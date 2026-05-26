@@ -1,0 +1,711 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>World Minifigures 4U</title>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<style>
+*{
+    box-sizing:border-box;
+}
+
+body{
+    margin:0;
+    font-family:Arial,Helvetica,sans-serif;
+    background:#000;
+    color:#fff;
+}
+
+header{
+    background:#ffc107;
+    color:#000;
+    text-align:center;
+    padding:20px;
+}
+
+.container{
+    display:flex;
+    gap:20px;
+    padding:20px;
+}
+
+.menu-temas{
+    width:260px;
+    background:#111;
+    border-radius:10px;
+    padding:15px;
+    height:fit-content;
+}
+
+.produtos{
+    flex:1;
+    display:grid;
+    grid-template-columns:repeat(auto-fill,minmax(230px,1fr));
+    gap:20px;
+}
+
+.produto-card{
+    background:#111;
+    border-radius:12px;
+    padding:15px;
+    border:1px solid #333;
+    display:flex;
+    flex-direction:column;
+}
+
+.produto-img{
+    width:100%;
+    height:220px;
+    object-fit:contain;
+    background:#222;
+    border-radius:10px;
+}
+
+.preco{
+    color:#ff4d4d;
+    font-size:22px;
+    font-weight:bold;
+    margin-top:10px;
+}
+
+.btn-adicionar,
+.btn-tema,
+.btn-subtema,
+.btn-finalizar{
+    border:none;
+    cursor:pointer;
+    border-radius:8px;
+    font-weight:bold;
+}
+
+.btn-adicionar{
+    margin-top:auto;
+    background:#ffc107;
+    padding:12px;
+}
+
+.btn-tema{
+    width:100%;
+    margin-bottom:8px;
+    padding:10px;
+    background:#222;
+    color:#fff;
+    text-align:left;
+}
+
+.btn-subtema{
+    width:100%;
+    margin-bottom:4px;
+    padding:8px;
+    background:#181818;
+    color:#ccc;
+    text-align:left;
+}
+
+.btn-tema:hover,
+.btn-subtema:hover,
+.btn-tema.ativo,
+.btn-subtema.ativo{
+    background:#ffc107;
+    color:#000;
+}
+
+.grupo-subtemas{
+    margin-left:10px;
+    margin-bottom:10px;
+    border-left:2px solid #333;
+    padding-left:8px;
+    display:none;
+}
+
+.carrinho{
+    position:fixed;
+    top:20px;
+    right:20px;
+    width:320px;
+    background:#111;
+    border:2px solid #ffc107;
+    border-radius:12px;
+    padding:15px;
+    z-index:999;
+    max-height:90vh;
+    overflow:auto;
+}
+
+.carrinho h2{
+    margin-top:0;
+}
+
+.item-carrinho{
+    border-bottom:1px solid #333;
+    padding:10px 0;
+}
+
+.total{
+    margin-top:15px;
+    font-size:22px;
+    font-weight:bold;
+    color:#ffc107;
+}
+
+input,
+select{
+    width:100%;
+    padding:10px;
+    margin-top:8px;
+    margin-bottom:8px;
+    border:none;
+    border-radius:6px;
+}
+
+.btn-finalizar{
+    width:100%;
+    padding:14px;
+    background:#28a745;
+    color:#fff;
+    margin-top:15px;
+}
+
+.estado-vitrine{
+    background:#111;
+    padding:30px;
+    border-radius:12px;
+    text-align:center;
+    grid-column:1 / -1;
+}
+
+.erro{
+    color:#ff4d4d;
+}
+
+@media(max-width:1200px){
+    .carrinho{
+        position:relative;
+        top:auto;
+        right:auto;
+        width:100%;
+    }
+
+    .container{
+        flex-direction:column;
+    }
+
+    .menu-temas{
+        width:100%;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<header>
+    <h1>🌍 World Minifigures 4U</h1>
+    <p>Minifiguras exclusivas de todo o mundo</p>
+</header>
+
+<div class="container">
+
+    <aside class="menu-temas" id="menu-lateral-temas">
+        <h2>Temas</h2>
+
+        <button class="btn-tema ativo"
+        onclick="filtrarTema('todos', this)">
+            ⭐ Todos os Temas
+        </button>
+    </aside>
+
+    <main class="produtos" id="vitrine-produtos">
+
+        <div class="estado-vitrine">
+            A carregar minifiguras extraordinárias...
+        </div>
+
+    </main>
+
+</div>
+
+<div class="carrinho">
+
+    <h2>🛒 Carrinho</h2>
+
+    <div id="lista-carrinho">
+        Carrinho vazio.
+    </div>
+
+    <h3>📦 Portes</h3>
+
+    <select id="portes" onchange="atualizarCarrinho()">
+        <option value="4.99">Correio Normal - 4,99€</option>
+        <option value="6.99">Correio Registado - 6,99€</option>
+        <option value="9.99">Envio Expresso - 9,99€</option>
+    </select>
+
+    <div class="total" id="total-carrinho">
+        Total: 0,00 €
+    </div>
+
+    <hr>
+
+    <h3>👤 Registo Obrigatório</h3>
+
+    <input type="text" id="nome" placeholder="Nome Completo">
+    <input type="email" id="email" placeholder="Email">
+    <input type="text" id="telefone" placeholder="Telemóvel">
+    <input type="text" id="morada" placeholder="Morada">
+    <input type="text" id="cp" placeholder="Código Postal">
+
+    <button class="btn-finalizar" onclick="finalizarCompra()">
+        Finalizar Compra
+    </button>
+
+</div>
+
+<script>
+
+const SUPABASE_URL = "https://gksndzxadndrsynvzgzb.supabase.co";
+
+const SUPABASE_KEY = "COLOCA_AQUI_A_TUA_CHAVE_SUPABASE";
+
+const dbClient = supabase.createClient(
+    SUPABASE_URL,
+    SUPABASE_KEY
+);
+
+let todosOsProdutos = [];
+let carrinho = [];
+
+window.addEventListener('load', () => {
+    carregarProdutos();
+});
+
+function formatarEuro(valor){
+    return Number(valor || 0)
+    .toFixed(2)
+    .replace('.', ',');
+}
+
+async function carregarProdutos(){
+
+    try{
+
+        const { data, error } = await dbClient
+        .from('produtos')
+        .select('*')
+        .order('tema');
+
+        if(error){
+            console.error(error);
+            throw error;
+        }
+
+        if(!data || data.length === 0){
+
+            document.getElementById('vitrine-produtos').innerHTML = `
+                <div class="estado-vitrine erro">
+                    Nenhum produto encontrado.
+                </div>
+            `;
+
+            return;
+        }
+
+        todosOsProdutos = data;
+
+        gerarMenus(data);
+
+        gerarProdutos(data);
+
+    }catch(erro){
+
+        console.error(erro);
+
+        document.getElementById('vitrine-produtos').innerHTML = `
+            <div class="estado-vitrine erro">
+                Erro ao carregar produtos.
+            </div>
+        `;
+    }
+}
+
+function gerarMenus(lista){
+
+    const menu = document.getElementById('menu-lateral-temas');
+
+    menu.innerHTML = `
+        <h2>Temas</h2>
+
+        <button class="btn-tema ativo"
+        onclick="filtrarTema('todos', this)">
+            ⭐ Todos os Temas
+        </button>
+    `;
+
+    const temas = {};
+
+    lista.forEach(prod => {
+
+        const tema = prod.tema || 'Outros';
+
+        const subtema = (
+            prod.subtema &&
+            prod.subtema !== 'semsubtema'
+        )
+        ? prod.subtema
+        : '';
+
+        if(!temas[tema]){
+            temas[tema] = [];
+        }
+
+        if(subtema && !temas[tema].includes(subtema)){
+            temas[tema].push(subtema);
+        }
+
+    });
+
+    Object.keys(temas).forEach(tema => {
+
+        const temaId = tema
+        .toLowerCase()
+        .replace(/\s+/g,'-');
+
+        const btnTema = document.createElement('button');
+
+        btnTema.className = 'btn-tema';
+
+        btnTema.innerText = tema;
+
+        btnTema.onclick = function(){
+            filtrarTema(temaId, this);
+        };
+
+        menu.appendChild(btnTema);
+
+        if(temas[tema].length > 0){
+
+            const grupo = document.createElement('div');
+
+            grupo.className = 'grupo-subtemas';
+
+            grupo.id = 'grupo-' + temaId;
+
+            temas[tema].forEach(subtema => {
+
+                const subId = subtema
+                .toLowerCase()
+                .replace(/\s+/g,'-');
+
+                const btnSub = document.createElement('button');
+
+                btnSub.className = 'btn-subtema';
+
+                btnSub.innerText = '• ' + subtema;
+
+                btnSub.onclick = function(e){
+
+                    e.stopPropagation();
+
+                    filtrarTema(
+                        temaId + '|' + subId,
+                        this
+                    );
+                };
+
+                grupo.appendChild(btnSub);
+
+            });
+
+            menu.appendChild(grupo);
+        }
+
+    });
+}
+
+function gerarProdutos(lista){
+
+    const vitrine = document.getElementById('vitrine-produtos');
+
+    vitrine.innerHTML = '';
+
+    lista.forEach(prod => {
+
+        const card = document.createElement('div');
+
+        card.className = 'produto-card';
+
+        const temaId = (prod.tema || '')
+        .toLowerCase()
+        .replace(/\s+/g,'-');
+
+        const subtemaId = (prod.subtema || '')
+        .toLowerCase()
+        .replace(/\s+/g,'-');
+
+        card.dataset.tema = temaId;
+        card.dataset.subtema = subtemaId;
+
+        let imagem = 'https://placehold.co/300x300?text=Sem+Imagem';
+
+        if(Array.isArray(prod.imagens) && prod.imagens.length > 0){
+            imagem = prod.imagens[0];
+        }
+
+        const img = document.createElement('img');
+
+        img.src = imagem;
+
+        img.className = 'produto-img';
+
+        card.appendChild(img);
+
+        const titulo = document.createElement('h3');
+
+        titulo.innerText = prod.nome || '';
+
+        card.appendChild(titulo);
+
+        const categoria = document.createElement('div');
+
+        categoria.innerHTML = `
+            <small>${prod.tema || ''}</small>
+        `;
+
+        card.appendChild(categoria);
+
+        if(prod.subtema && prod.subtema !== 'semsubtema'){
+
+            const sub = document.createElement('div');
+
+            sub.innerHTML = `
+                <small>${prod.subtema}</small>
+            `;
+
+            card.appendChild(sub);
+        }
+
+        const preco = document.createElement('div');
+
+        preco.className = 'preco';
+
+        preco.innerText =
+            formatarEuro(prod.preco) + ' €';
+
+        card.appendChild(preco);
+
+        const btn = document.createElement('button');
+
+        btn.className = 'btn-adicionar';
+
+        btn.innerText = 'Adicionar ao Carrinho';
+
+        btn.onclick = () => adicionarAoCarrinho(prod);
+
+        card.appendChild(btn);
+
+        vitrine.appendChild(card);
+
+    });
+
+}
+
+function filtrarTema(filtro, botao){
+
+    document.querySelectorAll(
+        '.btn-tema, .btn-subtema'
+    ).forEach(btn => {
+        btn.classList.remove('ativo');
+    });
+
+    botao.classList.add('ativo');
+
+    const produtos = document.querySelectorAll('.produto-card');
+
+    if(filtro === 'todos'){
+
+        produtos.forEach(p => {
+            p.style.display = 'flex';
+        });
+
+        document.querySelectorAll('.grupo-subtemas')
+        .forEach(g => {
+            g.style.display = 'none';
+        });
+
+        return;
+    }
+
+    const partes = filtro.split('|');
+
+    const tema = partes[0];
+
+    const subtema = partes[1] || null;
+
+    produtos.forEach(prod => {
+
+        const mostrar = subtema
+        ? (
+            prod.dataset.tema === tema &&
+            prod.dataset.subtema === subtema
+        )
+        : (
+            prod.dataset.tema === tema
+        );
+
+        prod.style.display =
+            mostrar ? 'flex' : 'none';
+    });
+
+    document.querySelectorAll('.grupo-subtemas')
+    .forEach(g => {
+        g.style.display = 'none';
+    });
+
+    const grupo = document.getElementById(
+        'grupo-' + tema
+    );
+
+    if(grupo && !subtema){
+        grupo.style.display = 'block';
+    }
+}
+
+function adicionarAoCarrinho(prod){
+
+    carrinho.push(prod);
+
+    atualizarCarrinho();
+}
+
+function atualizarCarrinho(){
+
+    const lista = document.getElementById('lista-carrinho');
+
+    if(carrinho.length === 0){
+
+        lista.innerHTML = 'Carrinho vazio.';
+
+        document.getElementById('total-carrinho')
+        .innerText = 'Total: 0,00 €';
+
+        return;
+    }
+
+    lista.innerHTML = '';
+
+    let subtotal = 0;
+
+    carrinho.forEach((item,index) => {
+
+        subtotal += Number(item.preco || 0);
+
+        const div = document.createElement('div');
+
+        div.className = 'item-carrinho';
+
+        div.innerHTML = `
+            ${item.nome}<br>
+            <strong>
+                ${formatarEuro(item.preco)} €
+            </strong>
+            <br><br>
+            <button onclick="removerCarrinho(${index})">
+                Remover
+            </button>
+        `;
+
+        lista.appendChild(div);
+
+    });
+
+    const portes = Number(
+        document.getElementById('portes').value
+    );
+
+    const total = subtotal + portes;
+
+    document.getElementById('total-carrinho')
+    .innerText =
+        'Total: ' + formatarEuro(total) + ' €';
+}
+
+function removerCarrinho(index){
+
+    carrinho.splice(index,1);
+
+    atualizarCarrinho();
+}
+
+async function finalizarCompra(){
+
+    if(carrinho.length === 0){
+        alert('Carrinho vazio.');
+        return;
+    }
+
+    const nome = document.getElementById('nome').value.trim();
+    const email = document.getElementById('email').value.trim();
+    const telefone = document.getElementById('telefone').value.trim();
+    const morada = document.getElementById('morada').value.trim();
+    const cp = document.getElementById('cp').value.trim();
+
+    if(
+        !nome ||
+        !email ||
+        !telefone ||
+        !morada ||
+        !cp
+    ){
+        alert('Preencha todos os dados.');
+        return;
+    }
+
+    try{
+
+        // TABELA ALTERADA PARA "clientes"
+        const { error } = await dbClient
+        .from('clientes')
+        .insert([{
+            nome:nome,
+            email:email,
+            telemovel:telefone,
+            morada:morada,
+            cp:cp
+        }]);
+
+        if(error){
+
+            console.error(error);
+
+            alert(
+                'Erro ao guardar cliente.'
+            );
+
+            return;
+        }
+
+        alert(
+            'Compra registada com sucesso!'
+        );
+
+        carrinho = [];
+
+        atualizarCarrinho();
+
+    }catch(erro){
+
+        console.error(erro);
+
+        alert(
+            'Erro ao finalizar compra.'
+        );
+    }
+}
+
+</script>
+
+</body>
+</html>
