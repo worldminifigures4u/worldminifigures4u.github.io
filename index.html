@@ -584,18 +584,20 @@ async function registarCliente(event) {
     const cp = document.getElementById('registo-cp').value.trim();
 
     try {
-        const { data: authData, error: authError } = await dbClient.auth.signUp({
-            email: email,
-            password: password,
-            options: {
-                data: {
-                    nome: nome,
-                    telemovel: telemovel,
-                    morada: morada,
-                    cp: cp
-                }
-            }
-        });
+       const { data, error } = await dbClient.auth.signUp({
+    email: email,
+    password: password,
+    options: {
+        // Força o Supabase a enviar o cliente sempre para o teu novo URL limpo
+        emailRedirectTo: 'https://worldminifigures4u.github.io/',
+        data: {
+            nome: nome,
+            telemovel: telemovel,
+            morada: morada,
+            cp: cp
+        }
+    }
+});
 
         if (authError) throw authError;
 
