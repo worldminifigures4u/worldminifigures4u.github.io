@@ -296,6 +296,61 @@
             display:none;
         }
 
+        .cabecalho-menu-temas{
+            display:flex;
+            justify-content:space-between;
+            align-items:center;
+            gap:10px;
+            border-bottom:1px solid #333;
+            padding-bottom:10px;
+            margin-bottom:12px;
+        }
+
+        .cabecalho-menu-temas h2{
+            border-bottom:none;
+            padding-bottom:0;
+            margin:0;
+        }
+
+        .btn-toggle-menu{
+            background:#222;
+            color:#ffc107;
+            border:1px solid #444;
+            border-radius:6px;
+            padding:6px 10px;
+            cursor:pointer;
+            font-weight:bold;
+        }
+
+        .lista-temas.recolhida{
+            display:none;
+        }
+
+        .linha-tema{
+            margin-bottom:6px;
+        }
+
+        .btn-tema-com-subtemas{
+            display:flex;
+            align-items:center;
+            justify-content:space-between;
+            gap:8px;
+        }
+
+        .indicador-tema{
+            color:#ffc107;
+            font-size:12px;
+        }
+
+        .btn-tema.ativo .indicador-tema,
+        .btn-tema:hover .indicador-tema{
+            color:#000;
+        }
+
+        .grupo-subtemas.aberto{
+            display:block;
+        }
+
         .estado-vitrine{
             background:#111;
             padding:30px;
@@ -865,15 +920,33 @@ function gerarMenus(listaProdutos){
     const menu = document.getElementById('menu-lateral-temas');
     menu.replaceChildren();
 
+    const cabecalho = document.createElement('div');
+    cabecalho.className = 'cabecalho-menu-temas';
+
     const tituloMenu = document.createElement('h2');
     tituloMenu.textContent = 'Temas';
-    menu.appendChild(tituloMenu);
+    cabecalho.appendChild(tituloMenu);
+
+    const toggleMenu = document.createElement('button');
+    toggleMenu.className = 'btn-toggle-menu';
+    toggleMenu.type = 'button';
+    toggleMenu.textContent = 'Recolher';
+    toggleMenu.onclick = function(){
+        const recolhido = listaTemas.classList.toggle('recolhida');
+        toggleMenu.textContent = recolhido ? 'Mostrar' : 'Recolher';
+    };
+    cabecalho.appendChild(toggleMenu);
+    menu.appendChild(cabecalho);
+
+    const listaTemas = document.createElement('div');
+    listaTemas.className = 'lista-temas';
+    menu.appendChild(listaTemas);
 
     const todosBtn = document.createElement('button');
     todosBtn.className = 'btn-tema ativo';
     todosBtn.textContent = '⭐ Todos os Temas';
     todosBtn.onclick = function(){ filtrarTema('todos', this); };
-    menu.appendChild(todosBtn);
+    listaTemas.appendChild(todosBtn);
 
     const mapa = {};
     listaProdutos.forEach(prod => {
@@ -885,30 +958,57 @@ function gerarMenus(listaProdutos){
 
     Object.keys(mapa).forEach(tema => {
         const temaId = tema.toLowerCase().replace(/\s+/g, '-');
+        const linhaTema = document.createElement('div');
+        linhaTema.className = 'linha-tema';
+
         const btnTema = document.createElement('button');
         btnTema.className = 'btn-tema';
-        btnTema.innerText = tema;
-        btnTema.onclick = function(){ filtrarTema(temaId, this); };
-        menu.appendChild(btnTema);
+
+        const nomeTema = document.createElement('span');
+        nomeTema.textContent = tema;
+        btnTema.appendChild(nomeTema);
 
         if(mapa[tema].length > 0){
+            btnTema.classList.add('btn-tema-com-subtemas');
+            const indicador = document.createElement('span');
+            indicador.className = 'indicador-tema';
+            indicador.textContent = '+';
+            btnTema.appendChild(indicador);
+
             const group = document.createElement('div');
             group.className = 'grupo-subtemas';
             group.id = 'grupo-' + temaId;
+
+            btnTema.onclick = function(){
+                const estavaAberto = group.classList.contains('aberto');
+                document.querySelectorAll('.grupo-subtemas').forEach(g => g.classList.remove('aberto'));
+                document.querySelectorAll('.indicador-tema').forEach(i => i.textContent = '+');
+                if(!estavaAberto){
+                    group.classList.add('aberto');
+                    indicador.textContent = '-';
+                }
+                filtrarTema(temaId, this);
+            };
 
             mapa[tema].forEach(subtema => {
                 const subId = subtema.toLowerCase().replace(/\s+/g, '-');
                 const btnSub = document.createElement('button');
                 btnSub.className = 'btn-subtema';
-                btnSub.innerText = '• ' + subtema;
+                btnSub.textContent = '• ' + subtema;
                 btnSub.onclick = function(e){
                     e.stopPropagation();
                     filtrarTema(temaId + '|' + subId, this);
                 };
                 group.appendChild(btnSub);
             });
-            menu.appendChild(group);
+            linhaTema.appendChild(btnTema);
+            linhaTema.appendChild(group);
+        } else {
+            btnTema.onclick = function(){ filtrarTema(temaId, this); };
+            linhaTema.appendChild(btnTema);
         }
+
+        listaTemas.appendChild(linhaTema);
     });
 }
 
@@ -1024,13 +1124,19 @@ function filtrarTema(filtro, botao){
     filtroTemaAtual = filtro;
 
     if(filtro === 'todos'){
-        document.querySelectorAll('.grupo-subtemas').forEach(g => { g.style.display = 'none'; });
+        document.querySelectorAll('.grupo-subtemas').forEach(g => { g.classList.remove('aberto'); });
+        document.querySelectorAll('.indicador-tema').forEach(i => { i.textContent = '+'; });
     } else {
         const partes = filtro.split('|');
         const tema = partes[0];
-        document.querySelectorAll('.grupo-subtemas').forEach(g => { if(g.id !== 'grupo-' + tema){ g.style.display = 'none'; } });
+        document.querySelectorAll('.grupo-subtemas').forEach(g => { if(g.id !== 'grupo-' + tema){ g.classList.remove('aberto'); } });
+        document.querySelectorAll('.indicador-tema').forEach(i => {
+            const linha = i.closest('.linha-tema');
+            const grupo = linha ? linha.querySelector('.grupo-subtemas') : null;
+            i.textContent = grupo && grupo.classList.contains('aberto') ? '-' : '+';
+        });
         const grupoAlvo = document.getElementById('grupo-' + tema);
-        if(grupoAlvo && partes.length === 1){ grupoAlvo.style.display = 'block'; }
+        if(grupoAlvo && partes.length === 1){ grupoAlvo.classList.add('aberto'); }
     }
 
     executarFiltrosCombinados();
