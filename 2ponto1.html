@@ -606,28 +606,20 @@ window.addEventListener('load', async () => {
                 storageKey: 'world-minifigures-produtos-publicos'
             }
         });
-        dbClient.auth.onAuthStateChange(
-async (event, session) => {
-
-    if (session?.user) {
-
-        await obterDadosPerfilDaTabela(
-            session.user.id
-        );
-
-    } else {
-
-        document.getElementById(
-            'conteudo-cliente-autenticado'
-        ).style.display = 'none';
-
-        document.getElementById(
-            'conteudo-cliente-anonimo'
-        ).style.display = 'block';
-
-    }
-
-});
+        dbClient.auth.onAuthStateChange((event, session) => {
+            setTimeout(async () => {
+                if (session?.user) {
+                    if (session.user.email_confirmed_at === null) {
+                        await dbClient.auth.signOut();
+                        return;
+                    }
+                    await obterDadosPerfilDaTabela(session.user.id);
+                } else {
+                    document.getElementById('conteudo-cliente-autenticado').style.display = 'none';
+                    document.getElementById('conteudo-cliente-anonimo').style.display = 'block';
+                }
+            }, 0);
+        });
         await carregarProdutosDaNuvem();
         await verificarSessaoSupabase();
     } else {
@@ -660,17 +652,35 @@ function mudarAba(tipo) {
 async function fazerLogin(event) {
     event.preventDefault();
     const statusDiv = document.getElementById('status-cliente');
+    const botaoLogin = document.querySelector('#form-login button[type="submit"]');
     statusDiv.className = "msg-status";
     statusDiv.innerText = "A entrar...";
 
     const email = document.getElementById('login-email').value.trim();
     const password = document.getElementById('login-password').value;
 
+    if(!dbClient){
+        mostrarMensagem(statusDiv, "Erro: ligação ao Supabase indisponível. Verifique a internet e recarregue a página.", "msg-erro");
+        return;
+    }
+
+    if(!email || !password){
+        mostrarMensagem(statusDiv, "Preencha o e-mail e a palavra-passe.", "msg-erro");
+        return;
+    }
+
+    botaoLogin.disabled = true;
+    botaoLogin.innerText = "A entrar...";
+
     try {
-        const { data, error } = await dbClient.auth.signInWithPassword({
-            email: email,
-            password: password
-        });
+        const { data, error } = await executarComTimeout(
+            dbClient.auth.signInWithPassword({
+                email: email,
+                password: password
+            }),
+            30000,
+            "A ligação ao serviço de login demorou demasiado. Tente novamente."
+        );
 
         if (error) throw error;
 
@@ -680,12 +690,19 @@ async function fazerLogin(event) {
                 mostrarMensagem(statusDiv, "⚠️ E-mail não confirmado!\nPor favor, aceda à sua caixa de correio e clique no link de validação enviado para poder iniciar sessão.", "msg-erro");
                 return;
             }
-            obterDadosPerfilDaTabela(data.user.id);
+            await executarComTimeout(
+                obterDadosPerfilDaTabela(data.user.id),
+                15000,
+                "Sessão iniciada, mas os dados do perfil demoraram demasiado a carregar."
+            );
+            statusDiv.innerText = "";
         }
     } catch (erro) {
         console.error(erro);
-        statusDiv.className = "msg-status msg-erro";
-        statusDiv.innerText = "Erro: " + (erro.message || "E-mail ou password inválidos.");
+        mostrarMensagem(statusDiv, "Erro: " + (erro.message || "E-mail ou password inválidos."), "msg-erro");
+    } finally {
+        botaoLogin.disabled = false;
+        botaoLogin.innerText = "Entrar na Conta";
     }
 }
 
