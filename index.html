@@ -263,6 +263,7 @@
             font-weight:bold;
             cursor:pointer;
             transition:0.2s;
+            color: #000;
         }
 
         .btn-adicionar:hover{
@@ -359,6 +360,7 @@
             margin-top:20px;
             border-top:2px solid #333;
             padding-top:15px;
+            margin-bottom: 15px;
         }
 
         .linha-total{
@@ -371,6 +373,53 @@
             color:#ff4d4d;
             font-size:26px;
             font-weight:bold;
+        }
+
+        .seccao-pagamento {
+            margin-top: 15px;
+            border-top: 1px dashed #333;
+            padding-top: 15px;
+        }
+        .seccao-pagamento h3 {
+            font-size: 15px;
+            color: #ffc107;
+            margin-top: 0;
+            margin-bottom: 10px;
+        }
+        .opcao-pagamento {
+            display: flex;
+            align-items: center;
+            background: #1c1c1c;
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            cursor: pointer;
+            border: 1px solid #222;
+            transition: 0.2s;
+        }
+        .opcao-pagamento:hover {
+            border-color: #444;
+        }
+        .opcao-pagamento input {
+            margin-right: 10px;
+            cursor: pointer;
+        }
+
+        .btn-confirmar {
+            background: #28a745;
+            color: white;
+            width: 100%;
+            padding: 14px;
+            border: none;
+            border-radius: 8px;
+            font-weight: bold;
+            font-size: 16px;
+            cursor: pointer;
+            transition: 0.2s;
+            margin-top: 15px;
+        }
+        .btn-confirmar:hover {
+            background: #218838;
         }
 
         @media(max-width:1100px){
@@ -494,6 +543,25 @@
                 <span id="total">0,00 €</span>
             </div>
         </div>
+
+        <div class="seccao-pagamento">
+            <h3>💳 Método de Pagamento</h3>
+            <label class="opcao-pagamento">
+                <input type="radio" name="metodo-pagamento" value="MB WAY" checked>
+                <span>📱 MB WAY</span>
+            </label>
+            <label class="opcao-pagamento">
+                <input type="radio" name="metodo-pagamento" value="Transferência Bancária">
+                <span>🏦 Transferência Bancária</span>
+            </label>
+            <label class="opcao-pagamento">
+                <input type="radio" name="metodo-pagamento" value="PayPal">
+                <span>🔵 PayPal</span>
+            </label>
+        </div>
+
+        <button class="btn-confirmar" onclick="criarNovaEncomenda()">Confirmar Encomenda</button>
+        <div id="status-encomenda" class="msg-status"></div>
     </aside>
 
 </div>
@@ -588,7 +656,6 @@ async function registarCliente(event) {
     email: email,
     password: password,
     options: {
-        // Força o Supabase a enviar o cliente sempre para o teu novo URL limpo
         emailRedirectTo: 'https://worldminifigures4u.github.io/',
         data: {
             nome: nome,
@@ -599,9 +666,9 @@ async function registarCliente(event) {
     }
 });
 
-        if (authError) throw authError;
+        if (error) throw error;
 
-        if (authData && authData.user) {
+        if (data && data.user) {
             await dbClient.auth.signOut();
 
             statusDiv.className = "msg-status msg-sucesso";
@@ -750,7 +817,6 @@ function gerarProdutos(listaProdutos){
         card.className = 'produto-card';
         card.dataset.id = prod.id;
         
-        // CORREÇÃO: Limpeza de espaços adicionais e proteção contra nomes nulos
         const nomeLimpo = (prod.nome || '').trim().toLowerCase();
         card.dataset.nome = nomeLimpo; 
         
@@ -854,9 +920,7 @@ function verificarTeclaEnter(evento) {
     }
 }
 
-// MOTOR DE PROCURA ULTRA-RESISTENTE COM REMOÇÃO DE ACENTOS E ESPAÇOS
-function executarFiltrosCombinados() {
-    // Captura o input e remove acentos para pesquisa tolerante
+function ejecutarFiltrosCombinados() {
     const inputRaw = document.getElementById('campo-pesquisa').value || '';
     const textoPesquisa = inputRaw.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
     
@@ -868,7 +932,6 @@ function executarFiltrosCombinados() {
     const subtemaAtivo = partesTema[1] || null;
 
     todosOsCards.forEach(card => {
-        // 1. Filtro por Categorias/Temas
         let correspondeAoTema = false;
         if (filtroTemaAtual === 'todos') {
             correspondeAoTema = true;
@@ -880,12 +943,10 @@ function executarFiltrosCombinados() {
                 : (cardTema === temaAtivo);
         }
 
-        // 2. Filtro Inteligente de Nome por Aproximação
         const nomeCardBruto = card.dataset.nome || '';
         const nomeCardNormalizado = nomeCardBruto.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
         const correspondeAoNome = nomeCardNormalizado.includes(textoPesquisa);
 
-        // Aplica a visibilidade apenas se passar em ambos os testes em simultâneo
         if (correspondeAoTema && correspondeAoNome) {
             card.style.display = 'flex';
             totalVisiveis++;
@@ -894,7 +955,6 @@ function executarFiltrosCombinados() {
         }
     });
 
-    // Controla a exibição da mensagem de erro elegante na vitrine
     const avisoExistente = document.getElementById('aviso-pesquisa-vazia');
     if (avisoExistente) avisoExistente.remove();
 
@@ -945,6 +1005,72 @@ function recalcularTotais(){
     document.getElementById('subtotal').innerText = formatarEuro(subtotal) + ' €';
     document.getElementById('portes').innerText = formatarEuro(portes) + ' €';
     document.getElementById('total').innerText = formatarEuro(subtotal + portes) + ' €';
+}
+
+async function criarNovaEncomenda() {
+  const statusDiv = document.getElementById('status-encomenda');
+  statusDiv.className = "msg-status";
+  statusDiv.innerText = "A processar encomenda...";
+
+  if (carrinho.length === 0) {
+    statusDiv.className = "msg-status msg-erro";
+    statusDiv.innerText = "❌ O seu carrinho está vazio.";
+    alert("Adicione pelo menos um produto ao carrinho antes de finalizar.");
+    return;
+  }
+
+  const { data: { user }, error: authError } = await dbClient.auth.getUser();
+
+  if (authError || !user) {
+    console.error("Erro de Autenticação:", authError);
+    statusDiv.className = "msg-status msg-erro";
+    statusDiv.innerText = "⚠️ Necessita de iniciar sessão.";
+    alert("Por favor, faça login ou registe-se na coluna lateral esquerda para poder finalizar a sua encomenda.");
+    return;
+  }
+
+  const textoTotal = document.getElementById('total').innerText; 
+  const totalNumerico = parseFloat(textoTotal.replace('€', '').replace(',', '.').trim());
+
+  const radioSelecionado = document.querySelector('input[name="metodo-pagamento"]:checked');
+  const metodoPagamento = radioSelecionado ? radioSelecionado.value : "Não especificado";
+
+  const listaProdutosJSON = carrinho.map(item => ({
+    id_produto: item.id,
+    nome: item.nome,
+    preco_unitario: item.preco
+  }));
+
+  const dadosDaEncomenda = {
+    id_cliente: user.id,          
+    produtos: listaProdutosJSON,   
+    total: totalNumerico,          
+    metodo_pagamento: metodoPagamento, 
+    estado: "Pendente"            
+  };
+
+  try {
+    const { data, error } = await dbClient
+      .from('encomendas')
+      .insert([dadosDaEncomenda])
+      .select();
+
+    if (error) throw error;
+
+    console.log("Encomenda gravada com sucesso:", data);
+    statusDiv.className = "msg-status msg-sucesso";
+    statusDiv.innerHTML = "🎉 <strong>Encomenda registada com sucesso!</strong><br>Aguarde o processamento do seu pagamento.";
+    
+    carrinho = [];
+    atualizarCarrinho();
+    alert("Sucesso! A sua encomenda foi submetida.");
+
+  } catch (err) {
+    console.error("Erro ao gravar encomenda:", err.message);
+    statusDiv.className = "msg-status msg-erro";
+    statusDiv.innerText = "Erro ao guardar: " + err.message;
+    alert("Houve um problema ao processar a compra. Verifique a consola do programador.");
+  }
 }
 </script>
 </body>
