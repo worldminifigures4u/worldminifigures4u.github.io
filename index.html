@@ -147,6 +147,66 @@
         .msg-sucesso { color: #28a745; }
         .msg-erro { color: #ff4d4d; }
 
+        .historico-encomendas{
+            margin-top:18px;
+            padding-top:15px;
+            border-top:1px solid #333;
+        }
+
+        .historico-encomendas h3{
+            margin:0 0 10px 0;
+            font-size:15px;
+            color:#ffc107;
+        }
+
+        .lista-historico{
+            display:flex;
+            flex-direction:column;
+            gap:10px;
+        }
+
+        .encomenda-card{
+            background:#181818;
+            border:1px solid #333;
+            border-radius:8px;
+            padding:10px;
+            font-size:13px;
+            line-height:1.4;
+        }
+
+        .encomenda-topo{
+            display:flex;
+            justify-content:space-between;
+            gap:10px;
+            align-items:flex-start;
+            margin-bottom:6px;
+        }
+
+        .encomenda-id{
+            color:#ffc107;
+            font-weight:bold;
+        }
+
+        .encomenda-estado{
+            background:#222;
+            color:#fff;
+            border-radius:999px;
+            padding:3px 8px;
+            font-size:11px;
+            white-space:nowrap;
+        }
+
+        .encomenda-total{
+            color:#ff4d4d;
+            font-weight:bold;
+        }
+
+        .historico-vazio{
+            color:#999;
+            font-size:13px;
+            line-height:1.4;
+        }
+
         .conteudo-central {
             flex: 1;
             display: flex;
@@ -508,6 +568,12 @@
                     <p id="cp-perfil-logado" style="color: #aaa; font-size: 12px;"></p>
                     <button class="btn-logout" onclick="fazerLogout()">Sair da Conta</button>
                 </div>
+                <div class="historico-encomendas">
+                    <h3>Histórico de encomendas</h3>
+                    <div id="lista-historico-encomendas" class="lista-historico">
+                        <p class="historico-vazio">Entre na conta para carregar o histórico.</p>
+                    </div>
+                </div>
             </div>
 
             <div id="conteudo-cliente-anonimo">
@@ -826,6 +892,7 @@ async function obterDadosPerfilDaTabela(userId) {
             document.getElementById('conteudo-cliente-anonimo').style.display = 'none';
             document.getElementById('conteudo-cliente-autenticado').style.display = 'block';
             document.getElementById('nome-perfil-logado').innerText = "Cliente Autenticado";
+            carregarHistoricoEncomendas(userId);
             return;
         }
 
@@ -835,6 +902,7 @@ async function obterDadosPerfilDaTabela(userId) {
             document.getElementById('nome-perfil-logado').innerText = data.nome;
             document.getElementById('email-perfil-logado').innerText = data.email;
             document.getElementById('cp-perfil-logado').innerText = "📍 Morada: " + data.morada + " (" + data.cp + ")";
+            carregarHistoricoEncomendas(userId);
         }
     } catch (e) {
         console.error(e);
@@ -846,6 +914,7 @@ async function fazerLogout() {
     document.getElementById('conteudo-cliente-autenticado').style.display = 'none';
     document.getElementById('conteudo-cliente-anonimo').style.display = 'block';
     document.getElementById('status-cliente').innerText = '';
+    definirHistoricoVazio('Entre na conta para carregar o histórico.');
     mudarAba('login');
 }
 
@@ -869,6 +938,103 @@ function mostrarMensagem(elemento, mensagem, tipo = '') {
         if(index > 0) elemento.appendChild(document.createElement('br'));
         elemento.appendChild(document.createTextNode(linha));
     });
+}
+
+function definirHistoricoVazio(mensagem) {
+    const lista = document.getElementById('lista-historico-encomendas');
+    if(!lista) return;
+    lista.replaceChildren();
+    const vazio = document.createElement('p');
+    vazio.className = 'historico-vazio';
+    vazio.textContent = mensagem;
+    lista.appendChild(vazio);
+}
+
+function resumirProdutosEncomenda(produtos) {
+    if(!Array.isArray(produtos) || produtos.length === 0) return 'Sem artigos registados';
+    return produtos
+        .slice(0, 3)
+        .map(item => {
+            const quantidade = Number(item.quantidade || item.qtd || 1);
+            const nome = item.nome || item.produto || 'Artigo';
+            return `${quantidade}x ${nome}`;
+        })
+        .join(', ') + (produtos.length > 3 ? '...' : '');
+}
+
+function renderizarHistoricoEncomendas(encomendas) {
+    const lista = document.getElementById('lista-historico-encomendas');
+    if(!lista) return;
+    lista.replaceChildren();
+
+    if(!encomendas || encomendas.length === 0) {
+        definirHistoricoVazio('Ainda não existem encomendas nesta conta.');
+        return;
+    }
+
+    encomendas.forEach(encomenda => {
+        const card = document.createElement('div');
+        card.className = 'encomenda-card';
+
+        const topo = document.createElement('div');
+        topo.className = 'encomenda-topo';
+
+        const id = document.createElement('span');
+        id.className = 'encomenda-id';
+        id.textContent = '#' + (encomenda.id || 'sem-id');
+
+        const estado = document.createElement('span');
+        estado.className = 'encomenda-estado';
+        estado.textContent = encomenda.estado || 'Pendente';
+
+        topo.appendChild(id);
+        topo.appendChild(estado);
+
+        const data = document.createElement('div');
+        const dataValor = encomenda.created_at || encomenda.data || encomenda.inserted_at;
+        data.textContent = dataValor ? new Date(dataValor).toLocaleDateString('pt-PT') : 'Data indisponível';
+
+        const produtos = document.createElement('div');
+        produtos.textContent = resumirProdutosEncomenda(encomenda.produtos || encomenda.artigos);
+
+        const total = document.createElement('div');
+        total.className = 'encomenda-total';
+        total.textContent = formatarEuro(encomenda.total || 0) + ' €';
+
+        card.appendChild(topo);
+        card.appendChild(data);
+        card.appendChild(produtos);
+        card.appendChild(total);
+        lista.appendChild(card);
+    });
+}
+
+async function carregarHistoricoEncomendas(userId) {
+    definirHistoricoVazio('A carregar histórico...');
+    try {
+        let { data, error } = await dbClient
+            .from('encomendas')
+            .select('id, produtos, total, metodo_pagamento, estado, created_at')
+            .eq('id_cliente', userId)
+            .order('created_at', { ascending:false })
+            .limit(10);
+
+        if(error && /created_at|column/i.test(error.message || '')) {
+            const fallback = await dbClient
+                .from('encomendas')
+                .select('id, produtos, total, metodo_pagamento, estado')
+                .eq('id_cliente', userId)
+                .limit(10);
+            data = fallback.data;
+            error = fallback.error;
+        }
+
+        if(error) throw error;
+        renderizarHistoricoEncomendas(data);
+    } catch(e) {
+        console.error('Erro ao carregar histórico:', e);
+        definirHistoricoVazio('Não foi possível carregar o histórico de encomendas.');
+    }
 }
 
 function definirEstadoVitrine(mensagem, tipo = ''){
@@ -1437,6 +1603,7 @@ async function criarNovaEncomenda() {
     carrinho = [];
     guardarCarrinho();
     atualizarCarrinho();
+    carregarHistoricoEncomendas(user.id);
 
   } catch (err) {
     console.error("Erro ao gravar encomenda:", err.message);
