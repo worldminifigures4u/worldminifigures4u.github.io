@@ -571,13 +571,41 @@ const SUPABASE_URL = "https://gksndzxadndrsynvzgzb.supabase.co";
 const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imdrc25kenhhZG5kcnN5bnZ6Z3piIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkwODc5NzMsImV4cCI6MjA5NDY2Mzk3M30.EHZgacYr27dqoc4CJHsOwkNnJFGlLIteSHBi4B1HfVE";
 
 let dbClient = null;
+let produtosClient = null;
 let todosOsProdutos = [];
-let carrinho = JSON.parse(localStorage.getItem('carrinho')) || [];
+let carrinho = carregarCarrinhoLocal();
 let filtroTemaAtual = 'todos';
 
+function carregarCarrinhoLocal() {
+    try {
+        const guardado = JSON.parse(localStorage.getItem('carrinho')) || [];
+        if(!Array.isArray(guardado)) return [];
+        return guardado
+            .filter(item => item && item.id !== undefined && item.nome)
+            .map(item => ({
+                id: item.id,
+                nome: String(item.nome),
+                preco: Number(item.preco || 0),
+                quantidade: Math.max(1, Number(item.quantidade || 1))
+            }));
+    } catch(e) {
+        localStorage.removeItem('carrinho');
+        return [];
+    }
+}
+
 window.addEventListener('load', async () => {
+    atualizarCarrinho();
     if(typeof supabase !== 'undefined'){
         dbClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        produtosClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {
+            auth: {
+                persistSession: false,
+                autoRefreshToken: false,
+                detectSessionInUrl: false,
+                storageKey: 'world-minifigures-produtos-publicos'
+            }
+        });
         dbClient.auth.onAuthStateChange(
 async (event, session) => {
 
@@ -601,7 +629,9 @@ async (event, session) => {
 
 });
         await carregarProdutosDaNuvem();
-await verificarSessaoSupabase();
+        await verificarSessaoSupabase();
+    } else {
+        definirEstadoVitrine('Erro: biblioteca Supabase não carregou. Verifique a ligação à internet.', 'erro');
     }
 });
 
@@ -647,8 +677,7 @@ async function fazerLogin(event) {
         if (data && data.user) {
             if (data.user.email_confirmed_at === null) {
                 await dbClient.auth.signOut();
-                statusDiv.className = "msg-status msg-erro";
-                statusDiv.innerHTML = "⚠️ <strong>E-mail não confirmado!</strong><br>Por favor, aceda à sua caixa de correio e clique no link de validação enviado para poder iniciar sessão.";
+                mostrarMensagem(statusDiv, "⚠️ E-mail não confirmado!\nPor favor, aceda à sua caixa de correio e clique no link de validação enviado para poder iniciar sessão.", "msg-erro");
                 return;
             }
             obterDadosPerfilDaTabela(data.user.id);
@@ -693,8 +722,7 @@ async function registarCliente(event) {
         if (data && data.user) {
             await dbClient.auth.signOut();
 
-            statusDiv.className = "msg-status msg-sucesso";
-            statusDiv.innerHTML = "📧 <strong>Registo efetuado!</strong><br>Enviámos um link de confirmação para o seu e-mail. Ative a conta antes de tentar fazer login.";
+            mostrarMensagem(statusDiv, "📧 Registo efetuado!\nEnviámos um link de confirmação para o seu e-mail. Ative a conta antes de tentar fazer login.", "msg-sucesso");
             
             document.getElementById('form-registo').reset();
             setTimeout(() => { mudarAba('login'); }, 5000);
@@ -754,8 +782,22 @@ async function verificarSessaoSupabase() {
 
 function formatarEuro(valor){ return Number(valor || 0).toFixed(2).replace('.', ','); }
 
+function mostrarMensagem(elemento, mensagem, tipo = '') {
+    elemento.className = tipo ? `msg-status ${tipo}` : 'msg-status';
+    elemento.replaceChildren();
+    mensagem.split('\n').forEach((linha, index) => {
+        if(index > 0) elemento.appendChild(document.createElement('br'));
+        elemento.appendChild(document.createTextNode(linha));
+    });
+}
+
 function definirEstadoVitrine(mensagem, tipo = ''){
-    document.getElementById('vitrine-produtos').innerHTML = `<div class="estado-vitrine ${tipo}">${mensagem}</div>`;
+    const vitrine = document.getElementById('vitrine-produtos');
+    vitrine.replaceChildren();
+    const estado = document.createElement('div');
+    estado.className = `estado-vitrine ${tipo}`.trim();
+    estado.textContent = mensagem;
+    vitrine.appendChild(estado);
 }
 
 function executarComTimeout(promessa, ms, mensagemErro){
@@ -767,7 +809,12 @@ function executarComTimeout(promessa, ms, mensagemErro){
 async function carregarProdutosDaNuvem(){
     definirEstadoVitrine('A carregar minifiguras extraordinárias...');
     try{
-        const query = dbClient.from('produtos').select('*')
+        const clienteProdutos = produtosClient || dbClient;
+        if(!clienteProdutos){
+            throw new Error('Cliente Supabase indisponível.');
+        }
+
+        const query = clienteProdutos.from('produtos').select('*')
             .order('tema', { ascending:true })
             .order('subtema', { ascending:true })
             .order('nome', { ascending:true });
@@ -785,13 +832,23 @@ async function carregarProdutosDaNuvem(){
         gerarProdutos(listaProdutos);
     }catch(erro){
         console.error(erro);
-        definirEstadoVitrine('Erro ao carregar produtos do Supabase.', 'erro');
+        definirEstadoVitrine('Erro ao carregar produtos do Supabase: ' + (erro.message || 'sem detalhe disponível'), 'erro');
     }
 }
 
 function gerarMenus(listaProdutos){
     const menu = document.getElementById('menu-lateral-temas');
-    menu.innerHTML = `<h2>Temas</h2><button class="btn-tema ativo" onclick="filtrarTema('todos', this)">⭐ Todos os Temas</button>`;
+    menu.replaceChildren();
+
+    const tituloMenu = document.createElement('h2');
+    tituloMenu.textContent = 'Temas';
+    menu.appendChild(tituloMenu);
+
+    const todosBtn = document.createElement('button');
+    todosBtn.className = 'btn-tema ativo';
+    todosBtn.textContent = '⭐ Todos os Temas';
+    todosBtn.onclick = function(){ filtrarTema('todos', this); };
+    menu.appendChild(todosBtn);
 
     const mapa = {};
     listaProdutos.forEach(prod => {
@@ -832,7 +889,7 @@ function gerarMenus(listaProdutos){
 
 function gerarProdutos(listaProdutos){
     const vitrine = document.getElementById('vitrine-produtos');
-    vitrine.innerHTML = '';
+    vitrine.replaceChildren();
 
     listaProdutos.forEach(prod => {
         const card = document.createElement('div');
@@ -1076,7 +1133,16 @@ function atualizarCarrinho() {
 
 const carrinhoDiv = document.getElementById("lista-carrinho");
 
-    carrinhoDiv.innerHTML = "";
+    carrinhoDiv.replaceChildren();
+
+    if(carrinho.length === 0){
+        const vazio = document.createElement('p');
+        vazio.id = 'carrinho-vazio';
+        vazio.textContent = 'Nenhum produto adicionado.';
+        carrinhoDiv.appendChild(vazio);
+        recalcularTotais();
+        return;
+    }
 
     let subtotal = 0;
 
@@ -1140,6 +1206,8 @@ const carrinhoDiv = document.getElementById("lista-carrinho");
 document.getElementById("subtotal").textContent =
     formatarEuro(subtotal) + " €";
 
+recalcularTotais();
+
 }
 
 function removerCarrinho(id) {
@@ -1169,6 +1237,13 @@ function recalcularTotais(){
     document.getElementById('subtotal').innerText = formatarEuro(subtotal) + ' €';
     document.getElementById('portes').innerText = formatarEuro(portes) + ' €';
     document.getElementById('total').innerText = formatarEuro(subtotal + portes) + ' €';
+
+    return {
+        subtotal,
+        portes,
+        total: subtotal + portes,
+        regiao
+    };
 }
 
 async function criarNovaEncomenda() {
@@ -1178,8 +1253,7 @@ async function criarNovaEncomenda() {
 
   if (carrinho.length === 0) {
     statusDiv.className = "msg-status msg-erro";
-    statusDiv.innerText = "❌ O seu carrinho está vazio.";
-    alert("Adicione pelo menos um produto ao carrinho antes de finalizar.");
+    statusDiv.innerText = "❌ O seu carrinho está vazio. Adicione pelo menos um produto antes de finalizar.";
     return;
   }
 
@@ -1188,13 +1262,17 @@ async function criarNovaEncomenda() {
   if (authError || !user) {
     console.error("Erro de Autenticação:", authError);
     statusDiv.className = "msg-status msg-erro";
-    statusDiv.innerText = "⚠️ Necessita de iniciar sessão.";
-    alert("Por favor, faça login ou registe-se na coluna lateral esquerda para poder finalizar a sua encomenda.");
+    statusDiv.innerText = "⚠️ Necessita de iniciar sessão ou registar-se na coluna lateral esquerda para finalizar a encomenda.";
     return;
   }
 
-  const textoTotal = document.getElementById('total').innerText; 
-  const totalNumerico = parseFloat(textoTotal.replace('€', '').replace(',', '.').trim());
+  if (user.email_confirmed_at === null) {
+    statusDiv.className = "msg-status msg-erro";
+    statusDiv.innerText = "⚠️ Confirme o seu e-mail antes de finalizar a encomenda.";
+    return;
+  }
+
+  const totais = recalcularTotais();
 
   const radioSelecionado = document.querySelector('input[name="metodo-pagamento"]:checked');
   const metodoPagamento = radioSelecionado ? radioSelecionado.value : "Não especificado";
@@ -1202,13 +1280,14 @@ async function criarNovaEncomenda() {
   const listaProdutosJSON = carrinho.map(item => ({
     id_produto: item.id,
     nome: item.nome,
-    preco_unitario: item.preco
+    preco_unitario: Number(item.preco || 0),
+    quantidade: Number(item.quantidade || 1)
   }));
 
   const dadosDaEncomenda = {
     id_cliente: user.id,          
     produtos: listaProdutosJSON,   
-    total: totalNumerico,          
+    total: totais.total,          
     metodo_pagamento: metodoPagamento, 
     estado: "Pendente"            
   };
@@ -1222,18 +1301,16 @@ async function criarNovaEncomenda() {
     if (error) throw error;
 
     console.log("Encomenda gravada com sucesso:", data);
-    statusDiv.className = "msg-status msg-sucesso";
-    statusDiv.innerHTML = "🎉 <strong>Encomenda registada com sucesso!</strong><br>Aguarde o processamento do seu pagamento.";
+    mostrarMensagem(statusDiv, "🎉 Encomenda registada com sucesso!\nAguarde o processamento do seu pagamento.", "msg-sucesso");
     
     carrinho = [];
+    guardarCarrinho();
     atualizarCarrinho();
-    alert("Sucesso! A sua encomenda foi submetida.");
 
   } catch (err) {
     console.error("Erro ao gravar encomenda:", err.message);
     statusDiv.className = "msg-status msg-erro";
     statusDiv.innerText = "Erro ao guardar: " + err.message;
-    alert("Houve um problema ao processar a compra. Verifique a consola do programador.");
   }
 }
 </script>
