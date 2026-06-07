@@ -201,6 +201,40 @@
             font-weight:bold;
         }
 
+        .encomenda-produtos-resumo{
+            margin-top:6px;
+            color:#f5f5f5;
+            overflow-wrap:anywhere;
+        }
+
+        .btn-ver-artigos{
+            margin-top:8px;
+            background:#222;
+            color:#ffc107;
+            border:1px solid #444;
+            border-radius:6px;
+            padding:6px 8px;
+            cursor:pointer;
+            font-size:12px;
+            font-weight:bold;
+        }
+
+        .lista-artigos-encomenda{
+            display:none;
+            margin:8px 0 0;
+            padding-left:18px;
+            color:#ddd;
+        }
+
+        .lista-artigos-encomenda.aberta{
+            display:block;
+        }
+
+        .lista-artigos-encomenda li{
+            margin-bottom:4px;
+            overflow-wrap:anywhere;
+        }
+
         .historico-vazio{
             color:#999;
             font-size:13px;
@@ -952,14 +986,36 @@ function definirHistoricoVazio(mensagem) {
 
 function resumirProdutosEncomenda(produtos) {
     if(!Array.isArray(produtos) || produtos.length === 0) return 'Sem artigos registados';
-    return produtos
-        .slice(0, 3)
-        .map(item => {
-            const quantidade = Number(item.quantidade || item.qtd || 1);
-            const nome = item.nome || item.produto || 'Artigo';
-            return `${quantidade}x ${nome}`;
-        })
-        .join(', ') + (produtos.length > 3 ? '...' : '');
+    const totalArtigos = produtos.reduce((total, item) => total + Number(item.quantidade || item.qtd || 1), 0);
+    const primeiro = produtos[0];
+    const primeiroNome = primeiro ? (primeiro.nome || primeiro.produto || 'Artigo') : 'Artigo';
+    if(produtos.length === 1) return `${totalArtigos}x ${primeiroNome}`;
+    return `${totalArtigos} artigos - clique para ver detalhes`;
+}
+
+function criarListaCompletaProdutos(produtos) {
+    const lista = document.createElement('ul');
+    lista.className = 'lista-artigos-encomenda';
+
+    if(!Array.isArray(produtos) || produtos.length === 0) {
+        const item = document.createElement('li');
+        item.textContent = 'Sem artigos registados';
+        lista.appendChild(item);
+        return lista;
+    }
+
+    produtos.forEach(produto => {
+        const item = document.createElement('li');
+        const quantidade = Number(produto.quantidade || produto.qtd || 1);
+        const nome = produto.nome || produto.produto || 'Artigo';
+        const preco = produto.preco_unitario || produto.preco;
+        item.textContent = preco !== undefined
+            ? `${quantidade}x ${nome} - ${formatarEuro(preco)} €`
+            : `${quantidade}x ${nome}`;
+        lista.appendChild(item);
+    });
+
+    return lista;
 }
 
 function renderizarHistoricoEncomendas(encomendas) {
@@ -994,8 +1050,22 @@ function renderizarHistoricoEncomendas(encomendas) {
         const dataValor = encomenda.created_at || encomenda.data || encomenda.inserted_at;
         data.textContent = dataValor ? new Date(dataValor).toLocaleDateString('pt-PT') : 'Data indisponível';
 
+        const produtosDaEncomenda = encomenda.produtos || encomenda.artigos;
+
         const produtos = document.createElement('div');
-        produtos.textContent = resumirProdutosEncomenda(encomenda.produtos || encomenda.artigos);
+        produtos.className = 'encomenda-produtos-resumo';
+        produtos.textContent = resumirProdutosEncomenda(produtosDaEncomenda);
+
+        const listaCompleta = criarListaCompletaProdutos(produtosDaEncomenda);
+
+        const botaoArtigos = document.createElement('button');
+        botaoArtigos.className = 'btn-ver-artigos';
+        botaoArtigos.type = 'button';
+        botaoArtigos.textContent = 'Ver artigos';
+        botaoArtigos.onclick = function(){
+            const aberta = listaCompleta.classList.toggle('aberta');
+            botaoArtigos.textContent = aberta ? 'Ocultar artigos' : 'Ver artigos';
+        };
 
         const total = document.createElement('div');
         total.className = 'encomenda-total';
@@ -1004,6 +1074,8 @@ function renderizarHistoricoEncomendas(encomendas) {
         card.appendChild(topo);
         card.appendChild(data);
         card.appendChild(produtos);
+        card.appendChild(botaoArtigos);
+        card.appendChild(listaCompleta);
         card.appendChild(total);
         lista.appendChild(card);
     });
