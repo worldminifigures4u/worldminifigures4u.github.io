@@ -462,6 +462,7 @@
             padding:15px;
             border:1px solid #333;
             height:fit-content;
+            box-shadow:0 12px 30px rgba(0,0,0,0.25);
         }
 
         .carrinho h2{
@@ -473,26 +474,69 @@
         .lista-carrinho{
             max-height:300px;
             overflow-y:auto;
-        }
-
-        .item-carrinho{
-            border-bottom:1px solid #333;
-            padding:10px 0;
             display:flex;
-            justify-content:space-between;
+            flex-direction:column;
             gap:10px;
         }
 
-        .item-carrinho strong{ color:#ffc107; }
+        .linha-carrinho{
+            background:#181818;
+            border:1px solid #303030;
+            border-radius:10px;
+            padding:10px;
+            display:flex;
+            justify-content:space-between;
+            align-items:center;
+            gap:10px;
+        }
+
+        .linha-carrinho strong{ color:#ffc107; }
+
+        .info-carrinho{
+            min-width:0;
+            overflow-wrap:anywhere;
+            line-height:1.35;
+        }
+
+        .preco-carrinho{
+            color:#ff6b6b;
+            font-weight:bold;
+            margin-top:4px;
+        }
+
+        .controlos-carrinho{
+            display:flex;
+            align-items:center;
+            gap:6px;
+            flex-shrink:0;
+        }
+
+        .btn-quantidade,
+        .btn-remover{
+            min-width:30px;
+            height:30px;
+            border:none;
+            border-radius:8px;
+            cursor:pointer;
+            font-weight:bold;
+        }
+
+        .btn-quantidade{
+            background:#2a2a2a;
+            color:#ffc107;
+            border:1px solid #444;
+        }
+
+        .quantidade-carrinho{
+            min-width:22px;
+            text-align:center;
+            color:#fff;
+            font-weight:bold;
+        }
 
         .btn-remover{
             background:#ff4d4d;
-            border:none;
             color:white;
-            padding:6px 10px;
-            border-radius:6px;
-            cursor:pointer;
-            height:fit-content;
         }
 
         .select-envio{
@@ -507,8 +551,10 @@
 
         .total-box{
             margin-top:20px;
-            border-top:2px solid #333;
-            padding-top:15px;
+            background:#181818;
+            border:1px solid #333;
+            border-radius:10px;
+            padding:12px;
             margin-bottom: 15px;
         }
 
@@ -520,8 +566,11 @@
 
         .valor-final{
             color:#ff4d4d;
-            font-size:26px;
+            font-size:24px;
             font-weight:bold;
+            border-top:1px dashed #444;
+            padding-top:10px;
+            margin-top:8px;
         }
 
         .seccao-pagamento {
@@ -549,6 +598,12 @@
         .opcao-pagamento:hover {
             border-color: #444;
         }
+
+        .opcao-pagamento:has(input:checked){
+            border-color:#ffc107;
+            background:#221c0a;
+        }
+
         .opcao-pagamento input {
             margin-right: 10px;
             cursor: pointer;
@@ -569,6 +624,18 @@
         }
         .btn-confirmar:hover {
             background: #218838;
+        }
+
+        #status-encomenda{
+            background:#181818;
+            border:1px solid #333;
+            border-radius:8px;
+            padding:10px;
+            min-height:18px;
+        }
+
+        #status-encomenda:empty{
+            display:none;
         }
 
         @media(max-width:1100px){
@@ -1525,11 +1592,13 @@ const carrinhoDiv = document.getElementById("lista-carrinho");
 
         // bloco nome + preço
         const info = document.createElement("div");
+        info.className = "info-carrinho";
 
         const nome = document.createElement("strong");
         nome.textContent = item.nome;
 
         const preco = document.createElement("div");
+        preco.className = "preco-carrinho";
         preco.textContent =
             formatarEuro(item.preco * item.quantidade) + " €";
 
@@ -1539,25 +1608,32 @@ const carrinhoDiv = document.getElementById("lista-carrinho");
 
         // bloco dos botões
         const botoes = document.createElement("div");
+        botoes.className = "controlos-carrinho";
 
         // botão -
         const btnMenos = document.createElement("button");
+        btnMenos.className = "btn-quantidade";
         btnMenos.textContent = "-";
+        btnMenos.setAttribute("aria-label", "Diminuir quantidade");
         btnMenos.onclick = () => diminuirQuantidade(item.id);
 
         // quantidade
         const quantidade = document.createElement("span");
+        quantidade.className = "quantidade-carrinho";
         quantidade.textContent = item.quantidade;
-        quantidade.style.margin = "0 10px";
 
         // botão +
         const btnMais = document.createElement("button");
+        btnMais.className = "btn-quantidade";
         btnMais.textContent = "+";
+        btnMais.setAttribute("aria-label", "Aumentar quantidade");
         btnMais.onclick = () => aumentarQuantidade(item.id);
 
         // botão remover
         const btnRemover = document.createElement("button");
+        btnRemover.className = "btn-remover";
         btnRemover.textContent = "X";
+        btnRemover.setAttribute("aria-label", "Remover produto");
         btnRemover.onclick = () => removerCarrinho(item.id);
 
         botoes.appendChild(btnMenos);
