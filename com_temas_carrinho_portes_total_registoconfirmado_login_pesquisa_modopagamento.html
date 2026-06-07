@@ -1008,78 +1008,41 @@ function recalcularTotais(){
     document.getElementById('total').innerText = formatarEuro(subtotal + portes) + ' €';
 }
 
-// NOVA FUNÇÃO: Tratamento completo do envio e da criação da Encomenda conectada à Base de Dados
-async function confirmarEncomenda() {
-    const msgStatus = document.getElementById('status-encomenda');
-    msgStatus.className = "msg-status";
-    msgStatus.innerText = "";
+async function criarNovaEncomenda() {
+  // 1. Ir buscar o utilizador atual que está logado no site
+  const { data: { user }, error: authError } = await supabase.auth.getUser();
 
-    if (carrinho.length === 0) {
-        msgStatus.className = "msg-status msg-erro";
-        msgStatus.innerText = "⚠️ O seu carrinho está vazio! Adicione produtos antes de continuar.";
-        return;
-    }
+  // Se não houver utilizador logado, o Supabase vai rejeitar a inserção por causa das Policies
+  if (authError || !user) {
+    console.error("Erro: O utilizador precisa de iniciar sessão primeiro.");
+    alert("Por favor, faça login para concluir a sua encomenda.");
+    return;
+  }
 
-    const opcaoPagamento = document.querySelector('input[name="metodo-pagamento"]:checked');
-    if (!opcaoPagamento) {
-        msgStatus.className = "msg-status msg-erro";
-        msgStatus.innerText = "⚠️ Por favor, selecione um método de pagamento.";
-        return;
-    }
+  // 2. Preparar os dados da encomenda usando as colunas exatas da sua tabela
+  const dadosDaEncomenda = {
+    id_cliente: user.id, // CRUCIAL: Tem de ser igual ao ID do user autenticado para passar na Policy
+    produtos: [
+      { id_produto: 101, nome: "Minifigura Exemplo", quantidade: 2, preco: 4.99 }
+    ], // Isto preenche a coluna 'produtos' (jsonb)
+    total: 9.98, // Preenche a coluna 'total' (numeric)
+    metodo_pagamento: "Multibanco", // Preenche a coluna 'metodo_pagamento' (text)
+    estado: "Pendente" // Preenche a coluna 'estado' (text)
+  };
 
-    msgStatus.style.color = "#ffc107";
-    msgStatus.innerText = "A processar e a registar a sua encomenda de segurança... ⏳";
+  // 3. Enviar os dados para o Supabase
+  const { data, error } = await supabase
+    .from('encomendas')
+    .insert([dadosDaEncomenda])
+    .select(); // O .select() no fim ajuda a confirmar se os dados foram inseridos
 
-    try {
-        // Obter sessão do utilizador (se estiver logado)
-        const { data: { session } } = await dbClient.auth.getSession();
-        const idCliente = session && session.user ? session.user.id : null;
-
-        // Formatar array simples com o nome de cada produto para guardar na coluna 'produtos' jsonb
-        const listaProdutosNomes = carrinho.map(item => item.nome);
-
-        // Recalcular os valores exatos para gravação numérica ideal
-        let subtotal = 0;
-        carrinho.forEach(item => { subtotal += Number(item.preco || 0); });
-        
-        let portes = 0;
-        const regiao = document.getElementById('regiao-envio').value;
-        if(regiao === 'portugal') portes = 4.95;
-        if(regiao === 'europa') portes = 9.95;
-        if(regiao === 'resto') portes = 14.95;
-        
-        const valorTotalFinal = Number((subtotal + portes).toFixed(2));
-
-        // Construir o objeto respeitando rigorosamente as colunas da tabela 'encomendas'
-        const dadosEncomenda = {
-            id_cliente: idCliente, // Guarda UUID se autenticado ou NULL se anónimo
-            produtos: listaProdutosNomes,
-            total: valorTotalFinal,
-            metodo_pagamento: opcaoPagamento.value,
-            estado: "Pendente"
-        };
-
-        // Inserção direta no Supabase
-        const { data, error } = await dbClient
-            .from('encomendas')
-            .insert([dadosEncomenda])
-            .select();
-
-        if (error) throw error;
-
-        // Sucesso absoluto
-        msgStatus.className = "msg-status msg-sucesso";
-        msgStatus.innerHTML = "🎉 <strong>Encomenda Confirmada!</strong><br>Os dados foram enviados para o sistema com sucesso.";
-
-        // Limpar o carrinho local
-        carrinho = [];
-        atualizarCarrinho();
-
-    } catch (error) {
-        console.error("Erro no envio da encomenda:", error);
-        msgStatus.className = "msg-status msg-erro";
-        msgStatus.innerText = "Erro ao processar encomenda: " + (error.message || "Por favor, valide as políticas de segurança.");
-    }
+  if (error) {
+    console.error("Erro ao submeter a encomenda:", error.message);
+    alert("Houve um problema ao guardar a encomenda. Tente novamente.");
+  } else {
+    console.log("Sucesso! Encomenda registada em segurança:", data);
+    alert("Encomenda registada com sucesso!");
+  }
 }
 </script>
 </body>
