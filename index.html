@@ -906,12 +906,51 @@ let produtosClient = null;
 let todosOsProdutos = [];
 let carrinho = carregarCarrinhoLocal();
 let filtroTemaAtual = 'todos';
+let emRecuperacaoPassword = false;
 
 function obterUrlPublicoAtual() {
     if (window.location.protocol === 'file:') {
         return URL_PUBLICO_FALLBACK;
     }
     return new URL('.', window.location.href).href;
+}
+
+function obterParametrosAuthUrl() {
+    const params = new URLSearchParams(window.location.search);
+    const hash = window.location.hash ? window.location.hash.replace(/^#/, '') : '';
+    const hashParams = new URLSearchParams(hash);
+
+    hashParams.forEach((valor, chave) => {
+        if(!params.has(chave)) params.set(chave, valor);
+    });
+
+    return params;
+}
+
+function urlTemRecuperacaoPassword() {
+    const params = obterParametrosAuthUrl();
+    return params.get('type') === 'recovery' || params.has('code') || params.has('access_token');
+}
+
+async function prepararRecuperacaoPassword() {
+    emRecuperacaoPassword = true;
+    const params = obterParametrosAuthUrl();
+    const code = params.get('code');
+
+    if(code) {
+        const { error } = await dbClient.auth.exchangeCodeForSession(code);
+        if(error) {
+            mostrarMensagem(
+                document.getElementById('status-cliente'),
+                'Erro ao validar o link de recuperação. Peça um novo link no Supabase.',
+                'msg-erro'
+            );
+            console.error('Erro recovery code:', error);
+            return;
+        }
+    }
+
+    mostrarFormularioRecuperacaoPassword();
 }
 
 function carregarCarrinhoLocal() {
@@ -947,6 +986,12 @@ window.addEventListener('load', async () => {
         dbClient.auth.onAuthStateChange((event, session) => {
             setTimeout(async () => {
                 if (event === 'PASSWORD_RECOVERY') {
+                    emRecuperacaoPassword = true;
+                    mostrarFormularioRecuperacaoPassword();
+                    return;
+                }
+
+                if (emRecuperacaoPassword) {
                     mostrarFormularioRecuperacaoPassword();
                     return;
                 }
@@ -965,6 +1010,10 @@ window.addEventListener('load', async () => {
             }, 0);
         });
         await carregarProdutosDaNuvem();
+        if(urlTemRecuperacaoPassword()) {
+            await prepararRecuperacaoPassword();
+            return;
+        }
         await verificarSessaoSupabase();
     } else {
         definirEstadoVitrine('Erro: biblioteca Supabase não carregou. Verifique a ligação à internet.', 'erro');
@@ -1134,6 +1183,10 @@ async function atualizarPasswordRecuperacao(event) {
 
         document.getElementById('form-recuperar-password').reset();
         mostrarMensagem(statusDiv, 'Password atualizada com sucesso. Já pode iniciar sessão.', 'msg-sucesso');
+        emRecuperacaoPassword = false;
+        if(window.history && window.history.replaceState) {
+            window.history.replaceState({}, document.title, obterUrlPublicoAtual());
+        }
         await dbClient.auth.signOut();
         setTimeout(() => { mudarAba('login'); }, 1500);
     } catch(error) {
