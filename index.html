@@ -804,6 +804,29 @@
                     <button class="btn-logout" onclick="fazerLogout()">Sair da Conta</button>
                 </div>
                 <div class="historico-encomendas">
+                    <h3>Dados pessoais</h3>
+                    <form class="form-cliente" id="form-editar-dados-cliente" onsubmit="guardarDadosCliente(event)">
+                        <div>
+                            <label for="editar-nome">Nome:</label>
+                            <input type="text" id="editar-nome" required placeholder="Nome completo">
+                        </div>
+                        <div>
+                            <label for="editar-telemovel">Telemóvel:</label>
+                            <input type="tel" id="editar-telemovel" placeholder="Ex: 912345678">
+                        </div>
+                        <div>
+                            <label for="editar-morada">Morada:</label>
+                            <input type="text" id="editar-morada" placeholder="Rua, número, localidade">
+                        </div>
+                        <div>
+                            <label for="editar-cp">Código postal:</label>
+                            <input type="text" id="editar-cp" placeholder="Ex: 1000-013">
+                        </div>
+                        <button type="submit" class="btn-acao-cliente">Guardar dados</button>
+                        <div id="status-dados-cliente" class="msg-status"></div>
+                    </form>
+                </div>
+                <div class="historico-encomendas">
                     <h3>Alterar password</h3>
                     <form class="form-cliente" id="form-alterar-password" onsubmit="alterarPasswordConta(event)">
                         <div>
@@ -1255,6 +1278,68 @@ async function alterarPasswordConta(event) {
     }
 }
 
+function preencherFormularioDadosCliente(data = {}, user = null) {
+    const nome = data.nome || user?.user_metadata?.nome || '';
+    const email = data.email || user?.email || '';
+    const morada = data.morada || '';
+    const cp = data.cp || '';
+
+    document.getElementById('nome-perfil-logado').innerText = nome || 'Cliente Autenticado';
+    document.getElementById('email-perfil-logado').innerText = email;
+    document.getElementById('cp-perfil-logado').innerText = morada || cp ? `📍 Morada: ${morada}${cp ? ` (${cp})` : ''}` : '';
+
+    const campoNome = document.getElementById('editar-nome');
+    const campoTelemovel = document.getElementById('editar-telemovel');
+    const campoMorada = document.getElementById('editar-morada');
+    const campoCp = document.getElementById('editar-cp');
+
+    if (campoNome) campoNome.value = nome;
+    if (campoTelemovel) campoTelemovel.value = data.telemovel || '';
+    if (campoMorada) campoMorada.value = morada;
+    if (campoCp) campoCp.value = cp;
+}
+
+async function guardarDadosCliente(event) {
+    event.preventDefault();
+    const statusDiv = document.getElementById('status-dados-cliente');
+    const nome = document.getElementById('editar-nome').value.trim();
+    const telemovel = document.getElementById('editar-telemovel').value.trim();
+    const morada = document.getElementById('editar-morada').value.trim();
+    const cp = document.getElementById('editar-cp').value.trim();
+
+    if (!nome) {
+        mostrarMensagem(statusDiv, 'Indique o nome.', 'msg-erro');
+        return;
+    }
+
+    try {
+        mostrarMensagem(statusDiv, 'A guardar dados...');
+        const { data: { user }, error: userError } = await dbClient.auth.getUser();
+        if (userError || !user) throw userError || new Error('Sessão não encontrada.');
+
+        const perfilAtualizado = {
+            id: user.id,
+            nome,
+            email: user.email,
+            telemovel,
+            morada,
+            cp
+        };
+
+        const { error } = await dbClient
+            .from('clientes')
+            .upsert(perfilAtualizado, { onConflict: 'id' });
+
+        if (error) throw error;
+
+        preencherFormularioDadosCliente(perfilAtualizado, user);
+        mostrarMensagem(statusDiv, 'Dados guardados com sucesso.', 'msg-sucesso');
+    } catch(error) {
+        console.error('Erro ao guardar dados do cliente:', error);
+        mostrarMensagem(statusDiv, 'Erro: ' + (error.message || 'Não foi possível guardar os dados.'), 'msg-erro');
+    }
+}
+
 async function obterDadosPerfilDaTabela(userId, user = null) {
     try {
         const { data, error } = await dbClient
@@ -1266,7 +1351,7 @@ async function obterDadosPerfilDaTabela(userId, user = null) {
         if (error) {
             document.getElementById('conteudo-cliente-anonimo').style.display = 'none';
             document.getElementById('conteudo-cliente-autenticado').style.display = 'block';
-            document.getElementById('nome-perfil-logado').innerText = "Cliente Autenticado";
+            preencherFormularioDadosCliente({}, user);
             atualizarVisibilidadeAdmin(user);
             restaurarCarrinhoGuardado();
             carregarHistoricoEncomendas(userId);
@@ -1276,9 +1361,7 @@ async function obterDadosPerfilDaTabela(userId, user = null) {
         if (data) {
             document.getElementById('conteudo-cliente-anonimo').style.display = 'none';
             document.getElementById('conteudo-cliente-autenticado').style.display = 'block';
-            document.getElementById('nome-perfil-logado').innerText = data.nome;
-            document.getElementById('email-perfil-logado').innerText = data.email;
-            document.getElementById('cp-perfil-logado').innerText = "📍 Morada: " + data.morada + " (" + data.cp + ")";
+            preencherFormularioDadosCliente(data, user);
             atualizarVisibilidadeAdmin(user);
             restaurarCarrinhoGuardado();
             carregarHistoricoEncomendas(userId);
