@@ -47,6 +47,10 @@
             box-sizing: border-box;
         }
 
+        .carrinho .area-cliente{
+            margin-top:15px;
+        }
+
         .menu-temas h2, .area-cliente h2{
             margin-top:0;
             border-bottom:1px solid #333;
@@ -661,6 +665,61 @@
             <h2>Temas</h2>
             <button class="btn-tema ativo" onclick="filtrarTema('todos', this)">⭐ Todos os Temas</button>
         </aside>
+    </div>
+
+    <div class="conteudo-central">
+        <div class="barra-pesquisa-container">
+            <input type="text" id="campo-pesquisa" class="input-pesquisa" placeholder="🔍 Digite o nome da minifigura... (Ex: Darth Vader)" oninput="executarFiltrosCombinados()" onkeydown="verificarTeclaEnter(event)">
+        </div>
+
+        <main class="produtos" id="vitrine-produtos">
+            <div class="estado-vitrine">A carregar minifiguras extraordinárias...</div>
+        </main>
+    </div>
+
+    <aside class="carrinho">
+        <h2>🛒 Carrinho</h2>
+        <div class="lista-carrinho" id="lista-carrinho">
+            <p id="carrinho-vazio">Nenhum produto adicionado.</p>
+        </div>
+
+        <label>📦 Região de envio:</label>
+        <select class="select-envio" id="regiao-envio" onchange="recalcularTotais()">
+            <option value="portugal">Portugal</option>
+            <option value="europa">Europa</option>
+            <option value="resto">Resto do Mundo</option>
+        </select>
+
+        <div class="total-box">
+            <div class="linha-total">
+                <span>Subtotal:</span>
+                <span id="subtotal">0,00 €</span>
+            </div>
+            <div class="linha-total">
+                <span>Portes:</span>
+                <span id="portes">0,00 €</span>
+            </div>
+            <div class="linha-total valor-final">
+                <span>Total:</span>
+                <span id="total">0,00 €</span>
+            </div>
+        </div>
+
+        <div class="seccao-pagamento">
+            <h3>💳 Método de Pagamento</h3>
+            <label class="opcao-pagamento">
+                <input type="radio" name="metodo-pagamento" value="MB WAY" checked>
+                <span>📱 MB WAY</span>
+            </label>
+            <label class="opcao-pagamento">
+                <input type="radio" name="metodo-pagamento" value="Transferência Bancária">
+                <span>🏦 Transferência Bancária</span>
+            </label>
+            <label class="opcao-pagamento">
+                <input type="radio" name="metodo-pagamento" value="PayPal">
+                <span>🔵 PayPal</span>
+            </label>
+        </div>
 
         <aside class="area-cliente" id="painel-cliente">
             <div id="conteudo-cliente-autenticado" style="display: none;">
@@ -729,61 +788,6 @@
                 <div id="status-cliente" class="msg-status"></div>
             </div>
         </aside>
-    </div>
-
-    <div class="conteudo-central">
-        <div class="barra-pesquisa-container">
-            <input type="text" id="campo-pesquisa" class="input-pesquisa" placeholder="🔍 Digite o nome da minifigura... (Ex: Darth Vader)" oninput="executarFiltrosCombinados()" onkeydown="verificarTeclaEnter(event)">
-        </div>
-
-        <main class="produtos" id="vitrine-produtos">
-            <div class="estado-vitrine">A carregar minifiguras extraordinárias...</div>
-        </main>
-    </div>
-
-    <aside class="carrinho">
-        <h2>🛒 Carrinho</h2>
-        <div class="lista-carrinho" id="lista-carrinho">
-            <p id="carrinho-vazio">Nenhum produto adicionado.</p>
-        </div>
-
-        <label>📦 Região de envio:</label>
-        <select class="select-envio" id="regiao-envio" onchange="recalcularTotais()">
-            <option value="portugal">Portugal</option>
-            <option value="europa">Europa</option>
-            <option value="resto">Resto do Mundo</option>
-        </select>
-
-        <div class="total-box">
-            <div class="linha-total">
-                <span>Subtotal:</span>
-                <span id="subtotal">0,00 €</span>
-            </div>
-            <div class="linha-total">
-                <span>Portes:</span>
-                <span id="portes">0,00 €</span>
-            </div>
-            <div class="linha-total valor-final">
-                <span>Total:</span>
-                <span id="total">0,00 €</span>
-            </div>
-        </div>
-
-        <div class="seccao-pagamento">
-            <h3>💳 Método de Pagamento</h3>
-            <label class="opcao-pagamento">
-                <input type="radio" name="metodo-pagamento" value="MB WAY" checked>
-                <span>📱 MB WAY</span>
-            </label>
-            <label class="opcao-pagamento">
-                <input type="radio" name="metodo-pagamento" value="Transferência Bancária">
-                <span>🏦 Transferência Bancária</span>
-            </label>
-            <label class="opcao-pagamento">
-                <input type="radio" name="metodo-pagamento" value="PayPal">
-                <span>🔵 PayPal</span>
-            </label>
-        </div>
 
         <button class="btn-confirmar" onclick="criarNovaEncomenda()">Confirmar Encomenda</button>
         <div id="status-encomenda" class="msg-status"></div>
@@ -1723,7 +1727,7 @@ async function criarNovaEncomenda() {
   if (authError || !user) {
     console.error("Erro de Autenticação:", authError);
     statusDiv.className = "msg-status msg-erro";
-    statusDiv.innerText = "⚠️ Necessita de iniciar sessão ou registar-se na coluna lateral esquerda para finalizar a encomenda.";
+    statusDiv.innerText = "⚠️ Necessita de iniciar sessão ou registar-se na secção Minha Conta para finalizar a encomenda.";
     return;
   }
 
