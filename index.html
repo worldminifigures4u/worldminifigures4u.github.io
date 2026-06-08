@@ -1458,7 +1458,7 @@ function renderizarHistoricoEncomendas(encomendas) {
 
         const id = document.createElement('span');
         id.className = 'encomenda-id';
-        id.textContent = '#' + (encomenda.id || 'sem-id');
+        id.textContent = encomenda.codigo_encomenda || ('#' + (encomenda.id || 'sem-id'));
 
         const estado = document.createElement('span');
         estado.className = 'encomenda-estado';
@@ -1507,7 +1507,7 @@ async function carregarHistoricoEncomendas(userId) {
     try {
         let { data, error } = await dbClient
             .from('encomendas')
-            .select('id, produtos, total, metodo_pagamento, estado, created_at')
+            .select('id, codigo_encomenda, produtos, total, metodo_pagamento, estado, created_at')
             .eq('id_cliente', userId)
             .order('created_at', { ascending:false })
             .limit(10);
@@ -1515,7 +1515,7 @@ async function carregarHistoricoEncomendas(userId) {
         if(error && /created_at|column/i.test(error.message || '')) {
             const fallback = await dbClient
                 .from('encomendas')
-                .select('id, produtos, total, metodo_pagamento, estado')
+                .select('id, codigo_encomenda, produtos, total, metodo_pagamento, estado')
                 .eq('id_cliente', userId)
                 .limit(10);
             data = fallback.data;
