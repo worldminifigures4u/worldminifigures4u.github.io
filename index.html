@@ -1000,6 +1000,7 @@ async function obterDadosPerfilDaTabela(userId) {
             document.getElementById('conteudo-cliente-anonimo').style.display = 'none';
             document.getElementById('conteudo-cliente-autenticado').style.display = 'block';
             document.getElementById('nome-perfil-logado').innerText = "Cliente Autenticado";
+            restaurarCarrinhoGuardado();
             carregarHistoricoEncomendas(userId);
             return;
         }
@@ -1010,6 +1011,7 @@ async function obterDadosPerfilDaTabela(userId) {
             document.getElementById('nome-perfil-logado').innerText = data.nome;
             document.getElementById('email-perfil-logado').innerText = data.email;
             document.getElementById('cp-perfil-logado').innerText = "📍 Morada: " + data.morada + " (" + data.cp + ")";
+            restaurarCarrinhoGuardado();
             carregarHistoricoEncomendas(userId);
         }
     } catch (e) {
@@ -1019,6 +1021,7 @@ async function obterDadosPerfilDaTabela(userId) {
 
 async function fazerLogout() {
     await dbClient.auth.signOut();
+    restaurarCarrinhoGuardado();
     document.getElementById('conteudo-cliente-autenticado').style.display = 'none';
     document.getElementById('conteudo-cliente-anonimo').style.display = 'block';
     document.getElementById('status-cliente').innerText = '';
@@ -1424,6 +1427,11 @@ function gerarProdutos(listaProdutos){
 
 function guardarCarrinho() {
     localStorage.setItem('carrinho', JSON.stringify(carrinho));
+}
+
+function restaurarCarrinhoGuardado() {
+    carrinho = carregarCarrinhoLocal();
+    atualizarCarrinho();
 }
 
 function limparCarrinho() {
