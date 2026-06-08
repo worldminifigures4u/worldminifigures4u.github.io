@@ -803,6 +803,21 @@
                     <p id="cp-perfil-logado" style="color: #aaa; font-size: 12px;"></p>
                     <button class="btn-logout" onclick="fazerLogout()">Sair da Conta</button>
                 </div>
+                <div class="historico-encomendas">
+                    <h3>Alterar password</h3>
+                    <form class="form-cliente" id="form-alterar-password" onsubmit="alterarPasswordConta(event)">
+                        <div>
+                            <label for="conta-nova-password">Nova palavra-passe:</label>
+                            <input type="password" id="conta-nova-password" required minlength="6" placeholder="Mínimo 6 caracteres">
+                        </div>
+                        <div>
+                            <label for="conta-confirmar-password">Confirmar nova palavra-passe:</label>
+                            <input type="password" id="conta-confirmar-password" required minlength="6" placeholder="Repita a palavra-passe">
+                        </div>
+                        <button type="submit" class="btn-acao-cliente">Guardar nova password</button>
+                        <div id="status-alterar-password" class="msg-status"></div>
+                    </form>
+                </div>
                 <div class="painel-admin" id="painel-admin">
                     <h3>Admin</h3>
                     <form class="form-admin" id="form-admin-produto" onsubmit="criarProdutoAdmin(event)">
@@ -1207,6 +1222,35 @@ async function atualizarPasswordRecuperacao(event) {
         setTimeout(() => { mudarAba('login'); }, 1500);
     } catch(error) {
         console.error('Erro ao atualizar password:', error);
+        mostrarMensagem(statusDiv, 'Erro: ' + (error.message || 'Não foi possível atualizar a password.'), 'msg-erro');
+    }
+}
+
+async function alterarPasswordConta(event) {
+    event.preventDefault();
+    const statusDiv = document.getElementById('status-alterar-password');
+    const novaPassword = document.getElementById('conta-nova-password').value;
+    const confirmarPassword = document.getElementById('conta-confirmar-password').value;
+
+    if(novaPassword.length < 6) {
+        mostrarMensagem(statusDiv, 'A nova password deve ter pelo menos 6 caracteres.', 'msg-erro');
+        return;
+    }
+
+    if(novaPassword !== confirmarPassword) {
+        mostrarMensagem(statusDiv, 'As passwords não coincidem.', 'msg-erro');
+        return;
+    }
+
+    try {
+        mostrarMensagem(statusDiv, 'A atualizar password...');
+        const { error } = await dbClient.auth.updateUser({ password: novaPassword });
+        if(error) throw error;
+
+        document.getElementById('form-alterar-password').reset();
+        mostrarMensagem(statusDiv, 'Password atualizada com sucesso.', 'msg-sucesso');
+    } catch(error) {
+        console.error('Erro ao alterar password:', error);
         mostrarMensagem(statusDiv, 'Erro: ' + (error.message || 'Não foi possível atualizar a password.'), 'msg-erro');
     }
 }
