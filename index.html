@@ -876,6 +876,18 @@
                     <button type="submit" class="btn-acao-cliente">Criar Conta</button>
                 </form>
 
+                <form class="form-cliente" id="form-recuperar-password" onsubmit="atualizarPasswordRecuperacao(event)" style="display: none;">
+                    <div>
+                        <label for="nova-password">Nova palavra-passe:</label>
+                        <input type="password" id="nova-password" required minlength="6" placeholder="Mínimo 6 caracteres">
+                    </div>
+                    <div>
+                        <label for="confirmar-nova-password">Confirmar nova palavra-passe:</label>
+                        <input type="password" id="confirmar-nova-password" required minlength="6" placeholder="Repita a palavra-passe">
+                    </div>
+                    <button type="submit" class="btn-acao-cliente">Definir nova password</button>
+                </form>
+
                 <div id="status-cliente" class="msg-status"></div>
             </div>
         </aside>
@@ -934,6 +946,11 @@ window.addEventListener('load', async () => {
         });
         dbClient.auth.onAuthStateChange((event, session) => {
             setTimeout(async () => {
+                if (event === 'PASSWORD_RECOVERY') {
+                    mostrarFormularioRecuperacaoPassword();
+                    return;
+                }
+
                 if (session?.user) {
                     if (session.user.email_confirmed_at === null) {
                         await dbClient.auth.signOut();
@@ -959,9 +976,11 @@ function mudarAba(tipo) {
     const btnRegisto = document.querySelectorAll('.tab-btn')[1];
     const formLogin = document.getElementById('form-login');
     const formRegisto = document.getElementById('form-registo');
+    const formRecuperar = document.getElementById('form-recuperar-password');
     const statusDiv = document.getElementById('status-cliente');
 
     statusDiv.innerText = '';
+    if(formRecuperar) formRecuperar.style.display = 'none';
 
     if (tipo === 'login') {
         btnLogin.classList.add('ativa');
@@ -974,6 +993,20 @@ function mudarAba(tipo) {
         formLogin.style.display = 'none';
         formRegisto.style.display = 'flex';
     }
+}
+
+function mostrarFormularioRecuperacaoPassword() {
+    document.getElementById('conteudo-cliente-autenticado').style.display = 'none';
+    document.getElementById('conteudo-cliente-anonimo').style.display = 'block';
+    document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('ativa'));
+    document.getElementById('form-login').style.display = 'none';
+    document.getElementById('form-registo').style.display = 'none';
+    document.getElementById('form-recuperar-password').style.display = 'flex';
+    mostrarMensagem(
+        document.getElementById('status-cliente'),
+        'Defina a nova palavra-passe para concluir a recuperação da conta.',
+        'msg-sucesso'
+    );
 }
 
 async function fazerLogin(event) {
@@ -1075,6 +1108,37 @@ async function registarCliente(event) {
         console.error("Erro completo:", erro);
         statusDiv.className = "msg-status msg-erro";
         statusDiv.innerText = "Erro ao registar: " + (erro.message || "Verifique os dados informados.");
+    }
+}
+
+async function atualizarPasswordRecuperacao(event) {
+    event.preventDefault();
+    const statusDiv = document.getElementById('status-cliente');
+    const novaPassword = document.getElementById('nova-password').value;
+    const confirmarPassword = document.getElementById('confirmar-nova-password').value;
+
+    if(novaPassword.length < 6) {
+        mostrarMensagem(statusDiv, 'A nova password deve ter pelo menos 6 caracteres.', 'msg-erro');
+        return;
+    }
+
+    if(novaPassword !== confirmarPassword) {
+        mostrarMensagem(statusDiv, 'As passwords não coincidem.', 'msg-erro');
+        return;
+    }
+
+    try {
+        mostrarMensagem(statusDiv, 'A atualizar password...');
+        const { error } = await dbClient.auth.updateUser({ password: novaPassword });
+        if(error) throw error;
+
+        document.getElementById('form-recuperar-password').reset();
+        mostrarMensagem(statusDiv, 'Password atualizada com sucesso. Já pode iniciar sessão.', 'msg-sucesso');
+        await dbClient.auth.signOut();
+        setTimeout(() => { mudarAba('login'); }, 1500);
+    } catch(error) {
+        console.error('Erro ao atualizar password:', error);
+        mostrarMensagem(statusDiv, 'Erro: ' + (error.message || 'Não foi possível atualizar a password.'), 'msg-erro');
     }
 }
 
