@@ -310,16 +310,19 @@
         .miniatura-img{
             width:45px;
             height:45px;
-            object-fit:contain;
             border-radius:6px;
             border:1px solid #444;
             cursor:pointer;
             background: #222;
+            color:#ffc107;
+            font-weight:bold;
+            padding:0;
             transition: 0.2s;
         }
 
         .miniatura-img:hover {
             border-color: #ffc107;
+            background:#333;
         }
 
         .categoria{
@@ -1352,27 +1355,32 @@ function gerarProdutos(listaProdutos){
         }
 
         listaImagens = listaImagens.filter(url => url && typeof url === 'string' && url.trim() !== "");
+        const imagemFallback = 'img/sem-imagem.png';
+        const imagemInicial = listaImagens.length > 0 ? listaImagens[0] : imagemFallback;
 
         const imagemPrincipal = document.createElement('img');
         imagemPrincipal.className = 'produto-img';
-        imagemPrincipal.src =
-listaImagens.length > 0 ?
-listaImagens[0] :
-'img/sem-imagem.png';
-
-imagemPrincipal.onerror = () => {
-    imagemPrincipal.src = 'img/sem-imagem.png';
-};
+        imagemPrincipal.loading = 'lazy';
+        imagemPrincipal.decoding = 'async';
+        imagemPrincipal.dataset.srcOriginal = imagemInicial;
+        imagemPrincipal.src = imagemInicial;
+        imagemPrincipal.onerror = () => {
+            if (imagemPrincipal.src.indexOf(imagemFallback) === -1) {
+                imagemPrincipal.src = imagemFallback;
+            }
+        };
         card.appendChild(imagemPrincipal);
 
         if (listaImagens.length > 1) {
             const miniaturasDiv = document.createElement('div');
             miniaturasDiv.className = 'produto-miniaturas';
             
-            listaImagens.forEach(url => {
-                const mini = document.createElement('img');
+            listaImagens.forEach((url, index) => {
+                const mini = document.createElement('button');
                 mini.className = 'miniatura-img';
-                mini.src = url;
+                mini.type = 'button';
+                mini.title = 'Ver imagem ' + (index + 1);
+                mini.textContent = index + 1;
                 mini.onclick = function() { imagemPrincipal.src = url; };
                 miniaturasDiv.appendChild(mini);
             });
@@ -1482,11 +1490,19 @@ function executarFiltrosCombinados() {
         const nomeCardNormalizado = nomeCardBruto.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
         const correspondeAoNome = nomeCardNormalizado.includes(textoPesquisa);
 
+        const imagem = card.querySelector('.produto-img');
+
         if (correspondeAoTema && correspondeAoNome) {
             card.style.display = 'flex';
+            if(imagem && imagem.dataset.srcOriginal && !imagem.src) {
+                imagem.src = imagem.dataset.srcOriginal;
+            }
             totalVisiveis++;
         } else {
             card.style.display = 'none';
+            if(imagem) {
+                imagem.removeAttribute('src');
+            }
         }
     });
 
