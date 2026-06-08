@@ -1722,30 +1722,41 @@ async function criarNovaEncomenda() {
   const radioSelecionado = document.querySelector('input[name="metodo-pagamento"]:checked');
   const metodoPagamento = radioSelecionado ? radioSelecionado.value : "Não especificado";
 
-  const listaProdutosJSON = carrinho.map(item => ({
+  const itensPedido = carrinho.map(item => ({
     id_produto: item.id,
-    nome: item.nome,
-    preco_unitario: Number(item.preco || 0),
     quantidade: Number(item.quantidade || 1)
   }));
 
-  const dadosDaEncomenda = {
-    id_cliente: user.id,          
-    produtos: listaProdutosJSON,   
-    total: totais.total,          
-    metodo_pagamento: metodoPagamento, 
-    estado: "Pendente"            
-  };
-
   try {
-    const { data, error } = await dbClient
-      .from('encomendas')
-      .insert([dadosDaEncomenda])
-      .select();
+    const { data: { session } } = await dbClient.auth.getSession();
+    if(!session?.access_token){
+      throw new Error("Sessão inválida. Faça login novamente.");
+    }
 
-    if (error) throw error;
+    const resposta = await executarComTimeout(
+      fetch(`${SUPABASE_URL}/functions/v1/criar-encomenda`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`
+        },
+        body: JSON.stringify({
+          itens: itensPedido,
+          regiao: totais.regiao,
+          metodo_pagamento: metodoPagamento
+        })
+      }),
+      30000,
+      "O checkout demorou demasiado. Tente novamente."
+    );
 
-    console.log("Encomenda gravada com sucesso:", data);
+    const resultado = await resposta.json().catch(() => ({}));
+
+    if(!resposta.ok || !resultado.sucesso){
+      throw new Error(resultado.error || "Não foi possível criar a encomenda.");
+    }
+
+    console.log("Encomenda gravada com sucesso:", resultado);
     mostrarMensagem(statusDiv, "🎉 Encomenda registada com sucesso!\nAguarde o processamento do seu pagamento.", "msg-sucesso");
     
     carrinho = [];
