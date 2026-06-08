@@ -670,6 +670,21 @@
             cursor: pointer;
         }
 
+        .instrucoes-pagamento{
+            background:#181818;
+            border:1px solid #333;
+            border-radius:8px;
+            padding:10px;
+            margin-top:10px;
+            color:#ddd;
+            font-size:13px;
+            line-height:1.45;
+        }
+
+        .instrucoes-pagamento strong{
+            color:#ffc107;
+        }
+
         .btn-confirmar {
             background: #28a745;
             color: white;
@@ -761,17 +776,18 @@
         <div class="seccao-pagamento">
             <h3>💳 Método de Pagamento</h3>
             <label class="opcao-pagamento">
-                <input type="radio" name="metodo-pagamento" value="MB WAY" checked>
+                <input type="radio" name="metodo-pagamento" value="MB WAY" checked onchange="atualizarInstrucoesPagamento()">
                 <span>📱 MB WAY</span>
             </label>
             <label class="opcao-pagamento">
-                <input type="radio" name="metodo-pagamento" value="Transferência Bancária">
+                <input type="radio" name="metodo-pagamento" value="Transferência Bancária" onchange="atualizarInstrucoesPagamento()">
                 <span>🏦 Transferência Bancária</span>
             </label>
             <label class="opcao-pagamento">
-                <input type="radio" name="metodo-pagamento" value="PayPal">
+                <input type="radio" name="metodo-pagamento" value="PayPal" onchange="atualizarInstrucoesPagamento()">
                 <span>🔵 PayPal</span>
             </label>
+            <div id="instrucoes-pagamento" class="instrucoes-pagamento"></div>
         </div>
 
         <button class="btn-confirmar" onclick="criarNovaEncomenda()">Confirmar Encomenda</button>
@@ -972,6 +988,7 @@ function carregarCarrinhoLocal() {
 
 window.addEventListener('load', async () => {
     atualizarCarrinho();
+    atualizarInstrucoesPagamento();
     if(typeof supabase !== 'undefined'){
         dbClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
         produtosClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {
@@ -1392,6 +1409,75 @@ function mostrarMensagem(elemento, mensagem, tipo = '') {
         if(index > 0) elemento.appendChild(document.createElement('br'));
         elemento.appendChild(document.createTextNode(linha));
     });
+}
+
+function definirHtmlSeguro(elemento, partes) {
+    elemento.replaceChildren();
+    partes.forEach(parte => {
+        if (typeof parte === 'string') {
+            elemento.appendChild(document.createTextNode(parte));
+            return;
+        }
+        if (parte.br) {
+            elemento.appendChild(document.createElement('br'));
+            return;
+        }
+        if (parte.strong) {
+            const strong = document.createElement('strong');
+            strong.textContent = parte.strong;
+            elemento.appendChild(strong);
+        }
+    });
+}
+
+function obterMetodoPagamentoSelecionado() {
+    const radioSelecionado = document.querySelector('input[name="metodo-pagamento"]:checked');
+    return radioSelecionado ? radioSelecionado.value : 'Não especificado';
+}
+
+function obterInstrucoesPagamento(metodoPagamento) {
+    if (metodoPagamento === 'MB WAY') {
+        return [
+            { strong: 'MB WAY: ' },
+            'após confirmar a encomenda, enviaremos os dados para pagamento. A encomenda será preparada depois da confirmação manual do pagamento.'
+        ];
+    }
+
+    if (metodoPagamento === 'Transferência Bancária') {
+        return [
+            { strong: 'Transferência Bancária: ' },
+            'após confirmar a encomenda, enviaremos os dados bancários. A encomenda será preparada depois da confirmação manual da transferência.'
+        ];
+    }
+
+    if (metodoPagamento === 'PayPal') {
+        return [
+            { strong: 'PayPal: ' },
+            'após confirmar a encomenda, enviaremos os dados para pagamento PayPal. A encomenda será preparada depois da confirmação manual do pagamento.'
+        ];
+    }
+
+    return ['Escolha um método de pagamento para ver as instruções.'];
+}
+
+function atualizarInstrucoesPagamento() {
+    const instrucoes = document.getElementById('instrucoes-pagamento');
+    if(!instrucoes) return;
+    definirHtmlSeguro(instrucoes, obterInstrucoesPagamento(obterMetodoPagamentoSelecionado()));
+}
+
+function mensagemSucessoEncomenda(metodoPagamento, codigoEncomenda = '') {
+    const referencia = codigoEncomenda ? `\nReferência da encomenda: ${codigoEncomenda}` : '';
+    if (metodoPagamento === 'MB WAY') {
+        return `Encomenda registada com sucesso!${referencia}\nIremos enviar os dados de pagamento por MB WAY. A encomenda será preparada depois da confirmação manual do pagamento.`;
+    }
+    if (metodoPagamento === 'Transferência Bancária') {
+        return `Encomenda registada com sucesso!${referencia}\nIremos enviar os dados para transferência bancária. A encomenda será preparada depois da confirmação manual da transferência.`;
+    }
+    if (metodoPagamento === 'PayPal') {
+        return `Encomenda registada com sucesso!${referencia}\nIremos enviar os dados para pagamento por PayPal. A encomenda será preparada depois da confirmação manual do pagamento.`;
+    }
+    return `Encomenda registada com sucesso!${referencia}\nAguarde o contacto para instruções de pagamento.`;
 }
 
 function definirHistoricoVazio(mensagem) {
@@ -2090,8 +2176,7 @@ async function criarNovaEncomenda() {
 
   const totais = recalcularTotais();
 
-  const radioSelecionado = document.querySelector('input[name="metodo-pagamento"]:checked');
-  const metodoPagamento = radioSelecionado ? radioSelecionado.value : "Não especificado";
+  const metodoPagamento = obterMetodoPagamentoSelecionado();
 
   const itensPedido = carrinho.map(item => ({
     id_produto: item.id,
@@ -2128,7 +2213,11 @@ async function criarNovaEncomenda() {
     }
 
     console.log("Encomenda gravada com sucesso:", resultado);
-    mostrarMensagem(statusDiv, "🎉 Encomenda registada com sucesso!\nAguarde o processamento do seu pagamento.", "msg-sucesso");
+    mostrarMensagem(
+      statusDiv,
+      mensagemSucessoEncomenda(metodoPagamento, resultado.encomenda?.codigo_encomenda || ''),
+      "msg-sucesso"
+    );
     
     carrinho = [];
     guardarCarrinho();
