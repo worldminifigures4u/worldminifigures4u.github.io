@@ -1594,17 +1594,8 @@ function atualizarInstrucoesPagamento() {
 }
 
 function mensagemSucessoEncomenda(metodoPagamento, codigoEncomenda = '') {
-    const referencia = codigoEncomenda ? `\nReferência da encomenda: ${codigoEncomenda}` : '';
-    if (metodoPagamento === 'MB WAY') {
-        return `Encomenda registada com sucesso!${referencia}\nIremos enviar os dados de pagamento por MB WAY. A encomenda será preparada depois da confirmação do pagamento.`;
-    }
-    if (metodoPagamento === 'Transferência Bancária') {
-        return `Encomenda registada com sucesso!${referencia}\nIremos enviar os dados para transferência bancária. A encomenda será preparada depois da confirmação da transferência.`;
-    }
-    if (metodoPagamento === 'PayPal') {
-        return `Encomenda registada com sucesso!${referencia}\nIremos enviar os dados para pagamento por PayPal. A encomenda será preparada depois da confirmação do pagamento.`;
-    }
-    return `Encomenda registada com sucesso!${referencia}\nAguarde o contacto para instruções de pagamento.`;
+    const referencia = codigoEncomenda ? `\nRefer?ncia da encomenda: ${codigoEncomenda}` : '';
+    return `Encomenda registada com sucesso!${referencia}\nEnvi?mos um e-mail com os dados para pagamento.`;
 }
 
 function definirHistoricoVazio(mensagem) {
