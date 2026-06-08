@@ -1439,21 +1439,21 @@ function obterInstrucoesPagamento(metodoPagamento) {
     if (metodoPagamento === 'MB WAY') {
         return [
             { strong: 'MB WAY: ' },
-            'após confirmar a encomenda, enviaremos os dados para pagamento. A encomenda será preparada depois da confirmação manual do pagamento.'
+            'após confirmar a encomenda, enviaremos os dados para pagamento. A encomenda será preparada depois da confirmação do pagamento.'
         ];
     }
 
     if (metodoPagamento === 'Transferência Bancária') {
         return [
             { strong: 'Transferência Bancária: ' },
-            'após confirmar a encomenda, enviaremos os dados bancários. A encomenda será preparada depois da confirmação manual da transferência.'
+            'após confirmar a encomenda, enviaremos os dados bancários. A encomenda será preparada depois da confirmação da transferência.'
         ];
     }
 
     if (metodoPagamento === 'PayPal') {
         return [
             { strong: 'PayPal: ' },
-            'após confirmar a encomenda, enviaremos os dados para pagamento PayPal. A encomenda será preparada depois da confirmação manual do pagamento.'
+            'após confirmar a encomenda, enviaremos os dados para pagamento PayPal. A encomenda será preparada depois da confirmação do pagamento.'
         ];
     }
 
@@ -1469,13 +1469,13 @@ function atualizarInstrucoesPagamento() {
 function mensagemSucessoEncomenda(metodoPagamento, codigoEncomenda = '') {
     const referencia = codigoEncomenda ? `\nReferência da encomenda: ${codigoEncomenda}` : '';
     if (metodoPagamento === 'MB WAY') {
-        return `Encomenda registada com sucesso!${referencia}\nIremos enviar os dados de pagamento por MB WAY. A encomenda será preparada depois da confirmação manual do pagamento.`;
+        return `Encomenda registada com sucesso!${referencia}\nIremos enviar os dados de pagamento por MB WAY. A encomenda será preparada depois da confirmação do pagamento.`;
     }
     if (metodoPagamento === 'Transferência Bancária') {
-        return `Encomenda registada com sucesso!${referencia}\nIremos enviar os dados para transferência bancária. A encomenda será preparada depois da confirmação manual da transferência.`;
+        return `Encomenda registada com sucesso!${referencia}\nIremos enviar os dados para transferência bancária. A encomenda será preparada depois da confirmação da transferência.`;
     }
     if (metodoPagamento === 'PayPal') {
-        return `Encomenda registada com sucesso!${referencia}\nIremos enviar os dados para pagamento por PayPal. A encomenda será preparada depois da confirmação manual do pagamento.`;
+        return `Encomenda registada com sucesso!${referencia}\nIremos enviar os dados para pagamento por PayPal. A encomenda será preparada depois da confirmação do pagamento.`;
     }
     return `Encomenda registada com sucesso!${referencia}\nAguarde o contacto para instruções de pagamento.`;
 }
