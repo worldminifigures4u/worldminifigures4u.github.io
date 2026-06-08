@@ -151,6 +151,60 @@
         .msg-sucesso { color: #28a745; }
         .msg-erro { color: #ff4d4d; }
 
+        .painel-admin{
+            display:none;
+            margin-top:18px;
+            padding-top:15px;
+            border-top:1px solid #333;
+        }
+
+        .painel-admin h3{
+            margin:0 0 10px 0;
+            font-size:15px;
+            color:#ffc107;
+        }
+
+        .form-admin{
+            display:flex;
+            flex-direction:column;
+            gap:10px;
+        }
+
+        .form-admin label{
+            font-size:13px;
+            color:#aaa;
+        }
+
+        .form-admin input,
+        .form-admin textarea{
+            width:100%;
+            padding:8px;
+            border-radius:6px;
+            border:1px solid #333;
+            background:#222;
+            color:#fff;
+            box-sizing:border-box;
+            font-family:Arial, Helvetica, sans-serif;
+        }
+
+        .form-admin textarea{
+            min-height:78px;
+            resize:vertical;
+        }
+
+        .linha-admin-dupla{
+            display:grid;
+            grid-template-columns:1fr 1fr;
+            gap:8px;
+        }
+
+        .ajuda-admin{
+            margin:0;
+            color:#888;
+            font-size:12px;
+            line-height:1.4;
+        }
+
         .historico-encomendas{
             margin-top:18px;
             padding-top:15px;
@@ -734,6 +788,40 @@
                     <p id="cp-perfil-logado" style="color: #aaa; font-size: 12px;"></p>
                     <button class="btn-logout" onclick="fazerLogout()">Sair da Conta</button>
                 </div>
+                <div class="painel-admin" id="painel-admin">
+                    <h3>Admin</h3>
+                    <form class="form-admin" id="form-admin-produto" onsubmit="criarProdutoAdmin(event)">
+                        <div>
+                            <label for="admin-produto-nome">Nome do produto:</label>
+                            <input type="text" id="admin-produto-nome" required placeholder="Ex: Darth Vader v1" oninput="sugerirSkuAdmin()">
+                        </div>
+                        <div class="linha-admin-dupla">
+                            <div>
+                                <label for="admin-produto-sku">SKU:</label>
+                                <input type="text" id="admin-produto-sku" required placeholder="DV01">
+                            </div>
+                            <div>
+                                <label for="admin-produto-preco">Preço:</label>
+                                <input type="number" id="admin-produto-preco" required min="0" step="0.01" placeholder="4.95">
+                            </div>
+                        </div>
+                        <div>
+                            <label for="admin-produto-tema">Tema:</label>
+                            <input type="text" id="admin-produto-tema" required placeholder="Star Wars">
+                        </div>
+                        <div>
+                            <label for="admin-produto-subtema">Subtema:</label>
+                            <input type="text" id="admin-produto-subtema" placeholder="Darth Vader">
+                        </div>
+                        <div>
+                            <label for="admin-produto-imagens">URLs das imagens:</label>
+                            <textarea id="admin-produto-imagens" placeholder="Um URL por linha"></textarea>
+                            <p class="ajuda-admin">Quando ligarmos o Cloudinary, estes URLs serão preenchidos automaticamente pelo upload.</p>
+                        </div>
+                        <button type="submit" class="btn-acao-cliente">Criar Produto</button>
+                        <div id="status-admin-produto" class="msg-status"></div>
+                    </form>
+                </div>
                 <div class="historico-encomendas">
                     <h3>Histórico de encomendas</h3>
                     <div id="lista-historico-encomendas" class="lista-historico">
@@ -799,6 +887,7 @@
 const SUPABASE_URL = "https://gksndzxadndrsynvzgzb.supabase.co";
 const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imdrc25kenhhZG5kcnN5bnZ6Z3piIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkwODc5NzMsImV4cCI6MjA5NDY2Mzk3M30.EHZgacYr27dqoc4CJHsOwkNnJFGlLIteSHBi4B1HfVE";
 const URL_PUBLICO_FALLBACK = "https://worldminifigures4u.github.io/";
+const ADMIN_EMAILS = ["worldminifigures4u@gmail.com"];
 
 let dbClient = null;
 let produtosClient = null;
@@ -850,8 +939,9 @@ window.addEventListener('load', async () => {
                         await dbClient.auth.signOut();
                         return;
                     }
-                    await obterDadosPerfilDaTabela(session.user.id);
+                    await obterDadosPerfilDaTabela(session.user.id, session.user);
                 } else {
+                    atualizarVisibilidadeAdmin(null);
                     document.getElementById('conteudo-cliente-autenticado').style.display = 'none';
                     document.getElementById('conteudo-cliente-anonimo').style.display = 'block';
                 }
@@ -928,7 +1018,7 @@ async function fazerLogin(event) {
                 return;
             }
             await executarComTimeout(
-                obterDadosPerfilDaTabela(data.user.id),
+                obterDadosPerfilDaTabela(data.user.id, data.user),
                 15000,
                 "Sessão iniciada, mas os dados do perfil demoraram demasiado a carregar."
             );
@@ -988,7 +1078,7 @@ async function registarCliente(event) {
     }
 }
 
-async function obterDadosPerfilDaTabela(userId) {
+async function obterDadosPerfilDaTabela(userId, user = null) {
     try {
         const { data, error } = await dbClient
             .from('clientes')
@@ -1000,6 +1090,7 @@ async function obterDadosPerfilDaTabela(userId) {
             document.getElementById('conteudo-cliente-anonimo').style.display = 'none';
             document.getElementById('conteudo-cliente-autenticado').style.display = 'block';
             document.getElementById('nome-perfil-logado').innerText = "Cliente Autenticado";
+            atualizarVisibilidadeAdmin(user);
             restaurarCarrinhoGuardado();
             carregarHistoricoEncomendas(userId);
             return;
@@ -1011,6 +1102,7 @@ async function obterDadosPerfilDaTabela(userId) {
             document.getElementById('nome-perfil-logado').innerText = data.nome;
             document.getElementById('email-perfil-logado').innerText = data.email;
             document.getElementById('cp-perfil-logado').innerText = "📍 Morada: " + data.morada + " (" + data.cp + ")";
+            atualizarVisibilidadeAdmin(user);
             restaurarCarrinhoGuardado();
             carregarHistoricoEncomendas(userId);
         }
@@ -1022,6 +1114,7 @@ async function obterDadosPerfilDaTabela(userId) {
 async function fazerLogout() {
     await dbClient.auth.signOut();
     restaurarCarrinhoGuardado();
+    atualizarVisibilidadeAdmin(null);
     document.getElementById('conteudo-cliente-autenticado').style.display = 'none';
     document.getElementById('conteudo-cliente-anonimo').style.display = 'block';
     document.getElementById('status-cliente').innerText = '';
@@ -1036,11 +1129,145 @@ async function verificarSessaoSupabase() {
             await dbClient.auth.signOut();
             return;
         }
-        obterDadosPerfilDaTabela(session.user.id);
+        obterDadosPerfilDaTabela(session.user.id, session.user);
     }
 }
 
 function formatarEuro(valor){ return Number(valor || 0).toFixed(2).replace('.', ','); }
+
+function normalizarTextoSku(texto) {
+    return String(texto || '')
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .toUpperCase();
+}
+
+function obterPalavrasSku(nomeProduto) {
+    const palavrasIgnoradas = new Set(['A', 'O', 'OS', 'AS', 'E', 'DE', 'DA', 'DO', 'DAS', 'DOS', 'THE', 'OF', 'AND']);
+    return normalizarTextoSku(nomeProduto)
+        .replace(/[^A-Z0-9\s-]/g, ' ')
+        .split(/[\s-]+/)
+        .map(palavra => palavra.trim())
+        .filter(palavra =>
+            palavra.length > 0 &&
+            !palavrasIgnoradas.has(palavra) &&
+            !/^V\d+$/i.test(palavra) &&
+            /[A-Z]/.test(palavra)
+        );
+}
+
+function gerarPrefixoSku(nomeProduto) {
+    const palavras = obterPalavrasSku(nomeProduto);
+    if (palavras.length >= 2) {
+        return (palavras[0][0] + palavras[1][0]).toUpperCase();
+    }
+    if (palavras.length === 1) {
+        return palavras[0].slice(0, 2).padEnd(2, 'X').toUpperCase();
+    }
+    return 'PR';
+}
+
+function gerarSkuProduto(nomeProduto, produtosExistentes = todosOsProdutos) {
+    const prefixo = gerarPrefixoSku(nomeProduto);
+    const numerosUsados = (produtosExistentes || [])
+        .map(produto => String(produto.sku || '').toUpperCase())
+        .filter(sku => sku.startsWith(prefixo))
+        .map(sku => Number(sku.slice(prefixo.length)))
+        .filter(numero => Number.isInteger(numero) && numero > 0);
+
+    const proximoNumero = numerosUsados.length > 0 ? Math.max(...numerosUsados) + 1 : 1;
+    return prefixo + String(proximoNumero).padStart(2, '0');
+}
+
+window.gerarSkuProduto = gerarSkuProduto;
+
+function utilizadorAdmin(user) {
+    const email = String(user?.email || '').toLowerCase();
+    return ADMIN_EMAILS.includes(email);
+}
+
+function atualizarVisibilidadeAdmin(user) {
+    const painel = document.getElementById('painel-admin');
+    if(!painel) return;
+    painel.style.display = utilizadorAdmin(user) ? 'block' : 'none';
+}
+
+function sugerirSkuAdmin() {
+    const nomeInput = document.getElementById('admin-produto-nome');
+    const skuInput = document.getElementById('admin-produto-sku');
+    if(!nomeInput || !skuInput) return;
+
+    const nome = nomeInput.value.trim();
+    if(!nome) {
+        skuInput.value = '';
+        return;
+    }
+
+    skuInput.value = gerarSkuProduto(nome);
+}
+
+function obterUrlsImagensAdmin() {
+    const textarea = document.getElementById('admin-produto-imagens');
+    if(!textarea) return [];
+    return textarea.value
+        .split(/[\n,]+/)
+        .map(url => url.trim())
+        .filter(url => url.length > 0);
+}
+
+async function criarProdutoAdmin(event) {
+    event.preventDefault();
+    const status = document.getElementById('status-admin-produto');
+    mostrarMensagem(status, 'A criar produto...');
+
+    try {
+        const { data: { user }, error: authError } = await dbClient.auth.getUser();
+        if(authError || !utilizadorAdmin(user)) {
+            throw new Error('Apenas o administrador pode criar produtos.');
+        }
+
+        const nome = document.getElementById('admin-produto-nome').value.trim();
+        const sku = normalizarTextoSku(document.getElementById('admin-produto-sku').value).replace(/[^A-Z0-9]/g, '');
+        const tema = document.getElementById('admin-produto-tema').value.trim();
+        const subtema = document.getElementById('admin-produto-subtema').value.trim();
+        const preco = Number(document.getElementById('admin-produto-preco').value);
+        const imagens = obterUrlsImagensAdmin();
+
+        if(!nome || !sku || !tema || !Number.isFinite(preco) || preco < 0) {
+            throw new Error('Preencha nome, SKU, tema e preço.');
+        }
+
+        const skuExistente = todosOsProdutos.some(produto => String(produto.sku || '').toUpperCase() === sku);
+        if(skuExistente) {
+            throw new Error('Este SKU já existe. Ajuste o SKU antes de criar o produto.');
+        }
+
+        const novoProduto = {
+            sku,
+            nome,
+            tema,
+            subtema: subtema || 'semsubtema',
+            preco,
+            imagens
+        };
+
+        const { data, error } = await dbClient
+            .from('produtos')
+            .insert([novoProduto])
+            .select('*')
+            .single();
+
+        if(error) throw error;
+
+        todosOsProdutos.push(data);
+        document.getElementById('form-admin-produto').reset();
+        mostrarMensagem(status, 'Produto criado com sucesso.', 'msg-sucesso');
+        await carregarProdutosDaNuvem();
+    } catch(error) {
+        console.error('Erro admin:', error);
+        mostrarMensagem(status, 'Erro: ' + (error.message || 'Não foi possível criar o produto.'), 'msg-erro');
+    }
+}
 
 function mostrarMensagem(elemento, mensagem, tipo = '') {
     elemento.className = tipo ? `msg-status ${tipo}` : 'msg-status';
