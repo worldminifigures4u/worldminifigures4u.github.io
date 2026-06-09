@@ -736,12 +736,17 @@
             <p id="carrinho-vazio">Nenhum produto adicionado.</p>
         </div>
 
-        <label>📦 Região de envio:</label>
-        <select class="select-envio" id="regiao-envio" onchange="recalcularTotais()">
+        <label>Pa&iacute;s/zona de envio:</label>
+        <select class="select-envio" id="pais-envio" onchange="atualizarOpcoesEnvio()">
             <option value="portugal">Portugal</option>
-            <option value="europa">Europa</option>
-            <option value="resto">Resto do Mundo</option>
+            <option value="espanha">Espanha</option>
+            <option value="europa">Resto da Europa</option>
+            <option value="resto_mundo">Resto do Mundo</option>
         </select>
+
+        <label>M&eacute;todo de envio:</label>
+        <select class="select-envio" id="metodo-envio" onchange="recalcularTotais()"></select>
+        <div id="info-envio" class="msg-status"></div>
 
         <div class="total-box">
             <div class="linha-total">
@@ -944,24 +949,62 @@ const ADMIN_EMAILS = ["worldminifigures4u@gmail.com"];
 const PESO_PADRAO_PRODUTO_GRAMAS = 10;
 const TABELA_PORTES_POR_PESO = {
     portugal: [
-        { ate: 100, valor: 4.95 },
-        { ate: 500, valor: 6.95 },
-        { ate: 1000, valor: 8.95 },
-        { ate: Infinity, valor: 12.95 }
+        { ate: 100, opcoes: [
+            { id: 'ctt_normal', nome: 'CTT Normal', valor: 1.58 },
+            { id: 'ctt_azul', nome: 'CTT Azul', valor: 2.10 },
+            { id: 'ctt_registado', nome: 'CTT Registado', valor: 4.60 },
+            { id: 'inpost_registado', nome: 'InPost Registado', valor: 4.76 }
+        ]},
+        { ate: 500, opcoes: [
+            { id: 'ctt_normal', nome: 'CTT Normal', valor: 2.34 },
+            { id: 'ctt_azul', nome: 'CTT Azul', valor: 3.90 },
+            { id: 'ctt_registado', nome: 'CTT Registado', valor: 5.40 },
+            { id: 'inpost_registado', nome: 'InPost Registado', valor: 4.76 }
+        ]},
+        { ate: Infinity, opcoes: [
+            { id: 'ctt_normal', nome: 'CTT Normal', valor: 5.55 },
+            { id: 'ctt_azul', nome: 'CTT Azul', valor: 7.80 },
+            { id: 'ctt_registado', nome: 'CTT Registado', valor: 8.93 },
+            { id: 'inpost_registado', nome: 'InPost Registado', valor: 5.42 }
+        ]}
+    ],
+    espanha: [
+        { ate: 100, opcoes: [
+            { id: 'ctt_registado', nome: 'CTT Registado', valor: 5.80 },
+            { id: 'inpost_registado', nome: 'InPost Registado', valor: 5.12 }
+        ]},
+        { ate: 250, opcoes: [
+            { id: 'ctt_registado', nome: 'CTT Registado', valor: 7.55 },
+            { id: 'inpost_registado', nome: 'InPost Registado', valor: 5.12 }
+        ]},
+        { ate: 500, opcoes: [
+            { id: 'ctt_registado', nome: 'CTT Registado', valor: 9.80 },
+            { id: 'inpost_registado', nome: 'InPost Registado', valor: 5.12 }
+        ]},
+        { ate: 1000, opcoes: [
+            { id: 'ctt_registado', nome: 'CTT Registado', valor: 13.20 },
+            { id: 'inpost_registado', nome: 'InPost Registado', valor: 5.81 }
+        ]},
+        { ate: Infinity, opcoes: [
+            { id: 'ctt_registado', nome: 'CTT Registado', valor: 21.20 },
+            { id: 'inpost_registado', nome: 'InPost Registado', valor: 6.64 }
+        ]}
     ],
     europa: [
-        { ate: 100, valor: 9.95 },
-        { ate: 500, valor: 14.95 },
-        { ate: 1000, valor: 19.95 },
-        { ate: Infinity, valor: 29.95 }
+        { ate: 100, opcoes: [{ id: 'ctt_registado', nome: 'CTT Registado', valor: 5.80 }] },
+        { ate: 250, opcoes: [{ id: 'ctt_registado', nome: 'CTT Registado', valor: 7.55 }] },
+        { ate: 500, opcoes: [{ id: 'ctt_registado', nome: 'CTT Registado', valor: 9.80 }] },
+        { ate: 1000, opcoes: [{ id: 'ctt_registado', nome: 'CTT Registado', valor: 13.20 }] },
+        { ate: Infinity, opcoes: [{ id: 'ctt_registado', nome: 'CTT Registado', valor: 21.20 }] }
     ],
-    resto: [
-        { ate: 100, valor: 14.95 },
-        { ate: 500, valor: 24.95 },
-        { ate: 1000, valor: 34.95 },
-        { ate: Infinity, valor: 49.95 }
+    resto_mundo: [
+        { ate: 100, opcoes: [{ id: 'ctt_registado', nome: 'CTT Registado', valor: 6.55 }] },
+        { ate: 250, opcoes: [{ id: 'ctt_registado', nome: 'CTT Registado', valor: 9.30 }] },
+        { ate: 500, opcoes: [{ id: 'ctt_registado', nome: 'CTT Registado', valor: 14.15 }] },
+        { ate: 1000, opcoes: [{ id: 'ctt_registado', nome: 'CTT Registado', valor: 23.95 }] },
+        { ate: Infinity, opcoes: [{ id: 'ctt_registado', nome: 'CTT Registado', valor: 36.15 }] }
     ]
-};
+}
 
 
 let dbClient = null;
@@ -2133,7 +2176,7 @@ const carrinhoDiv = document.getElementById("lista-carrinho");
         vazio.id = 'carrinho-vazio';
         vazio.textContent = 'Nenhum produto adicionado.';
         carrinhoDiv.appendChild(vazio);
-        recalcularTotais();
+        atualizarOpcoesEnvio();
         return;
     }
 
@@ -2208,7 +2251,7 @@ const carrinhoDiv = document.getElementById("lista-carrinho");
 document.getElementById("subtotal").textContent =
     formatarEuro(subtotal) + " €";
 
-recalcularTotais();
+atualizarOpcoesEnvio();
 
 }
 
@@ -2232,20 +2275,64 @@ function calcularPesoTotalCarrinho() {
     }, 0);
 }
 
-function calcularPortesPorPeso(regiao, pesoTotal) {
-    if (pesoTotal <= 0) return 0;
-    const tabela = TABELA_PORTES_POR_PESO[regiao] || TABELA_PORTES_POR_PESO.portugal;
-    const escalao = tabela.find(linha => pesoTotal <= linha.ate) || tabela[tabela.length - 1];
-    return escalao.valor;
+function obterEscalaoEnvio(paisEnvio, pesoTotal) {
+    const tabela = TABELA_PORTES_POR_PESO[paisEnvio] || TABELA_PORTES_POR_PESO.portugal;
+    return tabela.find(linha => pesoTotal <= linha.ate) || tabela[tabela.length - 1];
+}
+
+function obterOpcoesEnvio(paisEnvio, pesoTotal) {
+    if (pesoTotal <= 0) return [];
+    return obterEscalaoEnvio(paisEnvio, pesoTotal).opcoes;
+}
+
+function obterOpcaoEnvioSelecionada(paisEnvio, pesoTotal, metodoEnvio) {
+    const opcoes = obterOpcoesEnvio(paisEnvio, pesoTotal);
+    return opcoes.find(opcao => opcao.id === metodoEnvio) || opcoes[0] || { id: '', nome: '', valor: 0 };
+}
+
+function atualizarOpcoesEnvio() {
+    const selectPais = document.getElementById('pais-envio');
+    const selectMetodo = document.getElementById('metodo-envio');
+    const infoEnvio = document.getElementById('info-envio');
+    if(!selectPais || !selectMetodo) return;
+
+    const metodoAnterior = selectMetodo.value;
+    const pesoTotal = calcularPesoTotalCarrinho();
+    const opcoes = obterOpcoesEnvio(selectPais.value, pesoTotal);
+    selectMetodo.replaceChildren();
+
+    if(opcoes.length === 0) {
+        const option = document.createElement('option');
+        option.value = '';
+        option.textContent = 'Adicione produtos para calcular o envio';
+        selectMetodo.appendChild(option);
+        if(infoEnvio) infoEnvio.textContent = '';
+        recalcularTotais();
+        return;
+    }
+
+    opcoes.forEach(opcao => {
+        const option = document.createElement('option');
+        option.value = opcao.id;
+        option.textContent = opcao.nome + ' - ' + formatarEuro(opcao.valor) + ' \u20ac';
+        selectMetodo.appendChild(option);
+    });
+
+    const metodoAindaDisponivel = opcoes.some(opcao => opcao.id === metodoAnterior);
+    selectMetodo.value = metodoAindaDisponivel ? metodoAnterior : opcoes[0].id;
+    if(infoEnvio) infoEnvio.textContent = 'Peso estimado: ' + pesoTotal + 'g';
+    recalcularTotais();
 }
 
 function recalcularTotais(){
     let subtotal = 0;
     carrinho.forEach(item => { subtotal += Number(item.preco || 0) * item.quantidade; });
 
-    const regiao = document.getElementById('regiao-envio').value;
+    const paisEnvio = document.getElementById('pais-envio')?.value || 'portugal';
+    const metodoEnvio = document.getElementById('metodo-envio')?.value || '';
     const pesoTotal = calcularPesoTotalCarrinho();
-    const portes = calcularPortesPorPeso(regiao, pesoTotal);
+    const opcaoEnvio = obterOpcaoEnvioSelecionada(paisEnvio, pesoTotal, metodoEnvio);
+    const portes = opcaoEnvio.valor || 0;
 
     document.getElementById('subtotal').innerText = formatarEuro(subtotal) + ' \u20ac';
     document.getElementById('portes').innerText = formatarEuro(portes) + ' \u20ac';
@@ -2255,7 +2342,10 @@ function recalcularTotais(){
         subtotal,
         portes,
         total: subtotal + portes,
-        regiao,
+        regiao: paisEnvio,
+        paisEnvio,
+        metodoEnvio: opcaoEnvio.id,
+        metodoEnvioNome: opcaoEnvio.nome,
         pesoTotal
     };
 }
@@ -2310,7 +2400,9 @@ async function criarNovaEncomenda() {
         },
         body: JSON.stringify({
           itens: itensPedido,
-          regiao: totais.regiao,
+          regiao: totais.paisEnvio,
+          metodo_envio: totais.metodoEnvio,
+          metodo_envio_nome: totais.metodoEnvioNome,
           metodo_pagamento: metodoPagamento
         })
       }),
