@@ -126,9 +126,14 @@
         }
 
         .acao-cabecalho:hover,
-        .acao-cabecalho:focus-visible{
+        .acao-cabecalho:focus-visible,
+        .acao-cabecalho.ativa{
             background:rgba(0,0,0,0.1);
             outline:none;
+        }
+
+        .acao-cabecalho.ativa{
+            box-shadow:inset 0 -3px 0 #000;
         }
 
         .icone-acao{
@@ -931,18 +936,24 @@
     <div class="cabecalho-loja">
         <a class="logo-loja" href="#loja" onclick="mostrarVista('loja')">World Minifigures 4U</a>
         <div class="cabecalho-pesquisa">
-            <input type="text" id="campo-pesquisa" class="input-pesquisa" placeholder="O que est&aacute;s &agrave; procura?" oninput="executarFiltrosCombinados()" onkeydown="verificarTeclaEnter(event)">
+            <input type="text" id="campo-pesquisa" class="input-pesquisa" placeholder="O que est&aacute;s &agrave; procura?" oninput="pesquisarNoCabecalho()" onkeydown="verificarTeclaEnter(event)">
             <span class="icone-pesquisa" aria-hidden="true"></span>
         </div>
         <div class="acoes-cabecalho">
-            <button class="acao-cabecalho" type="button" onclick="mostrarVista('conta')" aria-label="Abrir area de cliente">
+            <button class="acao-cabecalho" type="button" onclick="mostrarVista('loja')" aria-label="Ver produtos" data-vista-nav="loja">
+                <span class="texto-acao">
+                    <span>Ver</span>
+                    <strong>Produtos</strong>
+                </span>
+            </button>
+            <button class="acao-cabecalho" type="button" onclick="mostrarVista('conta')" aria-label="Abrir area de cliente" data-vista-nav="conta">
                 <span class="icone-acao" aria-hidden="true"></span>
                 <span class="texto-acao">
                     <span id="estado-login-cabecalho">Ola!</span>
                     <strong id="nome-login-cabecalho">Entrar</strong>
                 </span>
             </button>
-            <button class="acao-cabecalho acao-carrinho" type="button" onclick="mostrarVista('carrinho')" aria-label="Abrir carrinho">
+            <button class="acao-cabecalho acao-carrinho" type="button" onclick="mostrarVista('carrinho')" aria-label="Abrir carrinho" data-vista-nav="carrinho">
                 <span class="icone-acao" aria-hidden="true"></span>
                 <span class="badge-carrinho" id="contador-carrinho-cabecalho">0</span>
             </button>
@@ -1362,6 +1373,9 @@ function mostrarVista(vista, atualizarHash = true) {
     document.querySelectorAll('.vista').forEach(secao => {
         secao.classList.toggle('ativa', secao.id === 'vista-' + destino);
     });
+    document.querySelectorAll('[data-vista-nav]').forEach(botao => {
+        botao.classList.toggle('ativa', botao.dataset.vistaNav === destino);
+    });
     if (atualizarHash && window.location.hash !== '#' + destino) {
         history.pushState(null, '', '#' + destino);
     }
@@ -1374,6 +1388,11 @@ function irParaPainelCliente() {
 
 function irParaCarrinho() {
     mostrarVista('carrinho');
+}
+
+function pesquisarNoCabecalho() {
+    mostrarVista('loja');
+    executarFiltrosCombinados();
 }
 
 window.addEventListener('hashchange', () => {
