@@ -169,6 +169,16 @@
             white-space:nowrap;
         }
 
+        .detalhe-conta-cabecalho{
+            font-size:12px;
+            font-weight:700;
+            max-width:120px;
+            opacity:0.8;
+            overflow:hidden;
+            text-overflow:ellipsis;
+            white-space:nowrap;
+        }
+
         .acao-produtos .texto-acao strong{
             max-width:none;
         }
@@ -970,8 +980,8 @@
             <button class="acao-cabecalho" type="button" onclick="mostrarVista('conta')" aria-label="Abrir area de cliente" data-vista-nav="conta">
                 <span class="icone-acao" aria-hidden="true"></span>
                 <span class="texto-acao">
-                    <span id="estado-login-cabecalho">Ol&aacute;,</span>
-                    <strong id="nome-login-cabecalho">Entrar</strong>
+                    <strong>Conta</strong>
+                    <span class="detalhe-conta-cabecalho" id="nome-login-cabecalho"></span>
                 </span>
             </button>
             <button class="acao-cabecalho acao-carrinho" type="button" onclick="mostrarVista('carrinho')" aria-label="Abrir carrinho" data-vista-nav="carrinho">
@@ -1367,13 +1377,12 @@ function carregarCarrinhoLocal() {
 }
 
 function atualizarCabecalhoCliente(nome = '') {
-    const estado = document.getElementById('estado-login-cabecalho');
     const nomeEl = document.getElementById('nome-login-cabecalho');
-    if (!estado || !nomeEl) return;
+    if (!nomeEl) return;
 
     const nomeLimpo = String(nome || '').trim();
-    estado.textContent = nomeLimpo ? 'Ol\u00e1,' : '';
-    nomeEl.textContent = nomeLimpo || 'Conta';
+    nomeEl.textContent = nomeLimpo;
+    nomeEl.style.display = nomeLimpo ? 'inline' : 'none';
 }
 
 function atualizarContadorCarrinhoCabecalho() {
