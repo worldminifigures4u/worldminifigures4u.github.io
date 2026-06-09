@@ -670,21 +670,6 @@
             cursor: pointer;
         }
 
-        .instrucoes-pagamento{
-            background:#181818;
-            border:1px solid #333;
-            border-radius:8px;
-            padding:10px;
-            margin-top:10px;
-            color:#ddd;
-            font-size:13px;
-            line-height:1.45;
-        }
-
-        .instrucoes-pagamento strong{
-            color:#ffc107;
-        }
-
         .btn-confirmar {
             background: #28a745;
             color: white;
@@ -776,18 +761,17 @@
         <div class="seccao-pagamento">
             <h3>💳 Método de Pagamento</h3>
             <label class="opcao-pagamento">
-                <input type="radio" name="metodo-pagamento" value="MB WAY" checked onchange="atualizarInstrucoesPagamento()">
+                <input type="radio" name="metodo-pagamento" value="MB WAY" checked>
                 <span>📱 MB WAY</span>
             </label>
             <label class="opcao-pagamento">
-                <input type="radio" name="metodo-pagamento" value="Transferência Bancária" onchange="atualizarInstrucoesPagamento()">
+                <input type="radio" name="metodo-pagamento" value="Transferência Bancária">
                 <span>🏦 Transferência Bancária</span>
             </label>
             <label class="opcao-pagamento">
-                <input type="radio" name="metodo-pagamento" value="PayPal" onchange="atualizarInstrucoesPagamento()">
+                <input type="radio" name="metodo-pagamento" value="PayPal">
                 <span>🔵 PayPal</span>
             </label>
-            <div id="instrucoes-pagamento" class="instrucoes-pagamento"></div>
         </div>
 
         <button class="btn-confirmar" onclick="criarNovaEncomenda()">Confirmar Encomenda</button>
@@ -1026,7 +1010,6 @@ function carregarCarrinhoLocal() {
 
 window.addEventListener('load', async () => {
     atualizarCarrinho();
-    atualizarInstrucoesPagamento();
     if(typeof supabase !== 'undefined'){
         dbClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
         produtosClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {
@@ -1560,37 +1543,6 @@ function definirHtmlSeguro(elemento, partes) {
 function obterMetodoPagamentoSelecionado() {
     const radioSelecionado = document.querySelector('input[name="metodo-pagamento"]:checked');
     return radioSelecionado ? radioSelecionado.value : 'Não especificado';
-}
-
-function obterInstrucoesPagamento(metodoPagamento) {
-    if (metodoPagamento === 'MB WAY') {
-        return [
-            { strong: 'MB WAY: ' },
-            'após confirmar a encomenda, enviaremos os dados para pagamento. A encomenda será preparada depois da confirmação do pagamento.'
-        ];
-    }
-
-    if (metodoPagamento === 'Transferência Bancária') {
-        return [
-            { strong: 'Transferência Bancária: ' },
-            'após confirmar a encomenda, enviaremos os dados bancários. A encomenda será preparada depois da confirmação da transferência.'
-        ];
-    }
-
-    if (metodoPagamento === 'PayPal') {
-        return [
-            { strong: 'PayPal: ' },
-            'após confirmar a encomenda, enviaremos os dados para pagamento PayPal. A encomenda será preparada depois da confirmação do pagamento.'
-        ];
-    }
-
-    return ['Escolha um método de pagamento para ver as instruções.'];
-}
-
-function atualizarInstrucoesPagamento() {
-    const instrucoes = document.getElementById('instrucoes-pagamento');
-    if(!instrucoes) return;
-    definirHtmlSeguro(instrucoes, obterInstrucoesPagamento(obterMetodoPagamentoSelecionado()));
 }
 
 function mensagemSucessoEncomenda(metodoPagamento, codigoEncomenda = '') {
