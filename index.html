@@ -747,6 +747,7 @@
         <label>M&eacute;todo de envio:</label>
         <select class="select-envio" id="metodo-envio" onchange="recalcularTotais()"></select>
         <div id="info-envio" class="msg-status"></div>
+        <div id="aviso-envio-nao-registado" class="msg-status msg-erro"></div>
 
         <div class="total-box">
             <div class="linha-total">
@@ -2295,6 +2296,16 @@ function valorPortesComIva(valorBase) {
     return Math.round((Number(valorBase || 0) * (1 + IVA_PORTES)) * 100) / 100;
 }
 
+function atualizarAvisoEnvio(metodoEnvio) {
+    const aviso = document.getElementById('aviso-envio-nao-registado');
+    if(!aviso) return;
+
+    const mostrarAviso = metodoEnvio === 'ctt_normal' || metodoEnvio === 'ctt_azul';
+    aviso.textContent = mostrarAviso
+        ? 'Recomendado o Envio Registado. Não nos responsabilizamos pelo extravio de encomendas.'
+        : '';
+}
+
 function atualizarOpcoesEnvio() {
     const selectPais = document.getElementById('pais-envio');
     const selectMetodo = document.getElementById('metodo-envio');
@@ -2324,7 +2335,8 @@ function atualizarOpcoesEnvio() {
     });
 
     const metodoAindaDisponivel = opcoes.some(opcao => opcao.id === metodoAnterior);
-    selectMetodo.value = metodoAindaDisponivel ? metodoAnterior : opcoes[0].id;
+    const metodoRegistado = opcoes.find(opcao => opcao.id === 'ctt_registado');
+    selectMetodo.value = metodoAindaDisponivel ? metodoAnterior : (metodoRegistado?.id || opcoes[0].id);
     if(infoEnvio) infoEnvio.textContent = 'Peso estimado: ' + pesoTotal + 'g';
     recalcularTotais();
 }
@@ -2338,6 +2350,7 @@ function recalcularTotais(){
     const pesoTotal = calcularPesoTotalCarrinho();
     const opcaoEnvio = obterOpcaoEnvioSelecionada(paisEnvio, pesoTotal, metodoEnvio);
     const portes = valorPortesComIva(opcaoEnvio.valor);
+    atualizarAvisoEnvio(opcaoEnvio.id);
 
     document.getElementById('subtotal').innerText = formatarEuro(subtotal) + ' \u20ac';
     document.getElementById('portes').innerText = formatarEuro(portes) + ' \u20ac';
