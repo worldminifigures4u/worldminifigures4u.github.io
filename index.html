@@ -17,7 +17,7 @@
         }
 
         body{
-            padding-top: 92px;
+            padding-top: 76px;
         }
 
         header{
@@ -28,16 +28,16 @@
             z-index:1000;
             background:#ffc107;
             color:#000;
-            box-shadow:0 10px 26px rgba(0,0,0,0.38);
+            box-shadow:0 8px 22px rgba(0,0,0,0.32);
         }
 
         .cabecalho-loja{
-            width:min(1280px, 100%);
-            margin:0 auto;
-            padding:14px 20px;
+            width:100%;
+            margin:0;
+            padding:12px 24px;
             box-sizing:border-box;
             display:grid;
-            grid-template-columns:minmax(190px, 260px) minmax(240px, 1fr) minmax(210px, 270px);
+            grid-template-columns:minmax(230px, 300px) minmax(360px, 560px) minmax(230px, 1fr);
             gap:18px;
             align-items:center;
         }
@@ -45,11 +45,13 @@
         .logo-loja{
             color:#000;
             text-decoration:none;
-            font-size:26px;
-            line-height:1;
+            font-size:22px;
+            line-height:1.1;
             font-weight:900;
             letter-spacing:0;
             white-space:nowrap;
+            overflow:hidden;
+            text-overflow:ellipsis;
         }
 
         .cabecalho-pesquisa{
@@ -58,13 +60,13 @@
         }
 
         .cabecalho-pesquisa .input-pesquisa{
-            height:48px;
-            padding:0 52px 0 20px;
+            height:44px;
+            padding:0 48px 0 18px;
             background:#fff;
             color:#111;
-            border:none;
+            border:1px solid rgba(0,0,0,0.12);
             border-radius:999px;
-            box-shadow:0 2px 0 rgba(0,0,0,0.05);
+            box-shadow:none;
         }
 
         .cabecalho-pesquisa .input-pesquisa::placeholder{
@@ -72,7 +74,7 @@
         }
 
         .cabecalho-pesquisa .input-pesquisa:focus{
-            box-shadow:0 0 0 3px rgba(0,0,0,0.18);
+            box-shadow:0 0 0 3px rgba(0,0,0,0.16);
         }
 
         .icone-pesquisa{
@@ -80,28 +82,44 @@
             right:18px;
             top:50%;
             transform:translateY(-50%);
-            color:#555;
-            font-size:20px;
+            width:16px;
+            height:16px;
+            border:2px solid #555;
+            border-radius:50%;
             pointer-events:none;
+            box-sizing:border-box;
+        }
+
+        .icone-pesquisa::after{
+            content:"";
+            position:absolute;
+            width:8px;
+            height:2px;
+            right:-6px;
+            bottom:-3px;
+            background:#555;
+            transform:rotate(45deg);
+            border-radius:2px;
         }
 
         .acoes-cabecalho{
             display:flex;
             justify-content:flex-end;
             align-items:center;
-            gap:10px;
+            gap:8px;
             min-width:0;
         }
 
         .acao-cabecalho{
+            min-height:44px;
             border:none;
             background:transparent;
             color:#000;
             display:flex;
             align-items:center;
             gap:8px;
-            padding:8px;
-            border-radius:10px;
+            padding:8px 10px;
+            border-radius:8px;
             cursor:pointer;
             font-weight:bold;
             min-width:0;
@@ -114,31 +132,29 @@
         }
 
         .icone-acao{
-            font-size:25px;
-            line-height:1;
-            flex:0 0 auto;
+            display:none;
         }
 
         .texto-acao{
             display:flex;
             flex-direction:column;
             align-items:flex-start;
-            line-height:1.05;
+            line-height:1.1;
             min-width:0;
         }
 
         .texto-acao span{
-            font-size:12px;
+            font-size:11px;
             font-weight:700;
-            max-width:120px;
+            max-width:135px;
             overflow:hidden;
             text-overflow:ellipsis;
             white-space:nowrap;
         }
 
         .texto-acao strong{
-            font-size:13px;
-            max-width:120px;
+            font-size:12px;
+            max-width:135px;
             overflow:hidden;
             text-overflow:ellipsis;
             white-space:nowrap;
@@ -146,20 +162,26 @@
 
         .acao-carrinho{
             position:relative;
+            padding-right:18px;
+        }
+
+        .acao-carrinho::before{
+            content:"Carrinho";
+            font-size:12px;
         }
 
         .badge-carrinho{
             position:absolute;
-            top:2px;
+            top:3px;
             right:0;
-            min-width:20px;
-            height:20px;
+            min-width:19px;
+            height:19px;
             padding:0 5px;
             border-radius:999px;
             background:#000;
             color:#ffc107;
-            font-size:12px;
-            line-height:20px;
+            font-size:11px;
+            line-height:19px;
             text-align:center;
             box-sizing:border-box;
         }
@@ -845,35 +867,38 @@
         }
 
         @media(max-width:1100px){
-            body{ padding-top:146px; }
+            body{ padding-top:126px; }
             .cabecalho-loja{
                 grid-template-columns:1fr auto;
-                gap:12px;
-                padding:12px 14px;
+                gap:10px 12px;
+                padding:10px 14px;
             }
             .cabecalho-pesquisa{
                 grid-column:1 / -1;
                 grid-row:2;
             }
-            .logo-loja{ font-size:22px; }
-            .texto-acao{ display:none; }
-            .acao-cabecalho{ padding:8px 10px; }
+            .logo-loja{ font-size:20px; }
+            .texto-acao span{ max-width:120px; }
+            .texto-acao strong{ max-width:120px; }
             .container{ flex-direction:column; }
             .coluna-esquerda, .carrinho{ width:100%; box-sizing:border-box; }
         }
 
         @media(max-width:560px){
-            body{ padding-top:136px; }
-            .cabecalho-loja{ gap:10px; }
-            .logo-loja{ font-size:18px; }
+            body{ padding-top:122px; }
+            .cabecalho-loja{ gap:8px; }
+            .logo-loja{ font-size:17px; }
             .cabecalho-pesquisa .input-pesquisa{
-                height:44px;
+                height:42px;
                 font-size:14px;
                 padding-left:16px;
             }
             .acoes-cabecalho{ gap:2px; }
-            .icone-acao{ font-size:22px; }
+            .acao-cabecalho{ padding:7px 8px; }
+            .texto-acao span,
+            .texto-acao strong{ max-width:92px; }
         }
+
     </style>
 </head>
 <body>
@@ -882,19 +907,19 @@
     <div class="cabecalho-loja">
         <a class="logo-loja" href="#" onclick="window.scrollTo({top:0, behavior:'smooth'}); return false;">World Minifigures 4U</a>
         <div class="cabecalho-pesquisa">
-            <input type="text" id="campo-pesquisa" class="input-pesquisa" placeholder="O que estÃ¡s Ã  procura?" oninput="executarFiltrosCombinados()" onkeydown="verificarTeclaEnter(event)">
-            <span class="icone-pesquisa" aria-hidden="true">âŒ•</span>
+            <input type="text" id="campo-pesquisa" class="input-pesquisa" placeholder="O que est&aacute;s &agrave; procura?" oninput="executarFiltrosCombinados()" onkeydown="verificarTeclaEnter(event)">
+            <span class="icone-pesquisa" aria-hidden="true"></span>
         </div>
         <div class="acoes-cabecalho">
-            <button class="acao-cabecalho" type="button" onclick="irParaPainelCliente()" aria-label="Abrir Ã¡rea de cliente">
-                <span class="icone-acao" aria-hidden="true">â™™</span>
+            <button class="acao-cabecalho" type="button" onclick="irParaPainelCliente()" aria-label="Abrir area de cliente">
+                <span class="icone-acao" aria-hidden="true"></span>
                 <span class="texto-acao">
-                    <span id="estado-login-cabecalho">OlÃ¡!</span>
+                    <span id="estado-login-cabecalho">Ola!</span>
                     <strong id="nome-login-cabecalho">Entrar</strong>
                 </span>
             </button>
             <button class="acao-cabecalho acao-carrinho" type="button" onclick="irParaCarrinho()" aria-label="Abrir carrinho">
-                <span class="icone-acao" aria-hidden="true">ðŸ›’</span>
+                <span class="icone-acao" aria-hidden="true"></span>
                 <span class="badge-carrinho" id="contador-carrinho-cabecalho">0</span>
             </button>
         </div>
@@ -1285,7 +1310,7 @@ function atualizarCabecalhoCliente(nome = '') {
     if (!estado || !nomeEl) return;
 
     const nomeLimpo = String(nome || '').trim();
-    estado.textContent = 'OlÃ¡!';
+    estado.textContent = 'Ola!';
     nomeEl.textContent = nomeLimpo || 'Entrar';
 }
 
