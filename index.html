@@ -1352,7 +1352,7 @@ function preencherFormularioDadosCliente(data = {}, user = null) {
     document.getElementById('nome-perfil-logado').innerText = nome || 'Cliente Autenticado';
     document.getElementById('email-perfil-logado').innerText = email;
     const moradaResumo = [morada, [cp, cidade].filter(Boolean).join(' ')].filter(Boolean).join(', ');
-    document.getElementById('cp-perfil-logado').innerText = moradaResumo ? `?? Morada: ${moradaResumo}` : '';
+    document.getElementById('cp-perfil-logado').innerText = moradaResumo ? `Morada: ${moradaResumo}` : '';
 
     const campoNome = document.getElementById('editar-nome');
     const campoTelemovel = document.getElementById('editar-telemovel');
