@@ -149,7 +149,7 @@
         }
 
         .texto-acao span{
-            font-size:11px;
+            font-size:12px;
             font-weight:700;
             max-width:135px;
             overflow:hidden;
@@ -158,11 +158,15 @@
         }
 
         .texto-acao strong{
-            font-size:12px;
+            font-size:15px;
             max-width:135px;
             overflow:hidden;
             text-overflow:ellipsis;
             white-space:nowrap;
+        }
+
+        .acao-produtos .texto-acao strong{
+            max-width:none;
         }
 
         .acao-carrinho{
@@ -172,7 +176,7 @@
 
         .acao-carrinho::before{
             content:"Carrinho";
-            font-size:12px;
+            font-size:15px;
         }
 
         .badge-carrinho{
@@ -926,6 +930,8 @@
             .acao-cabecalho{ padding:7px 8px; }
             .texto-acao span,
             .texto-acao strong{ max-width:92px; }
+            .texto-acao strong,
+            .acao-carrinho::before{ font-size:13px; }
         }
 
     </style>
@@ -940,9 +946,8 @@
             <span class="icone-pesquisa" aria-hidden="true"></span>
         </div>
         <div class="acoes-cabecalho">
-            <button class="acao-cabecalho" type="button" onclick="mostrarVista('loja')" aria-label="Ver produtos" data-vista-nav="loja">
+            <button class="acao-cabecalho acao-produtos" type="button" onclick="mostrarVista('loja')" aria-label="Ver produtos" data-vista-nav="loja">
                 <span class="texto-acao">
-                    <span>Ver</span>
                     <strong>Produtos</strong>
                 </span>
             </button>
