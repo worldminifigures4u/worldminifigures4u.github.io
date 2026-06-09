@@ -812,6 +812,10 @@
                             <label for="editar-cp">Código postal:</label>
                             <input type="text" id="editar-cp" placeholder="Ex: 1000-013">
                         </div>
+                        <div>
+                            <label for="editar-cidade">Cidade:</label>
+                            <input type="text" id="editar-cidade" placeholder="Ex: Tomar">
+                        </div>
                         <button type="submit" class="btn-acao-cliente">Guardar dados</button>
                         <div id="status-dados-cliente" class="msg-status"></div>
                     </form>
@@ -919,6 +923,10 @@
                     <div>
                         <label for="registo-cp">Código Postal (CP):</label>
                         <input type="text" id="registo-cp" required placeholder="1000-001">
+                    </div>
+                    <div>
+                        <label for="registo-cidade">Cidade:</label>
+                        <input type="text" id="registo-cidade" required placeholder="Tomar">
                     </div>
                     <button type="submit" class="btn-acao-cliente">Criar Conta</button>
                 </form>
@@ -1235,6 +1243,7 @@ async function registarCliente(event) {
     const telemovel = document.getElementById('registo-telemovel').value.trim();
     const morada = document.getElementById('registo-morada').value.trim();
     const cp = document.getElementById('registo-cp').value.trim();
+    const cidade = document.getElementById('registo-cidade').value.trim();
 
     try {
        const { data, error } = await dbClient.auth.signUp({
@@ -1246,7 +1255,8 @@ async function registarCliente(event) {
             nome: nome,
             telemovel: telemovel,
             morada: morada,
-            cp: cp
+            cp: cp,
+            cidade: cidade
         }
     }
 });
@@ -1337,20 +1347,24 @@ function preencherFormularioDadosCliente(data = {}, user = null) {
     const email = data.email || user?.email || '';
     const morada = data.morada || '';
     const cp = data.cp || '';
+    const cidade = data.cidade || '';
 
     document.getElementById('nome-perfil-logado').innerText = nome || 'Cliente Autenticado';
     document.getElementById('email-perfil-logado').innerText = email;
-    document.getElementById('cp-perfil-logado').innerText = morada || cp ? `📍 Morada: ${morada}${cp ? ` (${cp})` : ''}` : '';
+    const moradaResumo = [morada, [cp, cidade].filter(Boolean).join(' ')].filter(Boolean).join(', ');
+    document.getElementById('cp-perfil-logado').innerText = moradaResumo ? `?? Morada: ${moradaResumo}` : '';
 
     const campoNome = document.getElementById('editar-nome');
     const campoTelemovel = document.getElementById('editar-telemovel');
     const campoMorada = document.getElementById('editar-morada');
     const campoCp = document.getElementById('editar-cp');
+    const campoCidade = document.getElementById('editar-cidade');
 
     if (campoNome) campoNome.value = nome;
     if (campoTelemovel) campoTelemovel.value = data.telemovel || '';
     if (campoMorada) campoMorada.value = morada;
     if (campoCp) campoCp.value = cp;
+    if (campoCidade) campoCidade.value = cidade;
 }
 
 async function guardarDadosCliente(event) {
@@ -1360,6 +1374,7 @@ async function guardarDadosCliente(event) {
     const telemovel = document.getElementById('editar-telemovel').value.trim();
     const morada = document.getElementById('editar-morada').value.trim();
     const cp = document.getElementById('editar-cp').value.trim();
+    const cidade = document.getElementById('editar-cidade').value.trim();
 
     if (!nome) {
         mostrarMensagem(statusDiv, 'Indique o nome.', 'msg-erro');
@@ -1377,7 +1392,8 @@ async function guardarDadosCliente(event) {
             email: user.email,
             telemovel,
             morada,
-            cp
+            cp,
+            cidade
         };
 
         const { error } = await dbClient
