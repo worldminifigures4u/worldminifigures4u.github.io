@@ -187,10 +187,27 @@
         }
 
         .container{
+            padding:20px;
+        }
+
+        .vista{
+            display:none;
+        }
+
+        .vista.ativa{
+            display:block;
+        }
+
+        .vista-loja.ativa{
             display:flex;
             gap:20px;
-            padding:20px;
             align-items:flex-start;
+        }
+
+        .vista-conta.ativa,
+        .vista-carrinho.ativa{
+            max-width:760px;
+            margin:0 auto;
         }
 
         .coluna-esquerda {
@@ -210,8 +227,15 @@
             box-sizing: border-box;
         }
 
-        .carrinho .area-cliente{
-            margin-bottom:15px;
+        .vista-conta .area-cliente{
+            margin:0 auto;
+        }
+
+        .vista-carrinho .carrinho{
+            width:100%;
+            max-width:520px;
+            margin:0 auto;
+            box-sizing:border-box;
         }
 
         .menu-temas h2, .area-cliente h2{
@@ -880,7 +904,7 @@
             .logo-loja{ font-size:20px; }
             .texto-acao span{ max-width:120px; }
             .texto-acao strong{ max-width:120px; }
-            .container{ flex-direction:column; }
+            .vista-loja.ativa{ flex-direction:column; }
             .coluna-esquerda, .carrinho{ width:100%; box-sizing:border-box; }
         }
 
@@ -905,20 +929,20 @@
 
 <header>
     <div class="cabecalho-loja">
-        <a class="logo-loja" href="#" onclick="window.scrollTo({top:0, behavior:'smooth'}); return false;">World Minifigures 4U</a>
+        <a class="logo-loja" href="#loja" onclick="mostrarVista('loja')">World Minifigures 4U</a>
         <div class="cabecalho-pesquisa">
             <input type="text" id="campo-pesquisa" class="input-pesquisa" placeholder="O que est&aacute;s &agrave; procura?" oninput="executarFiltrosCombinados()" onkeydown="verificarTeclaEnter(event)">
             <span class="icone-pesquisa" aria-hidden="true"></span>
         </div>
         <div class="acoes-cabecalho">
-            <button class="acao-cabecalho" type="button" onclick="irParaPainelCliente()" aria-label="Abrir area de cliente">
+            <button class="acao-cabecalho" type="button" onclick="mostrarVista('conta')" aria-label="Abrir area de cliente">
                 <span class="icone-acao" aria-hidden="true"></span>
                 <span class="texto-acao">
                     <span id="estado-login-cabecalho">Ola!</span>
                     <strong id="nome-login-cabecalho">Entrar</strong>
                 </span>
             </button>
-            <button class="acao-cabecalho acao-carrinho" type="button" onclick="irParaCarrinho()" aria-label="Abrir carrinho">
+            <button class="acao-cabecalho acao-carrinho" type="button" onclick="mostrarVista('carrinho')" aria-label="Abrir carrinho">
                 <span class="icone-acao" aria-hidden="true"></span>
                 <span class="badge-carrinho" id="contador-carrinho-cabecalho">0</span>
             </button>
@@ -928,6 +952,7 @@
 
 <div class="container">
 
+    <section class="vista vista-loja ativa" id="vista-loja">
     <div class="coluna-esquerda">
         <aside class="menu-temas" id="menu-lateral-temas">
             <h2>Temas</h2>
@@ -940,8 +965,9 @@
             <div class="estado-vitrine">A carregar minifiguras extraordinárias...</div>
         </main>
     </div>
+    </section>
 
-    <aside class="carrinho">
+    <section class="vista vista-conta" id="vista-conta">
         <aside class="area-cliente" id="painel-cliente">
             <div id="conteudo-cliente-autenticado" style="display: none;">
                 <h2>👤 Minha Conta</h2>
@@ -1109,8 +1135,11 @@
                 <div id="status-cliente" class="msg-status"></div>
             </div>
         </aside>
+    </section>
 
-        <h2>🛒 Carrinho</h2>
+    <section class="vista vista-carrinho" id="vista-carrinho">
+        <aside class="carrinho">
+<h2>🛒 Carrinho</h2>
         <div class="lista-carrinho" id="lista-carrinho">
             <p id="carrinho-vazio">Nenhum produto adicionado.</p>
         </div>
@@ -1163,10 +1192,10 @@
         <div id="status-encomenda" class="msg-status"></div>
 
 
-    </aside>
+        </aside>
+    </section>
 
 </div>
-
 <script>
 const SUPABASE_URL = "https://gksndzxadndrsynvzgzb.supabase.co";
 const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imdrc25kenhhZG5kcnN5bnZ6Z3piIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkwODc5NzMsImV4cCI6MjA5NDY2Mzk3M30.EHZgacYr27dqoc4CJHsOwkNnJFGlLIteSHBi4B1HfVE";
@@ -1266,6 +1295,7 @@ function urlTemRecuperacaoPassword() {
 
 async function prepararRecuperacaoPassword() {
     emRecuperacaoPassword = true;
+    mostrarVista('conta', false);
     const params = obterParametrosAuthUrl();
     const code = params.get('code');
 
@@ -1322,15 +1352,33 @@ function atualizarContadorCarrinhoCabecalho() {
     contador.textContent = totalItens;
 }
 
+function obterVistaHash() {
+    const hash = (window.location.hash || '').replace(/^#/, '').toLowerCase();
+    return ['loja', 'conta', 'carrinho'].includes(hash) ? hash : 'loja';
+}
+
+function mostrarVista(vista, atualizarHash = true) {
+    const destino = ['loja', 'conta', 'carrinho'].includes(vista) ? vista : 'loja';
+    document.querySelectorAll('.vista').forEach(secao => {
+        secao.classList.toggle('ativa', secao.id === 'vista-' + destino);
+    });
+    if (atualizarHash && window.location.hash !== '#' + destino) {
+        history.pushState(null, '', '#' + destino);
+    }
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
 function irParaPainelCliente() {
-    const painel = document.getElementById('painel-cliente');
-    if (painel) painel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    mostrarVista('conta');
 }
 
 function irParaCarrinho() {
-    const carrinhoEl = document.querySelector('.carrinho');
-    if (carrinhoEl) carrinhoEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    mostrarVista('carrinho');
 }
+
+window.addEventListener('hashchange', () => {
+    mostrarVista(obterVistaHash(), false);
+});
 window.addEventListener('load', async () => {
     atualizarCarrinho();
     if(typeof supabase !== 'undefined'){
@@ -1375,6 +1423,7 @@ window.addEventListener('load', async () => {
             await prepararRecuperacaoPassword();
             return;
         }
+        mostrarVista(obterVistaHash(), false);
         await verificarSessaoSupabase();
     } else {
         definirEstadoVitrine('Erro: biblioteca Supabase não carregou. Verifique a ligação à internet.', 'erro');
