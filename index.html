@@ -841,6 +841,10 @@
                                 <label for="admin-produto-preco">Preço:</label>
                                 <input type="number" id="admin-produto-preco" required min="0" step="0.01" placeholder="4.95">
                             </div>
+                            <div>
+                                <label for="admin-produto-peso">Peso (g):</label>
+                                <input type="number" id="admin-produto-peso" required min="1" step="1" value="10">
+                            </div>
                         </div>
                         <div>
                             <label for="admin-produto-tema">Tema:</label>
@@ -937,6 +941,28 @@ const SUPABASE_URL = "https://gksndzxadndrsynvzgzb.supabase.co";
 const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imdrc25kenhhZG5kcnN5bnZ6Z3piIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkwODc5NzMsImV4cCI6MjA5NDY2Mzk3M30.EHZgacYr27dqoc4CJHsOwkNnJFGlLIteSHBi4B1HfVE";
 const URL_PUBLICO_FALLBACK = "https://worldminifigures4u.github.io/";
 const ADMIN_EMAILS = ["worldminifigures4u@gmail.com"];
+const PESO_PADRAO_PRODUTO_GRAMAS = 10;
+const TABELA_PORTES_POR_PESO = {
+    portugal: [
+        { ate: 100, valor: 4.95 },
+        { ate: 500, valor: 6.95 },
+        { ate: 1000, valor: 8.95 },
+        { ate: Infinity, valor: 12.95 }
+    ],
+    europa: [
+        { ate: 100, valor: 9.95 },
+        { ate: 500, valor: 14.95 },
+        { ate: 1000, valor: 19.95 },
+        { ate: Infinity, valor: 29.95 }
+    ],
+    resto: [
+        { ate: 100, valor: 14.95 },
+        { ate: 500, valor: 24.95 },
+        { ate: 1000, valor: 34.95 },
+        { ate: Infinity, valor: 49.95 }
+    ]
+};
+
 
 let dbClient = null;
 let produtosClient = null;
@@ -944,7 +970,6 @@ let todosOsProdutos = [];
 let carrinho = carregarCarrinhoLocal();
 let filtroTemaAtual = 'todos';
 let emRecuperacaoPassword = false;
-
 function obterUrlPublicoAtual() {
     if (window.location.protocol === 'file:') {
         return URL_PUBLICO_FALLBACK;
@@ -1000,6 +1025,7 @@ function carregarCarrinhoLocal() {
                 id: item.id,
                 nome: String(item.nome),
                 preco: Number(item.preco || 0),
+                peso: Number(item.peso || PESO_PADRAO_PRODUTO_GRAMAS),
                 quantidade: Math.max(1, Number(item.quantidade || 1))
             }));
     } catch(e) {
@@ -1474,10 +1500,11 @@ async function criarProdutoAdmin(event) {
         const tema = document.getElementById('admin-produto-tema').value.trim();
         const subtema = document.getElementById('admin-produto-subtema').value.trim();
         const preco = Number(document.getElementById('admin-produto-preco').value);
+        const peso = Number(document.getElementById('admin-produto-peso').value || PESO_PADRAO_PRODUTO_GRAMAS);
         const imagens = obterUrlsImagensAdmin();
 
-        if(!nome || !sku || !tema || !Number.isFinite(preco) || preco < 0) {
-            throw new Error('Preencha nome, SKU, tema e preço.');
+        if(!nome || !sku || !tema || !Number.isFinite(preco) || preco < 0 || !Number.isFinite(peso) || peso < 1) {
+            throw new Error('Preencha nome, SKU, tema, pre?o e peso.');
         }
 
         const skuExistente = todosOsProdutos.some(produto => String(produto.sku || '').toUpperCase() === sku);
@@ -1491,6 +1518,7 @@ async function criarProdutoAdmin(event) {
             tema,
             subtema: subtema || 'semsubtema',
             preco,
+            peso,
             imagens
         };
 
@@ -2045,6 +2073,7 @@ function adicionarAoCarrinho(prod) {
             id: prod.id,
             nome: prod.nome,
             preco: prod.preco,
+            peso: Number(prod.peso || PESO_PADRAO_PRODUTO_GRAMAS),
             quantidade: 1
         });
 
@@ -2195,27 +2224,39 @@ function removerCarrinho(id) {
 
 }
 
+function calcularPesoTotalCarrinho() {
+    return carrinho.reduce((total, item) => {
+        const pesoUnitario = Number(item.peso || PESO_PADRAO_PRODUTO_GRAMAS);
+        const quantidade = Number(item.quantidade || 1);
+        return total + (pesoUnitario * quantidade);
+    }, 0);
+}
+
+function calcularPortesPorPeso(regiao, pesoTotal) {
+    if (pesoTotal <= 0) return 0;
+    const tabela = TABELA_PORTES_POR_PESO[regiao] || TABELA_PORTES_POR_PESO.portugal;
+    const escalao = tabela.find(linha => pesoTotal <= linha.ate) || tabela[tabela.length - 1];
+    return escalao.valor;
+}
+
 function recalcularTotais(){
     let subtotal = 0;
     carrinho.forEach(item => { subtotal += Number(item.preco || 0) * item.quantidade; });
 
-    let portes = 0;
     const regiao = document.getElementById('regiao-envio').value;
-    if(carrinho.length > 0){
-        if(regiao === 'portugal'){ portes = 4.95; }
-        if(regiao === 'europa'){ portes = 9.95; }
-        if(regiao === 'resto'){ portes = 14.95; }
-    }
+    const pesoTotal = calcularPesoTotalCarrinho();
+    const portes = calcularPortesPorPeso(regiao, pesoTotal);
 
-    document.getElementById('subtotal').innerText = formatarEuro(subtotal) + ' €';
-    document.getElementById('portes').innerText = formatarEuro(portes) + ' €';
-    document.getElementById('total').innerText = formatarEuro(subtotal + portes) + ' €';
+    document.getElementById('subtotal').innerText = formatarEuro(subtotal) + ' \u20ac';
+    document.getElementById('portes').innerText = formatarEuro(portes) + ' \u20ac';
+    document.getElementById('total').innerText = formatarEuro(subtotal + portes) + ' \u20ac';
 
     return {
         subtotal,
         portes,
         total: subtotal + portes,
-        regiao
+        regiao,
+        pesoTotal
     };
 }
 
