@@ -2025,6 +2025,7 @@ function executarFiltrosCombinados() {
     const inputRaw = document.getElementById('campo-pesquisa').value || '';
     // Normaliza acentos e remove caracteres especiais
     const textoPesquisa = inputRaw.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
+    const pesquisaAtiva = textoPesquisa.length > 0;
     
     const todosOsCards = document.querySelectorAll('.produto-card');
     let totalVisiveis = 0;
@@ -2035,7 +2036,7 @@ function executarFiltrosCombinados() {
 
     todosOsCards.forEach(card => {
         let correspondeAoTema = false;
-        if (filtroTemaAtual === 'todos') {
+        if (pesquisaAtiva || filtroTemaAtual === 'todos') {
             correspondeAoTema = true;
         } else {
             const cardTema = card.dataset.tema || '';
