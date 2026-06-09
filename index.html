@@ -111,18 +111,21 @@
         }
 
         .acao-cabecalho{
-            min-height:44px;
-            border:none;
-            background:transparent;
+            height:42px;
+            border:1px solid rgba(0,0,0,0.18);
+            background:rgba(255,255,255,0.12);
             color:#000;
             display:flex;
             align-items:center;
             gap:8px;
-            padding:8px 10px;
-            border-radius:8px;
+            padding:0 14px;
+            border-radius:10px;
             cursor:pointer;
-            font-weight:bold;
+            font-size:15px;
+            font-weight:800;
+            line-height:1;
             min-width:0;
+            box-sizing:border-box;
         }
 
         .acao-cabecalho:hover,
@@ -133,6 +136,8 @@
         }
 
         .acao-cabecalho.ativa{
+            background:rgba(0,0,0,0.16);
+            border-color:rgba(0,0,0,0.42);
             box-shadow:inset 0 -3px 0 #000;
         }
 
@@ -142,16 +147,15 @@
 
         .texto-acao{
             display:flex;
-            flex-direction:column;
-            align-items:flex-start;
-            line-height:1.1;
+            align-items:center;
+            gap:4px;
+            line-height:1;
             min-width:0;
         }
 
         .texto-acao span{
-            font-size:12px;
-            font-weight:700;
-            max-width:135px;
+            font-size:15px;
+            font-weight:800;
             overflow:hidden;
             text-overflow:ellipsis;
             white-space:nowrap;
@@ -159,7 +163,7 @@
 
         .texto-acao strong{
             font-size:15px;
-            max-width:135px;
+            max-width:150px;
             overflow:hidden;
             text-overflow:ellipsis;
             white-space:nowrap;
@@ -171,26 +175,27 @@
 
         .acao-carrinho{
             position:relative;
-            padding-right:18px;
+            padding-right:32px;
         }
 
         .acao-carrinho::before{
             content:"Carrinho";
             font-size:15px;
+            font-weight:800;
         }
 
         .badge-carrinho{
             position:absolute;
-            top:3px;
-            right:0;
-            min-width:19px;
-            height:19px;
+            top:5px;
+            right:6px;
+            min-width:18px;
+            height:18px;
             padding:0 5px;
             border-radius:999px;
             background:#000;
             color:#ffc107;
             font-size:11px;
-            line-height:19px;
+            line-height:18px;
             text-align:center;
             box-sizing:border-box;
         }
@@ -913,6 +918,7 @@
             .logo-loja{ font-size:20px; }
             .texto-acao span{ max-width:120px; }
             .texto-acao strong{ max-width:120px; }
+            .acao-cabecalho{ padding:0 12px; }
             .vista-loja.ativa{ flex-direction:column; }
             .coluna-esquerda, .carrinho{ width:100%; box-sizing:border-box; }
         }
@@ -927,11 +933,21 @@
                 padding-left:16px;
             }
             .acoes-cabecalho{ gap:2px; }
-            .acao-cabecalho{ padding:7px 8px; }
+            .acao-cabecalho{
+                height:38px;
+                padding:0 8px;
+                border-radius:8px;
+            }
+            .acao-carrinho{ padding-right:26px; }
             .texto-acao span,
-            .texto-acao strong{ max-width:92px; }
+            .texto-acao strong{ max-width:88px; }
             .texto-acao strong,
             .acao-carrinho::before{ font-size:13px; }
+            .texto-acao span{ font-size:13px; }
+            .badge-carrinho{
+                top:3px;
+                right:3px;
+            }
         }
 
     </style>
@@ -954,7 +970,7 @@
             <button class="acao-cabecalho" type="button" onclick="mostrarVista('conta')" aria-label="Abrir area de cliente" data-vista-nav="conta">
                 <span class="icone-acao" aria-hidden="true"></span>
                 <span class="texto-acao">
-                    <span id="estado-login-cabecalho">Ola!</span>
+                    <span id="estado-login-cabecalho">Ol&aacute;,</span>
                     <strong id="nome-login-cabecalho">Entrar</strong>
                 </span>
             </button>
@@ -1356,8 +1372,8 @@ function atualizarCabecalhoCliente(nome = '') {
     if (!estado || !nomeEl) return;
 
     const nomeLimpo = String(nome || '').trim();
-    estado.textContent = 'Ola!';
-    nomeEl.textContent = nomeLimpo || 'Entrar';
+    estado.textContent = nomeLimpo ? 'Ol\u00e1,' : '';
+    nomeEl.textContent = nomeLimpo || 'Conta';
 }
 
 function atualizarContadorCarrinhoCabecalho() {
