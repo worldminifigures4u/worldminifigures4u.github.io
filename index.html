@@ -16,11 +16,152 @@
             font-family:Arial, Helvetica, sans-serif;
         }
 
+        body{
+            padding-top: 92px;
+        }
+
         header{
+            position:fixed;
+            top:0;
+            left:0;
+            right:0;
+            z-index:1000;
             background:#ffc107;
             color:#000;
+            box-shadow:0 10px 26px rgba(0,0,0,0.38);
+        }
+
+        .cabecalho-loja{
+            width:min(1280px, 100%);
+            margin:0 auto;
+            padding:14px 20px;
+            box-sizing:border-box;
+            display:grid;
+            grid-template-columns:minmax(190px, 260px) minmax(240px, 1fr) minmax(210px, 270px);
+            gap:18px;
+            align-items:center;
+        }
+
+        .logo-loja{
+            color:#000;
+            text-decoration:none;
+            font-size:26px;
+            line-height:1;
+            font-weight:900;
+            letter-spacing:0;
+            white-space:nowrap;
+        }
+
+        .cabecalho-pesquisa{
+            position:relative;
+            min-width:0;
+        }
+
+        .cabecalho-pesquisa .input-pesquisa{
+            height:48px;
+            padding:0 52px 0 20px;
+            background:#fff;
+            color:#111;
+            border:none;
+            border-radius:999px;
+            box-shadow:0 2px 0 rgba(0,0,0,0.05);
+        }
+
+        .cabecalho-pesquisa .input-pesquisa::placeholder{
+            color:#777;
+        }
+
+        .cabecalho-pesquisa .input-pesquisa:focus{
+            box-shadow:0 0 0 3px rgba(0,0,0,0.18);
+        }
+
+        .icone-pesquisa{
+            position:absolute;
+            right:18px;
+            top:50%;
+            transform:translateY(-50%);
+            color:#555;
+            font-size:20px;
+            pointer-events:none;
+        }
+
+        .acoes-cabecalho{
+            display:flex;
+            justify-content:flex-end;
+            align-items:center;
+            gap:10px;
+            min-width:0;
+        }
+
+        .acao-cabecalho{
+            border:none;
+            background:transparent;
+            color:#000;
+            display:flex;
+            align-items:center;
+            gap:8px;
+            padding:8px;
+            border-radius:10px;
+            cursor:pointer;
+            font-weight:bold;
+            min-width:0;
+        }
+
+        .acao-cabecalho:hover,
+        .acao-cabecalho:focus-visible{
+            background:rgba(0,0,0,0.1);
+            outline:none;
+        }
+
+        .icone-acao{
+            font-size:25px;
+            line-height:1;
+            flex:0 0 auto;
+        }
+
+        .texto-acao{
+            display:flex;
+            flex-direction:column;
+            align-items:flex-start;
+            line-height:1.05;
+            min-width:0;
+        }
+
+        .texto-acao span{
+            font-size:12px;
+            font-weight:700;
+            max-width:120px;
+            overflow:hidden;
+            text-overflow:ellipsis;
+            white-space:nowrap;
+        }
+
+        .texto-acao strong{
+            font-size:13px;
+            max-width:120px;
+            overflow:hidden;
+            text-overflow:ellipsis;
+            white-space:nowrap;
+        }
+
+        .acao-carrinho{
+            position:relative;
+        }
+
+        .badge-carrinho{
+            position:absolute;
+            top:2px;
+            right:0;
+            min-width:20px;
+            height:20px;
+            padding:0 5px;
+            border-radius:999px;
+            background:#000;
+            color:#ffc107;
+            font-size:12px;
+            line-height:20px;
             text-align:center;
-            padding:20px;
+            box-sizing:border-box;
         }
 
         .container{
@@ -309,6 +450,10 @@
         .barra-pesquisa-container {
             width: 100%;
             box-sizing: border-box;
+        }
+
+        .conteudo-central > .barra-pesquisa-container {
+            display:none;
         }
 
         .input-pesquisa {
@@ -700,15 +845,60 @@
         }
 
         @media(max-width:1100px){
+            body{ padding-top:146px; }
+            .cabecalho-loja{
+                grid-template-columns:1fr auto;
+                gap:12px;
+                padding:12px 14px;
+            }
+            .cabecalho-pesquisa{
+                grid-column:1 / -1;
+                grid-row:2;
+            }
+            .logo-loja{ font-size:22px; }
+            .texto-acao{ display:none; }
+            .acao-cabecalho{ padding:8px 10px; }
             .container{ flex-direction:column; }
             .coluna-esquerda, .carrinho{ width:100%; box-sizing:border-box; }
+        }
+
+        @media(max-width:560px){
+            body{ padding-top:136px; }
+            .cabecalho-loja{ gap:10px; }
+            .logo-loja{ font-size:18px; }
+            .cabecalho-pesquisa .input-pesquisa{
+                height:44px;
+                font-size:14px;
+                padding-left:16px;
+            }
+            .acoes-cabecalho{ gap:2px; }
+            .icone-acao{ font-size:22px; }
         }
     </style>
 </head>
 <body>
 
 <header>
-    <h1>World Minifigures 4U</h1>
+    <div class="cabecalho-loja">
+        <a class="logo-loja" href="#" onclick="window.scrollTo({top:0, behavior:'smooth'}); return false;">World Minifigures 4U</a>
+        <div class="cabecalho-pesquisa">
+            <input type="text" id="campo-pesquisa" class="input-pesquisa" placeholder="O que estÃ¡s Ã  procura?" oninput="executarFiltrosCombinados()" onkeydown="verificarTeclaEnter(event)">
+            <span class="icone-pesquisa" aria-hidden="true">âŒ•</span>
+        </div>
+        <div class="acoes-cabecalho">
+            <button class="acao-cabecalho" type="button" onclick="irParaPainelCliente()" aria-label="Abrir Ã¡rea de cliente">
+                <span class="icone-acao" aria-hidden="true">â™™</span>
+                <span class="texto-acao">
+                    <span id="estado-login-cabecalho">OlÃ¡!</span>
+                    <strong id="nome-login-cabecalho">Entrar</strong>
+                </span>
+            </button>
+            <button class="acao-cabecalho acao-carrinho" type="button" onclick="irParaCarrinho()" aria-label="Abrir carrinho">
+                <span class="icone-acao" aria-hidden="true">ðŸ›’</span>
+                <span class="badge-carrinho" id="contador-carrinho-cabecalho">0</span>
+            </button>
+        </div>
+    </div>
 </header>
 
 <div class="container">
@@ -721,10 +911,6 @@
     </div>
 
     <div class="conteudo-central">
-        <div class="barra-pesquisa-container">
-            <input type="text" id="campo-pesquisa" class="input-pesquisa" placeholder="🔍 Digite o nome da minifigura... (Ex: Darth Vader)" oninput="executarFiltrosCombinados()" onkeydown="verificarTeclaEnter(event)">
-        </div>
-
         <main class="produtos" id="vitrine-produtos">
             <div class="estado-vitrine">A carregar minifiguras extraordinárias...</div>
         </main>
@@ -1093,6 +1279,33 @@ function carregarCarrinhoLocal() {
     }
 }
 
+function atualizarCabecalhoCliente(nome = '') {
+    const estado = document.getElementById('estado-login-cabecalho');
+    const nomeEl = document.getElementById('nome-login-cabecalho');
+    if (!estado || !nomeEl) return;
+
+    const nomeLimpo = String(nome || '').trim();
+    estado.textContent = 'OlÃ¡!';
+    nomeEl.textContent = nomeLimpo || 'Entrar';
+}
+
+function atualizarContadorCarrinhoCabecalho() {
+    const contador = document.getElementById('contador-carrinho-cabecalho');
+    if (!contador) return;
+
+    const totalItens = carrinho.reduce((total, item) => total + Number(item.quantidade || 0), 0);
+    contador.textContent = totalItens;
+}
+
+function irParaPainelCliente() {
+    const painel = document.getElementById('painel-cliente');
+    if (painel) painel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function irParaCarrinho() {
+    const carrinhoEl = document.querySelector('.carrinho');
+    if (carrinhoEl) carrinhoEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
 window.addEventListener('load', async () => {
     atualizarCarrinho();
     if(typeof supabase !== 'undefined'){
@@ -1128,6 +1341,7 @@ window.addEventListener('load', async () => {
                     atualizarVisibilidadeAdmin(null);
                     document.getElementById('conteudo-cliente-autenticado').style.display = 'none';
                     document.getElementById('conteudo-cliente-anonimo').style.display = 'block';
+                    atualizarCabecalhoCliente();
                 }
             }, 0);
         });
@@ -1356,6 +1570,7 @@ function preencherFormularioDadosCliente(data = {}, user = null) {
     const cidade = data.cidade || '';
 
     document.getElementById('nome-perfil-logado').innerText = nome || 'Cliente Autenticado';
+    atualizarCabecalhoCliente(nome || 'Cliente');
     document.getElementById('email-perfil-logado').innerText = '';
     const moradaResumo = [morada, [cp, cidade].filter(Boolean).join(' ')].filter(Boolean).join(', ');
     document.getElementById('cp-perfil-logado').innerText = '';
@@ -1479,6 +1694,7 @@ async function fazerLogout() {
     document.getElementById('conteudo-cliente-autenticado').style.display = 'none';
     document.getElementById('conteudo-cliente-anonimo').style.display = 'block';
     document.getElementById('status-cliente').innerText = '';
+    atualizarCabecalhoCliente();
     definirHistoricoVazio('Entre na conta para carregar o histórico.');
     mudarAba('login');
 }
@@ -2215,6 +2431,7 @@ function diminuirQuantidade(id) {
 }
 
 function atualizarCarrinho() {
+    atualizarContadorCarrinhoCabecalho();
 
 const carrinhoDiv = document.getElementById("lista-carrinho");
 
