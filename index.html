@@ -754,7 +754,7 @@
                 <span id="subtotal">0,00 €</span>
             </div>
             <div class="linha-total">
-                <span>Portes:</span>
+                <span>Portes de envio (IVA incluído):</span>
                 <span id="portes">0,00 €</span>
             </div>
             <div class="linha-total valor-final">
@@ -947,6 +947,7 @@ const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZ
 const URL_PUBLICO_FALLBACK = "https://worldminifigures4u.github.io/";
 const ADMIN_EMAILS = ["worldminifigures4u@gmail.com"];
 const PESO_PADRAO_PRODUTO_GRAMAS = 10;
+const IVA_PORTES = 0.23;
 const TABELA_PORTES_POR_PESO = {
     portugal: [
         { ate: 100, opcoes: [
@@ -2290,6 +2291,10 @@ function obterOpcaoEnvioSelecionada(paisEnvio, pesoTotal, metodoEnvio) {
     return opcoes.find(opcao => opcao.id === metodoEnvio) || opcoes[0] || { id: '', nome: '', valor: 0 };
 }
 
+function valorPortesComIva(valorBase) {
+    return Math.round((Number(valorBase || 0) * (1 + IVA_PORTES)) * 100) / 100;
+}
+
 function atualizarOpcoesEnvio() {
     const selectPais = document.getElementById('pais-envio');
     const selectMetodo = document.getElementById('metodo-envio');
@@ -2314,7 +2319,7 @@ function atualizarOpcoesEnvio() {
     opcoes.forEach(opcao => {
         const option = document.createElement('option');
         option.value = opcao.id;
-        option.textContent = opcao.nome + ' - ' + formatarEuro(opcao.valor) + ' \u20ac';
+        option.textContent = opcao.nome + ' - ' + formatarEuro(valorPortesComIva(opcao.valor)) + ' \u20ac';
         selectMetodo.appendChild(option);
     });
 
@@ -2332,7 +2337,7 @@ function recalcularTotais(){
     const metodoEnvio = document.getElementById('metodo-envio')?.value || '';
     const pesoTotal = calcularPesoTotalCarrinho();
     const opcaoEnvio = obterOpcaoEnvioSelecionada(paisEnvio, pesoTotal, metodoEnvio);
-    const portes = opcaoEnvio.valor || 0;
+    const portes = valorPortesComIva(opcaoEnvio.valor);
 
     document.getElementById('subtotal').innerText = formatarEuro(subtotal) + ' \u20ac';
     document.getElementById('portes').innerText = formatarEuro(portes) + ' \u20ac';
