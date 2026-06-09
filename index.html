@@ -801,6 +801,10 @@
                             <input type="text" id="editar-nome" required placeholder="Nome completo">
                         </div>
                         <div>
+                            <label for="editar-email">E-mail:</label>
+                            <input type="email" id="editar-email" required placeholder="email@exemplo.com">
+                        </div>
+                        <div>
                             <label for="editar-telemovel">Telemóvel:</label>
                             <input type="tel" id="editar-telemovel" placeholder="Ex: 912345678">
                         </div>
@@ -1350,17 +1354,19 @@ function preencherFormularioDadosCliente(data = {}, user = null) {
     const cidade = data.cidade || '';
 
     document.getElementById('nome-perfil-logado').innerText = nome || 'Cliente Autenticado';
-    document.getElementById('email-perfil-logado').innerText = email;
+    document.getElementById('email-perfil-logado').innerText = '';
     const moradaResumo = [morada, [cp, cidade].filter(Boolean).join(' ')].filter(Boolean).join(', ');
-    document.getElementById('cp-perfil-logado').innerText = moradaResumo ? `Morada: ${moradaResumo}` : '';
+    document.getElementById('cp-perfil-logado').innerText = '';
 
     const campoNome = document.getElementById('editar-nome');
+    const campoEmail = document.getElementById('editar-email');
     const campoTelemovel = document.getElementById('editar-telemovel');
     const campoMorada = document.getElementById('editar-morada');
     const campoCp = document.getElementById('editar-cp');
     const campoCidade = document.getElementById('editar-cidade');
 
     if (campoNome) campoNome.value = nome;
+    if (campoEmail) campoEmail.value = email;
     if (campoTelemovel) campoTelemovel.value = data.telemovel || '';
     if (campoMorada) campoMorada.value = morada;
     if (campoCp) campoCp.value = cp;
@@ -1371,6 +1377,7 @@ async function guardarDadosCliente(event) {
     event.preventDefault();
     const statusDiv = document.getElementById('status-dados-cliente');
     const nome = document.getElementById('editar-nome').value.trim();
+    const email = document.getElementById('editar-email').value.trim();
     const telemovel = document.getElementById('editar-telemovel').value.trim();
     const morada = document.getElementById('editar-morada').value.trim();
     const cp = document.getElementById('editar-cp').value.trim();
@@ -1381,15 +1388,31 @@ async function guardarDadosCliente(event) {
         return;
     }
 
+    if (!email) {
+        mostrarMensagem(statusDiv, 'Indique o e-mail.', 'msg-erro');
+        return;
+    }
+
     try {
         mostrarMensagem(statusDiv, 'A guardar dados...');
         const { data: { user }, error: userError } = await dbClient.auth.getUser();
         if (userError || !user) throw userError || new Error('Sessão não encontrada.');
+        const emailAtual = String(user.email || '').toLowerCase();
+        const emailNovo = email.toLowerCase();
+        const emailAlterado = emailNovo !== emailAtual;
+
+        if (emailAlterado) {
+            const { error: emailError } = await dbClient.auth.updateUser(
+                { email },
+                { emailRedirectTo: obterUrlPublicoAtual() }
+            );
+            if (emailError) throw emailError;
+        }
 
         const perfilAtualizado = {
             id: user.id,
             nome,
-            email: user.email,
+            email,
             telemovel,
             morada,
             cp,
@@ -1403,7 +1426,13 @@ async function guardarDadosCliente(event) {
         if (error) throw error;
 
         preencherFormularioDadosCliente(perfilAtualizado, user);
-        mostrarMensagem(statusDiv, 'Dados guardados com sucesso.', 'msg-sucesso');
+        mostrarMensagem(
+            statusDiv,
+            emailAlterado
+                ? 'Dados guardados. Confirme o novo e-mail através do link enviado pelo Supabase.'
+                : 'Dados guardados com sucesso.',
+            'msg-sucesso'
+        );
     } catch(error) {
         console.error('Erro ao guardar dados do cliente:', error);
         mostrarMensagem(statusDiv, 'Erro: ' + (error.message || 'Não foi possível guardar os dados.'), 'msg-erro');
