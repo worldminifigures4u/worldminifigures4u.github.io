@@ -240,7 +240,7 @@
             gap: 20px;
             width: 250px;
             position:sticky;
-            top:96px;
+            top:var(--temas-sticky-top, 96px);
             align-self:flex-start;
         }
 
@@ -1456,10 +1456,33 @@ function pesquisarNoCabecalho() {
     executarFiltrosCombinados();
 }
 
+function atualizarStickyTemas() {
+    const coluna = document.querySelector('.coluna-esquerda');
+    const menu = document.getElementById('menu-lateral-temas');
+    const header = document.querySelector('header');
+    if (!coluna || !menu) return;
+
+    if (window.matchMedia && window.matchMedia('(max-width: 1100px)').matches) {
+        coluna.style.removeProperty('--temas-sticky-top');
+        return;
+    }
+
+    const margem = 20;
+    const headerBottom = header ? header.getBoundingClientRect().bottom : 76;
+    const topoNormal = Math.ceil(headerBottom + margem);
+    const alturaMenu = Math.ceil(menu.offsetHeight);
+    const topoComFundoVisivel = Math.floor(window.innerHeight - alturaMenu - margem);
+    const stickyTop = Math.min(topoNormal, topoComFundoVisivel);
+
+    coluna.style.setProperty('--temas-sticky-top', `${stickyTop}px`);
+}
+
 window.addEventListener('hashchange', () => {
     mostrarVista(obterVistaHash(), false);
 });
+window.addEventListener('resize', atualizarStickyTemas);
 window.addEventListener('load', async () => {
+    atualizarStickyTemas();
     atualizarCarrinho();
     if(typeof supabase !== 'undefined'){
         dbClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -2270,6 +2293,7 @@ function gerarMenus(listaProdutos){
     toggleMenu.onclick = function(){
         const recolhido = listaTemas.classList.toggle('recolhida');
         toggleMenu.textContent = recolhido ? 'Mostrar' : 'Recolher';
+        atualizarStickyTemas();
     };
     cabecalho.appendChild(toggleMenu);
     menu.appendChild(cabecalho);
@@ -2351,6 +2375,8 @@ function gerarMenus(listaProdutos){
 
         listaTemas.appendChild(linhaTema);
     });
+
+    atualizarStickyTemas();
 }
 
 function gerarProdutos(listaProdutos){
