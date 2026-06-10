@@ -1324,6 +1324,21 @@
                                 <div id="status-importacao-stock" class="msg-status"></div>
                             </div>
                         </div>
+                        <div class="admin-seccao">
+                            <h3>Substituir catálogo pelo Mapas.ods</h3>
+                            <div class="form-admin">
+                                <input class="input-upload-admin" type="file" id="admin-ficheiro-catalogo" accept=".ods,.xlsx,.xls" onchange="analisarFicheiroCatalogoAdmin(this)">
+                                <p class="ajuda-admin">Importa nome, preço, SKU, stock, tema, subtema e peso. Produtos que não constem do ficheiro serão removidos.</p>
+                                <div id="resumo-importacao-catalogo" class="resumo-importacao-stock" style="display:none;"></div>
+                                <div id="detalhes-importacao-catalogo" class="lista-importacao-stock" style="display:none;"></div>
+                                <div>
+                                    <label for="confirmacao-substituir-catalogo">Para confirmar, escreva SUBSTITUIR:</label>
+                                    <input type="text" id="confirmacao-substituir-catalogo" autocomplete="off" oninput="atualizarConfirmacaoCatalogoAdmin()">
+                                </div>
+                                <button type="button" id="btn-confirmar-importacao-catalogo" class="btn-logout" onclick="confirmarImportacaoCatalogoAdmin()" disabled>Substituir catálogo completo</button>
+                                <div id="status-importacao-catalogo" class="msg-status"></div>
+                            </div>
+                        </div>
                         <form class="form-admin admin-seccao" id="form-admin-editar-produto" onsubmit="guardarEdicaoProdutoAdmin(event)" style="display:none;">
                             <input type="hidden" id="admin-editar-id">
                             <input type="hidden" id="admin-editar-sku-original">
@@ -2199,6 +2214,7 @@ function gerarSkuProduto(nomeProduto, produtosExistentes = todosOsProdutos) {
 window.gerarSkuProduto = gerarSkuProduto;
 
 let importacaoStockPendente = null;
+let importacaoCatalogoPendente = null;
 
 function utilizadorAdmin(user) {
     const email = String(user?.email || '').toLowerCase();
@@ -2440,6 +2456,239 @@ async function confirmarImportacaoStockAdmin() {
         console.error('Erro ao atualizar stock:', error);
         botao.disabled = false;
         mostrarMensagem(status, 'Erro: ' + (error.message || 'Não foi possível atualizar o stock.'), 'msg-erro');
+    }
+}
+
+function lerFolhaMapas(conteudo) {
+    if(typeof XLSX === 'undefined') {
+        throw new Error('O leitor de folhas de cálculo não foi carregado. Atualize a página e tente novamente.');
+    }
+
+    const workbook = XLSX.read(conteudo, { type:'array' });
+    const primeiraFolha = workbook.Sheets[workbook.SheetNames[0]];
+    const linhas = XLSX.utils.sheet_to_json(primeiraFolha, { header:1, defval:null, raw:true });
+    const indiceCabecalho = linhas.findIndex(linha => {
+        const cabecalhos = linha.map(normalizarCabecalhoStock);
+        return cabecalhos.includes('sku') && cabecalhos.includes('stock') && cabecalhos.includes('nome');
+    });
+
+    if(indiceCabecalho < 0) {
+        throw new Error('Não foram encontradas as colunas nome, sku e stock.');
+    }
+
+    return {
+        linhas:linhas.slice(indiceCabecalho + 1),
+        cabecalhos:linhas[indiceCabecalho].map(normalizarCabecalhoStock),
+        primeiraLinhaDados:indiceCabecalho + 2
+    };
+}
+
+function obterIndiceColuna(cabecalhos, nome, obrigatoria = true) {
+    const indice = cabecalhos.indexOf(nome);
+    if(indice < 0 && obrigatoria) {
+        throw new Error(`Não foi encontrada a coluna ${nome}.`);
+    }
+    return indice;
+}
+
+function renderizarResumoImportacaoCatalogo(resultado) {
+    const resumo = document.getElementById('resumo-importacao-catalogo');
+    const detalhes = document.getElementById('detalhes-importacao-catalogo');
+    if(!resumo || !detalhes) return;
+
+    resumo.replaceChildren(
+        criarIndicadorImportacaoStock(resultado.produtos.length, 'Produtos válidos'),
+        criarIndicadorImportacaoStock(resultado.novos.length, 'Novos'),
+        criarIndicadorImportacaoStock(resultado.existentes.length, 'Atualizados'),
+        criarIndicadorImportacaoStock(resultado.remover.length, 'A remover'),
+        criarIndicadorImportacaoStock(resultado.ativos, 'Ativos'),
+        criarIndicadorImportacaoStock(resultado.inativos, 'Inativos')
+    );
+    resumo.style.display = 'grid';
+
+    detalhes.replaceChildren();
+    const linhas = [
+        `${resultado.produtos.length} produtos serão importados do ficheiro.`,
+        `${resultado.novos.length} produtos serão adicionados.`,
+        `${resultado.existentes.length} produtos existentes serão atualizados por SKU.`,
+        `${resultado.remover.length} produtos atuais não constam do ficheiro e serão removidos.`
+    ];
+    if(resultado.invalidos.length) linhas.push(`${resultado.invalidos.length} linha(s) inválida(s) foram ignoradas.`);
+    resultado.remover.slice(0, 30).forEach(produto => linhas.push(`Remover: ${produto.sku} | ${produto.nome || ''}`));
+
+    linhas.forEach(linha => {
+        const div = document.createElement('div');
+        div.textContent = linha;
+        detalhes.appendChild(div);
+    });
+    detalhes.style.display = 'block';
+}
+
+function atualizarConfirmacaoCatalogoAdmin() {
+    const botao = document.getElementById('btn-confirmar-importacao-catalogo');
+    const confirmacao = document.getElementById('confirmacao-substituir-catalogo')?.value.trim().toUpperCase();
+    if(botao) {
+        botao.disabled = !importacaoCatalogoPendente || confirmacao !== 'SUBSTITUIR';
+    }
+}
+
+async function analisarFicheiroCatalogoAdmin(input) {
+    const status = document.getElementById('status-importacao-catalogo');
+    importacaoCatalogoPendente = null;
+    atualizarConfirmacaoCatalogoAdmin();
+
+    try {
+        const ficheiro = input.files?.[0];
+        if(!ficheiro) return;
+        mostrarMensagem(status, 'A analisar o catálogo completo...');
+
+        const conteudo = await ficheiro.arrayBuffer();
+        const { linhas, cabecalhos, primeiraLinhaDados } = lerFolhaMapas(conteudo);
+        const colunas = {
+            nome:obterIndiceColuna(cabecalhos, 'nome'),
+            preco:obterIndiceColuna(cabecalhos, 'preco'),
+            sku:obterIndiceColuna(cabecalhos, 'sku'),
+            stock:obterIndiceColuna(cabecalhos, 'stock'),
+            tema:obterIndiceColuna(cabecalhos, 'tema'),
+            subtema:obterIndiceColuna(cabecalhos, 'subtema', false),
+            peso:obterIndiceColuna(cabecalhos, 'peso')
+        };
+
+        const produtosPorSku = new Map();
+        const invalidos = [];
+
+        linhas.forEach((linha, indice) => {
+            if(!linha.some(valor => valor !== null && valor !== '')) return;
+            const nome = String(linha[colunas.nome] || '').trim();
+            const sku = normalizarTextoSku(linha[colunas.sku]).replace(/[^A-Z0-9]/g, '');
+            const preco = Number(linha[colunas.preco]);
+            const stock = Number(linha[colunas.stock]);
+            const tema = String(linha[colunas.tema] || '').trim();
+            const subtema = colunas.subtema >= 0 ? String(linha[colunas.subtema] || '').trim() : '';
+            const peso = Number(linha[colunas.peso]);
+
+            if(!nome || !sku || !tema || !Number.isFinite(preco) || preco < 0 || !Number.isInteger(stock) || stock < 0 || !Number.isFinite(peso) || peso < 1 || produtosPorSku.has(sku)) {
+                invalidos.push(indice + primeiraLinhaDados);
+                return;
+            }
+
+            produtosPorSku.set(sku, {
+                nome,
+                preco,
+                sku,
+                stock,
+                tema,
+                subtema:subtema || 'semsubtema',
+                peso,
+                ativo:stock > 0
+            });
+        });
+
+        if(produtosPorSku.size === 0) {
+            throw new Error('O ficheiro não contém produtos válidos.');
+        }
+        if(invalidos.length > 0) {
+            throw new Error(`Foram encontradas ${invalidos.length} linha(s) inválida(s). Corrija o ficheiro antes de substituir o catálogo.`);
+        }
+
+        const atuaisPorSku = new Map(todosOsProdutos.map(produto => [String(produto.sku || '').trim().toUpperCase(), produto]));
+        const produtos = [...produtosPorSku.values()];
+        const novos = produtos.filter(produto => !atuaisPorSku.has(produto.sku));
+        const existentes = produtos.filter(produto => atuaisPorSku.has(produto.sku));
+        const remover = todosOsProdutos.filter(produto => !produtosPorSku.has(String(produto.sku || '').trim().toUpperCase()));
+
+        importacaoCatalogoPendente = {
+            nomeFicheiro:ficheiro.name,
+            produtos,
+            novos,
+            existentes,
+            remover,
+            invalidos,
+            ativos:produtos.filter(produto => produto.ativo).length,
+            inativos:produtos.filter(produto => !produto.ativo).length
+        };
+
+        renderizarResumoImportacaoCatalogo(importacaoCatalogoPendente);
+        atualizarConfirmacaoCatalogoAdmin();
+        mostrarMensagem(status, 'Análise concluída. Reveja o resumo antes de confirmar.', 'msg-sucesso');
+    } catch(error) {
+        console.error('Erro ao analisar catálogo:', error);
+        mostrarMensagem(status, 'Erro: ' + (error.message || 'Não foi possível analisar o catálogo.'), 'msg-erro');
+    }
+}
+
+function descarregarBackupCatalogoAdmin() {
+    const conteudo = JSON.stringify({ criadoEm:new Date().toISOString(), produtos:todosOsProdutos }, null, 2);
+    const blob = new Blob([conteudo], { type:'application/json' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `catalogo-backup-${new Date().toISOString().replace(/[:.]/g, '-')}.json`;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    URL.revokeObjectURL(url);
+}
+
+async function confirmarImportacaoCatalogoAdmin() {
+    const status = document.getElementById('status-importacao-catalogo');
+    const botao = document.getElementById('btn-confirmar-importacao-catalogo');
+    const importacao = importacaoCatalogoPendente;
+    const confirmacao = document.getElementById('confirmacao-substituir-catalogo')?.value.trim().toUpperCase();
+    if(!importacao || confirmacao !== 'SUBSTITUIR') return;
+
+    try {
+        const { data: { user }, error:authError } = await dbClient.auth.getUser();
+        if(authError || !utilizadorAdmin(user)) {
+            throw new Error('Apenas o administrador pode substituir o catálogo.');
+        }
+
+        botao.disabled = true;
+        descarregarBackupCatalogoAdmin();
+        mostrarMensagem(status, 'Backup criado. A importar o novo catálogo...');
+
+        const tamanhoLote = 100;
+        let importados = 0;
+        for(let inicio = 0; inicio < importacao.produtos.length; inicio += tamanhoLote) {
+            const lote = importacao.produtos.slice(inicio, inicio + tamanhoLote);
+            const { data, error } = await dbClient
+                .from('produtos')
+                .upsert(lote, { onConflict:'sku', ignoreDuplicates:false, defaultToNull:false })
+                .select('sku');
+            if(error) throw error;
+            if(!data || data.length !== lote.length) {
+                throw new Error('Nem todos os produtos do lote foram importados.');
+            }
+            importados += data.length;
+            mostrarMensagem(status, `A importar catálogo: ${importados}/${importacao.produtos.length}`);
+        }
+
+        let removidos = 0;
+        const skusRemover = importacao.remover.map(produto => String(produto.sku || '').trim()).filter(Boolean);
+        for(let inicio = 0; inicio < skusRemover.length; inicio += 50) {
+            const lote = skusRemover.slice(inicio, inicio + 50);
+            const { data, error } = await dbClient
+                .from('produtos')
+                .delete()
+                .in('sku', lote)
+                .select('sku');
+            if(error) throw error;
+            removidos += data?.length || 0;
+            mostrarMensagem(status, `Catálogo importado. A remover produtos antigos: ${removidos}/${skusRemover.length}`);
+        }
+
+        if(removidos !== skusRemover.length) {
+            throw new Error('Alguns produtos antigos não foram removidos. Verifique a policy DELETE no Supabase.');
+        }
+
+        importacaoCatalogoPendente = null;
+        document.getElementById('confirmacao-substituir-catalogo').value = '';
+        await carregarProdutosDaNuvem();
+        mostrarMensagem(status, `${importados} produtos importados e ${removidos} produtos antigos removidos.`, 'msg-sucesso');
+    } catch(error) {
+        console.error('Erro ao substituir catálogo:', error);
+        botao.disabled = false;
+        mostrarMensagem(status, 'Erro: ' + (error.message || 'Não foi possível substituir o catálogo.'), 'msg-erro');
     }
 }
 
