@@ -2157,6 +2157,20 @@ function atualizarVisibilidadeAdmin(user) {
     const adminAtivo = utilizadorAdmin(user);
     painel.style.display = adminAtivo ? 'block' : 'none';
     if(adminAtivo) {
+        const conteudoConta = document.getElementById('conteudo-cliente-autenticado');
+        const dadosPessoais = document.getElementById('form-editar-dados-cliente')?.closest('.historico-encomendas');
+        const gestaoProdutos = painel.querySelector('.admin-seccao');
+        const tituloAdicionarProduto = painel.querySelector(':scope > h3');
+
+        if(conteudoConta && dadosPessoais) {
+            conteudoConta.insertBefore(painel, dadosPessoais);
+        }
+
+        if(gestaoProdutos && tituloAdicionarProduto) {
+            tituloAdicionarProduto.textContent = 'Adicionar produto';
+            painel.insertBefore(gestaoProdutos, tituloAdicionarProduto);
+        }
+
         renderizarListaProdutosAdmin();
     } else {
         cancelarEdicaoProdutoAdmin();
