@@ -672,6 +672,18 @@
             gap: 20px;
         }
 
+        .contador-produtos{
+            color:#bbb;
+            font-size:14px;
+            font-weight:bold;
+            line-height:1.3;
+        }
+
+        .contador-produtos strong{
+            color:#ffc107;
+            font-size:18px;
+        }
+
         .barra-pesquisa-container {
             width: 100%;
             box-sizing: border-box;
@@ -1180,6 +1192,7 @@
     </div>
 
     <div class="conteudo-central">
+        <div class="contador-produtos" id="contador-produtos" aria-live="polite"></div>
         <main class="produtos" id="vitrine-produtos">
             <div class="estado-vitrine">A carregar minifiguras extraordinárias...</div>
         </main>
@@ -3527,6 +3540,8 @@ function gerarProdutos(listaProdutos){
 
         vitrine.appendChild(card);
     });
+
+    executarFiltrosCombinados();
 }
 
 function guardarCarrinho() {
@@ -3578,6 +3593,23 @@ function verificarTeclaEnter(evento) {
     }
 }
 
+function atualizarContadorProdutos(totalVisiveis, totalProdutos, pesquisaAtiva) {
+    const contador = document.getElementById('contador-produtos');
+    if(!contador) return;
+
+    const numero = pesquisaAtiva || filtroTemaAtual !== 'todos' ? totalVisiveis : totalProdutos;
+    const legenda = pesquisaAtiva
+        ? (numero === 1 ? 'produto encontrado' : 'produtos encontrados')
+        : filtroTemaAtual !== 'todos'
+            ? (numero === 1 ? 'produto neste filtro' : 'produtos neste filtro')
+            : (numero === 1 ? 'produto na loja' : 'produtos na loja');
+
+    contador.replaceChildren();
+    const destaque = document.createElement('strong');
+    destaque.textContent = Number(numero || 0).toLocaleString('pt-PT');
+    contador.append(destaque, document.createTextNode(' ' + legenda));
+}
+
 function executarFiltrosCombinados() {
     const inputRaw = document.getElementById('campo-pesquisa').value || '';
     // Normaliza acentos e remove caracteres especiais
@@ -3625,6 +3657,8 @@ function executarFiltrosCombinados() {
 
     const avisoExistente = document.getElementById('aviso-pesquisa-vazia');
     if (avisoExistente) avisoExistente.remove();
+
+    atualizarContadorProdutos(totalVisiveis, todosOsCards.length, pesquisaAtiva);
 
     if (totalVisiveis === 0 && todosOsCards.length > 0) {
         const vitrine = document.getElementById('vitrine-produtos');
