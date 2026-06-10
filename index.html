@@ -1256,6 +1256,7 @@
                         </div>
                         <form class="form-admin admin-seccao" id="form-admin-editar-produto" onsubmit="guardarEdicaoProdutoAdmin(event)" style="display:none;">
                             <input type="hidden" id="admin-editar-id">
+                            <input type="hidden" id="admin-editar-sku-original">
                             <h3>Editar produto</h3>
                             <div>
                                 <label for="admin-editar-nome">Nome do produto:</label>
@@ -2270,6 +2271,7 @@ function preencherEdicaoProdutoAdmin(produtoId) {
     if(!produto || !form) return;
 
     document.getElementById('admin-editar-id').value = obterProdutoId(produto);
+    document.getElementById('admin-editar-sku-original').value = produto.sku || '';
     document.getElementById('admin-editar-nome').value = produto.nome || '';
     document.getElementById('admin-editar-sku').value = produto.sku || '';
     document.getElementById('admin-editar-preco').value = Number(produto.preco || 0).toFixed(2);
@@ -2299,6 +2301,7 @@ function cancelarEdicaoProdutoAdmin() {
 
 function lerProdutoEditadoAdmin() {
     const id = document.getElementById('admin-editar-id').value;
+    const skuOriginal = document.getElementById('admin-editar-sku-original').value;
     const nome = document.getElementById('admin-editar-nome').value.trim();
     const sku = normalizarTextoSku(document.getElementById('admin-editar-sku').value).replace(/[^A-Z0-9]/g, '');
     const tema = document.getElementById('admin-editar-tema').value.trim();
@@ -2316,6 +2319,7 @@ function lerProdutoEditadoAdmin() {
 
     return {
         id,
+        skuOriginal,
         produto: {
             sku,
             nome,
@@ -2342,22 +2346,36 @@ async function guardarEdicaoProdutoAdmin(event) {
             throw new Error('Apenas o administrador pode editar produtos.');
         }
 
-        const { id, produto } = lerProdutoEditadoAdmin();
-        const skuExistente = todosOsProdutos.some(item => obterProdutoId(item) !== String(id) && String(item.sku || '').toUpperCase() === produto.sku);
+        const { id, skuOriginal, produto } = lerProdutoEditadoAdmin();
+        const skuExistente = todosOsProdutos.some(item => {
+            const skuItem = String(item.sku || '').toUpperCase();
+            return skuItem !== String(skuOriginal || '').toUpperCase() && skuItem === produto.sku;
+        });
         if(skuExistente) {
             throw new Error('Este SKU já existe noutro produto.');
         }
 
-        const { data, error } = await dbClient
+        let query = dbClient
             .from('produtos')
-            .update(produto)
-            .eq('id', id)
-            .select('*')
-            .single();
+            .update(produto);
+
+        if(skuOriginal) {
+            query = query.eq('sku', skuOriginal);
+        } else {
+            query = query.eq('id', id);
+        }
+
+        const { data, error } = await query.select('*');
 
         if(error) throw error;
+        if(!data || data.length === 0) {
+            throw new Error('Produto não encontrado para atualizar.');
+        }
 
-        todosOsProdutos = todosOsProdutos.map(item => obterProdutoId(item) === String(id) ? data : item);
+        const produtoAtualizado = data[0];
+
+        todosOsProdutos = todosOsProdutos.map(item => String(item.sku || '').toUpperCase() === String(skuOriginal || '').toUpperCase() ? produtoAtualizado : item);
+        document.getElementById('admin-editar-sku-original').value = produtoAtualizado.sku || produto.sku;
         mostrarMensagem(status, 'Produto atualizado com sucesso.', 'msg-sucesso');
         await carregarProdutosDaNuvem();
         renderizarListaProdutosAdmin();
