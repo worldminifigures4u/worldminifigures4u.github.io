@@ -462,6 +462,13 @@
             padding-right:4px;
         }
 
+        .linha-admin-pesquisa{
+            display:grid;
+            grid-template-columns:minmax(0, 1fr) auto;
+            gap:8px;
+            align-items:end;
+        }
+
         .item-admin-produto{
             display:grid;
             grid-template-columns:minmax(0, 1fr) auto;
@@ -1238,9 +1245,12 @@
                     <div class="admin-seccao">
                         <h3>Gestão de produtos</h3>
                         <div class="form-admin">
-                            <div>
-                                <label for="admin-pesquisa-produtos">Pesquisar produto:</label>
-                                <input type="text" id="admin-pesquisa-produtos" placeholder="Nome, SKU ou tema" oninput="renderizarListaProdutosAdmin()">
+                            <div class="linha-admin-pesquisa">
+                                <div>
+                                    <label for="admin-pesquisa-produtos">Pesquisar produto:</label>
+                                    <input type="text" id="admin-pesquisa-produtos" placeholder="Nome, SKU ou tema" oninput="renderizarListaProdutosAdmin()">
+                                </div>
+                                <button type="button" class="btn-admin-secundario" onclick="renderizarListaProdutosAdmin()">Pesquisar</button>
                             </div>
                             <div id="lista-admin-produtos" class="lista-admin-produtos"></div>
                         </div>
@@ -2209,7 +2219,7 @@ function renderizarListaProdutosAdmin() {
 
         const detalhes = document.createElement('span');
         const estado = produto.ativo === false ? 'Inativo' : 'Ativo';
-        detalhes.textContent = `${produto.sku || 'sem SKU'} | ${formatarPreco(Number(produto.preco || 0))} | Stock: ${produto.stock ?? '-'} | ${estado}`;
+        detalhes.textContent = `${produto.sku || 'sem SKU'} | ${formatarEuro(produto.preco)} € | Stock: ${produto.stock ?? '-'} | ${estado}`;
         info.appendChild(detalhes);
         item.appendChild(info);
 
