@@ -6,6 +6,7 @@
     <title>World Minifigures 4U</title>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
 
     <style>
         body{
@@ -528,6 +529,46 @@
             border-radius:8px;
             padding:10px;
             color:#ddd;
+        }
+
+        .resumo-importacao-stock{
+            display:grid;
+            grid-template-columns:repeat(3, minmax(0, 1fr));
+            gap:8px;
+        }
+
+        .resumo-importacao-stock div{
+            background:#181818;
+            border:1px solid #333;
+            border-radius:6px;
+            padding:8px;
+            text-align:center;
+        }
+
+        .resumo-importacao-stock strong{
+            display:block;
+            color:#ffc107;
+            font-size:18px;
+        }
+
+        .resumo-importacao-stock span{
+            color:#aaa;
+            font-size:11px;
+        }
+
+        .lista-importacao-stock{
+            max-height:180px;
+            overflow:auto;
+            background:#181818;
+            border:1px solid #333;
+            border-radius:6px;
+            padding:8px;
+            font-size:12px;
+            line-height:1.5;
+        }
+
+        @media(max-width:560px){
+            .resumo-importacao-stock{ grid-template-columns:repeat(2, minmax(0, 1fr)); }
         }
 
         .historico-encomendas{
@@ -1271,6 +1312,17 @@
                                 <button type="button" class="btn-admin-secundario" onclick="renderizarListaProdutosAdmin()">Pesquisar</button>
                             </div>
                             <div id="lista-admin-produtos" class="lista-admin-produtos"></div>
+                        </div>
+                        <div class="admin-seccao">
+                            <h3>Atualizar stock pelo Mapas.ods</h3>
+                            <div class="form-admin">
+                                <input class="input-upload-admin" type="file" id="admin-ficheiro-stock" accept=".ods,.xlsx,.xls" onchange="analisarFicheiroStockAdmin(this)">
+                                <p class="ajuda-admin">Apenas as colunas SKU e stock são utilizadas. As encomendas aos fornecedores não alteram o stock atual.</p>
+                                <div id="resumo-importacao-stock" class="resumo-importacao-stock" style="display:none;"></div>
+                                <div id="detalhes-importacao-stock" class="lista-importacao-stock" style="display:none;"></div>
+                                <button type="button" id="btn-confirmar-importacao-stock" class="btn-acao-cliente" onclick="confirmarImportacaoStockAdmin()" disabled>Atualizar stock no Supabase</button>
+                                <div id="status-importacao-stock" class="msg-status"></div>
+                            </div>
                         </div>
                         <form class="form-admin admin-seccao" id="form-admin-editar-produto" onsubmit="guardarEdicaoProdutoAdmin(event)" style="display:none;">
                             <input type="hidden" id="admin-editar-id">
@@ -2146,6 +2198,8 @@ function gerarSkuProduto(nomeProduto, produtosExistentes = todosOsProdutos) {
 
 window.gerarSkuProduto = gerarSkuProduto;
 
+let importacaoStockPendente = null;
+
 function utilizadorAdmin(user) {
     const email = String(user?.email || '').toLowerCase();
     return ADMIN_EMAILS.includes(email);
@@ -2174,6 +2228,218 @@ function atualizarVisibilidadeAdmin(user) {
         renderizarListaProdutosAdmin();
     } else {
         cancelarEdicaoProdutoAdmin();
+    }
+}
+
+function normalizarCabecalhoStock(valor) {
+    return String(valor || '')
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .trim()
+        .toLowerCase();
+}
+
+function criarIndicadorImportacaoStock(valor, legenda) {
+    const bloco = document.createElement('div');
+    const numero = document.createElement('strong');
+    numero.textContent = String(valor);
+    const texto = document.createElement('span');
+    texto.textContent = legenda;
+    bloco.append(numero, texto);
+    return bloco;
+}
+
+function renderizarResumoImportacaoStock(resultado) {
+    const resumo = document.getElementById('resumo-importacao-stock');
+    const detalhes = document.getElementById('detalhes-importacao-stock');
+    if(!resumo || !detalhes) return;
+
+    resumo.replaceChildren(
+        criarIndicadorImportacaoStock(resultado.totalLinhas, 'SKUs no ficheiro'),
+        criarIndicadorImportacaoStock(resultado.alteracoes.length, 'Alterações'),
+        criarIndicadorImportacaoStock(resultado.aumentos, 'Aumentam'),
+        criarIndicadorImportacaoStock(resultado.reducoes, 'Diminuem'),
+        criarIndicadorImportacaoStock(resultado.desativados, 'Ficam inativos'),
+        criarIndicadorImportacaoStock(resultado.naoEncontrados.length, 'Não encontrados')
+    );
+    resumo.style.display = 'grid';
+
+    detalhes.replaceChildren();
+    const linhas = [];
+    resultado.alteracoes.slice(0, 60).forEach(item => {
+        linhas.push(`${item.sku} | ${item.nome} | ${item.stockAtual} → ${item.stockNovo} | ${item.ativoNovo ? 'ativo' : 'inativo'}`);
+    });
+    resultado.naoEncontrados.slice(0, 30).forEach(item => {
+        linhas.push(`${item.sku} | não encontrado no Supabase`);
+    });
+    if(resultado.ausentesNoFicheiro.length > 0) {
+        linhas.push(`${resultado.ausentesNoFicheiro.length} produto(s) do Supabase não constam do ficheiro e não serão alterados.`);
+    }
+    if(resultado.invalidos.length > 0) {
+        linhas.push(`${resultado.invalidos.length} linha(s) foram ignoradas por SKU ou stock inválido.`);
+    }
+
+    linhas.forEach(linha => {
+        const div = document.createElement('div');
+        div.textContent = linha;
+        detalhes.appendChild(div);
+    });
+    detalhes.style.display = linhas.length ? 'block' : 'none';
+}
+
+async function analisarFicheiroStockAdmin(input) {
+    const status = document.getElementById('status-importacao-stock');
+    const botao = document.getElementById('btn-confirmar-importacao-stock');
+    importacaoStockPendente = null;
+    if(botao) botao.disabled = true;
+
+    try {
+        const ficheiro = input.files?.[0];
+        if(!ficheiro) return;
+        if(typeof XLSX === 'undefined') {
+            throw new Error('O leitor de folhas de cálculo não foi carregado. Atualize a página e tente novamente.');
+        }
+
+        mostrarMensagem(status, 'A analisar o ficheiro de stock...');
+        const conteudo = await ficheiro.arrayBuffer();
+        const workbook = XLSX.read(conteudo, { type:'array' });
+        const primeiraFolha = workbook.Sheets[workbook.SheetNames[0]];
+        const linhas = XLSX.utils.sheet_to_json(primeiraFolha, { header:1, defval:null, raw:true });
+        const indiceCabecalho = linhas.findIndex(linha => {
+            const cabecalhos = linha.map(normalizarCabecalhoStock);
+            return cabecalhos.includes('sku') && cabecalhos.includes('stock');
+        });
+
+        if(indiceCabecalho < 0) {
+            throw new Error('Não foram encontradas as colunas sku e stock.');
+        }
+
+        const cabecalhos = linhas[indiceCabecalho].map(normalizarCabecalhoStock);
+        const colunaSku = cabecalhos.indexOf('sku');
+        const colunaStock = cabecalhos.indexOf('stock');
+        const stockPorSku = new Map();
+        const invalidos = [];
+
+        linhas.slice(indiceCabecalho + 1).forEach((linha, indice) => {
+            const sku = normalizarTextoSku(linha[colunaSku]).replace(/[^A-Z0-9]/g, '');
+            const stock = Number(linha[colunaStock]);
+            if(!sku || !Number.isInteger(stock) || stock < 0) {
+                if(linha.some(valor => valor !== null && valor !== '')) invalidos.push(indice + indiceCabecalho + 2);
+                return;
+            }
+            stockPorSku.set(sku, stock);
+        });
+
+        const produtosPorSku = new Map(todosOsProdutos.map(produto => [String(produto.sku || '').trim().toUpperCase(), produto]));
+        const alteracoes = [];
+        const naoEncontrados = [];
+        let aumentos = 0;
+        let reducoes = 0;
+        let desativados = 0;
+
+        stockPorSku.forEach((stockNovo, sku) => {
+            const produto = produtosPorSku.get(sku);
+            if(!produto) {
+                naoEncontrados.push({ sku, stock:stockNovo });
+                return;
+            }
+
+            const stockAtual = Number(produto.stock || 0);
+            const ativoAtual = produto.ativo !== false;
+            const ativoNovo = stockNovo > 0;
+            if(stockAtual !== stockNovo || ativoAtual !== ativoNovo) {
+                alteracoes.push({
+                    sku,
+                    nome:produto.nome || '',
+                    stockAtual,
+                    stockNovo,
+                    ativoNovo
+                });
+                if(stockNovo > stockAtual) aumentos += 1;
+                if(stockNovo < stockAtual) reducoes += 1;
+                if(!ativoNovo) desativados += 1;
+            }
+        });
+
+        const ausentesNoFicheiro = todosOsProdutos
+            .filter(produto => !stockPorSku.has(String(produto.sku || '').trim().toUpperCase()))
+            .map(produto => produto.sku);
+
+        importacaoStockPendente = {
+            nomeFicheiro:ficheiro.name,
+            totalLinhas:stockPorSku.size,
+            alteracoes,
+            naoEncontrados,
+            ausentesNoFicheiro,
+            invalidos,
+            aumentos,
+            reducoes,
+            desativados
+        };
+
+        renderizarResumoImportacaoStock(importacaoStockPendente);
+        if(botao) botao.disabled = alteracoes.length === 0;
+        mostrarMensagem(
+            status,
+            alteracoes.length > 0
+                ? `Análise concluída. Confirme para atualizar ${alteracoes.length} produto(s).`
+                : 'Análise concluída. O stock já está atualizado.',
+            'msg-sucesso'
+        );
+    } catch(error) {
+        console.error('Erro ao analisar stock:', error);
+        mostrarMensagem(status, 'Erro: ' + (error.message || 'Não foi possível ler o ficheiro.'), 'msg-erro');
+    }
+}
+
+async function confirmarImportacaoStockAdmin() {
+    const status = document.getElementById('status-importacao-stock');
+    const botao = document.getElementById('btn-confirmar-importacao-stock');
+    const importacao = importacaoStockPendente;
+    if(!importacao || importacao.alteracoes.length === 0) return;
+
+    try {
+        const { data: { user }, error: authError } = await dbClient.auth.getUser();
+        if(authError || !utilizadorAdmin(user)) {
+            throw new Error('Apenas o administrador pode atualizar o stock.');
+        }
+
+        botao.disabled = true;
+        const erros = [];
+        let atualizados = 0;
+        const tamanhoLote = 8;
+
+        for(let inicio = 0; inicio < importacao.alteracoes.length; inicio += tamanhoLote) {
+            const lote = importacao.alteracoes.slice(inicio, inicio + tamanhoLote);
+            const resultados = await Promise.all(lote.map(async item => {
+                const { data, error } = await dbClient
+                    .from('produtos')
+                    .update({ stock:item.stockNovo, ativo:item.ativoNovo })
+                    .eq('sku', item.sku)
+                    .select('sku');
+                if(error) throw error;
+                if(!data || data.length === 0) throw new Error('Produto não atualizado.');
+                return item.sku;
+            }));
+
+            resultados.forEach(sku => {
+                if(sku) atualizados += 1;
+                else erros.push('SKU desconhecido');
+            });
+            mostrarMensagem(status, `A atualizar stock: ${atualizados}/${importacao.alteracoes.length}`);
+        }
+
+        if(erros.length > 0) {
+            throw new Error(`${erros.length} produto(s) não foram atualizados.`);
+        }
+
+        mostrarMensagem(status, `${atualizados} produto(s) atualizados com sucesso.`, 'msg-sucesso');
+        importacaoStockPendente = null;
+        await carregarProdutosDaNuvem();
+    } catch(error) {
+        console.error('Erro ao atualizar stock:', error);
+        botao.disabled = false;
+        mostrarMensagem(status, 'Erro: ' + (error.message || 'Não foi possível atualizar o stock.'), 'msg-erro');
     }
 }
 
