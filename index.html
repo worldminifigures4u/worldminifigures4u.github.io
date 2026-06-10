@@ -3366,6 +3366,18 @@ function obterImagemPrincipalProduto(prod = {}) {
     return listaImagens.length > 0 ? listaImagens[0] : 'img/sem-imagem.png';
 }
 
+function obterImagemAtualCarrinho(item, produtoCompleto) {
+    const imagemAtual = produtoCompleto
+        ? obterImagemPrincipalProduto(produtoCompleto)
+        : '';
+
+    if(imagemAtual && imagemAtual !== 'img/sem-imagem.png') {
+        return imagemAtual;
+    }
+
+    return item?.imagem || 'img/sem-imagem.png';
+}
+
 async function carregarProdutosDaNuvem(){
     definirEstadoVitrine('A carregar minifiguras extraordinárias...');
     try{
@@ -3876,6 +3888,8 @@ const carrinhoDiv = document.getElementById("lista-carrinho");
 
     let subtotal = 0;
 
+    let imagensCarrinhoAtualizadas = false;
+
     carrinho.forEach(item => {
 
         subtotal += Number(item.preco || 0) * item.quantidade;
@@ -3885,7 +3899,11 @@ const carrinhoDiv = document.getElementById("lista-carrinho");
         linha.className = "linha-carrinho";
 
         const produtoCompleto = todosOsProdutos.find(produto => String(produto.id) === String(item.id));
-        const imagemSrc = item.imagem || obterImagemPrincipalProduto(produtoCompleto || {});
+        const imagemSrc = obterImagemAtualCarrinho(item, produtoCompleto);
+        if(item.imagem !== imagemSrc) {
+            item.imagem = imagemSrc;
+            imagensCarrinhoAtualizadas = true;
+        }
 
         const imagem = document.createElement("img");
         imagem.className = "imagem-carrinho";
@@ -3957,6 +3975,10 @@ const carrinhoDiv = document.getElementById("lista-carrinho");
         carrinhoDiv.appendChild(linha);
 
     });
+
+    if(imagensCarrinhoAtualizadas) {
+        guardarCarrinho();
+    }
 
 document.getElementById("subtotal").textContent =
     formatarEuro(subtotal) + " €";
