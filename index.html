@@ -1647,6 +1647,7 @@ const TABELA_PORTES_POR_PESO = {
 let dbClient = null;
 let produtosClient = null;
 let todosOsProdutos = [];
+let catalogoAdminCarregado = false;
 let carrinho = carregarCarrinhoLocal();
 let filtroTemaAtual = 'todos';
 let emRecuperacaoPassword = false;
@@ -2190,6 +2191,7 @@ async function fazerLogout() {
     atualizarCabecalhoCliente();
     definirHistoricoVazio('Entre na conta para carregar o histórico.');
     mudarAba('login');
+    await carregarProdutosDaNuvem();
 }
 
 async function verificarSessaoSupabase() {
@@ -2279,8 +2281,11 @@ function atualizarVisibilidadeAdmin(user) {
             painel.insertBefore(gestaoProdutos, tituloAdicionarProduto);
         }
 
-        renderizarListaProdutosAdmin();
+        carregarProdutosAdminDaNuvem().catch(error => {
+            console.error('Erro ao carregar catálogo administrativo:', error);
+        });
     } else {
+        catalogoAdminCarregado = false;
         cancelarEdicaoProdutoAdmin();
     }
 }
@@ -2489,7 +2494,7 @@ async function confirmarImportacaoStockAdmin() {
 
         mostrarMensagem(status, `${atualizados} produto(s) atualizados com sucesso.`, 'msg-sucesso');
         importacaoStockPendente = null;
-        await carregarProdutosDaNuvem();
+        await carregarProdutosAdminDaNuvem();
     } catch(error) {
         console.error('Erro ao atualizar stock:', error);
         botao.disabled = false;
@@ -2721,7 +2726,7 @@ async function confirmarImportacaoCatalogoAdmin() {
 
         importacaoCatalogoPendente = null;
         document.getElementById('confirmacao-substituir-catalogo').value = '';
-        await carregarProdutosDaNuvem();
+        await carregarProdutosAdminDaNuvem();
         mostrarMensagem(status, `${importados} produtos importados e ${removidos} produtos antigos removidos.`, 'msg-sucesso');
     } catch(error) {
         console.error('Erro ao substituir catálogo:', error);
@@ -3023,7 +3028,7 @@ async function guardarEdicaoProdutoAdmin(event) {
                 .from('produtos')
                 .update(produto)
                 .eq('id', id)
-                .select('*');
+                .select('id, sku');
             data = resultadoPorId.data;
             error = resultadoPorId.error;
         }
@@ -3033,7 +3038,7 @@ async function guardarEdicaoProdutoAdmin(event) {
                 .from('produtos')
                 .update(produto)
                 .eq('sku', skuOriginal)
-                .select('*');
+                .select('id, sku');
             data = resultadoPorSku.data;
             error = resultadoPorSku.error;
         }
@@ -3043,12 +3048,12 @@ async function guardarEdicaoProdutoAdmin(event) {
             throw new Error('Produto não atualizado. Verifique se existe uma policy UPDATE no Supabase para o administrador.');
         }
 
-        const produtoAtualizado = data[0];
+        const produtoAtualizado = { ...produto, id:data[0].id };
 
         todosOsProdutos = todosOsProdutos.map(item => String(item.sku || '').toUpperCase() === String(skuOriginal || '').toUpperCase() ? produtoAtualizado : item);
         document.getElementById('admin-editar-sku-original').value = produtoAtualizado.sku || produto.sku;
         mostrarMensagem(status, 'Produto atualizado com sucesso.', 'msg-sucesso');
-        await carregarProdutosDaNuvem();
+        await carregarProdutosAdminDaNuvem();
         renderizarListaProdutosAdmin();
     } catch(error) {
         console.error('Erro admin:', error);
@@ -3103,17 +3108,17 @@ async function criarProdutoAdmin(event) {
         const { data, error } = await dbClient
             .from('produtos')
             .insert([novoProduto])
-            .select('*')
+            .select('id, sku')
             .single();
 
         if(error) throw error;
 
-        todosOsProdutos.push(data);
+        todosOsProdutos.push({ ...novoProduto, id:data.id });
         document.getElementById('form-admin-produto').reset();
         document.getElementById('admin-produto-ativo').checked = true;
         atualizarPreviewImagensAdmin();
         mostrarMensagem(status, 'Produto criado com sucesso.', 'msg-sucesso');
-        await carregarProdutosDaNuvem();
+        await carregarProdutosAdminDaNuvem();
     } catch(error) {
         console.error('Erro admin:', error);
         mostrarMensagem(status, 'Erro: ' + (error.message || 'Não foi possível criar o produto.'), 'msg-erro');
@@ -3345,7 +3350,9 @@ async function carregarProdutosDaNuvem(){
         let inicio = 0;
 
         while(true) {
-            const query = clienteProdutos.from('produtos').select('*')
+            const query = clienteProdutos
+                .from('produtos_loja')
+                .select('id, sku, nome, preco, peso, tema, subtema, imagens, ativo')
                 .order('tema', { ascending:true })
                 .order('subtema', { ascending:true })
                 .order('nome', { ascending:true })
@@ -3372,15 +3379,58 @@ async function carregarProdutosDaNuvem(){
         }
 
         todosOsProdutos = listaProdutos;
+        catalogoAdminCarregado = false;
         const produtosVisiveis = listaProdutos.filter(produto => produto.ativo !== false);
         gerarMenus(produtosVisiveis);
         gerarProdutos(produtosVisiveis);
         atualizarCarrinho();
-        renderizarListaProdutosAdmin();
     }catch(erro){
         console.error(erro);
         definirEstadoVitrine('Erro ao carregar produtos do Supabase: ' + (erro.message || 'sem detalhe disponível'), 'erro');
     }
+}
+
+async function carregarProdutosAdminDaNuvem(){
+    if(!dbClient) return;
+
+    const listaProdutos = [];
+    const tamanhoPagina = 500;
+    let inicio = 0;
+
+    while(true) {
+        const { data:pagina, error } = await executarComTimeout(
+            dbClient.rpc('listar_produtos_admin', {
+                p_limite:tamanhoPagina,
+                p_offset:inicio
+            }),
+            20000,
+            'Consulta administrativa de produtos demasiado lenta.'
+        );
+
+        if(error) throw error;
+        if(!pagina || pagina.length === 0) break;
+
+        listaProdutos.push(...pagina);
+        if(pagina.length < tamanhoPagina) break;
+        inicio += tamanhoPagina;
+    }
+
+    todosOsProdutos = listaProdutos;
+    catalogoAdminCarregado = true;
+    const produtosVisiveis = listaProdutos.filter(produto => produto.ativo !== false);
+    gerarMenus(produtosVisiveis);
+    gerarProdutos(produtosVisiveis);
+    atualizarCarrinho();
+    renderizarListaProdutosAdmin();
+}
+
+async function carregarProdutosConformeUtilizador(){
+    const { data:{ user } } = await dbClient.auth.getUser();
+    if(utilizadorAdmin(user)) {
+        await carregarProdutosAdminDaNuvem();
+        return;
+    }
+    await carregarProdutosDaNuvem();
 }
 
 function gerarMenus(listaProdutos){
@@ -4079,7 +4129,7 @@ async function criarNovaEncomenda() {
     carrinho = [];
     guardarCarrinho();
     atualizarCarrinho();
-    await carregarProdutosDaNuvem();
+    await carregarProdutosConformeUtilizador();
     carregarHistoricoEncomendas(user.id);
 
   } catch (err) {
