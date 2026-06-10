@@ -4058,7 +4058,15 @@ async function criarNovaEncomenda() {
     const resultado = await resposta.json().catch(() => ({}));
 
     if(!resposta.ok || !resultado.sucesso){
-      throw new Error(resultado.error || "Não foi possível criar a encomenda.");
+      const produtosSemStock = Array.isArray(resultado.produtos_sem_stock)
+        ? resultado.produtos_sem_stock
+            .map(item => String(item?.nome || '').trim())
+            .filter(Boolean)
+        : [];
+      const mensagemStock = produtosSemStock.length > 0
+        ? `Stock insuficiente para: ${produtosSemStock.join(', ')}. Atualize o carrinho e tente novamente.`
+        : '';
+      throw new Error(mensagemStock || resultado.error || "Não foi possível criar a encomenda.");
     }
 
     console.log("Encomenda gravada com sucesso:", resultado);
@@ -4071,6 +4079,7 @@ async function criarNovaEncomenda() {
     carrinho = [];
     guardarCarrinho();
     atualizarCarrinho();
+    await carregarProdutosDaNuvem();
     carregarHistoricoEncomendas(user.id);
 
   } catch (err) {
