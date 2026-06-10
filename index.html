@@ -516,6 +516,20 @@
             gap:8px;
         }
 
+        .upload-admin-fotos{
+            display:flex;
+            flex-direction:column;
+            gap:6px;
+        }
+
+        .input-upload-admin{
+            border:1px dashed #555;
+            background:#181818;
+            border-radius:8px;
+            padding:10px;
+            color:#ddd;
+        }
+
         .historico-encomendas{
             margin-top:18px;
             padding-top:15px;
@@ -1227,8 +1241,12 @@
                         </div>
                         <div>
                             <label for="admin-produto-imagens">URLs das imagens:</label>
+                            <div class="upload-admin-fotos">
+                                <input class="input-upload-admin" type="file" id="admin-produto-upload-imagens" accept="image/jpeg,image/png,image/webp" multiple onchange="enviarFotosCloudinaryAdmin(this, 'admin-produto-imagens', atualizarPreviewImagensAdmin, 'status-upload-admin-produto')">
+                                <p class="ajuda-admin">Selecione fotos do PC para enviar para o Cloudinary. Os URLs serão adicionados automaticamente.</p>
+                                <div id="status-upload-admin-produto" class="msg-status"></div>
+                            </div>
                             <textarea id="admin-produto-imagens" placeholder="Um URL por linha" oninput="atualizarPreviewImagensAdmin()"></textarea>
-                            <p class="ajuda-admin">Quando ligarmos o Cloudinary, estes URLs serão preenchidos automaticamente pelo upload.</p>
                             <div id="preview-imagens-admin" class="preview-imagens-admin"></div>
                         </div>
                         <div>
@@ -1290,6 +1308,11 @@
                             </div>
                             <div>
                                 <label for="admin-editar-imagens">URLs das imagens:</label>
+                                <div class="upload-admin-fotos">
+                                    <input class="input-upload-admin" type="file" id="admin-editar-upload-imagens" accept="image/jpeg,image/png,image/webp" multiple onchange="enviarFotosCloudinaryAdmin(this, 'admin-editar-imagens', atualizarPreviewEditarImagensAdmin, 'status-upload-admin-editar')">
+                                    <p class="ajuda-admin">Selecione fotos do PC para enviar para o Cloudinary. Os URLs serão adicionados automaticamente.</p>
+                                    <div id="status-upload-admin-editar" class="msg-status"></div>
+                                </div>
                                 <textarea id="admin-editar-imagens" placeholder="Um URL por linha" oninput="atualizarPreviewEditarImagensAdmin()"></textarea>
                                 <div id="preview-editar-imagens-admin" class="preview-imagens-admin"></div>
                             </div>
@@ -1450,6 +1473,8 @@
 <script>
 const SUPABASE_URL = "https://gksndzxadndrsynvzgzb.supabase.co";
 const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imdrc25kenhhZG5kcnN5bnZ6Z3piIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkwODc5NzMsImV4cCI6MjA5NDY2Mzk3M30.EHZgacYr27dqoc4CJHsOwkNnJFGlLIteSHBi4B1HfVE";
+const CLOUDINARY_CLOUD_NAME = "ddzgmr4eb";
+const CLOUDINARY_UPLOAD_PRESET = "worldminifigures4u_unsigned";
 const URL_PUBLICO_FALLBACK = "https://worldminifigures4u.github.io/";
 const ADMIN_EMAILS = ["worldminifigures4u@gmail.com"];
 const PESO_PADRAO_PRODUTO_GRAMAS = 10;
@@ -2174,6 +2199,74 @@ function atualizarPreviewImagensAdmin() {
         imagem.onerror = () => { imagem.style.display = 'none'; };
         preview.appendChild(imagem);
     });
+}
+
+function adicionarUrlsAoCampoImagens(textareaId, urls) {
+    const textarea = document.getElementById(textareaId);
+    if(!textarea || !urls.length) return;
+
+    const atuais = textarea.value
+        .split(/[\n,]+/)
+        .map(url => url.trim())
+        .filter(Boolean);
+    const todas = [...atuais];
+
+    urls.forEach(url => {
+        if(!todas.includes(url)) {
+            todas.push(url);
+        }
+    });
+
+    textarea.value = todas.join('\n');
+}
+
+async function enviarFotosCloudinaryAdmin(input, textareaId, atualizarPreview, statusId) {
+    const status = document.getElementById(statusId);
+    const ficheiros = Array.from(input.files || []);
+    if(ficheiros.length === 0) return;
+
+    try {
+        const { data: { user }, error: authError } = await dbClient.auth.getUser();
+        if(authError || !utilizadorAdmin(user)) {
+            throw new Error('Apenas o administrador pode enviar fotos.');
+        }
+
+        mostrarMensagem(status, `A enviar ${ficheiros.length} foto(s) para o Cloudinary...`);
+        const urls = [];
+
+        for(const ficheiro of ficheiros) {
+            if(!ficheiro.type.startsWith('image/')) {
+                throw new Error('Só pode enviar ficheiros de imagem.');
+            }
+
+            const formData = new FormData();
+            formData.append('file', ficheiro);
+            formData.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
+
+            const resposta = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`, {
+                method: 'POST',
+                body: formData
+            });
+            const resultado = await resposta.json();
+
+            if(!resposta.ok) {
+                throw new Error(resultado?.error?.message || 'Falha no upload para o Cloudinary.');
+            }
+
+            urls.push(resultado.secure_url);
+            mostrarMensagem(status, `Enviadas ${urls.length}/${ficheiros.length} foto(s)...`);
+        }
+
+        adicionarUrlsAoCampoImagens(textareaId, urls);
+        if(typeof atualizarPreview === 'function') {
+            atualizarPreview();
+        }
+        input.value = '';
+        mostrarMensagem(status, `${urls.length} foto(s) adicionada(s) com sucesso.`, 'msg-sucesso');
+    } catch(error) {
+        console.error('Erro Cloudinary:', error);
+        mostrarMensagem(status, 'Erro: ' + (error.message || 'Não foi possível enviar as fotos.'), 'msg-erro');
+    }
 }
 
 function obterProdutoId(produto) {
