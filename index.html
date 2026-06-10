@@ -257,7 +257,7 @@
 
         .vista-carrinho .carrinho{
             width:100%;
-            max-width:520px;
+            max-width:860px;
             margin:0 auto;
             box-sizing:border-box;
         }
@@ -748,7 +748,7 @@
         }
 
         .lista-carrinho{
-            max-height:300px;
+            max-height:430px;
             overflow-y:auto;
             display:flex;
             flex-direction:column;
@@ -766,10 +766,21 @@
             gap:10px;
         }
 
+        .imagem-carrinho{
+            width:74px;
+            height:74px;
+            flex:0 0 74px;
+            object-fit:contain;
+            background:#222;
+            border:1px solid #333;
+            border-radius:8px;
+        }
+
         .linha-carrinho strong{ color:#ffc107; }
 
         .info-carrinho{
             min-width:0;
+            flex:1;
             overflow-wrap:anywhere;
             line-height:1.35;
         }
@@ -784,7 +795,7 @@
             display:flex;
             align-items:center;
             gap:6px;
-            flex-shrink:0;
+            flex:0 0 auto;
         }
 
         .btn-quantidade,
@@ -957,6 +968,11 @@
             .badge-carrinho{
                 top:3px;
                 right:3px;
+            }
+            .imagem-carrinho{
+                width:58px;
+                height:58px;
+                flex-basis:58px;
             }
         }
 
@@ -1376,6 +1392,7 @@ function carregarCarrinhoLocal() {
                 nome: String(item.nome),
                 preco: Number(item.preco || 0),
                 peso: Number(item.peso || PESO_PADRAO_PRODUTO_GRAMAS),
+                imagem: String(item.imagem || ''),
                 quantidade: Math.max(1, Number(item.quantidade || 1))
             }));
     } catch(e) {
@@ -2174,6 +2191,30 @@ function executarComTimeout(promessa, ms, mensagemErro){
     return Promise.race([promessa, timeoutPromise]).finally(() => clearTimeout(timeout));
 }
 
+function obterImagemPrincipalProduto(prod = {}) {
+    let listaImagens = [];
+
+    if (prod.imagens) {
+        if (Array.isArray(prod.imagens)) {
+            listaImagens = prod.imagens;
+        } else if (typeof prod.imagens === 'string') {
+            const textoLimpo = prod.imagens.trim();
+            if (textoLimpo.startsWith('[') && textoLimpo.endsWith(']')) {
+                try {
+                    listaImagens = JSON.parse(textoLimpo);
+                } catch(e) {
+                    listaImagens = textoLimpo.replace(/[\[\]"]/g, '').split(',').map(s => s.trim());
+                }
+            } else {
+                listaImagens = [textoLimpo];
+            }
+        }
+    }
+
+    listaImagens = listaImagens.filter(url => url && typeof url === 'string' && url.trim() !== "");
+    return listaImagens.length > 0 ? listaImagens[0] : 'img/sem-imagem.png';
+}
+
 async function carregarProdutosDaNuvem(){
     definirEstadoVitrine('A carregar minifiguras extraordinárias...');
     try{
@@ -2198,6 +2239,7 @@ async function carregarProdutosDaNuvem(){
         todosOsProdutos = listaProdutos;
         gerarMenus(listaProdutos);
         gerarProdutos(listaProdutos);
+        atualizarCarrinho();
     }catch(erro){
         console.error(erro);
         definirEstadoVitrine('Erro ao carregar produtos do Supabase: ' + (erro.message || 'sem detalhe disponível'), 'erro');
@@ -2525,6 +2567,7 @@ function adicionarAoCarrinho(prod) {
             nome: prod.nome,
             preco: prod.preco,
             peso: Number(prod.peso || PESO_PADRAO_PRODUTO_GRAMAS),
+            imagem: obterImagemPrincipalProduto(prod),
             quantidade: 1
         });
 
@@ -2599,6 +2642,21 @@ const carrinhoDiv = document.getElementById("lista-carrinho");
         const linha = document.createElement("div");
         linha.className = "linha-carrinho";
 
+        const produtoCompleto = todosOsProdutos.find(produto => String(produto.id) === String(item.id));
+        const imagemSrc = item.imagem || obterImagemPrincipalProduto(produtoCompleto || {});
+
+        const imagem = document.createElement("img");
+        imagem.className = "imagem-carrinho";
+        imagem.loading = "lazy";
+        imagem.decoding = "async";
+        imagem.src = imagemSrc;
+        imagem.alt = item.nome;
+        imagem.onerror = () => {
+            if (imagem.src.indexOf('img/sem-imagem.png') === -1) {
+                imagem.src = 'img/sem-imagem.png';
+            }
+        };
+
         // bloco nome + preço
         const info = document.createElement("div");
         info.className = "info-carrinho";
@@ -2650,6 +2708,7 @@ const carrinhoDiv = document.getElementById("lista-carrinho");
         botoes.appendChild(btnMais);
         botoes.appendChild(btnRemover);
 
+        linha.appendChild(imagem);
         linha.appendChild(info);
         linha.appendChild(botoes);
 
