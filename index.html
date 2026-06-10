@@ -1766,6 +1766,9 @@ function pesquisarNoCabecalho() {
     executarFiltrosCombinados();
 }
 
+let frameAtualizacaoStickyTemas = null;
+let observadorTamanhoMenuTemas = null;
+
 function atualizarStickyTemas() {
     const coluna = document.querySelector('.coluna-esquerda');
     const menu = document.getElementById('menu-lateral-temas');
@@ -1787,12 +1790,40 @@ function atualizarStickyTemas() {
     coluna.style.setProperty('--temas-sticky-top', `${stickyTop}px`);
 }
 
+function agendarAtualizacaoStickyTemas() {
+    if(frameAtualizacaoStickyTemas !== null) {
+        cancelAnimationFrame(frameAtualizacaoStickyTemas);
+    }
+
+    frameAtualizacaoStickyTemas = requestAnimationFrame(() => {
+        frameAtualizacaoStickyTemas = null;
+        atualizarStickyTemas();
+    });
+}
+
+function observarTamanhoMenuTemas() {
+    const menu = document.getElementById('menu-lateral-temas');
+    if(!menu || typeof ResizeObserver === 'undefined') return;
+
+    if(observadorTamanhoMenuTemas) {
+        observadorTamanhoMenuTemas.disconnect();
+    }
+
+    observadorTamanhoMenuTemas = new ResizeObserver(() => {
+        agendarAtualizacaoStickyTemas();
+    });
+    observadorTamanhoMenuTemas.observe(menu);
+}
+
 window.addEventListener('hashchange', () => {
     mostrarVista(obterVistaHash(), false);
 });
-window.addEventListener('resize', atualizarStickyTemas);
+window.addEventListener('resize', agendarAtualizacaoStickyTemas);
+window.visualViewport?.addEventListener('resize', agendarAtualizacaoStickyTemas);
 window.addEventListener('load', async () => {
-    atualizarStickyTemas();
+    observarTamanhoMenuTemas();
+    agendarAtualizacaoStickyTemas();
+    document.fonts?.ready.then(agendarAtualizacaoStickyTemas);
     atualizarCarrinho();
     if(typeof supabase !== 'undefined'){
         dbClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -3449,7 +3480,7 @@ function gerarMenus(listaProdutos){
     toggleMenu.onclick = function(){
         const recolhido = listaTemas.classList.toggle('recolhida');
         toggleMenu.textContent = recolhido ? 'Mostrar' : 'Recolher';
-        atualizarStickyTemas();
+        agendarAtualizacaoStickyTemas();
     };
     cabecalho.appendChild(toggleMenu);
     menu.appendChild(cabecalho);
@@ -3509,6 +3540,7 @@ function gerarMenus(listaProdutos){
                     indicador.textContent = '-';
                 }
                 filtrarTema(temaId, this);
+                agendarAtualizacaoStickyTemas();
             };
 
             mapa[tema].forEach(subtema => {
@@ -3532,7 +3564,8 @@ function gerarMenus(listaProdutos){
         listaTemas.appendChild(linhaTema);
     });
 
-    atualizarStickyTemas();
+    observarTamanhoMenuTemas();
+    agendarAtualizacaoStickyTemas();
 }
 
 function gerarProdutos(listaProdutos){
