@@ -2694,15 +2694,15 @@ async function confirmarImportacaoCatalogoAdmin() {
         let importados = 0;
         for(let inicio = 0; inicio < importacao.produtos.length; inicio += tamanhoLote) {
             const lote = importacao.produtos.slice(inicio, inicio + tamanhoLote);
-            const { data, error } = await dbClient
-                .from('produtos')
-                .upsert(lote, { onConflict:'sku', ignoreDuplicates:false, defaultToNull:false })
-                .select('sku');
+            const { data, error } = await dbClient.rpc('importar_produtos_admin', {
+                p_produtos:lote
+            });
             if(error) throw error;
-            if(!data || data.length !== lote.length) {
+            const quantidadeImportada = Number(data?.importados || 0);
+            if(quantidadeImportada !== lote.length) {
                 throw new Error('Nem todos os produtos do lote foram importados.');
             }
-            importados += data.length;
+            importados += quantidadeImportada;
             mostrarMensagem(status, `A importar catálogo: ${importados}/${importacao.produtos.length}`);
         }
 
@@ -2710,13 +2710,11 @@ async function confirmarImportacaoCatalogoAdmin() {
         const skusRemover = importacao.remover.map(produto => String(produto.sku || '').trim()).filter(Boolean);
         for(let inicio = 0; inicio < skusRemover.length; inicio += 50) {
             const lote = skusRemover.slice(inicio, inicio + 50);
-            const { data, error } = await dbClient
-                .from('produtos')
-                .delete()
-                .in('sku', lote)
-                .select('sku');
+            const { data, error } = await dbClient.rpc('remover_produtos_admin', {
+                p_skus:lote
+            });
             if(error) throw error;
-            removidos += data?.length || 0;
+            removidos += Number(data?.removidos || 0);
             mostrarMensagem(status, `Catálogo importado. A remover produtos antigos: ${removidos}/${skusRemover.length}`);
         }
 
