@@ -447,6 +447,68 @@
             line-height:1.4;
         }
 
+        .admin-seccao{
+            margin-top:18px;
+            padding-top:15px;
+            border-top:1px solid #333;
+        }
+
+        .lista-admin-produtos{
+            display:flex;
+            flex-direction:column;
+            gap:8px;
+            max-height:320px;
+            overflow-y:auto;
+            padding-right:4px;
+        }
+
+        .item-admin-produto{
+            display:grid;
+            grid-template-columns:minmax(0, 1fr) auto;
+            gap:10px;
+            align-items:center;
+            background:#181818;
+            border:1px solid #333;
+            border-radius:8px;
+            padding:10px;
+        }
+
+        .item-admin-produto strong{
+            display:block;
+            color:#ffc107;
+            overflow:hidden;
+            text-overflow:ellipsis;
+            white-space:nowrap;
+        }
+
+        .item-admin-produto span{
+            display:block;
+            color:#aaa;
+            font-size:12px;
+            line-height:1.4;
+        }
+
+        .btn-admin-secundario{
+            background:#222;
+            border:1px solid #444;
+            border-radius:6px;
+            color:#fff;
+            cursor:pointer;
+            font-weight:bold;
+            padding:8px 10px;
+        }
+
+        .btn-admin-secundario:hover{
+            border-color:#ffc107;
+            color:#ffc107;
+        }
+
+        .acoes-form-admin{
+            display:grid;
+            grid-template-columns:1fr 1fr;
+            gap:8px;
+        }
+
         .historico-encomendas{
             margin-top:18px;
             padding-top:15px;
@@ -1173,6 +1235,68 @@
                         <button type="submit" class="btn-acao-cliente">Criar Produto</button>
                         <div id="status-admin-produto" class="msg-status"></div>
                     </form>
+                    <div class="admin-seccao">
+                        <h3>Gestão de produtos</h3>
+                        <div class="form-admin">
+                            <div>
+                                <label for="admin-pesquisa-produtos">Pesquisar produto:</label>
+                                <input type="text" id="admin-pesquisa-produtos" placeholder="Nome, SKU ou tema" oninput="renderizarListaProdutosAdmin()">
+                            </div>
+                            <div id="lista-admin-produtos" class="lista-admin-produtos"></div>
+                        </div>
+                        <form class="form-admin admin-seccao" id="form-admin-editar-produto" onsubmit="guardarEdicaoProdutoAdmin(event)" style="display:none;">
+                            <input type="hidden" id="admin-editar-id">
+                            <h3>Editar produto</h3>
+                            <div>
+                                <label for="admin-editar-nome">Nome do produto:</label>
+                                <input type="text" id="admin-editar-nome" required>
+                            </div>
+                            <div class="linha-admin-dupla">
+                                <div>
+                                    <label for="admin-editar-sku">SKU:</label>
+                                    <input type="text" id="admin-editar-sku" required>
+                                </div>
+                                <div>
+                                    <label for="admin-editar-preco">Preço:</label>
+                                    <input type="number" id="admin-editar-preco" required min="0" step="0.01">
+                                </div>
+                                <div>
+                                    <label for="admin-editar-peso">Peso (g):</label>
+                                    <input type="number" id="admin-editar-peso" required min="1" step="1">
+                                </div>
+                                <div>
+                                    <label for="admin-editar-stock">Stock:</label>
+                                    <input type="number" id="admin-editar-stock" required min="0" step="1">
+                                </div>
+                            </div>
+                            <div>
+                                <label for="admin-editar-tema">Tema:</label>
+                                <input type="text" id="admin-editar-tema" required>
+                            </div>
+                            <div>
+                                <label for="admin-editar-subtema">Subtema:</label>
+                                <input type="text" id="admin-editar-subtema">
+                            </div>
+                            <div>
+                                <label for="admin-editar-imagens">URLs das imagens:</label>
+                                <textarea id="admin-editar-imagens" placeholder="Um URL por linha" oninput="atualizarPreviewEditarImagensAdmin()"></textarea>
+                                <div id="preview-editar-imagens-admin" class="preview-imagens-admin"></div>
+                            </div>
+                            <div>
+                                <label for="admin-editar-observacoes">Observações:</label>
+                                <textarea id="admin-editar-observacoes" placeholder="Notas internas sobre estado, acessórios, origem, etc."></textarea>
+                            </div>
+                            <label class="opcao-admin-inline">
+                                <input type="checkbox" id="admin-editar-ativo">
+                                Produto ativo na loja
+                            </label>
+                            <div class="acoes-form-admin">
+                                <button type="submit" class="btn-acao-cliente">Guardar alterações</button>
+                                <button type="button" class="btn-admin-secundario" onclick="cancelarEdicaoProdutoAdmin()">Cancelar</button>
+                            </div>
+                            <div id="status-admin-editar-produto" class="msg-status"></div>
+                        </form>
+                    </div>
                 </div>
                 <div class="historico-encomendas">
                     <h3>Histórico de encomendas</h3>
@@ -1994,7 +2118,13 @@ function utilizadorAdmin(user) {
 function atualizarVisibilidadeAdmin(user) {
     const painel = document.getElementById('painel-admin');
     if(!painel) return;
-    painel.style.display = utilizadorAdmin(user) ? 'block' : 'none';
+    const adminAtivo = utilizadorAdmin(user);
+    painel.style.display = adminAtivo ? 'block' : 'none';
+    if(adminAtivo) {
+        renderizarListaProdutosAdmin();
+    } else {
+        cancelarEdicaoProdutoAdmin();
+    }
 }
 
 function sugerirSkuAdmin() {
@@ -2033,6 +2163,198 @@ function atualizarPreviewImagensAdmin() {
         imagem.onerror = () => { imagem.style.display = 'none'; };
         preview.appendChild(imagem);
     });
+}
+
+function obterProdutoId(produto) {
+    return String(produto?.id ?? produto?.sku ?? '');
+}
+
+function produtoCorrespondePesquisaAdmin(produto, termoNormalizado) {
+    if(!termoNormalizado) return true;
+    const textoProduto = [
+        produto.nome,
+        produto.sku,
+        produto.tema,
+        produto.subtema
+    ].map(valor => normalizarTextoSku(valor)).join(' ');
+    return textoProduto.includes(termoNormalizado);
+}
+
+function renderizarListaProdutosAdmin() {
+    const lista = document.getElementById('lista-admin-produtos');
+    if(!lista) return;
+
+    lista.replaceChildren();
+    const termo = normalizarTextoSku(document.getElementById('admin-pesquisa-produtos')?.value || '');
+    const produtos = todosOsProdutos
+        .filter(produto => produtoCorrespondePesquisaAdmin(produto, termo))
+        .slice(0, 40);
+
+    if(produtos.length === 0) {
+        const vazio = document.createElement('p');
+        vazio.className = 'ajuda-admin';
+        vazio.textContent = todosOsProdutos.length === 0 ? 'Ainda não há produtos carregados.' : 'Nenhum produto encontrado.';
+        lista.appendChild(vazio);
+        return;
+    }
+
+    produtos.forEach(produto => {
+        const item = document.createElement('div');
+        item.className = 'item-admin-produto';
+
+        const info = document.createElement('div');
+        const nome = document.createElement('strong');
+        nome.textContent = produto.nome || 'Produto sem nome';
+        info.appendChild(nome);
+
+        const detalhes = document.createElement('span');
+        const estado = produto.ativo === false ? 'Inativo' : 'Ativo';
+        detalhes.textContent = `${produto.sku || 'sem SKU'} | ${formatarPreco(Number(produto.preco || 0))} | Stock: ${produto.stock ?? '-'} | ${estado}`;
+        info.appendChild(detalhes);
+        item.appendChild(info);
+
+        const botao = document.createElement('button');
+        botao.type = 'button';
+        botao.className = 'btn-admin-secundario';
+        botao.textContent = 'Editar';
+        botao.onclick = () => preencherEdicaoProdutoAdmin(obterProdutoId(produto));
+        item.appendChild(botao);
+
+        lista.appendChild(item);
+    });
+}
+
+function obterUrlsImagensEditarAdmin() {
+    const textarea = document.getElementById('admin-editar-imagens');
+    if(!textarea) return [];
+    return textarea.value
+        .split(/[\n,]+/)
+        .map(url => url.trim())
+        .filter(url => url.length > 0);
+}
+
+function atualizarPreviewEditarImagensAdmin() {
+    const preview = document.getElementById('preview-editar-imagens-admin');
+    if(!preview) return;
+
+    preview.replaceChildren();
+    obterUrlsImagensEditarAdmin().slice(0, 12).forEach((url, index) => {
+        const imagem = document.createElement('img');
+        imagem.src = url;
+        imagem.alt = 'Imagem ' + (index + 1);
+        imagem.loading = 'lazy';
+        imagem.onerror = () => { imagem.style.display = 'none'; };
+        preview.appendChild(imagem);
+    });
+}
+
+function imagensParaTextoAdmin(produto) {
+    const imagens = Array.isArray(produto?.imagens) ? produto.imagens : [];
+    return imagens.filter(url => typeof url === 'string' && url.trim()).join('\n');
+}
+
+function preencherEdicaoProdutoAdmin(produtoId) {
+    const produto = todosOsProdutos.find(item => obterProdutoId(item) === String(produtoId));
+    const form = document.getElementById('form-admin-editar-produto');
+    const status = document.getElementById('status-admin-editar-produto');
+    if(!produto || !form) return;
+
+    document.getElementById('admin-editar-id').value = obterProdutoId(produto);
+    document.getElementById('admin-editar-nome').value = produto.nome || '';
+    document.getElementById('admin-editar-sku').value = produto.sku || '';
+    document.getElementById('admin-editar-preco').value = Number(produto.preco || 0).toFixed(2);
+    document.getElementById('admin-editar-peso').value = Number(produto.peso || PESO_PADRAO_PRODUTO_GRAMAS);
+    document.getElementById('admin-editar-stock').value = Number(produto.stock ?? 1);
+    document.getElementById('admin-editar-tema').value = produto.tema || '';
+    document.getElementById('admin-editar-subtema').value = produto.subtema === 'semsubtema' ? '' : (produto.subtema || '');
+    document.getElementById('admin-editar-imagens').value = imagensParaTextoAdmin(produto);
+    document.getElementById('admin-editar-observacoes').value = produto.observacoes || '';
+    document.getElementById('admin-editar-ativo').checked = produto.ativo !== false;
+
+    if(status) status.textContent = '';
+    atualizarPreviewEditarImagensAdmin();
+    form.style.display = 'flex';
+    form.scrollIntoView({ behavior:'smooth', block:'start' });
+}
+
+function cancelarEdicaoProdutoAdmin() {
+    const form = document.getElementById('form-admin-editar-produto');
+    const status = document.getElementById('status-admin-editar-produto');
+    if(!form) return;
+    form.reset();
+    form.style.display = 'none';
+    if(status) status.textContent = '';
+    atualizarPreviewEditarImagensAdmin();
+}
+
+function lerProdutoEditadoAdmin() {
+    const id = document.getElementById('admin-editar-id').value;
+    const nome = document.getElementById('admin-editar-nome').value.trim();
+    const sku = normalizarTextoSku(document.getElementById('admin-editar-sku').value).replace(/[^A-Z0-9]/g, '');
+    const tema = document.getElementById('admin-editar-tema').value.trim();
+    const subtema = document.getElementById('admin-editar-subtema').value.trim();
+    const preco = Number(document.getElementById('admin-editar-preco').value);
+    const peso = Number(document.getElementById('admin-editar-peso').value || PESO_PADRAO_PRODUTO_GRAMAS);
+    const stock = Number(document.getElementById('admin-editar-stock').value || 0);
+    const observacoes = document.getElementById('admin-editar-observacoes').value.trim();
+    const ativo = document.getElementById('admin-editar-ativo').checked;
+    const imagens = obterUrlsImagensEditarAdmin();
+
+    if(!id || !nome || !sku || !tema || !Number.isFinite(preco) || preco < 0 || !Number.isFinite(peso) || peso < 1 || !Number.isInteger(stock) || stock < 0) {
+        throw new Error('Preencha nome, SKU, tema, preço, peso e stock.');
+    }
+
+    return {
+        id,
+        produto: {
+            sku,
+            nome,
+            tema,
+            subtema: subtema || 'semsubtema',
+            preco,
+            peso,
+            stock,
+            observacoes,
+            ativo,
+            imagens
+        }
+    };
+}
+
+async function guardarEdicaoProdutoAdmin(event) {
+    event.preventDefault();
+    const status = document.getElementById('status-admin-editar-produto');
+    mostrarMensagem(status, 'A guardar alterações...');
+
+    try {
+        const { data: { user }, error: authError } = await dbClient.auth.getUser();
+        if(authError || !utilizadorAdmin(user)) {
+            throw new Error('Apenas o administrador pode editar produtos.');
+        }
+
+        const { id, produto } = lerProdutoEditadoAdmin();
+        const skuExistente = todosOsProdutos.some(item => obterProdutoId(item) !== String(id) && String(item.sku || '').toUpperCase() === produto.sku);
+        if(skuExistente) {
+            throw new Error('Este SKU já existe noutro produto.');
+        }
+
+        const { data, error } = await dbClient
+            .from('produtos')
+            .update(produto)
+            .eq('id', id)
+            .select('*')
+            .single();
+
+        if(error) throw error;
+
+        todosOsProdutos = todosOsProdutos.map(item => obterProdutoId(item) === String(id) ? data : item);
+        mostrarMensagem(status, 'Produto atualizado com sucesso.', 'msg-sucesso');
+        await carregarProdutosDaNuvem();
+        renderizarListaProdutosAdmin();
+    } catch(error) {
+        console.error('Erro admin:', error);
+        mostrarMensagem(status, 'Erro: ' + (error.message || 'Não foi possível guardar o produto.'), 'msg-erro');
+    }
 }
 
 async function criarProdutoAdmin(event) {
@@ -2337,6 +2659,7 @@ async function carregarProdutosDaNuvem(){
         gerarMenus(produtosVisiveis);
         gerarProdutos(produtosVisiveis);
         atualizarCarrinho();
+        renderizarListaProdutosAdmin();
     }catch(erro){
         console.error(erro);
         definirEstadoVitrine('Erro ao carregar produtos do Supabase: ' + (erro.message || 'sem detalhe disponível'), 'erro');
