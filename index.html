@@ -428,6 +428,18 @@
             border-radius:8px;
         }
 
+        .opcao-admin-inline{
+            display:flex;
+            align-items:center;
+            gap:8px;
+            color:#ddd;
+            font-size:13px;
+        }
+
+        .opcao-admin-inline input{
+            width:auto;
+        }
+
         .ajuda-admin{
             margin:0;
             color:#888;
@@ -1154,6 +1166,10 @@
                             <label for="admin-produto-observacoes">Observações:</label>
                             <textarea id="admin-produto-observacoes" placeholder="Notas internas sobre estado, acessórios, origem, etc."></textarea>
                         </div>
+                        <label class="opcao-admin-inline">
+                            <input type="checkbox" id="admin-produto-ativo" checked>
+                            Produto ativo na loja
+                        </label>
                         <button type="submit" class="btn-acao-cliente">Criar Produto</button>
                         <div id="status-admin-produto" class="msg-status"></div>
                     </form>
@@ -2038,6 +2054,7 @@ async function criarProdutoAdmin(event) {
         const peso = Number(document.getElementById('admin-produto-peso').value || PESO_PADRAO_PRODUTO_GRAMAS);
         const stock = Number(document.getElementById('admin-produto-stock').value || 0);
         const observacoes = document.getElementById('admin-produto-observacoes').value.trim();
+        const ativo = document.getElementById('admin-produto-ativo').checked;
         const imagens = obterUrlsImagensAdmin();
 
         if(!nome || !sku || !tema || !Number.isFinite(preco) || preco < 0 || !Number.isFinite(peso) || peso < 1 || !Number.isInteger(stock) || stock < 0) {
@@ -2058,6 +2075,7 @@ async function criarProdutoAdmin(event) {
             peso,
             stock,
             observacoes,
+            ativo,
             imagens
         };
 
@@ -2071,6 +2089,7 @@ async function criarProdutoAdmin(event) {
 
         todosOsProdutos.push(data);
         document.getElementById('form-admin-produto').reset();
+        document.getElementById('admin-produto-ativo').checked = true;
         atualizarPreviewImagensAdmin();
         mostrarMensagem(status, 'Produto criado com sucesso.', 'msg-sucesso');
         await carregarProdutosDaNuvem();
@@ -2314,8 +2333,9 @@ async function carregarProdutosDaNuvem(){
         }
 
         todosOsProdutos = listaProdutos;
-        gerarMenus(listaProdutos);
-        gerarProdutos(listaProdutos);
+        const produtosVisiveis = listaProdutos.filter(produto => produto.ativo !== false);
+        gerarMenus(produtosVisiveis);
+        gerarProdutos(produtosVisiveis);
         atualizarCarrinho();
     }catch(erro){
         console.error(erro);
