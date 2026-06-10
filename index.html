@@ -251,6 +251,13 @@
             box-sizing: border-box;
         }
 
+        .menu-temas{
+            position:sticky;
+            top:96px;
+            max-height:calc(100vh - 116px);
+            overflow:hidden;
+        }
+
         .vista-conta .area-cliente{
             margin:0 auto;
         }
@@ -696,6 +703,12 @@
             display:none;
         }
 
+        .lista-temas{
+            max-height:calc(100vh - 190px);
+            overflow-y:auto;
+            padding-right:4px;
+        }
+
         .linha-tema{
             margin-bottom:6px;
         }
@@ -942,6 +955,16 @@
             .acao-cabecalho{ padding:0 12px; }
             .vista-loja.ativa{ flex-direction:column; }
             .coluna-esquerda, .carrinho{ width:100%; box-sizing:border-box; }
+            .menu-temas{
+                position:static;
+                max-height:none;
+                overflow:visible;
+            }
+            .lista-temas{
+                max-height:none;
+                overflow:visible;
+                padding-right:0;
+            }
         }
 
         @media(max-width:560px){
