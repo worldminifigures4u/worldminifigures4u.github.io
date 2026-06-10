@@ -3315,14 +3315,32 @@ async function carregarProdutosDaNuvem(){
             throw new Error('Cliente Supabase indisponível.');
         }
 
-        const query = clienteProdutos.from('produtos').select('*')
-            .order('tema', { ascending:true })
-            .order('subtema', { ascending:true })
-            .order('nome', { ascending:true });
+        const listaProdutos = [];
+        const tamanhoPagina = 500;
+        let inicio = 0;
 
-        const { data: listaProdutos, error } = await executarComTimeout(query, 15000, 'Consulta demasiado lenta.');
+        while(true) {
+            const query = clienteProdutos.from('produtos').select('*')
+                .order('tema', { ascending:true })
+                .order('subtema', { ascending:true })
+                .order('nome', { ascending:true })
+                .order('id', { ascending:true })
+                .range(inicio, inicio + tamanhoPagina - 1);
 
-        if(error){ console.error(error); throw error; }
+            const { data: pagina, error } = await executarComTimeout(
+                query,
+                20000,
+                'Consulta de produtos demasiado lenta.'
+            );
+
+            if(error){ console.error(error); throw error; }
+            if(!pagina || pagina.length === 0) break;
+
+            listaProdutos.push(...pagina);
+            if(pagina.length < tamanhoPagina) break;
+            inicio += tamanhoPagina;
+        }
+
         if(!listaProdutos || listaProdutos.length === 0){
             definirEstadoVitrine('Nenhum produto encontrado.', 'erro');
             return;
