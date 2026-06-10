@@ -2355,21 +2355,32 @@ async function guardarEdicaoProdutoAdmin(event) {
             throw new Error('Este SKU já existe noutro produto.');
         }
 
-        let query = dbClient
-            .from('produtos')
-            .update(produto);
+        let data = null;
+        let error = null;
 
-        if(skuOriginal) {
-            query = query.eq('sku', skuOriginal);
-        } else {
-            query = query.eq('id', id);
+        if(id && id !== skuOriginal) {
+            const resultadoPorId = await dbClient
+                .from('produtos')
+                .update(produto)
+                .eq('id', id)
+                .select('*');
+            data = resultadoPorId.data;
+            error = resultadoPorId.error;
         }
 
-        const { data, error } = await query.select('*');
+        if(!error && (!data || data.length === 0) && skuOriginal) {
+            const resultadoPorSku = await dbClient
+                .from('produtos')
+                .update(produto)
+                .eq('sku', skuOriginal)
+                .select('*');
+            data = resultadoPorSku.data;
+            error = resultadoPorSku.error;
+        }
 
         if(error) throw error;
         if(!data || data.length === 0) {
-            throw new Error('Produto não encontrado para atualizar.');
+            throw new Error('Produto não atualizado. Verifique se existe uma policy UPDATE no Supabase para o administrador.');
         }
 
         const produtoAtualizado = data[0];
