@@ -425,8 +425,46 @@
             aspect-ratio:1;
             object-fit:contain;
             background:#222;
+            display:block;
+            pointer-events:none;
+        }
+
+        .item-preview-imagem-admin{
+            position:relative;
+            overflow:hidden;
+            background:#222;
             border:1px solid #333;
             border-radius:8px;
+            cursor:grab;
+            user-select:none;
+            touch-action:none;
+            transition:border-color 0.15s, opacity 0.15s, transform 0.15s;
+        }
+
+        .item-preview-imagem-admin:hover{
+            border-color:#ffc107;
+        }
+
+        .item-preview-imagem-admin.arrastando{
+            opacity:0.55;
+            transform:scale(0.96);
+        }
+
+        .item-preview-imagem-admin.destino-arrasto{
+            border-color:#35c7ff;
+            box-shadow:0 0 0 2px rgba(53, 199, 255, 0.28);
+        }
+
+        .etiqueta-imagem-principal{
+            position:absolute;
+            left:4px;
+            bottom:4px;
+            padding:3px 5px;
+            border-radius:4px;
+            background:#ffc107;
+            color:#000;
+            font-size:10px;
+            font-weight:800;
         }
 
         .opcao-admin-inline{
@@ -2787,19 +2825,101 @@ function obterUrlsImagensAdmin() {
         .filter(url => url.length > 0);
 }
 
-function atualizarPreviewImagensAdmin() {
-    const preview = document.getElementById('preview-imagens-admin');
-    if(!preview) return;
+function reordenarUrlsImagensAdmin(textareaId, origem, destino, atualizarPreview) {
+    const textarea = document.getElementById(textareaId);
+    if(!textarea || origem === destino || origem < 0 || destino < 0) return;
 
+    const urls = textarea.value
+        .split(/[\n,]+/)
+        .map(url => url.trim())
+        .filter(Boolean);
+
+    if(origem >= urls.length || destino >= urls.length) return;
+    const [urlMovido] = urls.splice(origem, 1);
+    urls.splice(destino, 0, urlMovido);
+    textarea.value = urls.join('\n');
+    atualizarPreview();
+}
+
+function criarPreviewOrdenavelImagens(preview, urls, textareaId, atualizarPreview) {
     preview.replaceChildren();
-    obterUrlsImagensAdmin().slice(0, 12).forEach((url, index) => {
+
+    urls.slice(0, 12).forEach((url, index) => {
+        const item = document.createElement('div');
+        item.className = 'item-preview-imagem-admin';
+        item.draggable = true;
+        item.dataset.indiceImagem = String(index);
+        item.title = 'Arraste para alterar a ordem';
+
         const imagem = document.createElement('img');
         imagem.src = url;
         imagem.alt = 'Imagem ' + (index + 1);
         imagem.loading = 'lazy';
-        imagem.onerror = () => { imagem.style.display = 'none'; };
-        preview.appendChild(imagem);
+        imagem.onerror = () => { item.style.display = 'none'; };
+        item.appendChild(imagem);
+
+        if(index === 0) {
+            const etiqueta = document.createElement('span');
+            etiqueta.className = 'etiqueta-imagem-principal';
+            etiqueta.textContent = 'Principal';
+            item.appendChild(etiqueta);
+        }
+
+        item.addEventListener('dragstart', event => {
+            item.classList.add('arrastando');
+            event.dataTransfer.effectAllowed = 'move';
+            event.dataTransfer.setData('text/plain', String(index));
+        });
+        item.addEventListener('dragend', () => {
+            preview.querySelectorAll('.item-preview-imagem-admin').forEach(elemento => {
+                elemento.classList.remove('arrastando', 'destino-arrasto');
+            });
+        });
+        item.addEventListener('dragover', event => {
+            event.preventDefault();
+            event.dataTransfer.dropEffect = 'move';
+            preview.querySelectorAll('.destino-arrasto').forEach(elemento => elemento.classList.remove('destino-arrasto'));
+            item.classList.add('destino-arrasto');
+        });
+        item.addEventListener('drop', event => {
+            event.preventDefault();
+            const origem = Number(event.dataTransfer.getData('text/plain'));
+            reordenarUrlsImagensAdmin(textareaId, origem, index, atualizarPreview);
+        });
+
+        item.addEventListener('pointerdown', event => {
+            if(event.pointerType === 'mouse') return;
+            item.setPointerCapture(event.pointerId);
+            item.dataset.indiceDestino = String(index);
+            item.classList.add('arrastando');
+        });
+        item.addEventListener('pointermove', event => {
+            if(event.pointerType === 'mouse' || !item.hasPointerCapture(event.pointerId)) return;
+            const destino = document.elementFromPoint(event.clientX, event.clientY)?.closest('.item-preview-imagem-admin');
+            preview.querySelectorAll('.destino-arrasto').forEach(elemento => elemento.classList.remove('destino-arrasto'));
+            if(destino && destino.parentElement === preview) {
+                destino.classList.add('destino-arrasto');
+                item.dataset.indiceDestino = destino.dataset.indiceImagem;
+            }
+        });
+        const terminarArrastoToque = event => {
+            if(event.pointerType === 'mouse') return;
+            const destino = Number(item.dataset.indiceDestino ?? index);
+            item.classList.remove('arrastando');
+            preview.querySelectorAll('.destino-arrasto').forEach(elemento => elemento.classList.remove('destino-arrasto'));
+            reordenarUrlsImagensAdmin(textareaId, index, destino, atualizarPreview);
+        };
+        item.addEventListener('pointerup', terminarArrastoToque);
+        item.addEventListener('pointercancel', terminarArrastoToque);
+
+        preview.appendChild(item);
     });
+}
+
+function atualizarPreviewImagensAdmin() {
+    const preview = document.getElementById('preview-imagens-admin');
+    if(!preview) return;
+    criarPreviewOrdenavelImagens(preview, obterUrlsImagensAdmin(), 'admin-produto-imagens', atualizarPreviewImagensAdmin);
 }
 
 function adicionarUrlsAoCampoImagens(textareaId, urls) {
@@ -2941,16 +3061,7 @@ function obterUrlsImagensEditarAdmin() {
 function atualizarPreviewEditarImagensAdmin() {
     const preview = document.getElementById('preview-editar-imagens-admin');
     if(!preview) return;
-
-    preview.replaceChildren();
-    obterUrlsImagensEditarAdmin().slice(0, 12).forEach((url, index) => {
-        const imagem = document.createElement('img');
-        imagem.src = url;
-        imagem.alt = 'Imagem ' + (index + 1);
-        imagem.loading = 'lazy';
-        imagem.onerror = () => { imagem.style.display = 'none'; };
-        preview.appendChild(imagem);
-    });
+    criarPreviewOrdenavelImagens(preview, obterUrlsImagensEditarAdmin(), 'admin-editar-imagens', atualizarPreviewEditarImagensAdmin);
 }
 
 function imagensParaTextoAdmin(produto) {
