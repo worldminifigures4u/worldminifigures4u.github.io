@@ -408,8 +408,24 @@
 
         .linha-admin-dupla{
             display:grid;
-            grid-template-columns:1fr 1fr;
+            grid-template-columns:repeat(3, minmax(0, 1fr));
             gap:8px;
+        }
+
+        .preview-imagens-admin{
+            display:grid;
+            grid-template-columns:repeat(auto-fill, minmax(72px, 1fr));
+            gap:8px;
+            margin-top:8px;
+        }
+
+        .preview-imagens-admin img{
+            width:100%;
+            aspect-ratio:1;
+            object-fit:contain;
+            background:#222;
+            border:1px solid #333;
+            border-radius:8px;
         }
 
         .ajuda-admin{
@@ -980,6 +996,9 @@
                 height:58px;
                 flex-basis:58px;
             }
+            .linha-admin-dupla{
+                grid-template-columns:1fr;
+            }
         }
 
     </style>
@@ -1112,6 +1131,10 @@
                                 <label for="admin-produto-peso">Peso (g):</label>
                                 <input type="number" id="admin-produto-peso" required min="1" step="1" value="10">
                             </div>
+                            <div>
+                                <label for="admin-produto-stock">Stock:</label>
+                                <input type="number" id="admin-produto-stock" required min="0" step="1" value="1">
+                            </div>
                         </div>
                         <div>
                             <label for="admin-produto-tema">Tema:</label>
@@ -1123,8 +1146,13 @@
                         </div>
                         <div>
                             <label for="admin-produto-imagens">URLs das imagens:</label>
-                            <textarea id="admin-produto-imagens" placeholder="Um URL por linha"></textarea>
+                            <textarea id="admin-produto-imagens" placeholder="Um URL por linha" oninput="atualizarPreviewImagensAdmin()"></textarea>
                             <p class="ajuda-admin">Quando ligarmos o Cloudinary, estes URLs serão preenchidos automaticamente pelo upload.</p>
+                            <div id="preview-imagens-admin" class="preview-imagens-admin"></div>
+                        </div>
+                        <div>
+                            <label for="admin-produto-observacoes">Observações:</label>
+                            <textarea id="admin-produto-observacoes" placeholder="Notas internas sobre estado, acessórios, origem, etc."></textarea>
                         </div>
                         <button type="submit" class="btn-acao-cliente">Criar Produto</button>
                         <div id="status-admin-produto" class="msg-status"></div>
@@ -1976,6 +2004,21 @@ function obterUrlsImagensAdmin() {
         .filter(url => url.length > 0);
 }
 
+function atualizarPreviewImagensAdmin() {
+    const preview = document.getElementById('preview-imagens-admin');
+    if(!preview) return;
+
+    preview.replaceChildren();
+    obterUrlsImagensAdmin().slice(0, 12).forEach((url, index) => {
+        const imagem = document.createElement('img');
+        imagem.src = url;
+        imagem.alt = 'Imagem ' + (index + 1);
+        imagem.loading = 'lazy';
+        imagem.onerror = () => { imagem.style.display = 'none'; };
+        preview.appendChild(imagem);
+    });
+}
+
 async function criarProdutoAdmin(event) {
     event.preventDefault();
     const status = document.getElementById('status-admin-produto');
@@ -1993,10 +2036,12 @@ async function criarProdutoAdmin(event) {
         const subtema = document.getElementById('admin-produto-subtema').value.trim();
         const preco = Number(document.getElementById('admin-produto-preco').value);
         const peso = Number(document.getElementById('admin-produto-peso').value || PESO_PADRAO_PRODUTO_GRAMAS);
+        const stock = Number(document.getElementById('admin-produto-stock').value || 0);
+        const observacoes = document.getElementById('admin-produto-observacoes').value.trim();
         const imagens = obterUrlsImagensAdmin();
 
-        if(!nome || !sku || !tema || !Number.isFinite(preco) || preco < 0 || !Number.isFinite(peso) || peso < 1) {
-            throw new Error('Preencha nome, SKU, tema, pre?o e peso.');
+        if(!nome || !sku || !tema || !Number.isFinite(preco) || preco < 0 || !Number.isFinite(peso) || peso < 1 || !Number.isInteger(stock) || stock < 0) {
+            throw new Error('Preencha nome, SKU, tema, preço, peso e stock.');
         }
 
         const skuExistente = todosOsProdutos.some(produto => String(produto.sku || '').toUpperCase() === sku);
@@ -2011,6 +2056,8 @@ async function criarProdutoAdmin(event) {
             subtema: subtema || 'semsubtema',
             preco,
             peso,
+            stock,
+            observacoes,
             imagens
         };
 
@@ -2024,6 +2071,7 @@ async function criarProdutoAdmin(event) {
 
         todosOsProdutos.push(data);
         document.getElementById('form-admin-produto').reset();
+        atualizarPreviewImagensAdmin();
         mostrarMensagem(status, 'Produto criado com sucesso.', 'msg-sucesso');
         await carregarProdutosDaNuvem();
     } catch(error) {
