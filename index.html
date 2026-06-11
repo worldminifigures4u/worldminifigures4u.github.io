@@ -2852,7 +2852,7 @@ function criarPreviewOrdenavelImagens(preview, urls, textareaId, atualizarPrevie
         item.title = 'Arraste para alterar a ordem';
 
         const imagem = document.createElement('img');
-        imagem.src = url;
+        imagem.src = otimizarImagemCloudinary(url, 240);
         imagem.alt = 'Imagem ' + (index + 1);
         imagem.loading = 'lazy';
         imagem.onerror = () => { item.style.display = 'none'; };
@@ -3453,6 +3453,19 @@ function executarComTimeout(promessa, ms, mensagemErro){
     return Promise.race([promessa, timeoutPromise]).finally(() => clearTimeout(timeout));
 }
 
+function otimizarImagemCloudinary(url, largura = 700) {
+    const urlOriginal = String(url || '').trim();
+    if(!urlOriginal || !urlOriginal.includes('res.cloudinary.com/') || !urlOriginal.includes('/image/upload/')) {
+        return urlOriginal;
+    }
+
+    const larguraSegura = Math.max(80, Math.min(1600, Math.round(Number(largura) || 700)));
+    return urlOriginal.replace(
+        '/image/upload/',
+        `/image/upload/f_auto,q_auto,w_${larguraSegura},c_limit/`
+    );
+}
+
 function obterImagemPrincipalProduto(prod = {}) {
     let listaImagens = [];
 
@@ -3727,7 +3740,9 @@ function gerarProdutos(listaProdutos){
 
         listaImagens = listaImagens.filter(url => url && typeof url === 'string' && url.trim() !== "");
         const imagemFallback = 'img/sem-imagem.png';
-        const imagemInicial = listaImagens.length > 0 ? listaImagens[0] : imagemFallback;
+        const imagemInicial = listaImagens.length > 0
+            ? otimizarImagemCloudinary(listaImagens[0], 700)
+            : imagemFallback;
 
         const imagemPrincipal = document.createElement('img');
         imagemPrincipal.className = 'produto-img';
@@ -3752,7 +3767,11 @@ function gerarProdutos(listaProdutos){
                 mini.type = 'button';
                 mini.title = 'Ver imagem ' + (index + 1);
                 mini.textContent = index + 1;
-                mini.onclick = function() { imagemPrincipal.src = url; };
+                mini.onclick = function() {
+                    const imagemOtimizada = otimizarImagemCloudinary(url, 700);
+                    imagemPrincipal.dataset.srcOriginal = imagemOtimizada;
+                    imagemPrincipal.src = imagemOtimizada;
+                };
                 miniaturasDiv.appendChild(mini);
             });
             card.appendChild(miniaturasDiv);
@@ -4020,7 +4039,7 @@ const carrinhoDiv = document.getElementById("lista-carrinho");
         imagem.className = "imagem-carrinho";
         imagem.loading = "lazy";
         imagem.decoding = "async";
-        imagem.src = imagemSrc;
+        imagem.src = otimizarImagemCloudinary(imagemSrc, 180);
         imagem.alt = item.nome;
         imagem.onerror = () => {
             if (imagem.src.indexOf('img/sem-imagem.png') === -1) {
