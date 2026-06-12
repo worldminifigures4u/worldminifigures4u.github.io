@@ -631,6 +631,44 @@ body{
             gap:8px;
         }
 
+        .wallapop-dados-encomenda{
+            margin-bottom:20px;
+            padding-bottom:18px;
+            border-bottom:1px solid #333;
+        }
+
+        .wallapop-dados-encomenda label{
+            display:block;
+            margin-bottom:7px;
+            color:#ffc400;
+            font-weight:800;
+        }
+
+        .wallapop-dados-encomenda input{
+            width:100%;
+            box-sizing:border-box;
+            padding:11px 12px;
+            border:1px solid #555;
+            border-radius:5px;
+            background:#222;
+            color:#fff;
+            font:inherit;
+        }
+
+        .wallapop-dados-encomenda p{
+            margin:10px 0 5px;
+            color:#bbb;
+            font-size:13px;
+            line-height:1.4;
+        }
+
+        .wallapop-dados-encomenda code{
+            display:block;
+            overflow-wrap:anywhere;
+            color:#fff;
+            font-size:12px;
+        }
+
         .wallapop-status{
             margin:12px 0 0;
             min-height:18px;

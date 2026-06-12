@@ -294,7 +294,101 @@ async function esperarImagensWallapop() {
     }));
 }
 
+const WALLAPOP_PASTA_DB = 'figures-planet-anuncio';
+const WALLAPOP_PASTA_STORE = 'configuracao';
+
+function abrirBaseDadosPastaWallapop() {
+    return new Promise((resolve, reject) => {
+        const pedido = indexedDB.open(WALLAPOP_PASTA_DB, 1);
+        pedido.onupgradeneeded = () => pedido.result.createObjectStore(WALLAPOP_PASTA_STORE);
+        pedido.onsuccess = () => resolve(pedido.result);
+        pedido.onerror = () => reject(pedido.error);
+    });
+}
+
+async function guardarPastaBaseWallapop(handle) {
+    const db = await abrirBaseDadosPastaWallapop();
+    await new Promise((resolve, reject) => {
+        const transacao = db.transaction(WALLAPOP_PASTA_STORE, 'readwrite');
+        transacao.objectStore(WALLAPOP_PASTA_STORE).put(handle, 'pasta-base');
+        transacao.oncomplete = resolve;
+        transacao.onerror = () => reject(transacao.error);
+    });
+    db.close();
+}
+
+async function carregarPastaBaseWallapop() {
+    const db = await abrirBaseDadosPastaWallapop();
+    const handle = await new Promise((resolve, reject) => {
+        const transacao = db.transaction(WALLAPOP_PASTA_STORE, 'readonly');
+        const pedido = transacao.objectStore(WALLAPOP_PASTA_STORE).get('pasta-base');
+        pedido.onsuccess = () => resolve(pedido.result || null);
+        pedido.onerror = () => reject(pedido.error);
+    });
+    db.close();
+    return handle;
+}
+
+async function obterPastaBaseWallapop() {
+    if (!window.showDirectoryPicker) throw new Error('Esta função requer Chrome ou Edge atualizado.');
+
+    let handle = await carregarPastaBaseWallapop().catch(() => null);
+    if (handle) {
+        let permissao = await handle.queryPermission({ mode: 'readwrite' });
+        if (permissao !== 'granted') permissao = await handle.requestPermission({ mode: 'readwrite' });
+        if (permissao === 'granted') return handle;
+    }
+
+    handle = await window.showDirectoryPicker({
+        id: 'figures-planet-passei-a-bola',
+        mode: 'readwrite'
+    });
+    if (handle.name !== 'Passei a Bola') {
+        throw new Error('Selecione a pasta "Passei a Bola" indicada na página.');
+    }
+    await guardarPastaBaseWallapop(handle).catch(() => {});
+    return handle;
+}
+
+function limparNomePastaWallapop(nome) {
+    const limpo = String(nome || '')
+        .trim()
+        .replace(/[<>:"/\\|?*\x00-\x1F]/g, '-')
+        .replace(/[. ]+$/g, '')
+        .slice(0, 100);
+    if (!limpo || /^(con|prn|aux|nul|com[1-9]|lpt[1-9])$/i.test(limpo)) return '';
+    return limpo;
+}
+
+async function escreverFicheiroWallapop(pasta, nome, conteudo) {
+    const ficheiro = await pasta.getFileHandle(nome, { create: true });
+    const escrita = await ficheiro.createWritable();
+    await escrita.write(conteudo);
+    await escrita.close();
+}
+
+function criarTextoEncomendaWallapop() {
+    return '\ufeff' + wallapopItens.map(item => [
+        Math.max(1, Number(item.quantidade) || 1),
+        String(item.nome || '').trim(),
+        String(item.sku || '').trim()
+    ].join('\t')).join('\r\n');
+}
+
+function canvasParaBlobWallapop(canvas) {
+    return new Promise((resolve, reject) => {
+        canvas.toBlob(blob => blob ? resolve(blob) : reject(new Error('Não foi possível gerar o PNG.')), 'image/png');
+    });
+}
+
 async function descarregarImagemWallapop() {
+    const campoNome = document.getElementById('wallapop-nome-encomenda');
+    const nomeEncomenda = limparNomePastaWallapop(campoNome.value);
+    if (!nomeEncomenda) {
+        definirStatusWallapop('Indique um nome válido para a encomenda.', true);
+        campoNome.focus();
+        return;
+    }
     if (!wallapopItens.length) {
         definirStatusWallapop('Adicione pelo menos um produto.', true);
         return;
@@ -304,8 +398,9 @@ async function descarregarImagemWallapop() {
         return;
     }
 
-    definirStatusWallapop('A preparar a imagem...');
+    definirStatusWallapop('A preparar a pasta e os ficheiros...');
     try {
+        const pastaBase = await obterPastaBaseWallapop();
         await esperarImagensWallapop();
         const folha = document.getElementById('wallapop-folha');
         const canvas = await html2canvas(folha, {
@@ -316,14 +411,18 @@ async function descarregarImagemWallapop() {
             windowWidth: folha.scrollWidth,
             windowHeight: folha.scrollHeight
         });
-        const link = document.createElement('a');
-        link.download = `wallapop-${new Date().toISOString().slice(0, 10)}.png`;
-        link.href = canvas.toDataURL('image/png');
-        link.click();
-        definirStatusWallapop('Imagem descarregada com sucesso.');
+        const pastaEncomenda = await pastaBase.getDirectoryHandle(nomeEncomenda, { create: true });
+        const imagem = await canvasParaBlobWallapop(canvas);
+        await escreverFicheiroWallapop(pastaEncomenda, `${nomeEncomenda}.txt`, criarTextoEncomendaWallapop());
+        await escreverFicheiroWallapop(pastaEncomenda, 'foto anuncio.png', imagem);
+        definirStatusWallapop(`Pasta "${nomeEncomenda}" guardada com sucesso.`);
     } catch (error) {
         console.error(error);
-        definirStatusWallapop('Não foi possível criar a imagem. Verifique se todas as fotografias carregaram.', true);
+        if (error?.name === 'AbortError') {
+            definirStatusWallapop('Seleção da pasta cancelada.', true);
+            return;
+        }
+        definirStatusWallapop('Não foi possível guardar a encomenda: ' + (error.message || 'erro desconhecido'), true);
     }
 }
 
