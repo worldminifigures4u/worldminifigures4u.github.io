@@ -15,7 +15,6 @@
         <h1>Anúncio</h1>
         <div class="wallapop-topo-acoes">
             <a class="wallapop-botao" href="conta.html">Voltar à conta</a>
-            <button class="wallapop-botao wallapop-botao-destaque" type="button" id="btn-descarregar-wallapop">Guardar anúncio</button>
         </div>
     </div>
 
@@ -23,12 +22,6 @@
 
     <main class="wallapop-layout" id="wallapop-aplicacao" hidden>
         <section class="wallapop-editor" aria-label="Editor do anúncio">
-            <div class="wallapop-dados-encomenda">
-                <label for="wallapop-nome-encomenda">Nome da encomenda</label>
-                <input type="text" id="wallapop-nome-encomenda" placeholder="Ex.: João Silva" autocomplete="off">
-                <p>Ao guardar, escolhe a pasta de destino. Dentro dela será criada uma pasta com o nome da encomenda.</p>
-            </div>
-
             <h2>Adicionar produtos</h2>
             <div class="wallapop-pesquisa">
                 <input type="search" id="wallapop-pesquisa" placeholder="Nome ou SKU" autocomplete="off">
@@ -39,14 +32,23 @@
             <div class="wallapop-selecionados" id="wallapop-selecionados"></div>
             <div class="wallapop-controlos-finais">
                 <button class="wallapop-botao" type="button" id="btn-limpar-wallapop">Limpar lista</button>
-                <button class="wallapop-botao wallapop-botao-destaque" type="button" id="btn-descarregar-wallapop-secundario">Guardar anúncio</button>
             </div>
-            <p class="wallapop-status" id="wallapop-status" aria-live="polite"></p>
         </section>
 
         <section class="wallapop-preview-wrap" aria-label="Pré-visualização da imagem">
-            <div class="wallapop-folha" id="wallapop-folha">
-                <div class="wallapop-grelha" id="wallapop-grelha"></div>
+            <div class="wallapop-preview-acoes">
+                <div class="wallapop-dados-encomenda">
+                    <label for="wallapop-nome-encomenda">Nome da encomenda</label>
+                    <input type="text" id="wallapop-nome-encomenda" placeholder="Ex.: João Silva" autocomplete="off">
+                    <p>Ao guardar, escolhe a pasta de destino. Dentro dela será criada uma pasta com o nome da encomenda.</p>
+                </div>
+                <button class="wallapop-botao wallapop-botao-destaque" type="button" id="btn-descarregar-wallapop">Guardar anúncio</button>
+                <p class="wallapop-status" id="wallapop-status" aria-live="polite"></p>
+            </div>
+            <div class="wallapop-folha-escala">
+                <div class="wallapop-folha" id="wallapop-folha">
+                    <div class="wallapop-grelha" id="wallapop-grelha"></div>
+                </div>
             </div>
         </section>
     </main>

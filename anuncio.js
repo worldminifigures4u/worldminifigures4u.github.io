@@ -360,8 +360,8 @@ async function descarregarImagemWallapop() {
         const pastaBase = await obterPastaBaseWallapop();
         await esperarImagensWallapop();
         const folha = document.getElementById('wallapop-folha');
-        const zoomAnterior = folha.style.zoom;
-        folha.style.zoom = '1';
+        const transformAnterior = folha.style.transform;
+        folha.style.transform = 'none';
         let canvas;
         try {
             canvas = await html2canvas(folha, {
@@ -373,7 +373,7 @@ async function descarregarImagemWallapop() {
                 windowHeight: folha.scrollHeight
             });
         } finally {
-            folha.style.zoom = zoomAnterior;
+            folha.style.transform = transformAnterior;
         }
         const pastaEncomenda = await pastaBase.getDirectoryHandle(nomeEncomenda, { create: true });
         const imagem = await canvasParaBlobWallapop(canvas);
@@ -426,5 +426,4 @@ async function iniciarWallapopAdmin() {
 document.getElementById('wallapop-pesquisa').addEventListener('input', renderizarResultadosWallapop);
 document.getElementById('btn-limpar-wallapop').addEventListener('click', limparListaWallapop);
 document.getElementById('btn-descarregar-wallapop').addEventListener('click', descarregarImagemWallapop);
-document.getElementById('btn-descarregar-wallapop-secundario').addEventListener('click', descarregarImagemWallapop);
 window.addEventListener('load', iniciarWallapopAdmin);

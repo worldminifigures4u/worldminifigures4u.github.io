@@ -626,15 +626,15 @@ body{
 
         .wallapop-controlos-finais{
             margin-top:16px;
-            display:grid;
-            grid-template-columns:1fr 1fr;
-            gap:8px;
+            display:block;
+        }
+
+        .wallapop-controlos-finais .wallapop-botao{
+            width:100%;
         }
 
         .wallapop-dados-encomenda{
-            margin-bottom:20px;
-            padding-bottom:18px;
-            border-bottom:1px solid #333;
+            min-width:0;
         }
 
         .wallapop-dados-encomenda label{
@@ -670,7 +670,8 @@ body{
         }
 
         .wallapop-status{
-            margin:12px 0 0;
+            grid-column:1 / -1;
+            margin:0;
             min-height:18px;
             color:#bbb;
             font-size:13px;
@@ -681,7 +682,34 @@ body{
             overflow:hidden;
             padding:0 0 20px;
             display:flex;
-            justify-content:center;
+            flex-direction:column;
+            align-items:center;
+        }
+
+        .wallapop-preview-acoes{
+            width:100%;
+            margin-bottom:16px;
+            padding:16px;
+            box-sizing:border-box;
+            border:1px solid #333;
+            border-radius:8px;
+            background:#111;
+            display:grid;
+            grid-template-columns:minmax(0, 1fr) auto;
+            gap:12px;
+            align-items:end;
+        }
+
+        .wallapop-preview-acoes .wallapop-botao{
+            min-height:42px;
+            white-space:nowrap;
+        }
+
+        .wallapop-folha-escala{
+            width:476px;
+            height:674px;
+            flex:0 0 auto;
+            overflow:hidden;
         }
 
         .wallapop-folha{
@@ -695,7 +723,8 @@ body{
             box-shadow:0 8px 28px rgba(0,0,0,.45);
             display:flex;
             flex-direction:column;
-            zoom:.6;
+            transform:scale(.6);
+            transform-origin:top left;
         }
 
         .wallapop-grelha{
@@ -792,8 +821,15 @@ body{
                 margin-inline:-16px;
                 overflow:auto;
             }
+            .wallapop-preview-acoes{
+                width:calc(100% - 32px);
+            }
+            .wallapop-folha-escala{
+                width:596px;
+                height:843px;
+            }
             .wallapop-folha{
-                zoom:.75;
+                transform:scale(.75);
             }
         }
 
@@ -803,7 +839,8 @@ body{
                 flex-direction:column;
             }
             .wallapop-topo-acoes,
-            .wallapop-controlos-finais{
+            .wallapop-controlos-finais,
+            .wallapop-preview-acoes{
                 width:100%;
                 grid-template-columns:1fr;
             }
