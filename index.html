@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>World Minifigures 4U</title>
+    <title>Figures Planet</title>
+    <link rel="icon" type="image/jpeg" href="figures-planet-logo.jpg">
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
@@ -18,7 +19,7 @@
         }
 
         body{
-            padding-top: 76px;
+            padding-top: 112px;
         }
 
         header{
@@ -44,15 +45,20 @@
         }
 
         .logo-loja{
-            color:#000;
             text-decoration:none;
-            font-size:22px;
-            line-height:1.1;
-            font-weight:900;
-            letter-spacing:0;
-            white-space:nowrap;
-            overflow:hidden;
-            text-overflow:ellipsis;
+            display:flex;
+            align-items:center;
+            width:max-content;
+            max-width:100%;
+        }
+
+        .logo-loja img{
+            display:block;
+            width:156px;
+            height:88px;
+            object-fit:contain;
+            object-position:center;
+            border-radius:7px;
         }
 
         .cabecalho-pesquisa{
@@ -1131,7 +1137,7 @@
         }
 
         @media(max-width:1100px){
-            body{ padding-top:126px; }
+            body{ padding-top:156px; }
             .cabecalho-loja{
                 grid-template-columns:1fr auto;
                 gap:10px 12px;
@@ -1141,7 +1147,10 @@
                 grid-column:1 / -1;
                 grid-row:2;
             }
-            .logo-loja{ font-size:20px; }
+            .logo-loja img{
+                width:138px;
+                height:78px;
+            }
             .texto-acao span{ max-width:120px; }
             .texto-acao strong{ max-width:120px; }
             .acao-cabecalho{ padding:0 12px; }
@@ -1153,7 +1162,7 @@
         }
 
         @media(max-width:560px){
-            body{ padding-top:160px; }
+            body{ padding-top:188px; }
             .cabecalho-loja{
                 grid-template-columns:minmax(0, 1fr);
                 grid-template-rows:auto auto auto;
@@ -1163,10 +1172,11 @@
             .logo-loja{
                 grid-column:1;
                 grid-row:1;
-                font-size:19px;
-                text-align:center;
-                overflow:visible;
-                text-overflow:clip;
+                justify-self:center;
+            }
+            .logo-loja img{
+                width:120px;
+                height:68px;
             }
             .acoes-cabecalho{
                 grid-column:1;
@@ -1218,7 +1228,9 @@
 
 <header>
     <div class="cabecalho-loja">
-        <a class="logo-loja" href="#loja" onclick="mostrarVista('loja')">World Minifigures 4U</a>
+        <a class="logo-loja" href="#loja" onclick="mostrarVista('loja')" aria-label="Figures Planet - Produtos">
+            <img src="figures-planet-logo.jpg" alt="Figures Planet">
+        </a>
         <div class="cabecalho-pesquisa">
             <input type="text" id="campo-pesquisa" class="input-pesquisa" placeholder="O que est&aacute;s &agrave; procura?" oninput="pesquisarNoCabecalho()" onkeydown="verificarTeclaEnter(event)">
             <span class="icone-pesquisa" aria-hidden="true"></span>
