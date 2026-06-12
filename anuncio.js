@@ -294,60 +294,12 @@ async function esperarImagensWallapop() {
     }));
 }
 
-const WALLAPOP_PASTA_DB = 'figures-planet-anuncio';
-const WALLAPOP_PASTA_STORE = 'configuracao';
-
-function abrirBaseDadosPastaWallapop() {
-    return new Promise((resolve, reject) => {
-        const pedido = indexedDB.open(WALLAPOP_PASTA_DB, 1);
-        pedido.onupgradeneeded = () => pedido.result.createObjectStore(WALLAPOP_PASTA_STORE);
-        pedido.onsuccess = () => resolve(pedido.result);
-        pedido.onerror = () => reject(pedido.error);
-    });
-}
-
-async function guardarPastaBaseWallapop(handle) {
-    const db = await abrirBaseDadosPastaWallapop();
-    await new Promise((resolve, reject) => {
-        const transacao = db.transaction(WALLAPOP_PASTA_STORE, 'readwrite');
-        transacao.objectStore(WALLAPOP_PASTA_STORE).put(handle, 'pasta-base');
-        transacao.oncomplete = resolve;
-        transacao.onerror = () => reject(transacao.error);
-    });
-    db.close();
-}
-
-async function carregarPastaBaseWallapop() {
-    const db = await abrirBaseDadosPastaWallapop();
-    const handle = await new Promise((resolve, reject) => {
-        const transacao = db.transaction(WALLAPOP_PASTA_STORE, 'readonly');
-        const pedido = transacao.objectStore(WALLAPOP_PASTA_STORE).get('pasta-base');
-        pedido.onsuccess = () => resolve(pedido.result || null);
-        pedido.onerror = () => reject(pedido.error);
-    });
-    db.close();
-    return handle;
-}
-
 async function obterPastaBaseWallapop() {
     if (!window.showDirectoryPicker) throw new Error('Esta função requer Chrome ou Edge atualizado.');
-
-    let handle = await carregarPastaBaseWallapop().catch(() => null);
-    if (handle) {
-        let permissao = await handle.queryPermission({ mode: 'readwrite' });
-        if (permissao !== 'granted') permissao = await handle.requestPermission({ mode: 'readwrite' });
-        if (permissao === 'granted') return handle;
-    }
-
-    handle = await window.showDirectoryPicker({
-        id: 'figures-planet-passei-a-bola',
+    return window.showDirectoryPicker({
+        id: 'figures-planet-anuncio-destino',
         mode: 'readwrite'
     });
-    if (handle.name !== 'Passei a Bola') {
-        throw new Error('Selecione a pasta "Passei a Bola" indicada na página.');
-    }
-    await guardarPastaBaseWallapop(handle).catch(() => {});
-    return handle;
 }
 
 function limparNomePastaWallapop(nome) {
@@ -368,11 +320,16 @@ async function escreverFicheiroWallapop(pasta, nome, conteudo) {
 }
 
 function criarTextoEncomendaWallapop() {
-    return '\ufeff' + wallapopItens.map(item => [
+    const linhas = wallapopItens.map(item => [
         Math.max(1, Number(item.quantidade) || 1),
         String(item.nome || '').trim(),
         String(item.sku || '').trim()
-    ].join('\t')).join('\r\n');
+    ].join('\t'));
+    const total = wallapopItens.reduce((soma, item) => {
+        return soma + (Math.max(1, Number(item.quantidade) || 1) * Number(item.preco || 0));
+    }, 0);
+    linhas.push('', `Total:\t${formatarEuroWallapop(total)} €`);
+    return '\ufeff' + linhas.join('\r\n');
 }
 
 function canvasParaBlobWallapop(canvas) {
