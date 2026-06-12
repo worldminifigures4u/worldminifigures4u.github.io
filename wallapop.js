@@ -1,0 +1,365 @@
+const WALLAPOP_SUPABASE_URL = "https://gksndzxadndrsynvzgzb.supabase.co";
+const WALLAPOP_SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imdrc25kenhhZG5kcnN5bnZ6Z3piIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkwODc5NzMsImV4cCI6MjA5NDY2Mzk3M30.EHZgacYr27dqoc4CJHsOwkNnJFGlLIteSHBi4B1HfVE";
+const WALLAPOP_ADMIN_EMAILS = ["worldminifigures4u@gmail.com"];
+const WALLAPOP_STORAGE_KEY = "figures-planet-wallapop-itens";
+const WALLAPOP_SEM_IMAGEM = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(
+    '<svg xmlns="http://www.w3.org/2000/svg" width="500" height="500"><rect width="100%" height="100%" fill="#f1f1f1"/><text x="50%" y="50%" text-anchor="middle" dominant-baseline="middle" fill="#777" font-family="Arial" font-size="34">Sem foto</text></svg>'
+);
+
+let wallapopClient = null;
+let wallapopProdutos = [];
+let wallapopItens = carregarItensWallapop();
+
+function formatarEuroWallapop(valor) {
+    return Number(valor || 0).toFixed(2).replace('.', ',');
+}
+
+function normalizarTextoWallapop(valor) {
+    return String(valor || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+}
+
+function obterImagemWallapop(produto = {}) {
+    let imagens = produto.imagens;
+    if (typeof imagens === 'string') {
+        try {
+            imagens = JSON.parse(imagens);
+        } catch (_) {
+            imagens = imagens.split(',').map(item => item.trim());
+        }
+    }
+    const url = Array.isArray(imagens) ? imagens.find(Boolean) : '';
+    return url || WALLAPOP_SEM_IMAGEM;
+}
+
+function otimizarImagemWallapop(url, largura = 500) {
+    const original = String(url || '');
+    if (!original.includes('res.cloudinary.com/') || !original.includes('/image/upload/')) return original;
+    return original.replace('/image/upload/', `/image/upload/f_auto,q_auto,w_${largura},c_limit/`);
+}
+
+function carregarItensWallapop() {
+    try {
+        const guardados = JSON.parse(localStorage.getItem(WALLAPOP_STORAGE_KEY) || '[]');
+        return Array.isArray(guardados) ? guardados : [];
+    } catch (_) {
+        return [];
+    }
+}
+
+function guardarItensWallapop() {
+    localStorage.setItem(WALLAPOP_STORAGE_KEY, JSON.stringify(wallapopItens));
+}
+
+function definirStatusWallapop(texto, erro = false) {
+    const elemento = document.getElementById('wallapop-status');
+    elemento.textContent = texto || '';
+    elemento.style.color = erro ? '#ff6262' : '#bbb';
+}
+
+async function carregarCatalogoWallapop() {
+    const produtos = [];
+    let inicio = 0;
+    const tamanho = 500;
+
+    while (true) {
+        const { data, error } = await wallapopClient
+            .from('produtos_loja')
+            .select('id, sku, nome, preco, imagens, ativo')
+            .order('nome', { ascending: true })
+            .range(inicio, inicio + tamanho - 1);
+        if (error) throw error;
+        if (!data?.length) break;
+        produtos.push(...data.filter(produto => produto.ativo !== false));
+        if (data.length < tamanho) break;
+        inicio += tamanho;
+    }
+
+    wallapopProdutos = produtos;
+    wallapopItens = wallapopItens
+        .map(item => {
+            const produto = produtos.find(atual => String(atual.id) === String(item.id));
+            return produto ? { ...produto, quantidade: Math.max(1, Number(item.quantidade) || 1) } : null;
+        })
+        .filter(Boolean);
+    guardarItensWallapop();
+}
+
+function criarImagemWallapop(src, alt, classe) {
+    const imagem = document.createElement('img');
+    imagem.className = classe;
+    imagem.alt = alt;
+    imagem.crossOrigin = 'anonymous';
+    imagem.src = otimizarImagemWallapop(src);
+    imagem.onerror = () => {
+        imagem.onerror = null;
+        imagem.removeAttribute('crossorigin');
+        imagem.src = WALLAPOP_SEM_IMAGEM;
+    };
+    return imagem;
+}
+
+function adicionarProdutoWallapop(id) {
+    const existente = wallapopItens.find(item => String(item.id) === String(id));
+    if (existente) {
+        existente.quantidade += 1;
+    } else {
+        const produto = wallapopProdutos.find(item => String(item.id) === String(id));
+        if (!produto) return;
+        wallapopItens.push({ ...produto, quantidade: 1 });
+    }
+    guardarItensWallapop();
+    renderizarSelecionadosWallapop();
+    renderizarFolhaWallapop();
+}
+
+function alterarQuantidadeWallapop(id, diferenca) {
+    const item = wallapopItens.find(produto => String(produto.id) === String(id));
+    if (!item) return;
+    item.quantidade = Math.max(1, item.quantidade + diferenca);
+    guardarItensWallapop();
+    renderizarSelecionadosWallapop();
+    renderizarFolhaWallapop();
+}
+
+function removerProdutoWallapop(id) {
+    wallapopItens = wallapopItens.filter(item => String(item.id) !== String(id));
+    guardarItensWallapop();
+    renderizarSelecionadosWallapop();
+    renderizarFolhaWallapop();
+}
+
+function moverProdutoWallapop(id, diferenca) {
+    const indice = wallapopItens.findIndex(item => String(item.id) === String(id));
+    const destino = indice + diferenca;
+    if (indice < 0 || destino < 0 || destino >= wallapopItens.length) return;
+    [wallapopItens[indice], wallapopItens[destino]] = [wallapopItens[destino], wallapopItens[indice]];
+    guardarItensWallapop();
+    renderizarSelecionadosWallapop();
+    renderizarFolhaWallapop();
+}
+
+function renderizarResultadosWallapop() {
+    const termo = normalizarTextoWallapop(document.getElementById('wallapop-pesquisa').value);
+    const contentor = document.getElementById('wallapop-resultados');
+    contentor.replaceChildren();
+
+    if (!termo) {
+        const ajuda = document.createElement('p');
+        ajuda.className = 'wallapop-status';
+        ajuda.textContent = 'Pesquise para adicionar produtos.';
+        contentor.appendChild(ajuda);
+        return;
+    }
+
+    const resultados = wallapopProdutos.filter(produto =>
+        normalizarTextoWallapop(produto.nome).includes(termo) ||
+        normalizarTextoWallapop(produto.sku).includes(termo)
+    ).slice(0, 30);
+
+    resultados.forEach(produto => {
+        const linha = document.createElement('div');
+        linha.className = 'wallapop-resultado';
+        linha.appendChild(criarImagemWallapop(obterImagemWallapop(produto), produto.nome, 'wallapop-miniatura'));
+
+        const info = document.createElement('div');
+        info.className = 'wallapop-resultado-info';
+        const nome = document.createElement('strong');
+        nome.textContent = produto.nome;
+        const preco = document.createElement('span');
+        preco.textContent = `${formatarEuroWallapop(produto.preco)} €`;
+        info.append(nome, preco);
+
+        const adicionar = document.createElement('button');
+        adicionar.className = 'wallapop-botao wallapop-botao-destaque';
+        adicionar.type = 'button';
+        adicionar.textContent = 'Adicionar';
+        adicionar.onclick = () => adicionarProdutoWallapop(produto.id);
+        linha.append(info, adicionar);
+        contentor.appendChild(linha);
+    });
+
+    if (!resultados.length) {
+        const vazio = document.createElement('p');
+        vazio.className = 'wallapop-status';
+        vazio.textContent = 'Nenhum produto encontrado.';
+        contentor.appendChild(vazio);
+    }
+}
+
+function renderizarSelecionadosWallapop() {
+    const contentor = document.getElementById('wallapop-selecionados');
+    contentor.replaceChildren();
+
+    wallapopItens.forEach(item => {
+        const linha = document.createElement('div');
+        linha.className = 'wallapop-selecionado';
+        linha.appendChild(criarImagemWallapop(obterImagemWallapop(item), item.nome, 'wallapop-miniatura'));
+
+        const info = document.createElement('div');
+        info.className = 'wallapop-selecionado-info';
+        const nome = document.createElement('strong');
+        nome.textContent = item.nome;
+        const preco = document.createElement('span');
+        preco.textContent = `${formatarEuroWallapop(item.preco)} €`;
+        info.append(nome, preco);
+
+        const controlos = document.createElement('div');
+        controlos.className = 'wallapop-quantidade';
+        const subir = document.createElement('button');
+        subir.type = 'button';
+        subir.textContent = '↑';
+        subir.title = 'Mover para cima';
+        subir.onclick = () => moverProdutoWallapop(item.id, -1);
+        const descer = document.createElement('button');
+        descer.type = 'button';
+        descer.textContent = '↓';
+        descer.title = 'Mover para baixo';
+        descer.onclick = () => moverProdutoWallapop(item.id, 1);
+        const menos = document.createElement('button');
+        menos.type = 'button';
+        menos.textContent = '−';
+        menos.title = 'Diminuir quantidade';
+        menos.onclick = () => alterarQuantidadeWallapop(item.id, -1);
+        const quantidade = document.createElement('strong');
+        quantidade.textContent = item.quantidade;
+        const mais = document.createElement('button');
+        mais.type = 'button';
+        mais.textContent = '+';
+        mais.title = 'Aumentar quantidade';
+        mais.onclick = () => alterarQuantidadeWallapop(item.id, 1);
+        const remover = document.createElement('button');
+        remover.type = 'button';
+        remover.className = 'wallapop-remover';
+        remover.textContent = '×';
+        remover.title = 'Remover produto';
+        remover.onclick = () => removerProdutoWallapop(item.id);
+        controlos.append(subir, descer, menos, quantidade, mais, remover);
+        linha.append(info, controlos);
+        contentor.appendChild(linha);
+    });
+
+    if (!wallapopItens.length) {
+        const vazio = document.createElement('p');
+        vazio.className = 'wallapop-status';
+        vazio.textContent = 'A lista está vazia.';
+        contentor.appendChild(vazio);
+    }
+}
+
+function renderizarFolhaWallapop() {
+    const grelha = document.getElementById('wallapop-grelha');
+    grelha.replaceChildren();
+
+    wallapopItens.forEach(item => {
+        const cartao = document.createElement('article');
+        cartao.className = 'wallapop-cartao';
+        cartao.appendChild(criarImagemWallapop(obterImagemWallapop(item), item.nome, ''));
+
+        const texto = document.createElement('div');
+        texto.className = 'wallapop-cartao-texto';
+        const quantidade = document.createElement('p');
+        quantidade.className = 'wallapop-cartao-quantidade';
+        quantidade.textContent = `${item.quantidade}x`;
+        const nome = document.createElement('h3');
+        nome.textContent = item.nome;
+        const preco = document.createElement('p');
+        preco.className = 'wallapop-cartao-preco';
+        preco.textContent = `${formatarEuroWallapop(item.preco)} € / un.`;
+        texto.append(quantidade, nome, preco);
+        cartao.appendChild(texto);
+        grelha.appendChild(cartao);
+    });
+
+    if (!wallapopItens.length) {
+        const vazio = document.createElement('div');
+        vazio.className = 'wallapop-vazio';
+        vazio.textContent = 'Adicione produtos para criar a imagem.';
+        grelha.appendChild(vazio);
+    }
+
+    const total = wallapopItens.reduce((soma, item) => soma + Number(item.preco || 0) * item.quantidade, 0);
+    document.getElementById('wallapop-total').textContent = `Total: ${formatarEuroWallapop(total)} €`;
+}
+
+async function esperarImagensWallapop() {
+    const imagens = [...document.querySelectorAll('#wallapop-folha img')];
+    await Promise.all(imagens.map(imagem => {
+        if (imagem.complete) return Promise.resolve();
+        return new Promise(resolve => {
+            imagem.addEventListener('load', resolve, { once: true });
+            imagem.addEventListener('error', resolve, { once: true });
+        });
+    }));
+}
+
+async function descarregarImagemWallapop() {
+    if (!wallapopItens.length) {
+        definirStatusWallapop('Adicione pelo menos um produto.', true);
+        return;
+    }
+    if (typeof html2canvas !== 'function') {
+        definirStatusWallapop('A ferramenta de imagem não carregou. Atualize a página.', true);
+        return;
+    }
+
+    definirStatusWallapop('A preparar a imagem...');
+    try {
+        await esperarImagensWallapop();
+        const folha = document.getElementById('wallapop-folha');
+        const canvas = await html2canvas(folha, {
+            backgroundColor: '#ffffff',
+            scale: 2,
+            useCORS: true,
+            logging: false,
+            windowWidth: folha.scrollWidth,
+            windowHeight: folha.scrollHeight
+        });
+        const link = document.createElement('a');
+        link.download = `wallapop-${new Date().toISOString().slice(0, 10)}.png`;
+        link.href = canvas.toDataURL('image/png');
+        link.click();
+        definirStatusWallapop('Imagem descarregada com sucesso.');
+    } catch (error) {
+        console.error(error);
+        definirStatusWallapop('Não foi possível criar a imagem. Verifique se todas as fotografias carregaram.', true);
+    }
+}
+
+function limparListaWallapop() {
+    if (!wallapopItens.length || !window.confirm('Limpar todos os produtos desta imagem?')) return;
+    wallapopItens = [];
+    guardarItensWallapop();
+    renderizarSelecionadosWallapop();
+    renderizarFolhaWallapop();
+    definirStatusWallapop('Lista limpa.');
+}
+
+async function iniciarWallapopAdmin() {
+    const bloqueio = document.getElementById('wallapop-bloqueio');
+    try {
+        if (typeof supabase === 'undefined') throw new Error('A biblioteca Supabase não carregou.');
+        wallapopClient = supabase.createClient(WALLAPOP_SUPABASE_URL, WALLAPOP_SUPABASE_KEY);
+        const { data: { user }, error } = await wallapopClient.auth.getUser();
+        if (error || !user || !WALLAPOP_ADMIN_EMAILS.includes(String(user.email || '').toLowerCase())) {
+            bloqueio.textContent = 'Acesso reservado ao administrador. A regressar à conta...';
+            setTimeout(() => window.location.replace('conta.html'), 1400);
+            return;
+        }
+
+        await carregarCatalogoWallapop();
+        bloqueio.hidden = true;
+        document.getElementById('wallapop-aplicacao').hidden = false;
+        renderizarResultadosWallapop();
+        renderizarSelecionadosWallapop();
+        renderizarFolhaWallapop();
+    } catch (error) {
+        console.error(error);
+        bloqueio.textContent = 'Erro ao abrir a ferramenta: ' + (error.message || 'sem detalhe disponível');
+    }
+}
+
+document.getElementById('wallapop-pesquisa').addEventListener('input', renderizarResultadosWallapop);
+document.getElementById('btn-limpar-wallapop').addEventListener('click', limparListaWallapop);
+document.getElementById('btn-descarregar-wallapop').addEventListener('click', descarregarImagemWallapop);
+document.getElementById('btn-descarregar-wallapop-secundario').addEventListener('click', descarregarImagemWallapop);
+window.addEventListener('load', iniciarWallapopAdmin);
