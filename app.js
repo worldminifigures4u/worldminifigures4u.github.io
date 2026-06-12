@@ -372,6 +372,38 @@ function mostrarFormularioRecuperacaoPassword() {
     );
 }
 
+async function pedirRecuperacaoPassword() {
+    const statusDiv = document.getElementById('status-cliente');
+    const emailInput = document.getElementById('login-email');
+    const email = String(emailInput?.value || '').trim();
+
+    if (!email) {
+        mostrarMensagem(statusDiv, 'Introduza primeiro o seu endereço de email.', 'msg-erro');
+        emailInput?.focus();
+        return;
+    }
+
+    try {
+        mostrarMensagem(statusDiv, 'A enviar o email de recuperação...');
+        const redirectTo = new URL('conta.html', obterUrlPublicoAtual()).href;
+        const { error } = await dbClient.auth.resetPasswordForEmail(email, { redirectTo });
+        if (error) throw error;
+
+        mostrarMensagem(
+            statusDiv,
+            'Enviámos um email com o link para definir uma nova palavra-passe. Verifique também a pasta de spam.',
+            'msg-sucesso'
+        );
+    } catch (error) {
+        console.error('Erro ao pedir recuperação de password:', error);
+        mostrarMensagem(
+            statusDiv,
+            'Erro: ' + (error.message || 'Não foi possível enviar o email de recuperação.'),
+            'msg-erro'
+        );
+    }
+}
+
 async function fazerLogin(event) {
     event.preventDefault();
     const statusDiv = document.getElementById('status-cliente');

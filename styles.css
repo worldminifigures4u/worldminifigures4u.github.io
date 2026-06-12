@@ -351,6 +351,24 @@ body{
             background: #cc3333;
         }
 
+        .btn-link-cliente{
+            align-self:flex-start;
+            padding:2px 0;
+            border:0;
+            background:transparent;
+            color:#21bfff;
+            font:inherit;
+            font-size:13px;
+            font-weight:700;
+            cursor:pointer;
+            text-decoration:underline;
+        }
+
+        .btn-link-cliente:hover,
+        .btn-link-cliente:focus-visible{
+            color:#ffc107;
+        }
+
         .msg-status {
             font-size: 13px;
             margin-top: 8px;
