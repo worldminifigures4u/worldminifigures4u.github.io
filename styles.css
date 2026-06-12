@@ -387,6 +387,10 @@ body{
             line-height:1.5;
         }
 
+        .form-eliminar-conta{
+            margin-top:12px;
+        }
+
         .btn-solicitar-eliminacao{
             width:100%;
             padding:11px 14px;
@@ -402,6 +406,11 @@ body{
         .btn-solicitar-eliminacao:focus-visible{
             background:#ff4d55;
             color:#fff;
+        }
+
+        .btn-solicitar-eliminacao:disabled{
+            cursor:wait;
+            opacity:.6;
         }
 
         .msg-status {

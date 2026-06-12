@@ -126,8 +126,18 @@
                     </form>
                     <div class="zona-perigo-conta" id="zona-eliminacao-conta">
                         <h3>Eliminar conta</h3>
-                        <p>O pedido será analisado pela Figures Planet. Os dados que tenham de ser conservados por obrigações legais poderão ser mantidos ou anonimizados.</p>
-                        <button type="button" class="btn-solicitar-eliminacao" onclick="solicitarEliminacaoConta()">Solicitar eliminação da conta</button>
+                        <p>Esta ação é irreversível. A conta e o perfil serão eliminados de imediato. As encomendas anteriores serão conservadas sem os seus dados pessoais.</p>
+                        <form class="form-cliente form-eliminar-conta" onsubmit="eliminarContaUtilizador(event)">
+                            <div>
+                                <label for="eliminar-conta-password">Palavra-passe atual:</label>
+                                <input type="password" id="eliminar-conta-password" required autocomplete="current-password">
+                            </div>
+                            <div>
+                                <label for="eliminar-conta-confirmacao">Escreva ELIMINAR para confirmar:</label>
+                                <input type="text" id="eliminar-conta-confirmacao" required autocomplete="off" spellcheck="false">
+                            </div>
+                            <button type="submit" class="btn-solicitar-eliminacao">Eliminar a minha conta</button>
+                        </form>
                         <div id="status-eliminacao-conta" class="msg-status"></div>
                     </div>
                 </div>

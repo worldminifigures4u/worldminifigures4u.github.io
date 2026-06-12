@@ -574,47 +574,68 @@ async function alterarPasswordConta(event) {
     }
 }
 
-async function solicitarEliminacaoConta() {
+async function eliminarContaUtilizador(event) {
+    event.preventDefault();
     const statusDiv = document.getElementById('status-eliminacao-conta');
+    const passwordInput = document.getElementById('eliminar-conta-password');
+    const confirmacaoInput = document.getElementById('eliminar-conta-confirmacao');
+    const submitButton = event.currentTarget?.querySelector('button[type="submit"]');
 
     try {
-        const { data: { user }, error } = await dbClient.auth.getUser();
-        if (error || !user) {
-            throw new Error('Inicie sessão novamente antes de solicitar a eliminação da conta.');
-        }
+        const password = String(passwordInput?.value || '');
+        const confirmacao = String(confirmacaoInput?.value || '').trim().toUpperCase();
 
-        const confirmou = window.confirm(
-            'Pretende solicitar a eliminação da sua conta? Será preparado um email para confirmar o pedido com a Figures Planet.'
-        );
+        if (!password) throw new Error('Introduza a sua palavra-passe atual.');
+        if (confirmacao !== 'ELIMINAR') throw new Error('Escreva ELIMINAR exatamente como indicado.');
+
+        const confirmou = window.confirm('Eliminar definitivamente a sua conta? Esta ação não pode ser anulada.');
         if (!confirmou) return;
 
-        const nome = String(document.getElementById('nome-perfil-logado')?.textContent || '').trim();
-        const assunto = 'Pedido de eliminação da conta Figures Planet';
-        const corpo = [
-            'Olá,',
-            '',
-            'Solicito a eliminação da minha conta Figures Planet.',
-            '',
-            `Nome: ${nome || 'Não indicado'}`,
-            `Email da conta: ${user.email || 'Não indicado'}`,
-            `ID da conta: ${user.id}`,
-            '',
-            'Compreendo que alguns dados de encomendas poderão ter de ser conservados ou anonimizados para cumprimento de obrigações legais.',
-            '',
-            'Obrigado.'
-        ].join('\n');
+        const { data: { session }, error: sessionError } = await dbClient.auth.getSession();
+        if (sessionError || !session?.access_token) {
+            throw new Error('A sessão terminou. Inicie sessão novamente antes de eliminar a conta.');
+        }
 
-        mostrarMensagem(
-            statusDiv,
-            'O seu programa de email será aberto com o pedido preparado. Envie a mensagem para concluir a solicitação.',
-            'msg-sucesso'
-        );
-        window.location.href = `mailto:contact@figuresplanet.com?subject=${encodeURIComponent(assunto)}&body=${encodeURIComponent(corpo)}`;
+        if (submitButton) submitButton.disabled = true;
+        mostrarMensagem(statusDiv, 'A eliminar a conta...');
+
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 20000);
+        let response;
+        try {
+            response = await fetch(`${SUPABASE_URL}/functions/v1/eliminar-conta`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${session.access_token}`,
+                    'apikey': SUPABASE_KEY
+                },
+                body: JSON.stringify({ password, confirmacao }),
+                signal: controller.signal
+            });
+        } finally {
+            clearTimeout(timeoutId);
+        }
+
+        const resultado = await response.json().catch(() => ({}));
+        if (!response.ok) throw new Error(resultado.error || 'Não foi possível eliminar a conta.');
+
+        localStorage.removeItem('carrinho');
+        await dbClient.auth.signOut().catch(() => {});
+        mostrarMensagem(statusDiv, 'A sua conta foi eliminada com sucesso.', 'msg-sucesso');
+        setTimeout(() => window.location.replace('index.html'), 1200);
     } catch (error) {
-        console.error('Erro ao solicitar eliminação da conta:', error);
-        mostrarMensagem(statusDiv, 'Erro: ' + error.message, 'msg-erro');
+        console.error('Erro ao eliminar conta:', error);
+        const mensagem = error?.name === 'AbortError'
+            ? 'A eliminação demorou demasiado. Tente novamente.'
+            : (error.message || 'Não foi possível eliminar a conta.');
+        mostrarMensagem(statusDiv, 'Erro: ' + mensagem, 'msg-erro');
+    } finally {
+        if (submitButton) submitButton.disabled = false;
     }
 }
+
+window.eliminarContaUtilizador = eliminarContaUtilizador;
 
 function preencherFormularioDadosCliente(data = {}, user = null) {
     const nome = data.nome || user?.user_metadata?.nome || '';
