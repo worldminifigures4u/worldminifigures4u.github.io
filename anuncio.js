@@ -360,14 +360,21 @@ async function descarregarImagemWallapop() {
         const pastaBase = await obterPastaBaseWallapop();
         await esperarImagensWallapop();
         const folha = document.getElementById('wallapop-folha');
-        const canvas = await html2canvas(folha, {
-            backgroundColor: '#ffffff',
-            scale: 2,
-            useCORS: true,
-            logging: false,
-            windowWidth: folha.scrollWidth,
-            windowHeight: folha.scrollHeight
-        });
+        const zoomAnterior = folha.style.zoom;
+        folha.style.zoom = '1';
+        let canvas;
+        try {
+            canvas = await html2canvas(folha, {
+                backgroundColor: '#ffffff',
+                scale: 2,
+                useCORS: true,
+                logging: false,
+                windowWidth: folha.scrollWidth,
+                windowHeight: folha.scrollHeight
+            });
+        } finally {
+            folha.style.zoom = zoomAnterior;
+        }
         const pastaEncomenda = await pastaBase.getDirectoryHandle(nomeEncomenda, { create: true });
         const imagem = await canvasParaBlobWallapop(canvas);
         await escreverFicheiroWallapop(pastaEncomenda, `${nomeEncomenda}.txt`, criarTextoEncomendaWallapop());

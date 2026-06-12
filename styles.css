@@ -505,7 +505,7 @@ body{
             width:min(1440px, calc(100% - 32px));
             margin:22px auto 50px;
             display:grid;
-            grid-template-columns:minmax(300px, 390px) minmax(0, 1fr);
+            grid-template-columns:minmax(0, 3fr) minmax(0, 2fr);
             gap:24px;
             align-items:start;
         }
@@ -554,18 +554,18 @@ body{
         .wallapop-resultado,
         .wallapop-selecionado{
             display:grid;
-            grid-template-columns:52px minmax(0, 1fr) auto;
-            gap:9px;
+            grid-template-columns:76px minmax(0, 1fr) auto;
+            gap:14px;
             align-items:center;
-            padding:8px;
+            padding:10px;
             border:1px solid #333;
             border-radius:6px;
             background:#1b1b1b;
         }
 
         .wallapop-miniatura{
-            width:52px;
-            height:52px;
+            width:76px;
+            height:76px;
             border-radius:5px;
             object-fit:cover;
             background:#fff;
@@ -579,16 +579,16 @@ body{
         .wallapop-resultado-info strong,
         .wallapop-selecionado-info strong{
             display:block;
-            overflow:hidden;
             color:#fff;
-            text-overflow:ellipsis;
-            white-space:nowrap;
+            font-size:16px;
+            line-height:1.25;
+            overflow-wrap:anywhere;
         }
 
         .wallapop-resultado-info span,
         .wallapop-selecionado-info span{
             color:#29b6f6;
-            font-size:13px;
+            font-size:15px;
             font-weight:700;
         }
 
@@ -603,13 +603,13 @@ body{
         .wallapop-quantidade{
             display:flex;
             align-items:center;
-            gap:5px;
+            gap:7px;
         }
 
         .wallapop-quantidade button,
         .wallapop-remover{
-            width:30px;
-            height:30px;
+            width:38px;
+            height:38px;
             border:0;
             border-radius:5px;
             background:#333;
@@ -678,8 +678,10 @@ body{
         }
 
         .wallapop-preview-wrap{
-            overflow:auto;
+            overflow:hidden;
             padding:0 0 20px;
+            display:flex;
+            justify-content:center;
         }
 
         .wallapop-folha{
@@ -693,6 +695,7 @@ body{
             box-shadow:0 8px 28px rgba(0,0,0,.45);
             display:flex;
             flex-direction:column;
+            zoom:.6;
         }
 
         .wallapop-grelha{
@@ -787,6 +790,10 @@ body{
             }
             .wallapop-preview-wrap{
                 margin-inline:-16px;
+                overflow:auto;
+            }
+            .wallapop-folha{
+                zoom:.75;
             }
         }
 
