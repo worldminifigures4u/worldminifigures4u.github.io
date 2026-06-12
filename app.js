@@ -159,7 +159,10 @@ function atualizarContadorCarrinhoCabecalho() {
 const PAGINAS_VISTA = {
     loja: 'index.html',
     conta: 'conta.html',
-    carrinho: 'carrinho.html'
+    carrinho: 'carrinho.html',
+    sobre: 'sobre.html',
+    contactos: 'contactos.html',
+    politicas: 'politicas.html'
 };
 
 function obterVistaPagina() {
