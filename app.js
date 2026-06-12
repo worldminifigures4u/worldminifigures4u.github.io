@@ -574,6 +574,48 @@ async function alterarPasswordConta(event) {
     }
 }
 
+async function solicitarEliminacaoConta() {
+    const statusDiv = document.getElementById('status-eliminacao-conta');
+
+    try {
+        const { data: { user }, error } = await dbClient.auth.getUser();
+        if (error || !user) {
+            throw new Error('Inicie sessão novamente antes de solicitar a eliminação da conta.');
+        }
+
+        const confirmou = window.confirm(
+            'Pretende solicitar a eliminação da sua conta? Será preparado um email para confirmar o pedido com a Figures Planet.'
+        );
+        if (!confirmou) return;
+
+        const nome = String(document.getElementById('nome-perfil-logado')?.textContent || '').trim();
+        const assunto = 'Pedido de eliminação da conta Figures Planet';
+        const corpo = [
+            'Olá,',
+            '',
+            'Solicito a eliminação da minha conta Figures Planet.',
+            '',
+            `Nome: ${nome || 'Não indicado'}`,
+            `Email da conta: ${user.email || 'Não indicado'}`,
+            `ID da conta: ${user.id}`,
+            '',
+            'Compreendo que alguns dados de encomendas poderão ter de ser conservados ou anonimizados para cumprimento de obrigações legais.',
+            '',
+            'Obrigado.'
+        ].join('\n');
+
+        mostrarMensagem(
+            statusDiv,
+            'O seu programa de email será aberto com o pedido preparado. Envie a mensagem para concluir a solicitação.',
+            'msg-sucesso'
+        );
+        window.location.href = `mailto:contact@figuresplanet.com?subject=${encodeURIComponent(assunto)}&body=${encodeURIComponent(corpo)}`;
+    } catch (error) {
+        console.error('Erro ao solicitar eliminação da conta:', error);
+        mostrarMensagem(statusDiv, 'Erro: ' + error.message, 'msg-erro');
+    }
+}
+
 function preencherFormularioDadosCliente(data = {}, user = null) {
     const nome = data.nome || user?.user_metadata?.nome || '';
     const email = data.email || user?.email || '';
@@ -788,7 +830,9 @@ function atualizarVisibilidadeAdmin(user) {
     const painel = document.getElementById('painel-admin');
     if(!painel) return;
     const adminAtivo = utilizadorAdmin(user);
+    const zonaEliminacao = document.getElementById('zona-eliminacao-conta');
     painel.style.display = adminAtivo ? 'block' : 'none';
+    if(zonaEliminacao) zonaEliminacao.style.display = adminAtivo ? 'none' : 'block';
     if(adminAtivo) {
         const conteudoConta = document.getElementById('conteudo-cliente-autenticado');
         const dadosPessoais = document.getElementById('form-editar-dados-cliente')?.closest('.historico-encomendas');

@@ -369,6 +369,41 @@ body{
             color:#ffc107;
         }
 
+        .zona-perigo-conta{
+            margin-top:22px;
+            padding-top:20px;
+            border-top:1px solid #333;
+        }
+
+        .zona-perigo-conta h3{
+            margin:0 0 8px;
+            color:#ff6262;
+        }
+
+        .zona-perigo-conta p{
+            margin:0 0 14px;
+            color:#bbb;
+            font-size:13px;
+            line-height:1.5;
+        }
+
+        .btn-solicitar-eliminacao{
+            width:100%;
+            padding:11px 14px;
+            border:1px solid #ff4d55;
+            border-radius:6px;
+            background:transparent;
+            color:#ff6b72;
+            font-weight:800;
+            cursor:pointer;
+        }
+
+        .btn-solicitar-eliminacao:hover,
+        .btn-solicitar-eliminacao:focus-visible{
+            background:#ff4d55;
+            color:#fff;
+        }
+
         .msg-status {
             font-size: 13px;
             margin-top: 8px;
