@@ -444,24 +444,6 @@ body{
             color:#ffc107;
         }
 
-        .btn-admin-wallapop{
-            display:block;
-            margin:0 0 18px;
-            padding:12px 16px;
-            border-radius:6px;
-            background:#ffc107;
-            color:#000;
-            font-weight:800;
-            text-align:center;
-            text-decoration:none;
-        }
-
-        .btn-admin-wallapop:hover,
-        .btn-admin-wallapop:focus-visible{
-            background:#e0a800;
-            outline:none;
-        }
-
         body.pagina-wallapop{
             padding:0;
             background:#080808;
@@ -690,12 +672,24 @@ body{
         }
 
         .wallapop-cartao img{
+            display:block;
+            width:auto;
+            height:auto;
+            max-width:128px;
+            max-height:128px;
+            object-fit:contain;
+        }
+
+        .wallapop-foto{
             width:128px;
             height:128px;
-            object-fit:contain;
+            display:flex;
+            align-items:center;
+            justify-content:center;
             border:1px solid #ddd;
             border-radius:4px;
             background:#fff;
+            overflow:hidden;
         }
 
         .wallapop-cartao-texto{
@@ -722,16 +716,6 @@ body{
             color:#111;
             font-size:18px;
             font-weight:800;
-        }
-
-        .wallapop-total{
-            margin-top:auto;
-            padding-top:26px;
-            border-top:2px solid #111;
-            color:#111;
-            font-size:30px;
-            font-weight:900;
-            text-align:right;
         }
 
         .wallapop-vazio{
@@ -1580,6 +1564,9 @@ body{
                 grid-template-columns:repeat(3, minmax(0, 1fr));
                 gap:5px;
                 width:100%;
+            }
+            .acoes-cabecalho.com-anuncio-admin{
+                grid-template-columns:repeat(4, minmax(0, 1fr));
             }
             .cabecalho-pesquisa{
                 grid-column:1;

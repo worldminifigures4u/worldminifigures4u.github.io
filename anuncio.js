@@ -253,13 +253,17 @@ function renderizarFolhaWallapop() {
     wallapopItens.forEach(item => {
         const cartao = document.createElement('article');
         cartao.className = 'wallapop-cartao';
-        cartao.appendChild(criarImagemWallapop(obterImagemWallapop(item), item.nome, ''));
+        const foto = document.createElement('div');
+        foto.className = 'wallapop-foto';
+        foto.appendChild(criarImagemWallapop(obterImagemWallapop(item), item.nome, ''));
+        cartao.appendChild(foto);
 
         const texto = document.createElement('div');
         texto.className = 'wallapop-cartao-texto';
         const quantidade = document.createElement('p');
         quantidade.className = 'wallapop-cartao-quantidade';
-        quantidade.textContent = `${item.quantidade}x`;
+        quantidade.textContent = item.quantidade > 1 ? `${item.quantidade}x` : '';
+        quantidade.hidden = item.quantidade <= 1;
         const nome = document.createElement('h3');
         nome.textContent = item.nome;
         const preco = document.createElement('p');
@@ -277,8 +281,6 @@ function renderizarFolhaWallapop() {
         grelha.appendChild(vazio);
     }
 
-    const total = wallapopItens.reduce((soma, item) => soma + Number(item.preco || 0) * item.quantidade, 0);
-    document.getElementById('wallapop-total').textContent = `Total: ${formatarEuroWallapop(total)} €`;
 }
 
 async function esperarImagensWallapop() {

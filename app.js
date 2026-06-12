@@ -849,8 +849,11 @@ function utilizadorAdmin(user) {
 
 function atualizarVisibilidadeAdmin(user) {
     const painel = document.getElementById('painel-admin');
-    if(!painel) return;
     const adminAtivo = utilizadorAdmin(user);
+    const atalhosAnuncio = document.querySelectorAll('.acao-anuncio-admin');
+    atalhosAnuncio.forEach(atalho => { atalho.hidden = !adminAtivo; });
+    document.querySelector('.acoes-cabecalho')?.classList.toggle('com-anuncio-admin', adminAtivo);
+    if(!painel) return;
     const zonaEliminacao = document.getElementById('zona-eliminacao-conta');
     painel.style.display = adminAtivo ? 'block' : 'none';
     if(zonaEliminacao) zonaEliminacao.style.display = adminAtivo ? 'none' : 'block';
