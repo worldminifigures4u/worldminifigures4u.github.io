@@ -618,8 +618,10 @@ body{
             cursor:pointer;
         }
 
-        .wallapop-remover{
-            background:#ff4d55;
+        .wallapop-quantidade .wallapop-remover{
+            background:#ff4d4d;
+            color:#fff;
+            border-radius:8px;
         }
 
         .wallapop-controlos-finais{
@@ -686,10 +688,11 @@ body{
             display:flex;
             align-items:center;
             justify-content:center;
-            border:1px solid #ddd;
-            border-radius:4px;
-            background:#fff;
-            overflow:hidden;
+            border:0;
+            border-radius:0;
+            background:transparent;
+            box-shadow:none;
+            overflow:visible;
         }
 
         .wallapop-cartao-texto{
