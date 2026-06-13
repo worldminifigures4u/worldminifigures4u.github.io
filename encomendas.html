@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex, nofollow, noarchive, nosnippet">
+    <title>Encomendas | Figures Planet</title>
+    <link rel="icon" type="image/png" href="figures-planet-logo-transparent.png">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body class="pagina-encomendas-admin">
+    <header class="admin-encomendas-topo">
+        <a href="index.html" class="admin-encomendas-marca" aria-label="Figures Planet">
+            <img src="figures-planet-logo-transparent.png" alt="Figures Planet">
+        </a>
+        <h1>Encomendas</h1>
+        <nav>
+            <a class="wallapop-botao" href="anuncio.html">Anúncio</a>
+            <a class="wallapop-botao" href="conta.html">Conta</a>
+        </nav>
+    </header>
+
+    <div class="wallapop-bloqueio" id="encomendas-bloqueio">A verificar acesso administrativo...</div>
+
+    <main class="admin-encomendas" id="encomendas-aplicacao" hidden>
+        <section class="admin-encomendas-resumo" aria-label="Resumo das encomendas">
+            <div><strong id="encomendas-total">0</strong><span>Total</span></div>
+            <div><strong id="encomendas-pendentes">0</strong><span>A aguardar pagamento</span></div>
+            <div><strong id="encomendas-preparacao">0</strong><span>Em preparação</span></div>
+            <div><strong id="encomendas-enviadas">0</strong><span>Enviadas</span></div>
+        </section>
+
+        <section class="admin-encomendas-filtros" aria-label="Pesquisa e filtros">
+            <label>
+                <span>Pesquisar</span>
+                <input type="search" id="pesquisa-encomendas-admin" placeholder="Código, nome ou e-mail" autocomplete="off">
+            </label>
+            <label>
+                <span>Estado</span>
+                <select id="filtro-estado-encomendas-admin">
+                    <option value="todos">Todos os estados</option>
+                    <option value="A aguardar pagamento">A aguardar pagamento</option>
+                    <option value="Pago">Pago</option>
+                    <option value="Em preparação">Em preparação</option>
+                    <option value="Enviado">Enviado</option>
+                    <option value="Concluído">Concluído</option>
+                    <option value="Cancelado">Cancelado</option>
+                </select>
+            </label>
+            <button type="button" class="wallapop-botao" id="btn-atualizar-encomendas">Atualizar</button>
+        </section>
+
+        <p class="admin-encomendas-contagem" id="contagem-encomendas-admin" aria-live="polite"></p>
+        <section class="admin-encomendas-lista" id="lista-encomendas-admin"></section>
+        <p class="wallapop-status" id="status-encomendas-admin" aria-live="polite"></p>
+    </main>
+
+    <script src="encomendas.js"></script>
+</body>
+</html>

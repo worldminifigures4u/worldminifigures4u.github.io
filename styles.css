@@ -473,6 +473,10 @@ body{
             gap:8px;
         }
 
+        .acao-cabecalho[hidden]{
+            display:none !important;
+        }
+
         .wallapop-botao{
             border:0;
             border-radius:6px;
@@ -808,6 +812,350 @@ body{
             background:#111;
             color:#fff;
             text-align:center;
+        }
+
+        body.pagina-encomendas-admin{
+            min-height:100vh;
+            padding:0;
+            background:#080808;
+            color:#fff;
+        }
+
+        .admin-encomendas-topo{
+            position:sticky;
+            top:0;
+            z-index:20;
+            min-height:72px;
+            padding:10px 24px;
+            border-bottom:1px solid #333;
+            background:#111;
+            display:grid;
+            grid-template-columns:150px 1fr auto;
+            gap:18px;
+            align-items:center;
+            box-sizing:border-box;
+        }
+
+        .admin-encomendas-marca img{
+            display:block;
+            width:112px;
+            height:58px;
+            object-fit:contain;
+        }
+
+        .admin-encomendas-topo h1{
+            margin:0;
+            color:#ffc107;
+            font-size:24px;
+            letter-spacing:0;
+        }
+
+        .admin-encomendas-topo nav{
+            display:flex;
+            gap:8px;
+        }
+
+        .admin-encomendas{
+            width:min(1180px, calc(100% - 32px));
+            margin:24px auto 50px;
+        }
+
+        .admin-encomendas-resumo{
+            display:grid;
+            grid-template-columns:repeat(4, minmax(0, 1fr));
+            gap:10px;
+            margin-bottom:16px;
+        }
+
+        .admin-encomendas-resumo div{
+            min-height:82px;
+            padding:14px;
+            border:1px solid #333;
+            border-radius:6px;
+            background:#151515;
+            display:flex;
+            flex-direction:column;
+            justify-content:center;
+        }
+
+        .admin-encomendas-resumo strong{
+            color:#ffc107;
+            font-size:26px;
+        }
+
+        .admin-encomendas-resumo span{
+            margin-top:3px;
+            color:#bbb;
+            font-size:13px;
+        }
+
+        .admin-encomendas-filtros{
+            padding:14px;
+            border:1px solid #333;
+            border-radius:6px;
+            background:#111;
+            display:grid;
+            grid-template-columns:minmax(260px, 1fr) minmax(210px, 280px) auto;
+            gap:10px;
+            align-items:end;
+        }
+
+        .admin-encomendas-filtros label,
+        .admin-encomenda-estado-edicao{
+            display:flex;
+            flex-direction:column;
+            gap:6px;
+            color:#ccc;
+            font-size:13px;
+        }
+
+        .admin-encomendas-filtros input,
+        .admin-encomendas-filtros select,
+        .admin-encomenda-estado-edicao select{
+            width:100%;
+            min-height:42px;
+            padding:9px 10px;
+            border:1px solid #555;
+            border-radius:5px;
+            background:#222;
+            color:#fff;
+            font:inherit;
+            box-sizing:border-box;
+        }
+
+        .admin-encomendas-contagem{
+            margin:14px 2px 8px;
+            color:#aaa;
+            font-size:13px;
+        }
+
+        .admin-encomendas-lista{
+            display:flex;
+            flex-direction:column;
+            gap:9px;
+        }
+
+        .admin-encomenda-card{
+            border:1px solid #333;
+            border-radius:6px;
+            background:#111;
+            overflow:hidden;
+        }
+
+        .admin-encomenda-card.aberta{
+            border-color:#7a6200;
+        }
+
+        .admin-encomenda-cabecalho{
+            width:100%;
+            padding:14px;
+            border:0;
+            background:#171717;
+            color:#fff;
+            text-align:left;
+            cursor:pointer;
+            display:grid;
+            grid-template-columns:190px minmax(220px, 1fr) 180px 22px;
+            gap:16px;
+            align-items:center;
+        }
+
+        .admin-encomenda-cabecalho:hover{
+            background:#202020;
+        }
+
+        .admin-encomenda-identificacao,
+        .admin-encomenda-cliente,
+        .admin-encomenda-valor{
+            min-width:0;
+            display:flex;
+            flex-direction:column;
+            gap:4px;
+        }
+
+        .admin-encomenda-identificacao strong{
+            color:#ffc107;
+            font-size:17px;
+        }
+
+        .admin-encomenda-identificacao span,
+        .admin-encomenda-cliente span{
+            overflow:hidden;
+            color:#aaa;
+            font-size:12px;
+            text-overflow:ellipsis;
+            white-space:nowrap;
+        }
+
+        .admin-encomenda-valor{
+            align-items:flex-end;
+        }
+
+        .admin-encomenda-valor strong{
+            color:#29b6f6;
+            font-size:18px;
+        }
+
+        .estado-encomenda{
+            max-width:100%;
+            padding:4px 8px;
+            border-radius:4px;
+            background:#292929;
+            color:#ddd;
+            font-size:11px;
+            text-align:center;
+        }
+
+        .estado-pago,
+        .estado-concluido{ background:#173d22; color:#8fe3a5; }
+        .estado-em-preparacao{ background:#453a12; color:#ffe184; }
+        .estado-enviado{ background:#14384a; color:#8bd8ff; }
+        .estado-cancelado{ background:#481d21; color:#ff9da5; }
+
+        .admin-encomenda-seta{
+            color:#ffc107;
+            font-size:20px;
+            transition:transform .15s ease;
+        }
+
+        .admin-encomenda-card.aberta .admin-encomenda-seta{
+            transform:rotate(180deg);
+        }
+
+        .admin-encomenda-detalhes{
+            padding:16px;
+        }
+
+        .admin-encomenda-dados{
+            display:grid;
+            grid-template-columns:repeat(2, minmax(0, 1fr));
+            gap:8px 22px;
+        }
+
+        .admin-encomenda-detalhe-linha{
+            display:grid;
+            grid-template-columns:90px minmax(0, 1fr);
+            gap:8px;
+            color:#ddd;
+            font-size:13px;
+        }
+
+        .admin-encomenda-detalhe-linha strong{
+            color:#aaa;
+        }
+
+        .admin-encomenda-produtos{
+            margin-top:18px;
+            padding-top:14px;
+            border-top:1px solid #333;
+        }
+
+        .admin-encomenda-produtos h3{
+            margin:0 0 9px;
+            color:#ffc107;
+            font-size:15px;
+        }
+
+        .admin-encomenda-produto{
+            min-height:30px;
+            padding:5px 0;
+            border-bottom:1px solid #272727;
+            display:grid;
+            grid-template-columns:44px minmax(0, 1fr) 90px 90px;
+            gap:10px;
+            align-items:center;
+            font-size:13px;
+        }
+
+        .admin-encomenda-produto span:last-child{
+            text-align:right;
+        }
+
+        .admin-encomenda-total{
+            margin:12px 0 0;
+            color:#29b6f6;
+            font-size:18px;
+            font-weight:800;
+            text-align:right;
+        }
+
+        .admin-encomenda-acoes{
+            margin-top:16px;
+            display:flex;
+            justify-content:space-between;
+            align-items:end;
+            gap:12px;
+        }
+
+        .admin-encomenda-estado-edicao{
+            width:min(300px, 100%);
+        }
+
+        .admin-encomendas-vazio{
+            padding:45px 20px;
+            border:1px solid #333;
+            border-radius:6px;
+            color:#999;
+            text-align:center;
+        }
+
+        .admin-encomendas > .wallapop-status.msg-sucesso{ color:#28a745; }
+        .admin-encomendas > .wallapop-status.msg-erro{ color:#ff4d4d; }
+
+        @media(max-width:760px){
+            .admin-encomendas-topo{
+                grid-template-columns:80px 1fr;
+                padding:8px 12px;
+            }
+            .admin-encomendas-marca img{
+                width:72px;
+                height:44px;
+            }
+            .admin-encomendas-topo h1{
+                font-size:20px;
+            }
+            .admin-encomendas-topo nav{
+                grid-column:1 / -1;
+            }
+            .admin-encomendas-topo nav a{
+                flex:1;
+                text-align:center;
+            }
+            .admin-encomendas-resumo{
+                grid-template-columns:repeat(2, minmax(0, 1fr));
+            }
+            .admin-encomendas-filtros{
+                grid-template-columns:1fr;
+            }
+            .admin-encomenda-cabecalho{
+                grid-template-columns:1fr auto;
+                gap:9px;
+            }
+            .admin-encomenda-cliente,
+            .admin-encomenda-valor{
+                grid-column:1;
+                align-items:flex-start;
+            }
+            .admin-encomenda-seta{
+                grid-column:2;
+                grid-row:1 / span 3;
+            }
+            .admin-encomenda-dados{
+                grid-template-columns:1fr;
+            }
+            .admin-encomenda-produto{
+                grid-template-columns:36px minmax(0, 1fr) 76px;
+            }
+            .admin-encomenda-produto span:nth-child(3){
+                display:none;
+            }
+            .admin-encomenda-acoes{
+                align-items:stretch;
+                flex-direction:column;
+            }
+            .admin-encomenda-estado-edicao{
+                width:100%;
+            }
         }
 
         @media(max-width:1000px){
@@ -1650,8 +1998,8 @@ body{
                 gap:5px;
                 width:100%;
             }
-            .acoes-cabecalho.com-anuncio-admin{
-                grid-template-columns:repeat(4, minmax(0, 1fr));
+            .acoes-cabecalho.com-atalhos-admin{
+                grid-template-columns:repeat(3, minmax(0, 1fr));
             }
             .cabecalho-pesquisa{
                 grid-column:1;

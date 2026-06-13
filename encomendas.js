@@ -1,0 +1,293 @@
+const ENCOMENDAS_SUPABASE_URL = "https://gksndzxadndrsynvzgzb.supabase.co";
+const ENCOMENDAS_SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJIUzI1NiIsInJlZiI6Imdrc25kenhhZG5kcnN5bnZ6Z3piIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkwODc5NzMsImV4cCI6MjA5NDY2Mzk3M30.EHZgacYr27dqoc4CJHsOwkNnJFGlLIteSHBi4B1HfVE";
+const ENCOMENDAS_ADMIN_EMAILS = ["worldminifigures4u@gmail.com"];
+const ESTADOS_ENCOMENDA = [
+    'A aguardar pagamento',
+    'Pago',
+    'Em preparação',
+    'Enviado',
+    'Concluído',
+    'Cancelado'
+];
+
+let encomendasClient = null;
+let encomendasAdmin = [];
+
+function normalizarEncomenda(valor) {
+    return String(valor || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+}
+
+function formatarEuroEncomenda(valor) {
+    return Number(valor || 0).toFixed(2).replace('.', ',') + ' €';
+}
+
+function formatarDataEncomenda(valor) {
+    if (!valor) return 'Data indisponível';
+    const data = new Date(valor);
+    if (Number.isNaN(data.getTime())) return String(valor);
+    return new Intl.DateTimeFormat('pt-PT', {
+        day: '2-digit', month: '2-digit', year: 'numeric',
+        hour: '2-digit', minute: '2-digit'
+    }).format(data);
+}
+
+function estadoNormalizadoEncomenda(estado) {
+    return String(estado || '').toLowerCase() === 'pendente'
+        ? 'A aguardar pagamento'
+        : (estado || 'A aguardar pagamento');
+}
+
+function definirStatusEncomendas(texto, erro = false) {
+    const status = document.getElementById('status-encomendas-admin');
+    status.textContent = texto || '';
+    status.classList.toggle('msg-erro', erro);
+    status.classList.toggle('msg-sucesso', Boolean(texto) && !erro);
+}
+
+function criarElementoEncomenda(tag, classe, texto) {
+    const elemento = document.createElement(tag);
+    if (classe) elemento.className = classe;
+    if (texto !== undefined) elemento.textContent = texto;
+    return elemento;
+}
+
+function obterProdutosEncomenda(encomenda) {
+    let produtos = encomenda.produtos;
+    if (typeof produtos === 'string') {
+        try { produtos = JSON.parse(produtos); } catch (_) { produtos = []; }
+    }
+    return Array.isArray(produtos) ? produtos : [];
+}
+
+function textoProdutosEncomenda(encomenda) {
+    return obterProdutosEncomenda(encomenda).map(item => {
+        const quantidade = Number(item.quantidade || item.qtd || 1);
+        const nome = item.nome || 'Produto';
+        const sku = item.sku ? ` (${item.sku})` : '';
+        const preco = Number(item.preco_unitario ?? item.preco ?? 0);
+        return `${quantidade}x ${nome}${sku} - ${formatarEuroEncomenda(preco)}`;
+    }).join('\n');
+}
+
+function textoCompletoEncomenda(encomenda) {
+    const morada = [encomenda.morada_cliente, encomenda.cp_cliente, encomenda.cidade_cliente, encomenda.pais_cliente]
+        .filter(Boolean).join(', ');
+    return [
+        `Encomenda: ${encomenda.codigo_encomenda || encomenda.id}`,
+        `Data: ${formatarDataEncomenda(encomenda.created_at)}`,
+        `Estado: ${estadoNormalizadoEncomenda(encomenda.estado)}`,
+        '',
+        `Cliente: ${encomenda.nome_cliente || ''}`,
+        `E-mail: ${encomenda.email_cliente || ''}`,
+        `Telemóvel: ${encomenda.telefone_cliente || ''}`,
+        `Morada: ${morada}`,
+        '',
+        `Envio: ${encomenda.metodo_envio_nome || encomenda.metodo_envio || ''}`,
+        `Portes: ${formatarEuroEncomenda(encomenda.portes)}`,
+        `Pagamento: ${encomenda.metodo_pagamento || ''}`,
+        '',
+        'Produtos:',
+        textoProdutosEncomenda(encomenda),
+        '',
+        `Total: ${formatarEuroEncomenda(encomenda.total)}`
+    ].join('\n');
+}
+
+async function copiarEncomendaAdmin(encomenda) {
+    try {
+        await navigator.clipboard.writeText(textoCompletoEncomenda(encomenda));
+        definirStatusEncomendas(`Encomenda ${encomenda.codigo_encomenda || ''} copiada.`);
+    } catch (_) {
+        definirStatusEncomendas('Não foi possível copiar os dados.', true);
+    }
+}
+
+async function atualizarEstadoEncomendaAdmin(encomenda, estado, select) {
+    const estadoAnterior = estadoNormalizadoEncomenda(encomenda.estado);
+    select.disabled = true;
+    definirStatusEncomendas('A atualizar o estado...');
+    try {
+        const { data, error } = await encomendasClient.rpc('atualizar_estado_encomenda_admin', {
+            p_encomenda_id: String(encomenda.id),
+            p_estado: estado
+        });
+        if (error) throw error;
+        if (data?.sucesso === false) throw new Error(data.erro || 'Não foi possível atualizar.');
+        encomenda.estado = estado;
+        select.dataset.estadoAtual = estado;
+        atualizarResumoEncomendas();
+        renderizarEncomendasAdmin();
+        definirStatusEncomendas(`Estado da encomenda ${encomenda.codigo_encomenda || ''} atualizado.`);
+    } catch (error) {
+        select.value = estadoAnterior;
+        definirStatusEncomendas('Erro ao atualizar estado: ' + (error.message || 'sem detalhe'), true);
+    } finally {
+        select.disabled = false;
+    }
+}
+
+function criarLinhaDetalhe(rotulo, valor) {
+    const linha = criarElementoEncomenda('div', 'admin-encomenda-detalhe-linha');
+    linha.append(
+        criarElementoEncomenda('strong', '', rotulo),
+        criarElementoEncomenda('span', '', valor || '—')
+    );
+    return linha;
+}
+
+function criarCardEncomenda(encomenda) {
+    const card = criarElementoEncomenda('article', 'admin-encomenda-card');
+    const cabecalho = criarElementoEncomenda('button', 'admin-encomenda-cabecalho');
+    cabecalho.type = 'button';
+
+    const identificacao = criarElementoEncomenda('div', 'admin-encomenda-identificacao');
+    identificacao.append(
+        criarElementoEncomenda('strong', '', encomenda.codigo_encomenda || `#${encomenda.id}`),
+        criarElementoEncomenda('span', '', formatarDataEncomenda(encomenda.created_at))
+    );
+    const cliente = criarElementoEncomenda('div', 'admin-encomenda-cliente');
+    cliente.append(
+        criarElementoEncomenda('strong', '', encomenda.nome_cliente || 'Cliente sem nome'),
+        criarElementoEncomenda('span', '', encomenda.email_cliente || '')
+    );
+    const resumo = criarElementoEncomenda('div', 'admin-encomenda-valor');
+    resumo.append(
+        criarElementoEncomenda('strong', '', formatarEuroEncomenda(encomenda.total)),
+        criarElementoEncomenda('span', `estado-encomenda estado-${normalizarEncomenda(estadoNormalizadoEncomenda(encomenda.estado)).replace(/\s+/g, '-')}`, estadoNormalizadoEncomenda(encomenda.estado))
+    );
+    cabecalho.append(identificacao, cliente, resumo, criarElementoEncomenda('span', 'admin-encomenda-seta', '▾'));
+
+    const detalhes = criarElementoEncomenda('div', 'admin-encomenda-detalhes');
+    detalhes.hidden = true;
+    cabecalho.addEventListener('click', () => {
+        detalhes.hidden = !detalhes.hidden;
+        card.classList.toggle('aberta', !detalhes.hidden);
+    });
+
+    const dados = criarElementoEncomenda('div', 'admin-encomenda-dados');
+    const morada = [encomenda.morada_cliente, encomenda.cp_cliente, encomenda.cidade_cliente, encomenda.pais_cliente]
+        .filter(Boolean).join(', ');
+    dados.append(
+        criarLinhaDetalhe('Nome', encomenda.nome_cliente),
+        criarLinhaDetalhe('E-mail', encomenda.email_cliente),
+        criarLinhaDetalhe('Telemóvel', encomenda.telefone_cliente),
+        criarLinhaDetalhe('Morada', morada),
+        criarLinhaDetalhe('Envio', encomenda.metodo_envio_nome || encomenda.metodo_envio),
+        criarLinhaDetalhe('Portes', formatarEuroEncomenda(encomenda.portes)),
+        criarLinhaDetalhe('Pagamento', encomenda.metodo_pagamento)
+    );
+
+    const produtos = criarElementoEncomenda('div', 'admin-encomenda-produtos');
+    produtos.appendChild(criarElementoEncomenda('h3', '', 'Produtos'));
+    const lista = criarElementoEncomenda('div', 'admin-encomenda-produtos-lista');
+    obterProdutosEncomenda(encomenda).forEach(item => {
+        const linha = criarElementoEncomenda('div', 'admin-encomenda-produto');
+        const quantidade = Number(item.quantidade || item.qtd || 1);
+        const preco = Number(item.preco_unitario ?? item.preco ?? 0);
+        linha.append(
+            criarElementoEncomenda('span', '', `${quantidade}x`),
+            criarElementoEncomenda('strong', '', item.nome || 'Produto'),
+            criarElementoEncomenda('span', '', item.sku || '—'),
+            criarElementoEncomenda('span', '', formatarEuroEncomenda(preco))
+        );
+        lista.appendChild(linha);
+    });
+    produtos.append(lista, criarElementoEncomenda('p', 'admin-encomenda-total', `Total: ${formatarEuroEncomenda(encomenda.total)}`));
+
+    const acoes = criarElementoEncomenda('div', 'admin-encomenda-acoes');
+    const grupoEstado = criarElementoEncomenda('label', 'admin-encomenda-estado-edicao');
+    grupoEstado.appendChild(criarElementoEncomenda('span', '', 'Estado'));
+    const select = document.createElement('select');
+    const estadoAtual = estadoNormalizadoEncomenda(encomenda.estado);
+    ESTADOS_ENCOMENDA.forEach(estado => {
+        const option = new Option(estado, estado, false, estado === estadoAtual);
+        select.add(option);
+    });
+    select.dataset.estadoAtual = estadoAtual;
+    select.addEventListener('change', () => atualizarEstadoEncomendaAdmin(encomenda, select.value, select));
+    grupoEstado.appendChild(select);
+    const copiar = criarElementoEncomenda('button', 'wallapop-botao', 'Copiar dados');
+    copiar.type = 'button';
+    copiar.addEventListener('click', () => copiarEncomendaAdmin(encomenda));
+    acoes.append(grupoEstado, copiar);
+
+    detalhes.append(dados, produtos, acoes);
+    card.append(cabecalho, detalhes);
+    return card;
+}
+
+function encomendasFiltradasAdmin() {
+    const pesquisa = normalizarEncomenda(document.getElementById('pesquisa-encomendas-admin').value);
+    const estado = document.getElementById('filtro-estado-encomendas-admin').value;
+    return encomendasAdmin.filter(encomenda => {
+        const correspondeEstado = estado === 'todos' || estadoNormalizadoEncomenda(encomenda.estado) === estado;
+        const texto = normalizarEncomenda([
+            encomenda.codigo_encomenda,
+            encomenda.nome_cliente,
+            encomenda.email_cliente
+        ].join(' '));
+        return correspondeEstado && (!pesquisa || texto.includes(pesquisa));
+    });
+}
+
+function renderizarEncomendasAdmin() {
+    const lista = document.getElementById('lista-encomendas-admin');
+    const filtradas = encomendasFiltradasAdmin();
+    lista.replaceChildren();
+    document.getElementById('contagem-encomendas-admin').textContent = `${filtradas.length} encomenda(s) apresentada(s)`;
+    if (!filtradas.length) {
+        lista.appendChild(criarElementoEncomenda('p', 'admin-encomendas-vazio', 'Nenhuma encomenda encontrada.'));
+        return;
+    }
+    filtradas.forEach(encomenda => lista.appendChild(criarCardEncomenda(encomenda)));
+}
+
+function atualizarResumoEncomendas() {
+    const contar = estado => encomendasAdmin.filter(item => estadoNormalizadoEncomenda(item.estado) === estado).length;
+    document.getElementById('encomendas-total').textContent = encomendasAdmin.length;
+    document.getElementById('encomendas-pendentes').textContent = contar('A aguardar pagamento');
+    document.getElementById('encomendas-preparacao').textContent = contar('Em preparação');
+    document.getElementById('encomendas-enviadas').textContent = contar('Enviado');
+}
+
+async function carregarEncomendasAdmin() {
+    definirStatusEncomendas('A carregar encomendas...');
+    const { data, error } = await encomendasClient
+        .from('encomendas')
+        .select('*')
+        .order('created_at', { ascending: false });
+    if (error) throw error;
+    encomendasAdmin = data || [];
+    atualizarResumoEncomendas();
+    renderizarEncomendasAdmin();
+    definirStatusEncomendas('');
+}
+
+async function iniciarPainelEncomendas() {
+    const bloqueio = document.getElementById('encomendas-bloqueio');
+    try {
+        if (typeof supabase === 'undefined') throw new Error('A biblioteca Supabase não carregou.');
+        encomendasClient = supabase.createClient(ENCOMENDAS_SUPABASE_URL, ENCOMENDAS_SUPABASE_KEY);
+        const { data: { user }, error } = await encomendasClient.auth.getUser();
+        if (error || !user || !ENCOMENDAS_ADMIN_EMAILS.includes(String(user.email || '').toLowerCase())) {
+            bloqueio.textContent = 'Acesso reservado ao administrador. A regressar à conta...';
+            setTimeout(() => window.location.replace('conta.html'), 1400);
+            return;
+        }
+        bloqueio.hidden = true;
+        document.getElementById('encomendas-aplicacao').hidden = false;
+        await carregarEncomendasAdmin();
+    } catch (error) {
+        console.error(error);
+        bloqueio.hidden = false;
+        bloqueio.textContent = 'Erro ao abrir o painel: ' + (error.message || 'sem detalhe disponível');
+    }
+}
+
+document.getElementById('pesquisa-encomendas-admin').addEventListener('input', renderizarEncomendasAdmin);
+document.getElementById('filtro-estado-encomendas-admin').addEventListener('change', renderizarEncomendasAdmin);
+document.getElementById('btn-atualizar-encomendas').addEventListener('click', async () => {
+    try { await carregarEncomendasAdmin(); }
+    catch (error) { definirStatusEncomendas('Erro ao carregar: ' + (error.message || 'sem detalhe'), true); }
+});
+window.addEventListener('load', iniciarPainelEncomendas);
