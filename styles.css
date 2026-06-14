@@ -1266,6 +1266,18 @@ body{
             gap:12px;
         }
 
+        .admin-encomenda-botoes{
+            display:flex;
+            justify-content:flex-end;
+            gap:10px;
+        }
+
+        .admin-encomenda-editar{
+            background:#ffc107;
+            border-color:#ffc107;
+            color:#000;
+        }
+
         .admin-encomenda-estado-edicao{
             width:min(300px, 100%);
         }
@@ -1331,6 +1343,10 @@ body{
             .admin-encomenda-acoes{
                 align-items:stretch;
                 flex-direction:column;
+            }
+            .admin-encomenda-botoes{
+                display:grid;
+                grid-template-columns:repeat(auto-fit, minmax(150px, 1fr));
             }
             .admin-encomenda-estado-edicao{
                 width:100%;

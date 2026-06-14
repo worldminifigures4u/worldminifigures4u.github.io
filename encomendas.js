@@ -312,7 +312,19 @@ function criarCardEncomenda(encomenda) {
     const copiar = criarElementoEncomenda('button', 'wallapop-botao', 'Copiar dados');
     copiar.type = 'button';
     copiar.addEventListener('click', () => copiarEncomendaAdmin(encomenda));
-    acoes.append(grupoEstado, copiar);
+    const botoes = criarElementoEncomenda('div', 'admin-encomenda-botoes');
+    const origem = normalizarEncomenda(encomenda.origem);
+    const plataformaExterna = ['wallapop', 'olx', 'todocoleccion'].includes(origem);
+    const podeEditar = plataformaExterna
+        && estadoNormalizadoEncomenda(encomenda.estado) !== 'Cancelado'
+        && encomenda.codigo_encomenda;
+    if (podeEditar) {
+        const editar = criarElementoEncomenda('a', 'wallapop-botao admin-encomenda-editar', 'Editar encomenda');
+        editar.href = `plataforma.html?editar=${encodeURIComponent(encomenda.codigo_encomenda)}`;
+        botoes.appendChild(editar);
+    }
+    botoes.appendChild(copiar);
+    acoes.append(grupoEstado, botoes);
 
     detalhes.append(dados, produtos, acoes);
     card.append(cabecalho, detalhes);

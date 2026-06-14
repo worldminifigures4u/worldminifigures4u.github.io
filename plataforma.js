@@ -664,6 +664,54 @@ function mostrarEdicaoPlataforma(encomenda) {
     aviso.hidden = false;
 }
 
+async function carregarEncomendaPlataformaPorCodigo(codigo) {
+    const codigoNormalizado = String(codigo || '').trim().toUpperCase();
+    if (!codigoNormalizado) throw new Error('Indique o c\u00f3digo da encomenda.');
+
+    const { data, error } = await wallapopClient.rpc('obter_encomenda_plataforma_admin', {
+        p_codigo_encomenda: codigoNormalizado
+    });
+    if (error) throw error;
+    if (!data?.sucesso || !data?.encomenda) throw new Error(data?.erro || 'Encomenda n\u00e3o encontrada.');
+
+    const encomenda = data.encomenda;
+    const catalogo = Array.isArray(data.catalogo_itens) ? data.catalogo_itens : [];
+    const produtosEncomenda = Array.isArray(encomenda.produtos) ? encomenda.produtos : [];
+    wallapopItens = catalogo.map(produto => {
+        const reservado = produtosEncomenda.find(item => String(item.id_produto) === String(produto.id));
+        return { ...produto, quantidade: Math.max(1, Number(reservado?.quantidade) || 1) };
+    });
+    encomendaPlataformaEmEdicao = {
+        id: encomenda.id,
+        codigo_encomenda: encomenda.codigo_encomenda,
+        origem: encomenda.origem,
+        estado: encomenda.estado
+    };
+    wallapopRegistoConcluido = true;
+
+    const seletor = document.getElementById('plataforma-tipo');
+    seletor.value = encomenda.origem;
+    seletor.disabled = true;
+    atualizarModoPlataforma();
+    document.getElementById('wallapop-nome-encomenda').value = encomenda.codigo_encomenda;
+    document.getElementById('wallapop-nome-cliente').value = encomenda.nome_cliente || '';
+    document.getElementById('wallapop-referencia').value = encomenda.referencia_externa || '';
+
+    if (encomenda.origem === 'OLX') {
+        document.getElementById('plataforma-pais-envio').value = encomenda.regiao_envio || 'portugal';
+        atualizarOpcoesEnvioPlataforma();
+        document.getElementById('plataforma-metodo-envio').value = encomenda.metodo_envio || '';
+    }
+
+    guardarItensWallapop();
+    mostrarEdicaoPlataforma(encomendaPlataformaEmEdicao);
+    atualizarBotaoRegistoPlataforma();
+    renderizarResultadosWallapop();
+    renderizarSelecionadosWallapop();
+    renderizarFolhaWallapop();
+    return encomenda;
+}
+
 async function abrirEncomendaPlataformaPeloTxt(evento) {
     const input = evento.currentTarget;
     const ficheiro = input.files?.[0];
@@ -675,47 +723,7 @@ async function abrirEncomendaPlataformaPeloTxt(evento) {
         const codigo = extrairCodigoEncomendaDoTxt(await ficheiro.text());
         if (!codigo) throw new Error('O TXT n\u00e3o cont\u00e9m o c\u00f3digo da encomenda. Gere novamente os ficheiros desta encomenda.');
 
-        const { data, error } = await wallapopClient.rpc('obter_encomenda_plataforma_admin', {
-            p_codigo_encomenda: codigo
-        });
-        if (error) throw error;
-        if (!data?.sucesso || !data?.encomenda) throw new Error(data?.erro || 'Encomenda n\u00e3o encontrada.');
-
-        const encomenda = data.encomenda;
-        const catalogo = Array.isArray(data.catalogo_itens) ? data.catalogo_itens : [];
-        const produtosEncomenda = Array.isArray(encomenda.produtos) ? encomenda.produtos : [];
-        wallapopItens = catalogo.map(produto => {
-            const reservado = produtosEncomenda.find(item => String(item.id_produto) === String(produto.id));
-            return { ...produto, quantidade: Math.max(1, Number(reservado?.quantidade) || 1) };
-        });
-        encomendaPlataformaEmEdicao = {
-            id: encomenda.id,
-            codigo_encomenda: encomenda.codigo_encomenda,
-            origem: encomenda.origem,
-            estado: encomenda.estado
-        };
-        wallapopRegistoConcluido = true;
-
-        const seletor = document.getElementById('plataforma-tipo');
-        seletor.value = encomenda.origem;
-        seletor.disabled = true;
-        atualizarModoPlataforma();
-        document.getElementById('wallapop-nome-encomenda').value = encomenda.codigo_encomenda;
-        document.getElementById('wallapop-nome-cliente').value = encomenda.nome_cliente || '';
-        document.getElementById('wallapop-referencia').value = encomenda.referencia_externa || '';
-
-        if (encomenda.origem === 'OLX') {
-            document.getElementById('plataforma-pais-envio').value = encomenda.regiao_envio || 'portugal';
-            atualizarOpcoesEnvioPlataforma();
-            document.getElementById('plataforma-metodo-envio').value = encomenda.metodo_envio || '';
-        }
-
-        guardarItensWallapop();
-        mostrarEdicaoPlataforma(encomendaPlataformaEmEdicao);
-        atualizarBotaoRegistoPlataforma();
-        renderizarResultadosWallapop();
-        renderizarSelecionadosWallapop();
-        renderizarFolhaWallapop();
+        await carregarEncomendaPlataformaPorCodigo(codigo);
         definirStatusWallapop(`Encomenda ${codigo} aberta. Pode alterar produtos, quantidades e dados.`);
     } catch (error) {
         console.error(error);
@@ -856,6 +864,18 @@ async function iniciarWallapopAdmin() {
         renderizarSelecionadosWallapop();
         renderizarFolhaWallapop();
         atualizarModoPlataforma();
+
+        const codigoEditar = new URLSearchParams(window.location.search).get('editar');
+        if (codigoEditar) {
+            try {
+                definirStatusWallapop('A abrir a encomenda...');
+                const encomenda = await carregarEncomendaPlataformaPorCodigo(codigoEditar);
+                definirStatusWallapop(`Encomenda ${encomenda.codigo_encomenda} aberta. Pode alterar produtos, quantidades e dados.`);
+            } catch (error) {
+                console.error(error);
+                definirStatusWallapop('Erro ao abrir: ' + (error.message || 'erro desconhecido'), true);
+            }
+        }
     } catch (error) {
         console.error(error);
         bloqueio.textContent = 'Erro ao abrir a ferramenta: ' + (error.message || 'sem detalhe disponível');
