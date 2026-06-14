@@ -57,6 +57,7 @@ let wallapopItens = carregarItensWallapop();
 let wallapopRegistoConcluido = false;
 let encomendaPlataformaEmEdicao = null;
 let perfilExternoDetetado = null;
+let stockNegativoConfirmado = new Set();
 
 function analisarLinkPerfilPlataforma(valor) {
     const texto = String(valor || '').trim();
@@ -259,21 +260,29 @@ function definirStatusWallapop(texto, erro = false) {
 }
 
 async function carregarCatalogoWallapop() {
-    const produtos = [];
-    let inicio = 0;
-    const tamanho = 500;
+    const respostaAdmin = await wallapopClient.rpc('listar_produtos_plataforma_admin');
+    let produtos = Array.isArray(respostaAdmin.data) ? respostaAdmin.data : [];
 
-    while (true) {
-        const { data, error } = await wallapopClient
-            .from('produtos_loja')
-            .select('id, sku, nome, preco, peso, imagens, ativo')
-            .order('nome', { ascending: true })
-            .range(inicio, inicio + tamanho - 1);
-        if (error) throw error;
-        if (!data?.length) break;
-        produtos.push(...data.filter(produto => produto.ativo !== false));
-        if (data.length < tamanho) break;
-        inicio += tamanho;
+    if (respostaAdmin.error) {
+        console.warn('Catalogo administrativo indisponivel; a usar catalogo publico.', respostaAdmin.error);
+        produtos = [];
+        let inicio = 0;
+        const tamanho = 500;
+        while (true) {
+            const { data, error } = await wallapopClient
+                .from('produtos_loja')
+                .select('id, sku, nome, preco, peso, imagens, ativo')
+                .order('nome', { ascending: true })
+                .range(inicio, inicio + tamanho - 1);
+            if (error) throw error;
+            if (!data?.length) break;
+            produtos.push(...data.filter(produto => produto.ativo !== false).map(produto => ({
+                ...produto,
+                stock: null
+            })));
+            if (data.length < tamanho) break;
+            inicio += tamanho;
+        }
     }
 
     wallapopProdutos = produtos;
@@ -301,13 +310,49 @@ function criarImagemWallapop(src, alt, classe) {
     return imagem;
 }
 
+function obterQuantidadeOriginalPlataforma(id) {
+    return Number(encomendaPlataformaEmEdicao?.quantidades_originais?.[String(id)] || 0);
+}
+
+function obterStockDisponivelPlataforma(produto) {
+    if (produto?.stock === null || produto?.stock === undefined) return null;
+    const stock = Number(produto?.stock);
+    if (!Number.isFinite(stock)) return null;
+    return Math.max(stock, 0) + obterQuantidadeOriginalPlataforma(produto.id);
+}
+
+function confirmarStockNegativoPlataforma(produto, quantidadePretendida) {
+    const disponivel = obterStockDisponivelPlataforma(produto);
+    if (disponivel === null || quantidadePretendida <= disponivel) return true;
+    const confirmado = window.confirm(
+        `O produto "${produto.nome}" nao tem stock suficiente registado.\n\n` +
+        `Stock disponivel: ${Math.max(disponivel, 0)}\n` +
+        `Quantidade pretendida: ${quantidadePretendida}\n\n` +
+        'Confirmas que queres adicionar mesmo assim? O stock ficara negativo.'
+    );
+    if (confirmado) stockNegativoConfirmado.add(String(produto.id));
+    return confirmado;
+}
+
+function confirmarFaltasStockPlataforma() {
+    for (const item of wallapopItens) {
+        const disponivel = obterStockDisponivelPlataforma(item);
+        if (disponivel === null || item.quantidade <= disponivel) continue;
+        if (stockNegativoConfirmado.has(String(item.id))) continue;
+        if (!confirmarStockNegativoPlataforma(item, item.quantidade)) return false;
+    }
+    return true;
+}
+
 function adicionarProdutoWallapop(id) {
     const existente = wallapopItens.find(item => String(item.id) === String(id));
     if (existente) {
+        if (!confirmarStockNegativoPlataforma(existente, existente.quantidade + 1)) return;
         existente.quantidade += 1;
     } else {
         const produto = wallapopProdutos.find(item => String(item.id) === String(id));
         if (!produto) return;
+        if (!confirmarStockNegativoPlataforma(produto, 1)) return;
         wallapopItens.push({ ...produto, quantidade: 1 });
     }
     guardarItensWallapop();
@@ -319,7 +364,9 @@ function adicionarProdutoWallapop(id) {
 function alterarQuantidadeWallapop(id, diferenca) {
     const item = wallapopItens.find(produto => String(produto.id) === String(id));
     if (!item) return;
-    item.quantidade = Math.max(1, item.quantidade + diferenca);
+    const novaQuantidade = Math.max(1, item.quantidade + diferenca);
+    if (diferenca > 0 && !confirmarStockNegativoPlataforma(item, novaQuantidade)) return;
+    item.quantidade = novaQuantidade;
     guardarItensWallapop();
     marcarWallapopPorRegistar();
     renderizarSelecionadosWallapop();
@@ -375,6 +422,13 @@ function renderizarResultadosWallapop() {
         const preco = document.createElement('span');
         preco.textContent = `${formatarEuroWallapop(produto.preco)} €`;
         info.append(nome, preco);
+        if (produto.stock !== null && produto.stock !== undefined
+            && Number.isFinite(Number(produto.stock)) && Number(produto.stock) <= 0) {
+            const semStock = document.createElement('span');
+            semStock.className = 'plataforma-sem-stock';
+            semStock.textContent = 'Sem stock';
+            info.appendChild(semStock);
+        }
 
         const adicionar = document.createElement('button');
         adicionar.className = 'wallapop-botao wallapop-botao-destaque';
@@ -686,7 +740,8 @@ function obterItensEncomendaWallapop() {
     return wallapopItens.map((item, indice) => ({
         id_produto: String(item.id),
         quantidade: Math.max(1, Number(item.quantidade) || 1),
-        ordem: indice
+        ordem: indice,
+        permitir_stock_negativo: stockNegativoConfirmado.has(String(item.id))
     }));
 }
 
@@ -796,9 +851,11 @@ async function carregarEncomendaPlataformaPorCodigo(codigo) {
     const encomenda = data.encomenda;
     const catalogo = Array.isArray(data.catalogo_itens) ? data.catalogo_itens : [];
     const produtosEncomenda = Array.isArray(encomenda.produtos) ? encomenda.produtos : [];
+    stockNegativoConfirmado = new Set();
     wallapopItens = catalogo.map(produto => {
         const reservado = produtosEncomenda.find(item => String(item.id_produto) === String(produto.id));
-        return { ...produto, quantidade: Math.max(1, Number(reservado?.quantidade) || 1) };
+        const atual = wallapopProdutos.find(item => String(item.id) === String(produto.id));
+        return { ...produto, ...atual, quantidade: Math.max(1, Number(reservado?.quantidade) || 1) };
     });
     encomendaPlataformaEmEdicao = {
         id: encomenda.id,
@@ -859,6 +916,7 @@ async function abrirEncomendaPlataformaPeloTxt(evento) {
 function novaEncomendaPlataforma() {
     if (wallapopItens.length && !window.confirm('Come\u00e7ar uma nova encomenda e limpar a lista atual?')) return;
     encomendaPlataformaEmEdicao = null;
+    stockNegativoConfirmado = new Set();
     wallapopRegistoConcluido = false;
     wallapopItens = [];
     guardarItensWallapop();
@@ -909,6 +967,10 @@ async function registarEncomendaWallapop() {
     }
     if (!wallapopItens.length) {
         definirStatusWallapop('Adicione pelo menos um produto.', true);
+        return;
+    }
+    if (!confirmarFaltasStockPlataforma()) {
+        definirStatusWallapop('Encomenda n\u00e3o registada. Confirma primeiro os produtos sem stock.', true);
         return;
     }
 

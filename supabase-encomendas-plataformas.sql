@@ -8,6 +8,36 @@ alter table public.encomendas
 
 alter table public.encomendas alter column id_cliente drop not null;
 
+create or replace function public.listar_produtos_plataforma_admin()
+returns jsonb
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  if coalesce(auth.jwt() ->> 'email', '') <> 'worldminifigures4u@gmail.com' then
+    raise exception 'Acesso reservado ao administrador';
+  end if;
+
+  return coalesce((
+    select jsonb_agg(jsonb_build_object(
+      'id', produto.id,
+      'sku', produto.sku,
+      'nome', produto.nome,
+      'preco', coalesce(produto.preco, 0),
+      'peso', coalesce(produto.peso, 10),
+      'imagens', produto.imagens,
+      'stock', coalesce(produto.stock, 0),
+      'ativo', coalesce(produto.ativo, true)
+    ) order by produto.nome)
+    from public.produtos as produto
+  ), '[]'::jsonb);
+end;
+$$;
+
+revoke execute on function public.listar_produtos_plataforma_admin() from public, anon;
+grant execute on function public.listar_produtos_plataforma_admin() to authenticated;
+
 create or replace function public.criar_encomenda_plataforma_admin(
   p_plataforma text,
   p_itens jsonb,
@@ -59,7 +89,8 @@ begin
 
   for v_item in
     select item->>'id_produto' as id_produto,
-           sum((item->>'quantidade')::integer)::integer as quantidade
+           sum((item->>'quantidade')::integer)::integer as quantidade,
+           bool_or(coalesce((item->>'permitir_stock_negativo')::boolean, false)) as permitir_stock_negativo
     from jsonb_array_elements(p_itens) as itens(item)
     group by item->>'id_produto'
     order by item->>'id_produto'
@@ -83,7 +114,8 @@ begin
       v_indisponiveis := v_indisponiveis || jsonb_build_array(
         jsonb_build_object('id_produto', v_item.id_produto, 'nome', 'Produto indisponivel')
       );
-    elsif not v_produto.ativo or v_produto.stock < v_item.quantidade then
+    elsif (not v_produto.ativo or v_produto.stock < v_item.quantidade)
+          and not v_item.permitir_stock_negativo then
       v_indisponiveis := v_indisponiveis || jsonb_build_array(
         jsonb_build_object(
           'id_produto', v_item.id_produto,
@@ -224,8 +256,8 @@ begin
     for v_item in select value from jsonb_array_elements(v_encomenda.produtos)
     loop
       update public.produtos
-      set stock = coalesce(stock, 0) + greatest(1, coalesce((v_item->>'quantidade')::integer, 1)),
-          ativo = true
+    set stock = coalesce(stock, 0) + greatest(1, coalesce((v_item->>'quantidade')::integer, 1)),
+          ativo = (coalesce(stock, 0) + greatest(1, coalesce((v_item->>'quantidade')::integer, 1))) > 0
       where id::text = v_item->>'id_produto';
     end loop;
     v_encomenda.stock_reposto := true;
@@ -380,7 +412,8 @@ begin
 
   for v_item in
     select item->>'id_produto' as id_produto,
-           sum((item->>'quantidade')::integer)::integer as quantidade
+           sum((item->>'quantidade')::integer)::integer as quantidade,
+           bool_or(coalesce((item->>'permitir_stock_negativo')::boolean, false)) as permitir_stock_negativo
     from jsonb_array_elements(p_itens) as itens(item)
     group by item->>'id_produto'
     order by item->>'id_produto'
@@ -391,7 +424,8 @@ begin
     end if;
 
     select produto.id::text as id, produto.nome,
-           coalesce(produto.stock, 0)::integer as stock
+           coalesce(produto.stock, 0)::integer as stock,
+           coalesce(produto.ativo, true) as ativo
     into v_produto
     from public.produtos as produto
     where produto.id::text = v_item.id_produto;
@@ -412,8 +446,8 @@ begin
         jsonb_build_object('id_produto', v_item.id_produto, 'nome', 'Produto indisponivel')
       );
     else
-      v_disponivel := greatest(v_produto.stock + v_quantidade_antiga - v_nao_repor, 0);
-      if v_disponivel < v_item.quantidade then
+      v_disponivel := v_quantidade_antiga + greatest(v_produto.stock, 0) - v_nao_repor;
+      if v_disponivel < v_item.quantidade and not v_item.permitir_stock_negativo then
         v_indisponiveis := v_indisponiveis || jsonb_build_array(jsonb_build_object(
           'id_produto', v_item.id_produto,
           'nome', v_produto.nome,

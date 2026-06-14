@@ -2578,3 +2578,8 @@ body{
             }
             .rodape-links{ justify-content:center; }
         }
+.plataforma-sem-stock {
+    color: #ff4d55;
+    font-size: 12px;
+    font-weight: 700;
+}
