@@ -664,6 +664,80 @@ function mostrarEdicaoPlataforma(encomenda) {
     aviso.hidden = false;
 }
 
+function obterQuantidadesAtuaisPlataforma() {
+    return Object.fromEntries(wallapopItens.map(item => [
+        String(item.id),
+        Math.max(1, Number(item.quantidade) || 1)
+    ]));
+}
+
+function obterReducoesStockPlataforma() {
+    const originais = encomendaPlataformaEmEdicao?.quantidades_originais || {};
+    const atuais = obterQuantidadesAtuaisPlataforma();
+    return Object.entries(originais).map(([id, quantidadeOriginal]) => {
+        const quantidadeAtual = Number(atuais[id] || 0);
+        const produto = wallapopProdutos.find(item => String(item.id) === String(id));
+        return {
+            id,
+            nome: produto?.nome || `Produto ${id}`,
+            quantidade: Math.max(0, Number(quantidadeOriginal) - quantidadeAtual)
+        };
+    }).filter(item => item.quantidade > 0);
+}
+
+function perguntarReposicaoStockPlataforma(reducao) {
+    return new Promise(resolve => {
+        const fundo = document.createElement('div');
+        fundo.className = 'plataforma-stock-modal';
+        const caixa = document.createElement('div');
+        caixa.className = 'plataforma-stock-dialogo';
+        const titulo = document.createElement('h2');
+        titulo.textContent = 'Ajustar stock';
+        const texto = document.createElement('p');
+        texto.textContent = `${reducao.quantidade} unidade(s) de "${reducao.nome}" foram retiradas da encomenda. O que aconteceu a estas unidades?`;
+        const acoes = document.createElement('div');
+        acoes.className = 'plataforma-stock-acoes';
+
+        const terminar = resposta => {
+            fundo.remove();
+            document.body.classList.remove('plataforma-modal-aberto');
+            resolve(resposta);
+        };
+        const repor = document.createElement('button');
+        repor.type = 'button';
+        repor.className = 'wallapop-botao wallapop-botao-destaque';
+        repor.textContent = 'Repor no stock';
+        repor.addEventListener('click', () => terminar(true));
+        const naoRepor = document.createElement('button');
+        naoRepor.type = 'button';
+        naoRepor.className = 'wallapop-botao plataforma-stock-incorreto';
+        naoRepor.textContent = 'N\u00e3o repor, stock incorreto';
+        naoRepor.addEventListener('click', () => terminar(false));
+        const cancelar = document.createElement('button');
+        cancelar.type = 'button';
+        cancelar.className = 'wallapop-botao';
+        cancelar.textContent = 'Cancelar altera\u00e7\u00f5es';
+        cancelar.addEventListener('click', () => terminar(null));
+
+        acoes.append(repor, naoRepor, cancelar);
+        caixa.append(titulo, texto, acoes);
+        fundo.appendChild(caixa);
+        document.body.appendChild(fundo);
+        document.body.classList.add('plataforma-modal-aberto');
+        repor.focus();
+    });
+}
+
+async function escolherReposicaoStockPlataforma() {
+    const naoRepor = [];
+    for (const reducao of obterReducoesStockPlataforma()) {
+        const resposta = await perguntarReposicaoStockPlataforma(reducao);
+        if (resposta === null) return null;
+        if (resposta === false) naoRepor.push(reducao.id);
+    }
+    return naoRepor;
+}
+
 async function carregarEncomendaPlataformaPorCodigo(codigo) {
     const codigoNormalizado = String(codigo || '').trim().toUpperCase();
     if (!codigoNormalizado) throw new Error('Indique o c\u00f3digo da encomenda.');
@@ -685,7 +759,11 @@ async function carregarEncomendaPlataformaPorCodigo(codigo) {
         id: encomenda.id,
         codigo_encomenda: encomenda.codigo_encomenda,
         origem: encomenda.origem,
-        estado: encomenda.estado
+        estado: encomenda.estado,
+        quantidades_originais: Object.fromEntries(produtosEncomenda.map(item => [
+            String(item.id_produto),
+            Math.max(1, Number(item.quantidade) || 1)
+        ]))
     };
     wallapopRegistoConcluido = true;
 
@@ -771,6 +849,13 @@ async function registarEncomendaWallapop() {
 
     const envio = plataforma === 'OLX' ? obterEnvioPlataforma() : { regiao: '', id: '', nome: '', portes: 0 };
     const total = calcularSubtotalPlataforma() + envio.portes;
+    const naoReporStock = encomendaPlataformaEmEdicao
+        ? await escolherReposicaoStockPlataforma()
+        : [];
+    if (naoReporStock === null) {
+        definirStatusWallapop('Altera\u00e7\u00f5es n\u00e3o guardadas.');
+        return;
+    }
     const confirmado = window.confirm(encomendaPlataformaEmEdicao
         ? `Guardar as alterações da encomenda ${obterCodigoEncomendaAtual()}? O stock será ajustado automaticamente.`
         : `Registar a encomenda ${plataforma} de ${nomeCliente} por ${formatarEuroWallapop(total)} € e descontar o stock?`
@@ -796,6 +881,7 @@ async function registarEncomendaWallapop() {
             : 'criar_encomenda_plataforma_admin';
         if (encomendaPlataformaEmEdicao) {
             parametros.p_encomenda_id = String(encomendaPlataformaEmEdicao.id);
+            parametros.p_nao_repor_ids = naoReporStock;
         } else {
             parametros.p_plataforma = plataforma;
         }
@@ -817,7 +903,8 @@ async function registarEncomendaWallapop() {
             id: data.encomenda?.id || encomendaPlataformaEmEdicao?.id,
             codigo_encomenda: codigo,
             origem: data.encomenda?.origem || plataforma,
-            estado: data.encomenda?.estado || 'A aguardar pagamento'
+            estado: data.encomenda?.estado || 'A aguardar pagamento',
+            quantidades_originais: obterQuantidadesAtuaisPlataforma()
         };
         document.getElementById('plataforma-tipo').disabled = true;
         document.getElementById('wallapop-nome-encomenda').value ||= codigo;

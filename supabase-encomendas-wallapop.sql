@@ -308,6 +308,10 @@ from public, anon;
 grant execute on function public.obter_encomenda_plataforma_admin(text)
 to authenticated;
 
+drop function if exists public.atualizar_encomenda_plataforma_admin(
+  text, jsonb, text, text, text, text, text, numeric
+);
+
 create or replace function public.atualizar_encomenda_plataforma_admin(
   p_encomenda_id text,
   p_itens jsonb,
@@ -316,7 +320,8 @@ create or replace function public.atualizar_encomenda_plataforma_admin(
   p_regiao_envio text default null,
   p_metodo_envio text default null,
   p_metodo_envio_nome text default null,
-  p_portes numeric default 0
+  p_portes numeric default 0,
+  p_nao_repor_ids text[] default array[]::text[]
 )
 returns jsonb
 language plpgsql
@@ -328,6 +333,8 @@ declare
   v_item record;
   v_produto record;
   v_quantidade_antiga integer;
+  v_quantidade_nova integer;
+  v_nao_repor integer;
   v_disponivel integer;
   v_indisponiveis jsonb := '[]'::jsonb;
   v_produtos jsonb := '[]'::jsonb;
@@ -394,12 +401,18 @@ begin
     from jsonb_array_elements(v_encomenda.produtos) as antigo(item)
     where antigo.item->>'id_produto' = v_item.id_produto;
 
+    v_nao_repor := case
+      when v_item.id_produto = any(coalesce(p_nao_repor_ids, array[]::text[]))
+      then greatest(v_quantidade_antiga - v_item.quantidade, 0)
+      else 0
+    end;
+
     if not found or v_produto.id is null then
       v_indisponiveis := v_indisponiveis || jsonb_build_array(
         jsonb_build_object('id_produto', v_item.id_produto, 'nome', 'Produto indisponivel')
       );
     else
-      v_disponivel := greatest(v_produto.stock + v_quantidade_antiga, 0);
+      v_disponivel := greatest(v_produto.stock + v_quantidade_antiga - v_nao_repor, 0);
       if v_disponivel < v_item.quantidade then
         v_indisponiveis := v_indisponiveis || jsonb_build_array(jsonb_build_object(
           'id_produto', v_item.id_produto,
@@ -421,9 +434,20 @@ begin
     from jsonb_array_elements(v_encomenda.produtos) as antigos(item)
     group by item->>'id_produto'
   loop
+    select coalesce(sum((novo.item->>'quantidade')::integer), 0)::integer
+    into v_quantidade_nova
+    from jsonb_array_elements(p_itens) as novo(item)
+    where novo.item->>'id_produto' = v_item.id_produto;
+
+    v_nao_repor := case
+      when v_item.id_produto = any(coalesce(p_nao_repor_ids, array[]::text[]))
+      then greatest(v_item.quantidade - v_quantidade_nova, 0)
+      else 0
+    end;
+
     update public.produtos
-    set stock = coalesce(stock, 0) + v_item.quantidade,
-        ativo = true
+    set stock = coalesce(stock, 0) + greatest(v_item.quantidade - v_nao_repor, 0),
+        ativo = (coalesce(stock, 0) + greatest(v_item.quantidade - v_nao_repor, 0)) > 0
     where id::text = v_item.id_produto;
   end loop;
 
@@ -494,9 +518,9 @@ end;
 $$;
 
 revoke execute on function public.atualizar_encomenda_plataforma_admin(
-  text, jsonb, text, text, text, text, text, numeric
+  text, jsonb, text, text, text, text, text, numeric, text[]
 ) from public, anon;
 
 grant execute on function public.atualizar_encomenda_plataforma_admin(
-  text, jsonb, text, text, text, text, text, numeric
+  text, jsonb, text, text, text, text, text, numeric, text[]
 ) to authenticated;

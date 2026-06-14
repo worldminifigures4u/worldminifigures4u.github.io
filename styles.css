@@ -1278,6 +1278,55 @@ body{
             color:#000;
         }
 
+        .plataforma-stock-modal{
+            position:fixed;
+            z-index:12000;
+            inset:0;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            padding:20px;
+            background:rgba(0,0,0,.82);
+        }
+
+        .plataforma-stock-dialogo{
+            width:min(560px, 100%);
+            padding:24px;
+            border:1px solid #555;
+            border-radius:6px;
+            background:#171717;
+            color:#fff;
+        }
+
+        .plataforma-stock-dialogo h2{
+            margin:0 0 14px;
+            color:#ffc107;
+        }
+
+        .plataforma-stock-dialogo p{
+            margin:0 0 20px;
+            line-height:1.5;
+        }
+
+        .plataforma-stock-acoes{
+            display:grid;
+            grid-template-columns:1fr 1fr;
+            gap:10px;
+        }
+
+        .plataforma-stock-acoes button:last-child{
+            grid-column:1 / -1;
+        }
+
+        .plataforma-stock-incorreto{
+            border-color:#ff4d4d;
+            color:#ff7474;
+        }
+
+        body.plataforma-modal-aberto{
+            overflow:hidden;
+        }
+
         .admin-encomenda-estado-edicao{
             width:min(300px, 100%);
         }
@@ -1377,6 +1426,12 @@ body{
         }
 
         @media(max-width:560px){
+            .plataforma-stock-acoes{
+                grid-template-columns:1fr;
+            }
+            .plataforma-stock-acoes button:last-child{
+                grid-column:auto;
+            }
             .wallapop-topo{
                 align-items:flex-start;
                 flex-direction:column;
