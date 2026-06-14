@@ -230,10 +230,140 @@ function criarLinhaDetalhe(rotulo, valor) {
     return linha;
 }
 
+function definirStatusFichaCliente(texto, erro = false) {
+    const status = document.getElementById('admin-cliente-status');
+    status.textContent = texto || '';
+    status.classList.toggle('msg-erro', erro);
+    status.classList.toggle('msg-sucesso', Boolean(texto) && !erro);
+}
+
+function fecharFichaClienteAdmin() {
+    document.getElementById('admin-cliente-modal').hidden = true;
+    document.getElementById('admin-cliente-conteudo').replaceChildren();
+    definirStatusFichaCliente('');
+    document.body.classList.remove('admin-cliente-modal-aberto');
+}
+
+function criarCampoFichaCliente(rotulo, valor) {
+    const linha = criarElementoEncomenda('div', 'admin-cliente-campo');
+    linha.append(
+        criarElementoEncomenda('strong', '', rotulo),
+        criarElementoEncomenda('span', '', valor || '\u2014')
+    );
+    return linha;
+}
+
+function renderizarFichaClienteAdmin(dados) {
+    const conteudo = document.getElementById('admin-cliente-conteudo');
+    const cliente = dados.cliente || {};
+    const resumo = dados.resumo || {};
+    const perfis = Array.isArray(dados.perfis) ? dados.perfis : [];
+    const historico = Array.isArray(dados.historico) ? dados.historico : [];
+    conteudo.replaceChildren();
+
+    const dadosPessoais = criarElementoEncomenda('section', 'admin-cliente-secao');
+    dadosPessoais.appendChild(criarElementoEncomenda('h3', '', 'Dados do cliente'));
+    const grelha = criarElementoEncomenda('div', 'admin-cliente-grelha');
+    grelha.append(
+        criarCampoFichaCliente('Nome', cliente.nome),
+        criarCampoFichaCliente('E-mail', cliente.email),
+        criarCampoFichaCliente('Telem\u00f3vel', cliente.telefone),
+        criarCampoFichaCliente('Morada', [cliente.morada, cliente.cp, cliente.cidade, cliente.pais].filter(Boolean).join(', '))
+    );
+    dadosPessoais.appendChild(grelha);
+
+    const indicadores = criarElementoEncomenda('section', 'admin-cliente-resumo');
+    indicadores.append(
+        criarCampoFichaCliente('Encomendas', String(resumo.encomendas || 0)),
+        criarCampoFichaCliente('Total comprado', formatarEuroEncomenda(resumo.total)),
+        criarCampoFichaCliente('\u00daltima compra', resumo.ultima_compra ? formatarDataEncomenda(resumo.ultima_compra) : '\u2014')
+    );
+
+    const perfisSecao = criarElementoEncomenda('section', 'admin-cliente-secao');
+    perfisSecao.appendChild(criarElementoEncomenda('h3', '', 'Perfis externos'));
+    const listaPerfis = criarElementoEncomenda('div', 'admin-cliente-perfis');
+    if (!perfis.length) {
+        listaPerfis.appendChild(criarElementoEncomenda('p', 'admin-cliente-vazio', 'Nenhum perfil externo associado.'));
+    } else {
+        perfis.forEach(perfil => {
+            const link = criarElementoEncomenda('a', 'admin-cliente-perfil', `${perfil.plataforma}: ${perfil.utilizador}`);
+            link.href = perfil.url;
+            link.target = '_blank';
+            link.rel = 'noopener noreferrer';
+            listaPerfis.appendChild(link);
+        });
+    }
+    perfisSecao.appendChild(listaPerfis);
+
+    const historicoSecao = criarElementoEncomenda('section', 'admin-cliente-secao');
+    historicoSecao.appendChild(criarElementoEncomenda('h3', '', 'Hist\u00f3rico de encomendas'));
+    const listaHistorico = criarElementoEncomenda('div', 'admin-cliente-historico');
+    historico.forEach(item => {
+        const linha = criarElementoEncomenda('div', 'admin-cliente-historico-linha');
+        linha.append(
+            criarElementoEncomenda('strong', '', item.codigo || `#${item.id}`),
+            criarElementoEncomenda('span', '', item.origem || 'Site'),
+            criarElementoEncomenda('span', '', item.estado || ''),
+            criarElementoEncomenda('span', '', formatarDataEncomenda(item.data)),
+            criarElementoEncomenda('strong', '', formatarEuroEncomenda(item.total))
+        );
+        listaHistorico.appendChild(linha);
+    });
+    if (!historico.length) listaHistorico.appendChild(criarElementoEncomenda('p', 'admin-cliente-vazio', 'Sem encomendas associadas.'));
+    historicoSecao.appendChild(listaHistorico);
+
+    const notasSecao = criarElementoEncomenda('section', 'admin-cliente-secao');
+    notasSecao.appendChild(criarElementoEncomenda('h3', '', 'Notas internas'));
+    const notas = document.createElement('textarea');
+    notas.className = 'admin-cliente-notas';
+    notas.rows = 5;
+    notas.maxLength = 5000;
+    notas.value = cliente.notas || '';
+    notas.placeholder = 'Prefer\u00eancias, observa\u00e7\u00f5es de entrega ou outra informa\u00e7\u00e3o realmente necess\u00e1ria.';
+    const guardar = criarElementoEncomenda('button', 'wallapop-botao wallapop-botao-destaque', 'Guardar notas');
+    guardar.type = 'button';
+    guardar.addEventListener('click', async () => {
+        guardar.disabled = true;
+        definirStatusFichaCliente('A guardar notas...');
+        const { data, error } = await encomendasClient.rpc('guardar_notas_cliente_admin', {
+            p_cliente_id: cliente.id,
+            p_notas: notas.value
+        });
+        guardar.disabled = false;
+        if (error || data?.sucesso === false) {
+            definirStatusFichaCliente('Erro ao guardar notas: ' + (error?.message || data?.erro || 'sem detalhe'), true);
+            return;
+        }
+        definirStatusFichaCliente('Notas guardadas.');
+    });
+    notasSecao.append(notas, guardar);
+    conteudo.append(dadosPessoais, indicadores, perfisSecao, historicoSecao, notasSecao);
+}
+
+async function abrirFichaClienteAdmin(encomenda) {
+    const modal = document.getElementById('admin-cliente-modal');
+    modal.hidden = false;
+    document.body.classList.add('admin-cliente-modal-aberto');
+    document.getElementById('admin-cliente-conteudo').replaceChildren(
+        criarElementoEncomenda('p', 'admin-cliente-carregar', 'A carregar ficha do cliente...')
+    );
+    definirStatusFichaCliente('');
+    const { data, error } = await encomendasClient.rpc('obter_ficha_cliente_admin', {
+        p_encomenda_id: String(encomenda.id)
+    });
+    if (error || data?.sucesso === false) {
+        document.getElementById('admin-cliente-conteudo').replaceChildren();
+        definirStatusFichaCliente('Erro ao carregar ficha: ' + (error?.message || data?.erro || 'sem detalhe'), true);
+        return;
+    }
+    renderizarFichaClienteAdmin(data);
+}
+
 function criarCardEncomenda(encomenda) {
     const card = criarElementoEncomenda('article', 'admin-encomenda-card');
-    const cabecalho = criarElementoEncomenda('button', 'admin-encomenda-cabecalho');
-    cabecalho.type = 'button';
+    const cabecalho = criarElementoEncomenda('div', 'admin-encomenda-cabecalho');
+    cabecalho.tabIndex = 0;
+    cabecalho.setAttribute('role', 'button');
 
     const identificacao = criarElementoEncomenda('div', 'admin-encomenda-identificacao');
     identificacao.append(
@@ -242,10 +372,26 @@ function criarCardEncomenda(encomenda) {
         criarElementoEncomenda('span', 'admin-encomenda-origem', encomenda.origem || 'Site')
     );
     const cliente = criarElementoEncomenda('div', 'admin-encomenda-cliente');
-    cliente.append(
-        criarElementoEncomenda('strong', '', encomenda.nome_cliente || 'Cliente sem nome'),
-        criarElementoEncomenda('span', '', encomenda.email_cliente || '')
-    );
+    const abrirCliente = criarElementoEncomenda('button', 'admin-encomenda-cliente-link', encomenda.nome_cliente || 'Cliente sem nome');
+    abrirCliente.type = 'button';
+    abrirCliente.title = 'Abrir ficha do cliente';
+    abrirCliente.addEventListener('click', evento => {
+        evento.stopPropagation();
+        abrirFichaClienteAdmin(encomenda);
+    });
+    abrirCliente.addEventListener('keydown', evento => evento.stopPropagation());
+    cliente.appendChild(abrirCliente);
+    if (encomenda.email_cliente) {
+        const abrirClienteEmail = criarElementoEncomenda('button', 'admin-encomenda-cliente-email', encomenda.email_cliente);
+        abrirClienteEmail.type = 'button';
+        abrirClienteEmail.title = 'Abrir ficha do cliente';
+        abrirClienteEmail.addEventListener('click', evento => {
+            evento.stopPropagation();
+            abrirFichaClienteAdmin(encomenda);
+        });
+        abrirClienteEmail.addEventListener('keydown', evento => evento.stopPropagation());
+        cliente.appendChild(abrirClienteEmail);
+    }
     const resumo = criarElementoEncomenda('div', 'admin-encomenda-valor');
     resumo.append(
         criarElementoEncomenda('strong', '', formatarEuroEncomenda(encomenda.total)),
@@ -256,6 +402,12 @@ function criarCardEncomenda(encomenda) {
     const detalhes = criarElementoEncomenda('div', 'admin-encomenda-detalhes');
     detalhes.hidden = true;
     cabecalho.addEventListener('click', () => {
+        detalhes.hidden = !detalhes.hidden;
+        card.classList.toggle('aberta', !detalhes.hidden);
+    });
+    cabecalho.addEventListener('keydown', evento => {
+        if (evento.key !== 'Enter' && evento.key !== ' ') return;
+        evento.preventDefault();
         detalhes.hidden = !detalhes.hidden;
         card.classList.toggle('aberta', !detalhes.hidden);
     });
@@ -448,12 +600,18 @@ document.getElementById('btn-atualizar-encomendas').addEventListener('click', as
     catch (error) { definirStatusEncomendas('Erro ao carregar: ' + (error.message || 'sem detalhe'), true); }
 });
 document.getElementById('admin-imagem-modal-fechar').addEventListener('click', fecharImagemProdutoEncomenda);
+document.getElementById('admin-cliente-fechar').addEventListener('click', fecharFichaClienteAdmin);
+document.getElementById('admin-cliente-modal').addEventListener('click', evento => {
+    if (evento.target === evento.currentTarget) fecharFichaClienteAdmin();
+});
 document.getElementById('admin-imagem-modal').addEventListener('click', evento => {
     if (evento.target === evento.currentTarget) fecharImagemProdutoEncomenda();
 });
 document.addEventListener('keydown', evento => {
     if (evento.key === 'Escape' && !document.getElementById('admin-imagem-modal').hidden) {
         fecharImagemProdutoEncomenda();
+    } else if (evento.key === 'Escape' && !document.getElementById('admin-cliente-modal').hidden) {
+        fecharFichaClienteAdmin();
     }
 });
 window.addEventListener('load', iniciarPainelEncomendas);

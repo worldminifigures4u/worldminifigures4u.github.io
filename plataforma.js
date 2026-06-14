@@ -56,6 +56,51 @@ let wallapopProdutos = [];
 let wallapopItens = carregarItensWallapop();
 let wallapopRegistoConcluido = false;
 let encomendaPlataformaEmEdicao = null;
+let perfilExternoDetetado = null;
+
+function analisarLinkPerfilPlataforma(valor) {
+    const texto = String(valor || '').trim();
+    if (!texto) return null;
+    let url;
+    try { url = new URL(texto); }
+    catch (_) { return { erro: 'O link do perfil n\u00e3o \u00e9 v\u00e1lido.' }; }
+
+    const host = url.hostname.toLowerCase().replace(/^www\./, '');
+    const caminho = decodeURIComponent(url.pathname).replace(/\/+$/, '');
+    const regras = [
+        { plataforma: 'Wallapop', valido: host.endsWith('wallapop.com'), expressao: /\/user\/([^/?#]+)$/i },
+        { plataforma: 'OLX', valido: host.endsWith('olx.pt'), expressao: /\/ads\/user\/([^/?#]+)$/i },
+        { plataforma: 'Todocoleccion', valido: host.endsWith('todocoleccion.net'), expressao: /\/usuario\/([^/?#]+)$/i }
+    ];
+    const regra = regras.find(item => item.valido && item.expressao.test(caminho));
+    if (!regra) return { erro: 'Link n\u00e3o reconhecido. Use um perfil Wallapop, OLX ou Todocoleccion.' };
+    const correspondencia = caminho.match(regra.expressao);
+    return {
+        plataforma: regra.plataforma,
+        utilizador: correspondencia?.[1] || '',
+        url: url.href
+    };
+}
+
+function atualizarPerfilExternoPlataforma() {
+    const input = document.getElementById('plataforma-link-perfil');
+    const aviso = document.getElementById('plataforma-perfil-detetado');
+    const resultado = analisarLinkPerfilPlataforma(input?.value);
+    perfilExternoDetetado = resultado && !resultado.erro ? resultado : null;
+    aviso.hidden = !resultado;
+    aviso.classList.toggle('erro', Boolean(resultado?.erro));
+    aviso.textContent = resultado?.erro || (resultado
+        ? `${resultado.plataforma}: ${resultado.utilizador}`
+        : '');
+    if (!perfilExternoDetetado) return;
+
+    const seletor = document.getElementById('plataforma-tipo');
+    if (!seletor.disabled) {
+        seletor.value = perfilExternoDetetado.plataforma;
+        atualizarModoPlataforma();
+    }
+    document.getElementById('wallapop-nome-cliente').value = perfilExternoDetetado.utilizador;
+}
 
 function obterPlataformaAtual() {
     return document.getElementById('plataforma-tipo')?.value || 'Wallapop';
@@ -773,6 +818,8 @@ async function carregarEncomendaPlataformaPorCodigo(codigo) {
     atualizarModoPlataforma();
     document.getElementById('wallapop-nome-encomenda').value = encomenda.codigo_encomenda;
     document.getElementById('wallapop-nome-cliente').value = encomenda.nome_cliente || '';
+    document.getElementById('plataforma-link-perfil').value = encomenda.perfil_externo_url || '';
+    atualizarPerfilExternoPlataforma();
     document.getElementById('wallapop-referencia').value = encomenda.referencia_externa || '';
 
     if (encomenda.origem === 'OLX') {
@@ -819,6 +866,9 @@ function novaEncomendaPlataforma() {
     seletor.disabled = false;
     document.getElementById('wallapop-nome-encomenda').value = '';
     document.getElementById('wallapop-nome-cliente').value = '';
+    document.getElementById('plataforma-link-perfil').value = '';
+    perfilExternoDetetado = null;
+    atualizarPerfilExternoPlataforma();
     document.getElementById('wallapop-referencia').value = '';
     mostrarEdicaoPlataforma(null);
     atualizarModoPlataforma();
@@ -832,6 +882,21 @@ async function registarEncomendaWallapop() {
     const nomeCliente = document.getElementById('wallapop-nome-cliente').value.trim();
     const referencia = document.getElementById('wallapop-referencia').value.trim();
     const botao = document.getElementById('btn-registar-wallapop');
+    const linkPerfil = document.getElementById('plataforma-link-perfil').value.trim();
+
+    if (linkPerfil) {
+        const perfil = analisarLinkPerfilPlataforma(linkPerfil);
+        if (!perfil || perfil.erro) {
+            definirStatusWallapop(perfil?.erro || 'Link do perfil inv\u00e1lido.', true);
+            document.getElementById('plataforma-link-perfil').focus();
+            return;
+        }
+        if (perfil.plataforma !== plataforma) {
+            definirStatusWallapop(`O link pertence a ${perfil.plataforma}, mas a encomenda est\u00e1 em ${plataforma}.`, true);
+            return;
+        }
+        perfilExternoDetetado = perfil;
+    }
 
     if (wallapopRegistoConcluido && !encomendaPlataformaEmEdicao) {
         definirStatusWallapop(`Esta encomenda ${plataforma} já foi registada.`, true);
@@ -899,6 +964,17 @@ async function registarEncomendaWallapop() {
 
         wallapopRegistoConcluido = true;
         const codigo = data.encomenda?.codigo_encomenda || obterCodigoEncomendaAtual();
+        let avisoPerfil = '';
+        if (linkPerfil) {
+            const associacao = await wallapopClient.rpc('associar_perfil_encomenda_admin', {
+                p_encomenda_id: String(data.encomenda?.id || encomendaPlataformaEmEdicao?.id),
+                p_url_perfil: linkPerfil
+            });
+            if (associacao.error || associacao.data?.sucesso === false) {
+                avisoPerfil = ' A encomenda foi guardada, mas o perfil do cliente n\u00e3o ficou associado.';
+                console.error('Erro ao associar perfil externo:', associacao.error || associacao.data);
+            }
+        }
         encomendaPlataformaEmEdicao = {
             id: data.encomenda?.id || encomendaPlataformaEmEdicao?.id,
             codigo_encomenda: codigo,
@@ -910,7 +986,7 @@ async function registarEncomendaWallapop() {
         document.getElementById('wallapop-nome-encomenda').value ||= codigo;
         mostrarEdicaoPlataforma(encomendaPlataformaEmEdicao);
         atualizarBotaoRegistoPlataforma();
-        definirStatusWallapop(`Encomenda ${codigo} guardada. O stock foi atualizado. Agora pode guardar os ficheiros.`);
+        definirStatusWallapop(`Encomenda ${codigo} guardada. O stock foi atualizado. Agora pode guardar os ficheiros.${avisoPerfil}`);
         await carregarCatalogoWallapop();
         renderizarResultadosWallapop();
         renderizarSelecionadosWallapop();
@@ -981,6 +1057,10 @@ document.getElementById('btn-nova-encomenda-plataforma').addEventListener('click
 document.getElementById('wallapop-nome-cliente').addEventListener('input', marcarWallapopPorRegistar);
 document.getElementById('wallapop-referencia').addEventListener('input', marcarWallapopPorRegistar);
 document.getElementById('plataforma-tipo').addEventListener('change', atualizarModoPlataforma);
+document.getElementById('plataforma-link-perfil').addEventListener('input', () => {
+    atualizarPerfilExternoPlataforma();
+    marcarWallapopPorRegistar();
+});
 document.getElementById('plataforma-pais-envio').addEventListener('change', atualizarOpcoesEnvioPlataforma);
 document.getElementById('plataforma-metodo-envio').addEventListener('change', () => {
     marcarWallapopPorRegistar();
