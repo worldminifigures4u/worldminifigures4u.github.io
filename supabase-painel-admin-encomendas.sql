@@ -54,3 +54,47 @@ from public, anon;
 
 grant execute on function public.atualizar_estado_encomenda_admin(text, text)
 to authenticated;
+
+-- Devolve apenas as imagens necessarias ao painel de encomendas. Ao usar uma
+-- funcao administrativa, as fotografias continuam disponiveis mesmo quando o
+-- produto ficou sem stock e deixou de aparecer na vista publica da loja.
+create or replace function public.obter_imagens_produtos_encomendas_admin(
+  p_ids text[]
+)
+returns jsonb
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_produtos jsonb;
+begin
+  if lower(coalesce(auth.jwt() ->> 'email', '')) <>
+     'worldminifigures4u@gmail.com' then
+    raise exception 'Acesso reservado ao administrador';
+  end if;
+
+  select coalesce(
+    jsonb_agg(
+      jsonb_build_object(
+        'id', produto.id::text,
+        'sku', produto.sku,
+        'imagens', produto.imagens
+      )
+      order by produto.id
+    ),
+    '[]'::jsonb
+  )
+  into v_produtos
+  from public.produtos as produto
+  where produto.id::text = any(coalesce(p_ids, array[]::text[]));
+
+  return v_produtos;
+end;
+$$;
+
+revoke execute on function public.obter_imagens_produtos_encomendas_admin(text[])
+from public, anon;
+
+grant execute on function public.obter_imagens_produtos_encomendas_admin(text[])
+to authenticated;

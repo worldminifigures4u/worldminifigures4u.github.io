@@ -12,6 +12,12 @@ const ESTADOS_ENCOMENDA = [
 
 let encomendasClient = null;
 let encomendasAdmin = [];
+let imagensProdutosEncomendas = new Map();
+let imagensProdutosEncomendasPorSku = new Map();
+
+const ENCOMENDAS_SEM_IMAGEM = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(
+    '<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120"><rect width="100%" height="100%" fill="#222"/><text x="50%" y="50%" text-anchor="middle" dominant-baseline="middle" fill="#888" font-family="Arial" font-size="13">Sem foto</text></svg>'
+);
 
 function normalizarEncomenda(valor) {
     return String(valor || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
@@ -57,6 +63,66 @@ function obterProdutosEncomenda(encomenda) {
         try { produtos = JSON.parse(produtos); } catch (_) { produtos = []; }
     }
     return Array.isArray(produtos) ? produtos : [];
+}
+
+function obterPrimeiraImagemEncomenda(imagens) {
+    let lista = imagens;
+    if (typeof lista === 'string') {
+        try { lista = JSON.parse(lista); }
+        catch (_) { lista = lista.split(',').map(item => item.trim()).filter(Boolean); }
+    }
+    return Array.isArray(lista) ? String(lista.find(Boolean) || '') : '';
+}
+
+function otimizarMiniaturaEncomenda(url) {
+    const original = String(url || '');
+    if (!original.includes('res.cloudinary.com/') || !original.includes('/image/upload/')) return original;
+    return original.replace('/image/upload/', '/image/upload/f_auto,q_auto,w_120,h_120,c_fit/');
+}
+
+function obterImagemProdutoEncomenda(item) {
+    return imagensProdutosEncomendas.get(String(item.id_produto || item.id || ''))
+        || imagensProdutosEncomendasPorSku.get(String(item.sku || '').toUpperCase())
+        || '';
+}
+
+function abrirImagemProdutoEncomenda(url, nome) {
+    if (!url) return;
+    const modal = document.getElementById('admin-imagem-modal');
+    const foto = document.getElementById('admin-imagem-modal-foto');
+    foto.src = url;
+    foto.alt = nome || 'Fotografia do produto';
+    modal.hidden = false;
+    document.body.classList.add('admin-imagem-modal-aberto');
+    document.getElementById('admin-imagem-modal-fechar').focus();
+}
+
+function fecharImagemProdutoEncomenda() {
+    const modal = document.getElementById('admin-imagem-modal');
+    const foto = document.getElementById('admin-imagem-modal-foto');
+    modal.hidden = true;
+    foto.removeAttribute('src');
+    document.body.classList.remove('admin-imagem-modal-aberto');
+}
+
+function criarMiniaturaProdutoEncomenda(item) {
+    const url = obterImagemProdutoEncomenda(item);
+    const botao = criarElementoEncomenda('button', 'admin-encomenda-produto-foto');
+    botao.type = 'button';
+    botao.title = url ? 'Ampliar fotografia' : 'Produto sem fotografia';
+    botao.disabled = !url;
+    const imagem = document.createElement('img');
+    imagem.src = url ? otimizarMiniaturaEncomenda(url) : ENCOMENDAS_SEM_IMAGEM;
+    imagem.alt = item.nome || 'Produto';
+    imagem.loading = 'lazy';
+    imagem.onerror = () => {
+        imagem.onerror = null;
+        imagem.src = ENCOMENDAS_SEM_IMAGEM;
+        botao.disabled = true;
+    };
+    if (url) botao.addEventListener('click', () => abrirImagemProdutoEncomenda(url, item.nome));
+    botao.appendChild(imagem);
+    return botao;
 }
 
 function textoProdutosEncomenda(encomenda) {
@@ -221,10 +287,11 @@ function criarCardEncomenda(encomenda) {
         const quantidade = Number(item.quantidade || item.qtd || 1);
         const preco = Number(item.preco_unitario ?? item.preco ?? 0);
         linha.append(
-            criarElementoEncomenda('span', '', `${quantidade}x`),
-            criarElementoEncomenda('strong', '', item.nome || 'Produto'),
-            criarElementoEncomenda('span', '', item.sku || '—'),
-            criarElementoEncomenda('span', '', formatarEuroEncomenda(preco))
+            criarElementoEncomenda('span', 'admin-encomenda-produto-quantidade', `${quantidade}x`),
+            criarElementoEncomenda('strong', 'admin-encomenda-produto-nome', item.nome || 'Produto'),
+            criarMiniaturaProdutoEncomenda(item),
+            criarElementoEncomenda('span', 'admin-encomenda-produto-sku', item.sku || '—'),
+            criarElementoEncomenda('span', 'admin-encomenda-produto-preco', formatarEuroEncomenda(preco))
         );
         lista.appendChild(linha);
     });
@@ -296,9 +363,49 @@ async function carregarEncomendasAdmin() {
         .order('created_at', { ascending: false });
     if (error) throw error;
     encomendasAdmin = data || [];
+    await carregarImagensProdutosEncomendas();
     atualizarResumoEncomendas();
     renderizarEncomendasAdmin();
     definirStatusEncomendas('');
+}
+
+async function carregarImagensProdutosEncomendas() {
+    imagensProdutosEncomendas = new Map();
+    imagensProdutosEncomendasPorSku = new Map();
+    const ids = [...new Set(encomendasAdmin.flatMap(obterProdutosEncomenda)
+        .map(item => String(item.id_produto || item.id || ''))
+        .filter(Boolean))];
+    if (!ids.length) return;
+
+    for (let inicio = 0; inicio < ids.length; inicio += 200) {
+        const loteIds = ids.slice(inicio, inicio + 200);
+        let produtos = [];
+        const respostaAdmin = await encomendasClient.rpc('obter_imagens_produtos_encomendas_admin', {
+            p_ids: loteIds
+        });
+
+        if (!respostaAdmin.error) {
+            produtos = Array.isArray(respostaAdmin.data) ? respostaAdmin.data : [];
+        } else {
+            // Mantem o painel funcional antes de a RPC administrativa ser instalada.
+            const respostaPublica = await encomendasClient
+                .from('produtos_loja')
+                .select('id, sku, imagens')
+                .in('id', loteIds);
+            if (respostaPublica.error) {
+                console.warn('Nao foi possivel carregar fotografias das encomendas.', respostaPublica.error);
+                continue;
+            }
+            produtos = respostaPublica.data || [];
+        }
+
+        produtos.forEach(produto => {
+            const imagem = obterPrimeiraImagemEncomenda(produto.imagens);
+            if (!imagem) return;
+            imagensProdutosEncomendas.set(String(produto.id), imagem);
+            if (produto.sku) imagensProdutosEncomendasPorSku.set(String(produto.sku).toUpperCase(), imagem);
+        });
+    }
 }
 
 async function iniciarPainelEncomendas() {
@@ -327,5 +434,14 @@ document.getElementById('filtro-estado-encomendas-admin').addEventListener('chan
 document.getElementById('btn-atualizar-encomendas').addEventListener('click', async () => {
     try { await carregarEncomendasAdmin(); }
     catch (error) { definirStatusEncomendas('Erro ao carregar: ' + (error.message || 'sem detalhe'), true); }
+});
+document.getElementById('admin-imagem-modal-fechar').addEventListener('click', fecharImagemProdutoEncomenda);
+document.getElementById('admin-imagem-modal').addEventListener('click', evento => {
+    if (evento.target === evento.currentTarget) fecharImagemProdutoEncomenda();
+});
+document.addEventListener('keydown', evento => {
+    if (evento.key === 'Escape' && !document.getElementById('admin-imagem-modal').hidden) {
+        fecharImagemProdutoEncomenda();
+    }
 });
 window.addEventListener('load', iniciarPainelEncomendas);
