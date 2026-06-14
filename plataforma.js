@@ -55,9 +55,23 @@ let wallapopClient = null;
 let wallapopProdutos = [];
 let wallapopItens = carregarItensWallapop();
 let wallapopRegistoConcluido = false;
+let encomendaPlataformaEmEdicao = null;
 
 function obterPlataformaAtual() {
     return document.getElementById('plataforma-tipo')?.value || 'Wallapop';
+}
+
+function obterCodigoEncomendaAtual() {
+    return String(encomendaPlataformaEmEdicao?.codigo_encomenda || '').trim();
+}
+
+function atualizarBotaoRegistoPlataforma() {
+    const botao = document.getElementById('btn-registar-wallapop');
+    if (!botao) return;
+    botao.textContent = encomendaPlataformaEmEdicao
+        ? 'Guardar altera\u00e7\u00f5es'
+        : `Registar encomenda ${obterPlataformaAtual()}`;
+    botao.disabled = wallapopRegistoConcluido;
 }
 
 function formatarEuroWallapop(valor) {
@@ -143,7 +157,7 @@ function atualizarModoPlataforma() {
     document.getElementById('btn-descarregar-wallapop').textContent = wallapop
         ? 'Guardar an\u00fancio'
         : (olx ? 'Guardar ficheiros OLX' : 'Guardar ficheiro Todocoleccion');
-    document.getElementById('btn-registar-wallapop').textContent = `Registar encomenda ${plataforma}`;
+    atualizarBotaoRegistoPlataforma();
     document.getElementById('plataforma-ajuda-ficheiros').textContent = wallapop
         ? 'Ao guardar, ser\u00e3o criados o PNG e o TXT dentro da pasta da encomenda.'
         : 'Ao guardar, escolhe a pasta de destino. Dentro dela ser\u00e1 criada uma pasta com o nome da encomenda.';
@@ -190,8 +204,7 @@ function guardarItensWallapop() {
 
 function marcarWallapopPorRegistar() {
     wallapopRegistoConcluido = false;
-    const botao = document.getElementById('btn-registar-wallapop');
-    if (botao) botao.disabled = false;
+    atualizarBotaoRegistoPlataforma();
 }
 
 function definirStatusWallapop(texto, erro = false) {
@@ -222,7 +235,8 @@ async function carregarCatalogoWallapop() {
     wallapopItens = wallapopItens
         .map(item => {
             const produto = produtos.find(atual => String(atual.id) === String(item.id));
-            return produto ? { ...produto, quantidade: Math.max(1, Number(item.quantidade) || 1) } : null;
+            if (produto) return { ...produto, quantidade: Math.max(1, Number(item.quantidade) || 1) };
+            return encomendaPlataformaEmEdicao ? item : null;
         })
         .filter(Boolean);
     guardarItensWallapop();
@@ -470,11 +484,11 @@ async function escreverFicheiroWallapop(pasta, nome, conteudo) {
 }
 
 function criarTextoEncomendaWallapop() {
-    const linhas = wallapopItens.map(item => [
+    const linhas = criarCabecalhoCodigoEncomenda().concat(wallapopItens.map(item => [
         Math.max(1, Number(item.quantidade) || 1),
         String(item.nome || '').trim(),
         String(item.sku || '').trim()
-    ].join('\t'));
+    ].join('\t')));
     const total = wallapopItens.reduce((soma, item) => {
         return soma + (Math.max(1, Number(item.quantidade) || 1) * Number(item.preco || 0));
     }, 0);
@@ -483,18 +497,18 @@ function criarTextoEncomendaWallapop() {
 }
 
 function criarTextoInternoPlataforma() {
-    const linhas = wallapopItens.map(item => [
+    const linhas = criarCabecalhoCodigoEncomenda().concat(wallapopItens.map(item => [
         Math.max(1, Number(item.quantidade) || 1),
         String(item.nome || '').trim(),
         String(item.sku || '').trim()
-    ].join('\t'));
+    ].join('\t')));
     return '\ufeff' + linhas.join('\r\n');
 }
 
 function criarTextoClienteOlx() {
     const envio = obterEnvioPlataforma();
     const subtotal = calcularSubtotalPlataforma();
-    const linhas = ['Produtos:'];
+    const linhas = criarCabecalhoCodigoEncomenda().concat(['Produtos:']);
     wallapopItens.forEach(item => {
         linhas.push([
             `${Math.max(1, Number(item.quantidade) || 1)}x`,
@@ -510,6 +524,18 @@ function criarTextoClienteOlx() {
     return '\ufeff' + linhas.join('\r\n');
 }
 
+function criarCabecalhoCodigoEncomenda() {
+    const codigo = obterCodigoEncomendaAtual();
+    return codigo ? [`C\u00f3digo da encomenda:\t${codigo}`, ''] : [];
+}
+
+function validarEncomendaRegistadaParaFicheiros() {
+    if (obterCodigoEncomendaAtual()) return true;
+    definirStatusWallapop('Registe primeiro a encomenda para incluir o c\u00f3digo nos ficheiros.', true);
+    document.getElementById('btn-registar-wallapop')?.focus();
+    return false;
+}
+
 function canvasParaBlobWallapop(canvas) {
     return new Promise((resolve, reject) => {
         canvas.toBlob(blob => blob ? resolve(blob) : reject(new Error('Não foi possível gerar o PNG.')), 'image/png');
@@ -517,6 +543,7 @@ function canvasParaBlobWallapop(canvas) {
 }
 
 async function descarregarImagemWallapop() {
+    if (!validarEncomendaRegistadaParaFicheiros()) return;
     const campoNome = document.getElementById('wallapop-nome-encomenda');
     const nomeEncomenda = limparNomePastaWallapop(campoNome.value);
     if (!nomeEncomenda) {
@@ -574,6 +601,7 @@ async function guardarFicheirosPlataforma() {
         await descarregarImagemWallapop();
         return;
     }
+    if (!validarEncomendaRegistadaParaFicheiros()) return;
 
     const campoNome = document.getElementById('wallapop-nome-encomenda');
     const nomeEncomenda = limparNomePastaWallapop(campoNome.value);
@@ -617,13 +645,109 @@ function obterItensEncomendaWallapop() {
     }));
 }
 
+function extrairCodigoEncomendaDoTxt(conteudo) {
+    const correspondencia = String(conteudo || '').match(
+        /(?:c[o\u00f3]digo\s+da\s+encomenda|encomenda)\s*:\s*([a-z0-9]+)/i
+    );
+    return correspondencia ? correspondencia[1].toUpperCase() : '';
+}
+
+function mostrarEdicaoPlataforma(encomenda) {
+    const aviso = document.getElementById('plataforma-edicao');
+    if (!aviso) return;
+    if (!encomenda) {
+        aviso.hidden = true;
+        aviso.textContent = '';
+        return;
+    }
+    aviso.textContent = `A editar encomenda ${encomenda.codigo_encomenda} - ${encomenda.origem}`;
+    aviso.hidden = false;
+}
+
+async function abrirEncomendaPlataformaPeloTxt(evento) {
+    const input = evento.currentTarget;
+    const ficheiro = input.files?.[0];
+    input.value = '';
+    if (!ficheiro) return;
+
+    definirStatusWallapop('A abrir a encomenda...');
+    try {
+        const codigo = extrairCodigoEncomendaDoTxt(await ficheiro.text());
+        if (!codigo) throw new Error('O TXT n\u00e3o cont\u00e9m o c\u00f3digo da encomenda. Gere novamente os ficheiros desta encomenda.');
+
+        const { data, error } = await wallapopClient.rpc('obter_encomenda_plataforma_admin', {
+            p_codigo_encomenda: codigo
+        });
+        if (error) throw error;
+        if (!data?.sucesso || !data?.encomenda) throw new Error(data?.erro || 'Encomenda n\u00e3o encontrada.');
+
+        const encomenda = data.encomenda;
+        const catalogo = Array.isArray(data.catalogo_itens) ? data.catalogo_itens : [];
+        const produtosEncomenda = Array.isArray(encomenda.produtos) ? encomenda.produtos : [];
+        wallapopItens = catalogo.map(produto => {
+            const reservado = produtosEncomenda.find(item => String(item.id_produto) === String(produto.id));
+            return { ...produto, quantidade: Math.max(1, Number(reservado?.quantidade) || 1) };
+        });
+        encomendaPlataformaEmEdicao = {
+            id: encomenda.id,
+            codigo_encomenda: encomenda.codigo_encomenda,
+            origem: encomenda.origem,
+            estado: encomenda.estado
+        };
+        wallapopRegistoConcluido = true;
+
+        const seletor = document.getElementById('plataforma-tipo');
+        seletor.value = encomenda.origem;
+        seletor.disabled = true;
+        atualizarModoPlataforma();
+        document.getElementById('wallapop-nome-encomenda').value = encomenda.codigo_encomenda;
+        document.getElementById('wallapop-nome-cliente').value = encomenda.nome_cliente || '';
+        document.getElementById('wallapop-referencia').value = encomenda.referencia_externa || '';
+
+        if (encomenda.origem === 'OLX') {
+            document.getElementById('plataforma-pais-envio').value = encomenda.regiao_envio || 'portugal';
+            atualizarOpcoesEnvioPlataforma();
+            document.getElementById('plataforma-metodo-envio').value = encomenda.metodo_envio || '';
+        }
+
+        guardarItensWallapop();
+        mostrarEdicaoPlataforma(encomendaPlataformaEmEdicao);
+        atualizarBotaoRegistoPlataforma();
+        renderizarResultadosWallapop();
+        renderizarSelecionadosWallapop();
+        renderizarFolhaWallapop();
+        definirStatusWallapop(`Encomenda ${codigo} aberta. Pode alterar produtos, quantidades e dados.`);
+    } catch (error) {
+        console.error(error);
+        definirStatusWallapop('Erro ao abrir: ' + (error.message || 'erro desconhecido'), true);
+    }
+}
+
+function novaEncomendaPlataforma() {
+    if (wallapopItens.length && !window.confirm('Come\u00e7ar uma nova encomenda e limpar a lista atual?')) return;
+    encomendaPlataformaEmEdicao = null;
+    wallapopRegistoConcluido = false;
+    wallapopItens = [];
+    guardarItensWallapop();
+    const seletor = document.getElementById('plataforma-tipo');
+    seletor.disabled = false;
+    document.getElementById('wallapop-nome-encomenda').value = '';
+    document.getElementById('wallapop-nome-cliente').value = '';
+    document.getElementById('wallapop-referencia').value = '';
+    mostrarEdicaoPlataforma(null);
+    atualizarModoPlataforma();
+    renderizarSelecionadosWallapop();
+    renderizarFolhaWallapop();
+    definirStatusWallapop('Nova encomenda pronta.');
+}
+
 async function registarEncomendaWallapop() {
     const plataforma = obterPlataformaAtual();
     const nomeCliente = document.getElementById('wallapop-nome-cliente').value.trim();
     const referencia = document.getElementById('wallapop-referencia').value.trim();
     const botao = document.getElementById('btn-registar-wallapop');
 
-    if (wallapopRegistoConcluido) {
+    if (wallapopRegistoConcluido && !encomendaPlataformaEmEdicao) {
         definirStatusWallapop(`Esta encomenda ${plataforma} já foi registada.`, true);
         return;
     }
@@ -639,16 +763,18 @@ async function registarEncomendaWallapop() {
 
     const envio = plataforma === 'OLX' ? obterEnvioPlataforma() : { regiao: '', id: '', nome: '', portes: 0 };
     const total = calcularSubtotalPlataforma() + envio.portes;
-    const confirmado = window.confirm(
-        `Registar a encomenda ${plataforma} de ${nomeCliente} por ${formatarEuroWallapop(total)} € e descontar o stock?`
+    const confirmado = window.confirm(encomendaPlataformaEmEdicao
+        ? `Guardar as alterações da encomenda ${obterCodigoEncomendaAtual()}? O stock será ajustado automaticamente.`
+        : `Registar a encomenda ${plataforma} de ${nomeCliente} por ${formatarEuroWallapop(total)} € e descontar o stock?`
     );
     if (!confirmado) return;
 
     botao.disabled = true;
-    definirStatusWallapop('A validar o stock e registar a encomenda...');
+    definirStatusWallapop(encomendaPlataformaEmEdicao
+        ? 'A validar o stock e guardar as alterações...'
+        : 'A validar o stock e registar a encomenda...');
     try {
-        const { data, error } = await wallapopClient.rpc('criar_encomenda_plataforma_admin', {
-            p_plataforma: plataforma,
+        const parametros = {
             p_itens: obterItensEncomendaWallapop(),
             p_nome_cliente: nomeCliente,
             p_referencia_externa: referencia || null,
@@ -656,7 +782,16 @@ async function registarEncomendaWallapop() {
             p_metodo_envio: envio.id || null,
             p_metodo_envio_nome: envio.nome || null,
             p_portes: envio.portes || 0
-        });
+        };
+        const nomeFuncao = encomendaPlataformaEmEdicao
+            ? 'atualizar_encomenda_plataforma_admin'
+            : 'criar_encomenda_plataforma_admin';
+        if (encomendaPlataformaEmEdicao) {
+            parametros.p_encomenda_id = String(encomendaPlataformaEmEdicao.id);
+        } else {
+            parametros.p_plataforma = plataforma;
+        }
+        const { data, error } = await wallapopClient.rpc(nomeFuncao, parametros);
         if (error) throw error;
 
         if (!data?.sucesso) {
@@ -669,8 +804,18 @@ async function registarEncomendaWallapop() {
         }
 
         wallapopRegistoConcluido = true;
-        const codigo = data.encomenda?.codigo_encomenda || '';
-        definirStatusWallapop(`Encomenda ${codigo} registada. O stock foi atualizado.`);
+        const codigo = data.encomenda?.codigo_encomenda || obterCodigoEncomendaAtual();
+        encomendaPlataformaEmEdicao = {
+            id: data.encomenda?.id || encomendaPlataformaEmEdicao?.id,
+            codigo_encomenda: codigo,
+            origem: data.encomenda?.origem || plataforma,
+            estado: data.encomenda?.estado || 'A aguardar pagamento'
+        };
+        document.getElementById('plataforma-tipo').disabled = true;
+        document.getElementById('wallapop-nome-encomenda').value ||= codigo;
+        mostrarEdicaoPlataforma(encomendaPlataformaEmEdicao);
+        atualizarBotaoRegistoPlataforma();
+        definirStatusWallapop(`Encomenda ${codigo} guardada. O stock foi atualizado. Agora pode guardar os ficheiros.`);
         await carregarCatalogoWallapop();
         renderizarResultadosWallapop();
         renderizarSelecionadosWallapop();
@@ -721,6 +866,11 @@ document.getElementById('wallapop-pesquisa').addEventListener('input', renderiza
 document.getElementById('btn-limpar-wallapop').addEventListener('click', limparListaWallapop);
 document.getElementById('btn-descarregar-wallapop').addEventListener('click', guardarFicheirosPlataforma);
 document.getElementById('btn-registar-wallapop').addEventListener('click', registarEncomendaWallapop);
+document.getElementById('btn-abrir-encomenda-txt').addEventListener('click', () => {
+    document.getElementById('ficheiro-encomenda-txt').click();
+});
+document.getElementById('ficheiro-encomenda-txt').addEventListener('change', abrirEncomendaPlataformaPeloTxt);
+document.getElementById('btn-nova-encomenda-plataforma').addEventListener('click', novaEncomendaPlataforma);
 document.getElementById('wallapop-nome-cliente').addEventListener('input', marcarWallapopPorRegistar);
 document.getElementById('wallapop-referencia').addEventListener('input', marcarWallapopPorRegistar);
 document.getElementById('plataforma-tipo').addEventListener('change', atualizarModoPlataforma);

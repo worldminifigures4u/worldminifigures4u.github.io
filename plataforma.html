@@ -30,6 +30,12 @@
                     <option value="OLX">OLX</option>
                     <option value="Todocoleccion">Todocoleccion</option>
                 </select>
+                <div class="plataforma-abrir-acoes">
+                    <button class="wallapop-botao" type="button" id="btn-abrir-encomenda-txt">Abrir encomenda pelo TXT</button>
+                    <button class="wallapop-botao" type="button" id="btn-nova-encomenda-plataforma">Nova encomenda</button>
+                    <input type="file" id="ficheiro-encomenda-txt" accept=".txt,text/plain" hidden>
+                </div>
+                <p class="plataforma-edicao" id="plataforma-edicao" hidden></p>
             </div>
 
             <h2>Adicionar produtos</h2>
@@ -78,8 +84,8 @@
                     <p id="plataforma-ajuda-ficheiros">Ao guardar, escolhe a pasta de destino. Dentro dela ser&aacute; criada uma pasta com o nome da encomenda.</p>
                 </div>
                 <div class="wallapop-acoes-encomenda">
-                    <button class="wallapop-botao wallapop-botao-destaque" type="button" id="btn-descarregar-wallapop">Guardar an&uacute;ncio</button>
                     <button class="wallapop-botao wallapop-botao-registar" type="button" id="btn-registar-wallapop">Registar encomenda Wallapop</button>
+                    <button class="wallapop-botao wallapop-botao-destaque" type="button" id="btn-descarregar-wallapop">Guardar an&uacute;ncio</button>
                 </div>
                 <p class="wallapop-status" id="wallapop-status" aria-live="polite"></p>
             </div>

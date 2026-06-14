@@ -676,6 +676,29 @@ body{
             font-weight:800;
         }
 
+        .plataforma-abrir-acoes{
+            display:grid;
+            grid-template-columns:1fr 1fr;
+            gap:10px;
+            margin-top:10px;
+        }
+
+        .plataforma-edicao{
+            margin:12px 0 0;
+            padding:10px 12px;
+            border:1px solid #ffc107;
+            border-radius:5px;
+            background:#211b05;
+            color:#ffc107;
+            font-weight:800;
+        }
+
+        @media (max-width:700px){
+            .plataforma-abrir-acoes{
+                grid-template-columns:1fr;
+            }
+        }
+
         .plataforma-envio{
             margin-top:16px;
             padding-top:4px;
