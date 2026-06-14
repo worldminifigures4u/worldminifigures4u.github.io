@@ -648,6 +648,10 @@ body{
             font-weight:800;
         }
 
+        .wallapop-dados-encomenda label:not(:first-child){
+            margin-top:12px;
+        }
+
         .wallapop-dados-encomenda input{
             width:100%;
             box-sizing:border-box;
@@ -707,6 +711,22 @@ body{
         .wallapop-preview-acoes .wallapop-botao{
             min-height:42px;
             white-space:nowrap;
+        }
+
+        .wallapop-acoes-encomenda{
+            display:grid;
+            gap:10px;
+        }
+
+        .wallapop-botao-registar{
+            background:#29ad4b;
+            border-color:#29ad4b;
+            color:#fff;
+        }
+
+        .wallapop-botao-registar:disabled{
+            cursor:not-allowed;
+            opacity:.55;
         }
 
         .wallapop-folha-escala{
@@ -985,6 +1005,16 @@ body{
             font-size:12px;
             text-overflow:ellipsis;
             white-space:nowrap;
+        }
+
+        .admin-encomenda-identificacao .admin-encomenda-origem{
+            align-self:flex-start;
+            border:1px solid #ffc400;
+            border-radius:4px;
+            color:#ffc400;
+            font-size:11px;
+            font-weight:700;
+            padding:2px 6px;
         }
 
         .admin-encomenda-valor{

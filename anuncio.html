@@ -40,9 +40,16 @@
                 <div class="wallapop-dados-encomenda">
                     <label for="wallapop-nome-encomenda">Nome da encomenda</label>
                     <input type="text" id="wallapop-nome-encomenda" placeholder="Ex.: João Silva" autocomplete="off">
+                    <label for="wallapop-nome-cliente">Cliente Wallapop</label>
+                    <input type="text" id="wallapop-nome-cliente" placeholder="Nome ou utilizador no Wallapop" autocomplete="off">
+                    <label for="wallapop-referencia">Referência Wallapop (opcional)</label>
+                    <input type="text" id="wallapop-referencia" placeholder="Ex.: conversa, reserva ou venda" autocomplete="off">
                     <p>Ao guardar, escolhe a pasta de destino. Dentro dela será criada uma pasta com o nome da encomenda.</p>
                 </div>
-                <button class="wallapop-botao wallapop-botao-destaque" type="button" id="btn-descarregar-wallapop">Guardar anúncio</button>
+                <div class="wallapop-acoes-encomenda">
+                    <button class="wallapop-botao wallapop-botao-destaque" type="button" id="btn-descarregar-wallapop">Guardar anúncio</button>
+                    <button class="wallapop-botao wallapop-botao-registar" type="button" id="btn-registar-wallapop">Registar encomenda Wallapop</button>
+                </div>
                 <p class="wallapop-status" id="wallapop-status" aria-live="polite"></p>
             </div>
             <div class="wallapop-folha-escala">

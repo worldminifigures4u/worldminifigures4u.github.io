@@ -76,6 +76,8 @@ function textoCompletoEncomenda(encomenda) {
         `Encomenda: ${encomenda.codigo_encomenda || encomenda.id}`,
         `Data: ${formatarDataEncomenda(encomenda.created_at)}`,
         `Estado: ${estadoNormalizadoEncomenda(encomenda.estado)}`,
+        `Origem: ${encomenda.origem || 'Site'}`,
+        encomenda.referencia_externa ? `Referência: ${encomenda.referencia_externa}` : '',
         '',
         `Cliente: ${encomenda.nome_cliente || ''}`,
         `E-mail: ${encomenda.email_cliente || ''}`,
@@ -104,16 +106,42 @@ async function copiarEncomendaAdmin(encomenda) {
 
 async function atualizarEstadoEncomendaAdmin(encomenda, estado, select) {
     const estadoAnterior = estadoNormalizadoEncomenda(encomenda.estado);
+    const origem = String(encomenda.origem || 'Site').toLowerCase();
+    let reporStock = false;
+
+    if (estadoAnterior === 'Cancelado' && encomenda.stock_reposto && estado !== 'Cancelado') {
+        select.value = estadoAnterior;
+        definirStatusEncomendas('Esta encomenda foi cancelada com reposição de stock e não pode ser reaberta.', true);
+        return;
+    }
+
+    if (estado === 'Cancelado' && origem === 'wallapop') {
+        if (!window.confirm('Cancelar esta encomenda Wallapop?')) {
+            select.value = estadoAnterior;
+            return;
+        }
+        reporStock = !encomenda.stock_reposto && window.confirm(
+            'Pretende repor no stock as unidades desta encomenda?'
+        );
+    }
+
     select.disabled = true;
     definirStatusEncomendas('A atualizar o estado...');
     try {
-        const { data, error } = await encomendasClient.rpc('atualizar_estado_encomenda_admin', {
-            p_encomenda_id: String(encomenda.id),
-            p_estado: estado
-        });
+        const chamada = estado === 'Cancelado' && origem === 'wallapop'
+            ? encomendasClient.rpc('cancelar_encomenda_wallapop_admin', {
+                p_encomenda_id: String(encomenda.id),
+                p_repor_stock: reporStock
+            })
+            : encomendasClient.rpc('atualizar_estado_encomenda_admin', {
+                p_encomenda_id: String(encomenda.id),
+                p_estado: estado
+            });
+        const { data, error } = await chamada;
         if (error) throw error;
         if (data?.sucesso === false) throw new Error(data.erro || 'Não foi possível atualizar.');
         encomenda.estado = estado;
+        if (data?.stock_reposto) encomenda.stock_reposto = true;
         select.dataset.estadoAtual = estado;
         atualizarResumoEncomendas();
         renderizarEncomendasAdmin();
@@ -143,7 +171,8 @@ function criarCardEncomenda(encomenda) {
     const identificacao = criarElementoEncomenda('div', 'admin-encomenda-identificacao');
     identificacao.append(
         criarElementoEncomenda('strong', '', encomenda.codigo_encomenda || `#${encomenda.id}`),
-        criarElementoEncomenda('span', '', formatarDataEncomenda(encomenda.created_at))
+        criarElementoEncomenda('span', '', formatarDataEncomenda(encomenda.created_at)),
+        criarElementoEncomenda('span', 'admin-encomenda-origem', encomenda.origem || 'Site')
     );
     const cliente = criarElementoEncomenda('div', 'admin-encomenda-cliente');
     cliente.append(
@@ -176,6 +205,12 @@ function criarCardEncomenda(encomenda) {
         criarLinhaDetalhe('Portes', formatarEuroEncomenda(encomenda.portes)),
         criarLinhaDetalhe('Pagamento', encomenda.metodo_pagamento)
     );
+    if (encomenda.referencia_externa) {
+        dados.appendChild(criarLinhaDetalhe('Referência externa', encomenda.referencia_externa));
+    }
+    if (encomenda.stock_reposto) {
+        dados.appendChild(criarLinhaDetalhe('Stock', 'Reposto após cancelamento'));
+    }
 
     const produtos = criarElementoEncomenda('div', 'admin-encomenda-produtos');
     produtos.appendChild(criarElementoEncomenda('h3', '', 'Produtos'));
@@ -224,7 +259,9 @@ function encomendasFiltradasAdmin() {
         const texto = normalizarEncomenda([
             encomenda.codigo_encomenda,
             encomenda.nome_cliente,
-            encomenda.email_cliente
+            encomenda.email_cliente,
+            encomenda.origem,
+            encomenda.referencia_externa
         ].join(' '));
         return correspondeEstado && (!pesquisa || texto.includes(pesquisa));
     });

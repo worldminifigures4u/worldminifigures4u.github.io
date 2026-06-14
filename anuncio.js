@@ -9,6 +9,7 @@ const WALLAPOP_SEM_IMAGEM = "data:image/svg+xml;charset=utf-8," + encodeURICompo
 let wallapopClient = null;
 let wallapopProdutos = [];
 let wallapopItens = carregarItensWallapop();
+let wallapopRegistoConcluido = false;
 
 function formatarEuroWallapop(valor) {
     return Number(valor || 0).toFixed(2).replace('.', ',');
@@ -48,6 +49,12 @@ function carregarItensWallapop() {
 
 function guardarItensWallapop() {
     localStorage.setItem(WALLAPOP_STORAGE_KEY, JSON.stringify(wallapopItens));
+}
+
+function marcarWallapopPorRegistar() {
+    wallapopRegistoConcluido = false;
+    const botao = document.getElementById('btn-registar-wallapop');
+    if (botao) botao.disabled = false;
 }
 
 function definirStatusWallapop(texto, erro = false) {
@@ -108,6 +115,7 @@ function adicionarProdutoWallapop(id) {
         wallapopItens.push({ ...produto, quantidade: 1 });
     }
     guardarItensWallapop();
+    marcarWallapopPorRegistar();
     renderizarSelecionadosWallapop();
     renderizarFolhaWallapop();
 }
@@ -117,6 +125,7 @@ function alterarQuantidadeWallapop(id, diferenca) {
     if (!item) return;
     item.quantidade = Math.max(1, item.quantidade + diferenca);
     guardarItensWallapop();
+    marcarWallapopPorRegistar();
     renderizarSelecionadosWallapop();
     renderizarFolhaWallapop();
 }
@@ -124,6 +133,7 @@ function alterarQuantidadeWallapop(id, diferenca) {
 function removerProdutoWallapop(id) {
     wallapopItens = wallapopItens.filter(item => String(item.id) !== String(id));
     guardarItensWallapop();
+    marcarWallapopPorRegistar();
     renderizarSelecionadosWallapop();
     renderizarFolhaWallapop();
 }
@@ -134,6 +144,7 @@ function moverProdutoWallapop(id, diferenca) {
     if (indice < 0 || destino < 0 || destino >= wallapopItens.length) return;
     [wallapopItens[indice], wallapopItens[destino]] = [wallapopItens[destino], wallapopItens[indice]];
     guardarItensWallapop();
+    marcarWallapopPorRegistar();
     renderizarSelecionadosWallapop();
     renderizarFolhaWallapop();
 }
@@ -390,10 +401,79 @@ async function descarregarImagemWallapop() {
     }
 }
 
+function obterItensEncomendaWallapop() {
+    return wallapopItens.map((item, indice) => ({
+        id_produto: String(item.id),
+        quantidade: Math.max(1, Number(item.quantidade) || 1),
+        ordem: indice
+    }));
+}
+
+async function registarEncomendaWallapop() {
+    const nomeCliente = document.getElementById('wallapop-nome-cliente').value.trim();
+    const referencia = document.getElementById('wallapop-referencia').value.trim();
+    const botao = document.getElementById('btn-registar-wallapop');
+
+    if (wallapopRegistoConcluido) {
+        definirStatusWallapop('Esta encomenda Wallapop já foi registada.', true);
+        return;
+    }
+    if (!nomeCliente) {
+        definirStatusWallapop('Indique o nome ou utilizador do cliente Wallapop.', true);
+        document.getElementById('wallapop-nome-cliente').focus();
+        return;
+    }
+    if (!wallapopItens.length) {
+        definirStatusWallapop('Adicione pelo menos um produto.', true);
+        return;
+    }
+
+    const total = wallapopItens.reduce((soma, item) => {
+        return soma + (Math.max(1, Number(item.quantidade) || 1) * Number(item.preco || 0));
+    }, 0);
+    const confirmado = window.confirm(
+        `Registar a encomenda Wallapop de ${nomeCliente} por ${formatarEuroWallapop(total)} € e descontar o stock?`
+    );
+    if (!confirmado) return;
+
+    botao.disabled = true;
+    definirStatusWallapop('A validar o stock e registar a encomenda...');
+    try {
+        const { data, error } = await wallapopClient.rpc('criar_encomenda_wallapop_admin', {
+            p_itens: obterItensEncomendaWallapop(),
+            p_nome_cliente: nomeCliente,
+            p_referencia_externa: referencia || null
+        });
+        if (error) throw error;
+
+        if (!data?.sucesso) {
+            const indisponiveis = Array.isArray(data?.produtos_sem_stock)
+                ? data.produtos_sem_stock.map(item => item.nome).filter(Boolean)
+                : [];
+            throw new Error(indisponiveis.length
+                ? `Stock insuficiente: ${indisponiveis.join(', ')}.`
+                : 'Não foi possível validar o stock.');
+        }
+
+        wallapopRegistoConcluido = true;
+        const codigo = data.encomenda?.codigo_encomenda || '';
+        definirStatusWallapop(`Encomenda ${codigo} registada. O stock foi atualizado.`);
+        await carregarCatalogoWallapop();
+        renderizarResultadosWallapop();
+        renderizarSelecionadosWallapop();
+        renderizarFolhaWallapop();
+    } catch (error) {
+        console.error(error);
+        botao.disabled = false;
+        definirStatusWallapop('Erro ao registar: ' + (error.message || 'erro desconhecido'), true);
+    }
+}
+
 function limparListaWallapop() {
     if (!wallapopItens.length || !window.confirm('Limpar todos os produtos desta imagem?')) return;
     wallapopItens = [];
     guardarItensWallapop();
+    marcarWallapopPorRegistar();
     renderizarSelecionadosWallapop();
     renderizarFolhaWallapop();
     definirStatusWallapop('Lista limpa.');
@@ -426,4 +506,7 @@ async function iniciarWallapopAdmin() {
 document.getElementById('wallapop-pesquisa').addEventListener('input', renderizarResultadosWallapop);
 document.getElementById('btn-limpar-wallapop').addEventListener('click', limparListaWallapop);
 document.getElementById('btn-descarregar-wallapop').addEventListener('click', descarregarImagemWallapop);
+document.getElementById('btn-registar-wallapop').addEventListener('click', registarEncomendaWallapop);
+document.getElementById('wallapop-nome-cliente').addEventListener('input', marcarWallapopPorRegistar);
+document.getElementById('wallapop-referencia').addEventListener('input', marcarWallapopPorRegistar);
 window.addEventListener('load', iniciarWallapopAdmin);
