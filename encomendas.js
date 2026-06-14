@@ -107,6 +107,7 @@ async function copiarEncomendaAdmin(encomenda) {
 async function atualizarEstadoEncomendaAdmin(encomenda, estado, select) {
     const estadoAnterior = estadoNormalizadoEncomenda(encomenda.estado);
     const origem = String(encomenda.origem || 'Site').toLowerCase();
+    const plataformaExterna = ['wallapop', 'olx', 'todocoleccion'].includes(origem);
     let reporStock = false;
 
     if (estadoAnterior === 'Cancelado' && encomenda.stock_reposto && estado !== 'Cancelado') {
@@ -115,8 +116,8 @@ async function atualizarEstadoEncomendaAdmin(encomenda, estado, select) {
         return;
     }
 
-    if (estado === 'Cancelado' && origem === 'wallapop') {
-        if (!window.confirm('Cancelar esta encomenda Wallapop?')) {
+    if (estado === 'Cancelado' && plataformaExterna) {
+        if (!window.confirm(`Cancelar esta encomenda ${encomenda.origem}?`)) {
             select.value = estadoAnterior;
             return;
         }
@@ -128,8 +129,8 @@ async function atualizarEstadoEncomendaAdmin(encomenda, estado, select) {
     select.disabled = true;
     definirStatusEncomendas('A atualizar o estado...');
     try {
-        const chamada = estado === 'Cancelado' && origem === 'wallapop'
-            ? encomendasClient.rpc('cancelar_encomenda_wallapop_admin', {
+        const chamada = estado === 'Cancelado' && plataformaExterna
+            ? encomendasClient.rpc('cancelar_encomenda_plataforma_admin', {
                 p_encomenda_id: String(encomenda.id),
                 p_repor_stock: reporStock
             })

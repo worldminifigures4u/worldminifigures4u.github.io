@@ -652,7 +652,9 @@ body{
             margin-top:12px;
         }
 
-        .wallapop-dados-encomenda input{
+        .wallapop-dados-encomenda input,
+        .wallapop-dados-encomenda select,
+        .plataforma-seletor select{
             width:100%;
             box-sizing:border-box;
             padding:11px 12px;
@@ -661,6 +663,65 @@ body{
             background:#222;
             color:#fff;
             font:inherit;
+        }
+
+        .plataforma-seletor{
+            margin-bottom:20px;
+        }
+
+        .plataforma-seletor label{
+            display:block;
+            margin-bottom:7px;
+            color:#ffc107;
+            font-weight:800;
+        }
+
+        .plataforma-envio{
+            margin-top:16px;
+            padding-top:4px;
+            border-top:1px solid #333;
+        }
+
+        .plataforma-peso{
+            color:#fff !important;
+            font-weight:700;
+            text-align:center;
+        }
+
+        .plataforma-totais{
+            margin-top:15px;
+            padding:12px;
+            border:1px solid #3a3a3a;
+            border-radius:6px;
+            display:grid;
+            grid-template-columns:minmax(0, 1fr) auto;
+            gap:9px 16px;
+            color:#fff;
+        }
+
+        .plataforma-totais strong{
+            color:#29b6f6;
+            text-align:right;
+        }
+
+        .plataforma-resumo{
+            width:100%;
+            box-sizing:border-box;
+            padding:22px;
+            border:1px solid #333;
+            border-radius:8px;
+            background:#111;
+            color:#ddd;
+        }
+
+        .plataforma-resumo h2{
+            margin:0 0 10px;
+            color:#ffc107;
+        }
+
+        .plataforma-resumo p{
+            margin:0;
+            line-height:1.55;
         }
 
         .wallapop-dados-encomenda p{

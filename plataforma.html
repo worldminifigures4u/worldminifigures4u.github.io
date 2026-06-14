@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex, nofollow, noarchive, nosnippet">
+    <title>Plataforma | Figures Planet</title>
+    <link rel="icon" type="image/png" href="figures-planet-logo-transparent.png">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body class="pagina-wallapop">
+    <div class="wallapop-topo">
+        <h1>Plataforma</h1>
+        <div class="wallapop-topo-acoes">
+            <a class="wallapop-botao" href="conta.html">Voltar &agrave; conta</a>
+            <a class="wallapop-botao" href="encomendas.html">Encomendas</a>
+        </div>
+    </div>
+
+    <div class="wallapop-bloqueio" id="wallapop-bloqueio">A verificar acesso administrativo...</div>
+
+    <main class="wallapop-layout" id="wallapop-aplicacao" hidden>
+        <section class="wallapop-editor" aria-label="Produtos da encomenda">
+            <div class="plataforma-seletor">
+                <label for="plataforma-tipo">Plataforma</label>
+                <select id="plataforma-tipo">
+                    <option value="Wallapop">Wallapop</option>
+                    <option value="OLX">OLX</option>
+                    <option value="Todocoleccion">Todocoleccion</option>
+                </select>
+            </div>
+
+            <h2>Adicionar produtos</h2>
+            <div class="wallapop-pesquisa">
+                <input type="search" id="wallapop-pesquisa" placeholder="Nome ou SKU" autocomplete="off">
+            </div>
+            <div class="wallapop-resultados" id="wallapop-resultados"></div>
+
+            <h2>Produtos selecionados</h2>
+            <div class="wallapop-selecionados" id="wallapop-selecionados"></div>
+            <div class="wallapop-controlos-finais">
+                <button class="wallapop-botao" type="button" id="btn-limpar-wallapop">Limpar lista</button>
+            </div>
+        </section>
+
+        <section class="wallapop-preview-wrap" aria-label="Dados da plataforma">
+            <div class="wallapop-preview-acoes">
+                <div class="wallapop-dados-encomenda">
+                    <label for="wallapop-nome-encomenda">Nome da encomenda</label>
+                    <input type="text" id="wallapop-nome-encomenda" placeholder="Ex.: Joao Silva" autocomplete="off">
+
+                    <label for="wallapop-nome-cliente" id="label-cliente-plataforma">Cliente Wallapop</label>
+                    <input type="text" id="wallapop-nome-cliente" placeholder="Nome ou utilizador" autocomplete="off">
+
+                    <label for="wallapop-referencia" id="label-referencia-plataforma">Refer&ecirc;ncia Wallapop (opcional)</label>
+                    <input type="text" id="wallapop-referencia" placeholder="Ex.: conversa, reserva ou venda" autocomplete="off">
+
+                    <div class="plataforma-envio" id="plataforma-envio" hidden>
+                        <p class="plataforma-peso" id="plataforma-peso">Peso estimado: 0g</p>
+                        <label for="plataforma-pais-envio">Pa&iacute;s/zona de envio</label>
+                        <select id="plataforma-pais-envio">
+                            <option value="portugal">Portugal</option>
+                            <option value="espanha">Espanha</option>
+                            <option value="europa">Resto da Europa</option>
+                            <option value="resto_mundo">Resto do Mundo (exceto EUA)</option>
+                        </select>
+                        <label for="plataforma-metodo-envio">M&eacute;todo de envio</label>
+                        <select id="plataforma-metodo-envio"></select>
+                        <div class="plataforma-totais">
+                            <span>Subtotal</span><strong id="plataforma-subtotal">0,00 &euro;</strong>
+                            <span>Portes de envio (IVA inclu&iacute;do)</span><strong id="plataforma-portes">0,00 &euro;</strong>
+                            <span>Total geral</span><strong id="plataforma-total">0,00 &euro;</strong>
+                        </div>
+                    </div>
+
+                    <p id="plataforma-ajuda-ficheiros">Ao guardar, escolhe a pasta de destino. Dentro dela ser&aacute; criada uma pasta com o nome da encomenda.</p>
+                </div>
+                <div class="wallapop-acoes-encomenda">
+                    <button class="wallapop-botao wallapop-botao-destaque" type="button" id="btn-descarregar-wallapop">Guardar an&uacute;ncio</button>
+                    <button class="wallapop-botao wallapop-botao-registar" type="button" id="btn-registar-wallapop">Registar encomenda Wallapop</button>
+                </div>
+                <p class="wallapop-status" id="wallapop-status" aria-live="polite"></p>
+            </div>
+
+            <div class="wallapop-folha-escala" id="wallapop-folha-escala">
+                <div class="wallapop-folha" id="wallapop-folha">
+                    <div class="wallapop-grelha" id="wallapop-grelha"></div>
+                </div>
+            </div>
+
+            <div class="plataforma-resumo" id="plataforma-resumo" hidden>
+                <h2 id="plataforma-resumo-titulo">Ficheiros da plataforma</h2>
+                <p id="plataforma-resumo-texto"></p>
+            </div>
+        </section>
+    </main>
+
+    <script src="plataforma.js"></script>
+</body>
+</html>
