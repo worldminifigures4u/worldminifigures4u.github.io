@@ -253,6 +253,74 @@ function criarCampoFichaCliente(rotulo, valor) {
     return linha;
 }
 
+function criarCampoEdicaoCliente(rotulo, nome, valor, tipo = 'text', obrigatorio = false) {
+    const campo = document.createElement('label');
+    campo.className = 'admin-cliente-formulario-campo';
+    campo.appendChild(criarElementoEncomenda('span', '', rotulo));
+    const input = document.createElement('input');
+    input.type = tipo;
+    input.name = nome;
+    input.value = valor || '';
+    input.required = obrigatorio;
+    input.autocomplete = 'off';
+    campo.appendChild(input);
+    return campo;
+}
+
+function renderizarFormularioClienteExterno(dados, secao) {
+    const cliente = dados.cliente || {};
+    const formulario = document.createElement('form');
+    formulario.className = 'admin-cliente-formulario';
+    formulario.append(
+        criarCampoEdicaoCliente('Nome', 'nome', cliente.nome, 'text', true),
+        criarCampoEdicaoCliente('E-mail', 'email', cliente.email, 'email'),
+        criarCampoEdicaoCliente('Telem\u00f3vel', 'telefone', cliente.telefone),
+        criarCampoEdicaoCliente('Morada', 'morada', cliente.morada),
+        criarCampoEdicaoCliente('C\u00f3digo postal', 'cp', cliente.cp),
+        criarCampoEdicaoCliente('Cidade', 'cidade', cliente.cidade),
+        criarCampoEdicaoCliente('Pa\u00eds', 'pais', cliente.pais)
+    );
+
+    const acoes = criarElementoEncomenda('div', 'admin-cliente-formulario-acoes');
+    const cancelar = criarElementoEncomenda('button', 'wallapop-botao', 'Cancelar');
+    cancelar.type = 'button';
+    cancelar.addEventListener('click', () => renderizarFichaClienteAdmin(dados));
+    const guardar = criarElementoEncomenda('button', 'wallapop-botao wallapop-botao-destaque', 'Guardar altera\u00e7\u00f5es');
+    guardar.type = 'submit';
+    acoes.append(cancelar, guardar);
+    formulario.appendChild(acoes);
+
+    formulario.addEventListener('submit', async evento => {
+        evento.preventDefault();
+        guardar.disabled = true;
+        cancelar.disabled = true;
+        definirStatusFichaCliente('A guardar dados do cliente...');
+        const campos = new FormData(formulario);
+        const { data, error } = await encomendasClient.rpc('atualizar_cliente_externo_admin', {
+            p_cliente_id: cliente.id,
+            p_nome: String(campos.get('nome') || ''),
+            p_email: String(campos.get('email') || ''),
+            p_telefone: String(campos.get('telefone') || ''),
+            p_morada: String(campos.get('morada') || ''),
+            p_cp: String(campos.get('cp') || ''),
+            p_cidade: String(campos.get('cidade') || ''),
+            p_pais: String(campos.get('pais') || '')
+        });
+        guardar.disabled = false;
+        cancelar.disabled = false;
+        if (error || data?.sucesso === false) {
+            definirStatusFichaCliente('Erro ao guardar dados: ' + (error?.message || data?.erro || 'sem detalhe'), true);
+            return;
+        }
+        dados.cliente = data.cliente;
+        renderizarFichaClienteAdmin(dados);
+        definirStatusFichaCliente('Dados do cliente atualizados.');
+    });
+
+    secao.replaceChildren(criarElementoEncomenda('h3', '', 'Editar dados do cliente'), formulario);
+    formulario.querySelector('input[name="nome"]').focus();
+}
+
 function renderizarFichaClienteAdmin(dados) {
     const conteudo = document.getElementById('admin-cliente-conteudo');
     const cliente = dados.cliente || {};
@@ -262,7 +330,15 @@ function renderizarFichaClienteAdmin(dados) {
     conteudo.replaceChildren();
 
     const dadosPessoais = criarElementoEncomenda('section', 'admin-cliente-secao');
-    dadosPessoais.appendChild(criarElementoEncomenda('h3', '', 'Dados do cliente'));
+    const cabecalhoDados = criarElementoEncomenda('div', 'admin-cliente-secao-cabecalho');
+    cabecalhoDados.appendChild(criarElementoEncomenda('h3', '', 'Dados do cliente'));
+    if (!cliente.auth_user_id) {
+        const editar = criarElementoEncomenda('button', 'wallapop-botao admin-cliente-editar', 'Editar dados');
+        editar.type = 'button';
+        editar.addEventListener('click', () => renderizarFormularioClienteExterno(dados, dadosPessoais));
+        cabecalhoDados.appendChild(editar);
+    }
+    dadosPessoais.appendChild(cabecalhoDados);
     const grelha = criarElementoEncomenda('div', 'admin-cliente-grelha');
     grelha.append(
         criarCampoFichaCliente('Nome', cliente.nome),
@@ -271,6 +347,13 @@ function renderizarFichaClienteAdmin(dados) {
         criarCampoFichaCliente('Morada', [cliente.morada, cliente.cp, cliente.cidade, cliente.pais].filter(Boolean).join(', '))
     );
     dadosPessoais.appendChild(grelha);
+    if (cliente.auth_user_id) {
+        dadosPessoais.appendChild(criarElementoEncomenda(
+            'p',
+            'admin-cliente-aviso-conta',
+            'Os dados desta conta s\u00e3o geridos pelo pr\u00f3prio cliente no site.'
+        ));
+    }
 
     const indicadores = criarElementoEncomenda('section', 'admin-cliente-resumo');
     indicadores.append(

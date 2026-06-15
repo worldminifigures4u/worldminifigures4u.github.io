@@ -1361,6 +1361,65 @@ body{
             font-size:16px;
         }
 
+        .admin-cliente-secao-cabecalho{
+            margin-bottom:12px;
+            display:flex;
+            align-items:center;
+            justify-content:space-between;
+            gap:12px;
+        }
+
+        .admin-cliente-secao-cabecalho h3{ margin:0; }
+        .admin-cliente-editar{ flex:0 0 auto; padding:8px 12px; }
+
+        .admin-cliente-formulario{
+            display:grid;
+            grid-template-columns:repeat(2, minmax(0, 1fr));
+            gap:12px 18px;
+        }
+
+        .admin-cliente-formulario-campo{
+            min-width:0;
+            display:flex;
+            flex-direction:column;
+            gap:6px;
+            color:#aaa;
+            font-size:12px;
+            font-weight:700;
+        }
+
+        .admin-cliente-formulario-campo input{
+            width:100%;
+            min-width:0;
+            box-sizing:border-box;
+            padding:10px 11px;
+            border:1px solid #555;
+            border-radius:5px;
+            background:#222;
+            color:#fff;
+            font:inherit;
+            font-size:14px;
+            font-weight:400;
+        }
+
+        .admin-cliente-formulario-campo input:focus{
+            border-color:#ffc107;
+            outline:2px solid rgba(255,193,7,.2);
+        }
+
+        .admin-cliente-formulario-acoes{
+            grid-column:1 / -1;
+            display:flex;
+            justify-content:flex-end;
+            gap:10px;
+        }
+
+        .admin-cliente-aviso-conta{
+            margin:10px 0 0;
+            color:#aaa;
+            font-size:13px;
+        }
+
         .admin-cliente-grelha,
         .admin-cliente-resumo{
             display:grid;
@@ -1442,7 +1501,10 @@ body{
             .admin-cliente-modal{ padding:8px; }
             .admin-cliente-dialogo{ padding:18px 14px; max-height:96vh; }
             .admin-cliente-grelha,
-            .admin-cliente-resumo{ grid-template-columns:1fr; }
+            .admin-cliente-resumo,
+            .admin-cliente-formulario{ grid-template-columns:1fr; }
+            .admin-cliente-formulario-acoes{ flex-direction:column-reverse; }
+            .admin-cliente-formulario-acoes button{ width:100%; }
             .admin-cliente-historico-linha{
                 grid-template-columns:1fr 1fr;
             }
