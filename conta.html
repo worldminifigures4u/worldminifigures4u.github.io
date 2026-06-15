@@ -156,6 +156,10 @@
                         </div>
                         <div class="linha-admin-dupla">
                             <div>
+                                <label for="admin-produto-referencia">Ref.:</label>
+                                <input type="text" id="admin-produto-referencia" placeholder="Ex: TV8149">
+                            </div>
+                            <div>
                                 <label for="admin-produto-sku">SKU:</label>
                                 <input type="text" id="admin-produto-sku" required placeholder="DV01">
                             </div>
@@ -207,7 +211,7 @@
                             <div class="linha-admin-pesquisa">
                                 <div>
                                     <label for="admin-pesquisa-produtos">Pesquisar produto:</label>
-                                    <input type="text" id="admin-pesquisa-produtos" placeholder="Nome, SKU ou tema" oninput="renderizarListaProdutosAdmin()">
+                                    <input type="text" id="admin-pesquisa-produtos" placeholder="Nome, Ref., SKU ou tema" oninput="renderizarListaProdutosAdmin()">
                                 </div>
                                 <button type="button" class="btn-admin-secundario" onclick="renderizarListaProdutosAdmin()">Pesquisar</button>
                             </div>
@@ -228,7 +232,7 @@
                             <h3>Substituir catálogo pelo Mapas.ods</h3>
                             <div class="form-admin">
                                 <input class="input-upload-admin" type="file" id="admin-ficheiro-catalogo" accept=".ods,.xlsx,.xls" onchange="analisarFicheiroCatalogoAdmin(this)">
-                                <p class="ajuda-admin">Importa nome, preço, SKU, stock, tema, subtema e peso. Produtos que não constem do ficheiro serão removidos.</p>
+                                <p class="ajuda-admin">Importa nome, preço, Ref., SKU, stock, tema, subtema e peso. Produtos que não constem do ficheiro serão removidos.</p>
                                 <div id="resumo-importacao-catalogo" class="resumo-importacao-stock" style="display:none;"></div>
                                 <div id="detalhes-importacao-catalogo" class="lista-importacao-stock" style="display:none;"></div>
                                 <div>
@@ -248,6 +252,10 @@
                                 <input type="text" id="admin-editar-nome" required>
                             </div>
                             <div class="linha-admin-dupla">
+                                <div>
+                                    <label for="admin-editar-referencia">Ref.:</label>
+                                    <input type="text" id="admin-editar-referencia">
+                                </div>
                                 <div>
                                     <label for="admin-editar-sku">SKU:</label>
                                     <input type="text" id="admin-editar-sku" required>

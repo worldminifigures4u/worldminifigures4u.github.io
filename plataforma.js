@@ -267,8 +267,9 @@ function distanciaLevenshteinPlataforma(a, b) {
 function pontuarCorrespondenciaPlataforma(termo, produto) {
     const nome = normalizarTextoWallapop(produto.nome);
     const sku = normalizarTextoWallapop(produto.sku);
+    const referencia = normalizarTextoWallapop(produto.referencia);
     if (!termo) return 0;
-    if (termo === nome || termo === sku) return 1;
+    if (termo === nome || termo === sku || termo === referencia) return 1;
 
     const distancia = distanciaLevenshteinPlataforma(termo, nome);
     const similaridade = 1 - (distancia / Math.max(termo.length, nome.length, 1));
@@ -418,7 +419,7 @@ function abrirRevisaoListaProdutosPlataforma() {
         linha.candidatos.forEach(candidato => {
             const option = document.createElement('option');
             option.value = String(candidato.produto.id);
-            option.textContent = `${candidato.produto.nome} (${candidato.produto.sku || 'sem SKU'})`;
+            option.textContent = `${candidato.produto.nome} (Ref. ${candidato.produto.referencia || '—'} | SKU ${candidato.produto.sku || '—'})`;
             select.appendChild(option);
         });
         select.value = linha.produtoId;
@@ -642,6 +643,7 @@ function renderizarResultadosWallapop() {
 
     const resultados = wallapopProdutos.filter(produto =>
         normalizarTextoWallapop(produto.nome).includes(termo) ||
+        normalizarTextoWallapop(produto.referencia).includes(termo) ||
         normalizarTextoWallapop(produto.sku).includes(termo)
     ).slice(0, 30);
 
@@ -656,7 +658,10 @@ function renderizarResultadosWallapop() {
         nome.textContent = produto.nome;
         const preco = document.createElement('span');
         preco.textContent = `${formatarEuroWallapop(produto.preco)} €`;
-        info.append(nome, preco);
+        const identificadores = document.createElement('span');
+        identificadores.className = 'plataforma-produto-identificadores';
+        identificadores.textContent = `Ref. ${produto.referencia || '—'} | SKU ${produto.sku || '—'}`;
+        info.append(nome, identificadores, preco);
         if (produto.stock !== null && produto.stock !== undefined
             && Number.isFinite(Number(produto.stock)) && Number(produto.stock) <= 0) {
             const semStock = document.createElement('span');
@@ -822,6 +827,7 @@ function criarTextoEncomendaWallapop() {
     const linhas = criarCabecalhoCodigoEncomenda().concat(itens.map(item => [
         Math.max(1, Number(item.quantidade) || 1),
         String(item.nome || '').trim(),
+        String(item.referencia || '').trim(),
         String(item.sku || '').trim()
     ].join('\t')));
     const total = itens.reduce((soma, item) => {
@@ -835,6 +841,7 @@ function criarTextoInternoPlataforma() {
     const linhas = criarCabecalhoCodigoEncomenda().concat(obterItensParaFicheirosPlataforma().map(item => [
         Math.max(1, Number(item.quantidade) || 1),
         String(item.nome || '').trim(),
+        String(item.referencia || '').trim(),
         String(item.sku || '').trim()
     ].join('\t')));
     return '\ufeff' + linhas.join('\r\n');

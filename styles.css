@@ -1365,7 +1365,7 @@ body{
             padding:5px 0;
             border-bottom:1px solid #272727;
             display:grid;
-            grid-template-columns:44px minmax(0, 1fr) 58px 90px 90px;
+            grid-template-columns:44px minmax(0, 1fr) 58px 110px 90px 90px;
             gap:10px;
             align-items:center;
             font-size:13px;
@@ -1899,6 +1899,7 @@ body{
             .admin-encomenda-produto{
                 grid-template-columns:36px minmax(0, 1fr) 52px 76px;
             }
+            .admin-encomenda-produto-referencia,
             .admin-encomenda-produto-sku{
                 display:none;
             }
@@ -2907,4 +2908,12 @@ body{
     color: #ff4d55;
     font-size: 12px;
     font-weight: 700;
+}
+.admin-produto-identificadores,
+.plataforma-produto-identificadores{
+    display:flex;
+    justify-content:space-between;
+    gap:14px;
+    color:#aaa;
+    font-size:12px;
 }

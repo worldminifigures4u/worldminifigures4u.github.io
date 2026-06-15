@@ -1182,6 +1182,7 @@ async function analisarFicheiroCatalogoAdmin(input) {
             nome:obterIndiceColuna(cabecalhos, 'nome'),
             preco:obterIndiceColuna(cabecalhos, 'preco'),
             sku:obterIndiceColuna(cabecalhos, 'sku'),
+            referencia:obterIndiceColuna(cabecalhos, 'referencia', false),
             stock:obterIndiceColuna(cabecalhos, 'stock'),
             tema:obterIndiceColuna(cabecalhos, 'tema'),
             subtema:obterIndiceColuna(cabecalhos, 'subtema', false),
@@ -1195,6 +1196,7 @@ async function analisarFicheiroCatalogoAdmin(input) {
             if(!linha.some(valor => valor !== null && valor !== '')) return;
             const nome = String(linha[colunas.nome] || '').trim();
             const sku = normalizarTextoSku(linha[colunas.sku]).replace(/[^A-Z0-9]/g, '');
+            const referencia = colunas.referencia >= 0 ? String(linha[colunas.referencia] || '').trim() : '';
             const preco = Number(linha[colunas.preco]);
             const stock = Number(linha[colunas.stock]);
             const tema = String(linha[colunas.tema] || '').trim();
@@ -1210,6 +1212,7 @@ async function analisarFicheiroCatalogoAdmin(input) {
                 nome,
                 preco,
                 sku,
+                referencia,
                 stock,
                 tema,
                 subtema:subtema || 'semsubtema',
@@ -1520,6 +1523,7 @@ function produtoCorrespondePesquisaAdmin(produto, termoNormalizado) {
     if(!termoNormalizado) return true;
     const textoProduto = [
         produto.nome,
+        produto.referencia,
         produto.sku,
         produto.tema,
         produto.subtema
@@ -1554,9 +1558,18 @@ function renderizarListaProdutosAdmin() {
         nome.textContent = produto.nome || 'Produto sem nome';
         info.appendChild(nome);
 
+        const identificadores = document.createElement('span');
+        identificadores.className = 'admin-produto-identificadores';
+        const referencia = document.createElement('span');
+        referencia.textContent = `Ref.: ${produto.referencia || '—'}`;
+        const sku = document.createElement('span');
+        sku.textContent = `SKU: ${produto.sku || '—'}`;
+        identificadores.append(referencia, sku);
+        info.appendChild(identificadores);
+
         const detalhes = document.createElement('span');
         const estado = produto.ativo === false ? 'Inativo' : 'Ativo';
-        detalhes.textContent = `${produto.sku || 'sem SKU'} | ${formatarEuro(produto.preco)} € | Stock: ${produto.stock ?? '-'} | ${estado}`;
+        detalhes.textContent = `${formatarEuro(produto.preco)} € | Stock: ${produto.stock ?? '-'} | ${estado}`;
         info.appendChild(detalhes);
         item.appendChild(info);
 
@@ -1600,6 +1613,7 @@ function preencherEdicaoProdutoAdmin(produtoId) {
     document.getElementById('admin-editar-id').value = obterProdutoId(produto);
     document.getElementById('admin-editar-sku-original').value = produto.sku || '';
     document.getElementById('admin-editar-nome').value = produto.nome || '';
+    document.getElementById('admin-editar-referencia').value = produto.referencia || '';
     document.getElementById('admin-editar-sku').value = produto.sku || '';
     document.getElementById('admin-editar-preco').value = Number(produto.preco || 0).toFixed(2);
     document.getElementById('admin-editar-peso').value = Number(produto.peso || PESO_PADRAO_PRODUTO_GRAMAS);
@@ -1630,6 +1644,7 @@ function lerProdutoEditadoAdmin() {
     const id = document.getElementById('admin-editar-id').value;
     const skuOriginal = document.getElementById('admin-editar-sku-original').value;
     const nome = document.getElementById('admin-editar-nome').value.trim();
+    const referencia = document.getElementById('admin-editar-referencia').value.trim();
     const sku = normalizarTextoSku(document.getElementById('admin-editar-sku').value).replace(/[^A-Z0-9]/g, '');
     const tema = document.getElementById('admin-editar-tema').value.trim();
     const subtema = document.getElementById('admin-editar-subtema').value.trim();
@@ -1649,6 +1664,7 @@ function lerProdutoEditadoAdmin() {
         skuOriginal,
         produto: {
             sku,
+            referencia,
             nome,
             tema,
             subtema: subtema || 'semsubtema',
@@ -1735,6 +1751,7 @@ async function criarProdutoAdmin(event) {
         }
 
         const nome = document.getElementById('admin-produto-nome').value.trim();
+        const referencia = document.getElementById('admin-produto-referencia').value.trim();
         const sku = normalizarTextoSku(document.getElementById('admin-produto-sku').value).replace(/[^A-Z0-9]/g, '');
         const tema = document.getElementById('admin-produto-tema').value.trim();
         const subtema = document.getElementById('admin-produto-subtema').value.trim();
@@ -1756,6 +1773,7 @@ async function criarProdutoAdmin(event) {
 
         const novoProduto = {
             sku,
+            referencia,
             nome,
             tema,
             subtema: subtema || 'semsubtema',

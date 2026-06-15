@@ -16,6 +16,8 @@ let encomendasClient = null;
 let encomendasAdmin = [];
 let imagensProdutosEncomendas = new Map();
 let imagensProdutosEncomendasPorSku = new Map();
+let referenciasProdutosEncomendas = new Map();
+let referenciasProdutosEncomendasPorSku = new Map();
 
 const ENCOMENDAS_SEM_IMAGEM = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(
     '<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120"><rect width="100%" height="100%" fill="#222"/><text x="50%" y="50%" text-anchor="middle" dominant-baseline="middle" fill="#888" font-family="Arial" font-size="13">Sem foto</text></svg>'
@@ -85,6 +87,13 @@ function otimizarMiniaturaEncomenda(url) {
 function obterImagemProdutoEncomenda(item) {
     return imagensProdutosEncomendas.get(String(item.id_produto || item.id || ''))
         || imagensProdutosEncomendasPorSku.get(String(item.sku || '').toUpperCase())
+        || '';
+}
+
+function obterReferenciaProdutoEncomenda(item) {
+    return item.referencia
+        || referenciasProdutosEncomendas.get(String(item.id_produto || item.id || ''))
+        || referenciasProdutosEncomendasPorSku.get(String(item.sku || '').toUpperCase())
         || '';
 }
 
@@ -344,9 +353,11 @@ function textoProdutosEncomenda(encomenda) {
     return obterProdutosEncomenda(encomenda).map(item => {
         const quantidade = Number(item.quantidade || item.qtd || 1);
         const nome = item.nome || 'Produto';
-        const sku = item.sku ? ` (${item.sku})` : '';
+        const referencia = obterReferenciaProdutoEncomenda(item);
+        const identificadores = [referencia ? `Ref. ${referencia}` : '', item.sku ? `SKU ${item.sku}` : ''].filter(Boolean).join(' | ');
+        const sufixo = identificadores ? ` (${identificadores})` : '';
         const preco = Number(item.preco_unitario ?? item.preco ?? 0);
-        return `${quantidade}x ${nome}${sku} - ${formatarEuroEncomenda(preco)}`;
+        return `${quantidade}x ${nome}${sufixo} - ${formatarEuroEncomenda(preco)}`;
     }).join('\n');
 }
 
@@ -772,7 +783,8 @@ function criarCardEncomenda(encomenda) {
             criarElementoEncomenda('span', 'admin-encomenda-produto-quantidade', `${quantidade}x`),
             criarElementoEncomenda('strong', 'admin-encomenda-produto-nome', item.nome || 'Produto'),
             criarMiniaturaProdutoEncomenda(item),
-            criarElementoEncomenda('span', 'admin-encomenda-produto-sku', item.sku || '—'),
+            criarElementoEncomenda('span', 'admin-encomenda-produto-referencia', `Ref. ${obterReferenciaProdutoEncomenda(item) || '—'}`),
+            criarElementoEncomenda('span', 'admin-encomenda-produto-sku', `SKU ${item.sku || '—'}`),
             criarElementoEncomenda('span', 'admin-encomenda-produto-preco', formatarEuroEncomenda(preco))
         );
         lista.appendChild(linha);
@@ -867,6 +879,8 @@ async function carregarEncomendasAdmin() {
 async function carregarImagensProdutosEncomendas() {
     imagensProdutosEncomendas = new Map();
     imagensProdutosEncomendasPorSku = new Map();
+    referenciasProdutosEncomendas = new Map();
+    referenciasProdutosEncomendasPorSku = new Map();
     const ids = [...new Set(encomendasAdmin.flatMap(obterProdutosEncomenda)
         .map(item => String(item.id_produto || item.id || ''))
         .filter(Boolean))];
@@ -895,6 +909,11 @@ async function carregarImagensProdutosEncomendas() {
         }
 
         produtos.forEach(produto => {
+            const referencia = String(produto.referencia || '').trim();
+            if (referencia) {
+                referenciasProdutosEncomendas.set(String(produto.id), referencia);
+                if (produto.sku) referenciasProdutosEncomendasPorSku.set(String(produto.sku).toUpperCase(), referencia);
+            }
             const imagem = obterPrimeiraImagemEncomenda(produto.imagens);
             if (!imagem) return;
             imagensProdutosEncomendas.set(String(produto.id), imagem);

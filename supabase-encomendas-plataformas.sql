@@ -1,6 +1,8 @@
 -- Executar no SQL Editor do Supabase.
 -- Regista encomendas externas e desconta o stock numa unica transacao.
 
+alter table public.produtos add column if not exists referencia text;
+
 alter table public.encomendas
   add column if not exists origem text not null default 'Site',
   add column if not exists referencia_externa text,
@@ -22,6 +24,7 @@ begin
   return coalesce((
     select jsonb_agg(jsonb_build_object(
       'id', produto.id,
+      'referencia', produto.referencia,
       'sku', produto.sku,
       'nome', produto.nome,
       'preco', coalesce(produto.preco, 0),
@@ -149,6 +152,7 @@ begin
     v_produtos := v_produtos || jsonb_build_array(jsonb_build_object(
       'id_produto', v_produto.id,
       'nome', v_produto.nome,
+      'referencia', v_produto.referencia,
       'sku', v_produto.sku,
       'quantidade', v_item.quantidade,
       'preco_unitario', v_produto.preco,
@@ -315,6 +319,7 @@ begin
 
   select coalesce(jsonb_agg(jsonb_build_object(
     'id', produto.id::text,
+    'referencia', produto.referencia,
     'sku', produto.sku,
     'nome', produto.nome,
     'preco', coalesce(produto.preco, 0),
@@ -503,6 +508,7 @@ begin
     v_produtos := v_produtos || jsonb_build_array(jsonb_build_object(
       'id_produto', v_produto.id,
       'nome', v_produto.nome,
+      'referencia', v_produto.referencia,
       'sku', v_produto.sku,
       'quantidade', v_item.quantidade,
       'preco_unitario', v_produto.preco,

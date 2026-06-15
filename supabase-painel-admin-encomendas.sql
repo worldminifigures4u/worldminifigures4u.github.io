@@ -78,6 +78,7 @@ begin
     jsonb_agg(
       jsonb_build_object(
         'id', produto.id::text,
+        'referencia', produto.referencia,
         'sku', produto.sku,
         'imagens', produto.imagens
       )
@@ -98,3 +99,4 @@ from public, anon;
 
 grant execute on function public.obter_imagens_produtos_encomendas_admin(text[])
 to authenticated;
+alter table public.produtos add column if not exists referencia text;
