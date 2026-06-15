@@ -345,7 +345,7 @@ function adicionarListaRevistaPlataforma(linhas, modal) {
         const produto = wallapopProdutos.find(item => String(item.id) === String(produtoId));
         if (!produto) return;
         const existente = wallapopItens.find(item => String(item.id) === String(produtoId));
-        const quantidadeFinal = (existente?.quantidade || 0) + quantidade;
+        const quantidadeFinal = quantidade;
         if (!confirmarStockNegativoPlataforma(produto, quantidadeFinal)) return;
         if (existente) existente.quantidade = quantidadeFinal;
         else wallapopItens.push({ ...produto, quantidade });
