@@ -323,6 +323,51 @@ function analisarListaProdutosPlataforma(texto) {
         });
 }
 
+function textoOpcaoProdutoPlataforma(produto) {
+    return `${produto.nome} (Ref. ${produto.referencia || '-'} | SKU ${produto.sku || '-'})`;
+}
+
+function buscarProdutosCatalogoPlataforma(termo, limite = 30) {
+    const pesquisa = normalizarTextoWallapop(termo);
+    if (!pesquisa) return [];
+    return wallapopProdutos
+        .map(produto => {
+            const nome = normalizarTextoWallapop(produto.nome);
+            const sku = normalizarTextoWallapop(produto.sku);
+            const referencia = normalizarTextoWallapop(produto.referencia);
+            const tema = normalizarTextoWallapop(produto.tema);
+            const subtema = normalizarTextoWallapop(produto.subtema);
+            const textoCompleto = [nome, sku, referencia, tema, subtema].filter(Boolean).join(' ');
+            let prioridade = 0;
+            if (sku === pesquisa || referencia === pesquisa) prioridade = 1;
+            else if (nome === pesquisa) prioridade = 0.98;
+            else if (nome.includes(pesquisa) || pesquisa.includes(nome)) prioridade = 0.92;
+            else if (textoCompleto.includes(pesquisa)) prioridade = 0.84;
+            else prioridade = pontuarCorrespondenciaPlataforma(pesquisa, produto) * 0.72;
+            return { produto, prioridade };
+        })
+        .filter(item => item.prioridade >= 0.35)
+        .sort((a, b) => b.prioridade - a.prioridade || String(a.produto.nome).localeCompare(String(b.produto.nome), 'pt'))
+        .slice(0, limite)
+        .map(item => item.produto);
+}
+
+function preencherSelectProdutosPlataforma(select, produtos, textoVazio, produtoIdSelecionado = '') {
+    select.innerHTML = '';
+    const vazio = document.createElement('option');
+    vazio.value = '';
+    vazio.textContent = textoVazio;
+    select.appendChild(vazio);
+
+    produtos.forEach(produto => {
+        const option = document.createElement('option');
+        option.value = String(produto.id);
+        option.textContent = textoOpcaoProdutoPlataforma(produto);
+        select.appendChild(option);
+    });
+    select.value = produtoIdSelecionado;
+}
+
 function fecharRevisaoListaProdutosPlataforma() {
     document.getElementById('plataforma-revisao-lista')?.remove();
     document.body.classList.remove('plataforma-modal-aberto');
@@ -424,7 +469,41 @@ function abrirRevisaoListaProdutosPlataforma() {
         });
         select.value = linha.produtoId;
         select.onchange = () => item.classList.toggle('estado-rever', !select.value);
-        item.append(original, select);
+
+        const seletorArea = document.createElement('div');
+        seletorArea.className = 'plataforma-lista-seletor';
+        const pesquisaManual = document.createElement('input');
+        pesquisaManual.type = 'search';
+        pesquisaManual.className = 'plataforma-lista-pesquisa';
+        pesquisaManual.placeholder = 'Procurar no catalogo completo';
+        pesquisaManual.setAttribute('aria-label', `Procurar produto para ${linha.original}`);
+        let pesquisaTimer = null;
+        pesquisaManual.addEventListener('input', () => {
+            clearTimeout(pesquisaTimer);
+            pesquisaTimer = setTimeout(() => {
+                const termo = pesquisaManual.value.trim();
+                if (!termo) {
+                    preencherSelectProdutosPlataforma(
+                        select,
+                        linha.candidatos.map(candidato => candidato.produto),
+                        linha.candidatos.length ? 'Ignorar / escolher produto' : 'Nenhuma correspondencia encontrada',
+                        select.value
+                    );
+                    item.classList.toggle('estado-rever', !select.value);
+                    return;
+                }
+                const resultados = buscarProdutosCatalogoPlataforma(termo);
+                preencherSelectProdutosPlataforma(
+                    select,
+                    resultados,
+                    resultados.length ? 'Ignorar / escolher produto' : 'Nenhum produto encontrado no catalogo',
+                    resultados.some(produto => String(produto.id) === String(select.value)) ? select.value : ''
+                );
+                item.classList.toggle('estado-rever', !select.value);
+            }, 120);
+        });
+        seletorArea.append(select, pesquisaManual);
+        item.append(original, seletorArea);
         lista.appendChild(item);
     });
 
