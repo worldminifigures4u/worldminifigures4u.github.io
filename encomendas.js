@@ -1,6 +1,8 @@
 const ENCOMENDAS_SUPABASE_URL = "https://gksndzxadndrsynvzgzb.supabase.co";
 const ENCOMENDAS_SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imdrc25kenhhZG5kcnN5bnZ6Z3piIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkwODc5NzMsImV4cCI6MjA5NDY2Mzk3M30.EHZgacYr27dqoc4CJHsOwkNnJFGlLIteSHBi4B1HfVE";
 const ENCOMENDAS_ADMIN_EMAILS = ["worldminifigures4u@gmail.com"];
+const ENCOMENDAS_ANEXOS_BUCKET = 'anexos-encomendas';
+const ENCOMENDAS_ANEXO_MAX_BYTES = 10 * 1024 * 1024;
 const ESTADOS_ENCOMENDA = [
     'A aguardar pagamento',
     'Pago',
@@ -125,6 +127,219 @@ function criarMiniaturaProdutoEncomenda(item) {
     return botao;
 }
 
+function pastaAnexosEncomenda(encomenda) {
+    return String(encomenda.id);
+}
+
+function limparNomeAnexoEncomenda(nome) {
+    const partes = String(nome || 'anexo').split('.');
+    const extensao = partes.length > 1 ? `.${partes.pop().toLowerCase()}` : '';
+    const base = partes.join('.')
+        .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+        .replace(/[^a-zA-Z0-9_-]+/g, '-')
+        .replace(/^-+|-+$/g, '') || 'anexo';
+    return `${base.slice(0, 100)}${extensao}`;
+}
+
+function nomeVisivelAnexoEncomenda(nome) {
+    return String(nome || '').replace(/^\d{13}-[a-z0-9]{6}-/i, '');
+}
+
+async function listarAnexosEncomenda(encomenda) {
+    const { data, error } = await encomendasClient.storage
+        .from(ENCOMENDAS_ANEXOS_BUCKET)
+        .list(pastaAnexosEncomenda(encomenda), {
+            limit: 1000,
+            sortBy: { column: 'created_at', order: 'desc' }
+        });
+    if (error) throw error;
+    return (data || []).filter(item => item.name && item.name !== '.emptyFolderPlaceholder');
+}
+
+async function abrirAnexoEncomenda(encomenda, anexo) {
+    const caminho = `${pastaAnexosEncomenda(encomenda)}/${anexo.name}`;
+    const { data, error } = await encomendasClient.storage
+        .from(ENCOMENDAS_ANEXOS_BUCKET)
+        .createSignedUrl(caminho, 300);
+    if (error) throw error;
+    window.open(data.signedUrl, '_blank', 'noopener,noreferrer');
+}
+
+async function apagarAnexosEncomenda(encomenda) {
+    const anexos = await listarAnexosEncomenda(encomenda);
+    if (!anexos.length) return 0;
+    const caminhos = anexos.map(item => `${pastaAnexosEncomenda(encomenda)}/${item.name}`);
+    const { error } = await encomendasClient.storage
+        .from(ENCOMENDAS_ANEXOS_BUCKET)
+        .remove(caminhos);
+    if (error) throw error;
+    return caminhos.length;
+}
+
+async function carregarAnexosEncomenda(encomenda, lista, status) {
+    status.textContent = 'A carregar anexos...';
+    try {
+        const anexos = await listarAnexosEncomenda(encomenda);
+        lista.replaceChildren();
+        if (!anexos.length) {
+            lista.appendChild(criarElementoEncomenda('p', 'admin-encomenda-anexos-vazio', 'Sem anexos.'));
+        } else {
+            anexos.forEach(anexo => {
+                const linha = criarElementoEncomenda('div', 'admin-encomenda-anexo');
+                const nome = criarElementoEncomenda('span', '', nomeVisivelAnexoEncomenda(anexo.name));
+                nome.title = nome.textContent;
+                const abrir = criarElementoEncomenda('button', 'wallapop-botao', 'Abrir');
+                abrir.type = 'button';
+                abrir.addEventListener('click', async () => {
+                    abrir.disabled = true;
+                    status.textContent = 'A abrir anexo...';
+                    try {
+                        await abrirAnexoEncomenda(encomenda, anexo);
+                        status.textContent = '';
+                    } catch (error) {
+                        status.textContent = 'Erro ao abrir: ' + (error.message || 'sem detalhe');
+                    } finally {
+                        abrir.disabled = false;
+                    }
+                });
+                const apagar = criarElementoEncomenda('button', 'wallapop-botao admin-encomenda-anexo-apagar', 'Eliminar');
+                apagar.type = 'button';
+                apagar.addEventListener('click', async () => {
+                    if (!window.confirm(`Eliminar o anexo "${nome.textContent}"?`)) return;
+                    apagar.disabled = true;
+                    const caminho = `${pastaAnexosEncomenda(encomenda)}/${anexo.name}`;
+                    const { error } = await encomendasClient.storage.from(ENCOMENDAS_ANEXOS_BUCKET).remove([caminho]);
+                    if (error) {
+                        status.textContent = 'Erro ao eliminar: ' + error.message;
+                        apagar.disabled = false;
+                        return;
+                    }
+                    await carregarAnexosEncomenda(encomenda, lista, status);
+                });
+                linha.append(nome, abrir, apagar);
+                lista.appendChild(linha);
+            });
+        }
+        status.textContent = '';
+    } catch (error) {
+        lista.replaceChildren();
+        status.textContent = 'Anexos indispon\u00edveis. Execute primeiro o ficheiro SQL de configura\u00e7\u00e3o.';
+        console.warn('Erro ao carregar anexos da encomenda.', error);
+    }
+}
+
+function criarGestaoEncomenda(encomenda) {
+    const painel = criarElementoEncomenda('div', 'admin-encomenda-gestao');
+
+    const notasSecao = criarElementoEncomenda('section', 'admin-encomenda-notas');
+    notasSecao.appendChild(criarElementoEncomenda('h3', '', 'Notas internas da encomenda'));
+    const notas = document.createElement('textarea');
+    notas.rows = 4;
+    notas.maxLength = 10000;
+    notas.value = encomenda.notas_internas || '';
+    notas.placeholder = 'Pormenores de prepara\u00e7\u00e3o vis\u00edveis apenas ao administrador.';
+    const guardarNotas = criarElementoEncomenda('button', 'wallapop-botao wallapop-botao-destaque', 'Guardar notas');
+    guardarNotas.type = 'button';
+    const statusNotas = criarElementoEncomenda('p', 'admin-encomenda-gestao-status');
+    guardarNotas.addEventListener('click', async () => {
+        guardarNotas.disabled = true;
+        statusNotas.textContent = 'A guardar...';
+        const { data, error } = await encomendasClient.rpc('guardar_notas_encomenda_admin', {
+            p_encomenda_id: String(encomenda.id),
+            p_notas: notas.value
+        });
+        guardarNotas.disabled = false;
+        if (error || data?.sucesso === false) {
+            statusNotas.textContent = 'Erro ao guardar: ' + (error?.message || data?.erro || 'sem detalhe');
+            return;
+        }
+        encomenda.notas_internas = notas.value;
+        statusNotas.textContent = 'Notas guardadas.';
+    });
+    notasSecao.append(notas, guardarNotas, statusNotas);
+
+    const anexosSecao = criarElementoEncomenda('section', 'admin-encomenda-anexos');
+    anexosSecao.appendChild(criarElementoEncomenda('h3', '', 'Anexos'));
+    const lista = criarElementoEncomenda('div', 'admin-encomenda-anexos-lista');
+    const statusAnexos = criarElementoEncomenda('p', 'admin-encomenda-gestao-status');
+    const concluida = estadoNormalizadoEncomenda(encomenda.estado) === 'Conclu\u00eddo';
+    let avisoConcluida = null;
+    if (concluida) {
+        avisoConcluida = criarElementoEncomenda(
+            'p',
+            'admin-encomenda-anexos-aviso',
+            'Os anexos foram eliminados quando a encomenda foi conclu\u00edda.'
+        );
+        anexosSecao.appendChild(avisoConcluida);
+    } else {
+        const upload = criarElementoEncomenda('div', 'admin-encomenda-anexos-upload');
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.accept = '.pdf,image/jpeg,image/png,image/webp';
+        input.multiple = true;
+        const enviar = criarElementoEncomenda('button', 'wallapop-botao wallapop-botao-destaque', 'Adicionar anexos');
+        enviar.type = 'button';
+        enviar.addEventListener('click', async () => {
+            const ficheiros = [...input.files];
+            if (!ficheiros.length) {
+                statusAnexos.textContent = 'Seleciona pelo menos um ficheiro.';
+                return;
+            }
+            const demasiadoGrandes = ficheiros.filter(item => item.size > ENCOMENDAS_ANEXO_MAX_BYTES);
+            if (demasiadoGrandes.length) {
+                statusAnexos.textContent = 'Cada anexo pode ter no m\u00e1ximo 10 MB.';
+                return;
+            }
+            enviar.disabled = true;
+            input.disabled = true;
+            statusAnexos.textContent = 'A enviar anexos...';
+            try {
+                for (const ficheiro of ficheiros) {
+                    const aleatorio = Math.random().toString(36).slice(2, 8);
+                    const nome = `${Date.now()}-${aleatorio}-${limparNomeAnexoEncomenda(ficheiro.name)}`;
+                    const caminho = `${pastaAnexosEncomenda(encomenda)}/${nome}`;
+                    const { error } = await encomendasClient.storage
+                        .from(ENCOMENDAS_ANEXOS_BUCKET)
+                        .upload(caminho, ficheiro, { cacheControl: '3600', upsert: false });
+                    if (error) throw error;
+                }
+                input.value = '';
+                await carregarAnexosEncomenda(encomenda, lista, statusAnexos);
+                statusAnexos.textContent = `${ficheiros.length} anexo(s) guardado(s).`;
+            } catch (error) {
+                statusAnexos.textContent = 'Erro no envio: ' + (error.message || 'sem detalhe');
+            } finally {
+                enviar.disabled = false;
+                input.disabled = false;
+            }
+        });
+        upload.append(input, enviar);
+        anexosSecao.appendChild(upload);
+    }
+    anexosSecao.append(lista, statusAnexos);
+    painel.carregarAnexos = async () => {
+        if (painel.dataset.anexosCarregados === 'true') return;
+        painel.dataset.anexosCarregados = 'true';
+        if (concluida) {
+            statusAnexos.textContent = 'A verificar anexos residuais...';
+            try {
+                const eliminados = await apagarAnexosEncomenda(encomenda);
+                avisoConcluida.textContent = eliminados
+                    ? `${eliminados} anexo(s) residual(is) eliminado(s). As notas internas foram mantidas.`
+                    : 'N\u00e3o existem anexos nesta encomenda conclu\u00edda. As notas internas foram mantidas.';
+                statusAnexos.textContent = '';
+            } catch (error) {
+                painel.dataset.anexosCarregados = 'false';
+                statusAnexos.textContent = 'N\u00e3o foi poss\u00edvel verificar a elimina\u00e7\u00e3o dos anexos: ' + (error.message || 'sem detalhe');
+            }
+            return;
+        }
+        await carregarAnexosEncomenda(encomenda, lista, statusAnexos);
+    };
+    painel.append(notasSecao, anexosSecao);
+    return painel;
+}
+
 function textoProdutosEncomenda(encomenda) {
     return obterProdutosEncomenda(encomenda).map(item => {
         const quantidade = Number(item.quantidade || item.qtd || 1);
@@ -176,6 +391,16 @@ async function atualizarEstadoEncomendaAdmin(encomenda, estado, select) {
     const plataformaExterna = ['wallapop', 'olx', 'todocoleccion'].includes(origem);
     let reporStock = false;
 
+    if (estado === 'Conclu\u00eddo' && estadoAnterior !== 'Conclu\u00eddo') {
+        const confirmado = window.confirm(
+            'Ao concluir a encomenda, todos os anexos ser\u00e3o eliminados definitivamente. As notas internas ser\u00e3o mantidas. Continuar?'
+        );
+        if (!confirmado) {
+            select.value = estadoAnterior;
+            return;
+        }
+    }
+
     if (estadoAnterior === 'Cancelado' && encomenda.stock_reposto && estado !== 'Cancelado') {
         select.value = estadoAnterior;
         definirStatusEncomendas('Esta encomenda foi cancelada com reposição de stock e não pode ser reaberta.', true);
@@ -209,10 +434,30 @@ async function atualizarEstadoEncomendaAdmin(encomenda, estado, select) {
         if (data?.sucesso === false) throw new Error(data.erro || 'Não foi possível atualizar.');
         encomenda.estado = estado;
         if (data?.stock_reposto) encomenda.stock_reposto = true;
+        let anexosEliminados = 0;
+        let erroAnexos = null;
+        if (estado === 'Conclu\u00eddo') {
+            try {
+                anexosEliminados = await apagarAnexosEncomenda(encomenda);
+            } catch (erroLimpezaAnexos) {
+                erroAnexos = erroLimpezaAnexos;
+                console.error('Erro ao eliminar anexos da encomenda concluida.', erroLimpezaAnexos);
+            }
+        }
         select.dataset.estadoAtual = estado;
         atualizarResumoEncomendas();
         renderizarEncomendasAdmin();
-        definirStatusEncomendas(`Estado da encomenda ${encomenda.codigo_encomenda || ''} atualizado.`);
+        if (erroAnexos) {
+            definirStatusEncomendas(
+                `Estado atualizado, mas n\u00e3o foi poss\u00edvel eliminar os anexos: ${erroAnexos.message || 'erro desconhecido'}`,
+                true
+            );
+        } else {
+            const limpeza = estado === 'Conclu\u00eddo'
+                ? ` ${anexosEliminados} anexo(s) eliminado(s).`
+                : '';
+            definirStatusEncomendas(`Estado da encomenda ${encomenda.codigo_encomenda || ''} atualizado.${limpeza}`);
+        }
     } catch (error) {
         select.value = estadoAnterior;
         definirStatusEncomendas('Erro ao atualizar estado: ' + (error.message || 'sem detalhe'), true);
@@ -484,15 +729,17 @@ function criarCardEncomenda(encomenda) {
 
     const detalhes = criarElementoEncomenda('div', 'admin-encomenda-detalhes');
     detalhes.hidden = true;
-    cabecalho.addEventListener('click', () => {
+    let gestaoEncomenda = null;
+    const alternarDetalhes = () => {
         detalhes.hidden = !detalhes.hidden;
         card.classList.toggle('aberta', !detalhes.hidden);
-    });
+        if (!detalhes.hidden) gestaoEncomenda?.carregarAnexos?.();
+    };
+    cabecalho.addEventListener('click', alternarDetalhes);
     cabecalho.addEventListener('keydown', evento => {
         if (evento.key !== 'Enter' && evento.key !== ' ') return;
         evento.preventDefault();
-        detalhes.hidden = !detalhes.hidden;
-        card.classList.toggle('aberta', !detalhes.hidden);
+        alternarDetalhes();
     });
 
     const dados = criarElementoEncomenda('div', 'admin-encomenda-dados');
@@ -561,7 +808,8 @@ function criarCardEncomenda(encomenda) {
     botoes.appendChild(copiar);
     acoes.append(grupoEstado, botoes);
 
-    detalhes.append(dados, produtos, acoes);
+    gestaoEncomenda = criarGestaoEncomenda(encomenda);
+    detalhes.append(dados, produtos, gestaoEncomenda, acoes);
     card.append(cabecalho, detalhes);
     return card;
 }
