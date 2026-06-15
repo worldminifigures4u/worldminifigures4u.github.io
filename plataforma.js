@@ -235,7 +235,220 @@ function atualizarModoPlataforma() {
 }
 
 function normalizarTextoWallapop(valor) {
-    return String(valor || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+    return String(valor || '')
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, ' ')
+        .trim()
+        .replace(/\s+/g, ' ');
+}
+
+function distanciaLevenshteinPlataforma(a, b) {
+    const primeiro = String(a || '');
+    const segundo = String(b || '');
+    const linha = Array.from({ length: segundo.length + 1 }, (_, indice) => indice);
+    for (let i = 1; i <= primeiro.length; i += 1) {
+        let anterior = linha[0];
+        linha[0] = i;
+        for (let j = 1; j <= segundo.length; j += 1) {
+            const guardado = linha[j];
+            linha[j] = Math.min(
+                linha[j] + 1,
+                linha[j - 1] + 1,
+                anterior + (primeiro[i - 1] === segundo[j - 1] ? 0 : 1)
+            );
+            anterior = guardado;
+        }
+    }
+    return linha[segundo.length];
+}
+
+function pontuarCorrespondenciaPlataforma(termo, produto) {
+    const nome = normalizarTextoWallapop(produto.nome);
+    const sku = normalizarTextoWallapop(produto.sku);
+    if (!termo) return 0;
+    if (termo === nome || termo === sku) return 1;
+
+    const distancia = distanciaLevenshteinPlataforma(termo, nome);
+    const similaridade = 1 - (distancia / Math.max(termo.length, nome.length, 1));
+    const palavrasTermo = new Set(termo.split(' ').filter(Boolean));
+    const palavrasNome = new Set(nome.split(' ').filter(Boolean));
+    const comuns = [...palavrasTermo].filter(palavra => palavrasNome.has(palavra)).length;
+    const cobertura = comuns / Math.max(palavrasTermo.size, palavrasNome.size, 1);
+    const contem = nome.includes(termo) || termo.includes(nome) ? 0.9 : 0;
+    return Math.max(similaridade, similaridade * 0.72 + cobertura * 0.28, contem);
+}
+
+function interpretarLinhaProdutosPlataforma(linha, indice) {
+    let texto = String(linha || '').trim().replace(/^[\s\-*\u2022]+/, '');
+    if (!texto) return null;
+    let quantidade = 1;
+    const inicio = texto.match(/^(\d+)\s*(?:x|un(?:id(?:ades?)?)?\.?|-)??\s+(.+)$/i);
+    const fim = texto.match(/^(.+?)\s+[xX]\s*(\d+)$/);
+    if (inicio) {
+        quantidade = Math.max(1, Number(inicio[1]) || 1);
+        texto = inicio[2].trim();
+    } else if (fim) {
+        texto = fim[1].trim();
+        quantidade = Math.max(1, Number(fim[2]) || 1);
+    }
+    return { indice, original: texto, quantidade };
+}
+
+function analisarListaProdutosPlataforma(texto) {
+    return String(texto || '')
+        .split(/\r?\n/)
+        .map(interpretarLinhaProdutosPlataforma)
+        .filter(Boolean)
+        .map(linha => {
+            const termo = normalizarTextoWallapop(linha.original);
+            const candidatos = wallapopProdutos
+                .map(produto => ({ produto, pontuacao: pontuarCorrespondenciaPlataforma(termo, produto) }))
+                .filter(item => item.pontuacao >= 0.48)
+                .sort((a, b) => b.pontuacao - a.pontuacao || String(a.produto.nome).localeCompare(String(b.produto.nome), 'pt'))
+                .slice(0, 8);
+            const melhor = candidatos[0];
+            const segundo = candidatos[1];
+            const exata = melhor?.pontuacao === 1;
+            const segura = Boolean(melhor && melhor.pontuacao >= 0.78
+                && (!segundo || melhor.pontuacao - segundo.pontuacao >= 0.045));
+            return {
+                ...linha,
+                candidatos,
+                produtoId: exata || segura ? String(melhor.produto.id) : '',
+                estado: exata ? 'exata' : (segura ? 'sugerida' : 'rever')
+            };
+        });
+}
+
+function fecharRevisaoListaProdutosPlataforma() {
+    document.getElementById('plataforma-revisao-lista')?.remove();
+    document.body.classList.remove('plataforma-modal-aberto');
+}
+
+function adicionarListaRevistaPlataforma(linhas, modal) {
+    const selecoes = [...modal.querySelectorAll('[data-linha-lista]')].map((linha, indice) => ({
+        produtoId: linha.querySelector('select').value,
+        quantidade: linhas[indice].quantidade
+    })).filter(item => item.produtoId);
+
+    if (!selecoes.length) {
+        modal.querySelector('.plataforma-lista-aviso').textContent = 'Seleciona pelo menos um produto.';
+        return;
+    }
+
+    const agrupadas = new Map();
+    selecoes.forEach(item => agrupadas.set(item.produtoId, (agrupadas.get(item.produtoId) || 0) + item.quantidade));
+    let adicionados = 0;
+    agrupadas.forEach((quantidade, produtoId) => {
+        const produto = wallapopProdutos.find(item => String(item.id) === String(produtoId));
+        if (!produto) return;
+        const existente = wallapopItens.find(item => String(item.id) === String(produtoId));
+        const quantidadeFinal = (existente?.quantidade || 0) + quantidade;
+        if (!confirmarStockNegativoPlataforma(produto, quantidadeFinal)) return;
+        if (existente) existente.quantidade = quantidadeFinal;
+        else wallapopItens.push({ ...produto, quantidade });
+        adicionados += quantidade;
+    });
+
+    if (!adicionados) return;
+    guardarItensWallapop();
+    marcarWallapopPorRegistar();
+    renderizarSelecionadosWallapop();
+    renderizarFolhaWallapop();
+    document.getElementById('plataforma-lista-produtos').value = '';
+    fecharRevisaoListaProdutosPlataforma();
+    definirStatusWallapop(`${adicionados} produto(s) adicionado(s) a partir da lista.`);
+}
+
+function abrirRevisaoListaProdutosPlataforma() {
+    const texto = document.getElementById('plataforma-lista-produtos').value;
+    const linhas = analisarListaProdutosPlataforma(texto);
+    if (!linhas.length) {
+        definirStatusWallapop('Cola primeiro uma lista com uma figura por linha.', true);
+        return;
+    }
+
+    fecharRevisaoListaProdutosPlataforma();
+    const modal = document.createElement('div');
+    modal.id = 'plataforma-revisao-lista';
+    modal.className = 'plataforma-lista-modal';
+    const dialogo = document.createElement('div');
+    dialogo.className = 'plataforma-lista-dialogo';
+    const topo = document.createElement('div');
+    topo.className = 'plataforma-lista-topo';
+    const titulo = document.createElement('h2');
+    titulo.textContent = 'Rever produtos da lista';
+    const fechar = document.createElement('button');
+    fechar.type = 'button';
+    fechar.className = 'wallapop-remover';
+    fechar.textContent = '\u00d7';
+    fechar.title = 'Fechar';
+    fechar.onclick = fecharRevisaoListaProdutosPlataforma;
+    topo.append(titulo, fechar);
+
+    const explicacao = document.createElement('p');
+    explicacao.textContent = 'Confirma as correspond\u00eancias. As corre\u00e7\u00f5es prov\u00e1veis j\u00e1 est\u00e3o selecionadas; os casos duvidosos ficam por escolher.';
+    const lista = document.createElement('div');
+    lista.className = 'plataforma-lista-revisao';
+
+    linhas.forEach(linha => {
+        const item = document.createElement('div');
+        item.className = `plataforma-lista-linha estado-${linha.estado}`;
+        item.dataset.linhaLista = String(linha.indice);
+        const original = document.createElement('div');
+        original.className = 'plataforma-lista-original';
+        const quantidade = document.createElement('strong');
+        quantidade.textContent = `${linha.quantidade}x`;
+        const nome = document.createElement('span');
+        nome.textContent = linha.original;
+        const estado = document.createElement('small');
+        estado.textContent = linha.estado === 'exata'
+            ? 'Correspond\u00eancia exata'
+            : (linha.estado === 'sugerida' ? 'Corre\u00e7\u00e3o sugerida' : 'Escolha necess\u00e1ria');
+        original.append(quantidade, nome, estado);
+
+        const select = document.createElement('select');
+        select.setAttribute('aria-label', `Produto correspondente a ${linha.original}`);
+        const vazio = document.createElement('option');
+        vazio.value = '';
+        vazio.textContent = linha.candidatos.length ? 'Ignorar / escolher produto' : 'Nenhuma correspond\u00eancia encontrada';
+        select.appendChild(vazio);
+        linha.candidatos.forEach(candidato => {
+            const option = document.createElement('option');
+            option.value = String(candidato.produto.id);
+            option.textContent = `${candidato.produto.nome} (${candidato.produto.sku || 'sem SKU'})`;
+            select.appendChild(option);
+        });
+        select.value = linha.produtoId;
+        select.onchange = () => item.classList.toggle('estado-rever', !select.value);
+        item.append(original, select);
+        lista.appendChild(item);
+    });
+
+    const aviso = document.createElement('p');
+    aviso.className = 'plataforma-lista-aviso';
+    const acoes = document.createElement('div');
+    acoes.className = 'plataforma-lista-acoes';
+    const cancelar = document.createElement('button');
+    cancelar.type = 'button';
+    cancelar.className = 'wallapop-botao';
+    cancelar.textContent = 'Cancelar';
+    cancelar.onclick = fecharRevisaoListaProdutosPlataforma;
+    const adicionar = document.createElement('button');
+    adicionar.type = 'button';
+    adicionar.className = 'wallapop-botao wallapop-botao-destaque';
+    adicionar.textContent = 'Adicionar produtos selecionados';
+    adicionar.onclick = () => adicionarListaRevistaPlataforma(linhas, modal);
+    acoes.append(cancelar, adicionar);
+    dialogo.append(topo, explicacao, lista, aviso, acoes);
+    modal.appendChild(dialogo);
+    modal.addEventListener('click', evento => {
+        if (evento.target === modal) fecharRevisaoListaProdutosPlataforma();
+    });
+    document.body.appendChild(modal);
+    document.body.classList.add('plataforma-modal-aberto');
 }
 
 function obterImagemWallapop(produto = {}) {
@@ -1170,6 +1383,7 @@ async function iniciarWallapopAdmin() {
 }
 
 document.getElementById('wallapop-pesquisa').addEventListener('input', renderizarResultadosWallapop);
+document.getElementById('btn-analisar-lista-produtos').addEventListener('click', abrirRevisaoListaProdutosPlataforma);
 document.getElementById('btn-limpar-wallapop').addEventListener('click', limparListaWallapop);
 document.getElementById('btn-descarregar-wallapop').addEventListener('click', guardarFicheirosPlataforma);
 document.getElementById('btn-registar-wallapop').addEventListener('click', registarEncomendaWallapop);
