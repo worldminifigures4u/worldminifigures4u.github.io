@@ -906,7 +906,6 @@ function criarTextoEncomendaWallapop() {
     const linhas = criarCabecalhoCodigoEncomenda().concat(itens.map(item => [
         Math.max(1, Number(item.quantidade) || 1),
         String(item.nome || '').trim(),
-        String(item.referencia || '').trim(),
         String(item.sku || '').trim()
     ].join('\t')));
     const total = itens.reduce((soma, item) => {
@@ -920,7 +919,6 @@ function criarTextoInternoPlataforma() {
     const linhas = criarCabecalhoCodigoEncomenda().concat(obterItensParaFicheirosPlataforma().map(item => [
         Math.max(1, Number(item.quantidade) || 1),
         String(item.nome || '').trim(),
-        String(item.referencia || '').trim(),
         String(item.sku || '').trim()
     ].join('\t')));
     return '\ufeff' + linhas.join('\r\n');
