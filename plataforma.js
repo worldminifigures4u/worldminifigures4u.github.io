@@ -834,41 +834,77 @@ function renderizarSelecionadosWallapop() {
     else atualizarResumoPlataforma();
 }
 
+const WALLAPOP_ITENS_POR_FOLHA = 6;
+
+function dividirItensWallapop(itens, tamanho = WALLAPOP_ITENS_POR_FOLHA) {
+    const paginas = [];
+    for (let indice = 0; indice < itens.length; indice += tamanho) {
+        paginas.push(itens.slice(indice, indice + tamanho));
+    }
+    return paginas;
+}
+
+function atualizarAlturaPrevisualizacaoWallapop(totalPaginas) {
+    const escala = document.getElementById('wallapop-folha-escala');
+    if (!escala) return;
+    const estilos = getComputedStyle(escala);
+    const alturaPagina = parseFloat(estilos.getPropertyValue('--wallapop-preview-page-height')) || 674;
+    const intervalo = parseFloat(estilos.getPropertyValue('--wallapop-preview-gap')) || 14;
+    escala.style.height = `${(totalPaginas * alturaPagina) + ((totalPaginas - 1) * intervalo)}px`;
+}
+
+function criarCartaoFolhaWallapop(item) {
+    const cartao = document.createElement('article');
+    cartao.className = 'wallapop-cartao';
+    const foto = document.createElement('div');
+    foto.className = 'wallapop-foto';
+    foto.appendChild(criarImagemWallapop(obterImagemWallapop(item), item.nome, ''));
+    cartao.appendChild(foto);
+
+    const texto = document.createElement('div');
+    texto.className = 'wallapop-cartao-texto';
+    const quantidade = document.createElement('p');
+    quantidade.className = 'wallapop-cartao-quantidade';
+    quantidade.textContent = item.quantidade > 1 ? `${item.quantidade}x` : '';
+    quantidade.hidden = item.quantidade <= 1;
+    const nome = document.createElement('h3');
+    nome.textContent = item.nome;
+    const preco = document.createElement('p');
+    preco.className = 'wallapop-cartao-preco';
+    preco.textContent = `${formatarEuroWallapop(item.preco)} € / un.`;
+    texto.append(quantidade, nome, preco);
+    cartao.appendChild(texto);
+    return cartao;
+}
+
 function renderizarFolhaWallapop(itens = wallapopItens) {
-    const grelha = document.getElementById('wallapop-grelha');
-    grelha.replaceChildren();
-
-    itens.forEach(item => {
-        const cartao = document.createElement('article');
-        cartao.className = 'wallapop-cartao';
-        const foto = document.createElement('div');
-        foto.className = 'wallapop-foto';
-        foto.appendChild(criarImagemWallapop(obterImagemWallapop(item), item.nome, ''));
-        cartao.appendChild(foto);
-
-        const texto = document.createElement('div');
-        texto.className = 'wallapop-cartao-texto';
-        const quantidade = document.createElement('p');
-        quantidade.className = 'wallapop-cartao-quantidade';
-        quantidade.textContent = item.quantidade > 1 ? `${item.quantidade}x` : '';
-        quantidade.hidden = item.quantidade <= 1;
-        const nome = document.createElement('h3');
-        nome.textContent = item.nome;
-        const preco = document.createElement('p');
-        preco.className = 'wallapop-cartao-preco';
-        preco.textContent = `${formatarEuroWallapop(item.preco)} € / un.`;
-        texto.append(quantidade, nome, preco);
-        cartao.appendChild(texto);
-        grelha.appendChild(cartao);
-    });
+    const folha = document.getElementById('wallapop-folha');
+    folha.replaceChildren();
+    const paginas = dividirItensWallapop(itens);
+    const totalPaginas = Math.max(1, paginas.length);
+    atualizarAlturaPrevisualizacaoWallapop(totalPaginas);
 
     if (!itens.length) {
+        const pagina = document.createElement('section');
+        pagina.className = 'wallapop-pagina';
         const vazio = document.createElement('div');
         vazio.className = 'wallapop-vazio';
         vazio.textContent = 'Adicione produtos para criar a imagem.';
-        grelha.appendChild(vazio);
+        pagina.appendChild(vazio);
+        folha.appendChild(pagina);
+        return;
     }
 
+    paginas.forEach((itensPagina, indice) => {
+        const pagina = document.createElement('section');
+        pagina.className = 'wallapop-pagina';
+        pagina.setAttribute('aria-label', `Folha A4 ${indice + 1}`);
+        const grelha = document.createElement('div');
+        grelha.className = 'wallapop-grelha';
+        itensPagina.forEach(item => grelha.appendChild(criarCartaoFolhaWallapop(item)));
+        pagina.appendChild(grelha);
+        folha.appendChild(pagina);
+    });
 }
 
 async function esperarImagensWallapop() {
@@ -994,27 +1030,27 @@ async function descarregarImagemWallapop() {
         const pastaBase = await obterPastaBaseWallapop();
         renderizarFolhaWallapop(itensFicheiros);
         await esperarImagensWallapop();
-        const folha = document.getElementById('wallapop-folha');
-        const transformAnterior = folha.style.transform;
-        folha.style.transform = 'none';
-        let canvas;
-        try {
-            canvas = await html2canvas(folha, {
+        const paginas = [...document.querySelectorAll('#wallapop-folha .wallapop-pagina')];
+        if (!paginas.length) throw new Error('Nao existem folhas para exportar.');
+
+        const pastaEncomenda = await pastaBase.getDirectoryHandle(nomeEncomenda, { create: true });
+        await escreverFicheiroWallapop(pastaEncomenda, `${nomeEncomenda}.txt`, criarTextoEncomendaWallapop());
+
+        for (let indice = 0; indice < paginas.length; indice += 1) {
+            const pagina = paginas[indice];
+            const canvas = await html2canvas(pagina, {
                 backgroundColor: '#ffffff',
                 scale: 2,
                 useCORS: true,
                 logging: false,
-                windowWidth: folha.scrollWidth,
-                windowHeight: folha.scrollHeight
+                windowWidth: pagina.scrollWidth,
+                windowHeight: pagina.scrollHeight
             });
-        } finally {
-            folha.style.transform = transformAnterior;
+            const imagem = await canvasParaBlobWallapop(canvas);
+            const nomeImagem = paginas.length === 1 ? 'foto anuncio.png' : `foto anuncio ${indice + 1}.png`;
+            await escreverFicheiroWallapop(pastaEncomenda, nomeImagem, imagem);
         }
-        const pastaEncomenda = await pastaBase.getDirectoryHandle(nomeEncomenda, { create: true });
-        const imagem = await canvasParaBlobWallapop(canvas);
-        await escreverFicheiroWallapop(pastaEncomenda, `${nomeEncomenda}.txt`, criarTextoEncomendaWallapop());
-        await escreverFicheiroWallapop(pastaEncomenda, 'foto anuncio.png', imagem);
-        definirStatusWallapop(`Pasta "${nomeEncomenda}" guardada com sucesso.`);
+        definirStatusWallapop(`Pasta "${nomeEncomenda}" guardada com ${paginas.length} imagem(ns).`);
     } catch (error) {
         console.error(error);
         if (error?.name === 'AbortError') {

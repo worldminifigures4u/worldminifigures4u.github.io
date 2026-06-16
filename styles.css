@@ -869,6 +869,8 @@ body{
         }
 
         .wallapop-folha-escala{
+            --wallapop-preview-page-height:674px;
+            --wallapop-preview-gap:14px;
             width:476px;
             height:674px;
             flex:0 0 auto;
@@ -877,8 +879,22 @@ body{
 
         .wallapop-folha{
             width:794px;
+            min-height:0;
+            margin:0;
+            padding:0;
+            box-sizing:border-box;
+            background:transparent;
+            color:#111;
+            display:flex;
+            flex-direction:column;
+            gap:24px;
+            transform:scale(.6);
+            transform-origin:top left;
+        }
+
+        .wallapop-pagina{
+            width:794px;
             min-height:1123px;
-            margin:0 auto;
             padding:42px;
             box-sizing:border-box;
             background:#fff;
@@ -886,8 +902,6 @@ body{
             box-shadow:0 8px 28px rgba(0,0,0,.45);
             display:flex;
             flex-direction:column;
-            transform:scale(.6);
-            transform-origin:top left;
         }
 
         .wallapop-grelha{
@@ -1954,6 +1968,8 @@ body{
                 width:calc(100% - 32px);
             }
             .wallapop-folha-escala{
+                --wallapop-preview-page-height:843px;
+                --wallapop-preview-gap:18px;
                 width:596px;
                 height:843px;
             }
