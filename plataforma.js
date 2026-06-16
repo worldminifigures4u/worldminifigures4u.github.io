@@ -133,6 +133,12 @@ function obterNomeParaFicheirosPlataforma() {
         || document.getElementById('wallapop-nome-encomenda').value;
 }
 
+function comporNomeEncomendaPlataforma(codigo, cliente) {
+    return [String(codigo || '').trim(), String(cliente || '').trim()]
+        .filter(Boolean)
+        .join(' ');
+}
+
 function atualizarBotaoRegistoPlataforma() {
     const botao = document.getElementById('btn-registar-wallapop');
     if (!botao) return;
@@ -1377,15 +1383,16 @@ async function registarEncomendaWallapop() {
             encomendaPlataformaEmEdicao = encomendaGuardada;
             encomendaPlataformaParaFicheiros = null;
             document.getElementById('plataforma-tipo').disabled = true;
-            document.getElementById('wallapop-nome-encomenda').value ||= codigo;
+            document.getElementById('wallapop-nome-encomenda').value = comporNomeEncomendaPlataforma(codigo, nomeCliente);
             mostrarEdicaoPlataforma(encomendaPlataformaEmEdicao);
             atualizarBotaoRegistoPlataforma();
             definirStatusWallapop(`Encomenda ${codigo} guardada. O stock foi atualizado.${avisoPerfil}`);
         } else {
+            const nomeEncomendaAutomatico = comporNomeEncomendaPlataforma(codigo, nomeCliente);
             encomendaPlataformaParaFicheiros = {
                 codigo_encomenda: codigo,
                 plataforma,
-                nome_encomenda: document.getElementById('wallapop-nome-encomenda').value || codigo,
+                nome_encomenda: nomeEncomendaAutomatico,
                 envio: { ...envio },
                 itens: wallapopItens.map(item => ({
                     ...item,
