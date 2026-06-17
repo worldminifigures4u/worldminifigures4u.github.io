@@ -15,9 +15,22 @@
             <img src="figures-planet-logo-transparent.png" alt="Figures Planet">
         </a>
         <h1>Encomendas</h1>
-        <nav>
-            <a class="wallapop-botao" href="plataforma.html">Plataforma</a>
-            <a class="wallapop-botao" href="conta.html">Conta</a>
+        <nav class="acoes-cabecalho" aria-label="Navega&ccedil;&atilde;o principal">
+            <a class="acao-cabecalho" href="index.html" aria-label="Ver produtos">
+                <span class="texto-acao"><strong>Produtos</strong></span>
+            </a>
+            <a class="acao-cabecalho" href="conta.html" aria-label="Abrir conta de cliente">
+                <span class="texto-acao"><strong>Conta Cliente</strong></span>
+            </a>
+            <a class="acao-cabecalho" href="plataforma.html" aria-label="Abrir plataformas">
+                <span class="texto-acao"><strong>Plataforma</strong></span>
+            </a>
+            <a class="acao-cabecalho ativa" href="encomendas.html" aria-label="Gerir encomendas">
+                <span class="texto-acao"><strong>Encomendas</strong></span>
+            </a>
+            <a class="acao-cabecalho acao-carrinho" href="carrinho.html" aria-label="Abrir carrinho">
+                <span class="badge-carrinho" id="contador-carrinho-cabecalho">0</span>
+            </a>
         </nav>
     </header>
 
@@ -70,6 +83,27 @@
         </div>
     </div>
 
+    <script>
+        (function () {
+            function atualizarContadorCarrinhoTopo() {
+                const contador = document.getElementById('contador-carrinho-cabecalho');
+                if (!contador) return;
+
+                try {
+                    const itens = JSON.parse(localStorage.getItem('carrinho') || '[]');
+                    const total = Array.isArray(itens)
+                        ? itens.reduce((soma, item) => soma + Number(item && item.quantidade || 0), 0)
+                        : 0;
+                    contador.textContent = total;
+                } catch (erro) {
+                    contador.textContent = '0';
+                }
+            }
+
+            document.addEventListener('DOMContentLoaded', atualizarContadorCarrinhoTopo);
+            window.addEventListener('storage', atualizarContadorCarrinhoTopo);
+        })();
+    </script>
     <script src="encomendas.js"></script>
 </body>
 </html>
