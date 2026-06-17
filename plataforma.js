@@ -1600,11 +1600,11 @@ document.getElementById('btn-analisar-lista-produtos').addEventListener('click',
 document.getElementById('btn-limpar-wallapop').addEventListener('click', limparListaWallapop);
 document.getElementById('btn-descarregar-wallapop').addEventListener('click', guardarFicheirosPlataforma);
 document.getElementById('btn-registar-wallapop').addEventListener('click', registarEncomendaWallapop);
-document.getElementById('btn-abrir-encomenda-txt').addEventListener('click', () => {
-    document.getElementById('ficheiro-encomenda-txt').click();
+document.getElementById('btn-abrir-encomenda-txt')?.addEventListener('click', () => {
+    document.getElementById('ficheiro-encomenda-txt')?.click();
 });
-document.getElementById('ficheiro-encomenda-txt').addEventListener('change', abrirEncomendaPlataformaPeloTxt);
-document.getElementById('btn-nova-encomenda-plataforma').addEventListener('click', novaEncomendaPlataforma);
+document.getElementById('ficheiro-encomenda-txt')?.addEventListener('change', abrirEncomendaPlataformaPeloTxt);
+document.getElementById('btn-nova-encomenda-plataforma')?.addEventListener('click', novaEncomendaPlataforma);
 document.getElementById('wallapop-nome-cliente').addEventListener('input', marcarWallapopPorRegistar);
 document.getElementById('wallapop-referencia').addEventListener('input', marcarWallapopPorRegistar);
 document.getElementById('plataforma-tipo').addEventListener('change', atualizarModoPlataforma);

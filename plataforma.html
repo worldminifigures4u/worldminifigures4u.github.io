@@ -36,21 +36,6 @@
 
     <main class="wallapop-layout" id="wallapop-aplicacao" hidden>
         <section class="wallapop-editor" aria-label="Produtos da encomenda">
-            <div class="plataforma-seletor">
-                <label for="plataforma-tipo">Plataforma</label>
-                <select id="plataforma-tipo">
-                    <option value="Wallapop">Wallapop</option>
-                    <option value="OLX">OLX</option>
-                    <option value="Todocoleccion">Todocoleccion</option>
-                </select>
-                <div class="plataforma-abrir-acoes">
-                    <button class="wallapop-botao" type="button" id="btn-abrir-encomenda-txt">Abrir encomenda pelo TXT</button>
-                    <button class="wallapop-botao" type="button" id="btn-nova-encomenda-plataforma">Nova encomenda</button>
-                    <input type="file" id="ficheiro-encomenda-txt" accept=".txt,text/plain" hidden>
-                </div>
-                <p class="plataforma-edicao" id="plataforma-edicao" hidden></p>
-            </div>
-
             <h2>Adicionar produtos</h2>
             <div class="wallapop-pesquisa">
                 <input type="search" id="wallapop-pesquisa" placeholder="Nome ou SKU" autocomplete="off">
@@ -74,18 +59,26 @@
         <section class="wallapop-preview-wrap" aria-label="Dados da plataforma">
             <div class="wallapop-preview-acoes">
                 <div class="wallapop-dados-encomenda">
+                    <label for="plataforma-link-perfil">Link do perfil do cliente (opcional)</label>
+                    <input type="url" id="plataforma-link-perfil" placeholder="Cole o link do perfil Wallapop, OLX ou Todocoleccion" autocomplete="off">
+                    <p class="plataforma-perfil-detetado" id="plataforma-perfil-detetado" hidden></p>
+
                     <label for="wallapop-nome-encomenda">Nome do Cliente</label>
                     <input type="text" id="wallapop-nome-encomenda" placeholder="Ex.: Joao Silva" autocomplete="off">
 
                     <label for="wallapop-nome-cliente" id="label-cliente-plataforma">Nome de utilizador</label>
                     <input type="text" id="wallapop-nome-cliente" placeholder="Nome ou utilizador" autocomplete="off">
 
-                    <label for="plataforma-link-perfil">Link do perfil do cliente (opcional)</label>
-                    <input type="url" id="plataforma-link-perfil" placeholder="Cole o link do perfil Wallapop, OLX ou Todocoleccion" autocomplete="off">
-                    <p class="plataforma-perfil-detetado" id="plataforma-perfil-detetado" hidden></p>
+                    <label for="plataforma-tipo">Plataforma</label>
+                    <select id="plataforma-tipo">
+                        <option value="Wallapop">Wallapop</option>
+                        <option value="OLX">OLX</option>
+                        <option value="Todocoleccion">Todocoleccion</option>
+                    </select>
 
                     <label for="wallapop-referencia" id="label-referencia-plataforma">Refer&ecirc;ncia Wallapop (opcional)</label>
                     <input type="text" id="wallapop-referencia" placeholder="Ex.: conversa, reserva ou venda" autocomplete="off">
+                    <p class="plataforma-edicao" id="plataforma-edicao" hidden></p>
 
                     <div class="plataforma-envio" id="plataforma-envio" hidden>
                         <p class="plataforma-peso" id="plataforma-peso">Peso estimado: 0g</p>
