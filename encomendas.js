@@ -463,10 +463,15 @@ async function atualizarEstadoEncomendaAdmin(encomenda, estado, select) {
                 p_repor_stock: reporStock
             }));
         } else {
-            const respostaRpc = await encomendasClient.rpc('atualizar_estado_encomenda_admin', {
-                p_encomenda_id: String(encomenda.id),
-                p_estado: estado
-            }).catch(erroRede => ({ data: null, error: erroRede }));
+            let respostaRpc;
+            try {
+                respostaRpc = await encomendasClient.rpc('atualizar_estado_encomenda_admin', {
+                    p_encomenda_id: String(encomenda.id),
+                    p_estado: estado
+                });
+            } catch (erroRede) {
+                respostaRpc = { data: null, error: erroRede };
+            }
             data = respostaRpc.data;
             error = respostaRpc.error;
 
