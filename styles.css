@@ -904,34 +904,26 @@ body{
             flex-direction:column;
         }
 
-        .wallapop-grelha{
-            display:grid;
-            grid-template-columns:repeat(2, minmax(0, 1fr));
-            gap:20px 24px;
-            align-content:start;
+
+        .wallapop-lista{
+            height:100%;
+            display:flex;
+            flex-direction:column;
+            gap:8px;
         }
 
-        .wallapop-cartao{
-            min-height:142px;
+        .wallapop-linha{
+            min-height:96px;
             display:grid;
-            grid-template-columns:128px minmax(0, 1fr);
-            gap:14px;
+            grid-template-columns:98px 54px minmax(0, 1fr) 128px;
+            column-gap:18px;
             align-items:center;
             break-inside:avoid;
         }
 
-        .wallapop-cartao img{
-            display:block;
-            width:auto;
-            height:auto;
-            max-width:128px;
-            max-height:128px;
-            object-fit:contain;
-        }
-
-        .wallapop-foto{
-            width:128px;
-            height:128px;
+        .wallapop-linha-foto{
+            width:90px;
+            height:90px;
             display:flex;
             align-items:center;
             justify-content:center;
@@ -942,30 +934,36 @@ body{
             overflow:visible;
         }
 
-        .wallapop-cartao-texto{
-            min-width:0;
+        .wallapop-linha-foto img{
+            display:block;
+            width:auto;
+            height:auto;
+            max-width:90px;
+            max-height:90px;
+            object-fit:contain;
         }
 
-        .wallapop-cartao-quantidade{
-            margin:0 0 4px;
-            color:#555;
-            font-size:20px;
-            font-weight:800;
-        }
-
-        .wallapop-cartao h3{
-            margin:0 0 8px;
-            color:#111;
-            font-size:18px;
-            line-height:1.18;
-            overflow-wrap:anywhere;
-        }
-
-        .wallapop-cartao-preco{
+        .wallapop-linha-quantidade,
+        .wallapop-linha-nome,
+        .wallapop-linha-preco{
             margin:0;
             color:#111;
             font-size:18px;
+            line-height:1.18;
             font-weight:800;
+        }
+
+        .wallapop-linha-quantidade{
+            white-space:nowrap;
+        }
+
+        .wallapop-linha-nome{
+            overflow-wrap:anywhere;
+        }
+
+        .wallapop-linha-preco{
+            text-align:right;
+            white-space:nowrap;
         }
 
         .wallapop-vazio{

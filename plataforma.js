@@ -835,7 +835,7 @@ function renderizarSelecionadosWallapop() {
     else atualizarResumoPlataforma();
 }
 
-const WALLAPOP_ITENS_POR_FOLHA = 6;
+const WALLAPOP_ITENS_POR_FOLHA = 10;
 
 function dividirItensWallapop(itens, tamanho = WALLAPOP_ITENS_POR_FOLHA) {
     const paginas = [];
@@ -854,30 +854,29 @@ function atualizarAlturaPrevisualizacaoWallapop(totalPaginas) {
     escala.style.height = `${(totalPaginas * alturaPagina) + ((totalPaginas - 1) * intervalo)}px`;
 }
 
-function criarCartaoFolhaWallapop(item) {
-    const cartao = document.createElement('article');
-    cartao.className = 'wallapop-cartao';
+function criarLinhaFolhaWallapop(item) {
+    const linha = document.createElement('article');
+    linha.className = 'wallapop-linha';
+
     const foto = document.createElement('div');
-    foto.className = 'wallapop-foto';
+    foto.className = 'wallapop-linha-foto';
     foto.appendChild(criarImagemWallapop(obterImagemWallapop(item), item.nome, ''));
-    cartao.appendChild(foto);
 
-    const texto = document.createElement('div');
-    texto.className = 'wallapop-cartao-texto';
-    const quantidade = document.createElement('p');
-    quantidade.className = 'wallapop-cartao-quantidade';
-    quantidade.textContent = item.quantidade > 1 ? `${item.quantidade}x` : '';
-    quantidade.hidden = item.quantidade <= 1;
+    const quantidade = document.createElement('div');
+    quantidade.className = 'wallapop-linha-quantidade';
+    quantidade.textContent = `${item.quantidade || 1}x`;
+
     const nome = document.createElement('h3');
+    nome.className = 'wallapop-linha-nome';
     nome.textContent = item.nome;
-    const preco = document.createElement('p');
-    preco.className = 'wallapop-cartao-preco';
-    preco.textContent = `${formatarEuroWallapop(item.preco)} € / un.`;
-    texto.append(quantidade, nome, preco);
-    cartao.appendChild(texto);
-    return cartao;
-}
 
+    const preco = document.createElement('div');
+    preco.className = 'wallapop-linha-preco';
+    preco.textContent = `${formatarEuroWallapop(item.preco)} € / un.`;
+
+    linha.append(foto, quantidade, nome, preco);
+    return linha;
+}
 function renderizarFolhaWallapop(itens = wallapopItens) {
     const folha = document.getElementById('wallapop-folha');
     folha.replaceChildren();
@@ -900,10 +899,10 @@ function renderizarFolhaWallapop(itens = wallapopItens) {
         const pagina = document.createElement('section');
         pagina.className = 'wallapop-pagina';
         pagina.setAttribute('aria-label', `Folha A4 ${indice + 1}`);
-        const grelha = document.createElement('div');
-        grelha.className = 'wallapop-grelha';
-        itensPagina.forEach(item => grelha.appendChild(criarCartaoFolhaWallapop(item)));
-        pagina.appendChild(grelha);
+        const lista = document.createElement('div');
+        lista.className = 'wallapop-lista';
+        itensPagina.forEach(item => lista.appendChild(criarLinhaFolhaWallapop(item)));
+        pagina.appendChild(lista);
         folha.appendChild(pagina);
     });
 }
