@@ -2942,6 +2942,11 @@ body{
     font-size: 12px;
     font-weight: 700;
 }
+.plataforma-produto-stock {
+    color: #ddd !important;
+    font-size: 12px;
+    font-weight: 700;
+}
 .admin-produto-identificadores,
 .plataforma-produto-identificadores{
     display:flex;

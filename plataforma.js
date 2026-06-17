@@ -746,14 +746,15 @@ function renderizarResultadosWallapop() {
         const identificadores = document.createElement('span');
         identificadores.className = 'plataforma-produto-identificadores';
         identificadores.textContent = `Ref. ${produto.referencia || '—'} | SKU ${produto.sku || '—'}`;
-        info.append(nome, identificadores, preco);
-        if (produto.stock !== null && produto.stock !== undefined
-            && Number.isFinite(Number(produto.stock)) && Number(produto.stock) <= 0) {
-            const semStock = document.createElement('span');
-            semStock.className = 'plataforma-sem-stock';
-            semStock.textContent = 'Sem stock';
-            info.appendChild(semStock);
+        info.append(nome, identificadores);
+        if (produto.stock !== null && produto.stock !== undefined && Number.isFinite(Number(produto.stock))) {
+            const stock = Number(produto.stock);
+            const stockInfo = document.createElement('span');
+            stockInfo.className = stock <= 0 ? 'plataforma-sem-stock' : 'plataforma-produto-stock';
+            stockInfo.textContent = stock <= 0 ? `Stock: ${stock} | Sem stock` : `Stock: ${stock}`;
+            info.appendChild(stockInfo);
         }
+        info.appendChild(preco);
 
         const adicionar = document.createElement('button');
         adicionar.className = 'wallapop-botao wallapop-botao-destaque';
