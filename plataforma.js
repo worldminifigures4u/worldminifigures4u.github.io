@@ -216,7 +216,7 @@ function atualizarModoPlataforma() {
     const plataforma = obterPlataformaAtual();
     const wallapop = plataforma === 'Wallapop';
     const olx = plataforma === 'OLX';
-    document.getElementById('label-cliente-plataforma').textContent = `Cliente ${plataforma}`;
+    document.getElementById('label-cliente-plataforma').textContent = 'Nome de utilizador';
     document.getElementById('label-referencia-plataforma').textContent = `Refer\u00eancia ${plataforma} (opcional)`;
     document.getElementById('wallapop-nome-cliente').placeholder = `Nome ou utilizador no ${plataforma}`;
     document.getElementById('plataforma-envio').hidden = !olx;
