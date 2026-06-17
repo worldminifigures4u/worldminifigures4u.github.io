@@ -877,6 +877,102 @@ function criarLinhaFolhaWallapop(item) {
     linha.append(foto, quantidade, nome, preco);
     return linha;
 }
+function carregarImagemCanvasWallapop(src) {
+    return new Promise(resolve => {
+        const imagem = new Image();
+        const url = otimizarImagemWallapop(src, 320) || WALLAPOP_SEM_IMAGEM;
+        if (!url.startsWith('data:')) imagem.crossOrigin = 'anonymous';
+        imagem.onload = () => resolve(imagem);
+        imagem.onerror = () => {
+            const fallback = new Image();
+            fallback.onload = () => resolve(fallback);
+            fallback.src = WALLAPOP_SEM_IMAGEM;
+        };
+        imagem.src = url;
+    });
+}
+
+function desenharImagemContidaWallapop(ctx, imagem, x, y, largura, altura) {
+    const origemLargura = imagem.naturalWidth || imagem.width || largura;
+    const origemAltura = imagem.naturalHeight || imagem.height || altura;
+    const escala = Math.min(largura / origemLargura, altura / origemAltura);
+    const destinoLargura = origemLargura * escala;
+    const destinoAltura = origemAltura * escala;
+    const destinoX = x + (largura - destinoLargura) / 2;
+    const destinoY = y + (altura - destinoAltura) / 2;
+    ctx.drawImage(imagem, destinoX, destinoY, destinoLargura, destinoAltura);
+}
+
+function quebrarTextoCanvasWallapop(ctx, texto, larguraMaxima, maximoLinhas = 2) {
+    const palavras = String(texto || '').split(/\s+/).filter(Boolean);
+    const linhas = [];
+    let linha = '';
+
+    palavras.forEach(palavra => {
+        const tentativa = linha ? `${linha} ${palavra}` : palavra;
+        if (ctx.measureText(tentativa).width <= larguraMaxima) {
+            linha = tentativa;
+            return;
+        }
+        if (linha) linhas.push(linha);
+        linha = palavra;
+    });
+    if (linha) linhas.push(linha);
+
+    if (linhas.length > maximoLinhas) {
+        const cortadas = linhas.slice(0, maximoLinhas);
+        let ultima = cortadas[maximoLinhas - 1];
+        while (ultima.length > 1 && ctx.measureText(`${ultima}...`).width > larguraMaxima) {
+            ultima = ultima.slice(0, -1).trimEnd();
+        }
+        cortadas[maximoLinhas - 1] = `${ultima}...`;
+        return cortadas;
+    }
+    return linhas;
+}
+
+async function gerarCanvasFolhaWallapop(itensPagina) {
+    const largura = 794;
+    const altura = 1123;
+    const escala = 2;
+    const margem = 42;
+    const alturaLinha = 96;
+    const canvas = document.createElement('canvas');
+    canvas.width = largura * escala;
+    canvas.height = altura * escala;
+    const ctx = canvas.getContext('2d');
+    ctx.scale(escala, escala);
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 0, largura, altura);
+    ctx.textBaseline = 'middle';
+    ctx.fillStyle = '#111111';
+
+    for (let indice = 0; indice < itensPagina.length; indice += 1) {
+        const item = itensPagina[indice];
+        const y = margem + (indice * alturaLinha);
+        const centroY = y + (alturaLinha / 2);
+        const imagem = await carregarImagemCanvasWallapop(obterImagemWallapop(item));
+        desenharImagemContidaWallapop(ctx, imagem, margem, y + 3, 90, 90);
+
+        ctx.font = '700 17px Arial, Helvetica, sans-serif';
+        ctx.textAlign = 'left';
+        ctx.fillText(`${item.quantidade || 1}x`, 152, centroY);
+
+        ctx.font = '700 16px Arial, Helvetica, sans-serif';
+        const linhasNome = quebrarTextoCanvasWallapop(ctx, item.nome, 365, 2);
+        const linhaAltura = 19;
+        const inicioNomeY = centroY - ((linhasNome.length - 1) * linhaAltura / 2);
+        linhasNome.forEach((linha, linhaIndice) => {
+            ctx.fillText(linha, 210, inicioNomeY + (linhaIndice * linhaAltura));
+        });
+
+        ctx.font = '700 16px Arial, Helvetica, sans-serif';
+        ctx.textAlign = 'right';
+        ctx.fillText(`${formatarEuroWallapop(item.preco)} € / un.`, largura - margem, centroY);
+    }
+
+    return canvas;
+}
 function renderizarFolhaWallapop(itens = wallapopItens) {
     const folha = document.getElementById('wallapop-folha');
     folha.replaceChildren();
@@ -1028,29 +1124,19 @@ async function descarregarImagemWallapop() {
     definirStatusWallapop('A preparar a pasta e os ficheiros...');
     try {
         const pastaBase = await obterPastaBaseWallapop();
-        renderizarFolhaWallapop(itensFicheiros);
-        await esperarImagensWallapop();
-        const paginas = [...document.querySelectorAll('#wallapop-folha .wallapop-pagina')];
-        if (!paginas.length) throw new Error('Nao existem folhas para exportar.');
+        const paginasItens = dividirItensWallapop(itensFicheiros);
+        if (!paginasItens.length) throw new Error('Nao existem folhas para exportar.');
 
         const pastaEncomenda = await pastaBase.getDirectoryHandle(nomeEncomenda, { create: true });
         await escreverFicheiroWallapop(pastaEncomenda, `${nomeEncomenda}.txt`, criarTextoEncomendaWallapop());
 
-        for (let indice = 0; indice < paginas.length; indice += 1) {
-            const pagina = paginas[indice];
-            const canvas = await html2canvas(pagina, {
-                backgroundColor: '#ffffff',
-                scale: 2,
-                useCORS: true,
-                logging: false,
-                windowWidth: pagina.scrollWidth,
-                windowHeight: pagina.scrollHeight
-            });
+        for (let indice = 0; indice < paginasItens.length; indice += 1) {
+            const canvas = await gerarCanvasFolhaWallapop(paginasItens[indice]);
             const imagem = await canvasParaBlobWallapop(canvas);
-            const nomeImagem = paginas.length === 1 ? 'foto anuncio.png' : `foto anuncio ${indice + 1}.png`;
+            const nomeImagem = paginasItens.length === 1 ? 'foto anuncio.png' : `foto anuncio ${indice + 1}.png`;
             await escreverFicheiroWallapop(pastaEncomenda, nomeImagem, imagem);
         }
-        definirStatusWallapop(`Pasta "${nomeEncomenda}" guardada com ${paginas.length} imagem(ns).`);
+        definirStatusWallapop(`Pasta "${nomeEncomenda}" guardada com ${paginasItens.length} imagem(ns).`);
     } catch (error) {
         console.error(error);
         if (error?.name === 'AbortError') {
