@@ -915,8 +915,8 @@ body{
         .wallapop-linha{
             min-height:96px;
             display:grid;
-            grid-template-columns:98px 54px minmax(0, 1fr) 128px;
-            column-gap:18px;
+            grid-template-columns:96px 44px minmax(0, 1fr) 112px;
+            column-gap:14px;
             align-items:center;
             break-inside:avoid;
         }
@@ -948,9 +948,12 @@ body{
         .wallapop-linha-preco{
             margin:0;
             color:#111;
-            font-size:18px;
-            line-height:1.18;
-            font-weight:800;
+            font-family:Arial, Helvetica, sans-serif;
+            font-size:15px;
+            line-height:1.25;
+            font-weight:700;
+            letter-spacing:0;
+            word-spacing:normal;
         }
 
         .wallapop-linha-quantidade{
@@ -958,7 +961,9 @@ body{
         }
 
         .wallapop-linha-nome{
-            overflow-wrap:anywhere;
+            overflow-wrap:normal;
+            word-break:normal;
+            hyphens:none;
         }
 
         .wallapop-linha-preco{
