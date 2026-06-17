@@ -54,6 +54,29 @@ function definirStatusEncomendas(texto, erro = false) {
     status.classList.toggle('msg-sucesso', Boolean(texto) && !erro);
 }
 
+function detalheErroEncomendas(error) {
+    if (!error) return 'sem detalhe';
+    const partes = [
+        error.message,
+        error.details,
+        error.hint,
+        error.code ? `código ${error.code}` : '',
+        error.status ? `estado HTTP ${error.status}` : ''
+    ].filter(Boolean);
+    return partes.join(' | ') || String(error);
+}
+
+async function atualizarEstadoDiretoEncomendaAdmin(encomenda, estado) {
+    const { data, error } = await encomendasClient
+        .from('encomendas')
+        .update({ estado })
+        .eq('id', String(encomenda.id))
+        .select('id, estado')
+        .single();
+    if (error) throw error;
+    return data;
+}
+
 function criarElementoEncomenda(tag, classe, texto) {
     const elemento = document.createElement(tag);
     if (classe) elemento.className = classe;
@@ -431,16 +454,35 @@ async function atualizarEstadoEncomendaAdmin(encomenda, estado, select) {
     select.disabled = true;
     definirStatusEncomendas('A atualizar o estado...');
     try {
-        const chamada = estado === 'Cancelado' && plataformaExterna
-            ? encomendasClient.rpc('cancelar_encomenda_plataforma_admin', {
+        let data = null;
+        let error = null;
+
+        if (estado === 'Cancelado' && plataformaExterna) {
+            ({ data, error } = await encomendasClient.rpc('cancelar_encomenda_plataforma_admin', {
                 p_encomenda_id: String(encomenda.id),
                 p_repor_stock: reporStock
-            })
-            : encomendasClient.rpc('atualizar_estado_encomenda_admin', {
+            }));
+        } else {
+            const respostaRpc = await encomendasClient.rpc('atualizar_estado_encomenda_admin', {
                 p_encomenda_id: String(encomenda.id),
                 p_estado: estado
-            });
-        const { data, error } = await chamada;
+            }).catch(erroRede => ({ data: null, error: erroRede }));
+            data = respostaRpc.data;
+            error = respostaRpc.error;
+
+            if (error) {
+                try {
+                    await atualizarEstadoDiretoEncomendaAdmin(encomenda, estado);
+                    data = { sucesso: true, estado };
+                    error = null;
+                    console.warn('Estado atualizado por fallback direto depois de falha na RPC.', respostaRpc.error);
+                } catch (erroFallback) {
+                    throw new Error(
+                        `RPC: ${detalheErroEncomendas(respostaRpc.error)}. Atualização direta: ${detalheErroEncomendas(erroFallback)}`
+                    );
+                }
+            }
+        }
         if (error) throw error;
         if (data?.sucesso === false) throw new Error(data.erro || 'Não foi possível atualizar.');
         encomenda.estado = estado;
@@ -471,7 +513,7 @@ async function atualizarEstadoEncomendaAdmin(encomenda, estado, select) {
         }
     } catch (error) {
         select.value = estadoAnterior;
-        definirStatusEncomendas('Erro ao atualizar estado: ' + (error.message || 'sem detalhe'), true);
+        definirStatusEncomendas('Erro ao atualizar estado: ' + detalheErroEncomendas(error), true);
     } finally {
         select.disabled = false;
     }

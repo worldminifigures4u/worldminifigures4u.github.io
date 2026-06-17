@@ -12,6 +12,16 @@ using ((select auth.jwt() ->> 'email') = 'worldminifigures4u@gmail.com');
 
 grant select on public.encomendas to authenticated;
 
+drop policy if exists "Administrador pode atualizar estado das encomendas" on public.encomendas;
+create policy "Administrador pode atualizar estado das encomendas"
+on public.encomendas
+for update
+to authenticated
+using ((select auth.jwt() ->> 'email') = 'worldminifigures4u@gmail.com')
+with check ((select auth.jwt() ->> 'email') = 'worldminifigures4u@gmail.com');
+
+grant update (estado) on public.encomendas to authenticated;
+
 create or replace function public.atualizar_estado_encomenda_admin(
   p_encomenda_id text,
   p_estado text
