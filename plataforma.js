@@ -743,6 +743,7 @@ function renderizarResultadosWallapop() {
         const nome = document.createElement('strong');
         nome.textContent = produto.nome;
         const preco = document.createElement('span');
+        preco.className = 'plataforma-produto-preco';
         preco.textContent = `${formatarEuroWallapop(produto.preco)} €`;
         const identificadores = document.createElement('span');
         identificadores.className = 'plataforma-produto-identificadores';
@@ -788,6 +789,7 @@ function renderizarSelecionadosWallapop() {
         const nome = document.createElement('strong');
         nome.textContent = item.nome;
         const preco = document.createElement('span');
+        preco.className = 'plataforma-produto-preco';
         preco.textContent = `${formatarEuroWallapop(item.preco)} €`;
         info.append(nome, preco);
 
