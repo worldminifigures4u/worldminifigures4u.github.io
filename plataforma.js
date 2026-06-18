@@ -1,36 +1,50 @@
-﻿const WALLAPOP_SUPABASE_URL = "https://gksndzxadndrsynvzgzb.supabase.co";
+const WALLAPOP_SUPABASE_URL = "https://gksndzxadndrsynvzgzb.supabase.co";
 const WALLAPOP_SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imdrc25kenhhZG5kcnN5bnZ6Z3piIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkwODc5NzMsImV4cCI6MjA5NDY2Mzk3M30.EHZgacYr27dqoc4CJHsOwkNnJFGlLIteSHBi4B1HfVE";
 const WALLAPOP_ADMIN_EMAILS = ["worldminifigures4u@gmail.com"];
 const WALLAPOP_STORAGE_KEY = "figures-planet-wallapop-itens";
 const PESO_PADRAO_PLATAFORMA = 10;
-const IVA_PORTES_PLATAFORMA = 0.23;
 const TABELA_PORTES_PLATAFORMA = {
     portugal: [
         { ate: 100, opcoes: [
-            { id: 'ctt_normal', nome: 'CTT Normal', valor: 1.58 },
-            { id: 'ctt_azul', nome: 'CTT Azul', valor: 2.10 },
-            { id: 'ctt_registado', nome: 'CTT Registado', valor: 4.60 },
-            { id: 'inpost_registado', nome: 'InPost Registado', valor: 4.76 }
+            { id: 'ctt_normal', nome: 'CTT Normal', valor: 1.75 },
+            { id: 'ctt_azul', nome: 'CTT Azul', valor: 2.20 },
+            { id: 'ctt_registado', nome: 'CTT Registado', valor: 4.50 },
+            { id: 'inpost_registado', nome: 'InPost Registado (com seguro de 25\u20ac)', valor: 4.95 }
         ]},
         { ate: 500, opcoes: [
-            { id: 'ctt_normal', nome: 'CTT Normal', valor: 2.34 },
-            { id: 'ctt_azul', nome: 'CTT Azul', valor: 3.90 },
-            { id: 'ctt_registado', nome: 'CTT Registado', valor: 5.40 },
-            { id: 'inpost_registado', nome: 'InPost Registado', valor: 4.76 }
+            { id: 'ctt_normal', nome: 'CTT Normal', valor: 2.50 },
+            { id: 'ctt_azul', nome: 'CTT Azul', valor: 3.95 },
+            { id: 'ctt_registado', nome: 'CTT Registado', valor: 5.30 },
+            { id: 'inpost_registado', nome: 'InPost Registado (com seguro de 25\u20ac)', valor: 4.95 }
         ]},
         { ate: Infinity, opcoes: [
-            { id: 'ctt_normal', nome: 'CTT Normal', valor: 5.55 },
-            { id: 'ctt_azul', nome: 'CTT Azul', valor: 7.80 },
-            { id: 'ctt_registado', nome: 'CTT Registado', valor: 8.93 },
-            { id: 'inpost_registado', nome: 'InPost Registado', valor: 5.42 }
+            { id: 'ctt_normal', nome: 'CTT Normal', valor: 5.75 },
+            { id: 'ctt_azul', nome: 'CTT Azul', valor: 7.95 },
+            { id: 'ctt_registado', nome: 'CTT Registado', valor: 8.95 },
+            { id: 'inpost_registado', nome: 'InPost Registado (com seguro de 25\u20ac)', valor: 5.65 }
         ]}
     ],
     espanha: [
-        { ate: 100, opcoes: [{ id: 'ctt_registado', nome: 'CTT Registado', valor: 5.80 }, { id: 'inpost_registado', nome: 'InPost Registado', valor: 5.12 }] },
-        { ate: 250, opcoes: [{ id: 'ctt_registado', nome: 'CTT Registado', valor: 7.55 }, { id: 'inpost_registado', nome: 'InPost Registado', valor: 5.12 }] },
-        { ate: 500, opcoes: [{ id: 'ctt_registado', nome: 'CTT Registado', valor: 9.80 }, { id: 'inpost_registado', nome: 'InPost Registado', valor: 5.12 }] },
-        { ate: 1000, opcoes: [{ id: 'ctt_registado', nome: 'CTT Registado', valor: 13.20 }, { id: 'inpost_registado', nome: 'InPost Registado', valor: 5.81 }] },
-        { ate: Infinity, opcoes: [{ id: 'ctt_registado', nome: 'CTT Registado', valor: 21.20 }, { id: 'inpost_registado', nome: 'InPost Registado', valor: 6.64 }] }
+        { ate: 100, opcoes: [
+            { id: 'ctt_registado', nome: 'CTT Registado', valor: 5.80 },
+            { id: 'inpost_registado', nome: 'InPost Registado', valor: 5.12 }
+        ]},
+        { ate: 250, opcoes: [
+            { id: 'ctt_registado', nome: 'CTT Registado', valor: 7.55 },
+            { id: 'inpost_registado', nome: 'InPost Registado', valor: 5.12 }
+        ]},
+        { ate: 500, opcoes: [
+            { id: 'ctt_registado', nome: 'CTT Registado', valor: 9.80 },
+            { id: 'inpost_registado', nome: 'InPost Registado', valor: 5.12 }
+        ]},
+        { ate: 1000, opcoes: [
+            { id: 'ctt_registado', nome: 'CTT Registado', valor: 13.20 },
+            { id: 'inpost_registado', nome: 'InPost Registado', valor: 5.81 }
+        ]},
+        { ate: Infinity, opcoes: [
+            { id: 'ctt_registado', nome: 'CTT Registado', valor: 21.20 },
+            { id: 'inpost_registado', nome: 'InPost Registado', valor: 6.64 }
+        ]}
     ],
     europa: [
         { ate: 100, opcoes: [{ id: 'ctt_registado', nome: 'CTT Registado', valor: 5.80 }] },
@@ -38,15 +52,42 @@ const TABELA_PORTES_PLATAFORMA = {
         { ate: 500, opcoes: [{ id: 'ctt_registado', nome: 'CTT Registado', valor: 9.80 }] },
         { ate: 1000, opcoes: [{ id: 'ctt_registado', nome: 'CTT Registado', valor: 13.20 }] },
         { ate: Infinity, opcoes: [{ id: 'ctt_registado', nome: 'CTT Registado', valor: 21.20 }] }
-    ],
-    resto_mundo: [
-        { ate: 100, opcoes: [{ id: 'ctt_registado', nome: 'CTT Registado', valor: 6.55 }] },
-        { ate: 250, opcoes: [{ id: 'ctt_registado', nome: 'CTT Registado', valor: 9.30 }] },
-        { ate: 500, opcoes: [{ id: 'ctt_registado', nome: 'CTT Registado', valor: 14.15 }] },
-        { ate: 1000, opcoes: [{ id: 'ctt_registado', nome: 'CTT Registado', valor: 23.95 }] },
-        { ate: Infinity, opcoes: [{ id: 'ctt_registado', nome: 'CTT Registado', valor: 36.15 }] }
     ]
 };
+
+const ZONA_PORTES_PLATAFORMA = {
+    portugal: 'portugal',
+    espanha: 'espanha',
+    alemanha: 'europa',
+    austria: 'europa',
+    belgica: 'europa',
+    bulgaria: 'europa',
+    chequia: 'europa',
+    chipre: 'europa',
+    croacia: 'europa',
+    dinamarca: 'europa',
+    eslovaquia: 'europa',
+    eslovenia: 'europa',
+    estonia: 'europa',
+    finlandia: 'europa',
+    franca: 'europa',
+    grecia: 'europa',
+    hungria: 'europa',
+    irlanda: 'europa',
+    italia: 'europa',
+    letonia: 'europa',
+    lituania: 'europa',
+    luxemburgo: 'europa',
+    malta: 'europa',
+    paises_baixos: 'europa',
+    polonia: 'europa',
+    romenia: 'europa',
+    suecia: 'europa'
+};
+
+function obterZonaPortesPlataforma(paisEnvio) {
+    return ZONA_PORTES_PLATAFORMA[paisEnvio] || 'europa';
+}
 const WALLAPOP_SEM_IMAGEM = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(
     '<svg xmlns="http://www.w3.org/2000/svg" width="500" height="500"><rect width="100%" height="100%" fill="#f1f1f1"/><text x="50%" y="50%" text-anchor="middle" dominant-baseline="middle" fill="#777" font-family="Arial" font-size="34">Sem foto</text></svg>'
 );
@@ -174,12 +215,13 @@ function calcularPesoPlataforma() {
 
 function obterOpcoesEnvioPlataforma(regiao, peso) {
     if (peso <= 0) return [];
-    const tabela = TABELA_PORTES_PLATAFORMA[regiao] || TABELA_PORTES_PLATAFORMA.portugal;
+    const zonaEnvio = obterZonaPortesPlataforma(regiao);
+    const tabela = TABELA_PORTES_PLATAFORMA[zonaEnvio] || TABELA_PORTES_PLATAFORMA.portugal;
     return (tabela.find(linha => peso <= linha.ate) || tabela[tabela.length - 1]).opcoes;
 }
 
 function calcularPortesPlataforma(valorBase) {
-    return Math.round(Number(valorBase || 0) * (1 + IVA_PORTES_PLATAFORMA) * 100) / 100;
+    return Math.round(Number(valorBase || 0) * 100) / 100;
 }
 
 function obterEnvioPlataforma() {
@@ -752,10 +794,10 @@ function renderizarResultadosWallapop() {
         nome.textContent = produto.nome;
         const preco = document.createElement('span');
         preco.className = 'plataforma-produto-preco';
-        preco.textContent = `${formatarEuroWallapop(produto.preco)} â‚¬`;
+        preco.textContent = `${formatarEuroWallapop(produto.preco)} Ã¢â€šÂ¬`;
         const identificadores = document.createElement('span');
         identificadores.className = 'plataforma-produto-identificadores';
-        identificadores.textContent = `Ref. ${produto.referencia || 'â€”'} | SKU ${produto.sku || 'â€”'}`;
+        identificadores.textContent = `Ref. ${produto.referencia || 'Ã¢â‚¬â€'} | SKU ${produto.sku || 'Ã¢â‚¬â€'}`;
         info.append(nome, identificadores);
         if (produto.stock !== null && produto.stock !== undefined && Number.isFinite(Number(produto.stock))) {
             const stock = Number(produto.stock);
@@ -798,24 +840,24 @@ function renderizarSelecionadosWallapop() {
         nome.textContent = item.nome;
         const preco = document.createElement('span');
         preco.className = 'plataforma-produto-preco';
-        preco.textContent = `${formatarEuroWallapop(item.preco)} â‚¬`;
+        preco.textContent = `${formatarEuroWallapop(item.preco)} Ã¢â€šÂ¬`;
         info.append(nome, preco);
 
         const controlos = document.createElement('div');
         controlos.className = 'wallapop-quantidade';
         const subir = document.createElement('button');
         subir.type = 'button';
-        subir.textContent = 'â†‘';
+        subir.textContent = 'Ã¢â€ â€˜';
         subir.title = 'Mover para cima';
         subir.onclick = () => moverProdutoWallapop(item.id, -1);
         const descer = document.createElement('button');
         descer.type = 'button';
-        descer.textContent = 'â†“';
+        descer.textContent = 'Ã¢â€ â€œ';
         descer.title = 'Mover para baixo';
         descer.onclick = () => moverProdutoWallapop(item.id, 1);
         const menos = document.createElement('button');
         menos.type = 'button';
-        menos.textContent = 'âˆ’';
+        menos.textContent = 'Ã¢Ë†â€™';
         menos.title = 'Diminuir quantidade';
         menos.onclick = () => alterarQuantidadeWallapop(item.id, -1);
         const quantidade = document.createElement('strong');
@@ -828,7 +870,7 @@ function renderizarSelecionadosWallapop() {
         const remover = document.createElement('button');
         remover.type = 'button';
         remover.className = 'wallapop-remover';
-        remover.textContent = 'Ã—';
+        remover.textContent = 'Ãƒâ€”';
         remover.title = 'Remover produto';
         remover.onclick = () => removerProdutoWallapop(item.id);
         controlos.append(subir, descer, menos, quantidade, mais, remover);
@@ -839,7 +881,7 @@ function renderizarSelecionadosWallapop() {
     if (!wallapopItens.length) {
         const vazio = document.createElement('p');
         vazio.className = 'wallapop-status';
-        vazio.textContent = 'A lista estÃ¡ vazia.';
+        vazio.textContent = 'A lista estÃƒÂ¡ vazia.';
         contentor.appendChild(vazio);
     }
     if (obterPlataformaAtual() === 'OLX') atualizarOpcoesEnvioPlataforma();
@@ -883,7 +925,7 @@ function criarLinhaFolhaWallapop(item) {
 
     const preco = document.createElement('div');
     preco.className = 'wallapop-linha-preco';
-    preco.textContent = `${formatarEuroWallapop(item.preco)} â‚¬ / un.`;
+    preco.textContent = `${formatarEuroWallapop(item.preco)} Ã¢â€šÂ¬ / un.`;
 
     linha.append(foto, quantidade, nome, preco);
     return linha;
@@ -979,7 +1021,7 @@ async function gerarCanvasFolhaWallapop(itensPagina) {
 
         ctx.font = '700 16px Arial, Helvetica, sans-serif';
         ctx.textAlign = 'right';
-        ctx.fillText(`${formatarEuroWallapop(item.preco)} â‚¬ / un.`, largura - margem, centroY);
+        ctx.fillText(`${formatarEuroWallapop(item.preco)} Ã¢â€šÂ¬ / un.`, largura - margem, centroY);
     }
 
     return canvas;
@@ -1026,7 +1068,7 @@ async function esperarImagensWallapop() {
 }
 
 async function obterPastaBaseWallapop() {
-    if (!window.showDirectoryPicker) throw new Error('Esta funÃ§Ã£o requer Chrome ou Edge atualizado.');
+    if (!window.showDirectoryPicker) throw new Error('Esta funÃƒÂ§ÃƒÂ£o requer Chrome ou Edge atualizado.');
     return window.showDirectoryPicker({
         id: 'figures-planet-anuncio-destino',
         mode: 'readwrite'
@@ -1060,7 +1102,7 @@ function criarTextoEncomendaWallapop() {
     const total = itens.reduce((soma, item) => {
         return soma + (Math.max(1, Number(item.quantidade) || 1) * Number(item.preco || 0));
     }, 0);
-    linhas.push('', `Total:\t${formatarEuroWallapop(total)} â‚¬`);
+    linhas.push('', `Total:\t${formatarEuroWallapop(total)} Ã¢â€šÂ¬`);
     return '\ufeff' + linhas.join('\r\n');
 }
 
@@ -1109,7 +1151,7 @@ function validarEncomendaRegistadaParaFicheiros() {
 
 function canvasParaBlobWallapop(canvas) {
     return new Promise((resolve, reject) => {
-        canvas.toBlob(blob => blob ? resolve(blob) : reject(new Error('NÃ£o foi possÃ­vel gerar o PNG.')), 'image/png');
+        canvas.toBlob(blob => blob ? resolve(blob) : reject(new Error('NÃƒÂ£o foi possÃƒÂ­vel gerar o PNG.')), 'image/png');
     });
 }
 
@@ -1118,7 +1160,7 @@ async function descarregarImagemWallapop() {
     const campoNome = document.getElementById('wallapop-nome-encomenda');
     const nomeEncomenda = limparNomePastaWallapop(obterNomeParaFicheirosPlataforma());
     if (!nomeEncomenda) {
-        definirStatusWallapop('Indique um nome vÃ¡lido para a encomenda.', true);
+        definirStatusWallapop('Indique um nome vÃƒÂ¡lido para a encomenda.', true);
         campoNome.focus();
         return;
     }
@@ -1128,7 +1170,7 @@ async function descarregarImagemWallapop() {
         return;
     }
     if (typeof html2canvas !== 'function') {
-        definirStatusWallapop('A ferramenta de imagem nÃ£o carregou. Atualize a pÃ¡gina.', true);
+        definirStatusWallapop('A ferramenta de imagem nÃƒÂ£o carregou. Atualize a pÃƒÂ¡gina.', true);
         return;
     }
 
@@ -1151,10 +1193,10 @@ async function descarregarImagemWallapop() {
     } catch (error) {
         console.error(error);
         if (error?.name === 'AbortError') {
-            definirStatusWallapop('SeleÃ§Ã£o da pasta cancelada.', true);
+            definirStatusWallapop('SeleÃƒÂ§ÃƒÂ£o da pasta cancelada.', true);
             return;
         }
-        definirStatusWallapop('NÃ£o foi possÃ­vel guardar a encomenda: ' + (error.message || 'erro desconhecido'), true);
+        definirStatusWallapop('NÃƒÂ£o foi possÃƒÂ­vel guardar a encomenda: ' + (error.message || 'erro desconhecido'), true);
     } finally {
         renderizarFolhaWallapop();
     }
@@ -1425,7 +1467,7 @@ async function registarEncomendaWallapop() {
     }
 
     if (wallapopRegistoConcluido && !encomendaPlataformaEmEdicao) {
-        definirStatusWallapop(`Esta encomenda ${plataforma} jÃ¡ foi registada.`, true);
+        definirStatusWallapop(`Esta encomenda ${plataforma} jÃƒÂ¡ foi registada.`, true);
         return;
     }
     if (!nomeCliente) {
@@ -1452,14 +1494,14 @@ async function registarEncomendaWallapop() {
         return;
     }
     const confirmado = window.confirm(encomendaPlataformaEmEdicao
-        ? `Guardar as alteraÃ§Ãµes da encomenda ${obterCodigoEncomendaAtual()}? O stock serÃ¡ ajustado automaticamente.`
-        : `Registar a encomenda ${plataforma} de ${nomeCliente} por ${formatarEuroWallapop(total)} â‚¬ e descontar o stock?`
+        ? `Guardar as alteraÃƒÂ§ÃƒÂµes da encomenda ${obterCodigoEncomendaAtual()}? O stock serÃƒÂ¡ ajustado automaticamente.`
+        : `Registar a encomenda ${plataforma} de ${nomeCliente} por ${formatarEuroWallapop(total)} Ã¢â€šÂ¬ e descontar o stock?`
     );
     if (!confirmado) return;
 
     botao.disabled = true;
     definirStatusWallapop(encomendaPlataformaEmEdicao
-        ? 'A validar o stock e guardar as alteraÃ§Ãµes...'
+        ? 'A validar o stock e guardar as alteraÃƒÂ§ÃƒÂµes...'
         : 'A validar o stock e registar a encomenda...');
     try {
         const parametros = {
@@ -1489,7 +1531,7 @@ async function registarEncomendaWallapop() {
                 : [];
             throw new Error(indisponiveis.length
                 ? `Stock insuficiente: ${indisponiveis.join(', ')}.`
-                : 'NÃ£o foi possÃ­vel validar o stock.');
+                : 'NÃƒÂ£o foi possÃƒÂ­vel validar o stock.');
         }
 
         wallapopRegistoConcluido = true;
@@ -1572,11 +1614,11 @@ function limparListaWallapop() {
 async function iniciarWallapopAdmin() {
     const bloqueio = document.getElementById('wallapop-bloqueio');
     try {
-        if (typeof supabase === 'undefined') throw new Error('A biblioteca Supabase nÃ£o carregou.');
+        if (typeof supabase === 'undefined') throw new Error('A biblioteca Supabase nÃƒÂ£o carregou.');
         wallapopClient = supabase.createClient(WALLAPOP_SUPABASE_URL, WALLAPOP_SUPABASE_KEY);
         const { data: { user }, error } = await wallapopClient.auth.getUser();
         if (error || !user || !WALLAPOP_ADMIN_EMAILS.includes(String(user.email || '').toLowerCase())) {
-            bloqueio.textContent = 'Acesso reservado ao administrador. A regressar Ã  conta...';
+            bloqueio.textContent = 'Acesso reservado ao administrador. A regressar ÃƒÂ  conta...';
             setTimeout(() => window.location.replace('conta.html'), 1400);
             return;
         }
@@ -1602,7 +1644,7 @@ async function iniciarWallapopAdmin() {
         }
     } catch (error) {
         console.error(error);
-        bloqueio.textContent = 'Erro ao abrir a ferramenta: ' + (error.message || 'sem detalhe disponÃ­vel');
+        bloqueio.textContent = 'Erro ao abrir a ferramenta: ' + (error.message || 'sem detalhe disponÃƒÂ­vel');
     }
 }
 

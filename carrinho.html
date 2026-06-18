@@ -61,14 +61,14 @@
     <div class="coluna-esquerda">
         <aside class="menu-temas" id="menu-lateral-temas">
             <h2>Temas</h2>
-            <button class="btn-tema ativo" onclick="filtrarTema('todos', this)">⭐ Todos os Temas</button>
+            <button class="btn-tema ativo" onclick="filtrarTema('todos', this)">â­ Todos os Temas</button>
         </aside>
     </div>
 
     <div class="conteudo-central">
         <div class="contador-produtos" id="contador-produtos" aria-live="polite"></div>
         <main class="produtos" id="vitrine-produtos">
-            <div class="estado-vitrine">A carregar minifiguras extraordinárias...</div>
+            <div class="estado-vitrine">A carregar minifiguras extraordinÃ¡rias...</div>
         </main>
     </div>
     </section>
@@ -76,7 +76,7 @@
     <section class="vista vista-conta" id="vista-conta">
         <aside class="area-cliente" id="painel-cliente">
             <div id="conteudo-cliente-autenticado" style="display: none;">
-                <h2>👤 Minha Conta</h2>
+                <h2>ðŸ‘¤ Minha Conta</h2>
                 <div class="perfil-logado">
                     <p>Bem-vindo(a),</p>
                     <strong id="nome-perfil-logado" style="color: #ffc107; font-size: 16px;"></strong>
@@ -96,15 +96,15 @@
                             <input type="email" id="editar-email" required placeholder="email@exemplo.com">
                         </div>
                         <div>
-                            <label for="editar-telemovel">Telemóvel:</label>
+                            <label for="editar-telemovel">TelemÃ³vel:</label>
                             <input type="tel" id="editar-telemovel" placeholder="Ex: 912345678">
                         </div>
                         <div>
                             <label for="editar-morada">Morada:</label>
-                            <input type="text" id="editar-morada" placeholder="Rua, número, localidade">
+                            <input type="text" id="editar-morada" placeholder="Rua, nÃºmero, localidade">
                         </div>
                         <div>
-                            <label for="editar-cp">Código postal:</label>
+                            <label for="editar-cp">CÃ³digo postal:</label>
                             <input type="text" id="editar-cp" placeholder="Ex: 1000-013">
                         </div>
                         <div>
@@ -124,7 +124,7 @@
                     <form class="form-cliente" id="form-alterar-password" onsubmit="alterarPasswordConta(event)">
                         <div>
                             <label for="conta-nova-password">Nova palavra-passe:</label>
-                            <input type="password" id="conta-nova-password" required minlength="6" placeholder="Mínimo 6 caracteres">
+                            <input type="password" id="conta-nova-password" required minlength="6" placeholder="MÃ­nimo 6 caracteres">
                         </div>
                         <div>
                             <label for="conta-confirmar-password">Confirmar nova palavra-passe:</label>
@@ -135,7 +135,7 @@
                     </form>
                     <div class="zona-perigo-conta" id="zona-eliminacao-conta">
                         <h3>Eliminar conta</h3>
-                        <p>Esta ação é irreversível. A sua conta e os seus dados pessoais serão eliminados.</p>
+                        <p>Esta aÃ§Ã£o Ã© irreversÃ­vel. A sua conta e os seus dados pessoais serÃ£o eliminados.</p>
                         <form class="form-cliente form-eliminar-conta" onsubmit="eliminarContaUtilizador(event)">
                             <div>
                                 <label for="eliminar-conta-password">Palavra-passe atual:</label>
@@ -167,7 +167,7 @@
                                 <input type="text" id="admin-produto-sku" required placeholder="DV01">
                             </div>
                             <div>
-                                <label for="admin-produto-preco">Preço:</label>
+                                <label for="admin-produto-preco">PreÃ§o:</label>
                                 <input type="number" id="admin-produto-preco" required min="0" step="0.01" placeholder="4.95">
                             </div>
                             <div>
@@ -191,15 +191,15 @@
                             <label for="admin-produto-imagens">URLs das imagens:</label>
                             <div class="upload-admin-fotos">
                                 <input class="input-upload-admin" type="file" id="admin-produto-upload-imagens" accept="image/jpeg,image/png,image/webp" multiple onchange="enviarFotosCloudinaryAdmin(this, 'admin-produto-imagens', atualizarPreviewImagensAdmin, 'status-upload-admin-produto')">
-                                <p class="ajuda-admin">Selecione fotos do PC para enviar para o Cloudinary. Os URLs serão adicionados automaticamente.</p>
+                                <p class="ajuda-admin">Selecione fotos do PC para enviar para o Cloudinary. Os URLs serÃ£o adicionados automaticamente.</p>
                                 <div id="status-upload-admin-produto" class="msg-status"></div>
                             </div>
                             <textarea id="admin-produto-imagens" placeholder="Um URL por linha" oninput="atualizarPreviewImagensAdmin()"></textarea>
                             <div id="preview-imagens-admin" class="preview-imagens-admin"></div>
                         </div>
                         <div>
-                            <label for="admin-produto-observacoes">Observações:</label>
-                            <textarea id="admin-produto-observacoes" placeholder="Notas internas sobre estado, acessórios, origem, etc."></textarea>
+                            <label for="admin-produto-observacoes">ObservaÃ§Ãµes:</label>
+                            <textarea id="admin-produto-observacoes" placeholder="Notas internas sobre estado, acessÃ³rios, origem, etc."></textarea>
                         </div>
                         <label class="opcao-admin-inline">
                             <input type="checkbox" id="admin-produto-ativo" checked>
@@ -209,7 +209,7 @@
                         <div id="status-admin-produto" class="msg-status"></div>
                     </form>
                     <div class="admin-seccao">
-                        <h3>Gestão de produtos</h3>
+                        <h3>GestÃ£o de produtos</h3>
                         <div class="form-admin">
                             <div class="linha-admin-pesquisa">
                                 <div>
@@ -224,7 +224,7 @@
                             <h3>Atualizar stock pelo Mapas.ods</h3>
                             <div class="form-admin">
                                 <input class="input-upload-admin" type="file" id="admin-ficheiro-stock" accept=".ods,.xlsx,.xls" onchange="analisarFicheiroStockAdmin(this)">
-                                <p class="ajuda-admin">Apenas as colunas SKU e stock são utilizadas. As encomendas aos fornecedores não alteram o stock atual.</p>
+                                <p class="ajuda-admin">Apenas as colunas SKU e stock sÃ£o utilizadas. As encomendas aos fornecedores nÃ£o alteram o stock atual.</p>
                                 <div id="resumo-importacao-stock" class="resumo-importacao-stock" style="display:none;"></div>
                                 <div id="detalhes-importacao-stock" class="lista-importacao-stock" style="display:none;"></div>
                                 <button type="button" id="btn-confirmar-importacao-stock" class="btn-acao-cliente" onclick="confirmarImportacaoStockAdmin()" disabled>Atualizar stock no Supabase</button>
@@ -232,17 +232,17 @@
                             </div>
                         </div>
                         <div class="admin-seccao">
-                            <h3>Substituir catálogo pelo Mapas.ods</h3>
+                            <h3>Substituir catÃ¡logo pelo Mapas.ods</h3>
                             <div class="form-admin">
                                 <input class="input-upload-admin" type="file" id="admin-ficheiro-catalogo" accept=".ods,.xlsx,.xls" onchange="analisarFicheiroCatalogoAdmin(this)">
-                                <p class="ajuda-admin">Importa nome, preço, Ref., SKU, stock, tema, subtema e peso. Produtos que não constem do ficheiro serão removidos.</p>
+                                <p class="ajuda-admin">Importa nome, preÃ§o, Ref., SKU, stock, tema, subtema e peso. Produtos que nÃ£o constem do ficheiro serÃ£o removidos.</p>
                                 <div id="resumo-importacao-catalogo" class="resumo-importacao-stock" style="display:none;"></div>
                                 <div id="detalhes-importacao-catalogo" class="lista-importacao-stock" style="display:none;"></div>
                                 <div>
                                     <label for="confirmacao-substituir-catalogo">Para confirmar, escreva SUBSTITUIR:</label>
                                     <input type="text" id="confirmacao-substituir-catalogo" autocomplete="off" oninput="atualizarConfirmacaoCatalogoAdmin()">
                                 </div>
-                                <button type="button" id="btn-confirmar-importacao-catalogo" class="btn-logout" onclick="confirmarImportacaoCatalogoAdmin()" disabled>Substituir catálogo completo</button>
+                                <button type="button" id="btn-confirmar-importacao-catalogo" class="btn-logout" onclick="confirmarImportacaoCatalogoAdmin()" disabled>Substituir catÃ¡logo completo</button>
                                 <div id="status-importacao-catalogo" class="msg-status"></div>
                             </div>
                         </div>
@@ -264,7 +264,7 @@
                                     <input type="text" id="admin-editar-sku" required>
                                 </div>
                                 <div>
-                                    <label for="admin-editar-preco">Preço:</label>
+                                    <label for="admin-editar-preco">PreÃ§o:</label>
                                     <input type="number" id="admin-editar-preco" required min="0" step="0.01">
                                 </div>
                                 <div>
@@ -288,22 +288,22 @@
                                 <label for="admin-editar-imagens">URLs das imagens:</label>
                                 <div class="upload-admin-fotos">
                                     <input class="input-upload-admin" type="file" id="admin-editar-upload-imagens" accept="image/jpeg,image/png,image/webp" multiple onchange="enviarFotosCloudinaryAdmin(this, 'admin-editar-imagens', atualizarPreviewEditarImagensAdmin, 'status-upload-admin-editar')">
-                                    <p class="ajuda-admin">Selecione fotos do PC para enviar para o Cloudinary. Os URLs serão adicionados automaticamente.</p>
+                                    <p class="ajuda-admin">Selecione fotos do PC para enviar para o Cloudinary. Os URLs serÃ£o adicionados automaticamente.</p>
                                     <div id="status-upload-admin-editar" class="msg-status"></div>
                                 </div>
                                 <textarea id="admin-editar-imagens" placeholder="Um URL por linha" oninput="atualizarPreviewEditarImagensAdmin()"></textarea>
                                 <div id="preview-editar-imagens-admin" class="preview-imagens-admin"></div>
                             </div>
                             <div>
-                                <label for="admin-editar-observacoes">Observações:</label>
-                                <textarea id="admin-editar-observacoes" placeholder="Notas internas sobre estado, acessórios, origem, etc."></textarea>
+                                <label for="admin-editar-observacoes">ObservaÃ§Ãµes:</label>
+                                <textarea id="admin-editar-observacoes" placeholder="Notas internas sobre estado, acessÃ³rios, origem, etc."></textarea>
                             </div>
                             <label class="opcao-admin-inline">
                                 <input type="checkbox" id="admin-editar-ativo">
                                 Produto ativo na loja
                             </label>
                             <div class="acoes-form-admin">
-                                <button type="submit" class="btn-acao-cliente">Guardar alterações</button>
+                                <button type="submit" class="btn-acao-cliente">Guardar alteraÃ§Ãµes</button>
                                 <button type="button" class="btn-admin-secundario" onclick="cancelarEdicaoProdutoAdmin()">Cancelar</button>
                             </div>
                             <div id="status-admin-editar-produto" class="msg-status"></div>
@@ -311,9 +311,9 @@
                     </div>
                 </div>
                 <div class="historico-encomendas">
-                    <h3>Histórico de encomendas</h3>
+                    <h3>HistÃ³rico de encomendas</h3>
                     <div id="lista-historico-encomendas" class="lista-historico">
-                        <p class="historico-vazio">Entre na conta para carregar o histórico.</p>
+                        <p class="historico-vazio">Entre na conta para carregar o histÃ³rico.</p>
                     </div>
                 </div>
             </div>
@@ -331,7 +331,7 @@
                     </div>
                     <div>
                         <label for="login-password">Palavra-passe:</label>
-                        <input type="password" id="login-password" required placeholder="••••••••">
+                        <input type="password" id="login-password" required placeholder="â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢">
                     </div>
                     <button type="button" class="btn-link-cliente" onclick="pedirRecuperacaoPassword()">Esqueci-me da palavra-passe</button>
                     <button type="submit" class="btn-acao-cliente">Entrar na Conta</button>
@@ -340,7 +340,7 @@
                 <form class="form-cliente" id="form-registo" onsubmit="registarCliente(event)" style="display: none;">
                     <div>
                         <label for="registo-nome">Nome Completo:</label>
-                        <input type="text" id="registo-nome" required placeholder="Ex: Fábio Lopes">
+                        <input type="text" id="registo-nome" required placeholder="Ex: FÃ¡bio Lopes">
                     </div>
                     <div>
                         <label for="registo-email">E-mail:</label>
@@ -348,10 +348,10 @@
                     </div>
                     <div>
                         <label for="registo-password">Palavra-passe:</label>
-                        <input type="password" id="registo-password" required minlength="6" placeholder="Mínimo 6 caracteres">
+                        <input type="password" id="registo-password" required minlength="6" placeholder="MÃ­nimo 6 caracteres">
                     </div>
                     <div>
-                        <label for="registo-telemovel">Telemóvel:</label>
+                        <label for="registo-telemovel">TelemÃ³vel:</label>
                         <input type="tel" id="registo-telemovel" required placeholder="962234567">
                     </div>
                     <div>
@@ -359,7 +359,7 @@
                         <input type="text" id="registo-morada" required placeholder="Rua das Patacas 2">
                     </div>
                     <div>
-                        <label for="registo-cp">Código Postal (CP):</label>
+                        <label for="registo-cp">CÃ³digo Postal (CP):</label>
                         <input type="text" id="registo-cp" required placeholder="1000-001">
                     </div>
                     <div>
@@ -376,7 +376,7 @@
                 <form class="form-cliente" id="form-recuperar-password" onsubmit="atualizarPasswordRecuperacao(event)" style="display: none;">
                     <div>
                         <label for="nova-password">Nova palavra-passe:</label>
-                        <input type="password" id="nova-password" required minlength="6" placeholder="Mínimo 6 caracteres">
+                        <input type="password" id="nova-password" required minlength="6" placeholder="MÃ­nimo 6 caracteres">
                     </div>
                     <div>
                         <label for="confirmar-nova-password">Confirmar nova palavra-passe:</label>
@@ -392,18 +392,41 @@
 
     <section class="vista vista-carrinho ativa" id="vista-carrinho">
         <aside class="carrinho">
-<h2>🛒 Carrinho</h2>
+<h2>ðŸ›’ Carrinho</h2>
         <div class="lista-carrinho" id="lista-carrinho">
             <p id="carrinho-vazio">Nenhum produto adicionado.</p>
         </div>
         <div id="info-envio" class="msg-status"></div>
 
-        <label>Pa&iacute;s/zona de envio:</label>
+        <label>Pa&iacute;s de envio:</label>
         <select class="select-envio" id="pais-envio" onchange="atualizarOpcoesEnvio()">
-            <option value="portugal">Portugal</option>
+                        <option value="portugal">Portugal</option>
             <option value="espanha">Espanha</option>
-            <option value="europa">Resto da Europa</option>
-            <option value="resto_mundo">Resto do Mundo</option>
+            <option value="alemanha">Alemanha</option>
+            <option value="austria">&Aacute;ustria</option>
+            <option value="belgica">B&eacute;lgica</option>
+            <option value="bulgaria">Bulg&aacute;ria</option>
+            <option value="chequia">Ch&eacute;quia</option>
+            <option value="chipre">Chipre</option>
+            <option value="croacia">Cro&aacute;cia</option>
+            <option value="dinamarca">Dinamarca</option>
+            <option value="eslovaquia">Eslov&aacute;quia</option>
+            <option value="eslovenia">Eslov&eacute;nia</option>
+            <option value="estonia">Est&oacute;nia</option>
+            <option value="finlandia">Finl&acirc;ndia</option>
+            <option value="franca">Fran&ccedil;a</option>
+            <option value="grecia">Gr&eacute;cia</option>
+            <option value="hungria">Hungria</option>
+            <option value="irlanda">Irlanda</option>
+            <option value="italia">It&aacute;lia</option>
+            <option value="letonia">Let&oacute;nia</option>
+            <option value="lituania">Litu&acirc;nia</option>
+            <option value="luxemburgo">Luxemburgo</option>
+            <option value="malta">Malta</option>
+            <option value="paises_baixos">Pa&iacute;ses Baixos</option>
+            <option value="polonia">Pol&oacute;nia</option>
+            <option value="romenia">Rom&eacute;nia</option>
+            <option value="suecia">Su&eacute;cia</option>
         </select>
 
         <label>M&eacute;todo de envio:</label>
@@ -412,32 +435,32 @@
         <div class="total-box">
             <div class="linha-total">
                 <span>Subtotal:</span>
-                <span id="subtotal">0,00 €</span>
+                <span id="subtotal">0,00 â‚¬</span>
             </div>
             <div class="linha-total">
-                <span>Portes de envio (IVA incluído):</span>
-                <span id="portes">0,00 €</span>
+                <span>Portes de envio (IVA incluÃ­do):</span>
+                <span id="portes">0,00 â‚¬</span>
             </div>
             <div id="aviso-envio-nao-registado" class="msg-status msg-erro"></div>
             <div class="linha-total valor-final">
                 <span>Total:</span>
-                <span id="total">0,00 €</span>
+                <span id="total">0,00 â‚¬</span>
             </div>
         </div>
 
         <div class="seccao-pagamento">
-            <h3>💳 Método de Pagamento</h3>
+            <h3>ðŸ’³ MÃ©todo de Pagamento</h3>
             <label class="opcao-pagamento">
                 <input type="radio" name="metodo-pagamento" value="MB WAY" checked>
-                <span>📱 MB WAY</span>
+                <span>ðŸ“± MB WAY</span>
             </label>
             <label class="opcao-pagamento">
-                <input type="radio" name="metodo-pagamento" value="Transferência Bancária">
-                <span>🏦 Transferência Bancária</span>
+                <input type="radio" name="metodo-pagamento" value="TransferÃªncia BancÃ¡ria">
+                <span>ðŸ¦ TransferÃªncia BancÃ¡ria</span>
             </label>
             <label class="opcao-pagamento">
                 <input type="radio" name="metodo-pagamento" value="PayPal">
-                <span>🔵 PayPal</span>
+                <span>ðŸ”µ PayPal</span>
             </label>
         </div>
 
@@ -453,10 +476,10 @@
 <footer class="rodape-site">
     <div class="rodape-conteudo">
         <div class="rodape-marca">Figures Planet</div>
-        <nav class="rodape-links" aria-label="Informações da loja">
-            <a href="sobre.html">Sobre nós</a>
+        <nav class="rodape-links" aria-label="InformaÃ§Ãµes da loja">
+            <a href="sobre.html">Sobre nÃ³s</a>
             <a href="contactos.html">Contactos</a>
-            <a href="politicas.html">Políticas</a>
+            <a href="politicas.html">PolÃ­ticas</a>
         </nav>
     </div>
 </footer>

@@ -5,26 +5,25 @@ const CLOUDINARY_UPLOAD_PRESET = "worldminifigures4u_unsigned";
 const URL_PUBLICO_FALLBACK = "https://figuresplanet.com/";
 const ADMIN_EMAILS = ["worldminifigures4u@gmail.com"];
 const PESO_PADRAO_PRODUTO_GRAMAS = 10;
-const IVA_PORTES = 0.23;
 const TABELA_PORTES_POR_PESO = {
     portugal: [
         { ate: 100, opcoes: [
-            { id: 'ctt_normal', nome: 'CTT Normal', valor: 1.58 },
-            { id: 'ctt_azul', nome: 'CTT Azul', valor: 2.10 },
-            { id: 'ctt_registado', nome: 'CTT Registado', valor: 4.60 },
-            { id: 'inpost_registado', nome: 'InPost Registado', valor: 4.76 }
+            { id: 'ctt_normal', nome: 'CTT Normal', valor: 1.75 },
+            { id: 'ctt_azul', nome: 'CTT Azul', valor: 2.20 },
+            { id: 'ctt_registado', nome: 'CTT Registado', valor: 4.50 },
+            { id: 'inpost_registado', nome: 'InPost Registado (com seguro de 25\u20ac)', valor: 4.95 }
         ]},
         { ate: 500, opcoes: [
-            { id: 'ctt_normal', nome: 'CTT Normal', valor: 2.34 },
-            { id: 'ctt_azul', nome: 'CTT Azul', valor: 3.90 },
-            { id: 'ctt_registado', nome: 'CTT Registado', valor: 5.40 },
-            { id: 'inpost_registado', nome: 'InPost Registado', valor: 4.76 }
+            { id: 'ctt_normal', nome: 'CTT Normal', valor: 2.50 },
+            { id: 'ctt_azul', nome: 'CTT Azul', valor: 3.95 },
+            { id: 'ctt_registado', nome: 'CTT Registado', valor: 5.30 },
+            { id: 'inpost_registado', nome: 'InPost Registado (com seguro de 25\u20ac)', valor: 4.95 }
         ]},
         { ate: Infinity, opcoes: [
-            { id: 'ctt_normal', nome: 'CTT Normal', valor: 5.55 },
-            { id: 'ctt_azul', nome: 'CTT Azul', valor: 7.80 },
-            { id: 'ctt_registado', nome: 'CTT Registado', valor: 8.93 },
-            { id: 'inpost_registado', nome: 'InPost Registado', valor: 5.42 }
+            { id: 'ctt_normal', nome: 'CTT Normal', valor: 5.75 },
+            { id: 'ctt_azul', nome: 'CTT Azul', valor: 7.95 },
+            { id: 'ctt_registado', nome: 'CTT Registado', valor: 8.95 },
+            { id: 'inpost_registado', nome: 'InPost Registado (com seguro de 25\u20ac)', valor: 5.65 }
         ]}
     ],
     espanha: [
@@ -55,16 +54,42 @@ const TABELA_PORTES_POR_PESO = {
         { ate: 500, opcoes: [{ id: 'ctt_registado', nome: 'CTT Registado', valor: 9.80 }] },
         { ate: 1000, opcoes: [{ id: 'ctt_registado', nome: 'CTT Registado', valor: 13.20 }] },
         { ate: Infinity, opcoes: [{ id: 'ctt_registado', nome: 'CTT Registado', valor: 21.20 }] }
-    ],
-    resto_mundo: [
-        { ate: 100, opcoes: [{ id: 'ctt_registado', nome: 'CTT Registado', valor: 6.55 }] },
-        { ate: 250, opcoes: [{ id: 'ctt_registado', nome: 'CTT Registado', valor: 9.30 }] },
-        { ate: 500, opcoes: [{ id: 'ctt_registado', nome: 'CTT Registado', valor: 14.15 }] },
-        { ate: 1000, opcoes: [{ id: 'ctt_registado', nome: 'CTT Registado', valor: 23.95 }] },
-        { ate: Infinity, opcoes: [{ id: 'ctt_registado', nome: 'CTT Registado', valor: 36.15 }] }
     ]
-}
+};
 
+const ZONA_PORTES_POR_PAIS = {
+    portugal: 'portugal',
+    espanha: 'espanha',
+    alemanha: 'europa',
+    austria: 'europa',
+    belgica: 'europa',
+    bulgaria: 'europa',
+    chequia: 'europa',
+    chipre: 'europa',
+    croacia: 'europa',
+    dinamarca: 'europa',
+    eslovaquia: 'europa',
+    eslovenia: 'europa',
+    estonia: 'europa',
+    finlandia: 'europa',
+    franca: 'europa',
+    grecia: 'europa',
+    hungria: 'europa',
+    irlanda: 'europa',
+    italia: 'europa',
+    letonia: 'europa',
+    lituania: 'europa',
+    luxemburgo: 'europa',
+    malta: 'europa',
+    paises_baixos: 'europa',
+    polonia: 'europa',
+    romenia: 'europa',
+    suecia: 'europa'
+};
+
+function obterZonaPortesPorPais(paisEnvio) {
+    return ZONA_PORTES_POR_PAIS[paisEnvio] || 'europa';
+}
 
 let dbClient = null;
 let produtosClient = null;
@@ -108,7 +133,7 @@ async function prepararRecuperacaoPassword() {
         if(error) {
             mostrarMensagem(
                 document.getElementById('status-cliente'),
-                'Erro ao validar o link de recuperação. Peça um novo link no Supabase.',
+                'Erro ao validar o link de recuperaÃƒÂ§ÃƒÂ£o. PeÃƒÂ§a um novo link no Supabase.',
                 'msg-erro'
             );
             console.error('Erro recovery code:', error);
@@ -330,7 +355,7 @@ window.addEventListener('load', async () => {
         mostrarVista(obterVistaPagina(), false);
         await verificarSessaoSupabase();
     } else {
-        definirEstadoVitrine('Erro: biblioteca Supabase não carregou. Verifique a ligação à internet.', 'erro');
+        definirEstadoVitrine('Erro: biblioteca Supabase nÃƒÂ£o carregou. Verifique a ligaÃƒÂ§ÃƒÂ£o ÃƒÂ  internet.', 'erro');
     }
 });
 
@@ -367,7 +392,7 @@ function mostrarFormularioRecuperacaoPassword() {
     document.getElementById('form-recuperar-password').style.display = 'flex';
     mostrarMensagem(
         document.getElementById('status-cliente'),
-        'Defina a nova palavra-passe para concluir a recuperação da conta.',
+        'Defina a nova palavra-passe para concluir a recuperaÃƒÂ§ÃƒÂ£o da conta.',
         'msg-sucesso'
     );
 }
@@ -378,27 +403,27 @@ async function pedirRecuperacaoPassword() {
     const email = String(emailInput?.value || '').trim();
 
     if (!email) {
-        mostrarMensagem(statusDiv, 'Introduza primeiro o seu endereço de email.', 'msg-erro');
+        mostrarMensagem(statusDiv, 'Introduza primeiro o seu endereÃƒÂ§o de email.', 'msg-erro');
         emailInput?.focus();
         return;
     }
 
     try {
-        mostrarMensagem(statusDiv, 'A enviar o email de recuperação...');
+        mostrarMensagem(statusDiv, 'A enviar o email de recuperaÃƒÂ§ÃƒÂ£o...');
         const redirectTo = new URL('conta.html', obterUrlPublicoAtual()).href;
         const { error } = await dbClient.auth.resetPasswordForEmail(email, { redirectTo });
         if (error) throw error;
 
         mostrarMensagem(
             statusDiv,
-            'Enviámos um email com o link para definir uma nova palavra-passe. Verifique também a pasta de spam.',
+            'EnviÃƒÂ¡mos um email com o link para definir uma nova palavra-passe. Verifique tambÃƒÂ©m a pasta de spam.',
             'msg-sucesso'
         );
     } catch (error) {
-        console.error('Erro ao pedir recuperação de password:', error);
+        console.error('Erro ao pedir recuperaÃƒÂ§ÃƒÂ£o de password:', error);
         mostrarMensagem(
             statusDiv,
-            'Erro: ' + (error.message || 'Não foi possível enviar o email de recuperação.'),
+            'Erro: ' + (error.message || 'NÃƒÂ£o foi possÃƒÂ­vel enviar o email de recuperaÃƒÂ§ÃƒÂ£o.'),
             'msg-erro'
         );
     }
@@ -415,7 +440,7 @@ async function fazerLogin(event) {
     const password = document.getElementById('login-password').value;
 
     if(!dbClient){
-        mostrarMensagem(statusDiv, "Erro: ligação ao Supabase indisponível. Verifique a internet e recarregue a página.", "msg-erro");
+        mostrarMensagem(statusDiv, "Erro: ligaÃƒÂ§ÃƒÂ£o ao Supabase indisponÃƒÂ­vel. Verifique a internet e recarregue a pÃƒÂ¡gina.", "msg-erro");
         return;
     }
 
@@ -434,7 +459,7 @@ async function fazerLogin(event) {
                 password: password
             }),
             30000,
-            "A ligação ao serviço de login demorou demasiado. Tente novamente."
+            "A ligaÃƒÂ§ÃƒÂ£o ao serviÃƒÂ§o de login demorou demasiado. Tente novamente."
         );
 
         if (error) throw error;
@@ -442,19 +467,19 @@ async function fazerLogin(event) {
         if (data && data.user) {
             if (data.user.email_confirmed_at === null) {
                 await dbClient.auth.signOut();
-                mostrarMensagem(statusDiv, "⚠️ E-mail não confirmado!\nPor favor, aceda à sua caixa de correio e clique no link de validação enviado para poder iniciar sessão.", "msg-erro");
+                mostrarMensagem(statusDiv, "Ã¢Å¡Â Ã¯Â¸Â E-mail nÃƒÂ£o confirmado!\nPor favor, aceda ÃƒÂ  sua caixa de correio e clique no link de validaÃƒÂ§ÃƒÂ£o enviado para poder iniciar sessÃƒÂ£o.", "msg-erro");
                 return;
             }
             await executarComTimeout(
                 obterDadosPerfilDaTabela(data.user.id, data.user),
                 15000,
-                "Sessão iniciada, mas os dados do perfil demoraram demasiado a carregar."
+                "SessÃƒÂ£o iniciada, mas os dados do perfil demoraram demasiado a carregar."
             );
             statusDiv.innerText = "";
         }
     } catch (erro) {
         console.error(erro);
-        mostrarMensagem(statusDiv, "Erro: " + (erro.message || "E-mail ou password inválidos."), "msg-erro");
+        mostrarMensagem(statusDiv, "Erro: " + (erro.message || "E-mail ou password invÃƒÂ¡lidos."), "msg-erro");
     } finally {
         botaoLogin.disabled = false;
         botaoLogin.innerText = "Entrar na Conta";
@@ -465,7 +490,7 @@ async function registarCliente(event) {
     event.preventDefault();
     const statusDiv = document.getElementById('status-cliente');
     statusDiv.className = "msg-status";
-    statusDiv.innerText = "A processar registo de segurança...";
+    statusDiv.innerText = "A processar registo de seguranÃƒÂ§a...";
 
     const nome = document.getElementById('registo-nome').value.trim();
     const email = document.getElementById('registo-email').value.trim();
@@ -498,7 +523,7 @@ async function registarCliente(event) {
         if (data && data.user) {
             await dbClient.auth.signOut();
 
-            mostrarMensagem(statusDiv, "📧 Registo efetuado!\nEnviámos um link de confirmação para o seu e-mail. Ative a conta antes de tentar fazer login.", "msg-sucesso");
+            mostrarMensagem(statusDiv, "Ã°Å¸â€œÂ§ Registo efetuado!\nEnviÃƒÂ¡mos um link de confirmaÃƒÂ§ÃƒÂ£o para o seu e-mail. Ative a conta antes de tentar fazer login.", "msg-sucesso");
             
             document.getElementById('form-registo').reset();
             setTimeout(() => { mudarAba('login'); }, 5000);
@@ -522,7 +547,7 @@ async function atualizarPasswordRecuperacao(event) {
     }
 
     if(novaPassword !== confirmarPassword) {
-        mostrarMensagem(statusDiv, 'As passwords não coincidem.', 'msg-erro');
+        mostrarMensagem(statusDiv, 'As passwords nÃƒÂ£o coincidem.', 'msg-erro');
         return;
     }
 
@@ -532,7 +557,7 @@ async function atualizarPasswordRecuperacao(event) {
         if(error) throw error;
 
         document.getElementById('form-recuperar-password').reset();
-        mostrarMensagem(statusDiv, 'Password atualizada com sucesso. Já pode iniciar sessão.', 'msg-sucesso');
+        mostrarMensagem(statusDiv, 'Password atualizada com sucesso. JÃƒÂ¡ pode iniciar sessÃƒÂ£o.', 'msg-sucesso');
         emRecuperacaoPassword = false;
         if(window.history && window.history.replaceState) {
             window.history.replaceState({}, document.title, obterUrlPublicoAtual());
@@ -541,7 +566,7 @@ async function atualizarPasswordRecuperacao(event) {
         setTimeout(() => { mudarAba('login'); }, 1500);
     } catch(error) {
         console.error('Erro ao atualizar password:', error);
-        mostrarMensagem(statusDiv, 'Erro: ' + (error.message || 'Não foi possível atualizar a password.'), 'msg-erro');
+        mostrarMensagem(statusDiv, 'Erro: ' + (error.message || 'NÃƒÂ£o foi possÃƒÂ­vel atualizar a password.'), 'msg-erro');
     }
 }
 
@@ -557,7 +582,7 @@ async function alterarPasswordConta(event) {
     }
 
     if(novaPassword !== confirmarPassword) {
-        mostrarMensagem(statusDiv, 'As passwords não coincidem.', 'msg-erro');
+        mostrarMensagem(statusDiv, 'As passwords nÃƒÂ£o coincidem.', 'msg-erro');
         return;
     }
 
@@ -570,7 +595,7 @@ async function alterarPasswordConta(event) {
         mostrarMensagem(statusDiv, 'Password atualizada com sucesso.', 'msg-sucesso');
     } catch(error) {
         console.error('Erro ao alterar password:', error);
-        mostrarMensagem(statusDiv, 'Erro: ' + (error.message || 'Não foi possível atualizar a password.'), 'msg-erro');
+        mostrarMensagem(statusDiv, 'Erro: ' + (error.message || 'NÃƒÂ£o foi possÃƒÂ­vel atualizar a password.'), 'msg-erro');
     }
 }
 
@@ -588,12 +613,12 @@ async function eliminarContaUtilizador(event) {
         if (!password) throw new Error('Introduza a sua palavra-passe atual.');
         if (confirmacao !== 'ELIMINAR') throw new Error('Escreva ELIMINAR exatamente como indicado.');
 
-        const confirmou = window.confirm('Eliminar definitivamente a sua conta? Esta ação não pode ser anulada.');
+        const confirmou = window.confirm('Eliminar definitivamente a sua conta? Esta aÃƒÂ§ÃƒÂ£o nÃƒÂ£o pode ser anulada.');
         if (!confirmou) return;
 
         const { data: { session }, error: sessionError } = await dbClient.auth.getSession();
         if (sessionError || !session?.access_token) {
-            throw new Error('A sessão terminou. Inicie sessão novamente antes de eliminar a conta.');
+            throw new Error('A sessÃƒÂ£o terminou. Inicie sessÃƒÂ£o novamente antes de eliminar a conta.');
         }
 
         if (submitButton) submitButton.disabled = true;
@@ -618,7 +643,7 @@ async function eliminarContaUtilizador(event) {
         }
 
         const resultado = await response.json().catch(() => ({}));
-        if (!response.ok) throw new Error(resultado.error || 'Não foi possível eliminar a conta.');
+        if (!response.ok) throw new Error(resultado.error || 'NÃƒÂ£o foi possÃƒÂ­vel eliminar a conta.');
 
         localStorage.removeItem('carrinho');
         await dbClient.auth.signOut().catch(() => {});
@@ -627,8 +652,8 @@ async function eliminarContaUtilizador(event) {
     } catch (error) {
         console.error('Erro ao eliminar conta:', error);
         const mensagem = error?.name === 'AbortError'
-            ? 'A eliminação demorou demasiado. Tente novamente.'
-            : (error.message || 'Não foi possível eliminar a conta.');
+            ? 'A eliminaÃƒÂ§ÃƒÂ£o demorou demasiado. Tente novamente.'
+            : (error.message || 'NÃƒÂ£o foi possÃƒÂ­vel eliminar a conta.');
         mostrarMensagem(statusDiv, 'Erro: ' + mensagem, 'msg-erro');
     } finally {
         if (submitButton) submitButton.disabled = false;
@@ -692,7 +717,7 @@ async function guardarDadosCliente(event) {
     try {
         mostrarMensagem(statusDiv, 'A guardar dados...');
         const { data: { user }, error: userError } = await dbClient.auth.getUser();
-        if (userError || !user) throw userError || new Error('Sessão não encontrada.');
+        if (userError || !user) throw userError || new Error('SessÃƒÂ£o nÃƒÂ£o encontrada.');
         const emailAtual = String(user.email || '').toLowerCase();
         const emailNovo = email.toLowerCase();
         const emailAlterado = emailNovo !== emailAtual;
@@ -726,13 +751,13 @@ async function guardarDadosCliente(event) {
         mostrarMensagem(
             statusDiv,
             emailAlterado
-                ? 'Dados guardados. Confirme o novo e-mail através do link enviado pelo Supabase.'
+                ? 'Dados guardados. Confirme o novo e-mail atravÃƒÂ©s do link enviado pelo Supabase.'
                 : 'Dados guardados com sucesso.',
             'msg-sucesso'
         );
     } catch(error) {
         console.error('Erro ao guardar dados do cliente:', error);
-        mostrarMensagem(statusDiv, 'Erro: ' + (error.message || 'Não foi possível guardar os dados.'), 'msg-erro');
+        mostrarMensagem(statusDiv, 'Erro: ' + (error.message || 'NÃƒÂ£o foi possÃƒÂ­vel guardar os dados.'), 'msg-erro');
     }
 }
 
@@ -775,7 +800,7 @@ async function fazerLogout() {
     document.getElementById('conteudo-cliente-anonimo').style.display = 'block';
     document.getElementById('status-cliente').innerText = '';
     atualizarCabecalhoCliente();
-    definirHistoricoVazio('Entre na conta para carregar o histórico.');
+    definirHistoricoVazio('Entre na conta para carregar o histÃƒÂ³rico.');
     mudarAba('login');
     await carregarProdutosDaNuvem();
 }
@@ -873,7 +898,7 @@ function atualizarVisibilidadeAdmin(user) {
         }
 
         carregarProdutosAdminDaNuvem().catch(error => {
-            console.error('Erro ao carregar catálogo administrativo:', error);
+            console.error('Erro ao carregar catÃƒÂ¡logo administrativo:', error);
         });
     } else {
         catalogoAdminCarregado = false;
@@ -906,27 +931,27 @@ function renderizarResumoImportacaoStock(resultado) {
 
     resumo.replaceChildren(
         criarIndicadorImportacaoStock(resultado.totalLinhas, 'SKUs no ficheiro'),
-        criarIndicadorImportacaoStock(resultado.alteracoes.length, 'Alterações'),
+        criarIndicadorImportacaoStock(resultado.alteracoes.length, 'AlteraÃƒÂ§ÃƒÂµes'),
         criarIndicadorImportacaoStock(resultado.aumentos, 'Aumentam'),
         criarIndicadorImportacaoStock(resultado.reducoes, 'Diminuem'),
         criarIndicadorImportacaoStock(resultado.desativados, 'Ficam inativos'),
-        criarIndicadorImportacaoStock(resultado.naoEncontrados.length, 'Não encontrados')
+        criarIndicadorImportacaoStock(resultado.naoEncontrados.length, 'NÃƒÂ£o encontrados')
     );
     resumo.style.display = 'grid';
 
     detalhes.replaceChildren();
     const linhas = [];
     resultado.alteracoes.slice(0, 60).forEach(item => {
-        linhas.push(`${item.sku} | ${item.nome} | ${item.stockAtual} → ${item.stockNovo} | ${item.ativoNovo ? 'ativo' : 'inativo'}`);
+        linhas.push(`${item.sku} | ${item.nome} | ${item.stockAtual} Ã¢â€ â€™ ${item.stockNovo} | ${item.ativoNovo ? 'ativo' : 'inativo'}`);
     });
     resultado.naoEncontrados.slice(0, 30).forEach(item => {
-        linhas.push(`${item.sku} | não encontrado no Supabase`);
+        linhas.push(`${item.sku} | nÃƒÂ£o encontrado no Supabase`);
     });
     if(resultado.ausentesNoFicheiro.length > 0) {
-        linhas.push(`${resultado.ausentesNoFicheiro.length} produto(s) do Supabase não constam do ficheiro e não serão alterados.`);
+        linhas.push(`${resultado.ausentesNoFicheiro.length} produto(s) do Supabase nÃƒÂ£o constam do ficheiro e nÃƒÂ£o serÃƒÂ£o alterados.`);
     }
     if(resultado.invalidos.length > 0) {
-        linhas.push(`${resultado.invalidos.length} linha(s) foram ignoradas por SKU ou stock inválido.`);
+        linhas.push(`${resultado.invalidos.length} linha(s) foram ignoradas por SKU ou stock invÃƒÂ¡lido.`);
     }
 
     linhas.forEach(linha => {
@@ -947,7 +972,7 @@ async function analisarFicheiroStockAdmin(input) {
         const ficheiro = input.files?.[0];
         if(!ficheiro) return;
         if(typeof XLSX === 'undefined') {
-            throw new Error('O leitor de folhas de cálculo não foi carregado. Atualize a página e tente novamente.');
+            throw new Error('O leitor de folhas de cÃƒÂ¡lculo nÃƒÂ£o foi carregado. Atualize a pÃƒÂ¡gina e tente novamente.');
         }
 
         mostrarMensagem(status, 'A analisar o ficheiro de stock...');
@@ -961,7 +986,7 @@ async function analisarFicheiroStockAdmin(input) {
         });
 
         if(indiceCabecalho < 0) {
-            throw new Error('Não foram encontradas as colunas sku e stock.');
+            throw new Error('NÃƒÂ£o foram encontradas as colunas sku e stock.');
         }
 
         const cabecalhos = linhas[indiceCabecalho].map(normalizarCabecalhoStock);
@@ -1032,13 +1057,13 @@ async function analisarFicheiroStockAdmin(input) {
         mostrarMensagem(
             status,
             alteracoes.length > 0
-                ? `Análise concluída. Confirme para atualizar ${alteracoes.length} produto(s).`
-                : 'Análise concluída. O stock já está atualizado.',
+                ? `AnÃƒÂ¡lise concluÃƒÂ­da. Confirme para atualizar ${alteracoes.length} produto(s).`
+                : 'AnÃƒÂ¡lise concluÃƒÂ­da. O stock jÃƒÂ¡ estÃƒÂ¡ atualizado.',
             'msg-sucesso'
         );
     } catch(error) {
         console.error('Erro ao analisar stock:', error);
-        mostrarMensagem(status, 'Erro: ' + (error.message || 'Não foi possível ler o ficheiro.'), 'msg-erro');
+        mostrarMensagem(status, 'Erro: ' + (error.message || 'NÃƒÂ£o foi possÃƒÂ­vel ler o ficheiro.'), 'msg-erro');
     }
 }
 
@@ -1068,7 +1093,7 @@ async function confirmarImportacaoStockAdmin() {
                     .eq('sku', item.sku)
                     .select('sku');
                 if(error) throw error;
-                if(!data || data.length === 0) throw new Error('Produto não atualizado.');
+                if(!data || data.length === 0) throw new Error('Produto nÃƒÂ£o atualizado.');
                 return item.sku;
             }));
 
@@ -1080,7 +1105,7 @@ async function confirmarImportacaoStockAdmin() {
         }
 
         if(erros.length > 0) {
-            throw new Error(`${erros.length} produto(s) não foram atualizados.`);
+            throw new Error(`${erros.length} produto(s) nÃƒÂ£o foram atualizados.`);
         }
 
         mostrarMensagem(status, `${atualizados} produto(s) atualizados com sucesso.`, 'msg-sucesso');
@@ -1089,13 +1114,13 @@ async function confirmarImportacaoStockAdmin() {
     } catch(error) {
         console.error('Erro ao atualizar stock:', error);
         botao.disabled = false;
-        mostrarMensagem(status, 'Erro: ' + (error.message || 'Não foi possível atualizar o stock.'), 'msg-erro');
+        mostrarMensagem(status, 'Erro: ' + (error.message || 'NÃƒÂ£o foi possÃƒÂ­vel atualizar o stock.'), 'msg-erro');
     }
 }
 
 function lerFolhaMapas(conteudo) {
     if(typeof XLSX === 'undefined') {
-        throw new Error('O leitor de folhas de cálculo não foi carregado. Atualize a página e tente novamente.');
+        throw new Error('O leitor de folhas de cÃƒÂ¡lculo nÃƒÂ£o foi carregado. Atualize a pÃƒÂ¡gina e tente novamente.');
     }
 
     const workbook = XLSX.read(conteudo, { type:'array' });
@@ -1107,7 +1132,7 @@ function lerFolhaMapas(conteudo) {
     });
 
     if(indiceCabecalho < 0) {
-        throw new Error('Não foram encontradas as colunas nome, sku e stock.');
+        throw new Error('NÃƒÂ£o foram encontradas as colunas nome, sku e stock.');
     }
 
     return {
@@ -1120,7 +1145,7 @@ function lerFolhaMapas(conteudo) {
 function obterIndiceColuna(cabecalhos, nome, obrigatoria = true) {
     const indice = cabecalhos.indexOf(nome);
     if(indice < 0 && obrigatoria) {
-        throw new Error(`Não foi encontrada a coluna ${nome}.`);
+        throw new Error(`NÃƒÂ£o foi encontrada a coluna ${nome}.`);
     }
     return indice;
 }
@@ -1131,7 +1156,7 @@ function renderizarResumoImportacaoCatalogo(resultado) {
     if(!resumo || !detalhes) return;
 
     resumo.replaceChildren(
-        criarIndicadorImportacaoStock(resultado.produtos.length, 'Produtos válidos'),
+        criarIndicadorImportacaoStock(resultado.produtos.length, 'Produtos vÃƒÂ¡lidos'),
         criarIndicadorImportacaoStock(resultado.novos.length, 'Novos'),
         criarIndicadorImportacaoStock(resultado.existentes.length, 'Atualizados'),
         criarIndicadorImportacaoStock(resultado.remover.length, 'A remover'),
@@ -1142,12 +1167,12 @@ function renderizarResumoImportacaoCatalogo(resultado) {
 
     detalhes.replaceChildren();
     const linhas = [
-        `${resultado.produtos.length} produtos serão importados do ficheiro.`,
-        `${resultado.novos.length} produtos serão adicionados.`,
-        `${resultado.existentes.length} produtos existentes serão atualizados por SKU.`,
-        `${resultado.remover.length} produtos atuais não constam do ficheiro e serão removidos.`
+        `${resultado.produtos.length} produtos serÃƒÂ£o importados do ficheiro.`,
+        `${resultado.novos.length} produtos serÃƒÂ£o adicionados.`,
+        `${resultado.existentes.length} produtos existentes serÃƒÂ£o atualizados por SKU.`,
+        `${resultado.remover.length} produtos atuais nÃƒÂ£o constam do ficheiro e serÃƒÂ£o removidos.`
     ];
-    if(resultado.invalidos.length) linhas.push(`${resultado.invalidos.length} linha(s) inválida(s) foram ignoradas.`);
+    if(resultado.invalidos.length) linhas.push(`${resultado.invalidos.length} linha(s) invÃƒÂ¡lida(s) foram ignoradas.`);
     resultado.remover.slice(0, 30).forEach(produto => linhas.push(`Remover: ${produto.sku} | ${produto.nome || ''}`));
 
     linhas.forEach(linha => {
@@ -1174,7 +1199,7 @@ async function analisarFicheiroCatalogoAdmin(input) {
     try {
         const ficheiro = input.files?.[0];
         if(!ficheiro) return;
-        mostrarMensagem(status, 'A analisar o catálogo completo...');
+        mostrarMensagem(status, 'A analisar o catÃƒÂ¡logo completo...');
 
         const conteudo = await ficheiro.arrayBuffer();
         const { linhas, cabecalhos, primeiraLinhaDados } = lerFolhaMapas(conteudo);
@@ -1222,10 +1247,10 @@ async function analisarFicheiroCatalogoAdmin(input) {
         });
 
         if(produtosPorSku.size === 0) {
-            throw new Error('O ficheiro não contém produtos válidos.');
+            throw new Error('O ficheiro nÃƒÂ£o contÃƒÂ©m produtos vÃƒÂ¡lidos.');
         }
         if(invalidos.length > 0) {
-            throw new Error(`Foram encontradas ${invalidos.length} linha(s) inválida(s). Corrija o ficheiro antes de substituir o catálogo.`);
+            throw new Error(`Foram encontradas ${invalidos.length} linha(s) invÃƒÂ¡lida(s). Corrija o ficheiro antes de substituir o catÃƒÂ¡logo.`);
         }
 
         const atuaisPorSku = new Map(todosOsProdutos.map(produto => [String(produto.sku || '').trim().toUpperCase(), produto]));
@@ -1247,10 +1272,10 @@ async function analisarFicheiroCatalogoAdmin(input) {
 
         renderizarResumoImportacaoCatalogo(importacaoCatalogoPendente);
         atualizarConfirmacaoCatalogoAdmin();
-        mostrarMensagem(status, 'Análise concluída. Reveja o resumo antes de confirmar.', 'msg-sucesso');
+        mostrarMensagem(status, 'AnÃƒÂ¡lise concluÃƒÂ­da. Reveja o resumo antes de confirmar.', 'msg-sucesso');
     } catch(error) {
-        console.error('Erro ao analisar catálogo:', error);
-        mostrarMensagem(status, 'Erro: ' + (error.message || 'Não foi possível analisar o catálogo.'), 'msg-erro');
+        console.error('Erro ao analisar catÃƒÂ¡logo:', error);
+        mostrarMensagem(status, 'Erro: ' + (error.message || 'NÃƒÂ£o foi possÃƒÂ­vel analisar o catÃƒÂ¡logo.'), 'msg-erro');
     }
 }
 
@@ -1277,12 +1302,12 @@ async function confirmarImportacaoCatalogoAdmin() {
     try {
         const { data: { user }, error:authError } = await dbClient.auth.getUser();
         if(authError || !utilizadorAdmin(user)) {
-            throw new Error('Apenas o administrador pode substituir o catálogo.');
+            throw new Error('Apenas o administrador pode substituir o catÃƒÂ¡logo.');
         }
 
         botao.disabled = true;
         descarregarBackupCatalogoAdmin();
-        mostrarMensagem(status, 'Backup criado. A importar o novo catálogo...');
+        mostrarMensagem(status, 'Backup criado. A importar o novo catÃƒÂ¡logo...');
 
         const tamanhoLote = 100;
         let importados = 0;
@@ -1297,7 +1322,7 @@ async function confirmarImportacaoCatalogoAdmin() {
                 throw new Error('Nem todos os produtos do lote foram importados.');
             }
             importados += quantidadeImportada;
-            mostrarMensagem(status, `A importar catálogo: ${importados}/${importacao.produtos.length}`);
+            mostrarMensagem(status, `A importar catÃƒÂ¡logo: ${importados}/${importacao.produtos.length}`);
         }
 
         let removidos = 0;
@@ -1309,11 +1334,11 @@ async function confirmarImportacaoCatalogoAdmin() {
             });
             if(error) throw error;
             removidos += Number(data?.removidos || 0);
-            mostrarMensagem(status, `Catálogo importado. A remover produtos antigos: ${removidos}/${skusRemover.length}`);
+            mostrarMensagem(status, `CatÃƒÂ¡logo importado. A remover produtos antigos: ${removidos}/${skusRemover.length}`);
         }
 
         if(removidos !== skusRemover.length) {
-            throw new Error('Alguns produtos antigos não foram removidos. Verifique a policy DELETE no Supabase.');
+            throw new Error('Alguns produtos antigos nÃƒÂ£o foram removidos. Verifique a policy DELETE no Supabase.');
         }
 
         importacaoCatalogoPendente = null;
@@ -1321,9 +1346,9 @@ async function confirmarImportacaoCatalogoAdmin() {
         await carregarProdutosAdminDaNuvem();
         mostrarMensagem(status, `${importados} produtos importados e ${removidos} produtos antigos removidos.`, 'msg-sucesso');
     } catch(error) {
-        console.error('Erro ao substituir catálogo:', error);
+        console.error('Erro ao substituir catÃƒÂ¡logo:', error);
         botao.disabled = false;
-        mostrarMensagem(status, 'Erro: ' + (error.message || 'Não foi possível substituir o catálogo.'), 'msg-erro');
+        mostrarMensagem(status, 'Erro: ' + (error.message || 'NÃƒÂ£o foi possÃƒÂ­vel substituir o catÃƒÂ¡logo.'), 'msg-erro');
     }
 }
 
@@ -1482,7 +1507,7 @@ async function enviarFotosCloudinaryAdmin(input, textareaId, atualizarPreview, s
 
         for(const ficheiro of ficheiros) {
             if(!ficheiro.type.startsWith('image/')) {
-                throw new Error('Só pode enviar ficheiros de imagem.');
+                throw new Error('SÃƒÂ³ pode enviar ficheiros de imagem.');
             }
 
             const formData = new FormData();
@@ -1511,7 +1536,7 @@ async function enviarFotosCloudinaryAdmin(input, textareaId, atualizarPreview, s
         mostrarMensagem(status, `${urls.length} foto(s) adicionada(s) com sucesso.`, 'msg-sucesso');
     } catch(error) {
         console.error('Erro Cloudinary:', error);
-        mostrarMensagem(status, 'Erro: ' + (error.message || 'Não foi possível enviar as fotos.'), 'msg-erro');
+        mostrarMensagem(status, 'Erro: ' + (error.message || 'NÃƒÂ£o foi possÃƒÂ­vel enviar as fotos.'), 'msg-erro');
     }
 }
 
@@ -1544,7 +1569,7 @@ function renderizarListaProdutosAdmin() {
     if(produtos.length === 0) {
         const vazio = document.createElement('p');
         vazio.className = 'ajuda-admin';
-        vazio.textContent = todosOsProdutos.length === 0 ? 'Ainda não há produtos carregados.' : 'Nenhum produto encontrado.';
+        vazio.textContent = todosOsProdutos.length === 0 ? 'Ainda nÃƒÂ£o hÃƒÂ¡ produtos carregados.' : 'Nenhum produto encontrado.';
         lista.appendChild(vazio);
         return;
     }
@@ -1561,15 +1586,15 @@ function renderizarListaProdutosAdmin() {
         const identificadores = document.createElement('span');
         identificadores.className = 'admin-produto-identificadores';
         const referencia = document.createElement('span');
-        referencia.textContent = `Ref.: ${produto.referencia || '—'}`;
+        referencia.textContent = `Ref.: ${produto.referencia || 'Ã¢â‚¬â€'}`;
         const sku = document.createElement('span');
-        sku.textContent = `SKU: ${produto.sku || '—'}`;
+        sku.textContent = `SKU: ${produto.sku || 'Ã¢â‚¬â€'}`;
         identificadores.append(referencia, sku);
         info.appendChild(identificadores);
 
         const detalhes = document.createElement('span');
         const estado = produto.ativo === false ? 'Inativo' : 'Ativo';
-        detalhes.textContent = `${formatarEuro(produto.preco)} € | Stock: ${produto.stock ?? '-'} | ${estado}`;
+        detalhes.textContent = `${formatarEuro(produto.preco)} Ã¢â€šÂ¬ | Stock: ${produto.stock ?? '-'} | ${estado}`;
         info.appendChild(detalhes);
         item.appendChild(info);
 
@@ -1656,7 +1681,7 @@ function lerProdutoEditadoAdmin() {
     const imagens = obterUrlsImagensEditarAdmin();
 
     if(!id || !nome || !sku || !tema || !Number.isFinite(preco) || preco < 0 || !Number.isFinite(peso) || peso < 1 || !Number.isInteger(stock) || stock < 0) {
-        throw new Error('Preencha nome, SKU, tema, preço, peso e stock.');
+        throw new Error('Preencha nome, SKU, tema, preÃƒÂ§o, peso e stock.');
     }
 
     return {
@@ -1681,7 +1706,7 @@ function lerProdutoEditadoAdmin() {
 async function guardarEdicaoProdutoAdmin(event) {
     event.preventDefault();
     const status = document.getElementById('status-admin-editar-produto');
-    mostrarMensagem(status, 'A guardar alterações...');
+    mostrarMensagem(status, 'A guardar alteraÃƒÂ§ÃƒÂµes...');
 
     try {
         const { data: { user }, error: authError } = await dbClient.auth.getUser();
@@ -1695,7 +1720,7 @@ async function guardarEdicaoProdutoAdmin(event) {
             return skuItem !== String(skuOriginal || '').toUpperCase() && skuItem === produto.sku;
         });
         if(skuExistente) {
-            throw new Error('Este SKU já existe noutro produto.');
+            throw new Error('Este SKU jÃƒÂ¡ existe noutro produto.');
         }
 
         let data = null;
@@ -1723,7 +1748,7 @@ async function guardarEdicaoProdutoAdmin(event) {
 
         if(error) throw error;
         if(!data || data.length === 0) {
-            throw new Error('Produto não atualizado. Verifique se existe uma policy UPDATE no Supabase para o administrador.');
+            throw new Error('Produto nÃƒÂ£o atualizado. Verifique se existe uma policy UPDATE no Supabase para o administrador.');
         }
 
         const produtoAtualizado = { ...produto, id:data[0].id };
@@ -1735,7 +1760,7 @@ async function guardarEdicaoProdutoAdmin(event) {
         renderizarListaProdutosAdmin();
     } catch(error) {
         console.error('Erro admin:', error);
-        mostrarMensagem(status, 'Erro: ' + (error.message || 'Não foi possível guardar o produto.'), 'msg-erro');
+        mostrarMensagem(status, 'Erro: ' + (error.message || 'NÃƒÂ£o foi possÃƒÂ­vel guardar o produto.'), 'msg-erro');
     }
 }
 
@@ -1763,12 +1788,12 @@ async function criarProdutoAdmin(event) {
         const imagens = obterUrlsImagensAdmin();
 
         if(!nome || !sku || !tema || !Number.isFinite(preco) || preco < 0 || !Number.isFinite(peso) || peso < 1 || !Number.isInteger(stock) || stock < 0) {
-            throw new Error('Preencha nome, SKU, tema, preço, peso e stock.');
+            throw new Error('Preencha nome, SKU, tema, preÃƒÂ§o, peso e stock.');
         }
 
         const skuExistente = todosOsProdutos.some(produto => String(produto.sku || '').toUpperCase() === sku);
         if(skuExistente) {
-            throw new Error('Este SKU já existe. Ajuste o SKU antes de criar o produto.');
+            throw new Error('Este SKU jÃƒÂ¡ existe. Ajuste o SKU antes de criar o produto.');
         }
 
         const novoProduto = {
@@ -1801,7 +1826,7 @@ async function criarProdutoAdmin(event) {
         await carregarProdutosAdminDaNuvem();
     } catch(error) {
         console.error('Erro admin:', error);
-        mostrarMensagem(status, 'Erro: ' + (error.message || 'Não foi possível criar o produto.'), 'msg-erro');
+        mostrarMensagem(status, 'Erro: ' + (error.message || 'NÃƒÂ£o foi possÃƒÂ­vel criar o produto.'), 'msg-erro');
     }
 }
 
@@ -1835,12 +1860,12 @@ function definirHtmlSeguro(elemento, partes) {
 
 function obterMetodoPagamentoSelecionado() {
     const radioSelecionado = document.querySelector('input[name="metodo-pagamento"]:checked');
-    return radioSelecionado ? radioSelecionado.value : 'Não especificado';
+    return radioSelecionado ? radioSelecionado.value : 'NÃƒÂ£o especificado';
 }
 
 function mensagemSucessoEncomenda(metodoPagamento, codigoEncomenda = '') {
-    const referencia = codigoEncomenda ? `\nReferência da encomenda: ${codigoEncomenda}` : '';
-    return `Encomenda registada com sucesso!${referencia}\nEnviámos um e-mail com os dados para pagamento.`;
+    const referencia = codigoEncomenda ? `\nReferÃƒÂªncia da encomenda: ${codigoEncomenda}` : '';
+    return `Encomenda registada com sucesso!${referencia}\nEnviÃƒÂ¡mos um e-mail com os dados para pagamento.`;
 }
 
 function definirHistoricoVazio(mensagem) {
@@ -1879,7 +1904,7 @@ function criarListaCompletaProdutos(produtos) {
         const nome = produto.nome || produto.produto || 'Artigo';
         const preco = produto.preco_unitario || produto.preco;
         item.textContent = preco !== undefined
-            ? `${quantidade}x ${nome} - ${formatarEuro(preco)} €`
+            ? `${quantidade}x ${nome} - ${formatarEuro(preco)} Ã¢â€šÂ¬`
             : `${quantidade}x ${nome}`;
         lista.appendChild(item);
     });
@@ -1893,7 +1918,7 @@ function renderizarHistoricoEncomendas(encomendas) {
     lista.replaceChildren();
 
     if(!encomendas || encomendas.length === 0) {
-        definirHistoricoVazio('Ainda não existem encomendas nesta conta.');
+        definirHistoricoVazio('Ainda nÃƒÂ£o existem encomendas nesta conta.');
         return;
     }
 
@@ -1917,7 +1942,7 @@ function renderizarHistoricoEncomendas(encomendas) {
 
         const data = document.createElement('div');
         const dataValor = encomenda.created_at || encomenda.data || encomenda.inserted_at;
-        data.textContent = dataValor ? new Date(dataValor).toLocaleDateString('pt-PT') : 'Data indisponível';
+        data.textContent = dataValor ? new Date(dataValor).toLocaleDateString('pt-PT') : 'Data indisponÃƒÂ­vel';
 
         const produtosDaEncomenda = encomenda.produtos || encomenda.artigos;
 
@@ -1938,7 +1963,7 @@ function renderizarHistoricoEncomendas(encomendas) {
 
         const total = document.createElement('div');
         total.className = 'encomenda-total';
-        total.textContent = formatarEuro(encomenda.total || 0) + ' €';
+        total.textContent = formatarEuro(encomenda.total || 0) + ' Ã¢â€šÂ¬';
 
         card.appendChild(topo);
         card.appendChild(data);
@@ -1951,7 +1976,7 @@ function renderizarHistoricoEncomendas(encomendas) {
 }
 
 async function carregarHistoricoEncomendas(userId) {
-    definirHistoricoVazio('A carregar histórico...');
+    definirHistoricoVazio('A carregar histÃƒÂ³rico...');
     try {
         let { data, error } = await dbClient
             .from('encomendas')
@@ -1973,8 +1998,8 @@ async function carregarHistoricoEncomendas(userId) {
         if(error) throw error;
         renderizarHistoricoEncomendas(data);
     } catch(e) {
-        console.error('Erro ao carregar histórico:', e);
-        definirHistoricoVazio('Não foi possível carregar o histórico de encomendas.');
+        console.error('Erro ao carregar histÃƒÂ³rico:', e);
+        definirHistoricoVazio('NÃƒÂ£o foi possÃƒÂ­vel carregar o histÃƒÂ³rico de encomendas.');
     }
 }
 
@@ -2043,11 +2068,11 @@ function obterImagemAtualCarrinho(item, produtoCompleto) {
 }
 
 async function carregarProdutosDaNuvem(){
-    definirEstadoVitrine('A carregar minifiguras extraordinárias...');
+    definirEstadoVitrine('A carregar minifiguras extraordinÃƒÂ¡rias...');
     try{
         const clienteProdutos = produtosClient || dbClient;
         if(!clienteProdutos){
-            throw new Error('Cliente Supabase indisponível.');
+            throw new Error('Cliente Supabase indisponÃƒÂ­vel.');
         }
 
         const listaProdutos = [];
@@ -2091,7 +2116,7 @@ async function carregarProdutosDaNuvem(){
         atualizarCarrinho();
     }catch(erro){
         console.error(erro);
-        definirEstadoVitrine('Erro ao carregar produtos do Supabase: ' + (erro.message || 'sem detalhe disponível'), 'erro');
+        definirEstadoVitrine('Erro ao carregar produtos do Supabase: ' + (erro.message || 'sem detalhe disponÃƒÂ­vel'), 'erro');
     }
 }
 
@@ -2172,7 +2197,7 @@ function gerarMenus(listaProdutos){
 
     const todosBtn = document.createElement('button');
     todosBtn.className = 'btn-tema ativo';
-    todosBtn.textContent = '⭐ Todos os Temas';
+    todosBtn.textContent = 'Ã¢Â­Â Todos os Temas';
     todosBtn.onclick = function(){ filtrarTema('todos', this); };
     listaTemas.appendChild(todosBtn);
 
@@ -2223,7 +2248,7 @@ function gerarMenus(listaProdutos){
                 const subId = subtema.toLowerCase().replace(/\s+/g, '-');
                 const btnSub = document.createElement('button');
                 btnSub.className = 'btn-subtema';
-                btnSub.textContent = '• ' + subtema;
+                btnSub.textContent = 'Ã¢â‚¬Â¢ ' + subtema;
                 btnSub.onclick = function(e){
                     e.stopPropagation();
                     filtrarTema(temaId + '|' + subId, this);
@@ -2335,7 +2360,7 @@ function gerarProdutos(listaProdutos){
 
         const preco = document.createElement('div');
         preco.className = 'preco';
-        preco.innerText = formatarEuro(prod.preco) + ' €';
+        preco.innerText = formatarEuro(prod.preco) + ' Ã¢â€šÂ¬';
         card.appendChild(preco);
 
         const btn = document.createElement('button');
@@ -2476,7 +2501,7 @@ function executarFiltrosCombinados() {
         const erroDiv = document.createElement('div');
         erroDiv.id = 'aviso-pesquisa-vazia';
         erroDiv.className = 'estado-vitrine erro';
-        erroDiv.innerText = '🔍 Nenhuma minifigura encontrada com esse nome.';
+        erroDiv.innerText = 'Ã°Å¸â€Â Nenhuma minifigura encontrada com esse nome.';
         vitrine.appendChild(erroDiv);
     }
 }
@@ -2592,7 +2617,7 @@ const carrinhoDiv = document.getElementById("lista-carrinho");
             }
         };
 
-        // bloco nome + preço
+        // bloco nome + preÃƒÂ§o
         const info = document.createElement("div");
         info.className = "info-carrinho";
 
@@ -2602,17 +2627,17 @@ const carrinhoDiv = document.getElementById("lista-carrinho");
         const preco = document.createElement("div");
         preco.className = "preco-carrinho";
         preco.textContent =
-            formatarEuro(item.preco * item.quantidade) + " €";
+            formatarEuro(item.preco * item.quantidade) + " Ã¢â€šÂ¬";
 
         info.appendChild(nome);
         info.appendChild(document.createElement("br"));
         info.appendChild(preco);
 
-        // bloco dos botões
+        // bloco dos botÃƒÂµes
         const botoes = document.createElement("div");
         botoes.className = "controlos-carrinho";
 
-        // botão -
+        // botÃƒÂ£o -
         const btnMenos = document.createElement("button");
         btnMenos.className = "btn-quantidade";
         btnMenos.textContent = "-";
@@ -2624,14 +2649,14 @@ const carrinhoDiv = document.getElementById("lista-carrinho");
         quantidade.className = "quantidade-carrinho";
         quantidade.textContent = item.quantidade;
 
-        // botão +
+        // botÃƒÂ£o +
         const btnMais = document.createElement("button");
         btnMais.className = "btn-quantidade";
         btnMais.textContent = "+";
         btnMais.setAttribute("aria-label", "Aumentar quantidade");
         btnMais.onclick = () => aumentarQuantidade(item.id);
 
-        // botão remover
+        // botÃƒÂ£o remover
         const btnRemover = document.createElement("button");
         btnRemover.className = "btn-remover";
         btnRemover.textContent = "X";
@@ -2656,7 +2681,7 @@ const carrinhoDiv = document.getElementById("lista-carrinho");
     }
 
 document.getElementById("subtotal").textContent =
-    formatarEuro(subtotal) + " €";
+    formatarEuro(subtotal) + " Ã¢â€šÂ¬";
 
 atualizarOpcoesEnvio();
 
@@ -2683,7 +2708,8 @@ function calcularPesoTotalCarrinho() {
 }
 
 function obterEscalaoEnvio(paisEnvio, pesoTotal) {
-    const tabela = TABELA_PORTES_POR_PESO[paisEnvio] || TABELA_PORTES_POR_PESO.portugal;
+    const zonaEnvio = obterZonaPortesPorPais(paisEnvio);
+    const tabela = TABELA_PORTES_POR_PESO[zonaEnvio] || TABELA_PORTES_POR_PESO.portugal;
     return tabela.find(linha => pesoTotal <= linha.ate) || tabela[tabela.length - 1];
 }
 
@@ -2698,7 +2724,7 @@ function obterOpcaoEnvioSelecionada(paisEnvio, pesoTotal, metodoEnvio) {
 }
 
 function valorPortesComIva(valorBase) {
-    return Math.round((Number(valorBase || 0) * (1 + IVA_PORTES)) * 100) / 100;
+    return Math.round(Number(valorBase || 0) * 100) / 100;
 }
 
 function atualizarAvisoEnvio(metodoEnvio) {
@@ -2707,7 +2733,7 @@ function atualizarAvisoEnvio(metodoEnvio) {
 
     const mostrarAviso = metodoEnvio === 'ctt_normal' || metodoEnvio === 'ctt_azul';
     aviso.textContent = mostrarAviso
-        ? 'Recomendado o Envio Registado. Não nos responsabilizamos pelo extravio de encomendas.'
+        ? 'Recomendado o Envio Registado. NÃƒÂ£o nos responsabilizamos pelo extravio de encomendas.'
         : '';
 }
 
@@ -2780,22 +2806,22 @@ async function criarNovaEncomenda() {
 
   if (carrinho.length === 0) {
     statusDiv.className = "msg-status msg-erro";
-    statusDiv.innerText = "❌ O seu carrinho está vazio. Adicione pelo menos um produto antes de finalizar.";
+    statusDiv.innerText = "Ã¢ÂÅ’ O seu carrinho estÃƒÂ¡ vazio. Adicione pelo menos um produto antes de finalizar.";
     return;
   }
 
   const { data: { user }, error: authError } = await dbClient.auth.getUser();
 
   if (authError || !user) {
-    console.error("Erro de Autenticação:", authError);
+    console.error("Erro de AutenticaÃƒÂ§ÃƒÂ£o:", authError);
     statusDiv.className = "msg-status msg-erro";
-    statusDiv.innerText = "⚠️ Necessita de iniciar sessão ou registar-se na secção Minha Conta para finalizar a encomenda.";
+    statusDiv.innerText = "Ã¢Å¡Â Ã¯Â¸Â Necessita de iniciar sessÃƒÂ£o ou registar-se na secÃƒÂ§ÃƒÂ£o Minha Conta para finalizar a encomenda.";
     return;
   }
 
   if (user.email_confirmed_at === null) {
     statusDiv.className = "msg-status msg-erro";
-    statusDiv.innerText = "⚠️ Confirme o seu e-mail antes de finalizar a encomenda.";
+    statusDiv.innerText = "Ã¢Å¡Â Ã¯Â¸Â Confirme o seu e-mail antes de finalizar a encomenda.";
     return;
   }
 
@@ -2811,7 +2837,7 @@ async function criarNovaEncomenda() {
   try {
     const { data: { session } } = await dbClient.auth.getSession();
     if(!session?.access_token){
-      throw new Error("Sessão inválida. Faça login novamente.");
+      throw new Error("SessÃƒÂ£o invÃƒÂ¡lida. FaÃƒÂ§a login novamente.");
     }
 
     const resposta = await executarComTimeout(
@@ -2844,7 +2870,7 @@ async function criarNovaEncomenda() {
       const mensagemStock = produtosSemStock.length > 0
         ? `Stock insuficiente para: ${produtosSemStock.join(', ')}. Atualize o carrinho e tente novamente.`
         : '';
-      throw new Error(mensagemStock || resultado.error || "Não foi possível criar a encomenda.");
+      throw new Error(mensagemStock || resultado.error || "NÃƒÂ£o foi possÃƒÂ­vel criar a encomenda.");
     }
 
     console.log("Encomenda gravada com sucesso:", resultado);
