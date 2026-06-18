@@ -1,4 +1,4 @@
-const FORNECEDORES_SUPABASE_URL = "https://gksndzxadndrsynvzgzb.supabase.co";
+﻿const FORNECEDORES_SUPABASE_URL = "https://gksndzxadndrsynvzgzb.supabase.co";
 const FORNECEDORES_SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imdrc25kenhhZG5kcnN5bnZ6Z3piIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkwODc5NzMsImV4cCI6MjA5NDY2Mzk3M30.EHZgacYr27dqoc4CJHsOwkNnJFGlLIteSHBi4B1HfVE";
 const FORNECEDORES_ADMIN_EMAILS = ["worldminifigures4u@gmail.com"];
 const FORNECEDORES_STORAGE_KEY = "figures-planet-fornecedores-pedidos";
@@ -51,6 +51,33 @@ function guardarPedidosFornecedores() {
     localStorage.setItem(FORNECEDORES_STORAGE_KEY, JSON.stringify(fornecedorPedidos));
 }
 
+
+function normalizarPedidoFornecedor(pedido) {
+    if (!pedido) return null;
+    return {
+        id: String(pedido.id || pedido.codigo || Date.now()),
+        codigo: pedido.codigo || '',
+        fornecedor: pedido.fornecedor || '',
+        referencia: pedido.referencia || '',
+        estado: pedido.estado || 'A preparar',
+        criado_em: pedido.criado_em || new Date().toISOString(),
+        atualizado_em: pedido.atualizado_em || pedido.criado_em || new Date().toISOString(),
+        itens: Array.isArray(pedido.itens) ? pedido.itens : []
+    };
+}
+
+async function carregarPedidosFornecedoresRemotos() {
+    try {
+        const { data, error } = await fornecedoresClient.rpc('listar_encomendas_fornecedores_admin');
+        if (error) throw error;
+        const pedidos = Array.isArray(data) ? data : [];
+        fornecedorPedidos = pedidos.map(normalizarPedidoFornecedor).filter(Boolean);
+        guardarPedidosFornecedores();
+    } catch (error) {
+        console.warn('Tabela de fornecedores indisponivel; a usar copia local.', error);
+        definirStatusFornecedor('A tabela de fornecedores ainda nao esta ativa no Supabase. Execute o SQL criado.', true);
+    }
+}
 function gerarCodigoFornecedor() {
     const alfabeto = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
     let codigo = 'F';
@@ -282,61 +309,84 @@ function limparSelecaoFornecedor() {
     definirStatusFornecedor('Lista limpa.');
 }
 
-function criarPedidoFornecedor() {
+async function criarPedidoFornecedor() {
     if (!fornecedorSelecao.length) {
         definirStatusFornecedor('Adicione produtos antes de criar a encomenda.', true);
         return;
     }
     const fornecedor = document.getElementById('fornecedor-nome').value;
     const referencia = document.getElementById('fornecedor-referencia').value.trim();
-    const pedido = {
-        id: (window.crypto?.randomUUID ? window.crypto.randomUUID() : String(Date.now())),
-        codigo: gerarCodigoFornecedor(),
-        fornecedor,
-        referencia,
-        estado: 'A preparar',
-        criado_em: new Date().toISOString(),
-        atualizado_em: new Date().toISOString(),
-        itens: fornecedorSelecao.map(item => ({
-            id: item.id,
-            nome: item.nome,
-            sku: item.sku || '',
-            referencia: item.referencia || '',
-            quantidade: Math.max(1, Number(item.quantidade) || 1),
-            recebido: 0,
-            stock_no_momento: Number(item.stock || 0),
-            preco: Number(item.preco || 0),
-            imagens: item.imagens || []
-        }))
-    };
-    fornecedorPedidos.unshift(pedido);
-    guardarPedidosFornecedores();
-    fornecedorSelecao = [];
-    guardarSelecaoFornecedor();
-    document.getElementById('fornecedor-referencia').value = '';
-    renderizarSelecionadosFornecedor();
-    renderizarPedidosFornecedores();
-    definirStatusFornecedor(`Encomenda ${pedido.codigo} criada.`);
-}
+    const itens = fornecedorSelecao.map(item => ({
+        id: item.id,
+        nome: item.nome,
+        sku: item.sku || '',
+        referencia: item.referencia || '',
+        quantidade: Math.max(1, Number(item.quantidade) || 1),
+        recebido: 0,
+        stock_no_momento: Number(item.stock || 0),
+        preco: Number(item.preco || 0),
+        imagens: item.imagens || []
+    }));
 
-function alterarEstadoPedidoFornecedor(id, estado) {
+    try {
+        definirStatusFornecedor('A criar encomenda no Supabase...');
+        const { data, error } = await fornecedoresClient.rpc('criar_encomenda_fornecedor_admin', {
+            p_fornecedor: fornecedor,
+            p_referencia: referencia,
+            p_itens: itens
+        });
+        if (error) throw error;
+        const pedido = normalizarPedidoFornecedor(data);
+        fornecedorPedidos.unshift(pedido);
+        guardarPedidosFornecedores();
+        fornecedorSelecao = [];
+        guardarSelecaoFornecedor();
+        document.getElementById('fornecedor-referencia').value = '';
+        renderizarSelecionadosFornecedor();
+        renderizarPedidosFornecedores();
+        definirStatusFornecedor(`Encomenda ${pedido.codigo} criada.`);
+    } catch (error) {
+        console.error(error);
+        definirStatusFornecedor('Erro ao criar encomenda de fornecedor: ' + (error.message || 'erro desconhecido'), true);
+    }
+}
+async function alterarEstadoPedidoFornecedor(id, estado) {
     const pedido = fornecedorPedidos.find(item => item.id === id);
     if (!pedido) return;
-    pedido.estado = estado;
-    pedido.atualizado_em = new Date().toISOString();
-    guardarPedidosFornecedores();
-    renderizarPedidosFornecedores();
+    try {
+        const { data, error } = await fornecedoresClient.rpc('alterar_estado_encomenda_fornecedor_admin', {
+            p_id: id,
+            p_estado: estado
+        });
+        if (error) throw error;
+        const atualizado = normalizarPedidoFornecedor(data);
+        fornecedorPedidos = fornecedorPedidos.map(item => item.id === id ? atualizado : item);
+        guardarPedidosFornecedores();
+        renderizarPedidosFornecedores();
+        definirStatusFornecedor(`Estado da encomenda ${atualizado.codigo} atualizado.`);
+    } catch (error) {
+        console.error(error);
+        definirStatusFornecedor('Erro ao alterar estado: ' + (error.message || 'erro desconhecido'), true);
+        renderizarPedidosFornecedores();
+    }
 }
 
-function apagarPedidoFornecedor(id) {
+async function apagarPedidoFornecedor(id) {
     const pedido = fornecedorPedidos.find(item => item.id === id);
     if (!pedido) return;
     if (!window.confirm(`Apagar a encomenda ${pedido.codigo}? Isto nao altera o stock.`)) return;
-    fornecedorPedidos = fornecedorPedidos.filter(item => item.id !== id);
-    guardarPedidosFornecedores();
-    renderizarPedidosFornecedores();
+    try {
+        const { error } = await fornecedoresClient.rpc('apagar_encomenda_fornecedor_admin', { p_id: id });
+        if (error) throw error;
+        fornecedorPedidos = fornecedorPedidos.filter(item => item.id !== id);
+        guardarPedidosFornecedores();
+        renderizarPedidosFornecedores();
+        definirStatusFornecedor(`Encomenda ${pedido.codigo} apagada.`);
+    } catch (error) {
+        console.error(error);
+        definirStatusFornecedor('Erro ao apagar encomenda: ' + (error.message || 'erro desconhecido'), true);
+    }
 }
-
 function renderizarPedidosFornecedores() {
     const caixa = document.getElementById('fornecedor-pedidos');
     const filtro = document.getElementById('fornecedor-filtro-estado').value;
@@ -416,7 +466,7 @@ async function receberPedidoFornecedor(id) {
     if (!pedido) return;
     const linhas = Array.from(document.querySelectorAll(`.fornecedor-recebido-input[data-pedido="${CSS.escape(id)}"]`));
     const rececoes = linhas.map(input => ({
-        produtoId: input.dataset.produto,
+        produto_id: input.dataset.produto,
         quantidade: Math.max(0, Math.floor(Number(input.value) || 0))
     })).filter(item => item.quantidade > 0);
     if (!rececoes.length) {
@@ -426,29 +476,24 @@ async function receberPedidoFornecedor(id) {
     if (!window.confirm(`Atualizar stock de ${rececoes.length} produto(s) da encomenda ${pedido.codigo}?`)) return;
     try {
         definirStatusFornecedor('A atualizar stock...');
-        for (const rececao of rececoes) {
-            const itemPedido = pedido.itens.find(item => String(item.id) === String(rececao.produtoId));
-            const produtoAtual = obterProdutoAtual(rececao.produtoId);
-            if (!itemPedido || !produtoAtual) throw new Error('Produto nao encontrado no catalogo atual.');
-            const novoStock = Number(produtoAtual.stock || 0) + rececao.quantidade;
-            const { error } = await fornecedoresClient.from('produtos').update({ stock: novoStock, ativo: novoStock > 0 }).eq('id', produtoAtual.id);
-            if (error) throw error;
-            produtoAtual.stock = novoStock;
-            itemPedido.recebido = Number(itemPedido.recebido || 0) + rececao.quantidade;
-        }
-        const tudoRecebido = pedido.itens.every(item => Number(item.recebido || 0) >= Number(item.quantidade || 0));
-        pedido.estado = tudoRecebido ? 'Recebida' : 'Recebida parcialmente';
-        pedido.atualizado_em = new Date().toISOString();
+        const { data, error } = await fornecedoresClient.rpc('receber_stock_fornecedor_admin', {
+            p_encomenda_id: id,
+            p_recebidos: rececoes
+        });
+        if (error) throw error;
+
+        const atualizado = normalizarPedidoFornecedor(data);
+        fornecedorPedidos = fornecedorPedidos.map(item => item.id === id ? atualizado : item);
         guardarPedidosFornecedores();
+        await carregarCatalogoFornecedores();
         renderizarResultadosFornecedor();
         renderizarPedidosFornecedores();
-        definirStatusFornecedor(`Stock atualizado para a encomenda ${pedido.codigo}.`);
+        definirStatusFornecedor(`Stock atualizado para a encomenda ${atualizado.codigo}.`);
     } catch (error) {
         console.error(error);
         definirStatusFornecedor('Erro ao receber stock: ' + (error.message || 'erro desconhecido'), true);
     }
 }
-
 async function iniciarFornecedoresAdmin() {
     const bloqueio = document.getElementById('fornecedores-bloqueio');
     try {
@@ -461,6 +506,7 @@ async function iniciarFornecedoresAdmin() {
             return;
         }
         await carregarCatalogoFornecedores();
+        await carregarPedidosFornecedoresRemotos();
         bloqueio.hidden = true;
         document.getElementById('fornecedores-aplicacao').hidden = false;
         renderizarResultadosFornecedor();
