@@ -330,7 +330,8 @@ function analisarListaProdutosPlataforma(texto) {
 }
 
 function textoOpcaoProdutoPlataforma(produto) {
-    return `${produto.nome} (Ref. ${produto.referencia || '-'} | SKU ${produto.sku || '-'})`;
+    const stock = Number.isFinite(Number(produto.stock)) ? Number(produto.stock) : 0;
+    return `${produto.nome} (Ref. ${produto.referencia || '-'} | SKU ${produto.sku || '-'} | Stock: ${stock})`;
 }
 
 function buscarProdutosCatalogoPlataforma(termo, limite = 30) {
@@ -470,7 +471,7 @@ function abrirRevisaoListaProdutosPlataforma() {
         linha.candidatos.forEach(candidato => {
             const option = document.createElement('option');
             option.value = String(candidato.produto.id);
-            option.textContent = `${candidato.produto.nome} (Ref. ${candidato.produto.referencia || '—'} | SKU ${candidato.produto.sku || '—'})`;
+            option.textContent = textoOpcaoProdutoPlataforma(candidato.produto);
             select.appendChild(option);
         });
         select.value = linha.produtoId;
