@@ -116,6 +116,10 @@ function obterImagemFornecedor(produto) {
     return FORNECEDORES_SEM_IMAGEM;
 }
 
+function obterImagemProdutoFornecedor(produto) {
+    return obterImagemFornecedor(produto);
+}
+
 function criarImagemFornecedor(produto, classe = 'fornecedor-miniatura') {
     const img = document.createElement('img');
     img.className = classe;
