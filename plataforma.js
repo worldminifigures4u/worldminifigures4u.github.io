@@ -794,10 +794,10 @@ function renderizarResultadosWallapop() {
         nome.textContent = produto.nome;
         const preco = document.createElement('span');
         preco.className = 'plataforma-produto-preco';
-        preco.textContent = `${formatarEuroWallapop(produto.preco)} Ã¢â€šÂ¬`;
+        preco.textContent = `${formatarEuroWallapop(produto.preco)} €`;
         const identificadores = document.createElement('span');
         identificadores.className = 'plataforma-produto-identificadores';
-        identificadores.textContent = `Ref. ${produto.referencia || 'Ã¢â‚¬â€'} | SKU ${produto.sku || 'Ã¢â‚¬â€'}`;
+        identificadores.textContent = `Ref. ${produto.referencia || '—'} | SKU ${produto.sku || '—'}`;
         info.append(nome, identificadores);
         if (produto.stock !== null && produto.stock !== undefined && Number.isFinite(Number(produto.stock))) {
             const stock = Number(produto.stock);
@@ -840,24 +840,24 @@ function renderizarSelecionadosWallapop() {
         nome.textContent = item.nome;
         const preco = document.createElement('span');
         preco.className = 'plataforma-produto-preco';
-        preco.textContent = `${formatarEuroWallapop(item.preco)} Ã¢â€šÂ¬`;
+        preco.textContent = `${formatarEuroWallapop(item.preco)} €`;
         info.append(nome, preco);
 
         const controlos = document.createElement('div');
         controlos.className = 'wallapop-quantidade';
         const subir = document.createElement('button');
         subir.type = 'button';
-        subir.textContent = 'Ã¢â€ â€˜';
+        subir.textContent = '↑';
         subir.title = 'Mover para cima';
         subir.onclick = () => moverProdutoWallapop(item.id, -1);
         const descer = document.createElement('button');
         descer.type = 'button';
-        descer.textContent = 'Ã¢â€ â€œ';
+        descer.textContent = '↓';
         descer.title = 'Mover para baixo';
         descer.onclick = () => moverProdutoWallapop(item.id, 1);
         const menos = document.createElement('button');
         menos.type = 'button';
-        menos.textContent = 'Ã¢Ë†â€™';
+        menos.textContent = '−';
         menos.title = 'Diminuir quantidade';
         menos.onclick = () => alterarQuantidadeWallapop(item.id, -1);
         const quantidade = document.createElement('strong');
@@ -870,7 +870,7 @@ function renderizarSelecionadosWallapop() {
         const remover = document.createElement('button');
         remover.type = 'button';
         remover.className = 'wallapop-remover';
-        remover.textContent = 'Ãƒâ€”';
+        remover.textContent = '×';
         remover.title = 'Remover produto';
         remover.onclick = () => removerProdutoWallapop(item.id);
         controlos.append(subir, descer, menos, quantidade, mais, remover);
@@ -881,7 +881,7 @@ function renderizarSelecionadosWallapop() {
     if (!wallapopItens.length) {
         const vazio = document.createElement('p');
         vazio.className = 'wallapop-status';
-        vazio.textContent = 'A lista estÃƒÂ¡ vazia.';
+        vazio.textContent = 'A lista está vazia.';
         contentor.appendChild(vazio);
     }
     if (obterPlataformaAtual() === 'OLX') atualizarOpcoesEnvioPlataforma();
@@ -925,7 +925,7 @@ function criarLinhaFolhaWallapop(item) {
 
     const preco = document.createElement('div');
     preco.className = 'wallapop-linha-preco';
-    preco.textContent = `${formatarEuroWallapop(item.preco)} Ã¢â€šÂ¬ / un.`;
+    preco.textContent = `${formatarEuroWallapop(item.preco)} €`;
 
     linha.append(foto, quantidade, nome, preco);
     return linha;
@@ -1021,7 +1021,7 @@ async function gerarCanvasFolhaWallapop(itensPagina) {
 
         ctx.font = '700 16px Arial, Helvetica, sans-serif';
         ctx.textAlign = 'right';
-        ctx.fillText(`${formatarEuroWallapop(item.preco)} Ã¢â€šÂ¬ / un.`, largura - margem, centroY);
+        ctx.fillText(`${formatarEuroWallapop(item.preco)} € / un.`, largura - margem, centroY);
     }
 
     return canvas;
@@ -1068,7 +1068,7 @@ async function esperarImagensWallapop() {
 }
 
 async function obterPastaBaseWallapop() {
-    if (!window.showDirectoryPicker) throw new Error('Esta funÃƒÂ§ÃƒÂ£o requer Chrome ou Edge atualizado.');
+    if (!window.showDirectoryPicker) throw new Error('Esta função requer Chrome ou Edge atualizado.');
     return window.showDirectoryPicker({
         id: 'figures-planet-anuncio-destino',
         mode: 'readwrite'
@@ -1102,7 +1102,7 @@ function criarTextoEncomendaWallapop() {
     const total = itens.reduce((soma, item) => {
         return soma + (Math.max(1, Number(item.quantidade) || 1) * Number(item.preco || 0));
     }, 0);
-    linhas.push('', `Total:\t${formatarEuroWallapop(total)} Ã¢â€šÂ¬`);
+    linhas.push('', `Total:\t${formatarEuroWallapop(total)} €`);
     return '\ufeff' + linhas.join('\r\n');
 }
 
@@ -1151,7 +1151,7 @@ function validarEncomendaRegistadaParaFicheiros() {
 
 function canvasParaBlobWallapop(canvas) {
     return new Promise((resolve, reject) => {
-        canvas.toBlob(blob => blob ? resolve(blob) : reject(new Error('NÃƒÂ£o foi possÃƒÂ­vel gerar o PNG.')), 'image/png');
+        canvas.toBlob(blob => blob ? resolve(blob) : reject(new Error('Não foi possível gerar o PNG.')), 'image/png');
     });
 }
 
@@ -1160,7 +1160,7 @@ async function descarregarImagemWallapop() {
     const campoNome = document.getElementById('wallapop-nome-encomenda');
     const nomeEncomenda = limparNomePastaWallapop(obterNomeParaFicheirosPlataforma());
     if (!nomeEncomenda) {
-        definirStatusWallapop('Indique um nome vÃƒÂ¡lido para a encomenda.', true);
+        definirStatusWallapop('Indique um nome válido para a encomenda.', true);
         campoNome.focus();
         return;
     }
@@ -1170,7 +1170,7 @@ async function descarregarImagemWallapop() {
         return;
     }
     if (typeof html2canvas !== 'function') {
-        definirStatusWallapop('A ferramenta de imagem nÃƒÂ£o carregou. Atualize a pÃƒÂ¡gina.', true);
+        definirStatusWallapop('A ferramenta de imagem não carregou. Atualize a página.', true);
         return;
     }
 
@@ -1193,10 +1193,10 @@ async function descarregarImagemWallapop() {
     } catch (error) {
         console.error(error);
         if (error?.name === 'AbortError') {
-            definirStatusWallapop('SeleÃƒÂ§ÃƒÂ£o da pasta cancelada.', true);
+            definirStatusWallapop('Seleção da pasta cancelada.', true);
             return;
         }
-        definirStatusWallapop('NÃƒÂ£o foi possÃƒÂ­vel guardar a encomenda: ' + (error.message || 'erro desconhecido'), true);
+        definirStatusWallapop('Não foi possível guardar a encomenda: ' + (error.message || 'erro desconhecido'), true);
     } finally {
         renderizarFolhaWallapop();
     }
@@ -1467,7 +1467,7 @@ async function registarEncomendaWallapop() {
     }
 
     if (wallapopRegistoConcluido && !encomendaPlataformaEmEdicao) {
-        definirStatusWallapop(`Esta encomenda ${plataforma} jÃƒÂ¡ foi registada.`, true);
+        definirStatusWallapop(`Esta encomenda ${plataforma} já foi registada.`, true);
         return;
     }
     if (!nomeCliente) {
@@ -1494,14 +1494,14 @@ async function registarEncomendaWallapop() {
         return;
     }
     const confirmado = window.confirm(encomendaPlataformaEmEdicao
-        ? `Guardar as alteraÃƒÂ§ÃƒÂµes da encomenda ${obterCodigoEncomendaAtual()}? O stock serÃƒÂ¡ ajustado automaticamente.`
-        : `Registar a encomenda ${plataforma} de ${nomeCliente} por ${formatarEuroWallapop(total)} Ã¢â€šÂ¬ e descontar o stock?`
+        ? `Guardar as alterações da encomenda ${obterCodigoEncomendaAtual()}? O stock será ajustado automaticamente.`
+        : `Registar a encomenda ${plataforma} de ${nomeCliente} por ${formatarEuroWallapop(total)} € e descontar o stock?`
     );
     if (!confirmado) return;
 
     botao.disabled = true;
     definirStatusWallapop(encomendaPlataformaEmEdicao
-        ? 'A validar o stock e guardar as alteraÃƒÂ§ÃƒÂµes...'
+        ? 'A validar o stock e guardar as alterações...'
         : 'A validar o stock e registar a encomenda...');
     try {
         const parametros = {
@@ -1531,7 +1531,7 @@ async function registarEncomendaWallapop() {
                 : [];
             throw new Error(indisponiveis.length
                 ? `Stock insuficiente: ${indisponiveis.join(', ')}.`
-                : 'NÃƒÂ£o foi possÃƒÂ­vel validar o stock.');
+                : 'Não foi possível validar o stock.');
         }
 
         wallapopRegistoConcluido = true;
@@ -1614,11 +1614,11 @@ function limparListaWallapop() {
 async function iniciarWallapopAdmin() {
     const bloqueio = document.getElementById('wallapop-bloqueio');
     try {
-        if (typeof supabase === 'undefined') throw new Error('A biblioteca Supabase nÃƒÂ£o carregou.');
+        if (typeof supabase === 'undefined') throw new Error('A biblioteca Supabase não carregou.');
         wallapopClient = supabase.createClient(WALLAPOP_SUPABASE_URL, WALLAPOP_SUPABASE_KEY);
         const { data: { user }, error } = await wallapopClient.auth.getUser();
         if (error || !user || !WALLAPOP_ADMIN_EMAILS.includes(String(user.email || '').toLowerCase())) {
-            bloqueio.textContent = 'Acesso reservado ao administrador. A regressar ÃƒÂ  conta...';
+            bloqueio.textContent = 'Acesso reservado ao administrador. A regressar à conta...';
             setTimeout(() => window.location.replace('conta.html'), 1400);
             return;
         }
@@ -1644,7 +1644,7 @@ async function iniciarWallapopAdmin() {
         }
     } catch (error) {
         console.error(error);
-        bloqueio.textContent = 'Erro ao abrir a ferramenta: ' + (error.message || 'sem detalhe disponÃƒÂ­vel');
+        bloqueio.textContent = 'Erro ao abrir a ferramenta: ' + (error.message || 'sem detalhe disponível');
     }
 }
 
