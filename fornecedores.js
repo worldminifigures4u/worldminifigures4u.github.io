@@ -121,6 +121,47 @@ function obterImagemProdutoFornecedor(produto) {
     return obterImagemFornecedor(produto);
 }
 
+function abrirImagemFornecedorModal(url, alt) {
+    const modal = document.getElementById('admin-imagem-modal');
+    const foto = document.getElementById('admin-imagem-modal-foto');
+    const fechar = document.getElementById('admin-imagem-modal-fechar');
+    if (!modal || !foto || !url || url === FORNECEDORES_SEM_IMAGEM) return;
+    foto.src = url;
+    foto.alt = alt || 'Produto';
+    modal.hidden = false;
+    document.body.classList.add('admin-imagem-modal-aberto');
+    fechar?.focus();
+}
+
+function fecharImagemFornecedorModal() {
+    const modal = document.getElementById('admin-imagem-modal');
+    const foto = document.getElementById('admin-imagem-modal-foto');
+    if (!modal) return;
+    modal.hidden = true;
+    if (foto) {
+        foto.removeAttribute('src');
+        foto.alt = '';
+    }
+    document.body.classList.remove('admin-imagem-modal-aberto');
+}
+
+function tornarImagemFornecedorAmpliavel(img, produto) {
+    const modal = document.getElementById('admin-imagem-modal');
+    const url = obterImagemFornecedor(produto);
+    if (!modal || !url || url === FORNECEDORES_SEM_IMAGEM) return;
+    img.classList.add('fornecedor-miniatura-clicavel');
+    img.title = 'Ver imagem maior';
+    img.tabIndex = 0;
+    const abrir = () => abrirImagemFornecedorModal(url, img.alt);
+    img.addEventListener('click', abrir);
+    img.addEventListener('keydown', (evento) => {
+        if (evento.key === 'Enter' || evento.key === ' ') {
+            evento.preventDefault();
+            abrir();
+        }
+    });
+}
+
 function criarImagemFornecedor(produto, classe = 'fornecedor-miniatura') {
     const img = document.createElement('img');
     img.className = classe;
@@ -130,6 +171,7 @@ function criarImagemFornecedor(produto, classe = 'fornecedor-miniatura') {
         img.onerror = null;
         img.src = FORNECEDORES_SEM_IMAGEM;
     };
+    tornarImagemFornecedorAmpliavel(img, produto);
     return img;
 }
 
@@ -428,11 +470,14 @@ function renderizarResultadosFornecedorMapa(caixa, resultados, fornecedor) {
             linha.appendChild(criarCelulaMapaFornecedor(stockNumero, `mapas-col-stock mapa-stock-celula ${stockNumero <= 0 ? "sem-stock" : ""}`));
 
             const refCelula = document.createElement("td");
-            refCelula.className = "mapas-col-ref mapas-ref-com-imagem";
-            refCelula.appendChild(criarImagemFornecedor(atual, "fornecedor-miniatura pequena"));
+            refCelula.className = "mapas-col-ref";
+            const refConteudo = document.createElement("div");
+            refConteudo.className = "mapas-ref-com-imagem";
+            refConteudo.appendChild(criarImagemFornecedor(atual, "fornecedor-miniatura pequena"));
             const refTexto = document.createElement("span");
             refTexto.textContent = atual.referencia || "-";
-            refCelula.appendChild(refTexto);
+            refConteudo.appendChild(refTexto);
+            refCelula.appendChild(refConteudo);
             linha.appendChild(refCelula);
 
             const qtdCelula = document.createElement("td");
@@ -874,6 +919,21 @@ ligarEventoFornecedor('fornecedor-filtro-top', 'change', renderizarResultadosFor
 ligarEventoFornecedor('btn-limpar-fornecedor', 'click', limparSelecaoFornecedor);
 ligarEventoFornecedor('btn-criar-fornecedor', 'click', criarPedidoFornecedor);
 ligarEventoFornecedor('fornecedor-filtro-estado', 'change', renderizarPedidosFornecedores);
+
+const botaoFecharImagemFornecedor = document.getElementById('admin-imagem-modal-fechar');
+botaoFecharImagemFornecedor?.addEventListener('click', fecharImagemFornecedorModal);
+document.getElementById('admin-imagem-modal')?.addEventListener('click', (evento) => {
+    if (evento.target?.id === 'admin-imagem-modal') {
+        fecharImagemFornecedorModal();
+    }
+});
+document.addEventListener('keydown', (evento) => {
+    const modal = document.getElementById('admin-imagem-modal');
+    if (evento.key === 'Escape' && modal && !modal.hidden) {
+        fecharImagemFornecedorModal();
+    }
+});
+
 ligarEventoFornecedor('btn-atualizar-catalogo-fornecedor', 'click', async () => {
     try {
         definirStatusFornecedor('A atualizar catalogo...');

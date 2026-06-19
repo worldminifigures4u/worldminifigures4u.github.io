@@ -3181,9 +3181,10 @@
 .mapas-ref-com-imagem {
     display: flex;
     align-items: center;
-    justify-content: center;
+    justify-content: flex-start;
     gap: 16px;
     min-height: 58px;
+    width: 100%;
 }
 
 .mapas-ref-com-imagem span {
@@ -3192,6 +3193,15 @@
     min-height: 42px;
     line-height: 1;
     white-space: nowrap;
+}
+
+.fornecedor-miniatura-clicavel {
+    cursor: zoom-in;
+}
+
+.fornecedor-miniatura-clicavel:hover {
+    outline: 2px solid var(--amarelo);
+    outline-offset: 2px;
 }
 
 .mapas-ref-com-imagem .fornecedor-miniatura.pequena {
