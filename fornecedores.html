@@ -3,120 +3,69 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="robots" content="noindex, nofollow, noarchive, nosnippet">
+    <meta name="robots" content="noindex,nofollow">
     <title>Fornecedores | Figures Planet</title>
-    <link rel="icon" type="image/png" href="figures-planet-logo-transparent.png">
+    <link rel="icon" type="image/jpeg" href="assets/logo-figures-planet.jpg">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body class="pagina-fornecedores-admin">
     <header class="admin-encomendas-topo fornecedores-topo">
         <a href="index.html" class="admin-encomendas-marca" aria-label="Voltar aos produtos">
-            <img src="figures-planet-logo-transparent.png" alt="Figures Planet">
+            <img src="assets/logo-figures-planet.jpg" alt="Figures Planet">
         </a>
         <h1>Fornecedores</h1>
-        <nav class="acoes-cabecalho" aria-label="Navegacao principal">
-            <a class="acao-cabecalho" href="index.html" aria-label="Ver produtos"><span class="texto-acao"><strong>Produtos</strong></span></a>
-            <a class="acao-cabecalho" href="conta.html" aria-label="Abrir conta de cliente"><span class="texto-acao"><strong>Conta Cliente</strong></span></a>
-            <a class="acao-cabecalho" href="plataforma.html" aria-label="Abrir plataformas"><span class="texto-acao"><strong>Plataforma</strong></span></a>
-            <a class="acao-cabecalho ativa" href="fornecedores.html" aria-label="Gerir fornecedores"><span class="texto-acao"><strong>Fornecedores</strong></span></a>
-            <a class="acao-cabecalho" href="encomendas.html" aria-label="Gerir encomendas"><span class="texto-acao"><strong>Encomendas</strong></span></a>
-            <a class="acao-cabecalho acao-carrinho" href="carrinho.html" aria-label="Abrir carrinho"><span class="badge-carrinho" id="contador-carrinho-cabecalho">0</span></a>
+        <nav class="acoes-cabecalho com-atalhos-admin" aria-label="Navegacao principal">
+            <a class="acao-cabecalho" href="index.html">Produtos</a>
+            <a class="acao-cabecalho" href="conta.html">Conta Cliente</a>
+            <a class="acao-cabecalho" href="plataforma.html">Plataforma</a>
+            <a class="acao-cabecalho" href="mapas.html">Mapas</a>
+            <a class="acao-cabecalho ativa" href="fornecedores.html">Fornecedores</a>
+            <a class="acao-cabecalho" href="encomendas.html">Encomendas</a>
+            <a class="acao-cabecalho acao-carrinho" href="carrinho.html">
+                <span>Carrinho</span>
+                <span class="badge-carrinho" id="contador-carrinho-cabecalho">0</span>
+            </a>
         </nav>
     </header>
 
     <div class="wallapop-bloqueio" id="fornecedores-bloqueio">A verificar acesso administrativo...</div>
 
     <main class="fornecedores-admin" id="fornecedores-aplicacao" hidden>
-        <section class="fornecedores-grid">
-            <section class="fornecedores-painel" aria-label="Nova encomenda a fornecedor">
-                <h2>Nova encomenda a fornecedor</h2>
-                <div class="fornecedores-form-grid">
-                    <label for="fornecedor-nome">Fornecedor</label>
-                    <select id="fornecedor-nome">
-                        <option value="Lote 50">Lote 50</option>
-                        <option value="Enmei">Enmei</option>
-                        <option value="Minie">Minie</option>
-                        <option value="Ruisbengtu">Ruisbengtu</option>
-                        <option value="Lequgo">Lequgo</option>
-                        <option value="Chuangyaoke">Chuangyaoke</option>
-                        <option value="Keooli">Keooli</option>
-                        <option value="Brixtoy">Brixtoy</option>
-                        <option value="Outro">Outro</option>
-                    </select>
-                    <label for="fornecedor-referencia">Referencia interna</label>
-                    <input type="text" id="fornecedor-referencia" placeholder="Ex.: caixa Junho, AliExpress 1234">
-                </div>
-
-                <h3>Adicionar produtos</h3>
-                <input type="search" id="fornecedor-pesquisa" class="fornecedor-input" placeholder="Nome, Ref., SKU ou tema" autocomplete="off">
-                <div class="fornecedor-lista-controles" aria-label="Opcoes da lista de produtos">
-                    <label for="fornecedor-ordenacao-stock">Ordenar por stock
-                        <select id="fornecedor-ordenacao-stock">
-                            <option value="nome">Nome / relevancia</option>
-                            <option value="stock-asc">Stock crescente</option>
-                            <option value="stock-desc">Stock decrescente</option>
-                        </select>
-                    </label>
-                    <label for="fornecedor-filtro-marcacao">Filtro do fornecedor
-                        <select id="fornecedor-filtro-marcacao">
-                            <option value="todos">Todos</option>
-                            <option value="disponivel">Disponivel para encomendar</option>
-                            <option value="os">OS</option>
-                            <option value="ex">EX</option>
-                            <option value="numero">Ja encomendado</option>
-                        </select>
-                    </label>
-                </div>
-                <div class="fornecedor-resultados" id="fornecedor-resultados"></div>
-
-                <h3>Produtos selecionados</h3>
-                <div class="fornecedor-selecionados" id="fornecedor-selecionados"></div>
-
-                <div class="fornecedores-acoes">
-                    <button class="wallapop-botao" type="button" id="btn-limpar-fornecedor">Limpar lista</button>
-                    <button class="wallapop-botao wallapop-botao-destaque" type="button" id="btn-criar-fornecedor">Criar encomenda</button>
-                </div>
-                <p class="wallapop-status" id="fornecedores-status" aria-live="polite"></p>
-            </section>
-
-            <section class="fornecedores-painel" aria-label="Encomendas a fornecedores">
+        <section class="fornecedores-grid fornecedores-grid-lista">
+            <section class="fornecedores-painel fornecedores-painel-lista" aria-label="Encomendas a fornecedores">
                 <div class="fornecedores-cabecalho-lista">
                     <h2>Encomendas a fornecedores</h2>
-                    <button class="wallapop-botao" type="button" id="btn-atualizar-catalogo-fornecedor">Atualizar catalogo</button>
+                    <button type="button" id="btn-atualizar-catalogo-fornecedor">Atualizar catalogo</button>
                 </div>
-
                 <div class="fornecedores-form-grid fornecedores-filtros">
                     <label for="fornecedor-filtro-estado">Estado</label>
                     <select id="fornecedor-filtro-estado">
                         <option value="todos">Todos</option>
-                        <option value="A preparar">A preparar</option>
-                        <option value="Encomendada">Encomendada</option>
-                        <option value="Recebida parcialmente">Recebida parcialmente</option>
-                        <option value="Recebida">Recebida</option>
-                        <option value="Cancelada">Cancelada</option>
+                        <option value="a_preparar">A preparar</option>
+                        <option value="encomendada">Encomendada</option>
+                        <option value="recebida_parcialmente">Recebida parcialmente</option>
+                        <option value="recebida">Recebida</option>
+                        <option value="cancelada">Cancelada</option>
                     </select>
                 </div>
-                <div class="fornecedor-pedidos" id="fornecedor-pedidos"></div>
+                <div id="fornecedor-pedidos" class="fornecedor-pedidos"></div>
+                <p class="fornecedores-status" id="fornecedores-status" role="status"></p>
             </section>
         </section>
     </main>
 
     <script>
-        (function () {
-            function atualizarContadorCarrinhoTopo() {
-                const contador = document.getElementById('contador-carrinho-cabecalho');
-                if (!contador) return;
-                try {
-                    const itens = JSON.parse(localStorage.getItem('carrinho') || '[]');
-                    const total = Array.isArray(itens) ? itens.reduce((soma, item) => soma + Number(item && item.quantidade || 0), 0) : 0;
-                    contador.textContent = total;
-                } catch (erro) {
-                    contador.textContent = '0';
-                }
+        (function atualizarContadorCarrinhoCabecalho(){
+            const el = document.getElementById('contador-carrinho-cabecalho');
+            if (!el) return;
+            try {
+                const dados = JSON.parse(localStorage.getItem('wmf_cart') || '[]');
+                const total = Array.isArray(dados) ? dados.reduce((soma, item) => soma + (Number(item.quantidade) || 0), 0) : 0;
+                el.textContent = String(total);
+            } catch (erro) {
+                el.textContent = '0';
             }
-            document.addEventListener('DOMContentLoaded', atualizarContadorCarrinhoTopo);
-            window.addEventListener('storage', atualizarContadorCarrinhoTopo);
         })();
     </script>
     <script src="fornecedores.js"></script>

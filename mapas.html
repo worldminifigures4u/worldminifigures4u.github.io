@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex,nofollow">
+    <title>Mapas | Figures Planet</title>
+    <link rel="icon" type="image/jpeg" href="assets/logo-figures-planet.jpg">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body class="pagina-fornecedores-admin pagina-mapas-admin">
+    <header class="admin-encomendas-topo fornecedores-topo">
+        <a href="index.html" class="admin-encomendas-marca" aria-label="Voltar aos produtos">
+            <img src="assets/logo-figures-planet.jpg" alt="Figures Planet">
+        </a>
+        <h1>Mapas</h1>
+        <nav class="acoes-cabecalho com-atalhos-admin" aria-label="Navegacao principal">
+            <a class="acao-cabecalho" href="index.html">Produtos</a>
+            <a class="acao-cabecalho" href="conta.html">Conta Cliente</a>
+            <a class="acao-cabecalho" href="plataforma.html">Plataforma</a>
+            <a class="acao-cabecalho ativa" href="mapas.html">Mapas</a>
+            <a class="acao-cabecalho" href="fornecedores.html">Fornecedores</a>
+            <a class="acao-cabecalho" href="encomendas.html">Encomendas</a>
+            <a class="acao-cabecalho acao-carrinho" href="carrinho.html">
+                <span>Carrinho</span>
+                <span class="badge-carrinho" id="contador-carrinho-cabecalho">0</span>
+            </a>
+        </nav>
+    </header>
+
+    <div class="wallapop-bloqueio" id="fornecedores-bloqueio">A verificar acesso administrativo...</div>
+
+    <main class="fornecedores-admin" id="fornecedores-aplicacao" hidden>
+        <section class="fornecedores-grid fornecedores-grid-mapas">
+            <section class="fornecedores-painel" aria-label="Nova encomenda a fornecedor">
+                <h2>Nova encomenda a fornecedor</h2>
+                <div class="fornecedores-form-grid">
+                    <label for="fornecedor-nome">Fornecedor</label>
+                    <select id="fornecedor-nome">
+                        <option value="Lote 50">Lote 50</option>
+                        <option value="Enmei (Minie Gong)">Enmei (Minie Gong)</option>
+                        <option value="Ruisbengtu">Ruisbengtu</option>
+                        <option value="Lequgo">Lequgo</option>
+                        <option value="Chuangyaoke">Chuangyaoke</option>
+                        <option value="Keooli (Koopf)">Keooli (Koopf)</option>
+                        <option value="Brixtoy">Brixtoy</option>
+                        <option value="Outro">Outro</option>
+                    </select>
+
+                    <label for="fornecedor-referencia">Referencia interna</label>
+                    <input id="fornecedor-referencia" type="text" placeholder="Ex.: caixa Junho, AliExpress 1234">
+                </div>
+
+                <h3>Adicionar produtos</h3>
+                <input id="fornecedor-pesquisa" type="search" placeholder="Nome, Ref., SKU ou tema">
+                <div class="fornecedor-lista-controles">
+                    <label for="fornecedor-ordenacao-stock">Ordenar por stock</label>
+                    <label for="fornecedor-filtro-marcacao">Filtro do fornecedor</label>
+                    <select id="fornecedor-ordenacao-stock">
+                        <option value="nome">Nome / relevancia</option>
+                        <option value="stock-asc">Stock crescente</option>
+                        <option value="stock-desc">Stock decrescente</option>
+                    </select>
+                    <select id="fornecedor-filtro-marcacao">
+                        <option value="todos">Todos</option>
+                        <option value="os">OS</option>
+                        <option value="ex">EX</option>
+                        <option value="disponivel">Disponivel</option>
+                        <option value="encomendado">Ja encomendado</option>
+                    </select>
+                </div>
+                <div id="fornecedor-resultados" class="fornecedor-resultados"></div>
+
+                <h3>Produtos selecionados</h3>
+                <div id="fornecedor-selecionados" class="fornecedor-selecionados"></div>
+                <div class="fornecedores-acoes">
+                    <button type="button" id="btn-limpar-fornecedor">Limpar lista</button>
+                    <button type="button" id="btn-criar-fornecedor">Criar encomenda</button>
+                </div>
+                <p class="fornecedores-status" id="fornecedores-status" role="status"></p>
+            </section>
+        </section>
+    </main>
+
+    <script>
+        (function atualizarContadorCarrinhoCabecalho(){
+            const el = document.getElementById('contador-carrinho-cabecalho');
+            if (!el) return;
+            try {
+                const dados = JSON.parse(localStorage.getItem('wmf_cart') || '[]');
+                const total = Array.isArray(dados) ? dados.reduce((soma, item) => soma + (Number(item.quantidade) || 0), 0) : 0;
+                el.textContent = String(total);
+            } catch (erro) {
+                el.textContent = '0';
+            }
+        })();
+    </script>
+    <script src="fornecedores.js"></script>
+</body>
+</html>

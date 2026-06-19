@@ -543,7 +543,8 @@ async function apagarPedidoFornecedor(id) {
 }
 function renderizarPedidosFornecedores() {
     const caixa = document.getElementById('fornecedor-pedidos');
-    const filtro = document.getElementById('fornecedor-filtro-estado').value;
+    if (!caixa) return;
+    const filtro = document.getElementById('fornecedor-filtro-estado')?.value || 'todos';
     caixa.innerHTML = '';
     const pedidos = fornecedorPedidos.filter(pedido => filtro === 'todos' || pedido.estado === filtro);
     if (!pedidos.length) {
@@ -672,14 +673,21 @@ async function iniciarFornecedoresAdmin() {
     }
 }
 
-document.getElementById('fornecedor-pesquisa').addEventListener('input', renderizarResultadosFornecedor);
-document.getElementById('fornecedor-nome').addEventListener('change', renderizarResultadosFornecedor);
-document.getElementById('fornecedor-ordenacao-stock').addEventListener('change', renderizarResultadosFornecedor);
-document.getElementById('fornecedor-filtro-marcacao').addEventListener('change', renderizarResultadosFornecedor);
-document.getElementById('btn-limpar-fornecedor').addEventListener('click', limparSelecaoFornecedor);
-document.getElementById('btn-criar-fornecedor').addEventListener('click', criarPedidoFornecedor);
-document.getElementById('fornecedor-filtro-estado').addEventListener('change', renderizarPedidosFornecedores);
-document.getElementById('btn-atualizar-catalogo-fornecedor').addEventListener('click', async () => {
+function ligarEventoFornecedor(id, evento, handler) {
+    const elemento = document.getElementById(id);
+    if (elemento) {
+        elemento.addEventListener(evento, handler);
+    }
+}
+
+ligarEventoFornecedor('fornecedor-pesquisa', 'input', renderizarResultadosFornecedor);
+ligarEventoFornecedor('fornecedor-nome', 'change', renderizarResultadosFornecedor);
+ligarEventoFornecedor('fornecedor-ordenacao-stock', 'change', renderizarResultadosFornecedor);
+ligarEventoFornecedor('fornecedor-filtro-marcacao', 'change', renderizarResultadosFornecedor);
+ligarEventoFornecedor('btn-limpar-fornecedor', 'click', limparSelecaoFornecedor);
+ligarEventoFornecedor('btn-criar-fornecedor', 'click', criarPedidoFornecedor);
+ligarEventoFornecedor('fornecedor-filtro-estado', 'change', renderizarPedidosFornecedores);
+ligarEventoFornecedor('btn-atualizar-catalogo-fornecedor', 'click', async () => {
     try {
         definirStatusFornecedor('A atualizar catalogo...');
         await carregarCatalogoFornecedores();

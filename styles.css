@@ -3029,3 +3029,10 @@ body{
             .fornecedor-produto,.fornecedor-item,.fornecedor-pedido-linha,.fornecedor-pedido-cabecalho{ grid-template-columns:1fr; }
             .fornecedor-miniatura,.fornecedor-miniatura.pequena{ width:86px; height:86px; }
         }
+
+        .fornecedores-grid-lista{ grid-template-columns:minmax(0,1fr); }
+        .fornecedores-grid-mapas{ grid-template-columns:minmax(420px,760px); justify-content:center; }
+        .fornecedores-painel-lista{ width:100%; }
+        @media (max-width: 760px){
+            .fornecedores-grid-mapas{ grid-template-columns:1fr; }
+        }
