@@ -2,6 +2,9 @@
 alter table public.produtos
   add column if not exists referencia text;
 
+alter table public.produtos
+  add column if not exists fornecedores jsonb not null default '{}'::jsonb;
+
 create or replace function public.importar_produtos_admin(p_produtos jsonb)
 returns jsonb
 language plpgsql
@@ -24,7 +27,7 @@ begin
   for v_produto in select value from jsonb_array_elements(p_produtos)
   loop
     insert into public.produtos (
-      sku, referencia, nome, preco, stock, tema, subtema, peso, ativo
+      sku, referencia, nome, preco, stock, tema, subtema, peso, fornecedores, ativo
     ) values (
       upper(trim(v_produto->>'sku')),
       nullif(trim(v_produto->>'referencia'), ''),
@@ -34,6 +37,7 @@ begin
       trim(v_produto->>'tema'),
       coalesce(nullif(trim(v_produto->>'subtema'), ''), 'semsubtema'),
       (v_produto->>'peso')::numeric,
+      coalesce(v_produto->'fornecedores', '{}'::jsonb),
       coalesce((v_produto->>'ativo')::boolean, false)
     )
     on conflict (sku) do update set
@@ -44,6 +48,7 @@ begin
       tema = excluded.tema,
       subtema = excluded.subtema,
       peso = excluded.peso,
+      fornecedores = excluded.fornecedores,
       ativo = excluded.ativo;
 
     v_importados := v_importados + 1;
@@ -79,6 +84,7 @@ begin
       'peso', coalesce(produto.peso, 10),
       'imagens', produto.imagens,
       'stock', coalesce(produto.stock, 0),
+      'fornecedores', coalesce(produto.fornecedores, '{}'::jsonb),
       'ativo', coalesce(produto.ativo, true)
     ) order by produto.nome)
     from public.produtos as produto

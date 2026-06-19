@@ -914,6 +914,56 @@ function normalizarCabecalhoStock(valor) {
         .toLowerCase();
 }
 
+const COLUNAS_CATALOGO_BASE = new Set(['nome', 'preco', 'sku', 'top', 'stock', 'tema', 'subtema', 'peso', 'referencia']);
+const FORNECEDORES_IMPORTACAO = [
+    { chave:'lote50', aliases:['lote50', 'lote 50', 'lote_50'] },
+    { chave:'enmei', aliases:['enmei', 'winnie gong', 'winniegong'] },
+    { chave:'minie', aliases:['minie', 'minie gong', 'miniegong'] },
+    { chave:'ruisbengtu', aliases:['ruisbengtu', 'ruisbengtui'] },
+    { chave:'lequgo', aliases:['lequgo', 'legougo'] },
+    { chave:'chuangyaoke', aliases:['chuangyaoke', 'chuangyoke'] },
+    { chave:'keooli', aliases:['keooli', 'keooli koopt', 'koopt'] },
+    { chave:'brixtoy', aliases:['brixtoy'] }
+];
+
+function normalizarChaveImportacaoFornecedor(texto) {
+    return normalizarCabecalhoStock(texto).replace(/[^a-z0-9]/g, '');
+}
+
+function obterFornecedorPorCabecalhoImportacao(cabecalho) {
+    const chaveCabecalho = normalizarChaveImportacaoFornecedor(cabecalho);
+    if(!chaveCabecalho || COLUNAS_CATALOGO_BASE.has(cabecalho)) return null;
+    return FORNECEDORES_IMPORTACAO.find(fornecedor =>
+        fornecedor.aliases.some(alias => {
+            const chaveAlias = normalizarChaveImportacaoFornecedor(alias);
+            return chaveAlias && (chaveCabecalho === chaveAlias || chaveCabecalho.includes(chaveAlias));
+        })
+    ) || null;
+}
+
+function obterValorFornecedorImportacao(valor) {
+    if(valor === null || valor === undefined) return '';
+    return String(valor).trim();
+}
+
+function juntarValoresFornecedorImportacao(atual, novo) {
+    if(!atual) return novo;
+    if(!novo || atual === novo) return atual;
+    return atual + ' | ' + novo;
+}
+
+function extrairFornecedoresImportacao(linha, cabecalhos) {
+    const fornecedores = {};
+    cabecalhos.forEach((cabecalho, indice) => {
+        const fornecedor = obterFornecedorPorCabecalhoImportacao(cabecalho);
+        if(!fornecedor) return;
+        const valor = obterValorFornecedorImportacao(linha[indice]);
+        if(!valor) return;
+        fornecedores[fornecedor.chave] = juntarValoresFornecedorImportacao(fornecedores[fornecedor.chave], valor);
+    });
+    return fornecedores;
+}
+
 function criarIndicadorImportacaoStock(valor, legenda) {
     const bloco = document.createElement('div');
     const numero = document.createElement('strong');
@@ -1227,6 +1277,7 @@ async function analisarFicheiroCatalogoAdmin(input) {
             const tema = String(linha[colunas.tema] || '').trim();
             const subtema = colunas.subtema >= 0 ? String(linha[colunas.subtema] || '').trim() : '';
             const peso = Number(linha[colunas.peso]);
+            const fornecedores = extrairFornecedoresImportacao(linha, cabecalhos);
 
             if(!nome || !sku || !tema || !Number.isFinite(preco) || preco < 0 || !Number.isInteger(stock) || stock < 0 || !Number.isFinite(peso) || peso < 1 || produtosPorSku.has(sku)) {
                 invalidos.push(indice + primeiraLinhaDados);
@@ -1242,6 +1293,7 @@ async function analisarFicheiroCatalogoAdmin(input) {
                 tema,
                 subtema:subtema || 'semsubtema',
                 peso,
+                fornecedores,
                 ativo:stock > 0
             });
         });
