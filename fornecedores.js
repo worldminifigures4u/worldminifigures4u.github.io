@@ -20,6 +20,7 @@ let fornecedoresClient = null;
 let fornecedorProdutos = [];
 let fornecedorSelecao = carregarSelecaoFornecedor();
 let fornecedorPedidos = carregarPedidosFornecedores();
+let fornecedorMapaOrdenacao = { coluna: "nome", direcao: "asc" };
 
 function normalizarFornecedor(texto) {
     return String(texto || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim();
@@ -198,6 +199,7 @@ function obterControlosResultadosFornecedor() {
         termo: normalizarFornecedor(document.getElementById("fornecedor-pesquisa")?.value || ""),
         fornecedor: document.getElementById("fornecedor-nome")?.value || "",
         filtroFornecedor: document.getElementById("fornecedor-filtro-marcacao")?.value || "todos",
+        filtroTop: document.getElementById("fornecedor-filtro-top")?.value || "todos",
         ordenacao: document.getElementById("fornecedor-ordenacao-stock")?.value || "nome",
     };
 }
@@ -218,18 +220,51 @@ function calcularScoreResultadoFornecedor(produto, termo) {
     return 99;
 }
 
+function compararTextoFornecedor(a, b) {
+    return String(a || "").localeCompare(String(b || ""), "pt", { numeric: true, sensitivity: "base" });
+}
+
+function obterValorOrdenacaoFornecedor(item, coluna) {
+    const produto = item.produto || item;
+    if (coluna === "sku") return produto.sku || "";
+    if (coluna === "ref") return produto.referencia || "";
+    if (coluna === "top") return obterTopProdutoFornecedor(produto) || "";
+    if (coluna === "stock") return Number(produto.stock || 0);
+    if (coluna === "qtd") {
+        const selecionado = fornecedorSelecao.find(sel => String(sel.id) === String(produto.id));
+        return Number(selecionado?.quantidade || 0);
+    }
+    return produto.nome || "";
+}
+
+function compararProdutosPorColunaFornecedor(a, b, coluna, direcao = "asc") {
+    const valorA = obterValorOrdenacaoFornecedor(a, coluna);
+    const valorB = obterValorOrdenacaoFornecedor(b, coluna);
+    let resultado;
+    if (typeof valorA === "number" || typeof valorB === "number") {
+        resultado = Number(valorA || 0) - Number(valorB || 0);
+    } else {
+        resultado = compararTextoFornecedor(valorA, valorB);
+    }
+    if (resultado === 0 && coluna !== "nome") {
+        resultado = compararTextoFornecedor(a.produto?.nome, b.produto?.nome);
+    }
+    return direcao === "desc" ? -resultado : resultado;
+}
+
 function compararProdutosFornecedor(a, b, ordenacao) {
-    if (ordenacao === "stock-asc" || ordenacao === "stock-desc") {
-        const stockA = Number(a.produto.stock || 0);
-        const stockB = Number(b.produto.stock || 0);
-        if (stockA !== stockB) {
-            return ordenacao === "stock-asc" ? stockA - stockB : stockB - stockA;
-        }
-    } else if (a.score !== b.score) {
-        return a.score - b.score;
+    const direcao = ordenacao.endsWith("-desc") ? "desc" : "asc";
+    const coluna = ordenacao.replace("-asc", "").replace("-desc", "");
+
+    if (coluna === "stock") {
+        return compararProdutosPorColunaFornecedor(a, b, "stock", direcao);
+    }
+    if (["nome", "sku", "ref", "top", "qtd"].includes(coluna)) {
+        return compararProdutosPorColunaFornecedor(a, b, coluna, direcao);
     }
 
-    return String(a.produto.nome || "").localeCompare(String(b.produto.nome || ""), "pt");
+    if (a.score !== b.score) return a.score - b.score;
+    return compararTextoFornecedor(a.produto.nome, b.produto.nome);
 }
 
 function definirQuantidadeFornecedor(id, valor) {
@@ -243,6 +278,36 @@ function definirQuantidadeFornecedor(id, valor) {
 
 function obterProdutoAtual(id) {
     return fornecedorProdutos.find(produto => String(produto.id) === String(id));
+}
+
+function produtoPassaFiltroTopFornecedor(produto, filtroTop) {
+    if (!filtroTop || filtroTop === "todos") return true;
+    const valorTop = String(obterTopProdutoFornecedor(produto) || "").trim();
+    if (filtroTop === "top") return Boolean(valorTop);
+    if (filtroTop === "sem-top") return !valorTop;
+    return true;
+}
+
+function obterQuantidadeSelecionadaFornecedor(id) {
+    const item = fornecedorSelecao.find(selecionado => String(selecionado.id) === String(id));
+    return Number(item?.quantidade || 0);
+}
+
+function definirQuantidadeMapaFornecedor(produto, valor) {
+    const quantidade = Math.max(0, Math.floor(Number(valor) || 0));
+    const id = String(produto.id);
+    const indice = fornecedorSelecao.findIndex(item => String(item.id) === id);
+
+    if (quantidade <= 0) {
+        if (indice >= 0) fornecedorSelecao.splice(indice, 1);
+    } else if (indice >= 0) {
+        fornecedorSelecao[indice] = { ...fornecedorSelecao[indice], ...produto, quantidade };
+    } else {
+        fornecedorSelecao.push({ ...produto, quantidade });
+    }
+
+    guardarSelecaoFornecedor();
+    renderizarSelecionadosFornecedor();
 }
 
 async function carregarCatalogoFornecedores() {
@@ -318,72 +383,73 @@ function renderizarResultadosFornecedorMapa(caixa, resultados, fornecedor) {
 
     const thead = document.createElement("thead");
     const cabecalho = document.createElement("tr");
-    const fornecedorTitulo = fornecedor && fornecedor !== "Outro" ? fornecedor : "Fornecedor";
     [
-        ["nome", "mapas-col-nome"],
-        ["sku", "mapas-col-sku"],
-        ["top", "mapas-col-top"],
-        ["stock", "mapas-col-stock"],
-        ["Ref.", "mapas-col-ref"],
-        [fornecedorTitulo, "mapas-col-fornecedor"],
-        ["Qtd.", "mapas-col-qtd"],
-        ["", "mapas-col-acao"],
-    ].forEach(([texto, classe]) => {
+        ["nome", "mapas-col-nome", "nome"],
+        ["sku", "mapas-col-sku", "sku"],
+        ["stock", "mapas-col-stock", "stock"],
+        ["Ref.", "mapas-col-ref", "ref"],
+        ["Qtd.", "mapas-col-qtd", "qtd"],
+    ].forEach(([texto, classe, coluna]) => {
         const th = document.createElement("th");
-        th.className = classe;
-        th.textContent = texto;
+        th.className = `${classe} mapas-th-ordenavel`;
+        const botao = document.createElement("button");
+        botao.type = "button";
+        botao.textContent = texto;
+        const ativo = fornecedorMapaOrdenacao.coluna === coluna;
+        if (ativo) {
+            botao.setAttribute("aria-sort", fornecedorMapaOrdenacao.direcao === "asc" ? "ascending" : "descending");
+            botao.textContent += fornecedorMapaOrdenacao.direcao === "asc" ? " ▲" : " ▼";
+        }
+        botao.addEventListener("click", () => {
+            const mesmaColuna = fornecedorMapaOrdenacao.coluna === coluna;
+            fornecedorMapaOrdenacao = {
+                coluna,
+                direcao: mesmaColuna && fornecedorMapaOrdenacao.direcao === "asc" ? "desc" : "asc"
+            };
+            renderizarResultadosFornecedor();
+        });
+        th.appendChild(botao);
         cabecalho.appendChild(th);
     });
     thead.appendChild(cabecalho);
     tabela.appendChild(thead);
 
     const tbody = document.createElement("tbody");
-    resultados.forEach(({ produto }) => {
-        const atual = produto;
-        const linha = document.createElement("tr");
-        const stockNumero = Number(atual.stock || 0);
-        const valorFornecedor = fornecedor && fornecedor !== "Outro"
-            ? obterValorFornecedorProduto(atual, fornecedor)
-            : "";
-        const estadoFornecedor = classificarValorFornecedor(valorFornecedor);
-        const textoFornecedorBruto = String(valorFornecedor ?? "").trim();
-        const textoFornecedorCelula = textoFornecedorBruto
-            ? (estadoFornecedor.tipo === "numero" ? textoFornecedorBruto : estadoFornecedor.texto)
-            : "";
+    resultados
+        .slice()
+        .sort((a, b) => compararProdutosPorColunaFornecedor(a, b, fornecedorMapaOrdenacao.coluna, fornecedorMapaOrdenacao.direcao))
+        .forEach(({ produto }) => {
+            const atual = produto;
+            const linha = document.createElement("tr");
+            const stockNumero = Number(atual.stock || 0);
 
-        linha.appendChild(criarCelulaMapaFornecedor(atual.nome || "Produto sem nome", "mapas-col-nome"));
-        linha.appendChild(criarCelulaMapaFornecedor(atual.sku || "-", "mapas-col-sku"));
-        linha.appendChild(criarCelulaMapaFornecedor(obterTopProdutoFornecedor(atual) || "", "mapas-col-top"));
-        linha.appendChild(criarCelulaMapaFornecedor(stockNumero, `mapas-col-stock mapa-stock-celula ${stockNumero <= 0 ? "sem-stock" : ""}`));
-        linha.appendChild(criarCelulaMapaFornecedor(atual.referencia || "", "mapas-col-ref"));
-        linha.appendChild(criarCelulaMapaFornecedor(
-            fornecedor && fornecedor !== "Outro" ? textoFornecedorCelula : "",
-            `mapas-col-fornecedor mapa-fornecedor-celula ${estadoFornecedor.tipo || ""}`
-        ));
+            linha.appendChild(criarCelulaMapaFornecedor(atual.nome || "Produto sem nome", "mapas-col-nome"));
+            linha.appendChild(criarCelulaMapaFornecedor(atual.sku || "-", "mapas-col-sku"));
+            linha.appendChild(criarCelulaMapaFornecedor(stockNumero, `mapas-col-stock mapa-stock-celula ${stockNumero <= 0 ? "sem-stock" : ""}`));
 
-        const qtdCelula = document.createElement("td");
-        qtdCelula.className = "mapas-col-qtd";
-        const input = document.createElement("input");
-        input.type = "number";
-        input.min = "1";
-        input.step = "1";
-        input.value = "1";
-        input.className = "mapa-quantidade-input";
-        qtdCelula.appendChild(input);
-        linha.appendChild(qtdCelula);
+            const refCelula = document.createElement("td");
+            refCelula.className = "mapas-col-ref mapas-ref-com-imagem";
+            refCelula.appendChild(criarImagemFornecedor(atual, "fornecedor-miniatura pequena"));
+            const refTexto = document.createElement("span");
+            refTexto.textContent = atual.referencia || "-";
+            refCelula.appendChild(refTexto);
+            linha.appendChild(refCelula);
 
-        const acao = document.createElement("td");
-        acao.className = "mapas-col-acao";
-        const botao = document.createElement("button");
-        botao.type = "button";
-        botao.className = "mapa-adicionar-botao";
-        botao.textContent = "Adicionar";
-        botao.addEventListener("click", () => adicionarProdutoFornecedor(atual, input.value));
-        acao.appendChild(botao);
-        linha.appendChild(acao);
+            const qtdCelula = document.createElement("td");
+            qtdCelula.className = "mapas-col-qtd";
+            const input = document.createElement("input");
+            input.type = "number";
+            input.min = "0";
+            input.step = "1";
+            input.value = String(obterQuantidadeSelecionadaFornecedor(atual.id) || 0);
+            input.className = "mapa-quantidade-input";
+            input.addEventListener("change", () => definirQuantidadeMapaFornecedor(atual, input.value));
+            input.addEventListener("blur", () => definirQuantidadeMapaFornecedor(atual, input.value));
+            qtdCelula.appendChild(input);
+            linha.appendChild(qtdCelula);
 
-        tbody.appendChild(linha);
-    });
+            tbody.appendChild(linha);
+        });
 
     tabela.appendChild(tbody);
     envoltorio.appendChild(tabela);
@@ -394,7 +460,7 @@ function renderizarResultadosFornecedor() {
     const caixa = document.getElementById("fornecedor-resultados");
     if (!caixa) return;
 
-    const { termo, fornecedor, filtroFornecedor, ordenacao } = obterControlosResultadosFornecedor();
+    const { termo, fornecedor, filtroFornecedor, filtroTop, ordenacao } = obterControlosResultadosFornecedor();
     caixa.innerHTML = "";
 
     const resultados = fornecedorProdutos
@@ -402,7 +468,11 @@ function renderizarResultadosFornecedor() {
             produto,
             score: calcularScoreResultadoFornecedor(produto, termo),
         }))
-        .filter((item) => (!termo || item.score < 99) && produtoPassaFiltroFornecedor(item.produto, fornecedor, filtroFornecedor))
+        .filter((item) => (
+            (!termo || item.score < 99)
+            && produtoPassaFiltroFornecedor(item.produto, fornecedor, filtroFornecedor)
+            && produtoPassaFiltroTopFornecedor(item.produto, filtroTop)
+        ))
         .sort((a, b) => compararProdutosFornecedor(a, b, ordenacao));
 
     if (estaPaginaMapasFornecedor()) {
@@ -800,6 +870,7 @@ ligarEventoFornecedor('fornecedor-pesquisa', 'input', renderizarResultadosFornec
 ligarEventoFornecedor('fornecedor-nome', 'change', renderizarResultadosFornecedor);
 ligarEventoFornecedor('fornecedor-ordenacao-stock', 'change', renderizarResultadosFornecedor);
 ligarEventoFornecedor('fornecedor-filtro-marcacao', 'change', renderizarResultadosFornecedor);
+ligarEventoFornecedor('fornecedor-filtro-top', 'change', renderizarResultadosFornecedor);
 ligarEventoFornecedor('btn-limpar-fornecedor', 'click', limparSelecaoFornecedor);
 ligarEventoFornecedor('btn-criar-fornecedor', 'click', criarPedidoFornecedor);
 ligarEventoFornecedor('fornecedor-filtro-estado', 'change', renderizarPedidosFornecedores);

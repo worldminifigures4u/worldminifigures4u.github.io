@@ -3048,6 +3048,10 @@ body{
     justify-content: stretch;
 }
 
+.pagina-mapas-admin .fornecedor-lista-controles.mapas-lista-controles {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
 .pagina-mapas-admin .fornecedor-resultados {
     display: block;
     max-height: 62vh;
@@ -3100,22 +3104,15 @@ body{
     background: #171717;
 }
 
-.mapas-col-nome { width: 34%; }
-.mapas-col-sku { width: 8%; }
-.mapas-col-top { width: 7%; }
-.mapas-col-stock { width: 8%; }
-.mapas-col-ref { width: 13%; }
-.mapas-col-fornecedor { width: 13%; }
-.mapas-col-qtd { width: 74px; }
-.mapas-col-acao { width: 120px; }
+.mapas-col-nome { width: 42%; }
+.mapas-col-sku { width: 11%; }
+.mapas-col-stock { width: 10%; }
+.mapas-col-ref { width: 25%; }
+.mapas-col-qtd { width: 90px; }
 
 .mapas-col-sku,
-.mapas-col-top,
 .mapas-col-stock,
-.mapas-col-ref,
-.mapas-col-fornecedor,
-.mapas-col-qtd,
-.mapas-col-acao {
+.mapas-col-qtd {
     text-align: center;
 }
 
@@ -3151,7 +3148,7 @@ body{
 }
 
 .mapa-quantidade-input {
-    width: 58px;
+    width: 70px;
     box-sizing: border-box;
     border: 1px solid #444;
     border-radius: 5px;
@@ -3162,18 +3159,30 @@ body{
     font-weight: 800;
 }
 
-.mapa-adicionar-botao {
+.mapas-th-ordenavel button {
+    width: 100%;
     border: 0;
-    border-radius: 7px;
-    background: #ffc400;
-    color: #000;
-    padding: 8px 12px;
+    background: transparent;
+    color: inherit;
+    font: inherit;
     font-weight: 900;
+    text-align: inherit;
     cursor: pointer;
 }
 
-.mapa-adicionar-botao:hover {
-    filter: brightness(1.05);
+.mapas-ref-com-imagem {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.mapas-ref-com-imagem .fornecedor-miniatura.pequena {
+    width: 42px;
+    height: 42px;
+    flex: 0 0 42px;
+    object-fit: contain;
+    background: #222;
+    border-radius: 5px;
 }
 
 @media (max-width: 900px) {
