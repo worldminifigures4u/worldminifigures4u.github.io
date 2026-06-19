@@ -3036,3 +3036,152 @@ body{
         @media (max-width: 760px){
             .fornecedores-grid-mapas{ grid-template-columns:1fr; }
         }
+
+
+/* Mapa de fornecedor em formato de folha de calculo */
+.pagina-mapas-admin .fornecedores-admin {
+    max-width: 1680px;
+}
+
+.pagina-mapas-admin .fornecedores-grid-mapas {
+    grid-template-columns: minmax(0, 1fr);
+    justify-content: stretch;
+}
+
+.pagina-mapas-admin .fornecedor-resultados {
+    display: block;
+    max-height: 62vh;
+    overflow: auto;
+    padding-right: 0;
+    border: 1px solid #333;
+    border-radius: 8px;
+    background: #101010;
+}
+
+.mapas-tabela-resumo {
+    padding: 8px 10px;
+    margin: 0;
+    border-bottom: 1px solid #333;
+    background: #151515;
+}
+
+.mapas-tabela-wrapper {
+    overflow: auto;
+}
+
+.mapas-produtos-tabela {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed;
+    font-size: 14px;
+}
+
+.mapas-produtos-tabela th {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    background: #ffc400;
+    color: #000;
+    padding: 9px 8px;
+    border: 1px solid #8a6a00;
+    text-align: left;
+    font-weight: 900;
+}
+
+.mapas-produtos-tabela td {
+    padding: 7px 8px;
+    border: 1px solid #333;
+    color: #fff;
+    vertical-align: middle;
+    background: #111;
+}
+
+.mapas-produtos-tabela tbody tr:nth-child(even) td {
+    background: #171717;
+}
+
+.mapas-col-nome { width: 34%; }
+.mapas-col-sku { width: 8%; }
+.mapas-col-top { width: 7%; }
+.mapas-col-stock { width: 8%; }
+.mapas-col-ref { width: 13%; }
+.mapas-col-fornecedor { width: 13%; }
+.mapas-col-qtd { width: 74px; }
+.mapas-col-acao { width: 120px; }
+
+.mapas-col-sku,
+.mapas-col-top,
+.mapas-col-stock,
+.mapas-col-ref,
+.mapas-col-fornecedor,
+.mapas-col-qtd,
+.mapas-col-acao {
+    text-align: center;
+}
+
+.mapa-stock-celula {
+    font-weight: 900;
+}
+
+.mapa-stock-celula.sem-stock {
+    color: #ff4d4d !important;
+}
+
+.mapa-fornecedor-celula {
+    font-weight: 900;
+}
+
+.mapa-fornecedor-celula.os {
+    background: #d90000 !important;
+    color: #fff !important;
+}
+
+.mapa-fornecedor-celula.ex {
+    background: #ff8a00 !important;
+    color: #111 !important;
+}
+
+.mapa-fornecedor-celula.numero {
+    background: #7ed321 !important;
+    color: #111 !important;
+}
+
+.mapa-fornecedor-celula.disponivel {
+    color: #39d353 !important;
+}
+
+.mapa-quantidade-input {
+    width: 58px;
+    box-sizing: border-box;
+    border: 1px solid #444;
+    border-radius: 5px;
+    background: #242424;
+    color: #fff;
+    padding: 7px 6px;
+    text-align: center;
+    font-weight: 800;
+}
+
+.mapa-adicionar-botao {
+    border: 0;
+    border-radius: 7px;
+    background: #ffc400;
+    color: #000;
+    padding: 8px 12px;
+    font-weight: 900;
+    cursor: pointer;
+}
+
+.mapa-adicionar-botao:hover {
+    filter: brightness(1.05);
+}
+
+@media (max-width: 900px) {
+    .mapas-produtos-tabela {
+        min-width: 860px;
+    }
+
+    .pagina-mapas-admin .fornecedor-resultados {
+        max-height: 65vh;
+    }
+}

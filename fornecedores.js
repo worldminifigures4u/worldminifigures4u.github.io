@@ -282,6 +282,114 @@ async function carregarCatalogoFornecedores() {
     guardarSelecaoFornecedor();
 }
 
+
+function estaPaginaMapasFornecedor() {
+    return document.body?.classList.contains("pagina-mapas-admin");
+}
+
+function obterTopProdutoFornecedor(produto) {
+    return produto?.top || produto?.tipo || produto?.destaque || "";
+}
+
+function criarCelulaMapaFornecedor(texto, className = "") {
+    const celula = document.createElement("td");
+    if (className) celula.className = className;
+    celula.textContent = texto ?? "";
+    return celula;
+}
+
+function renderizarResultadosFornecedorMapa(caixa, resultados, fornecedor) {
+    caixa.classList.add("fornecedor-resultados-mapa");
+
+    const resumo = document.createElement("p");
+    resumo.className = "fornecedor-contagem-lista mapas-tabela-resumo";
+    resumo.textContent = resultados.length
+        ? `${resultados.length} produto(s) no mapa`
+        : "Nenhum produto encontrado.";
+    caixa.appendChild(resumo);
+
+    if (!resultados.length) return;
+
+    const envoltorio = document.createElement("div");
+    envoltorio.className = "mapas-tabela-wrapper";
+
+    const tabela = document.createElement("table");
+    tabela.className = "mapas-produtos-tabela";
+
+    const thead = document.createElement("thead");
+    const cabecalho = document.createElement("tr");
+    const fornecedorTitulo = fornecedor && fornecedor !== "Outro" ? fornecedor : "Fornecedor";
+    [
+        ["nome", "mapas-col-nome"],
+        ["sku", "mapas-col-sku"],
+        ["top", "mapas-col-top"],
+        ["stock", "mapas-col-stock"],
+        ["Ref.", "mapas-col-ref"],
+        [fornecedorTitulo, "mapas-col-fornecedor"],
+        ["Qtd.", "mapas-col-qtd"],
+        ["", "mapas-col-acao"],
+    ].forEach(([texto, classe]) => {
+        const th = document.createElement("th");
+        th.className = classe;
+        th.textContent = texto;
+        cabecalho.appendChild(th);
+    });
+    thead.appendChild(cabecalho);
+    tabela.appendChild(thead);
+
+    const tbody = document.createElement("tbody");
+    resultados.forEach(({ produto }) => {
+        const atual = produto;
+        const linha = document.createElement("tr");
+        const stockNumero = Number(atual.stock || 0);
+        const valorFornecedor = fornecedor && fornecedor !== "Outro"
+            ? obterValorFornecedorProduto(atual, fornecedor)
+            : "";
+        const estadoFornecedor = classificarValorFornecedor(valorFornecedor);
+        const textoFornecedorBruto = String(valorFornecedor ?? "").trim();
+        const textoFornecedorCelula = textoFornecedorBruto
+            ? (estadoFornecedor.tipo === "numero" ? textoFornecedorBruto : estadoFornecedor.texto)
+            : "";
+
+        linha.appendChild(criarCelulaMapaFornecedor(atual.nome || "Produto sem nome", "mapas-col-nome"));
+        linha.appendChild(criarCelulaMapaFornecedor(atual.sku || "-", "mapas-col-sku"));
+        linha.appendChild(criarCelulaMapaFornecedor(obterTopProdutoFornecedor(atual) || "", "mapas-col-top"));
+        linha.appendChild(criarCelulaMapaFornecedor(stockNumero, `mapas-col-stock mapa-stock-celula ${stockNumero <= 0 ? "sem-stock" : ""}`));
+        linha.appendChild(criarCelulaMapaFornecedor(atual.referencia || "", "mapas-col-ref"));
+        linha.appendChild(criarCelulaMapaFornecedor(
+            fornecedor && fornecedor !== "Outro" ? textoFornecedorCelula : "",
+            `mapas-col-fornecedor mapa-fornecedor-celula ${estadoFornecedor.tipo || ""}`
+        ));
+
+        const qtdCelula = document.createElement("td");
+        qtdCelula.className = "mapas-col-qtd";
+        const input = document.createElement("input");
+        input.type = "number";
+        input.min = "1";
+        input.step = "1";
+        input.value = "1";
+        input.className = "mapa-quantidade-input";
+        qtdCelula.appendChild(input);
+        linha.appendChild(qtdCelula);
+
+        const acao = document.createElement("td");
+        acao.className = "mapas-col-acao";
+        const botao = document.createElement("button");
+        botao.type = "button";
+        botao.className = "mapa-adicionar-botao";
+        botao.textContent = "Adicionar";
+        botao.addEventListener("click", () => adicionarProdutoFornecedor(atual, input.value));
+        acao.appendChild(botao);
+        linha.appendChild(acao);
+
+        tbody.appendChild(linha);
+    });
+
+    tabela.appendChild(tbody);
+    envoltorio.appendChild(tabela);
+    caixa.appendChild(envoltorio);
+}
+
 function renderizarResultadosFornecedor() {
     const caixa = document.getElementById("fornecedor-resultados");
     if (!caixa) return;
@@ -296,6 +404,13 @@ function renderizarResultadosFornecedor() {
         }))
         .filter((item) => (!termo || item.score < 99) && produtoPassaFiltroFornecedor(item.produto, fornecedor, filtroFornecedor))
         .sort((a, b) => compararProdutosFornecedor(a, b, ordenacao));
+
+    if (estaPaginaMapasFornecedor()) {
+        renderizarResultadosFornecedorMapa(caixa, resultados, fornecedor);
+        return;
+    }
+
+    caixa.classList.remove("fornecedor-resultados-mapa");
 
     const resumo = document.createElement("p");
     resumo.className = "fornecedor-contagem-lista";
@@ -358,13 +473,14 @@ function renderizarResultadosFornecedor() {
     });
 }
 
-function adicionarProdutoFornecedor(produto) {
+function adicionarProdutoFornecedor(produto, quantidade = 1) {
+    const quantidadeAdicionar = Math.max(1, Math.floor(Number(quantidade) || 1));
     const existente = fornecedorSelecao.find(item => String(item.id) === String(produto.id));
-    if (existente) existente.quantidade += 1;
-    else fornecedorSelecao.push({ ...produto, quantidade: 1 });
+    if (existente) existente.quantidade += quantidadeAdicionar;
+    else fornecedorSelecao.push({ ...produto, quantidade: quantidadeAdicionar });
     guardarSelecaoFornecedor();
     renderizarSelecionadosFornecedor();
-    definirStatusFornecedor('Produto adicionado.');
+    definirStatusFornecedor(quantidadeAdicionar > 1 ? `${quantidadeAdicionar} unidades adicionadas.` : 'Produto adicionado.');
 }
 
 function alterarQuantidadeFornecedor(id, delta) {
