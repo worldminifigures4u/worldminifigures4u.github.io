@@ -49,7 +49,25 @@
                 </div>
 
                 <h3>Adicionar produtos</h3>
-                <input type="search" id="fornecedor-pesquisa" class="fornecedor-input" placeholder="Nome, Ref. ou SKU" autocomplete="off">
+                <input type="search" id="fornecedor-pesquisa" class="fornecedor-input" placeholder="Nome, Ref., SKU ou tema" autocomplete="off">
+                <div class="fornecedor-lista-controles" aria-label="Opcoes da lista de produtos">
+                    <label for="fornecedor-ordenacao-stock">Ordenar por stock
+                        <select id="fornecedor-ordenacao-stock">
+                            <option value="nome">Nome / relevancia</option>
+                            <option value="stock-asc">Stock crescente</option>
+                            <option value="stock-desc">Stock decrescente</option>
+                        </select>
+                    </label>
+                    <label for="fornecedor-filtro-marcacao">Filtro do fornecedor
+                        <select id="fornecedor-filtro-marcacao">
+                            <option value="todos">Todos</option>
+                            <option value="disponivel">Disponivel para encomendar</option>
+                            <option value="os">OS</option>
+                            <option value="ex">EX</option>
+                            <option value="numero">Ja encomendado</option>
+                        </select>
+                    </label>
+                </div>
                 <div class="fornecedor-resultados" id="fornecedor-resultados"></div>
 
                 <h3>Produtos selecionados</h3>

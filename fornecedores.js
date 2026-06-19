@@ -5,6 +5,17 @@ const FORNECEDORES_STORAGE_KEY = "figures-planet-fornecedores-pedidos";
 const FORNECEDORES_SELECAO_KEY = "figures-planet-fornecedores-selecao";
 const FORNECEDORES_SEM_IMAGEM = 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="160" height="160" viewBox="0 0 160 160"><rect width="160" height="160" rx="8" fill="#eeeeee"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" font-family="Arial" font-size="13" fill="#777">Sem foto</text></svg>');
 
+const FORNECEDORES_ALIASES = {
+    "Lote 50": ["lote50", "lote 50", "lote_50"],
+    Enmei: ["enmei", "winnie gong", "winniegong"],
+    Minie: ["minie", "minie gong", "miniegong"],
+    Ruisbengtu: ["ruisbengtu", "ruisbengtui"],
+    Lequgo: ["lequgo", "legougo"],
+    Chuangyaoke: ["chuangyaoke", "chuangyoke"],
+    Keooli: ["keooli", "keooli koopt", "koopt"],
+    Brixtoy: ["brixtoy"],
+};
+
 let fornecedoresClient = null;
 let fornecedorProdutos = [];
 let fornecedorSelecao = carregarSelecaoFornecedor();
@@ -121,6 +132,111 @@ function textoIdentificacaoProduto(produto) {
     return `Ref. ${produto.referencia || '-'} | SKU ${produto.sku || '-'}`;
 }
 
+
+function normalizarChaveFornecedor(texto) {
+    return normalizarFornecedor(texto).replace(/[^a-z0-9]/g, "");
+}
+
+function obterAliasesFornecedor(nome) {
+    const aliases = FORNECEDORES_ALIASES[nome] || [nome];
+    return [nome, ...aliases].map(normalizarChaveFornecedor).filter(Boolean);
+}
+
+function lerValorPorAlias(objeto, aliases) {
+    if (!objeto || typeof objeto !== "object") return "";
+    for (const [chave, valor] of Object.entries(objeto)) {
+        const chaveNormalizada = normalizarChaveFornecedor(chave);
+        if (aliases.includes(chaveNormalizada)) return valor;
+    }
+    return "";
+}
+
+function obterValorFornecedorProduto(produto, fornecedorNome) {
+    if (!produto || !fornecedorNome || fornecedorNome === "Outro") return "";
+    const aliases = obterAliasesFornecedor(fornecedorNome);
+    const fontes = [
+        produto.fornecedores,
+        produto.fornecedor,
+        produto.mapa_fornecedores,
+        produto.mapaFornecedores,
+        produto.stock_fornecedores,
+        produto.stockFornecedores,
+        produto,
+    ];
+
+    for (const fonte of fontes) {
+        const valor = lerValorPorAlias(fonte, aliases);
+        if (valor !== "" && valor !== null && valor !== undefined) return valor;
+    }
+
+    return "";
+}
+
+function classificarValorFornecedor(valor) {
+    const texto = String(valor ?? "").trim();
+    const maiusculas = texto.toUpperCase();
+    if (!texto) return { tipo: "disponivel", texto: "Disponivel" };
+    if (maiusculas === "OS") return { tipo: "os", texto: "OS" };
+    if (maiusculas === "EX") return { tipo: "ex", texto: "EX" };
+    if (/^-?\d+(?:[,.]\d+)?$/.test(texto)) return { tipo: "numero", texto: `Ja encomendado: ${texto}` };
+    return { tipo: "info", texto };
+}
+
+function produtoPassaFiltroFornecedor(produto, fornecedorNome, filtro) {
+    if (!filtro || filtro === "todos" || fornecedorNome === "Outro") return true;
+    const valor = obterValorFornecedorProduto(produto, fornecedorNome);
+    const estado = classificarValorFornecedor(valor);
+    return estado.tipo === filtro;
+}
+
+function obterControlosResultadosFornecedor() {
+    return {
+        termo: normalizarFornecedor(document.getElementById("fornecedor-pesquisa")?.value || ""),
+        fornecedor: document.getElementById("fornecedor-nome")?.value || "",
+        filtroFornecedor: document.getElementById("fornecedor-filtro-marcacao")?.value || "todos",
+        ordenacao: document.getElementById("fornecedor-ordenacao-stock")?.value || "nome",
+    };
+}
+
+function calcularScoreResultadoFornecedor(produto, termo) {
+    if (!termo) return 5;
+    const nome = normalizarFornecedor(produto.nome);
+    const sku = normalizarFornecedor(produto.sku);
+    const referencia = normalizarFornecedor(produto.referencia);
+    const tema = normalizarFornecedor(produto.tema);
+    const subtema = normalizarFornecedor(produto.subtema);
+
+    if (sku === termo || referencia === termo) return 0;
+    if (nome === termo) return 1;
+    if (sku.includes(termo) || referencia.includes(termo)) return 2;
+    if (nome.includes(termo)) return 3;
+    if (tema.includes(termo) || subtema.includes(termo)) return 4;
+    return 99;
+}
+
+function compararProdutosFornecedor(a, b, ordenacao) {
+    if (ordenacao === "stock-asc" || ordenacao === "stock-desc") {
+        const stockA = Number(a.produto.stock || 0);
+        const stockB = Number(b.produto.stock || 0);
+        if (stockA !== stockB) {
+            return ordenacao === "stock-asc" ? stockA - stockB : stockB - stockA;
+        }
+    } else if (a.score !== b.score) {
+        return a.score - b.score;
+    }
+
+    return String(a.produto.nome || "").localeCompare(String(b.produto.nome || ""), "pt");
+}
+
+function definirQuantidadeFornecedor(id, valor) {
+    const item = fornecedorSelecao.find((selecionado) => String(selecionado.id) === String(id));
+    if (!item) return;
+    const quantidade = Math.max(1, Math.floor(Number(valor) || 1));
+    item.quantidade = quantidade;
+    guardarSelecaoFornecedor();
+    renderizarSelecionadosFornecedor();
+}
+
 function obterProdutoAtual(id) {
     return fornecedorProdutos.find(produto => String(produto.id) === String(id));
 }
@@ -137,7 +253,7 @@ async function carregarCatalogoFornecedores() {
         while (true) {
             const { data, error } = await fornecedoresClient
                 .from('produtos')
-                .select('id,nome,sku,referencia,preco,stock,ativo,imagens,peso,tema,subtema')
+                .select('*')
                 .order('nome', { ascending: true })
                 .range(inicio, inicio + tamanho - 1);
             if (error) throw error;
@@ -163,64 +279,77 @@ async function carregarCatalogoFornecedores() {
 }
 
 function renderizarResultadosFornecedor() {
-    const caixa = document.getElementById('fornecedor-resultados');
-    const termo = normalizarFornecedor(document.getElementById('fornecedor-pesquisa').value);
-    caixa.innerHTML = '';
+    const caixa = document.getElementById("fornecedor-resultados");
+    if (!caixa) return;
 
-    if (!termo) {
-        caixa.innerHTML = '<p class="fornecedor-vazio">Pesquise por nome, Ref. ou SKU.</p>';
-        return;
-    }
+    const { termo, fornecedor, filtroFornecedor, ordenacao } = obterControlosResultadosFornecedor();
+    caixa.innerHTML = "";
 
-    const resultados = fornecedorProdutos.map(produto => {
-        const nome = normalizarFornecedor(produto.nome);
-        const sku = normalizarFornecedor(produto.sku);
-        const ref = normalizarFornecedor(produto.referencia);
-        const tema = normalizarFornecedor(produto.tema);
-        let score = 99;
-        if (sku === termo || ref === termo) score = 0;
-        else if (nome === termo) score = 1;
-        else if (nome.startsWith(termo)) score = 2;
-        else if (sku.includes(termo) || ref.includes(termo)) score = 3;
-        else if ([nome, tema].join(' ').includes(termo)) score = 4;
-        return { produto, score };
-    }).filter(item => item.score < 99).sort((a, b) => a.score - b.score || String(a.produto.nome).localeCompare(String(b.produto.nome), 'pt')).slice(0, 35);
+    const resultados = fornecedorProdutos
+        .map((produto) => ({
+            produto,
+            score: calcularScoreResultadoFornecedor(produto, termo),
+        }))
+        .filter((item) => (!termo || item.score < 99) && produtoPassaFiltroFornecedor(item.produto, fornecedor, filtroFornecedor))
+        .sort((a, b) => compararProdutosFornecedor(a, b, ordenacao));
 
-    if (!resultados.length) {
-        caixa.innerHTML = '<p class="fornecedor-vazio">Nenhum produto encontrado.</p>';
-        return;
-    }
+    const resumo = document.createElement("p");
+    resumo.className = "fornecedor-contagem-lista";
+    resumo.textContent = resultados.length
+        ? `${resultados.length} produto(s) apresentados`
+        : "Nenhum produto encontrado.";
+    caixa.appendChild(resumo);
 
     resultados.forEach(({ produto }) => {
-        const linha = document.createElement('div');
-        linha.className = 'fornecedor-produto';
-        linha.appendChild(criarImagemFornecedor(produto));
+        const atual = produto;
+        const linha = document.createElement("div");
+        linha.className = "fornecedor-produto";
 
-        const info = document.createElement('div');
-        info.className = 'fornecedor-info';
-        const nome = document.createElement('strong');
-        nome.textContent = produto.nome || 'Produto sem nome';
+        const img = document.createElement("img");
+        img.className = "fornecedor-miniatura";
+        img.src = obterImagemProdutoFornecedor(atual);
+        img.alt = atual.nome || "Produto";
+        linha.appendChild(img);
+
+        const info = document.createElement("div");
+        info.className = "fornecedor-info";
+
+        const nome = document.createElement("strong");
+        nome.textContent = atual.nome || "Produto sem nome";
         info.appendChild(nome);
-        const ids = document.createElement('span');
-        ids.className = 'fornecedor-identificadores';
-        ids.textContent = textoIdentificacaoProduto(produto);
+
+        const ids = document.createElement("span");
+        ids.className = "fornecedor-identificadores";
+        ids.textContent = `${atual.referencia ? `Ref. ${atual.referencia} | ` : ""}SKU ${atual.sku || "-"}`;
         info.appendChild(ids);
-        const stock = document.createElement('span');
-        stock.className = Number(produto.stock) <= 0 ? 'fornecedor-stock sem-stock' : 'fornecedor-stock';
-        stock.textContent = `Stock: ${produto.stock}`;
+
+        const estadoFornecedor = classificarValorFornecedor(obterValorFornecedorProduto(atual, fornecedor));
+        if (fornecedor && fornecedor !== "Outro" && filtroFornecedor !== "todos") {
+            const fornecedorLinha = document.createElement("span");
+            fornecedorLinha.className = `fornecedor-marcacao ${estadoFornecedor.tipo}`;
+            fornecedorLinha.textContent = `${fornecedor}: ${estadoFornecedor.texto}`;
+            info.appendChild(fornecedorLinha);
+        }
+
+        const stock = document.createElement("span");
+        stock.className = `fornecedor-stock ${Number(atual.stock || 0) <= 0 ? "sem-stock" : ""}`;
+        stock.textContent = `Stock: ${Number(atual.stock || 0)}`;
         info.appendChild(stock);
-        const preco = document.createElement('span');
-        preco.className = 'fornecedor-preco';
-        preco.textContent = formatarEuroFornecedor(produto.preco);
+
+        const preco = document.createElement("span");
+        preco.className = "fornecedor-preco";
+        preco.textContent = formatarEuroFornecedor(atual.preco || 0);
         info.appendChild(preco);
+
         linha.appendChild(info);
 
-        const botao = document.createElement('button');
-        botao.type = 'button';
-        botao.className = 'wallapop-botao wallapop-botao-destaque';
-        botao.textContent = 'Adicionar';
-        botao.addEventListener('click', () => adicionarProdutoFornecedor(produto));
+        const botao = document.createElement("button");
+        botao.type = "button";
+        botao.className = "wallapop-botao wallapop-botao-destaque";
+        botao.textContent = "Adicionar";
+        botao.addEventListener("click", () => adicionarProdutoFornecedor(atual));
         linha.appendChild(botao);
+
         caixa.appendChild(linha);
     });
 }
@@ -250,50 +379,71 @@ function removerProdutoFornecedor(id) {
 }
 
 function renderizarSelecionadosFornecedor() {
-    const caixa = document.getElementById('fornecedor-selecionados');
-    caixa.innerHTML = '';
+    const caixa = document.getElementById("fornecedor-selecionados");
+    if (!caixa) return;
+    caixa.innerHTML = "";
+
     if (!fornecedorSelecao.length) {
         caixa.innerHTML = '<p class="fornecedor-vazio">A lista esta vazia.</p>';
         return;
     }
 
-    fornecedorSelecao.forEach(item => {
-        const linha = document.createElement('div');
-        linha.className = 'fornecedor-item';
-        linha.appendChild(criarImagemFornecedor(item));
+    fornecedorSelecao.forEach((item) => {
+        const atual = obterProdutoAtual(item.id) || item;
+        const linha = document.createElement("div");
+        linha.className = "fornecedor-item";
 
-        const info = document.createElement('div');
-        info.className = 'fornecedor-info';
-        const nome = document.createElement('strong');
-        nome.textContent = item.nome;
+        const img = document.createElement("img");
+        img.className = "fornecedor-miniatura";
+        img.src = obterImagemProdutoFornecedor(atual);
+        img.alt = atual.nome || "Produto";
+        linha.appendChild(img);
+
+        const info = document.createElement("div");
+        info.className = "fornecedor-info";
+        const nome = document.createElement("strong");
+        nome.textContent = atual.nome || "Produto sem nome";
         info.appendChild(nome);
-        const ids = document.createElement('span');
-        ids.className = 'fornecedor-identificadores';
-        ids.textContent = textoIdentificacaoProduto(item);
+        const ids = document.createElement("span");
+        ids.className = "fornecedor-identificadores";
+        ids.textContent = `${atual.referencia ? `Ref. ${atual.referencia} | ` : ""}SKU ${atual.sku || "-"}`;
         info.appendChild(ids);
-        const stock = document.createElement('span');
-        stock.className = Number(item.stock) <= 0 ? 'fornecedor-stock sem-stock' : 'fornecedor-stock';
-        stock.textContent = `Stock atual: ${item.stock}`;
+        const stock = document.createElement("span");
+        stock.className = Number(atual.stock || 0) <= 0 ? "fornecedor-stock sem-stock" : "fornecedor-stock";
+        stock.textContent = `Stock atual: ${Number(atual.stock || 0)}`;
         info.appendChild(stock);
         linha.appendChild(info);
 
-        const controlos = document.createElement('div');
-        controlos.className = 'fornecedor-quantidade';
-        const menos = document.createElement('button');
-        menos.type = 'button';
-        menos.textContent = '-';
-        menos.addEventListener('click', () => alterarQuantidadeFornecedor(item.id, -1));
-        const qtd = document.createElement('strong');
-        qtd.textContent = item.quantidade;
-        const mais = document.createElement('button');
-        mais.type = 'button';
-        mais.textContent = '+';
-        mais.addEventListener('click', () => alterarQuantidadeFornecedor(item.id, 1));
-        const remover = document.createElement('button');
-        remover.type = 'button';
-        remover.className = 'fornecedor-remover';
-        remover.textContent = 'x';
-        remover.addEventListener('click', () => removerProdutoFornecedor(item.id));
+        const controlos = document.createElement("div");
+        controlos.className = "fornecedor-quantidade";
+
+        const menos = document.createElement("button");
+        menos.type = "button";
+        menos.textContent = "-";
+        menos.addEventListener("click", () => alterarQuantidadeFornecedor(atual.id, -1));
+
+        const qtd = document.createElement("input");
+        qtd.type = "number";
+        qtd.min = "1";
+        qtd.step = "1";
+        qtd.inputMode = "numeric";
+        qtd.className = "fornecedor-quantidade-input";
+        qtd.value = Math.max(1, Number(item.quantidade) || 1);
+        qtd.setAttribute("aria-label", `Quantidade de ${atual.nome || "produto"}`);
+        qtd.addEventListener("change", () => definirQuantidadeFornecedor(atual.id, qtd.value));
+        qtd.addEventListener("blur", () => definirQuantidadeFornecedor(atual.id, qtd.value));
+
+        const mais = document.createElement("button");
+        mais.type = "button";
+        mais.textContent = "+";
+        mais.addEventListener("click", () => alterarQuantidadeFornecedor(atual.id, 1));
+
+        const remover = document.createElement("button");
+        remover.type = "button";
+        remover.textContent = "x";
+        remover.className = "fornecedor-remover";
+        remover.addEventListener("click", () => removerProdutoFornecedor(atual.id));
+
         controlos.append(menos, qtd, mais, remover);
         linha.appendChild(controlos);
         caixa.appendChild(linha);
@@ -519,6 +669,9 @@ async function iniciarFornecedoresAdmin() {
 }
 
 document.getElementById('fornecedor-pesquisa').addEventListener('input', renderizarResultadosFornecedor);
+document.getElementById('fornecedor-nome').addEventListener('change', renderizarResultadosFornecedor);
+document.getElementById('fornecedor-ordenacao-stock').addEventListener('change', renderizarResultadosFornecedor);
+document.getElementById('fornecedor-filtro-marcacao').addEventListener('change', renderizarResultadosFornecedor);
 document.getElementById('btn-limpar-fornecedor').addEventListener('click', limparSelecaoFornecedor);
 document.getElementById('btn-criar-fornecedor').addEventListener('click', criarPedidoFornecedor);
 document.getElementById('fornecedor-filtro-estado').addEventListener('change', renderizarPedidosFornecedores);

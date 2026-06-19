@@ -2987,6 +2987,15 @@ body{
         .fornecedores-form-grid{ display:grid; grid-template-columns:1fr; gap:8px; margin-bottom:12px; }
         .fornecedores-form-grid label{ font-weight:700; color:#ddd; }
         .fornecedores-form-grid input,.fornecedores-form-grid select,.fornecedor-input,.fornecedor-recebido-input,.fornecedor-status-select{ width:100%; box-sizing:border-box; border:1px solid #444; border-radius:6px; background:#242424; color:#fff; padding:11px 12px; font:inherit; }
+        .fornecedor-lista-controles{ display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; margin:10px 0 12px; }
+        .fornecedor-lista-controles label{ display:grid; gap:5px; color:#ddd; font-weight:700; }
+        .fornecedor-lista-controles select{ width:100%; box-sizing:border-box; border:1px solid #444; border-radius:6px; background:#242424; color:#fff; padding:10px 12px; font:inherit; }
+        .fornecedor-contagem-lista{ margin:0 0 6px; color:#cfcfcf; font-size:13px; }
+        .fornecedor-marcacao{ color:#cfcfcf !important; font-weight:700; }
+        .fornecedor-marcacao.disponivel{ color:#39d353 !important; }
+        .fornecedor-marcacao.os{ color:#ff4d4d !important; }
+        .fornecedor-marcacao.ex{ color:#ff9f1c !important; }
+        .fornecedor-marcacao.numero{ color:#ffc400 !important; }
         .fornecedor-resultados,.fornecedor-selecionados,.fornecedor-pedidos{ display:grid; gap:8px; margin-top:12px; }
         .fornecedor-resultados{ max-height:420px; overflow:auto; padding-right:6px; }
         .fornecedor-produto,.fornecedor-item,.fornecedor-pedido-linha{ display:grid; grid-template-columns:74px minmax(0,1fr) auto; gap:12px; align-items:center; background:#1d1d1d; border:1px solid #333; border-radius:7px; padding:10px; }
@@ -3002,6 +3011,7 @@ body{
         .fornecedor-preco{ color:#18c4ff !important; font-weight:700; }
         .fornecedor-quantidade,.fornecedores-acoes{ display:flex; gap:8px; align-items:center; justify-content:flex-end; }
         .fornecedor-quantidade button,.fornecedor-remover{ min-width:36px; height:36px; border:0; border-radius:6px; background:#333; color:#fff; font-weight:800; cursor:pointer; }
+        .fornecedor-quantidade-input{ width:64px; height:36px; box-sizing:border-box; border:1px solid #444; border-radius:6px; background:#242424; color:#fff; font-weight:800; text-align:center; }
         .fornecedor-remover{ background:#ff4747 !important; }
         .fornecedores-acoes{ margin-top:16px; }
         .fornecedores-acoes .wallapop-botao{ flex:1; }
@@ -3015,6 +3025,7 @@ body{
         .fornecedor-vazio{ margin:0; padding:14px; text-align:center; color:#bbb; background:#1d1d1d; border-radius:6px; }
         @media (max-width:980px){
             .fornecedores-grid{ grid-template-columns:1fr; }
+    .fornecedor-lista-controles{ grid-template-columns:1fr; }
             .fornecedor-produto,.fornecedor-item,.fornecedor-pedido-linha,.fornecedor-pedido-cabecalho{ grid-template-columns:1fr; }
             .fornecedor-miniatura,.fornecedor-miniatura.pequena{ width:86px; height:86px; }
         }
