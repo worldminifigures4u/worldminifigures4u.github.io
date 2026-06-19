@@ -1,4 +1,4 @@
-body{
+﻿body{
             margin:0;
             padding:0;
             background:#000;
@@ -3157,6 +3157,14 @@ body{
     padding: 7px 6px;
     text-align: center;
     font-weight: 800;
+    appearance: textfield;
+    -moz-appearance: textfield;
+}
+
+.mapa-quantidade-input::-webkit-outer-spin-button,
+.mapa-quantidade-input::-webkit-inner-spin-button {
+    margin: 0;
+    -webkit-appearance: none;
 }
 
 .mapas-th-ordenavel button {
@@ -3173,7 +3181,17 @@ body{
 .mapas-ref-com-imagem {
     display: flex;
     align-items: center;
-    gap: 10px;
+    justify-content: center;
+    gap: 16px;
+    min-height: 58px;
+}
+
+.mapas-ref-com-imagem span {
+    display: inline-flex;
+    align-items: center;
+    min-height: 42px;
+    line-height: 1;
+    white-space: nowrap;
 }
 
 .mapas-ref-com-imagem .fornecedor-miniatura.pequena {
@@ -3194,3 +3212,4 @@ body{
         max-height: 65vh;
     }
 }
+
