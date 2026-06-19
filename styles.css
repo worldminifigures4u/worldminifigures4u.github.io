@@ -1006,7 +1006,7 @@
             border-bottom:1px solid #333;
             background:#111;
             display:grid;
-            grid-template-columns:150px 1fr auto;
+            grid-template-columns:minmax(0, 1fr) auto;
             gap:18px;
             align-items:center;
             box-sizing:border-box;
@@ -1018,6 +1018,8 @@
             height:58px;
             object-fit:contain;
         }
+
+        .admin-encomendas-marca{ display:none; }
 
         .admin-encomendas-topo h1{
             margin:0;
@@ -1891,7 +1893,7 @@
 
         @media(max-width:760px){
             .admin-encomendas-topo{
-                grid-template-columns:80px 1fr;
+                grid-template-columns:1fr;
                 padding:8px 12px;
             }
             .admin-encomendas-marca img{
