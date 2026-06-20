@@ -427,10 +427,9 @@ function renderizarResultadosFornecedorMapa(caixa, resultados, fornecedor) {
     const cabecalho = document.createElement("tr");
     [
         ["nome", "mapas-col-nome", "nome"],
-        ["sku", "mapas-col-sku", "sku"],
-        ["stock", "mapas-col-stock", "stock"],
         ["Ref.", "mapas-col-ref", "ref"],
-        ["Qtd.", "mapas-col-qtd", "qtd"],
+        ["stock", "mapas-col-stock", "stock"],
+        ["qtd", "mapas-col-qtd", "qtd"],
     ].forEach(([texto, classe, coluna]) => {
         const th = document.createElement("th");
         th.className = `${classe} mapas-th-ordenavel`;
@@ -466,8 +465,6 @@ function renderizarResultadosFornecedorMapa(caixa, resultados, fornecedor) {
             const stockNumero = Number(atual.stock || 0);
 
             linha.appendChild(criarCelulaMapaFornecedor(atual.nome || "Produto sem nome", "mapas-col-nome"));
-            linha.appendChild(criarCelulaMapaFornecedor(atual.sku || "-", "mapas-col-sku"));
-            linha.appendChild(criarCelulaMapaFornecedor(stockNumero, `mapas-col-stock mapa-stock-celula ${stockNumero <= 0 ? "sem-stock" : ""}`));
 
             const refCelula = document.createElement("td");
             refCelula.className = "mapas-col-ref";
@@ -479,6 +476,8 @@ function renderizarResultadosFornecedorMapa(caixa, resultados, fornecedor) {
             refConteudo.appendChild(refTexto);
             refCelula.appendChild(refConteudo);
             linha.appendChild(refCelula);
+
+            linha.appendChild(criarCelulaMapaFornecedor(stockNumero, `mapas-col-stock mapa-stock-celula ${stockNumero <= 0 ? "sem-stock" : ""}`));
 
             const qtdCelula = document.createElement("td");
             qtdCelula.className = "mapas-col-qtd";

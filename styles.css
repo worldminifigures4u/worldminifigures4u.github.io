@@ -3106,13 +3106,11 @@
     background: #171717;
 }
 
-.mapas-col-nome { width: 42%; }
-.mapas-col-sku { width: 11%; }
+.mapas-col-nome { width: 48%; }
 .mapas-col-stock { width: 10%; }
-.mapas-col-ref { width: 25%; }
+.mapas-col-ref { width: 28%; }
 .mapas-col-qtd { width: 90px; }
 
-.mapas-col-sku,
 .mapas-col-stock,
 .mapas-col-qtd {
     text-align: center;
