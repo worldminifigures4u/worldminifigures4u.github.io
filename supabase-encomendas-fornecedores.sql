@@ -87,19 +87,19 @@ language plpgsql
 as $$
 declare
     alfabeto text := 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-    codigo text;
+    v_codigo text;
     i int;
 begin
     loop
-        codigo := 'F';
+        v_codigo := 'F';
         for i in 1..5 loop
-            codigo := codigo || substr(alfabeto, 1 + floor(random() * length(alfabeto))::int, 1);
+            v_codigo := v_codigo || substr(alfabeto, 1 + floor(random() * length(alfabeto))::int, 1);
         end loop;
         exit when not exists (
-            select 1 from public.encomendas_fornecedores ef where ef.codigo = codigo
+            select 1 from public.encomendas_fornecedores ef where ef.codigo = v_codigo
         );
     end loop;
-    return codigo;
+    return v_codigo;
 end;
 $$;
 
