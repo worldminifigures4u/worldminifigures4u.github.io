@@ -1,5 +1,7 @@
 -- Importação administrativa protegida. Evita conceder SELECT público ao stock.
 alter table public.produtos add column if not exists referencia text;
+alter table public.produtos add column if not exists top text;
+alter table public.produtos add column if not exists fornecedores jsonb not null default '{}'::jsonb;
 
 create or replace function public.importar_produtos_admin(p_produtos jsonb)
 returns jsonb
@@ -27,30 +29,36 @@ begin
       referencia,
       nome,
       preco,
+      top,
       stock,
       tema,
       subtema,
       peso,
+      fornecedores,
       ativo
     ) values (
       upper(trim(v_produto->>'sku')),
       nullif(trim(v_produto->>'referencia'), ''),
       trim(v_produto->>'nome'),
       (v_produto->>'preco')::numeric,
+      nullif(trim(v_produto->>'top'), ''),
       (v_produto->>'stock')::integer,
       trim(v_produto->>'tema'),
       coalesce(nullif(trim(v_produto->>'subtema'), ''), 'semsubtema'),
       (v_produto->>'peso')::numeric,
+      coalesce(v_produto->'fornecedores', '{}'::jsonb),
       coalesce((v_produto->>'ativo')::boolean, false)
     )
     on conflict (sku) do update set
       referencia = excluded.referencia,
       nome = excluded.nome,
       preco = excluded.preco,
+      top = excluded.top,
       stock = excluded.stock,
       tema = excluded.tema,
       subtema = excluded.subtema,
       peso = excluded.peso,
+      fornecedores = excluded.fornecedores,
       ativo = excluded.ativo;
 
     v_importados := v_importados + 1;

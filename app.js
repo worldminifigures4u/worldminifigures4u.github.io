@@ -1257,6 +1257,7 @@ async function analisarFicheiroCatalogoAdmin(input) {
             nome:obterIndiceColuna(cabecalhos, 'nome'),
             preco:obterIndiceColuna(cabecalhos, 'preco'),
             sku:obterIndiceColuna(cabecalhos, 'sku'),
+            top:obterIndiceColuna(cabecalhos, 'top', false),
             referencia:obterIndiceColuna(cabecalhos, 'referencia', false),
             stock:obterIndiceColuna(cabecalhos, 'stock'),
             tema:obterIndiceColuna(cabecalhos, 'tema'),
@@ -1271,6 +1272,7 @@ async function analisarFicheiroCatalogoAdmin(input) {
             if(!linha.some(valor => valor !== null && valor !== '')) return;
             const nome = String(linha[colunas.nome] || '').trim();
             const sku = normalizarTextoSku(linha[colunas.sku]).replace(/[^A-Z0-9]/g, '');
+            const top = colunas.top >= 0 ? String(linha[colunas.top] || '').trim() : '';
             const referencia = colunas.referencia >= 0 ? String(linha[colunas.referencia] || '').trim() : '';
             const preco = Number(linha[colunas.preco]);
             const stock = Number(linha[colunas.stock]);
@@ -1288,6 +1290,7 @@ async function analisarFicheiroCatalogoAdmin(input) {
                 nome,
                 preco,
                 sku,
+                top,
                 referencia,
                 stock,
                 tema,

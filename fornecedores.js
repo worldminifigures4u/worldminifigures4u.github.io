@@ -8,11 +8,13 @@ const FORNECEDORES_SEM_IMAGEM = 'data:image/svg+xml;charset=UTF-8,' + encodeURIC
 const FORNECEDORES_ALIASES = {
     "Lote 50": ["lote50", "lote 50", "lote_50"],
     Enmei: ["enmei", "winnie gong", "winniegong"],
+    "Enmei (Minie Gong)": ["enmei", "minie", "minie gong", "winnie gong", "winniegong", "miniegong"],
     Minie: ["minie", "minie gong", "miniegong"],
     Ruisbengtu: ["ruisbengtu", "ruisbengtui"],
     Lequgo: ["lequgo", "legougo"],
     Chuangyaoke: ["chuangyaoke", "chuangyoke"],
     Keooli: ["keooli", "keooli koopt", "koopt"],
+    "Keooli (Koopf)": ["keooli", "keooli koopt", "koopt", "koopf"],
     Brixtoy: ["brixtoy"],
 };
 
@@ -225,7 +227,7 @@ function classificarValorFornecedor(valor) {
     if (!texto) return { tipo: "disponivel", texto: "Disponivel" };
     if (maiusculas === "OS") return { tipo: "os", texto: "OS" };
     if (maiusculas === "EX") return { tipo: "ex", texto: "EX" };
-    if (/^-?\d+(?:[,.]\d+)?$/.test(texto)) return { tipo: "numero", texto: `Ja encomendado: ${texto}` };
+    if (/^-?\d+(?:[,.]\d+)?$/.test(texto)) return { tipo: "encomendado", texto: `Ja encomendado: ${texto}` };
     return { tipo: "info", texto };
 }
 
@@ -405,8 +407,54 @@ function criarCelulaMapaFornecedor(texto, className = "") {
     return celula;
 }
 
+function criarItemContadorMapa(rotulo, valor, destaque = false) {
+    const item = document.createElement("span");
+    item.className = destaque ? "mapas-contador-item destaque" : "mapas-contador-item";
+
+    const numero = document.createElement("strong");
+    numero.textContent = String(valor);
+
+    const texto = document.createElement("span");
+    texto.textContent = rotulo;
+
+    item.append(numero, texto);
+    return item;
+}
+
+function renderizarContadorMapa(caixa, resultados, fornecedor) {
+    const contadores = resultados.reduce((totais, { produto }) => {
+        const estado = classificarValorFornecedor(obterValorFornecedorProduto(produto, fornecedor));
+        if (estado.tipo === "os") totais.os += 1;
+        if (estado.tipo === "ex") totais.ex += 1;
+        if (estado.tipo === "disponivel") totais.disponivel += 1;
+        if (estado.tipo === "encomendado") totais.encomendado += 1;
+        if (String(obterTopProdutoFornecedor(produto) || "").trim()) totais.top += 1;
+        return totais;
+    }, {
+        top: 0,
+        os: 0,
+        ex: 0,
+        disponivel: 0,
+        encomendado: 0
+    });
+
+    const contador = document.createElement("div");
+    contador.className = "mapas-contador-filtros";
+    contador.setAttribute("aria-live", "polite");
+    contador.append(
+        criarItemContadorMapa(resultados.length === 1 ? "figura" : "figuras", resultados.length, true),
+        criarItemContadorMapa("Top", contadores.top),
+        criarItemContadorMapa("OS", contadores.os),
+        criarItemContadorMapa("EX", contadores.ex),
+        criarItemContadorMapa("Disponivel", contadores.disponivel),
+        criarItemContadorMapa("Ja encomendado", contadores.encomendado)
+    );
+    caixa.appendChild(contador);
+}
+
 function renderizarResultadosFornecedorMapa(caixa, resultados, fornecedor) {
     caixa.classList.add("fornecedor-resultados-mapa");
+    renderizarContadorMapa(caixa, resultados, fornecedor);
 
     const resumo = document.createElement("p");
     resumo.className = "fornecedor-contagem-lista mapas-tabela-resumo";

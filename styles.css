@@ -2997,7 +2997,7 @@
         .fornecedor-marcacao.disponivel{ color:#39d353 !important; }
         .fornecedor-marcacao.os{ color:#ff4d4d !important; }
         .fornecedor-marcacao.ex{ color:#ff9f1c !important; }
-        .fornecedor-marcacao.numero{ color:#ffc400 !important; }
+        .fornecedor-marcacao.encomendado{ color:#ffc400 !important; }
         .fornecedor-resultados,.fornecedor-selecionados,.fornecedor-pedidos{ display:grid; gap:8px; margin-top:12px; }
         .fornecedor-resultados{ max-height:420px; overflow:auto; padding-right:6px; }
         .fornecedor-produto,.fornecedor-item,.fornecedor-pedido-linha{ display:grid; grid-template-columns:74px minmax(0,1fr) auto; gap:12px; align-items:center; background:#1d1d1d; border:1px solid #333; border-radius:7px; padding:10px; }
@@ -3062,6 +3062,45 @@
     border: 1px solid #333;
     border-radius: 8px;
     background: #101010;
+}
+
+.mapas-contador-filtros {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: center;
+    padding: 10px;
+    border-bottom: 1px solid #333;
+    background: #121212;
+}
+
+.mapas-contador-item {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 5px;
+    min-height: 30px;
+    padding: 6px 9px;
+    border: 1px solid #333;
+    border-radius: 6px;
+    background: #1d1d1d;
+    color: #d8d8d8;
+    font-size: 12px;
+    line-height: 1;
+}
+
+.mapas-contador-item strong {
+    color: #fff;
+    font-size: 16px;
+}
+
+.mapas-contador-item.destaque {
+    border-color: #ffc400;
+    background: #2b2308;
+    color: #ffe58a;
+}
+
+.mapas-contador-item.destaque strong {
+    color: #ffc400;
 }
 
 .mapas-tabela-resumo {
@@ -3138,7 +3177,7 @@
     color: #111 !important;
 }
 
-.mapa-fornecedor-celula.numero {
+.mapa-fornecedor-celula.encomendado {
     background: #7ed321 !important;
     color: #111 !important;
 }
@@ -3222,4 +3261,3 @@
         max-height: 65vh;
     }
 }
-
