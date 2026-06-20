@@ -18,6 +18,17 @@ const FORNECEDORES_ALIASES = {
     Brixtoy: ["brixtoy"],
 };
 
+const FORNECEDORES_CAMPOS_PRODUTO = [
+    { chave: "lote50", rotulo: "Lote 50" },
+    { chave: "enmei", rotulo: "Enmei" },
+    { chave: "minie", rotulo: "Minie" },
+    { chave: "ruisbengtu", rotulo: "Ruisbengtu" },
+    { chave: "lequgo", rotulo: "Lequgo" },
+    { chave: "chuangyaoke", rotulo: "Chuangyaoke" },
+    { chave: "keooli", rotulo: "Keooli" },
+    { chave: "brixtoy", rotulo: "Brixtoy" },
+];
+
 let fornecedoresClient = null;
 let fornecedorProdutos = [];
 let fornecedorSelecao = carregarSelecaoFornecedor();
@@ -30,6 +41,15 @@ function normalizarFornecedor(texto) {
 
 function formatarEuroFornecedor(valor) {
     return Number(valor || 0).toLocaleString('pt-PT', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' \u20ac';
+}
+
+function normalizarSkuFornecedor(valor) {
+    return String(valor || '')
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .trim()
+        .toUpperCase()
+        .replace(/[^A-Z0-9]/g, '');
 }
 
 function definirStatusFornecedor(texto, erro = false) {
@@ -121,6 +141,27 @@ function obterImagemFornecedor(produto) {
 
 function obterImagemProdutoFornecedor(produto) {
     return obterImagemFornecedor(produto);
+}
+
+function imagensProdutoParaTextoFornecedor(produto) {
+    const imagens = produto?.imagens;
+    if (Array.isArray(imagens)) return imagens.join('\n');
+    if (typeof imagens === 'string') {
+        try {
+            const parsed = JSON.parse(imagens);
+            if (Array.isArray(parsed)) return parsed.join('\n');
+        } catch (_) {
+            return imagens;
+        }
+    }
+    return '';
+}
+
+function textoParaImagensProdutoFornecedor(texto) {
+    return String(texto || '')
+        .split(/[\n,]+/)
+        .map(url => url.trim())
+        .filter(Boolean);
 }
 
 function abrirImagemFornecedorModal(url, alt) {
@@ -219,6 +260,10 @@ function obterValorFornecedorProduto(produto, fornecedorNome) {
     }
 
     return "";
+}
+
+function obterFornecedorPorChaveProduto(produto, chave) {
+    return lerValorPorAlias(produto?.fornecedores, [normalizarChaveFornecedor(chave)]);
 }
 
 function classificarValorFornecedor(valor) {
@@ -456,6 +501,212 @@ function criarCelulaMapaFornecedor(texto, className = "") {
     return celula;
 }
 
+function criarInputEdicaoMapa(form, id, rotulo, valor, tipo = "text", opcoes = {}) {
+    const label = document.createElement("label");
+    label.setAttribute("for", id);
+    label.textContent = rotulo;
+
+    const input = document.createElement(opcoes.multilinha ? "textarea" : "input");
+    input.id = id;
+    input.name = id;
+    if (!opcoes.multilinha) input.type = tipo;
+    input.value = valor ?? "";
+    if (opcoes.required) input.required = true;
+    if (opcoes.min !== undefined) input.min = String(opcoes.min);
+    if (opcoes.step !== undefined) input.step = String(opcoes.step);
+    if (opcoes.rows) input.rows = opcoes.rows;
+
+    form.append(label, input);
+    return input;
+}
+
+function criarCheckboxEdicaoMapa(form, id, rotulo, marcado) {
+    const label = document.createElement("label");
+    label.className = "mapas-edicao-checkbox";
+    const input = document.createElement("input");
+    input.id = id;
+    input.name = id;
+    input.type = "checkbox";
+    input.checked = Boolean(marcado);
+    const texto = document.createElement("span");
+    texto.textContent = rotulo;
+    label.append(input, texto);
+    form.appendChild(label);
+    return input;
+}
+
+function garantirModalEdicaoProdutoMapa() {
+    let modal = document.getElementById("mapas-produto-modal");
+    if (modal) return modal;
+
+    modal = document.createElement("div");
+    modal.id = "mapas-produto-modal";
+    modal.className = "mapas-produto-modal";
+    modal.hidden = true;
+    modal.innerHTML = `
+        <div class="mapas-produto-modal-dialog" role="dialog" aria-modal="true" aria-labelledby="mapas-produto-modal-titulo">
+            <div class="mapas-produto-modal-topo">
+                <h3 id="mapas-produto-modal-titulo">Editar produto</h3>
+                <button type="button" class="mapas-produto-modal-fechar" aria-label="Fechar">x</button>
+            </div>
+            <form id="mapas-produto-form" class="mapas-produto-form">
+                <input type="hidden" id="mapas-editar-id">
+                <input type="hidden" id="mapas-editar-sku-original">
+                <div class="mapas-produto-form-grid" id="mapas-produto-form-campos"></div>
+                <p class="fornecedores-status mapas-produto-status" id="mapas-produto-status" role="status"></p>
+                <div class="fornecedores-acoes">
+                    <button type="button" id="mapas-produto-cancelar">Cancelar</button>
+                    <button type="submit" id="mapas-produto-guardar">Guardar produto</button>
+                </div>
+            </form>
+        </div>
+    `;
+    document.body.appendChild(modal);
+
+    modal.querySelector(".mapas-produto-modal-fechar")?.addEventListener("click", fecharEdicaoProdutoMapa);
+    modal.querySelector("#mapas-produto-cancelar")?.addEventListener("click", fecharEdicaoProdutoMapa);
+    modal.addEventListener("click", (evento) => {
+        if (evento.target === modal) fecharEdicaoProdutoMapa();
+    });
+    modal.querySelector("#mapas-produto-form")?.addEventListener("submit", guardarEdicaoProdutoMapa);
+    return modal;
+}
+
+function abrirEdicaoProdutoMapa(produtoId) {
+    const produto = obterProdutoAtual(produtoId);
+    if (!produto) return;
+
+    const modal = garantirModalEdicaoProdutoMapa();
+    const campos = modal.querySelector("#mapas-produto-form-campos");
+    const status = modal.querySelector("#mapas-produto-status");
+    campos.replaceChildren();
+    if (status) status.textContent = "";
+
+    modal.querySelector("#mapas-editar-id").value = String(produto.id || "");
+    modal.querySelector("#mapas-editar-sku-original").value = String(produto.sku || "");
+
+    criarInputEdicaoMapa(campos, "mapas-editar-nome", "Nome", produto.nome || "", "text", { required: true });
+    criarInputEdicaoMapa(campos, "mapas-editar-referencia", "Ref.", produto.referencia || "");
+    criarInputEdicaoMapa(campos, "mapas-editar-sku", "SKU", produto.sku || "", "text", { required: true });
+    criarInputEdicaoMapa(campos, "mapas-editar-top", "Top", obterTopProdutoFornecedor(produto) || "");
+    criarInputEdicaoMapa(campos, "mapas-editar-preco", "Preco", Number(produto.preco || 0).toFixed(2), "number", { required: true, min: 0, step: "0.01" });
+    criarInputEdicaoMapa(campos, "mapas-editar-peso", "Peso (g)", Number(produto.peso || 10), "number", { required: true, min: 1, step: 1 });
+    criarInputEdicaoMapa(campos, "mapas-editar-stock", "Stock", Number(produto.stock || 0), "number", { required: true, min: 0, step: 1 });
+    criarInputEdicaoMapa(campos, "mapas-editar-tema", "Tema", produto.tema || "", "text", { required: true });
+    criarInputEdicaoMapa(campos, "mapas-editar-subtema", "Subtema", produto.subtema === "semsubtema" ? "" : (produto.subtema || ""));
+    criarInputEdicaoMapa(campos, "mapas-editar-imagens", "URLs das imagens", imagensProdutoParaTextoFornecedor(produto), "text", { multilinha: true, rows: 4 });
+    criarInputEdicaoMapa(campos, "mapas-editar-observacoes", "Observacoes", produto.observacoes || "", "text", { multilinha: true, rows: 3 });
+
+    const blocoFornecedores = document.createElement("fieldset");
+    blocoFornecedores.className = "mapas-produto-fornecedores";
+    const legenda = document.createElement("legend");
+    legenda.textContent = "Fornecedores";
+    blocoFornecedores.appendChild(legenda);
+    FORNECEDORES_CAMPOS_PRODUTO.forEach(({ chave, rotulo }) => {
+        criarInputEdicaoMapa(blocoFornecedores, `mapas-editar-fornecedor-${chave}`, rotulo, obterFornecedorPorChaveProduto(produto, chave));
+    });
+    campos.appendChild(blocoFornecedores);
+
+    criarCheckboxEdicaoMapa(campos, "mapas-editar-ativo", "Produto ativo", produto.ativo !== false);
+
+    modal.hidden = false;
+    document.body.classList.add("mapas-produto-modal-aberto");
+    modal.querySelector("#mapas-editar-nome")?.focus();
+}
+
+function fecharEdicaoProdutoMapa() {
+    const modal = document.getElementById("mapas-produto-modal");
+    if (!modal) return;
+    modal.hidden = true;
+    document.body.classList.remove("mapas-produto-modal-aberto");
+}
+
+function lerProdutoEditadoMapa() {
+    const fornecedores = {};
+    FORNECEDORES_CAMPOS_PRODUTO.forEach(({ chave }) => {
+        const valor = document.getElementById(`mapas-editar-fornecedor-${chave}`)?.value.trim() || "";
+        if (valor) fornecedores[chave] = valor;
+    });
+
+    const produto = {
+        nome: document.getElementById("mapas-editar-nome").value.trim(),
+        referencia: document.getElementById("mapas-editar-referencia").value.trim(),
+        sku: normalizarSkuFornecedor(document.getElementById("mapas-editar-sku").value),
+        top: document.getElementById("mapas-editar-top").value.trim(),
+        preco: Number(document.getElementById("mapas-editar-preco").value),
+        peso: Number(document.getElementById("mapas-editar-peso").value || 10),
+        stock: Math.max(0, Math.floor(Number(document.getElementById("mapas-editar-stock").value || 0))),
+        tema: document.getElementById("mapas-editar-tema").value.trim(),
+        subtema: document.getElementById("mapas-editar-subtema").value.trim() || "semsubtema",
+        imagens: textoParaImagensProdutoFornecedor(document.getElementById("mapas-editar-imagens").value),
+        observacoes: document.getElementById("mapas-editar-observacoes").value.trim(),
+        fornecedores,
+        ativo: document.getElementById("mapas-editar-ativo").checked
+    };
+
+    if (!produto.nome || !produto.sku || !produto.tema || !Number.isFinite(produto.preco) || produto.preco < 0 || !Number.isFinite(produto.peso) || produto.peso < 1) {
+        throw new Error("Preencha nome, SKU, tema, preco e peso corretamente.");
+    }
+
+    return {
+        id: document.getElementById("mapas-editar-id").value,
+        skuOriginal: document.getElementById("mapas-editar-sku-original").value,
+        produto
+    };
+}
+
+async function guardarEdicaoProdutoMapa(evento) {
+    evento.preventDefault();
+    const status = document.getElementById("mapas-produto-status");
+    const botao = document.getElementById("mapas-produto-guardar");
+
+    try {
+        if (status) {
+            status.textContent = "A guardar produto...";
+            status.style.color = "#ddd";
+        }
+        if (botao) botao.disabled = true;
+
+        const { id, skuOriginal, produto } = lerProdutoEditadoMapa();
+        const skuDuplicado = fornecedorProdutos.some(item =>
+            String(item.sku || "").trim().toUpperCase() !== String(skuOriginal || "").trim().toUpperCase()
+            && String(item.sku || "").trim().toUpperCase() === produto.sku
+        );
+        if (skuDuplicado) throw new Error("Este SKU ja existe noutro produto.");
+
+        let query = fornecedoresClient.from("produtos").update(produto);
+        query = id ? query.eq("id", id) : query.eq("sku", skuOriginal);
+        const { data, error } = await query.select("*");
+        if (error) throw error;
+        if (!data?.length) throw new Error("Produto nao encontrado no Supabase.");
+
+        const atualizado = {
+            ...data[0],
+            stock: Number.isFinite(Number(data[0].stock)) ? Number(data[0].stock) : 0,
+            preco: Number.isFinite(Number(data[0].preco)) ? Number(data[0].preco) : 0
+        };
+        fornecedorProdutos = fornecedorProdutos.map(item =>
+            String(item.id) === String(atualizado.id) || String(item.sku || "").toUpperCase() === String(skuOriginal || "").toUpperCase()
+                ? atualizado
+                : item
+        );
+        fornecedorSelecao = fornecedorSelecao.map(item => String(item.id) === String(atualizado.id) ? { ...atualizado, quantidade: item.quantidade } : item);
+        guardarSelecaoFornecedor();
+        renderizarResultadosFornecedor();
+        renderizarSelecionadosFornecedor();
+        fecharEdicaoProdutoMapa();
+        definirStatusFornecedor("Produto guardado.");
+    } catch (error) {
+        console.error(error);
+        if (status) {
+            status.textContent = "Erro: " + (error.message || "Nao foi possivel guardar o produto.");
+            status.style.color = "#ff6262";
+        }
+    } finally {
+        if (botao) botao.disabled = false;
+    }
+}
+
 function criarItemContadorMapa(rotulo, valor, destaque = false) {
     const item = document.createElement("span");
     item.className = destaque ? "mapas-contador-item destaque" : "mapas-contador-item";
@@ -566,7 +817,16 @@ function renderizarResultadosFornecedorMapa(caixa, resultados, fornecedor) {
             const pendente = pendentes.total;
             const previsto = stockNumero + pendente;
 
-            linha.appendChild(criarCelulaMapaFornecedor(atual.nome || "Produto sem nome", "mapas-col-nome"));
+            const nomeCelula = document.createElement("td");
+            nomeCelula.className = "mapas-col-nome";
+            const nomeBotao = document.createElement("button");
+            nomeBotao.type = "button";
+            nomeBotao.className = "mapas-produto-nome-botao";
+            nomeBotao.textContent = atual.nome || "Produto sem nome";
+            nomeBotao.title = "Editar produto";
+            nomeBotao.addEventListener("click", () => abrirEdicaoProdutoMapa(atual.id));
+            nomeCelula.appendChild(nomeBotao);
+            linha.appendChild(nomeCelula);
 
             const refCelula = document.createElement("td");
             refCelula.className = "mapas-col-ref";
@@ -1041,6 +1301,10 @@ document.addEventListener('keydown', (evento) => {
     const modal = document.getElementById('admin-imagem-modal');
     if (evento.key === 'Escape' && modal && !modal.hidden) {
         fecharImagemFornecedorModal();
+    }
+    const modalProduto = document.getElementById('mapas-produto-modal');
+    if (evento.key === 'Escape' && modalProduto && !modalProduto.hidden) {
+        fecharEdicaoProdutoMapa();
     }
 });
 

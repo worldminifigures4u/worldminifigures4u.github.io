@@ -3223,6 +3223,151 @@
     -webkit-appearance: none;
 }
 
+.mapas-produto-nome-botao {
+    width: 100%;
+    border: 0;
+    background: transparent;
+    color: #fff;
+    padding: 0;
+    text-align: left;
+    font: inherit;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.mapas-produto-nome-botao:hover,
+.mapas-produto-nome-botao:focus-visible {
+    color: #ffc400;
+    text-decoration: underline;
+    outline: none;
+}
+
+.mapas-produto-modal[hidden] {
+    display: none;
+}
+
+.mapas-produto-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 10000;
+    display: grid;
+    place-items: center;
+    padding: 18px;
+    background: rgba(0, 0, 0, 0.74);
+}
+
+.mapas-produto-modal-dialog {
+    width: min(980px, 100%);
+    max-height: 92vh;
+    overflow: auto;
+    border: 1px solid #444;
+    border-radius: 8px;
+    background: #141414;
+    color: #fff;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+}
+
+.mapas-produto-modal-topo {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 14px 16px;
+    border-bottom: 1px solid #333;
+    background: #101010;
+}
+
+.mapas-produto-modal-topo h3 {
+    margin: 0;
+    color: #ffc400;
+}
+
+.mapas-produto-modal-fechar {
+    min-width: 34px;
+    height: 34px;
+    border: 0;
+    border-radius: 6px;
+    background: #333;
+    color: #fff;
+    font-weight: 900;
+    cursor: pointer;
+}
+
+.mapas-produto-form {
+    padding: 16px;
+}
+
+.mapas-produto-form-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 12px;
+}
+
+.mapas-produto-form-grid label,
+.mapas-produto-fornecedores label {
+    display: grid;
+    gap: 5px;
+    color: #ddd;
+    font-weight: 700;
+}
+
+.mapas-produto-form-grid input,
+.mapas-produto-form-grid textarea,
+.mapas-produto-fornecedores input {
+    width: 100%;
+    box-sizing: border-box;
+    border: 1px solid #444;
+    border-radius: 6px;
+    background: #242424;
+    color: #fff;
+    padding: 10px 11px;
+    font: inherit;
+}
+
+.mapas-produto-form-grid textarea {
+    resize: vertical;
+}
+
+.mapas-produto-fornecedores {
+    grid-column: 1 / -1;
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 12px;
+    margin: 4px 0 0;
+    padding: 12px;
+    border: 1px solid #333;
+    border-radius: 8px;
+}
+
+.mapas-produto-fornecedores legend {
+    padding: 0 6px;
+    color: #ffc400;
+    font-weight: 900;
+}
+
+.mapas-edicao-checkbox {
+    grid-column: 1 / -1;
+    display: flex !important;
+    grid-template-columns: none !important;
+    align-items: center;
+    gap: 8px !important;
+}
+
+.mapas-edicao-checkbox input {
+    width: auto;
+}
+
+.mapas-produto-status {
+    min-height: 20px;
+}
+
+body.mapas-produto-modal-aberto {
+    overflow: hidden;
+}
+
 .mapas-th-ordenavel button {
     width: 100%;
     border: 0;
@@ -3272,6 +3417,11 @@
 @media (max-width: 900px) {
     .mapas-produtos-tabela {
         min-width: 860px;
+    }
+
+    .mapas-produto-form-grid,
+    .mapas-produto-fornecedores {
+        grid-template-columns: 1fr;
     }
 
     .pagina-mapas-admin .fornecedor-resultados {
