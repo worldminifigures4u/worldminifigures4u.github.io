@@ -360,20 +360,16 @@ async function carregarCatalogoFornecedores() {
 
     if (respostaAdmin.error) {
         console.warn('Catalogo administrativo indisponivel; a usar consulta direta.', respostaAdmin.error);
-        produtos = [];
-        let inicio = 0;
-        const tamanho = 500;
-        while (true) {
-            const { data, error } = await fornecedoresClient
-                .from('produtos')
-                .select('*')
-                .order('nome', { ascending: true })
-                .range(inicio, inicio + tamanho - 1);
-            if (error) throw error;
-            if (!data?.length) break;
-            produtos.push(...data);
-            if (data.length < tamanho) break;
-            inicio += tamanho;
+        produtos = await carregarCatalogoFornecedoresDireto();
+    } else if (produtos.length && !produtos.some(produto => Object.prototype.hasOwnProperty.call(produto, "top"))) {
+        try {
+            const produtosDiretos = await carregarCatalogoFornecedoresDireto();
+            if (produtosDiretos.length) produtos = produtosDiretos;
+        } catch (error) {
+            console.warn('Catalogo direto indisponivel; a RPC nao devolveu o campo top.', error);
+            if (estaPaginaMapasFornecedor()) {
+                definirStatusFornecedor('O Supabase ainda nao esta a devolver a coluna Top. Execute o SQL atualizado e volte a importar o mapas.ods.', true);
+            }
         }
     }
 
@@ -391,6 +387,24 @@ async function carregarCatalogoFornecedores() {
     guardarSelecaoFornecedor();
 }
 
+async function carregarCatalogoFornecedoresDireto() {
+    const produtos = [];
+    let inicio = 0;
+    const tamanho = 500;
+    while (true) {
+        const { data, error } = await fornecedoresClient
+            .from('produtos')
+            .select('*')
+            .order('nome', { ascending: true })
+            .range(inicio, inicio + tamanho - 1);
+        if (error) throw error;
+        if (!data?.length) break;
+        produtos.push(...data);
+        if (data.length < tamanho) break;
+        inicio += tamanho;
+    }
+    return produtos;
+}
 
 function estaPaginaMapasFornecedor() {
     return document.body?.classList.contains("pagina-mapas-admin");

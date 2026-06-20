@@ -2,6 +2,8 @@
 -- Regista encomendas externas e desconta o stock numa unica transacao.
 
 alter table public.produtos add column if not exists referencia text;
+alter table public.produtos add column if not exists top text;
+alter table public.produtos add column if not exists fornecedores jsonb not null default '{}'::jsonb;
 
 alter table public.encomendas
   add column if not exists origem text not null default 'Site',
@@ -28,9 +30,11 @@ begin
       'sku', produto.sku,
       'nome', produto.nome,
       'preco', coalesce(produto.preco, 0),
+      'top', coalesce(produto.top, ''),
       'peso', coalesce(produto.peso, 10),
       'imagens', produto.imagens,
       'stock', coalesce(produto.stock, 0),
+      'fornecedores', coalesce(produto.fornecedores, '{}'::jsonb),
       'ativo', coalesce(produto.ativo, true)
     ) order by produto.nome)
     from public.produtos as produto
