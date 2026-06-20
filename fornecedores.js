@@ -274,6 +274,8 @@ function obterValorOrdenacaoFornecedor(item, coluna) {
     if (coluna === "ref") return produto.referencia || "";
     if (coluna === "top") return obterTopProdutoFornecedor(produto) || "";
     if (coluna === "stock") return Number(produto.stock || 0);
+    if (coluna === "pendente") return obterPendentesProdutoFornecedor(produto);
+    if (coluna === "previsto") return Number(produto.stock || 0) + obterPendentesProdutoFornecedor(produto);
     if (coluna === "qtd") {
         const selecionado = fornecedorSelecao.find(sel => String(sel.id) === String(produto.id));
         return Number(selecionado?.quantidade || 0);
@@ -303,7 +305,7 @@ function compararProdutosFornecedor(a, b, ordenacao) {
     if (coluna === "stock") {
         return compararProdutosPorColunaFornecedor(a, b, "stock", direcao);
     }
-    if (["nome", "sku", "ref", "top", "qtd"].includes(coluna)) {
+    if (["nome", "sku", "ref", "top", "pendente", "previsto", "qtd"].includes(coluna)) {
         return compararProdutosPorColunaFornecedor(a, b, coluna, direcao);
     }
 
@@ -352,6 +354,39 @@ function definirQuantidadeMapaFornecedor(produto, valor) {
 
     guardarSelecaoFornecedor();
     renderizarSelecionadosFornecedor();
+}
+
+function obterPendentesProdutoFornecedor(produto) {
+    return obterPendentesDetalhadosProdutoFornecedor(produto).total;
+}
+
+function obterPendentesDetalhadosProdutoFornecedor(produto) {
+    const idProduto = String(produto?.id || "");
+    const skuProduto = String(produto?.sku || "").trim().toUpperCase();
+    const pedidosAbertos = fornecedorPedidos.filter(pedido =>
+        pedido
+        && pedido.estado !== "Recebida"
+        && pedido.estado !== "Cancelada"
+        && Array.isArray(pedido.itens)
+    );
+
+    const detalhes = [];
+    const total = pedidosAbertos.reduce((soma, pedido) => {
+        return soma + pedido.itens.reduce((subtotal, item) => {
+            const mesmoId = idProduto && String(item.id || item.produto_id || "") === idProduto;
+            const mesmoSku = skuProduto && String(item.sku || "").trim().toUpperCase() === skuProduto;
+            if (!mesmoId && !mesmoSku) return subtotal;
+            const quantidade = Math.max(0, Number(item.quantidade || 0));
+            const recebido = Math.max(0, Number(item.recebido || 0));
+            const pendente = Math.max(0, quantidade - recebido);
+            if (pendente > 0) {
+                detalhes.push(`${pedido.codigo || "Encomenda"}${pedido.fornecedor ? ` - ${pedido.fornecedor}` : ""}: ${pendente}`);
+            }
+            return subtotal + pendente;
+        }, 0);
+    }, 0);
+
+    return { total, detalhes };
 }
 
 async function carregarCatalogoFornecedores() {
@@ -491,6 +526,8 @@ function renderizarResultadosFornecedorMapa(caixa, resultados, fornecedor) {
         ["nome", "mapas-col-nome", "nome"],
         ["Ref.", "mapas-col-ref", "ref"],
         ["stock", "mapas-col-stock", "stock"],
+        ["a chegar", "mapas-col-pendente", "pendente"],
+        ["previsto", "mapas-col-previsto", "previsto"],
         ["qtd", "mapas-col-qtd", "qtd"],
     ].forEach(([texto, classe, coluna]) => {
         const th = document.createElement("th");
@@ -525,6 +562,9 @@ function renderizarResultadosFornecedorMapa(caixa, resultados, fornecedor) {
             const atual = produto;
             const linha = document.createElement("tr");
             const stockNumero = Number(atual.stock || 0);
+            const pendentes = obterPendentesDetalhadosProdutoFornecedor(atual);
+            const pendente = pendentes.total;
+            const previsto = stockNumero + pendente;
 
             linha.appendChild(criarCelulaMapaFornecedor(atual.nome || "Produto sem nome", "mapas-col-nome"));
 
@@ -540,6 +580,12 @@ function renderizarResultadosFornecedorMapa(caixa, resultados, fornecedor) {
             linha.appendChild(refCelula);
 
             linha.appendChild(criarCelulaMapaFornecedor(stockNumero, `mapas-col-stock mapa-stock-celula ${stockNumero <= 0 ? "sem-stock" : ""}`));
+            const pendenteCelula = criarCelulaMapaFornecedor(pendente, `mapas-col-pendente mapa-pendente-celula ${pendente > 0 ? "com-pendente" : ""}`);
+            if (pendentes.detalhes.length) {
+                pendenteCelula.title = pendentes.detalhes.join("\n");
+            }
+            linha.appendChild(pendenteCelula);
+            linha.appendChild(criarCelulaMapaFornecedor(previsto, `mapas-col-previsto mapa-previsto-celula ${previsto > stockNumero ? "com-pendente" : ""}`));
 
             const qtdCelula = document.createElement("td");
             qtdCelula.className = "mapas-col-qtd";
@@ -788,6 +834,7 @@ async function criarPedidoFornecedor() {
         fornecedorSelecao = [];
         guardarSelecaoFornecedor();
         document.getElementById('fornecedor-referencia').value = '';
+        renderizarResultadosFornecedor();
         renderizarSelecionadosFornecedor();
         renderizarPedidosFornecedores();
         definirStatusFornecedor(`Encomenda ${pedido.codigo} criada.`);
@@ -808,6 +855,7 @@ async function alterarEstadoPedidoFornecedor(id, estado) {
         const atualizado = normalizarPedidoFornecedor(data);
         fornecedorPedidos = fornecedorPedidos.map(item => item.id === id ? atualizado : item);
         guardarPedidosFornecedores();
+        renderizarResultadosFornecedor();
         renderizarPedidosFornecedores();
         definirStatusFornecedor(`Estado da encomenda ${atualizado.codigo} atualizado.`);
     } catch (error) {
@@ -826,6 +874,7 @@ async function apagarPedidoFornecedor(id) {
         if (error) throw error;
         fornecedorPedidos = fornecedorPedidos.filter(item => item.id !== id);
         guardarPedidosFornecedores();
+        renderizarResultadosFornecedor();
         renderizarPedidosFornecedores();
         definirStatusFornecedor(`Encomenda ${pedido.codigo} apagada.`);
     } catch (error) {

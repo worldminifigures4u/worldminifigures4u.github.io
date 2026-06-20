@@ -3145,12 +3145,16 @@
     background: #171717;
 }
 
-.mapas-col-nome { width: 48%; }
-.mapas-col-stock { width: 10%; }
-.mapas-col-ref { width: 28%; }
+.mapas-col-nome { width: 36%; }
+.mapas-col-stock { width: 8%; }
+.mapas-col-pendente { width: 9%; }
+.mapas-col-previsto { width: 9%; }
+.mapas-col-ref { width: 24%; }
 .mapas-col-qtd { width: 90px; }
 
 .mapas-col-stock,
+.mapas-col-pendente,
+.mapas-col-previsto,
 .mapas-col-qtd {
     text-align: center;
 }
@@ -3161,6 +3165,19 @@
 
 .mapa-stock-celula.sem-stock {
     color: #ff4d4d !important;
+}
+
+.mapa-pendente-celula,
+.mapa-previsto-celula {
+    font-weight: 900;
+}
+
+.mapa-pendente-celula.com-pendente {
+    color: #18c4ff !important;
+}
+
+.mapa-previsto-celula.com-pendente {
+    color: #39d353 !important;
 }
 
 .mapa-fornecedor-celula {
