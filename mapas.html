@@ -52,26 +52,32 @@
                 <h3>Adicionar produtos</h3>
                 <input id="fornecedor-pesquisa" type="search" placeholder="Nome, Ref., SKU ou tema">
                 <div class="fornecedor-lista-controles mapas-lista-controles">
-                    <label for="fornecedor-filtro-top">Filtro Top</label>
-                    <label for="fornecedor-filtro-descontinuado">Descontinuado</label>
-                    <label for="fornecedor-filtro-marcacao">Filtro do fornecedor</label>
-                    <select id="fornecedor-filtro-top">
-                        <option value="todos">Todos</option>
-                        <option value="top">Apenas Top</option>
-                        <option value="sem-top">Sem Top</option>
-                    </select>
-                    <select id="fornecedor-filtro-descontinuado">
-                        <option value="todos">Todos</option>
-                        <option value="descontinuado">Apenas descontinuadas</option>
-                        <option value="sem-descontinuado">Sem descontinuadas</option>
-                    </select>
-                    <select id="fornecedor-filtro-marcacao">
-                        <option value="todos">Todos</option>
-                        <option value="os">OS</option>
-                        <option value="ex">EX</option>
-                        <option value="disponivel">Disponivel</option>
-                        <option value="encomendado">Ja encomendado</option>
-                    </select>
+                    <label for="fornecedor-filtro-top">
+                        Filtro Top
+                        <select id="fornecedor-filtro-top">
+                            <option value="todos">Todos</option>
+                            <option value="top">Apenas Top</option>
+                            <option value="sem-top">Sem Top</option>
+                        </select>
+                    </label>
+                    <label for="fornecedor-filtro-descontinuado">
+                        Descontinuado
+                        <select id="fornecedor-filtro-descontinuado">
+                            <option value="todos">Todos</option>
+                            <option value="descontinuado">Apenas descontinuadas</option>
+                            <option value="sem-descontinuado">Sem descontinuadas</option>
+                        </select>
+                    </label>
+                    <label for="fornecedor-filtro-marcacao">
+                        Filtro do fornecedor
+                        <select id="fornecedor-filtro-marcacao">
+                            <option value="todos">Todos</option>
+                            <option value="os">OS</option>
+                            <option value="ex">EX</option>
+                            <option value="disponivel">Disponivel</option>
+                            <option value="encomendado">Ja encomendado</option>
+                        </select>
+                    </label>
                 </div>
                 <div id="fornecedor-resultados" class="fornecedor-resultados"></div>
 
