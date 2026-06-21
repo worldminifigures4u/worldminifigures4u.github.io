@@ -847,6 +847,7 @@ function renderizarResultadosFornecedorMapa(caixa, resultados, fornecedor) {
         const botao = document.createElement("button");
         botao.type = "button";
         botao.textContent = texto;
+        botao.tabIndex = -1;
         const ativo = fornecedorMapaOrdenacao.coluna === coluna;
         if (ativo) {
             botao.setAttribute("aria-sort", fornecedorMapaOrdenacao.direcao === "asc" ? "ascending" : "descending");
@@ -867,9 +868,11 @@ function renderizarResultadosFornecedorMapa(caixa, resultados, fornecedor) {
     tabela.appendChild(thead);
 
     const tbody = document.createElement("tbody");
-    resultados
+    const resultadosOrdenados = resultados
         .slice()
-        .sort((a, b) => compararProdutosPorColunaFornecedor(a, b, fornecedorMapaOrdenacao.coluna, fornecedorMapaOrdenacao.direcao))
+        .sort((a, b) => compararProdutosPorColunaFornecedor(a, b, fornecedorMapaOrdenacao.coluna, fornecedorMapaOrdenacao.direcao));
+
+    resultadosOrdenados
         .forEach(({ produto }) => {
             const atual = produto;
             const linha = document.createElement("tr");
@@ -885,6 +888,7 @@ function renderizarResultadosFornecedorMapa(caixa, resultados, fornecedor) {
             nomeBotao.className = "mapas-produto-nome-botao";
             nomeBotao.textContent = atual.nome || "Produto sem nome";
             nomeBotao.title = "Editar produto";
+            nomeBotao.tabIndex = -1;
             nomeBotao.addEventListener("click", () => abrirEdicaoProdutoMapa(atual.id));
             nomeCelula.appendChild(nomeBotao);
             linha.appendChild(nomeCelula);
@@ -893,7 +897,9 @@ function renderizarResultadosFornecedorMapa(caixa, resultados, fornecedor) {
             refCelula.className = "mapas-col-ref";
             const refConteudo = document.createElement("div");
             refConteudo.className = "mapas-ref-com-imagem";
-            refConteudo.appendChild(criarImagemFornecedor(atual, "fornecedor-miniatura pequena"));
+            const imagemRef = criarImagemFornecedor(atual, "fornecedor-miniatura pequena");
+            imagemRef.tabIndex = -1;
+            refConteudo.appendChild(imagemRef);
             const refTexto = document.createElement("span");
             refTexto.textContent = atual.referencia || "-";
             refConteudo.appendChild(refTexto);
@@ -916,6 +922,7 @@ function renderizarResultadosFornecedorMapa(caixa, resultados, fornecedor) {
             input.step = "1";
             const quantidadeSelecionada = obterQuantidadeSelecionadaFornecedor(atual.id);
             input.value = quantidadeSelecionada > 0 ? String(quantidadeSelecionada) : "";
+            if (quantidadeSelecionada <= 0) input.removeAttribute("value");
             input.className = "mapa-quantidade-input";
             input.setAttribute("aria-label", `Quantidade de ${atual.nome || "produto"}`);
             input.addEventListener("keydown", tratarTeclaQuantidadeMapa);
