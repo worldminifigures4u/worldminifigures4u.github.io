@@ -713,6 +713,7 @@ async function carregarCatalogoFornecedores() {
     } else if (produtos.length && !produtos.some(produto =>
         Object.prototype.hasOwnProperty.call(produto, "top")
         && Object.prototype.hasOwnProperty.call(produto, "descontinuado")
+        && Object.prototype.hasOwnProperty.call(produto, "fornecedores")
     )) {
         try {
             const produtosDiretos = await carregarCatalogoFornecedoresDireto();
