@@ -107,6 +107,10 @@ function normalizarPedidoFornecedor(pedido) {
     };
 }
 
+function obterEstadosPedidoFornecedor() {
+    return ['A preparar', 'Encomendada', 'Recebida parcialmente', 'Recebida', 'Cancelada'];
+}
+
 async function carregarPedidosFornecedoresRemotos() {
     try {
         const { data, error } = await fornecedoresClient.rpc('listar_encomendas_fornecedores_admin');
@@ -1181,6 +1185,210 @@ async function apagarPedidoFornecedor(id) {
         definirStatusFornecedor('Erro ao apagar encomenda: ' + (error.message || 'erro desconhecido'), true);
     }
 }
+
+function garantirModalEdicaoFornecedor() {
+    let modal = document.getElementById('fornecedor-edicao-modal');
+    if (modal) return modal;
+
+    modal = document.createElement('div');
+    modal.id = 'fornecedor-edicao-modal';
+    modal.className = 'fornecedor-edicao-modal';
+    modal.hidden = true;
+    modal.innerHTML = `
+        <div class="fornecedor-edicao-dialog" role="dialog" aria-modal="true" aria-labelledby="fornecedor-edicao-titulo">
+            <div class="fornecedor-edicao-topo">
+                <h3 id="fornecedor-edicao-titulo">Editar ficha do fornecedor</h3>
+                <button type="button" class="fornecedor-edicao-fechar" id="fornecedor-edicao-fechar" aria-label="Fechar">x</button>
+            </div>
+            <form id="fornecedor-edicao-form" class="fornecedor-edicao-form">
+                <input type="hidden" id="fornecedor-edicao-id">
+                <div class="fornecedor-edicao-grid">
+                    <label>
+                        Fornecedor
+                        <input type="text" id="fornecedor-edicao-nome" required>
+                    </label>
+                    <label>
+                        Referencia interna
+                        <input type="text" id="fornecedor-edicao-referencia">
+                    </label>
+                    <label>
+                        Estado
+                        <select id="fornecedor-edicao-estado"></select>
+                    </label>
+                </div>
+                <div class="fornecedor-edicao-produtos" id="fornecedor-edicao-produtos"></div>
+                <p class="fornecedores-status fornecedor-edicao-status" id="fornecedor-edicao-status" role="status"></p>
+                <div class="fornecedores-acoes fornecedor-edicao-acoes">
+                    <button type="button" id="fornecedor-edicao-cancelar">Cancelar</button>
+                    <button type="submit" id="fornecedor-edicao-guardar">Guardar ficha</button>
+                </div>
+            </form>
+        </div>
+    `;
+
+    document.body.appendChild(modal);
+    modal.querySelector('#fornecedor-edicao-fechar')?.addEventListener('click', fecharEdicaoPedidoFornecedor);
+    modal.querySelector('#fornecedor-edicao-cancelar')?.addEventListener('click', fecharEdicaoPedidoFornecedor);
+    modal.addEventListener('click', (evento) => {
+        if (evento.target === modal) fecharEdicaoPedidoFornecedor();
+    });
+    modal.querySelector('#fornecedor-edicao-form')?.addEventListener('submit', guardarEdicaoPedidoFornecedor);
+    return modal;
+}
+
+function abrirEdicaoPedidoFornecedor(id) {
+    const pedido = fornecedorPedidos.find(item => item.id === id);
+    if (!pedido) return;
+    const modal = garantirModalEdicaoFornecedor();
+    const estadoSelect = modal.querySelector('#fornecedor-edicao-estado');
+    estadoSelect.replaceChildren();
+    obterEstadosPedidoFornecedor().forEach(opcao => {
+        const opt = document.createElement('option');
+        opt.value = opcao;
+        opt.textContent = opcao;
+        opt.selected = pedido.estado === opcao;
+        estadoSelect.appendChild(opt);
+    });
+
+    modal.querySelector('#fornecedor-edicao-id').value = pedido.id;
+    modal.querySelector('#fornecedor-edicao-nome').value = pedido.fornecedor || '';
+    modal.querySelector('#fornecedor-edicao-referencia').value = pedido.referencia || '';
+    modal.querySelector('#fornecedor-edicao-status').textContent = '';
+
+    const lista = modal.querySelector('#fornecedor-edicao-produtos');
+    lista.replaceChildren();
+    pedido.itens.forEach((item, indice) => {
+        const produtoAtual = obterProdutoAtual(item.id) || item;
+        const linha = document.createElement('div');
+        linha.className = 'fornecedor-edicao-produto';
+        linha.dataset.indice = String(indice);
+        linha.appendChild(criarImagemFornecedor(produtoAtual, 'fornecedor-miniatura pequena'));
+
+        const info = document.createElement('div');
+        info.className = 'fornecedor-info';
+        const nome = document.createElement('strong');
+        nome.textContent = item.nome || produtoAtual.nome || 'Produto';
+        const ids = document.createElement('span');
+        ids.className = 'fornecedor-identificadores';
+        ids.textContent = `Ref. ${item.referencia || produtoAtual.referencia || '-'} | SKU ${item.sku || produtoAtual.sku || '-'}`;
+        info.append(nome, ids);
+
+        const campos = document.createElement('div');
+        campos.className = 'fornecedor-edicao-produto-campos';
+        const quantidade = document.createElement('label');
+        quantidade.textContent = 'Pedido';
+        const quantidadeInput = document.createElement('input');
+        quantidadeInput.type = 'number';
+        quantidadeInput.min = '0';
+        quantidadeInput.step = '1';
+        quantidadeInput.value = Math.max(0, Number(item.quantidade || 0));
+        quantidadeInput.dataset.campo = 'quantidade';
+        quantidade.appendChild(quantidadeInput);
+
+        const recebido = document.createElement('label');
+        recebido.textContent = 'Recebido';
+        const recebidoInput = document.createElement('input');
+        recebidoInput.type = 'number';
+        recebidoInput.min = '0';
+        recebidoInput.step = '1';
+        recebidoInput.value = Math.max(0, Number(item.recebido || 0));
+        recebidoInput.dataset.campo = 'recebido';
+        recebido.appendChild(recebidoInput);
+
+        const remover = document.createElement('label');
+        remover.className = 'fornecedor-edicao-remover';
+        const removerInput = document.createElement('input');
+        removerInput.type = 'checkbox';
+        removerInput.dataset.campo = 'remover';
+        remover.append(removerInput, document.createTextNode(' Remover'));
+
+        campos.append(quantidade, recebido, remover);
+        linha.append(info, campos);
+        lista.appendChild(linha);
+    });
+
+    modal.hidden = false;
+    document.body.classList.add('fornecedor-edicao-modal-aberto');
+    modal.querySelector('#fornecedor-edicao-nome')?.focus();
+}
+
+function fecharEdicaoPedidoFornecedor() {
+    const modal = document.getElementById('fornecedor-edicao-modal');
+    if (!modal) return;
+    modal.hidden = true;
+    document.body.classList.remove('fornecedor-edicao-modal-aberto');
+}
+
+function lerItensEditadosPedidoFornecedor(pedido, modal) {
+    const linhas = Array.from(modal.querySelectorAll('.fornecedor-edicao-produto'));
+    return linhas.map(linha => {
+        const indice = Number(linha.dataset.indice);
+        const item = pedido.itens[indice];
+        if (!item) return null;
+        const remover = linha.querySelector('[data-campo="remover"]')?.checked;
+        if (remover) return null;
+        const quantidade = Math.max(0, Math.floor(Number(linha.querySelector('[data-campo="quantidade"]')?.value || 0)));
+        const recebido = Math.max(0, Math.floor(Number(linha.querySelector('[data-campo="recebido"]')?.value || 0)));
+        return {
+            ...item,
+            quantidade,
+            recebido: Math.min(recebido, quantidade)
+        };
+    }).filter(item => item && Number(item.quantidade || 0) > 0);
+}
+
+async function guardarEdicaoPedidoFornecedor(evento) {
+    evento.preventDefault();
+    const modal = garantirModalEdicaoFornecedor();
+    const status = modal.querySelector('#fornecedor-edicao-status');
+    const botao = modal.querySelector('#fornecedor-edicao-guardar');
+    const id = modal.querySelector('#fornecedor-edicao-id').value;
+    const pedido = fornecedorPedidos.find(item => item.id === id);
+    if (!pedido) return;
+
+    const fornecedor = modal.querySelector('#fornecedor-edicao-nome').value.trim();
+    const referencia = modal.querySelector('#fornecedor-edicao-referencia').value.trim();
+    const estado = modal.querySelector('#fornecedor-edicao-estado').value;
+    const itens = lerItensEditadosPedidoFornecedor(pedido, modal);
+
+    if (!fornecedor) {
+        status.textContent = 'Indique o fornecedor.';
+        status.style.color = '#ff6262';
+        return;
+    }
+    if (!itens.length) {
+        status.textContent = 'A ficha precisa de pelo menos um produto.';
+        status.style.color = '#ff6262';
+        return;
+    }
+
+    try {
+        botao.disabled = true;
+        status.textContent = 'A guardar ficha...';
+        status.style.color = '#ddd';
+        const { data, error } = await fornecedoresClient
+            .from('encomendas_fornecedores')
+            .update({ fornecedor, referencia: referencia || null, estado, itens })
+            .eq('id', id)
+            .select()
+            .single();
+        if (error) throw error;
+        const atualizado = normalizarPedidoFornecedor(data);
+        fornecedorPedidos = fornecedorPedidos.map(item => item.id === id ? atualizado : item);
+        guardarPedidosFornecedores();
+        renderizarResultadosFornecedor();
+        renderizarPedidosFornecedores();
+        fecharEdicaoPedidoFornecedor();
+        definirStatusFornecedor(`Ficha ${atualizado.codigo} guardada.`);
+    } catch (error) {
+        console.error(error);
+        status.textContent = 'Erro: ' + (error.message || 'Nao foi possivel guardar a ficha.');
+        status.style.color = '#ff6262';
+    } finally {
+        botao.disabled = false;
+    }
+}
+
 function renderizarPedidosFornecedores() {
     const caixa = document.getElementById('fornecedor-pedidos');
     if (!caixa) return;
@@ -1202,7 +1410,7 @@ function renderizarPedidosFornecedores() {
         titulo.innerHTML = `<strong>${pedido.codigo}</strong><span>${pedido.fornecedor}${pedido.referencia ? ' - ' + pedido.referencia : ''}</span><small>${new Date(pedido.criado_em).toLocaleString('pt-PT')}</small>`;
         const estado = document.createElement('select');
         estado.className = 'fornecedor-status-select';
-        ['A preparar', 'Encomendada', 'Recebida parcialmente', 'Recebida', 'Cancelada'].forEach(opcao => {
+        obterEstadosPedidoFornecedor().forEach(opcao => {
             const opt = document.createElement('option');
             opt.value = opcao;
             opt.textContent = opcao;
@@ -1240,6 +1448,11 @@ function renderizarPedidosFornecedores() {
 
         const acoes = document.createElement('div');
         acoes.className = 'fornecedores-acoes pedido';
+        const editar = document.createElement('button');
+        editar.type = 'button';
+        editar.className = 'wallapop-botao';
+        editar.textContent = 'Editar ficha';
+        editar.addEventListener('click', () => abrirEdicaoPedidoFornecedor(pedido.id));
         const receber = document.createElement('button');
         receber.type = 'button';
         receber.className = 'wallapop-botao wallapop-botao-destaque';
@@ -1250,7 +1463,7 @@ function renderizarPedidosFornecedores() {
         apagar.className = 'wallapop-botao';
         apagar.textContent = 'Apagar pedido';
         apagar.addEventListener('click', () => apagarPedidoFornecedor(pedido.id));
-        acoes.append(receber, apagar);
+        acoes.append(editar, receber, apagar);
         card.appendChild(acoes);
         caixa.appendChild(card);
     });
@@ -1345,6 +1558,10 @@ document.addEventListener('keydown', (evento) => {
     const modalProduto = document.getElementById('mapas-produto-modal');
     if (evento.key === 'Escape' && modalProduto && !modalProduto.hidden) {
         fecharEdicaoProdutoMapa();
+    }
+    const modalFornecedor = document.getElementById('fornecedor-edicao-modal');
+    if (evento.key === 'Escape' && modalFornecedor && !modalFornecedor.hidden) {
+        fecharEdicaoPedidoFornecedor();
     }
 });
 
