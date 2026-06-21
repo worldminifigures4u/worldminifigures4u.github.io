@@ -464,17 +464,27 @@ function obterAliasesFornecedor(nome) {
 }
 
 function lerValorPorAlias(objeto, aliases) {
+    if (typeof objeto === "string" && objeto.trim()) {
+        try {
+            objeto = JSON.parse(objeto);
+        } catch (_) {
+            return "";
+        }
+    }
     if (!objeto || typeof objeto !== "object") return "";
     for (const [chave, valor] of Object.entries(objeto)) {
         const chaveNormalizada = normalizarChaveFornecedor(chave);
-        if (aliases.includes(chaveNormalizada)) return valor;
+        if (aliases.includes(chaveNormalizada) || aliases.includes(chave)) return valor;
     }
     return "";
 }
 
 function obterValorFornecedorProduto(produto, fornecedorNome) {
     if (!produto || !fornecedorNome || fornecedorNome === "Outro") return "";
-    const aliases = obterAliasesFornecedor(fornecedorNome);
+    const aliases = [
+        ...obterAliasesFornecedor(fornecedorNome),
+        fornecedorNome
+    ].filter(Boolean);
     const fontes = [
         produto.fornecedores,
         produto.fornecedor,
