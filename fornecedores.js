@@ -788,6 +788,7 @@ function renderizarContadorMapa(caixa, resultados, fornecedor) {
         if (estado.tipo === "encomendado") totais.encomendado += 1;
         if (String(obterTopProdutoFornecedor(produto) || "").trim()) totais.top += 1;
         if (obterBooleanoProdutoFornecedor(produto?.descontinuado)) totais.descontinuado += 1;
+        totais.stock += Math.max(0, Number(produto?.stock || 0));
         return totais;
     }, {
         top: 0,
@@ -795,7 +796,8 @@ function renderizarContadorMapa(caixa, resultados, fornecedor) {
         os: 0,
         ex: 0,
         disponivel: 0,
-        encomendado: 0
+        encomendado: 0,
+        stock: 0
     });
 
     const contador = document.createElement("div");
@@ -807,6 +809,7 @@ function renderizarContadorMapa(caixa, resultados, fornecedor) {
         criarItemContadorMapa("Descontinuadas", contadores.descontinuado),
         criarItemContadorMapa("OS", contadores.os),
         criarItemContadorMapa("EX", contadores.ex),
+        criarItemContadorMapa("em stock", contadores.stock),
         criarItemContadorMapa("Disponivel", contadores.disponivel),
         criarItemContadorMapa("Ja encomendado", contadores.encomendado)
     );
