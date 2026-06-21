@@ -3,6 +3,7 @@ const FORNECEDORES_SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3Mi
 const FORNECEDORES_ADMIN_EMAILS = ["worldminifigures4u@gmail.com"];
 const FORNECEDORES_STORAGE_KEY = "figures-planet-fornecedores-pedidos";
 const FORNECEDORES_SELECAO_KEY = "figures-planet-fornecedores-selecao";
+const FORNECEDORES_FICHAS_KEY = "figures-planet-fornecedores-fichas";
 const FORNECEDORES_SEM_IMAGEM = 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="160" height="160" viewBox="0 0 160 160"><rect width="160" height="160" rx="8" fill="#eeeeee"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" font-family="Arial" font-size="13" fill="#777">Sem foto</text></svg>');
 
 const FORNECEDORES_ALIASES = {
@@ -29,10 +30,22 @@ const FORNECEDORES_CAMPOS_PRODUTO = [
     { chave: "brixtoy", rotulo: "Brixtoy" },
 ];
 
+const FORNECEDORES_FICHAS_PADRAO = [
+    { nome: "Lote 50", contacto: "", notas: "", ativo: true },
+    { nome: "Enmei (Minie Gong)", contacto: "", notas: "", ativo: true },
+    { nome: "Ruisbengtu", contacto: "", notas: "", ativo: true },
+    { nome: "Lequgo", contacto: "", notas: "", ativo: true },
+    { nome: "Chuangyaoke", contacto: "", notas: "", ativo: true },
+    { nome: "Keooli (Koopf)", contacto: "", notas: "", ativo: true },
+    { nome: "Brixtoy", contacto: "", notas: "", ativo: true },
+    { nome: "Outro", contacto: "", notas: "", ativo: true },
+];
+
 let fornecedoresClient = null;
 let fornecedorProdutos = [];
 let fornecedorSelecao = carregarSelecaoFornecedor();
 let fornecedorPedidos = carregarPedidosFornecedores();
+let fornecedorFichas = carregarFichasFornecedores();
 let fornecedorMapaOrdenacao = { coluna: "nome", direcao: "asc" };
 
 function normalizarFornecedor(texto) {
@@ -92,6 +105,169 @@ function guardarPedidosFornecedores() {
     localStorage.setItem(FORNECEDORES_STORAGE_KEY, JSON.stringify(fornecedorPedidos));
 }
 
+function normalizarFichaFornecedor(ficha, indice = 0) {
+    const nome = String(ficha?.nome || ficha?.fornecedor || "").trim();
+    if (!nome) return null;
+    return {
+        id: String(ficha?.id || normalizarChaveFornecedor(nome) || `fornecedor-${indice}`),
+        nome,
+        contacto: String(ficha?.contacto || ficha?.link || ""),
+        notas: String(ficha?.notas || ""),
+        ativo: ficha?.ativo !== false
+    };
+}
+
+function carregarFichasFornecedores() {
+    try {
+        const dados = JSON.parse(localStorage.getItem(FORNECEDORES_FICHAS_KEY) || "[]");
+        const fichas = Array.isArray(dados)
+            ? dados.map(normalizarFichaFornecedor).filter(Boolean)
+            : [];
+        return fichas.length ? fichas : FORNECEDORES_FICHAS_PADRAO.map(normalizarFichaFornecedor).filter(Boolean);
+    } catch (_) {
+        return FORNECEDORES_FICHAS_PADRAO.map(normalizarFichaFornecedor).filter(Boolean);
+    }
+}
+
+function guardarFichasFornecedoresLocal() {
+    localStorage.setItem(FORNECEDORES_FICHAS_KEY, JSON.stringify(fornecedorFichas));
+}
+
+async function carregarFichasFornecedoresRemotas() {
+    if (!fornecedoresClient) return;
+    try {
+        const { data, error } = await fornecedoresClient
+            .from("fornecedores_admin")
+            .select("id,nome,contacto,notas,ativo")
+            .order("nome", { ascending: true });
+        if (error) throw error;
+        const fichas = (data || []).map(normalizarFichaFornecedor).filter(Boolean);
+        if (fichas.length) {
+            fornecedorFichas = fichas;
+            guardarFichasFornecedoresLocal();
+        }
+    } catch (error) {
+        console.warn("Fichas de fornecedores indisponiveis no Supabase; a usar copia local.", error);
+    }
+}
+
+function obterFichaFornecedorPorId(id) {
+    return fornecedorFichas.find(ficha => String(ficha.id) === String(id));
+}
+
+function obterFichaFornecedorPorNome(nome) {
+    const alvo = normalizarChaveFornecedor(nome);
+    return fornecedorFichas.find(ficha => normalizarChaveFornecedor(ficha.nome) === alvo);
+}
+
+function renderizarFornecedoresGuardados() {
+    const selectPedido = document.getElementById("fornecedor-nome");
+    const selectFicha = document.getElementById("fornecedor-ficha-lista");
+    const valorAtual = selectPedido?.value || "";
+
+    if (selectPedido) {
+        selectPedido.replaceChildren();
+        fornecedorFichas
+            .filter(ficha => ficha.ativo)
+            .forEach(ficha => {
+                const option = document.createElement("option");
+                option.value = ficha.nome;
+                option.textContent = ficha.nome;
+                selectPedido.appendChild(option);
+            });
+        if (valorAtual && Array.from(selectPedido.options).some(option => option.value === valorAtual)) {
+            selectPedido.value = valorAtual;
+        }
+    }
+
+    if (selectFicha) {
+        selectFicha.replaceChildren();
+        fornecedorFichas.forEach(ficha => {
+            const option = document.createElement("option");
+            option.value = ficha.id;
+            option.textContent = ficha.ativo ? ficha.nome : `${ficha.nome} (inativo)`;
+            selectFicha.appendChild(option);
+        });
+        if (fornecedorFichas.length && !selectFicha.value) {
+            selectFicha.value = fornecedorFichas[0].id;
+        }
+    }
+}
+
+function preencherFormularioFichaFornecedor(ficha = null) {
+    const atual = ficha || fornecedorFichas[0] || { id: "", nome: "", contacto: "", notas: "", ativo: true };
+    const id = document.getElementById("fornecedor-ficha-id");
+    const nome = document.getElementById("fornecedor-ficha-nome");
+    const contacto = document.getElementById("fornecedor-ficha-contacto");
+    const notas = document.getElementById("fornecedor-ficha-notas");
+    const ativo = document.getElementById("fornecedor-ficha-ativo");
+    if (id) id.value = atual.id || "";
+    if (nome) nome.value = atual.nome || "";
+    if (contacto) contacto.value = atual.contacto || "";
+    if (notas) notas.value = atual.notas || "";
+    if (ativo) ativo.checked = atual.ativo !== false;
+}
+
+function novaFichaFornecedor() {
+    preencherFormularioFichaFornecedor({ id: "", nome: "", contacto: "", notas: "", ativo: true });
+    document.getElementById("fornecedor-ficha-lista").value = "";
+    document.getElementById("fornecedor-ficha-nome")?.focus();
+}
+
+async function guardarFichaFornecedor(evento) {
+    evento.preventDefault();
+    const idAtual = document.getElementById("fornecedor-ficha-id")?.value || "";
+    const nome = document.getElementById("fornecedor-ficha-nome")?.value.trim() || "";
+    const contacto = document.getElementById("fornecedor-ficha-contacto")?.value.trim() || "";
+    const notas = document.getElementById("fornecedor-ficha-notas")?.value.trim() || "";
+    const ativo = document.getElementById("fornecedor-ficha-ativo")?.checked !== false;
+    if (!nome) {
+        definirStatusFornecedor("Indique o nome do fornecedor.", true);
+        return;
+    }
+
+    const duplicado = fornecedorFichas.some(ficha =>
+        String(ficha.id) !== String(idAtual)
+        && normalizarChaveFornecedor(ficha.nome) === normalizarChaveFornecedor(nome)
+    );
+    if (duplicado) {
+        definirStatusFornecedor("Ja existe uma ficha com esse fornecedor.", true);
+        return;
+    }
+
+    const ficha = normalizarFichaFornecedor({ id: idAtual || normalizarChaveFornecedor(nome), nome, contacto, notas, ativo });
+    try {
+        const { data, error } = await fornecedoresClient
+            .from("fornecedores_admin")
+            .upsert(ficha, { onConflict: "id" })
+            .select("id,nome,contacto,notas,ativo")
+            .single();
+        if (!error && data) {
+            const guardada = normalizarFichaFornecedor(data);
+            fornecedorFichas = fornecedorFichas.filter(item => item.id !== guardada.id);
+            fornecedorFichas.push(guardada);
+        } else {
+            throw error;
+        }
+    } catch (error) {
+        console.warn("Nao foi possivel guardar ficha no Supabase; guardada localmente.", error);
+        fornecedorFichas = fornecedorFichas.filter(item => item.id !== ficha.id);
+        fornecedorFichas.push(ficha);
+        definirStatusFornecedor("Fornecedor guardado apenas neste navegador. Execute o SQL de fornecedores para guardar no Supabase.", true);
+    }
+
+    fornecedorFichas.sort((a, b) => a.nome.localeCompare(b.nome, "pt", { sensitivity: "base" }));
+    guardarFichasFornecedoresLocal();
+    renderizarFornecedoresGuardados();
+    preencherFormularioFichaFornecedor(obterFichaFornecedorPorId(ficha.id) || ficha);
+    if (document.getElementById("fornecedor-nome")) {
+        document.getElementById("fornecedor-nome").value = nome;
+        renderizarResultadosFornecedor();
+    }
+    if (!document.getElementById("fornecedores-status")?.textContent) {
+        definirStatusFornecedor("Fornecedor guardado.");
+    }
+}
 
 function normalizarPedidoFornecedor(pedido) {
     if (!pedido) return null;
@@ -1545,6 +1721,9 @@ async function iniciarFornecedoresAdmin() {
             setTimeout(() => window.location.replace('conta.html'), 1400);
             return;
         }
+        await carregarFichasFornecedoresRemotas();
+        renderizarFornecedoresGuardados();
+        preencherFormularioFichaFornecedor();
         await carregarCatalogoFornecedores();
         await carregarPedidosFornecedoresRemotos();
         bloqueio.hidden = true;
@@ -1574,6 +1753,11 @@ ligarEventoFornecedor('fornecedor-filtro-descontinuado', 'change', renderizarRes
 ligarEventoFornecedor('btn-limpar-fornecedor', 'click', limparSelecaoFornecedor);
 ligarEventoFornecedor('btn-criar-fornecedor', 'click', criarPedidoFornecedor);
 ligarEventoFornecedor('fornecedor-filtro-estado', 'change', renderizarPedidosFornecedores);
+ligarEventoFornecedor('fornecedor-ficha-lista', 'change', () => {
+    preencherFormularioFichaFornecedor(obterFichaFornecedorPorId(document.getElementById('fornecedor-ficha-lista')?.value));
+});
+ligarEventoFornecedor('fornecedor-ficha-novo', 'click', novaFichaFornecedor);
+ligarEventoFornecedor('fornecedor-ficha-form', 'submit', guardarFichaFornecedor);
 
 const botaoFecharImagemFornecedor = document.getElementById('admin-imagem-modal-fechar');
 botaoFecharImagemFornecedor?.addEventListener('click', fecharImagemFornecedorModal);

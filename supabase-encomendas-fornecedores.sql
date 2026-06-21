@@ -56,6 +56,67 @@ using ((select auth.jwt() ->> 'email') = 'worldminifigures4u@gmail.com');
 
 grant select, insert, update, delete on public.encomendas_fornecedores to authenticated;
 
+create table if not exists public.fornecedores_admin (
+    id text primary key,
+    nome text not null unique,
+    contacto text,
+    notas text,
+    ativo boolean not null default true,
+    criado_em timestamptz not null default now(),
+    atualizado_em timestamptz not null default now()
+);
+
+alter table public.fornecedores_admin enable row level security;
+
+drop policy if exists "Admin pode ler fornecedores" on public.fornecedores_admin;
+drop policy if exists "Admin pode criar fornecedores" on public.fornecedores_admin;
+drop policy if exists "Admin pode atualizar fornecedores" on public.fornecedores_admin;
+drop policy if exists "Admin pode apagar fornecedores" on public.fornecedores_admin;
+
+create policy "Admin pode ler fornecedores"
+on public.fornecedores_admin
+for select
+to authenticated
+using ((select auth.jwt() ->> 'email') = 'worldminifigures4u@gmail.com');
+
+create policy "Admin pode criar fornecedores"
+on public.fornecedores_admin
+for insert
+to authenticated
+with check ((select auth.jwt() ->> 'email') = 'worldminifigures4u@gmail.com');
+
+create policy "Admin pode atualizar fornecedores"
+on public.fornecedores_admin
+for update
+to authenticated
+using ((select auth.jwt() ->> 'email') = 'worldminifigures4u@gmail.com')
+with check ((select auth.jwt() ->> 'email') = 'worldminifigures4u@gmail.com');
+
+create policy "Admin pode apagar fornecedores"
+on public.fornecedores_admin
+for delete
+to authenticated
+using ((select auth.jwt() ->> 'email') = 'worldminifigures4u@gmail.com');
+
+grant select, insert, update, delete on public.fornecedores_admin to authenticated;
+
+create or replace function public.fornecedores_admin_atualizado_em()
+returns trigger
+language plpgsql
+as $$
+begin
+    new.atualizado_em = now();
+    return new;
+end;
+$$;
+
+drop trigger if exists trg_fornecedores_admin_atualizado_em on public.fornecedores_admin;
+
+create trigger trg_fornecedores_admin_atualizado_em
+before update on public.fornecedores_admin
+for each row
+execute function public.fornecedores_admin_atualizado_em();
+
 create or replace function public.encomendas_fornecedores_atualizado_em()
 returns trigger
 language plpgsql

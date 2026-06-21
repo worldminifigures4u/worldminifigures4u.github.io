@@ -34,20 +34,42 @@
                 <h2>Mapa de fornecedor</h2>
                 <div class="fornecedores-form-grid">
                     <label for="fornecedor-nome">Fornecedor</label>
-                    <select id="fornecedor-nome">
-                        <option value="Lote 50">Lote 50</option>
-                        <option value="Enmei (Minie Gong)">Enmei (Minie Gong)</option>
-                        <option value="Ruisbengtu">Ruisbengtu</option>
-                        <option value="Lequgo">Lequgo</option>
-                        <option value="Chuangyaoke">Chuangyaoke</option>
-                        <option value="Keooli (Koopf)">Keooli (Koopf)</option>
-                        <option value="Brixtoy">Brixtoy</option>
-                        <option value="Outro">Outro</option>
-                    </select>
+                    <select id="fornecedor-nome"></select>
 
                     <label for="fornecedor-referencia">Referencia interna</label>
                     <input id="fornecedor-referencia" type="text" placeholder="Ex.: caixa Junho, AliExpress 1234">
                 </div>
+
+                <details class="fornecedor-ficha-box">
+                    <summary>Ficha do fornecedor</summary>
+                    <form class="fornecedor-ficha-form" id="fornecedor-ficha-form">
+                        <input type="hidden" id="fornecedor-ficha-id">
+                        <label for="fornecedor-ficha-lista">
+                            Fornecedor guardado
+                            <select id="fornecedor-ficha-lista"></select>
+                        </label>
+                        <label for="fornecedor-ficha-nome">
+                            Nome
+                            <input id="fornecedor-ficha-nome" type="text" required placeholder="Ex.: Lote 50">
+                        </label>
+                        <label for="fornecedor-ficha-contacto">
+                            Contacto / link
+                            <input id="fornecedor-ficha-contacto" type="text" placeholder="Email, WhatsApp, AliExpress, site...">
+                        </label>
+                        <label for="fornecedor-ficha-notas" class="fornecedor-ficha-largo">
+                            Notas
+                            <textarea id="fornecedor-ficha-notas" rows="3" placeholder="Notas internas, prazos, moedas, regras, observa&ccedil;&otilde;es..."></textarea>
+                        </label>
+                        <label class="fornecedor-ficha-ativo">
+                            <input id="fornecedor-ficha-ativo" type="checkbox" checked>
+                            Ativo
+                        </label>
+                        <div class="fornecedores-acoes fornecedor-ficha-acoes">
+                            <button type="button" id="fornecedor-ficha-novo">Novo</button>
+                            <button type="submit">Guardar fornecedor</button>
+                        </div>
+                    </form>
+                </details>
 
                 <h3>Adicionar produtos</h3>
                 <input id="fornecedor-pesquisa" type="search" placeholder="Nome, Ref., SKU ou tema">

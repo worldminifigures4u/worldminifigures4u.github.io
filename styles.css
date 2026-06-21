@@ -3019,6 +3019,14 @@
         .fornecedores-acoes .wallapop-botao{ flex:1; }
         .fornecedores-cabecalho-lista{ display:flex; gap:12px; align-items:center; justify-content:space-between; margin-bottom:12px; }
         .fornecedores-cabecalho-lista h2{ margin:0; }
+        .fornecedor-ficha-box{ margin:14px 0 8px; padding:12px; border:1px solid #333; border-radius:8px; background:#101010; }
+        .fornecedor-ficha-box summary{ color:#ffc400; font-weight:900; cursor:pointer; }
+        .fornecedor-ficha-form{ display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; margin-top:12px; }
+        .fornecedor-ficha-form label{ display:grid; gap:6px; color:#ddd; font-weight:700; }
+        .fornecedor-ficha-form input,.fornecedor-ficha-form select,.fornecedor-ficha-form textarea{ width:100%; box-sizing:border-box; border:1px solid #444; border-radius:6px; background:#242424; color:#fff; padding:10px 11px; font:inherit; }
+        .fornecedor-ficha-largo,.fornecedor-ficha-acoes{ grid-column:1 / -1; }
+        .fornecedor-ficha-ativo{ display:flex !important; grid-template-columns:none !important; align-items:center; gap:8px !important; }
+        .fornecedor-ficha-ativo input{ width:auto; }
         .fornecedor-pedido-card{ border:1px solid #333; border-radius:8px; background:#111; padding:14px; }
         .fornecedor-pedido-cabecalho{ display:grid; grid-template-columns:minmax(0,1fr) 220px; gap:12px; align-items:start; border-bottom:1px solid #333; padding-bottom:12px; margin-bottom:12px; }
         .fornecedor-pedido-cabecalho strong{ display:block; color:#ffc400; font-size:20px; }
@@ -3045,7 +3053,7 @@
         @media (max-width:980px){
             .fornecedores-grid{ grid-template-columns:1fr; }
     .fornecedor-lista-controles{ grid-template-columns:1fr; }
-            .fornecedor-produto,.fornecedor-item,.fornecedor-pedido-linha,.fornecedor-pedido-cabecalho,.fornecedor-edicao-grid,.fornecedor-edicao-produto,.fornecedor-edicao-produto-campos{ grid-template-columns:1fr; }
+            .fornecedor-produto,.fornecedor-item,.fornecedor-pedido-linha,.fornecedor-pedido-cabecalho,.fornecedor-edicao-grid,.fornecedor-edicao-produto,.fornecedor-edicao-produto-campos,.fornecedor-ficha-form{ grid-template-columns:1fr; }
             .fornecedor-miniatura,.fornecedor-miniatura.pequena{ width:86px; height:86px; }
         }
 
