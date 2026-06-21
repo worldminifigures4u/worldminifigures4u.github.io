@@ -117,15 +117,51 @@ function normalizarFichaFornecedor(ficha, indice = 0) {
     };
 }
 
+function obterChaveCanonicaFichaFornecedor(nome) {
+    const chave = normalizarChaveFornecedor(nome);
+    if (chave.includes("lote50")) return "lote50";
+    if (chave.includes("enmei") || chave.includes("winnie") || chave.includes("minie")) return "enmei";
+    if (chave.includes("ruisbengtu") || chave.includes("ruisbengtui")) return "ruisbengtu";
+    if (chave.includes("lequgo") || chave.includes("legougo")) return "lequgo";
+    if (chave.includes("chuangyaoke") || chave.includes("chuangyoke")) return "chuangyaoke";
+    if (chave.includes("koopf") || chave.includes("kemoli") || chave.includes("keooli") || chave.includes("koopt")) return "keooli";
+    if (chave.includes("brixtoy")) return "brixtoy";
+    return chave;
+}
+
+function combinarFichasFornecedoresComPadrao(fichas = []) {
+    const mapa = new Map();
+
+    FORNECEDORES_FICHAS_PADRAO
+        .map(normalizarFichaFornecedor)
+        .filter(Boolean)
+        .forEach(ficha => mapa.set(obterChaveCanonicaFichaFornecedor(ficha.nome), ficha));
+
+    fichas
+        .map(normalizarFichaFornecedor)
+        .filter(Boolean)
+        .forEach(ficha => {
+            const chave = obterChaveCanonicaFichaFornecedor(ficha.nome);
+            const padrao = mapa.get(chave);
+            mapa.set(chave, {
+                ...(padrao || {}),
+                ...ficha,
+                id: ficha.id || padrao?.id
+            });
+        });
+
+    return [...mapa.values()].sort((a, b) => a.nome.localeCompare(b.nome, "pt", { sensitivity: "base" }));
+}
+
 function carregarFichasFornecedores() {
     try {
         const dados = JSON.parse(localStorage.getItem(FORNECEDORES_FICHAS_KEY) || "[]");
         const fichas = Array.isArray(dados)
             ? dados.map(normalizarFichaFornecedor).filter(Boolean)
             : [];
-        return fichas.length ? fichas : FORNECEDORES_FICHAS_PADRAO.map(normalizarFichaFornecedor).filter(Boolean);
+        return combinarFichasFornecedoresComPadrao(fichas);
     } catch (_) {
-        return FORNECEDORES_FICHAS_PADRAO.map(normalizarFichaFornecedor).filter(Boolean);
+        return combinarFichasFornecedoresComPadrao([]);
     }
 }
 
@@ -143,7 +179,7 @@ async function carregarFichasFornecedoresRemotas() {
         if (error) throw error;
         const fichas = (data || []).map(normalizarFichaFornecedor).filter(Boolean);
         if (fichas.length) {
-            fornecedorFichas = fichas;
+            fornecedorFichas = combinarFichasFornecedoresComPadrao(fichas);
             guardarFichasFornecedoresLocal();
         }
     } catch (error) {
@@ -228,7 +264,7 @@ async function guardarFichaFornecedor(evento) {
 
     const duplicado = fornecedorFichas.some(ficha =>
         String(ficha.id) !== String(idAtual)
-        && normalizarChaveFornecedor(ficha.nome) === normalizarChaveFornecedor(nome)
+        && obterChaveCanonicaFichaFornecedor(ficha.nome) === obterChaveCanonicaFichaFornecedor(nome)
     );
     if (duplicado) {
         definirStatusFornecedor("Ja existe uma ficha com esse fornecedor.", true);
@@ -256,7 +292,7 @@ async function guardarFichaFornecedor(evento) {
         definirStatusFornecedor("Fornecedor guardado apenas neste navegador. Execute o SQL de fornecedores para guardar no Supabase.", true);
     }
 
-    fornecedorFichas.sort((a, b) => a.nome.localeCompare(b.nome, "pt", { sensitivity: "base" }));
+    fornecedorFichas = combinarFichasFornecedoresComPadrao(fornecedorFichas);
     guardarFichasFornecedoresLocal();
     renderizarFornecedoresGuardados();
     preencherFormularioFichaFornecedor(obterFichaFornecedorPorId(ficha.id) || ficha);
