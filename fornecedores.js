@@ -333,6 +333,16 @@ function obterEstadosPedidoFornecedor() {
     return ['A preparar', 'Encomendada', 'Recebida parcialmente', 'Recebida', 'Cancelada'];
 }
 
+function normalizarEstadoPedidoFornecedor(estado) {
+    return normalizarChaveFornecedor(estado || '').replace(/-/g, '_');
+}
+
+function pedidoFornecedorPassaFiltroEstado(pedido, filtro) {
+    const filtroNormalizado = normalizarEstadoPedidoFornecedor(filtro || 'todos');
+    if (!filtroNormalizado || filtroNormalizado === 'todos') return true;
+    return normalizarEstadoPedidoFornecedor(pedido.estado) === filtroNormalizado;
+}
+
 async function carregarPedidosFornecedoresRemotos() {
     try {
         const { data, error } = await fornecedoresClient.rpc('listar_encomendas_fornecedores_admin');
@@ -1669,7 +1679,7 @@ function renderizarPedidosFornecedores() {
     if (!caixa) return;
     const filtro = document.getElementById('fornecedor-filtro-estado')?.value || 'todos';
     caixa.innerHTML = '';
-    const pedidos = fornecedorPedidos.filter(pedido => filtro === 'todos' || pedido.estado === filtro);
+    const pedidos = fornecedorPedidos.filter(pedido => pedidoFornecedorPassaFiltroEstado(pedido, filtro));
     if (!pedidos.length) {
         caixa.innerHTML = '<p class="fornecedor-vazio">Ainda nao existem encomendas neste estado.</p>';
         return;
