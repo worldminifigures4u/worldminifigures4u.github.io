@@ -917,12 +917,11 @@ function normalizarCabecalhoStock(valor) {
 const COLUNAS_CATALOGO_BASE = new Set(['nome', 'preco', 'sku', 'top', 'descontinuado', 'descontinuada', 'descontinuados', 'descontinuadas', 'discontinued', 'stock', 'tema', 'subtema', 'peso', 'referencia']);
 const FORNECEDORES_IMPORTACAO = [
     { chave:'lote50', aliases:['lote50', 'lote 50', 'lote_50'] },
-    { chave:'enmei', aliases:['enmei', 'winnie gong', 'winniegong'] },
-    { chave:'minie', aliases:['minie', 'minie gong', 'miniegong'] },
+    { chave:'enmei', aliases:['enmei', 'enmei winnie', 'enmei winnie gong', 'winnie', 'winnie gong', 'winniegong', 'minie', 'minie gong', 'miniegong'] },
     { chave:'ruisbengtu', aliases:['ruisbengtu', 'ruisbengtui'] },
     { chave:'lequgo', aliases:['lequgo', 'legougo'] },
     { chave:'chuangyaoke', aliases:['chuangyaoke', 'chuangyoke'] },
-    { chave:'keooli', aliases:['keooli', 'keooli koopt', 'koopt'] },
+    { chave:'keooli', aliases:['keooli', 'koopf', 'koopf kemoli', 'kemoli', 'keooli koopt', 'koopt'] },
     { chave:'brixtoy', aliases:['brixtoy'] }
 ];
 

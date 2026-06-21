@@ -8,37 +8,37 @@ const FORNECEDORES_SEM_IMAGEM = 'data:image/svg+xml;charset=UTF-8,' + encodeURIC
 
 const FORNECEDORES_ALIASES = {
     "Lote 50": ["lote50", "lote 50", "lote_50"],
-    Enmei: ["enmei", "winnie gong", "winniegong"],
+    Enmei: ["enmei", "enmei winnie", "enmei winnie gong", "winnie", "winnie gong", "winniegong", "minie", "minie gong", "miniegong"],
+    "Enmei / Winnie": ["enmei", "enmei winnie", "enmei winnie gong", "winnie", "winnie gong", "winniegong", "minie", "minie gong", "miniegong"],
     "Enmei (Minie Gong)": ["enmei", "minie", "minie gong", "winnie gong", "winniegong", "miniegong"],
     Minie: ["minie", "minie gong", "miniegong"],
     Ruisbengtu: ["ruisbengtu", "ruisbengtui"],
     Lequgo: ["lequgo", "legougo"],
     Chuangyaoke: ["chuangyaoke", "chuangyoke"],
-    Keooli: ["keooli", "keooli koopt", "koopt"],
-    "Keooli (Koopf)": ["keooli", "keooli koopt", "koopt", "koopf"],
+    Keooli: ["keooli", "koopf", "koopf kemoli", "kemoli", "keooli koopt", "koopt"],
+    "Koopf / Kemoli": ["keooli", "koopf", "koopf kemoli", "kemoli", "keooli koopt", "koopt"],
+    "Keooli (Koopf)": ["keooli", "koopf", "koopf kemoli", "kemoli", "keooli koopt", "koopt"],
     Brixtoy: ["brixtoy"],
 };
 
 const FORNECEDORES_CAMPOS_PRODUTO = [
     { chave: "lote50", rotulo: "Lote 50" },
-    { chave: "enmei", rotulo: "Enmei" },
-    { chave: "minie", rotulo: "Minie" },
+    { chave: "enmei", rotulo: "Enmei / Winnie" },
     { chave: "ruisbengtu", rotulo: "Ruisbengtu" },
     { chave: "lequgo", rotulo: "Lequgo" },
     { chave: "chuangyaoke", rotulo: "Chuangyaoke" },
-    { chave: "keooli", rotulo: "Keooli" },
+    { chave: "keooli", rotulo: "Koopf / Kemoli" },
     { chave: "brixtoy", rotulo: "Brixtoy" },
 ];
 
 const FORNECEDORES_FICHAS_PADRAO = [
     { nome: "Lote 50", contacto: "", notas: "", ativo: true },
-    { nome: "Enmei (Minie Gong)", contacto: "", notas: "", ativo: true },
+    { nome: "Enmei / Winnie", contacto: "", notas: "", ativo: true },
     { nome: "Ruisbengtu", contacto: "", notas: "", ativo: true },
     { nome: "Lequgo", contacto: "", notas: "", ativo: true },
     { nome: "Chuangyaoke", contacto: "", notas: "", ativo: true },
-    { nome: "Keooli (Koopf)", contacto: "", notas: "", ativo: true },
+    { nome: "Koopf / Kemoli", contacto: "", notas: "", ativo: true },
     { nome: "Brixtoy", contacto: "", notas: "", ativo: true },
-    { nome: "Outro", contacto: "", notas: "", ativo: true },
 ];
 
 let fornecedoresClient = null;
