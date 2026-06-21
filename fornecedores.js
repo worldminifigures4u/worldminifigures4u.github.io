@@ -7,37 +7,29 @@ const FORNECEDORES_FICHAS_KEY = "figures-planet-fornecedores-fichas";
 const FORNECEDORES_SEM_IMAGEM = 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="160" height="160" viewBox="0 0 160 160"><rect width="160" height="160" rx="8" fill="#eeeeee"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" font-family="Arial" font-size="13" fill="#777">Sem foto</text></svg>');
 
 const FORNECEDORES_ALIASES = {
-    "Lote 50": ["lote50", "lote 50", "lote_50"],
-    Enmei: ["enmei", "enmei winnie", "enmei winnie gong", "winnie", "winnie gong", "winniegong", "minie", "minie gong", "miniegong"],
-    "Enmei / Winnie": ["enmei", "enmei winnie", "enmei winnie gong", "winnie", "winnie gong", "winniegong", "minie", "minie gong", "miniegong"],
-    "Enmei (Minie Gong)": ["enmei", "minie", "minie gong", "winnie gong", "winniegong", "miniegong"],
-    Minie: ["minie", "minie gong", "miniegong"],
-    Ruisbengtu: ["ruisbengtu", "ruisbengtui"],
-    Lequgo: ["lequgo", "legougo"],
-    Chuangyaoke: ["chuangyaoke", "chuangyoke"],
-    Keooli: ["keooli", "koopf", "koopf kemoli", "kemoli", "keooli koopt", "koopt"],
-    "Koopf / Kemoli": ["keooli", "koopf", "koopf kemoli", "kemoli", "keooli koopt", "koopt"],
-    "Keooli (Koopf)": ["keooli", "koopf", "koopf kemoli", "kemoli", "keooli koopt", "koopt"],
-    Brixtoy: ["brixtoy"],
+    "Lote 50": ["Lote 50"],
+    Ruishengtu: ["Ruishengtu"],
+    Leguoguo: ["Leguoguo"],
+    Chuangyaoke: ["Chuangyaoke"],
+    Kopf: ["Kopf"],
+    Brixtoy: ["Brixtoy"],
 };
 
 const FORNECEDORES_CAMPOS_PRODUTO = [
     { chave: "lote50", rotulo: "Lote 50" },
-    { chave: "enmei", rotulo: "Enmei / Winnie" },
-    { chave: "ruisbengtu", rotulo: "Ruisbengtu" },
-    { chave: "lequgo", rotulo: "Lequgo" },
+    { chave: "ruishengtu", rotulo: "Ruishengtu" },
+    { chave: "leguoguo", rotulo: "Leguoguo" },
     { chave: "chuangyaoke", rotulo: "Chuangyaoke" },
-    { chave: "keooli", rotulo: "Koopf / Kemoli" },
+    { chave: "kopf", rotulo: "Kopf" },
     { chave: "brixtoy", rotulo: "Brixtoy" },
 ];
 
 const FORNECEDORES_FICHAS_PADRAO = [
     { nome: "Lote 50", contacto: "", notas: "", ativo: true },
-    { nome: "Enmei / Winnie", contacto: "", notas: "", ativo: true },
-    { nome: "Ruisbengtu", contacto: "", notas: "", ativo: true },
-    { nome: "Lequgo", contacto: "", notas: "", ativo: true },
+    { nome: "Ruishengtu", contacto: "", notas: "", ativo: true },
+    { nome: "Leguoguo", contacto: "", notas: "", ativo: true },
     { nome: "Chuangyaoke", contacto: "", notas: "", ativo: true },
-    { nome: "Koopf / Kemoli", contacto: "", notas: "", ativo: true },
+    { nome: "Kopf", contacto: "", notas: "", ativo: true },
     { nome: "Brixtoy", contacto: "", notas: "", ativo: true },
 ];
 
@@ -119,14 +111,8 @@ function normalizarFichaFornecedor(ficha, indice = 0) {
 
 function obterChaveCanonicaFichaFornecedor(nome) {
     const chave = normalizarChaveFornecedor(nome);
-    if (chave.includes("lote50")) return "lote50";
-    if (chave.includes("enmei") || chave.includes("winnie") || chave.includes("minie")) return "enmei";
-    if (chave.includes("ruisbengtu") || chave.includes("ruisbengtui")) return "ruisbengtu";
-    if (chave.includes("lequgo") || chave.includes("legougo")) return "lequgo";
-    if (chave.includes("chuangyaoke") || chave.includes("chuangyoke")) return "chuangyaoke";
-    if (chave.includes("koopf") || chave.includes("kemoli") || chave.includes("keooli") || chave.includes("koopt")) return "keooli";
-    if (chave.includes("brixtoy")) return "brixtoy";
-    return chave;
+    const chavesOficiais = new Set(["lote50", "ruishengtu", "leguoguo", "chuangyaoke", "kopf", "brixtoy"]);
+    return chavesOficiais.has(chave) ? chave : "";
 }
 
 function combinarFichasFornecedoresComPadrao(fichas = []) {
@@ -142,6 +128,7 @@ function combinarFichasFornecedoresComPadrao(fichas = []) {
         .filter(Boolean)
         .forEach(ficha => {
             const chave = obterChaveCanonicaFichaFornecedor(ficha.nome);
+            if (!chave || !mapa.has(chave)) return;
             const padrao = mapa.get(chave);
             mapa.set(chave, {
                 ...(padrao || {}),
@@ -150,7 +137,7 @@ function combinarFichasFornecedoresComPadrao(fichas = []) {
             });
         });
 
-    return [...mapa.values()].sort((a, b) => a.nome.localeCompare(b.nome, "pt", { sensitivity: "base" }));
+    return [...mapa.values()];
 }
 
 function carregarFichasFornecedores() {

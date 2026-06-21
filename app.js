@@ -916,13 +916,12 @@ function normalizarCabecalhoStock(valor) {
 
 const COLUNAS_CATALOGO_BASE = new Set(['nome', 'preco', 'sku', 'top', 'descontinuado', 'descontinuada', 'descontinuados', 'descontinuadas', 'discontinued', 'stock', 'tema', 'subtema', 'peso', 'referencia']);
 const FORNECEDORES_IMPORTACAO = [
-    { chave:'lote50', aliases:['lote50', 'lote 50', 'lote_50'] },
-    { chave:'enmei', aliases:['enmei', 'enmei winnie', 'enmei winnie gong', 'winnie', 'winnie gong', 'winniegong', 'minie', 'minie gong', 'miniegong'] },
-    { chave:'ruisbengtu', aliases:['ruisbengtu', 'ruisbengtui'] },
-    { chave:'lequgo', aliases:['lequgo', 'legougo'] },
-    { chave:'chuangyaoke', aliases:['chuangyaoke', 'chuangyoke'] },
-    { chave:'keooli', aliases:['keooli', 'koopf', 'koopf kemoli', 'kemoli', 'keooli koopt', 'koopt'] },
-    { chave:'brixtoy', aliases:['brixtoy'] }
+    { chave:'lote50', nome:'Lote 50' },
+    { chave:'ruishengtu', nome:'Ruishengtu' },
+    { chave:'leguoguo', nome:'Leguoguo' },
+    { chave:'chuangyaoke', nome:'Chuangyaoke' },
+    { chave:'kopf', nome:'Kopf' },
+    { chave:'brixtoy', nome:'Brixtoy' }
 ];
 
 function normalizarChaveImportacaoFornecedor(texto) {
@@ -930,13 +929,11 @@ function normalizarChaveImportacaoFornecedor(texto) {
 }
 
 function obterFornecedorPorCabecalhoImportacao(cabecalho) {
-    const chaveCabecalho = normalizarChaveImportacaoFornecedor(cabecalho);
-    if(!chaveCabecalho || COLUNAS_CATALOGO_BASE.has(cabecalho)) return null;
+    const textoCabecalho = String(cabecalho || '').trim();
+    const chaveCabecalho = normalizarChaveImportacaoFornecedor(textoCabecalho);
+    if(!textoCabecalho || !chaveCabecalho || COLUNAS_CATALOGO_BASE.has(chaveCabecalho)) return null;
     return FORNECEDORES_IMPORTACAO.find(fornecedor =>
-        fornecedor.aliases.some(alias => {
-            const chaveAlias = normalizarChaveImportacaoFornecedor(alias);
-            return chaveAlias && (chaveCabecalho === chaveAlias || chaveCabecalho.includes(chaveAlias));
-        })
+        textoCabecalho === fornecedor.nome
     ) || null;
 }
 
