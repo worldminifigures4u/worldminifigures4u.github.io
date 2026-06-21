@@ -2834,7 +2834,7 @@ function atualizarOpcoesEnvio() {
     const metodoAindaDisponivel = opcoes.some(opcao => opcao.id === metodoAnterior);
     const metodoRegistado = opcoes.find(opcao => opcao.id === 'ctt_registado');
     selectMetodo.value = metodoAindaDisponivel ? metodoAnterior : (metodoRegistado?.id || opcoes[0].id);
-    if(infoEnvio) infoEnvio.textContent = 'Peso estimado: ' + pesoTotal + 'g';
+    if(infoEnvio) infoEnvio.textContent = '';
     recalcularTotais();
 }
 
