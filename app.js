@@ -949,7 +949,7 @@ function obterFornecedorPorCabecalhoImportacao(cabecalho) {
     const chaveCabecalho = normalizarChaveImportacaoFornecedor(textoCabecalho);
     if(!textoCabecalho || !chaveCabecalho || COLUNAS_CATALOGO_BASE.has(chaveCabecalho)) return null;
     return obterFornecedoresImportacao().find(fornecedor =>
-        textoCabecalho === fornecedor.nome
+        chaveCabecalho === normalizarChaveImportacaoFornecedor(fornecedor.nome)
     ) || null;
 }
 
