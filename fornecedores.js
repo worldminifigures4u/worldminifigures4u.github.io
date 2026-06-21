@@ -21,6 +21,7 @@ let fornecedorSelecao = carregarSelecaoFornecedor();
 let fornecedorPedidos = carregarPedidosFornecedores();
 let fornecedorFichas = carregarFichasFornecedores();
 let fornecedorMapaOrdenacao = { coluna: "nome", direcao: "asc" };
+let fornecedorPedidosAbertos = new Set();
 
 function normalizarFornecedor(texto) {
     return String(texto || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim();
@@ -1666,11 +1667,43 @@ function renderizarPedidosFornecedores() {
     pedidos.forEach(pedido => {
         const card = document.createElement('article');
         card.className = 'fornecedor-pedido-card';
+        const aberto = fornecedorPedidosAbertos.has(String(pedido.id));
+        if (aberto) card.classList.add('aberta');
+
+        const totaisPedido = (pedido.itens || []).reduce((totais, item) => {
+            const quantidade = Math.max(0, Number(item.quantidade || 0));
+            const recebido = Math.max(0, Number(item.recebido || 0));
+            totais.itens += 1;
+            totais.quantidade += quantidade;
+            totais.pendente += Math.max(0, quantidade - recebido);
+            return totais;
+        }, { itens: 0, quantidade: 0, pendente: 0 });
 
         const topo = document.createElement('div');
         topo.className = 'fornecedor-pedido-cabecalho';
+        topo.setAttribute('role', 'button');
+        topo.tabIndex = 0;
+        topo.setAttribute('aria-expanded', aberto ? 'true' : 'false');
+        const alternarPedido = () => {
+            const idPedido = String(pedido.id);
+            if (fornecedorPedidosAbertos.has(idPedido)) {
+                fornecedorPedidosAbertos.delete(idPedido);
+            } else {
+                fornecedorPedidosAbertos.add(idPedido);
+            }
+            renderizarPedidosFornecedores();
+        };
+        topo.addEventListener('click', alternarPedido);
+        topo.addEventListener('keydown', (evento) => {
+            if (evento.key === 'Enter' || evento.key === ' ') {
+                evento.preventDefault();
+                alternarPedido();
+            }
+        });
         const titulo = document.createElement('div');
-        titulo.innerHTML = `<strong>${pedido.codigo}</strong><span>${pedido.fornecedor}${pedido.referencia ? ' - ' + pedido.referencia : ''}</span><small>${new Date(pedido.criado_em).toLocaleString('pt-PT')}</small>`;
+        titulo.innerHTML = `<strong>${pedido.codigo}</strong><span>${pedido.fornecedor}${pedido.referencia ? ' - ' + pedido.referencia : ''}</span><small>${new Date(pedido.criado_em).toLocaleString('pt-PT')}</small><small>${totaisPedido.itens} artigo(s) | ${totaisPedido.quantidade} unidade(s) | ${totaisPedido.pendente} por receber</small>`;
+        const controlos = document.createElement('div');
+        controlos.className = 'fornecedor-pedido-controlos';
         const estado = document.createElement('select');
         estado.className = 'fornecedor-status-select';
         obterEstadosPedidoFornecedor().forEach(opcao => {
@@ -1680,9 +1713,20 @@ function renderizarPedidosFornecedores() {
             opt.selected = pedido.estado === opcao;
             estado.appendChild(opt);
         });
+        estado.addEventListener('click', evento => evento.stopPropagation());
+        estado.addEventListener('keydown', evento => evento.stopPropagation());
         estado.addEventListener('change', () => alterarEstadoPedidoFornecedor(pedido.id, estado.value));
-        topo.append(titulo, estado);
+        const seta = document.createElement('span');
+        seta.className = 'fornecedor-pedido-seta';
+        seta.textContent = '▾';
+        seta.setAttribute('aria-hidden', 'true');
+        controlos.append(estado, seta);
+        topo.append(titulo, controlos);
         card.appendChild(topo);
+
+        const detalhes = document.createElement('div');
+        detalhes.className = 'fornecedor-pedido-detalhes';
+        detalhes.hidden = !aberto;
 
         const lista = document.createElement('div');
         lista.className = 'fornecedor-pedido-produtos';
@@ -1707,7 +1751,7 @@ function renderizarPedidosFornecedores() {
             linha.append(info, input);
             lista.appendChild(linha);
         });
-        card.appendChild(lista);
+        detalhes.appendChild(lista);
 
         const acoes = document.createElement('div');
         acoes.className = 'fornecedores-acoes pedido';
@@ -1727,7 +1771,8 @@ function renderizarPedidosFornecedores() {
         apagar.textContent = 'Apagar pedido';
         apagar.addEventListener('click', () => apagarPedidoFornecedor(pedido.id));
         acoes.append(editar, receber, apagar);
-        card.appendChild(acoes);
+        detalhes.appendChild(acoes);
+        card.appendChild(detalhes);
         caixa.appendChild(card);
     });
 }
