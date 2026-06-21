@@ -1,6 +1,7 @@
 -- Importação administrativa protegida. Evita conceder SELECT público ao stock.
 alter table public.produtos add column if not exists referencia text;
 alter table public.produtos add column if not exists top text;
+alter table public.produtos add column if not exists descontinuado boolean not null default false;
 alter table public.produtos add column if not exists fornecedores jsonb not null default '{}'::jsonb;
 
 create or replace function public.importar_produtos_admin(p_produtos jsonb)
@@ -30,6 +31,7 @@ begin
       nome,
       preco,
       top,
+      descontinuado,
       stock,
       tema,
       subtema,
@@ -42,6 +44,7 @@ begin
       trim(v_produto->>'nome'),
       (v_produto->>'preco')::numeric,
       nullif(trim(v_produto->>'top'), ''),
+      coalesce((v_produto->>'descontinuado')::boolean, false),
       (v_produto->>'stock')::integer,
       trim(v_produto->>'tema'),
       coalesce(nullif(trim(v_produto->>'subtema'), ''), 'semsubtema'),
@@ -54,6 +57,7 @@ begin
       nome = excluded.nome,
       preco = excluded.preco,
       top = excluded.top,
+      descontinuado = excluded.descontinuado,
       stock = excluded.stock,
       tema = excluded.tema,
       subtema = excluded.subtema,

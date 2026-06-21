@@ -3,6 +3,7 @@
 
 alter table public.produtos add column if not exists referencia text;
 alter table public.produtos add column if not exists top text;
+alter table public.produtos add column if not exists descontinuado boolean not null default false;
 alter table public.produtos add column if not exists fornecedores jsonb not null default '{}'::jsonb;
 
 alter table public.encomendas
@@ -31,6 +32,7 @@ begin
       'nome', produto.nome,
       'preco', coalesce(produto.preco, 0),
       'top', coalesce(produto.top, ''),
+      'descontinuado', coalesce(produto.descontinuado, false),
       'peso', coalesce(produto.peso, 10),
       'imagens', produto.imagens,
       'stock', coalesce(produto.stock, 0),

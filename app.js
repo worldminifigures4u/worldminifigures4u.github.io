@@ -914,7 +914,7 @@ function normalizarCabecalhoStock(valor) {
         .toLowerCase();
 }
 
-const COLUNAS_CATALOGO_BASE = new Set(['nome', 'preco', 'sku', 'top', 'stock', 'tema', 'subtema', 'peso', 'referencia']);
+const COLUNAS_CATALOGO_BASE = new Set(['nome', 'preco', 'sku', 'top', 'descontinuado', 'stock', 'tema', 'subtema', 'peso', 'referencia']);
 const FORNECEDORES_IMPORTACAO = [
     { chave:'lote50', aliases:['lote50', 'lote 50', 'lote_50'] },
     { chave:'enmei', aliases:['enmei', 'winnie gong', 'winniegong'] },
@@ -944,6 +944,11 @@ function obterFornecedorPorCabecalhoImportacao(cabecalho) {
 function obterValorFornecedorImportacao(valor) {
     if(valor === null || valor === undefined) return '';
     return String(valor).trim();
+}
+
+function obterBooleanoImportacao(valor) {
+    const texto = normalizarCabecalhoStock(valor);
+    return ['1', 'sim', 's', 'x', 'yes', 'y', 'true', 'verdadeiro'].includes(texto);
 }
 
 function juntarValoresFornecedorImportacao(atual, novo) {
@@ -1258,6 +1263,7 @@ async function analisarFicheiroCatalogoAdmin(input) {
             preco:obterIndiceColuna(cabecalhos, 'preco'),
             sku:obterIndiceColuna(cabecalhos, 'sku'),
             top:obterIndiceColuna(cabecalhos, 'top', false),
+            descontinuado:obterIndiceColuna(cabecalhos, 'descontinuado', false),
             referencia:obterIndiceColuna(cabecalhos, 'referencia', false),
             stock:obterIndiceColuna(cabecalhos, 'stock'),
             tema:obterIndiceColuna(cabecalhos, 'tema'),
@@ -1273,6 +1279,7 @@ async function analisarFicheiroCatalogoAdmin(input) {
             const nome = String(linha[colunas.nome] || '').trim();
             const sku = normalizarTextoSku(linha[colunas.sku]).replace(/[^A-Z0-9]/g, '');
             const top = colunas.top >= 0 ? String(linha[colunas.top] || '').trim() : '';
+            const descontinuado = colunas.descontinuado >= 0 ? obterBooleanoImportacao(linha[colunas.descontinuado]) : false;
             const referencia = colunas.referencia >= 0 ? String(linha[colunas.referencia] || '').trim() : '';
             const preco = Number(linha[colunas.preco]);
             const stock = Number(linha[colunas.stock]);
@@ -1291,6 +1298,7 @@ async function analisarFicheiroCatalogoAdmin(input) {
                 preco,
                 sku,
                 top,
+                descontinuado,
                 referencia,
                 stock,
                 tema,

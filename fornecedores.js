@@ -52,6 +52,13 @@ function normalizarSkuFornecedor(valor) {
         .replace(/[^A-Z0-9]/g, '');
 }
 
+function obterBooleanoProdutoFornecedor(valor) {
+    if (valor === true) return true;
+    if (valor === false || valor === null || valor === undefined) return false;
+    const texto = normalizarFornecedor(valor);
+    return ['1', 'sim', 's', 'x', 'yes', 'y', 'true', 'verdadeiro'].includes(texto);
+}
+
 function definirStatusFornecedor(texto, erro = false) {
     const el = document.getElementById('fornecedores-status');
     if (!el) return;
@@ -289,6 +296,7 @@ function obterControlosResultadosFornecedor() {
         fornecedor: document.getElementById("fornecedor-nome")?.value || "",
         filtroFornecedor: document.getElementById("fornecedor-filtro-marcacao")?.value || "todos",
         filtroTop: document.getElementById("fornecedor-filtro-top")?.value || "todos",
+        filtroDescontinuado: document.getElementById("fornecedor-filtro-descontinuado")?.value || "todos",
         ordenacao: document.getElementById("fornecedor-ordenacao-stock")?.value || "nome",
     };
 }
@@ -379,6 +387,14 @@ function produtoPassaFiltroTopFornecedor(produto, filtroTop) {
     return true;
 }
 
+function produtoPassaFiltroDescontinuadoFornecedor(produto, filtroDescontinuado) {
+    if (!filtroDescontinuado || filtroDescontinuado === "todos") return true;
+    const descontinuado = obterBooleanoProdutoFornecedor(produto?.descontinuado);
+    if (filtroDescontinuado === "descontinuado") return descontinuado;
+    if (filtroDescontinuado === "sem-descontinuado") return !descontinuado;
+    return true;
+}
+
 function obterQuantidadeSelecionadaFornecedor(id) {
     const item = fornecedorSelecao.find(selecionado => String(selecionado.id) === String(id));
     return Number(item?.quantidade || 0);
@@ -441,14 +457,17 @@ async function carregarCatalogoFornecedores() {
     if (respostaAdmin.error) {
         console.warn('Catalogo administrativo indisponivel; a usar consulta direta.', respostaAdmin.error);
         produtos = await carregarCatalogoFornecedoresDireto();
-    } else if (produtos.length && !produtos.some(produto => Object.prototype.hasOwnProperty.call(produto, "top"))) {
+    } else if (produtos.length && !produtos.some(produto =>
+        Object.prototype.hasOwnProperty.call(produto, "top")
+        && Object.prototype.hasOwnProperty.call(produto, "descontinuado")
+    )) {
         try {
             const produtosDiretos = await carregarCatalogoFornecedoresDireto();
             if (produtosDiretos.length) produtos = produtosDiretos;
         } catch (error) {
-            console.warn('Catalogo direto indisponivel; a RPC nao devolveu o campo top.', error);
+            console.warn('Catalogo direto indisponivel; a RPC nao devolveu todos os campos dos mapas.', error);
             if (estaPaginaMapasFornecedor()) {
-                definirStatusFornecedor('O Supabase ainda nao esta a devolver a coluna Top. Execute o SQL atualizado e volte a importar o mapas.ods.', true);
+                definirStatusFornecedor('O Supabase ainda nao esta a devolver todos os campos dos mapas. Execute o SQL atualizado e volte a importar o mapas.ods.', true);
             }
         }
     }
@@ -601,6 +620,7 @@ function abrirEdicaoProdutoMapa(produtoId) {
     criarInputEdicaoMapa(secaoIdentificacao, "mapas-editar-referencia", "Ref.", produto.referencia || "");
     criarInputEdicaoMapa(secaoIdentificacao, "mapas-editar-sku", "SKU", produto.sku || "", "text", { required: true });
     criarInputEdicaoMapa(secaoIdentificacao, "mapas-editar-top", "Top", obterTopProdutoFornecedor(produto) || "");
+    criarCheckboxEdicaoMapa(secaoIdentificacao, "mapas-editar-descontinuado", "Descontinuado", obterBooleanoProdutoFornecedor(produto.descontinuado));
     campos.appendChild(secaoIdentificacao);
 
     const secaoDetalhes = criarSecaoEdicaoMapa("Detalhes", "mapas-produto-secao-detalhes");
@@ -647,6 +667,7 @@ function lerProdutoEditadoMapa() {
         referencia: document.getElementById("mapas-editar-referencia").value.trim(),
         sku: normalizarSkuFornecedor(document.getElementById("mapas-editar-sku").value),
         top: document.getElementById("mapas-editar-top").value.trim(),
+        descontinuado: document.getElementById("mapas-editar-descontinuado").checked,
         preco: Number(document.getElementById("mapas-editar-preco").value),
         peso: Number(document.getElementById("mapas-editar-peso").value || 10),
         stock: Math.max(0, Math.floor(Number(document.getElementById("mapas-editar-stock").value || 0))),
@@ -743,9 +764,11 @@ function renderizarContadorMapa(caixa, resultados, fornecedor) {
         if (estado.tipo === "disponivel") totais.disponivel += 1;
         if (estado.tipo === "encomendado") totais.encomendado += 1;
         if (String(obterTopProdutoFornecedor(produto) || "").trim()) totais.top += 1;
+        if (obterBooleanoProdutoFornecedor(produto?.descontinuado)) totais.descontinuado += 1;
         return totais;
     }, {
         top: 0,
+        descontinuado: 0,
         os: 0,
         ex: 0,
         disponivel: 0,
@@ -758,6 +781,7 @@ function renderizarContadorMapa(caixa, resultados, fornecedor) {
     contador.append(
         criarItemContadorMapa(resultados.length === 1 ? "figura" : "figuras", resultados.length, true),
         criarItemContadorMapa("Top", contadores.top),
+        criarItemContadorMapa("Descontinuadas", contadores.descontinuado),
         criarItemContadorMapa("OS", contadores.os),
         criarItemContadorMapa("EX", contadores.ex),
         criarItemContadorMapa("Disponivel", contadores.disponivel),
@@ -886,7 +910,7 @@ function renderizarResultadosFornecedor() {
     const caixa = document.getElementById("fornecedor-resultados");
     if (!caixa) return;
 
-    const { termo, fornecedor, filtroFornecedor, filtroTop, ordenacao } = obterControlosResultadosFornecedor();
+    const { termo, fornecedor, filtroFornecedor, filtroTop, filtroDescontinuado, ordenacao } = obterControlosResultadosFornecedor();
     caixa.innerHTML = "";
 
     const resultados = fornecedorProdutos
@@ -898,6 +922,7 @@ function renderizarResultadosFornecedor() {
             (!termo || item.score < 99)
             && produtoPassaFiltroFornecedor(item.produto, fornecedor, filtroFornecedor)
             && produtoPassaFiltroTopFornecedor(item.produto, filtroTop)
+            && produtoPassaFiltroDescontinuadoFornecedor(item.produto, filtroDescontinuado)
         ))
         .sort((a, b) => compararProdutosFornecedor(a, b, ordenacao));
 
@@ -1300,6 +1325,7 @@ ligarEventoFornecedor('fornecedor-nome', 'change', renderizarResultadosFornecedo
 ligarEventoFornecedor('fornecedor-ordenacao-stock', 'change', renderizarResultadosFornecedor);
 ligarEventoFornecedor('fornecedor-filtro-marcacao', 'change', renderizarResultadosFornecedor);
 ligarEventoFornecedor('fornecedor-filtro-top', 'change', renderizarResultadosFornecedor);
+ligarEventoFornecedor('fornecedor-filtro-descontinuado', 'change', renderizarResultadosFornecedor);
 ligarEventoFornecedor('btn-limpar-fornecedor', 'click', limparSelecaoFornecedor);
 ligarEventoFornecedor('btn-criar-fornecedor', 'click', criarPedidoFornecedor);
 ligarEventoFornecedor('fornecedor-filtro-estado', 'change', renderizarPedidosFornecedores);
