@@ -1468,6 +1468,10 @@ function garantirModalEdicaoFornecedor() {
                 <input type="hidden" id="fornecedor-edicao-id">
                 <div class="fornecedor-edicao-grid">
                     <label>
+                        Nome da encomenda
+                        <input type="text" id="fornecedor-edicao-codigo" required>
+                    </label>
+                    <label>
                         Fornecedor
                         <input type="text" id="fornecedor-edicao-nome" required>
                     </label>
@@ -1515,6 +1519,7 @@ function abrirEdicaoPedidoFornecedor(id) {
     });
 
     modal.querySelector('#fornecedor-edicao-id').value = pedido.id;
+    modal.querySelector('#fornecedor-edicao-codigo').value = pedido.codigo || '';
     modal.querySelector('#fornecedor-edicao-nome').value = pedido.fornecedor || '';
     modal.querySelector('#fornecedor-edicao-referencia').value = pedido.referencia || '';
     modal.querySelector('#fornecedor-edicao-status').textContent = '';
@@ -1610,11 +1615,17 @@ async function guardarEdicaoPedidoFornecedor(evento) {
     const pedido = fornecedorPedidos.find(item => item.id === id);
     if (!pedido) return;
 
+    const codigo = modal.querySelector('#fornecedor-edicao-codigo').value.trim();
     const fornecedor = modal.querySelector('#fornecedor-edicao-nome').value.trim();
     const referencia = modal.querySelector('#fornecedor-edicao-referencia').value.trim();
     const estado = modal.querySelector('#fornecedor-edicao-estado').value;
     const itens = lerItensEditadosPedidoFornecedor(pedido, modal);
 
+    if (!codigo) {
+        status.textContent = 'Indique o nome da encomenda.';
+        status.style.color = '#ff6262';
+        return;
+    }
     if (!fornecedor) {
         status.textContent = 'Indique o fornecedor.';
         status.style.color = '#ff6262';
@@ -1632,7 +1643,7 @@ async function guardarEdicaoPedidoFornecedor(evento) {
         status.style.color = '#ddd';
         const { data, error } = await fornecedoresClient
             .from('encomendas_fornecedores')
-            .update({ fornecedor, referencia: referencia || null, estado, itens })
+            .update({ codigo, fornecedor, referencia: referencia || null, estado, itens })
             .eq('id', id)
             .select()
             .single();
