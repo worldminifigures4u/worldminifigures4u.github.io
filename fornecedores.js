@@ -6,24 +6,6 @@ const FORNECEDORES_SELECAO_KEY = "figures-planet-fornecedores-selecao";
 const FORNECEDORES_FICHAS_KEY = "figures-planet-fornecedores-fichas";
 const FORNECEDORES_SEM_IMAGEM = 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="160" height="160" viewBox="0 0 160 160"><rect width="160" height="160" rx="8" fill="#eeeeee"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" font-family="Arial" font-size="13" fill="#777">Sem foto</text></svg>');
 
-const FORNECEDORES_ALIASES = {
-    "Lote 50": ["Lote 50"],
-    Ruishengtu: ["Ruishengtu"],
-    Leguoguo: ["Leguoguo"],
-    Chuangyaoke: ["Chuangyaoke"],
-    Kopf: ["Kopf"],
-    Brixtoy: ["Brixtoy"],
-};
-
-const FORNECEDORES_CAMPOS_PRODUTO = [
-    { chave: "lote50", rotulo: "Lote 50" },
-    { chave: "ruishengtu", rotulo: "Ruishengtu" },
-    { chave: "leguoguo", rotulo: "Leguoguo" },
-    { chave: "chuangyaoke", rotulo: "Chuangyaoke" },
-    { chave: "kopf", rotulo: "Kopf" },
-    { chave: "brixtoy", rotulo: "Brixtoy" },
-];
-
 const FORNECEDORES_FICHAS_PADRAO = [
     { nome: "Lote 50", contacto: "", notas: "", ativo: true },
     { nome: "Ruishengtu", contacto: "", notas: "", ativo: true },
@@ -110,9 +92,17 @@ function normalizarFichaFornecedor(ficha, indice = 0) {
 }
 
 function obterChaveCanonicaFichaFornecedor(nome) {
-    const chave = normalizarChaveFornecedor(nome);
-    const chavesOficiais = new Set(["lote50", "ruishengtu", "leguoguo", "chuangyaoke", "kopf", "brixtoy"]);
-    return chavesOficiais.has(chave) ? chave : "";
+    return normalizarChaveFornecedor(nome);
+}
+
+function obterCamposProdutoFornecedor() {
+    return fornecedorFichas
+        .filter(ficha => ficha.ativo !== false)
+        .map(ficha => ({
+            chave: normalizarChaveFornecedor(ficha.nome),
+            rotulo: ficha.nome
+        }))
+        .filter(campo => campo.chave && campo.rotulo);
 }
 
 function combinarFichasFornecedoresComPadrao(fichas = []) {
@@ -128,7 +118,6 @@ function combinarFichasFornecedoresComPadrao(fichas = []) {
         .filter(Boolean)
         .forEach(ficha => {
             const chave = obterChaveCanonicaFichaFornecedor(ficha.nome);
-            if (!chave || !mapa.has(chave)) return;
             const padrao = mapa.get(chave);
             mapa.set(chave, {
                 ...(padrao || {}),
@@ -438,8 +427,7 @@ function normalizarChaveFornecedor(texto) {
 }
 
 function obterAliasesFornecedor(nome) {
-    const aliases = FORNECEDORES_ALIASES[nome] || [nome];
-    return [nome, ...aliases].map(normalizarChaveFornecedor).filter(Boolean);
+    return [nome].map(normalizarChaveFornecedor).filter(Boolean);
 }
 
 function lerValorPorAlias(objeto, aliases) {
@@ -860,7 +848,7 @@ function abrirEdicaoProdutoMapa(produtoId) {
     campos.appendChild(secaoMedia);
 
     const blocoFornecedores = criarSecaoEdicaoMapa("Fornecedores", "mapas-produto-fornecedores");
-    FORNECEDORES_CAMPOS_PRODUTO.forEach(({ chave, rotulo }) => {
+    obterCamposProdutoFornecedor().forEach(({ chave, rotulo }) => {
         criarInputEdicaoMapa(blocoFornecedores, `mapas-editar-fornecedor-${chave}`, rotulo, obterFornecedorPorChaveProduto(produto, chave));
     });
     campos.appendChild(blocoFornecedores);
@@ -879,7 +867,7 @@ function fecharEdicaoProdutoMapa() {
 
 function lerProdutoEditadoMapa() {
     const fornecedores = {};
-    FORNECEDORES_CAMPOS_PRODUTO.forEach(({ chave }) => {
+    obterCamposProdutoFornecedor().forEach(({ chave }) => {
         const valor = document.getElementById(`mapas-editar-fornecedor-${chave}`)?.value.trim() || "";
         if (valor) fornecedores[chave] = valor;
     });

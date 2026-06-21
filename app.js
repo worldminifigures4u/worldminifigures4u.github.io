@@ -866,6 +866,7 @@ window.gerarSkuProduto = gerarSkuProduto;
 
 let importacaoStockPendente = null;
 let importacaoCatalogoPendente = null;
+const FORNECEDORES_FICHAS_KEY = "figures-planet-fornecedores-fichas";
 
 function utilizadorAdmin(user) {
     const email = String(user?.email || '').toLowerCase();
@@ -924,6 +925,21 @@ const FORNECEDORES_IMPORTACAO = [
     { chave:'brixtoy', nome:'Brixtoy' }
 ];
 
+function obterFornecedoresImportacao() {
+    const mapa = new Map(FORNECEDORES_IMPORTACAO.map(fornecedor => [fornecedor.nome, fornecedor]));
+    try {
+        const fichas = JSON.parse(localStorage.getItem(FORNECEDORES_FICHAS_KEY) || "[]");
+        if (Array.isArray(fichas)) {
+            fichas.forEach(ficha => {
+                const nome = String(ficha?.nome || "").trim();
+                if (!nome || ficha?.ativo === false || mapa.has(nome)) return;
+                mapa.set(nome, { chave: normalizarChaveImportacaoFornecedor(nome), nome });
+            });
+        }
+    } catch (_) {}
+    return [...mapa.values()];
+}
+
 function normalizarChaveImportacaoFornecedor(texto) {
     return normalizarCabecalhoStock(texto).replace(/[^a-z0-9]/g, '');
 }
@@ -932,7 +948,7 @@ function obterFornecedorPorCabecalhoImportacao(cabecalho) {
     const textoCabecalho = String(cabecalho || '').trim();
     const chaveCabecalho = normalizarChaveImportacaoFornecedor(textoCabecalho);
     if(!textoCabecalho || !chaveCabecalho || COLUNAS_CATALOGO_BASE.has(chaveCabecalho)) return null;
-    return FORNECEDORES_IMPORTACAO.find(fornecedor =>
+    return obterFornecedoresImportacao().find(fornecedor =>
         textoCabecalho === fornecedor.nome
     ) || null;
 }
