@@ -226,6 +226,39 @@ function novaFichaFornecedor() {
     document.getElementById("fornecedor-ficha-nome")?.focus();
 }
 
+async function apagarFichaFornecedor() {
+    const idAtual = document.getElementById("fornecedor-ficha-id")?.value || "";
+    const ficha = obterFichaFornecedorPorId(idAtual);
+    if (!ficha) {
+        definirStatusFornecedor("Escolha um fornecedor guardado para apagar.", true);
+        return;
+    }
+
+    const confirmou = window.confirm(`Apagar o fornecedor "${ficha.nome}"?\n\nIsto remove a ficha do fornecedor, mas nao apaga produtos nem encomendas ja criadas.`);
+    if (!confirmou) return;
+
+    try {
+        if (!fornecedoresClient) throw new Error("Supabase indisponivel.");
+        const { error } = await fornecedoresClient
+            .from("fornecedores_admin")
+            .delete()
+            .eq("id", ficha.id);
+        if (error) throw error;
+        definirStatusFornecedor("Fornecedor apagado.");
+    } catch (error) {
+        console.warn("Nao foi possivel apagar ficha no Supabase; removida localmente.", error);
+        definirStatusFornecedor("Fornecedor removido apenas neste navegador. Verifique o Supabase se ele voltar a aparecer.", true);
+    }
+
+    fornecedorFichas = combinarFichasFornecedoresComPadrao(
+        fornecedorFichas.filter(item => String(item.id) !== String(ficha.id))
+    );
+    guardarFichasFornecedoresLocal();
+    renderizarFornecedoresGuardados();
+    preencherFormularioFichaFornecedor();
+    renderizarResultadosFornecedor();
+}
+
 async function guardarFichaFornecedor(evento) {
     evento.preventDefault();
     const idAtual = document.getElementById("fornecedor-ficha-id")?.value || "";
@@ -1768,6 +1801,7 @@ ligarEventoFornecedor('fornecedor-ficha-lista', 'change', () => {
     preencherFormularioFichaFornecedor(obterFichaFornecedorPorId(document.getElementById('fornecedor-ficha-lista')?.value));
 });
 ligarEventoFornecedor('fornecedor-ficha-novo', 'click', novaFichaFornecedor);
+ligarEventoFornecedor('fornecedor-ficha-apagar', 'click', apagarFichaFornecedor);
 ligarEventoFornecedor('fornecedor-ficha-form', 'submit', guardarFichaFornecedor);
 
 const botaoFecharImagemFornecedor = document.getElementById('admin-imagem-modal-fechar');

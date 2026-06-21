@@ -3027,6 +3027,8 @@
         .fornecedor-ficha-largo,.fornecedor-ficha-acoes{ grid-column:1 / -1; }
         .fornecedor-ficha-ativo{ display:flex !important; grid-template-columns:none !important; align-items:center; gap:8px !important; }
         .fornecedor-ficha-ativo input{ width:auto; }
+        .fornecedor-ficha-apagar{ margin-right:auto; border-color:#5a2525 !important; background:#2a1111 !important; color:#ffb3b3 !important; }
+        .fornecedor-ficha-apagar:hover,.fornecedor-ficha-apagar:focus-visible{ background:#4a1717 !important; color:#fff !important; }
         .fornecedor-pedido-card{ border:1px solid #333; border-radius:8px; background:#111; padding:14px; }
         .fornecedor-pedido-cabecalho{ display:grid; grid-template-columns:minmax(0,1fr) 220px; gap:12px; align-items:start; border-bottom:1px solid #333; padding-bottom:12px; margin-bottom:12px; }
         .fornecedor-pedido-cabecalho strong{ display:block; color:#ffc400; font-size:20px; }
