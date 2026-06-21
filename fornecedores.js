@@ -421,6 +421,25 @@ function definirQuantidadeMapaFornecedor(produto, valor) {
     renderizarSelecionadosFornecedor();
 }
 
+function focarQuantidadeMapaRelativa(inputAtual, direcao) {
+    const inputs = Array.from(document.querySelectorAll(".mapa-quantidade-input"));
+    const indiceAtual = inputs.indexOf(inputAtual);
+    if (indiceAtual < 0) return false;
+    const proximo = inputs[indiceAtual + direcao];
+    if (!proximo) return false;
+    proximo.focus();
+    proximo.select();
+    return true;
+}
+
+function tratarTeclaQuantidadeMapa(evento) {
+    if (evento.key !== "Tab") return;
+    const direcao = evento.shiftKey ? -1 : 1;
+    if (focarQuantidadeMapaRelativa(evento.currentTarget, direcao)) {
+        evento.preventDefault();
+    }
+}
+
 function obterPendentesProdutoFornecedor(produto) {
     return obterPendentesDetalhadosProdutoFornecedor(produto).total;
 }
@@ -895,8 +914,11 @@ function renderizarResultadosFornecedorMapa(caixa, resultados, fornecedor) {
             input.type = "number";
             input.min = "0";
             input.step = "1";
-            input.value = String(obterQuantidadeSelecionadaFornecedor(atual.id) || 0);
+            const quantidadeSelecionada = obterQuantidadeSelecionadaFornecedor(atual.id);
+            input.value = quantidadeSelecionada > 0 ? String(quantidadeSelecionada) : "";
             input.className = "mapa-quantidade-input";
+            input.setAttribute("aria-label", `Quantidade de ${atual.nome || "produto"}`);
+            input.addEventListener("keydown", tratarTeclaQuantidadeMapa);
             input.addEventListener("change", () => definirQuantidadeMapaFornecedor(atual, input.value));
             input.addEventListener("blur", () => definirQuantidadeMapaFornecedor(atual, input.value));
             qtdCelula.appendChild(input);
