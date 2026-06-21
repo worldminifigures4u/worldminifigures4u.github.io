@@ -358,7 +358,7 @@ function imprimirPedidoFornecedor(id) {
     if (!pedido) return;
 
     const linhas = (pedido.itens || []).map(item => {
-        const produtoAtual = obterProdutoAtual(item.id) || item;
+        const produtoAtual = obterProdutoParaPedidoFornecedor(item) || item;
         const subtemaProduto = produtoAtual.subtema && produtoAtual.subtema !== 'semsubtema' ? produtoAtual.subtema : '';
         const subtemaItem = item.subtema && item.subtema !== 'semsubtema' ? item.subtema : '';
         return `
@@ -699,6 +699,22 @@ function definirQuantidadeFornecedor(id, valor) {
 
 function obterProdutoAtual(id) {
     return fornecedorProdutos.find(produto => String(produto.id) === String(id));
+}
+
+function obterProdutoParaPedidoFornecedor(item) {
+    if (!item) return null;
+    const porId = obterProdutoAtual(item.id);
+    if (porId) return porId;
+
+    const skuItem = String(item.sku || '').trim().toUpperCase();
+    const referenciaItem = String(item.referencia || '').trim().toUpperCase();
+    const nomeItem = normalizarFornecedor(item.nome);
+    return fornecedorProdutos.find(produto => {
+        const mesmoSku = skuItem && String(produto.sku || '').trim().toUpperCase() === skuItem;
+        const mesmaReferencia = referenciaItem && String(produto.referencia || '').trim().toUpperCase() === referenciaItem;
+        const mesmoNome = nomeItem && normalizarFornecedor(produto.nome) === nomeItem;
+        return mesmoSku || mesmaReferencia || mesmoNome;
+    }) || null;
 }
 
 function produtoPassaFiltroTopFornecedor(produto, filtroTop) {
@@ -1467,6 +1483,8 @@ async function criarPedidoFornecedor() {
         nome: item.nome,
         sku: item.sku || '',
         referencia: item.referencia || '',
+        tema: item.tema || '',
+        subtema: item.subtema || '',
         quantidade: Math.max(1, Number(item.quantidade) || 1),
         recebido: 0,
         stock_no_momento: Number(item.stock || 0),
@@ -1614,7 +1632,7 @@ function abrirEdicaoPedidoFornecedor(id) {
     const lista = modal.querySelector('#fornecedor-edicao-produtos');
     lista.replaceChildren();
     pedido.itens.forEach((item, indice) => {
-        const produtoAtual = obterProdutoAtual(item.id) || item;
+        const produtoAtual = obterProdutoParaPedidoFornecedor(item) || item;
         const linha = document.createElement('div');
         linha.className = 'fornecedor-edicao-produto';
         linha.dataset.indice = String(indice);
@@ -1829,7 +1847,7 @@ function renderizarPedidosFornecedores() {
         const lista = document.createElement('div');
         lista.className = 'fornecedor-pedido-produtos';
         pedido.itens.forEach(item => {
-            const produtoAtual = obterProdutoAtual(item.id) || item;
+            const produtoAtual = obterProdutoParaPedidoFornecedor(item) || item;
             const recebido = Number(item.recebido || 0);
             const restante = Math.max(0, Number(item.quantidade || 0) - recebido);
             const linha = document.createElement('div');
