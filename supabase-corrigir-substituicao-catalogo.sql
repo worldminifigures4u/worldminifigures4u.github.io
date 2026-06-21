@@ -105,3 +105,20 @@ to authenticated;
 
 grant execute on function public.remover_produtos_admin(text[])
 to authenticated;
+
+-- A vista publica da loja nao expoe stock, referencia nem fornecedores.
+create or replace view public.produtos_loja as
+select
+  produto.id,
+  produto.sku,
+  produto.nome,
+  produto.preco,
+  produto.peso,
+  produto.tema,
+  produto.subtema,
+  produto.imagens,
+  produto.ativo,
+  coalesce(produto.descontinuado, false) as descontinuado
+from public.produtos as produto;
+
+grant select on public.produtos_loja to anon, authenticated;

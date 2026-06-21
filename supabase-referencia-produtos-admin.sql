@@ -147,4 +147,19 @@ from public, anon;
 grant execute on function public.obter_imagens_produtos_encomendas_admin(text[])
 to authenticated;
 
--- A vista public.produtos_loja e as permissoes publicas nao incluem referencia.
+-- A vista publica da loja nao expoe stock, referencia nem fornecedores.
+create or replace view public.produtos_loja as
+select
+  produto.id,
+  produto.sku,
+  produto.nome,
+  produto.preco,
+  produto.peso,
+  produto.tema,
+  produto.subtema,
+  produto.imagens,
+  produto.ativo,
+  coalesce(produto.descontinuado, false) as descontinuado
+from public.produtos as produto;
+
+grant select on public.produtos_loja to anon, authenticated;

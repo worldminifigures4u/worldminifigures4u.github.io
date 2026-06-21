@@ -914,7 +914,7 @@ function normalizarCabecalhoStock(valor) {
         .toLowerCase();
 }
 
-const COLUNAS_CATALOGO_BASE = new Set(['nome', 'preco', 'sku', 'top', 'descontinuado', 'stock', 'tema', 'subtema', 'peso', 'referencia']);
+const COLUNAS_CATALOGO_BASE = new Set(['nome', 'preco', 'sku', 'top', 'descontinuado', 'descontinuada', 'descontinuados', 'descontinuadas', 'discontinued', 'stock', 'tema', 'subtema', 'peso', 'referencia']);
 const FORNECEDORES_IMPORTACAO = [
     { chave:'lote50', aliases:['lote50', 'lote 50', 'lote_50'] },
     { chave:'enmei', aliases:['enmei', 'winnie gong', 'winniegong'] },
@@ -1197,8 +1197,11 @@ function lerFolhaMapas(conteudo) {
     };
 }
 
-function obterIndiceColuna(cabecalhos, nome, obrigatoria = true) {
-    const indice = cabecalhos.indexOf(nome);
+function obterIndiceColuna(cabecalhos, nomes, obrigatoria = true) {
+    const aliases = Array.isArray(nomes) ? nomes : [nomes];
+    const nome = aliases[0];
+    const aliasesNormalizados = aliases.map(normalizarCabecalhoStock);
+    const indice = cabecalhos.findIndex(cabecalho => aliasesNormalizados.includes(cabecalho));
     if(indice < 0 && obrigatoria) {
         throw new Error(`Não foi encontrada a coluna ${nome}.`);
     }
@@ -1263,7 +1266,7 @@ async function analisarFicheiroCatalogoAdmin(input) {
             preco:obterIndiceColuna(cabecalhos, 'preco'),
             sku:obterIndiceColuna(cabecalhos, 'sku'),
             top:obterIndiceColuna(cabecalhos, 'top', false),
-            descontinuado:obterIndiceColuna(cabecalhos, 'descontinuado', false),
+            descontinuado:obterIndiceColuna(cabecalhos, ['descontinuado', 'descontinuada', 'descontinuados', 'descontinuadas', 'discontinued'], false),
             referencia:obterIndiceColuna(cabecalhos, 'referencia', false),
             stock:obterIndiceColuna(cabecalhos, 'stock'),
             tema:obterIndiceColuna(cabecalhos, 'tema'),
@@ -2145,7 +2148,7 @@ async function carregarProdutosDaNuvem(){
         while(true) {
             const query = clienteProdutos
                 .from('produtos_loja')
-                .select('id, sku, nome, preco, peso, tema, subtema, imagens, ativo')
+                .select('id, sku, nome, preco, peso, tema, subtema, imagens, ativo, descontinuado')
                 .order('tema', { ascending:true })
                 .order('subtema', { ascending:true })
                 .order('nome', { ascending:true })
