@@ -353,12 +353,83 @@ function escaparHtmlFornecedor(valor) {
     }[caracter]));
 }
 
-function imprimirPedidoFornecedor(id) {
+function fundirProdutosFornecedor(produtos) {
+    if (!Array.isArray(produtos) || !produtos.length) return;
+    produtos.forEach(produto => {
+        if (!produto) return;
+        const indice = fornecedorProdutos.findIndex(item => (
+            (produto.id && String(item.id) === String(produto.id))
+            || (produto.sku && String(item.sku || '').trim().toUpperCase() === String(produto.sku).trim().toUpperCase())
+            || (produto.referencia && String(item.referencia || '').trim().toUpperCase() === String(produto.referencia).trim().toUpperCase())
+        ));
+        const produtoNormalizado = {
+            ...produto,
+            stock: Number.isFinite(Number(produto.stock)) ? Number(produto.stock) : 0,
+            preco: Number.isFinite(Number(produto.preco)) ? Number(produto.preco) : 0
+        };
+        if (indice >= 0) fornecedorProdutos[indice] = { ...fornecedorProdutos[indice], ...produtoNormalizado };
+        else fornecedorProdutos.push(produtoNormalizado);
+    });
+}
+
+async function carregarProdutosCompletosPedidoFornecedor(pedido) {
+    if (!pedido?.itens?.length || !fornecedoresClient) return [];
+
+    const ids = [...new Set(pedido.itens.map(item => item.id).filter(Boolean).map(String))];
+    const skus = [...new Set(pedido.itens.map(item => String(item.sku || '').trim()).filter(Boolean))];
+    const referencias = [...new Set(pedido.itens.map(item => String(item.referencia || '').trim()).filter(Boolean))];
+    const campos = 'id,nome,sku,referencia,tema,subtema,stock,preco,imagens';
+    const produtos = [];
+
+    const executarConsulta = async (coluna, valores) => {
+        if (!valores.length) return;
+        const { data, error } = await fornecedoresClient
+            .from('produtos')
+            .select(campos)
+            .in(coluna, valores);
+        if (error) throw error;
+        if (Array.isArray(data)) produtos.push(...data);
+    };
+
+    await executarConsulta('id', ids);
+    await executarConsulta('sku', skus);
+    await executarConsulta('referencia', referencias);
+
+    const unicos = [];
+    const vistos = new Set();
+    produtos.forEach(produto => {
+        const chave = String(produto.id || produto.sku || produto.referencia || produto.nome || '');
+        if (!chave || vistos.has(chave)) return;
+        vistos.add(chave);
+        unicos.push(produto);
+    });
+    fundirProdutosFornecedor(unicos);
+    return unicos;
+}
+
+async function imprimirPedidoFornecedor(id) {
     const pedido = fornecedorPedidos.find(item => String(item.id) === String(id));
     if (!pedido) return;
 
+    const janela = window.open('', '_blank', 'width=900,height=700');
+    if (!janela) {
+        definirStatusFornecedor('O navegador bloqueou a janela de impressao. Autorize pop-ups para imprimir.', true);
+        return;
+    }
+    janela.document.open();
+    janela.document.write('<!DOCTYPE html><html lang="pt"><head><meta charset="UTF-8"><title>A preparar impressao</title></head><body>A preparar impressão...</body></html>');
+    janela.document.close();
+
+    let produtosCompletos = [];
+    try {
+        produtosCompletos = await carregarProdutosCompletosPedidoFornecedor(pedido);
+    } catch (error) {
+        console.warn('Nao foi possivel carregar produtos completos para impressao.', error);
+    }
+
+    const produtosImpressao = produtosCompletos.length ? produtosCompletos : fornecedorProdutos;
     const linhas = (pedido.itens || []).map(item => {
-        const produtoAtual = obterProdutoParaPedidoFornecedor(item) || item;
+        const produtoAtual = obterProdutoParaPedidoFornecedor(item, produtosImpressao) || item;
         const subtemaProduto = produtoAtual.subtema && produtoAtual.subtema !== 'semsubtema' ? produtoAtual.subtema : '';
         const subtemaItem = item.subtema && item.subtema !== 'semsubtema' ? item.subtema : '';
         return `
@@ -370,12 +441,6 @@ function imprimirPedidoFornecedor(id) {
                 <td class="quantidade">${escaparHtmlFornecedor(item.quantidade || 0)}</td>
             </tr>`;
     }).join('');
-
-    const janela = window.open('', '_blank', 'width=900,height=700');
-    if (!janela) {
-        definirStatusFornecedor('O navegador bloqueou a janela de impressao. Autorize pop-ups para imprimir.', true);
-        return;
-    }
 
     janela.document.open();
     janela.document.write(`<!DOCTYPE html>
@@ -701,15 +766,15 @@ function obterProdutoAtual(id) {
     return fornecedorProdutos.find(produto => String(produto.id) === String(id));
 }
 
-function obterProdutoParaPedidoFornecedor(item) {
+function obterProdutoParaPedidoFornecedor(item, listaProdutos = fornecedorProdutos) {
     if (!item) return null;
-    const porId = obterProdutoAtual(item.id);
+    const porId = listaProdutos.find(produto => String(produto.id) === String(item.id));
     if (porId) return porId;
 
     const skuItem = String(item.sku || '').trim().toUpperCase();
     const referenciaItem = String(item.referencia || '').trim().toUpperCase();
     const nomeItem = normalizarFornecedor(item.nome);
-    return fornecedorProdutos.find(produto => {
+    return listaProdutos.find(produto => {
         const mesmoSku = skuItem && String(produto.sku || '').trim().toUpperCase() === skuItem;
         const mesmaReferencia = referenciaItem && String(produto.referencia || '').trim().toUpperCase() === referenciaItem;
         const mesmoNome = nomeItem && normalizarFornecedor(produto.nome) === nomeItem;
@@ -818,6 +883,9 @@ async function carregarCatalogoFornecedores() {
         Object.prototype.hasOwnProperty.call(produto, "top")
         && Object.prototype.hasOwnProperty.call(produto, "descontinuado")
         && Object.prototype.hasOwnProperty.call(produto, "fornecedores")
+        && Object.prototype.hasOwnProperty.call(produto, "tema")
+        && Object.prototype.hasOwnProperty.call(produto, "subtema")
+        && Object.prototype.hasOwnProperty.call(produto, "referencia")
     )) {
         try {
             const produtosDiretos = await carregarCatalogoFornecedoresDireto();
@@ -830,11 +898,8 @@ async function carregarCatalogoFornecedores() {
         }
     }
 
-    fornecedorProdutos = produtos.map(produto => ({
-        ...produto,
-        stock: Number.isFinite(Number(produto.stock)) ? Number(produto.stock) : 0,
-        preco: Number.isFinite(Number(produto.preco)) ? Number(produto.preco) : 0
-    }));
+    fornecedorProdutos = [];
+    fundirProdutosFornecedor(produtos);
 
     fornecedorSelecao = fornecedorSelecao.map(item => {
         const atual = obterProdutoAtual(item.id);
