@@ -504,6 +504,7 @@ function criarCelulaMapaFornecedor(texto, className = "") {
 function criarInputEdicaoMapa(form, id, rotulo, valor, tipo = "text", opcoes = {}) {
     const label = document.createElement("label");
     label.setAttribute("for", id);
+    label.className = opcoes.largo ? "mapas-produto-campo mapas-produto-campo-largo" : "mapas-produto-campo";
     label.textContent = rotulo;
 
     const input = document.createElement(opcoes.multilinha ? "textarea" : "input");
@@ -516,7 +517,8 @@ function criarInputEdicaoMapa(form, id, rotulo, valor, tipo = "text", opcoes = {
     if (opcoes.step !== undefined) input.step = String(opcoes.step);
     if (opcoes.rows) input.rows = opcoes.rows;
 
-    form.append(label, input);
+    label.appendChild(input);
+    form.appendChild(label);
     return input;
 }
 
@@ -533,6 +535,15 @@ function criarCheckboxEdicaoMapa(form, id, rotulo, marcado) {
     label.append(input, texto);
     form.appendChild(label);
     return input;
+}
+
+function criarSecaoEdicaoMapa(titulo, classe = "") {
+    const secao = document.createElement("fieldset");
+    secao.className = `mapas-produto-secao ${classe}`.trim();
+    const legenda = document.createElement("legend");
+    legenda.textContent = titulo;
+    secao.appendChild(legenda);
+    return secao;
 }
 
 function garantirModalEdicaoProdutoMapa() {
@@ -585,29 +596,32 @@ function abrirEdicaoProdutoMapa(produtoId) {
     modal.querySelector("#mapas-editar-id").value = String(produto.id || "");
     modal.querySelector("#mapas-editar-sku-original").value = String(produto.sku || "");
 
-    criarInputEdicaoMapa(campos, "mapas-editar-nome", "Nome", produto.nome || "", "text", { required: true });
-    criarInputEdicaoMapa(campos, "mapas-editar-referencia", "Ref.", produto.referencia || "");
-    criarInputEdicaoMapa(campos, "mapas-editar-sku", "SKU", produto.sku || "", "text", { required: true });
-    criarInputEdicaoMapa(campos, "mapas-editar-top", "Top", obterTopProdutoFornecedor(produto) || "");
-    criarInputEdicaoMapa(campos, "mapas-editar-preco", "Preco", Number(produto.preco || 0).toFixed(2), "number", { required: true, min: 0, step: "0.01" });
-    criarInputEdicaoMapa(campos, "mapas-editar-peso", "Peso (g)", Number(produto.peso || 10), "number", { required: true, min: 1, step: 1 });
-    criarInputEdicaoMapa(campos, "mapas-editar-stock", "Stock", Number(produto.stock || 0), "number", { required: true, min: 0, step: 1 });
-    criarInputEdicaoMapa(campos, "mapas-editar-tema", "Tema", produto.tema || "", "text", { required: true });
-    criarInputEdicaoMapa(campos, "mapas-editar-subtema", "Subtema", produto.subtema === "semsubtema" ? "" : (produto.subtema || ""));
-    criarInputEdicaoMapa(campos, "mapas-editar-imagens", "URLs das imagens", imagensProdutoParaTextoFornecedor(produto), "text", { multilinha: true, rows: 4 });
-    criarInputEdicaoMapa(campos, "mapas-editar-observacoes", "Observacoes", produto.observacoes || "", "text", { multilinha: true, rows: 3 });
+    const secaoIdentificacao = criarSecaoEdicaoMapa("Identificacao", "mapas-produto-secao-identificacao");
+    criarInputEdicaoMapa(secaoIdentificacao, "mapas-editar-nome", "Nome", produto.nome || "", "text", { required: true, largo: true });
+    criarInputEdicaoMapa(secaoIdentificacao, "mapas-editar-referencia", "Ref.", produto.referencia || "");
+    criarInputEdicaoMapa(secaoIdentificacao, "mapas-editar-sku", "SKU", produto.sku || "", "text", { required: true });
+    criarInputEdicaoMapa(secaoIdentificacao, "mapas-editar-top", "Top", obterTopProdutoFornecedor(produto) || "");
+    campos.appendChild(secaoIdentificacao);
 
-    const blocoFornecedores = document.createElement("fieldset");
-    blocoFornecedores.className = "mapas-produto-fornecedores";
-    const legenda = document.createElement("legend");
-    legenda.textContent = "Fornecedores";
-    blocoFornecedores.appendChild(legenda);
+    const secaoDetalhes = criarSecaoEdicaoMapa("Detalhes", "mapas-produto-secao-detalhes");
+    criarInputEdicaoMapa(secaoDetalhes, "mapas-editar-preco", "Preco", Number(produto.preco || 0).toFixed(2), "number", { required: true, min: 0, step: "0.01" });
+    criarInputEdicaoMapa(secaoDetalhes, "mapas-editar-peso", "Peso (g)", Number(produto.peso || 10), "number", { required: true, min: 1, step: 1 });
+    criarInputEdicaoMapa(secaoDetalhes, "mapas-editar-stock", "Stock", Number(produto.stock || 0), "number", { required: true, min: 0, step: 1 });
+    criarInputEdicaoMapa(secaoDetalhes, "mapas-editar-tema", "Tema", produto.tema || "", "text", { required: true });
+    criarInputEdicaoMapa(secaoDetalhes, "mapas-editar-subtema", "Subtema", produto.subtema === "semsubtema" ? "" : (produto.subtema || ""));
+    criarCheckboxEdicaoMapa(secaoDetalhes, "mapas-editar-ativo", "Produto ativo", produto.ativo !== false);
+    campos.appendChild(secaoDetalhes);
+
+    const secaoMedia = criarSecaoEdicaoMapa("Imagem e notas", "mapas-produto-secao-media");
+    criarInputEdicaoMapa(secaoMedia, "mapas-editar-imagens", "URLs das imagens", imagensProdutoParaTextoFornecedor(produto), "text", { multilinha: true, rows: 4, largo: true });
+    criarInputEdicaoMapa(secaoMedia, "mapas-editar-observacoes", "Observacoes", produto.observacoes || "", "text", { multilinha: true, rows: 3, largo: true });
+    campos.appendChild(secaoMedia);
+
+    const blocoFornecedores = criarSecaoEdicaoMapa("Fornecedores", "mapas-produto-fornecedores");
     FORNECEDORES_CAMPOS_PRODUTO.forEach(({ chave, rotulo }) => {
         criarInputEdicaoMapa(blocoFornecedores, `mapas-editar-fornecedor-${chave}`, rotulo, obterFornecedorPorChaveProduto(produto, chave));
     });
     campos.appendChild(blocoFornecedores);
-
-    criarCheckboxEdicaoMapa(campos, "mapas-editar-ativo", "Produto ativo", produto.ativo !== false);
 
     modal.hidden = false;
     document.body.classList.add("mapas-produto-modal-aberto");
