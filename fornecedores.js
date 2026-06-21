@@ -343,6 +343,83 @@ function pedidoFornecedorPassaFiltroEstado(pedido, filtro) {
     return normalizarEstadoPedidoFornecedor(pedido.estado) === filtroNormalizado;
 }
 
+function escaparHtmlFornecedor(valor) {
+    return String(valor ?? '').replace(/[&<>"']/g, (caracter) => ({
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#39;'
+    }[caracter]));
+}
+
+function imprimirPedidoFornecedor(id) {
+    const pedido = fornecedorPedidos.find(item => String(item.id) === String(id));
+    if (!pedido) return;
+
+    const linhas = (pedido.itens || []).map(item => {
+        const produtoAtual = obterProdutoAtual(item.id) || item;
+        const subtemaProduto = produtoAtual.subtema && produtoAtual.subtema !== 'semsubtema' ? produtoAtual.subtema : '';
+        const subtemaItem = item.subtema && item.subtema !== 'semsubtema' ? item.subtema : '';
+        return `
+            <tr>
+                <td>${escaparHtmlFornecedor(produtoAtual.nome || item.nome || '')}</td>
+                <td>${escaparHtmlFornecedor(produtoAtual.tema || item.tema || '')}</td>
+                <td>${escaparHtmlFornecedor(subtemaProduto || subtemaItem || '')}</td>
+                <td>${escaparHtmlFornecedor(produtoAtual.referencia || item.referencia || '')}</td>
+                <td class="quantidade">${escaparHtmlFornecedor(item.quantidade || 0)}</td>
+            </tr>`;
+    }).join('');
+
+    const janela = window.open('', '_blank', 'width=900,height=700');
+    if (!janela) {
+        definirStatusFornecedor('O navegador bloqueou a janela de impressao. Autorize pop-ups para imprimir.', true);
+        return;
+    }
+
+    janela.document.open();
+    janela.document.write(`<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <title>${escaparHtmlFornecedor(pedido.codigo || 'Encomenda')}</title>
+    <style>
+        @page { size: A4; margin: 14mm; }
+        * { box-sizing: border-box; }
+        body { margin: 0; color: #111; font-family: Arial, Helvetica, sans-serif; font-size: 12px; }
+        h1 { margin: 0 0 14px; font-size: 22px; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { border: 1px solid #444; padding: 7px 8px; text-align: left; vertical-align: top; }
+        th { background: #f2c200; color: #000; font-weight: 700; }
+        td.quantidade, th.quantidade { width: 90px; text-align: center; }
+    </style>
+</head>
+<body>
+    <h1>${escaparHtmlFornecedor(pedido.codigo || 'Encomenda')}</h1>
+    <table>
+        <thead>
+            <tr>
+                <th>Nome da figura</th>
+                <th>Tema</th>
+                <th>Subtema</th>
+                <th>Referência</th>
+                <th class="quantidade">Quantidade encomendada</th>
+            </tr>
+        </thead>
+        <tbody>
+            ${linhas || '<tr><td colspan="5">Sem produtos.</td></tr>'}
+        </tbody>
+    </table>
+    <script>
+        window.addEventListener('load', () => {
+            window.print();
+        });
+    <\/script>
+</body>
+</html>`);
+    janela.document.close();
+}
+
 async function carregarPedidosFornecedoresRemotos() {
     try {
         const { data, error } = await fornecedoresClient.rpc('listar_encomendas_fornecedores_admin');
@@ -1781,6 +1858,11 @@ function renderizarPedidosFornecedores() {
         editar.className = 'wallapop-botao';
         editar.textContent = 'Editar ficha';
         editar.addEventListener('click', () => abrirEdicaoPedidoFornecedor(pedido.id));
+        const imprimir = document.createElement('button');
+        imprimir.type = 'button';
+        imprimir.className = 'wallapop-botao';
+        imprimir.textContent = 'Imprimir';
+        imprimir.addEventListener('click', () => imprimirPedidoFornecedor(pedido.id));
         const receber = document.createElement('button');
         receber.type = 'button';
         receber.className = 'wallapop-botao wallapop-botao-destaque';
@@ -1791,7 +1873,7 @@ function renderizarPedidosFornecedores() {
         apagar.className = 'wallapop-botao';
         apagar.textContent = 'Apagar pedido';
         apagar.addEventListener('click', () => apagarPedidoFornecedor(pedido.id));
-        acoes.append(editar, receber, apagar);
+        acoes.append(editar, imprimir, receber, apagar);
         detalhes.appendChild(acoes);
         card.appendChild(detalhes);
         caixa.appendChild(card);
