@@ -283,7 +283,7 @@ function classificarValorFornecedor(valor) {
     if (!texto) return { tipo: "disponivel", texto: "Disponivel" };
     if (maiusculas === "OS") return { tipo: "os", texto: "OS" };
     if (maiusculas === "EX") return { tipo: "ex", texto: "EX" };
-    if (/^-?\d+(?:[,.]\d+)?$/.test(texto)) return { tipo: "encomendado", texto: `Ja encomendado: ${texto}` };
+    if (/^-?\d+(?:[,.]\d+)?$/.test(texto)) return { tipo: "encomendado", texto: `Marcado no mapa: ${texto}` };
     return { tipo: "info", texto };
 }
 
@@ -811,7 +811,7 @@ function renderizarContadorMapa(caixa, resultados, fornecedor) {
         criarItemContadorMapa("EX", contadores.ex),
         criarItemContadorMapa("em stock", contadores.stock),
         criarItemContadorMapa("Disponivel", contadores.disponivel),
-        criarItemContadorMapa("Ja encomendado", contadores.encomendado)
+        criarItemContadorMapa("Marcado no mapa", contadores.encomendado)
     );
     caixa.appendChild(contador);
 }
