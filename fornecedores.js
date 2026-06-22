@@ -1819,7 +1819,7 @@ function garantirModalEdicaoFornecedor() {
     modal.innerHTML = `
         <div class="fornecedor-edicao-dialog" role="dialog" aria-modal="true" aria-labelledby="fornecedor-edicao-titulo">
             <div class="fornecedor-edicao-topo">
-                <h3 id="fornecedor-edicao-titulo">Ajustar encomenda do fornecedor</h3>
+                <h3 id="fornecedor-edicao-titulo">Editar encomenda do fornecedor</h3>
                 <button type="button" class="fornecedor-edicao-fechar" id="fornecedor-edicao-fechar" aria-label="Fechar">x</button>
             </div>
             <form id="fornecedor-edicao-form" class="fornecedor-edicao-form">
@@ -1846,7 +1846,7 @@ function garantirModalEdicaoFornecedor() {
                 <p class="fornecedores-status fornecedor-edicao-status" id="fornecedor-edicao-status" role="status"></p>
                 <div class="fornecedores-acoes fornecedor-edicao-acoes">
                     <button type="button" id="fornecedor-edicao-cancelar">Cancelar</button>
-                    <button type="submit" id="fornecedor-edicao-guardar">Guardar ajuste</button>
+                    <button type="submit" id="fornecedor-edicao-guardar">Guardar encomenda</button>
                 </div>
             </form>
         </div>
@@ -2169,7 +2169,7 @@ function renderizarPedidosFornecedores() {
         const editar = document.createElement('button');
         editar.type = 'button';
         editar.className = 'wallapop-botao';
-        editar.textContent = 'Ajustar OS';
+        editar.textContent = 'Editar encomenda';
         editar.addEventListener('click', () => abrirEdicaoPedidoFornecedor(pedido.id));
         const completar = document.createElement('button');
         completar.type = 'button';
