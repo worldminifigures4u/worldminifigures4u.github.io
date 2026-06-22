@@ -392,18 +392,25 @@ function obterTextoExportacaoPedidoFornecedor(pedido) {
         .join('\r\n');
 }
 
-function exportarTxtPedidoFornecedor(pedido) {
-    const texto = obterTextoExportacaoPedidoFornecedor(pedido);
+function exportarTxtTextoFornecedor(texto, nomeBase = 'encomenda') {
     if (!texto) return;
     const blob = new Blob([texto], { type: 'text/plain;charset=utf-8' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
-    link.download = criarNomeFicheiroExportacaoFornecedor(pedido);
+    link.download = criarNomeFicheiroExportacaoFornecedor({ codigo: nomeBase });
     document.body.appendChild(link);
     link.click();
     link.remove();
     setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
+function exportarTxtPedidoFornecedor(pedido) {
+    exportarTxtTextoFornecedor(obterTextoExportacaoPedidoFornecedor(pedido), pedido?.codigo || 'encomenda');
+}
+
+function exportarTxtItensFornecedor(itens, nomeBase = 'encomenda') {
+    exportarTxtTextoFornecedor(obterTextoExportacaoPedidoFornecedor({ itens }), nomeBase);
 }
 
 function fundirProdutosFornecedor(produtos) {
@@ -1773,9 +1780,11 @@ async function adicionarSelecaoAoPedidoFornecedor(id) {
     if (!window.confirm(`Adicionar ${total} unidade(s) selecionada(s) a ${pedido.codigo}?`)) return;
 
     const itens = [...pedido.itens.map(normalizarItemPedidoFornecedor)];
+    const itensExportar = [];
     fornecedorSelecao.forEach(selecionado => {
         const existente = itens.find(item => String(item.id) === String(selecionado.id));
         const quantidade = Math.max(1, Math.floor(Number(selecionado.quantidade) || 1));
+        itensExportar.push(criarItemFornecedorAPartirSelecao(selecionado, 'substituicao'));
         if (existente) {
             existente.quantidade = Math.max(0, Number(existente.quantidade || 0)) + quantidade;
             existente.quantidade_original = Math.max(0, Number(existente.quantidade_original || existente.quantidade || 0)) + quantidade;
@@ -1791,7 +1800,7 @@ async function adicionarSelecaoAoPedidoFornecedor(id) {
         fornecedorSelecao = [];
         guardarSelecaoFornecedor();
         renderizarSelecionadosFornecedor();
-        exportarTxtPedidoFornecedor(atualizado);
+        exportarTxtItensFornecedor(itensExportar, `${atualizado.codigo}-selecao`);
         definirStatusFornecedor(`Encomenda ${atualizado.codigo} completada com os novos produtos.`);
     } catch (error) {
         console.error(error);
