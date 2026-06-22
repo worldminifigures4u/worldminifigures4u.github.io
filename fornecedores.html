@@ -39,14 +39,22 @@
                 <div class="fornecedores-cabecalho-lista">
                     <h2>Escolher figuras</h2>
                 </div>
-                <div class="fornecedores-form-grid">
-                    <label for="fornecedor-nome">Fornecedor</label>
-                    <select id="fornecedor-nome"></select>
-                </div>
-
                 <h3>Adicionar produtos</h3>
-                <input id="fornecedor-pesquisa" type="search" placeholder="Nome, Ref., SKU ou tema">
                 <div class="fornecedor-lista-controles mapas-lista-controles">
+                    <label for="fornecedor-nome">
+                        Fornecedor
+                        <select id="fornecedor-nome"></select>
+                    </label>
+                    <label for="fornecedor-filtro-marcacao">
+                        Filtro do fornecedor
+                        <select id="fornecedor-filtro-marcacao">
+                            <option value="todos">Todos</option>
+                            <option value="os">OS</option>
+                            <option value="ex">EX</option>
+                            <option value="disponivel">Disponivel</option>
+                            <option value="encomendado">Marcado no mapa</option>
+                        </select>
+                    </label>
                     <label for="fornecedor-filtro-top">
                         Filtro Top
                         <select id="fornecedor-filtro-top">
@@ -63,17 +71,8 @@
                             <option value="sem-descontinuado">Sem descontinuadas</option>
                         </select>
                     </label>
-                    <label for="fornecedor-filtro-marcacao">
-                        Filtro do fornecedor
-                        <select id="fornecedor-filtro-marcacao">
-                            <option value="todos">Todos</option>
-                            <option value="os">OS</option>
-                            <option value="ex">EX</option>
-                            <option value="disponivel">Disponivel</option>
-                            <option value="encomendado">Marcado no mapa</option>
-                        </select>
-                    </label>
                 </div>
+                <input id="fornecedor-pesquisa" type="search" placeholder="Nome, Ref., SKU ou tema">
                 <div id="fornecedor-resultados" class="fornecedor-resultados"></div>
 
                 <h3>Produtos selecionados</h3>

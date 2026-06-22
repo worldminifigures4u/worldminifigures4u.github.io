@@ -3029,7 +3029,7 @@
         .fornecedores-tabs a:hover,.fornecedores-tabs a:focus-visible{ border-color:#ffc400; color:#ffc400; outline:none; }
         .fornecedores-grid-unificada{ grid-template-columns:minmax(0,1fr); }
         .pagina-fornecedores-unificada .fornecedores-admin{ max-width:1680px; }
-        .pagina-fornecedores-unificada .fornecedor-lista-controles.mapas-lista-controles{ grid-template-columns:repeat(3,minmax(0,1fr)); }
+        .pagina-fornecedores-unificada .fornecedor-lista-controles.mapas-lista-controles{ grid-template-columns:repeat(4,minmax(0,1fr)); }
         .pagina-fornecedores-unificada .fornecedor-resultados{ display:block; max-height:52vh; overflow:auto; padding-right:0; border:1px solid #333; border-radius:8px; background:#101010; }
         .pagina-fornecedores-unificada .fornecedor-pedidos{ max-height:none; }
         .fornecedor-ficha-box{ margin:14px 0 8px; padding:12px; border:1px solid #333; border-radius:8px; background:#101010; }
@@ -3102,7 +3102,7 @@
 
 .pagina-mapas-admin .fornecedor-lista-controles.mapas-lista-controles,
 .pagina-fornecedores-unificada .fornecedor-lista-controles.mapas-lista-controles {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: repeat(4, minmax(0, 1fr));
 }
 
 .pagina-mapas-admin .fornecedor-resultados,
