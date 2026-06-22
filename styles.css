@@ -3022,6 +3022,8 @@
         .fornecedores-acoes .wallapop-botao{ flex:1; }
         .fornecedores-cabecalho-lista{ display:flex; gap:12px; align-items:center; justify-content:space-between; margin-bottom:12px; }
         .fornecedores-cabecalho-lista h2{ margin:0; }
+        .fornecedores-cabecalho-acoes{ display:flex; gap:8px; align-items:center; justify-content:flex-end; flex-wrap:wrap; }
+        .fornecedores-link-mapas{ display:inline-flex; align-items:center; justify-content:center; min-height:40px; box-sizing:border-box; text-decoration:none; padding:10px 14px; }
         .fornecedor-ficha-box{ margin:14px 0 8px; padding:12px; border:1px solid #333; border-radius:8px; background:#101010; }
         .fornecedor-ficha-box summary{ color:#ffc400; font-weight:900; cursor:pointer; }
         .fornecedor-ficha-form{ display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; margin-top:12px; }

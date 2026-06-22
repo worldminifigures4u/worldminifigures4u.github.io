@@ -94,6 +94,8 @@ begin
       'top', coalesce(produto.top, ''),
       'descontinuado', coalesce(produto.descontinuado, false),
       'peso', coalesce(produto.peso, 10),
+      'tema', coalesce(produto.tema, ''),
+      'subtema', coalesce(produto.subtema, ''),
       'imagens', produto.imagens,
       'stock', coalesce(produto.stock, 0),
       'fornecedores', coalesce(produto.fornecedores, '{}'::jsonb),

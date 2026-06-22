@@ -1727,7 +1727,7 @@ async function adicionarSelecaoAoPedidoFornecedor(id) {
     const pedido = fornecedorPedidos.find(item => item.id === id);
     if (!pedido) return;
     if (!fornecedorSelecao.length) {
-        definirStatusFornecedor('Escolha primeiro as figuras que vao completar a encomenda.', true);
+        definirStatusFornecedor('Escolha primeiro as figuras na pagina Mapas e depois volte aqui para juntar a selecao.', true);
         return;
     }
     const total = fornecedorSelecao.reduce((soma, item) => soma + Math.max(1, Math.floor(Number(item.quantidade) || 1)), 0);
