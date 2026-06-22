@@ -1605,7 +1605,7 @@ async function criarPedidoFornecedor() {
         return;
     }
     const fornecedor = document.getElementById('fornecedor-nome').value;
-    const referencia = document.getElementById('fornecedor-referencia').value.trim();
+    const referencia = document.getElementById('fornecedor-referencia')?.value.trim() || '';
     const itens = fornecedorSelecao.map(item => ({
         id: item.id,
         nome: item.nome,
@@ -1637,7 +1637,9 @@ async function criarPedidoFornecedor() {
         guardarPedidosFornecedores();
         fornecedorSelecao = [];
         guardarSelecaoFornecedor();
-        document.getElementById('fornecedor-referencia').value = '';
+        if (document.getElementById('fornecedor-referencia')) {
+            document.getElementById('fornecedor-referencia').value = '';
+        }
         renderizarResultadosFornecedor();
         renderizarSelecionadosFornecedor();
         renderizarPedidosFornecedores();
