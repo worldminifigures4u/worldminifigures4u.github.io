@@ -6,12 +6,11 @@
     <meta name="robots" content="noindex,nofollow">
     <title>Mapas | Figures Planet</title>
     <link rel="icon" type="image/jpeg" href="assets/logo-figures-planet.jpg">
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <link rel="stylesheet" href="styles.css">
 </head>
-<body class="pagina-fornecedores-admin pagina-mapas-admin">
+<body class="pagina-fornecedores-admin">
     <header class="admin-encomendas-topo fornecedores-topo">
-<h1>Mapas</h1>
+        <h1>Mapas</h1>
         <nav class="acoes-cabecalho com-atalhos-admin" aria-label="Navegacao principal">
             <a class="acao-cabecalho" href="index.html">Produtos</a>
             <a class="acao-cabecalho" href="conta.html">Conta Cliente</a>
@@ -26,100 +25,12 @@
         </nav>
     </header>
 
-    <div class="wallapop-bloqueio" id="fornecedores-bloqueio">A verificar acesso administrativo...</div>
-
-    <main class="fornecedores-admin" id="fornecedores-aplicacao" hidden>
-        <section class="fornecedores-grid fornecedores-grid-mapas">
-            <section class="fornecedores-painel" aria-label="Mapa de fornecedor">
-                <h2>Mapa de fornecedor</h2>
-                <div class="fornecedores-form-grid">
-                    <label for="fornecedor-nome">Fornecedor</label>
-                    <select id="fornecedor-nome"></select>
-
-                    <label for="fornecedor-referencia">Referencia interna</label>
-                    <input id="fornecedor-referencia" type="text" placeholder="Ex.: caixa Junho, AliExpress 1234">
-                </div>
-
-                <details class="fornecedor-ficha-box">
-                    <summary>Ficha do fornecedor</summary>
-                    <form class="fornecedor-ficha-form" id="fornecedor-ficha-form">
-                        <input type="hidden" id="fornecedor-ficha-id">
-                        <label for="fornecedor-ficha-lista">
-                            Fornecedor guardado
-                            <select id="fornecedor-ficha-lista"></select>
-                        </label>
-                        <label for="fornecedor-ficha-nome">
-                            Nome
-                            <input id="fornecedor-ficha-nome" type="text" required placeholder="Ex.: Lote 50">
-                        </label>
-                        <label for="fornecedor-ficha-contacto">
-                            Contacto / link
-                            <input id="fornecedor-ficha-contacto" type="text" placeholder="Email, WhatsApp, AliExpress, site...">
-                        </label>
-                        <label for="fornecedor-ficha-notas" class="fornecedor-ficha-largo">
-                            Notas
-                            <textarea id="fornecedor-ficha-notas" rows="3" placeholder="Notas internas, prazos, moedas, regras, observa&ccedil;&otilde;es..."></textarea>
-                        </label>
-                        <label class="fornecedor-ficha-ativo">
-                            <input id="fornecedor-ficha-ativo" type="checkbox" checked>
-                            Ativo
-                        </label>
-                        <div class="fornecedores-acoes fornecedor-ficha-acoes">
-                            <button type="button" id="fornecedor-ficha-apagar" class="fornecedor-ficha-apagar">Apagar fornecedor</button>
-                            <button type="button" id="fornecedor-ficha-novo">Novo</button>
-                            <button type="submit">Guardar fornecedor</button>
-                        </div>
-                    </form>
-                </details>
-
-                <h3>Adicionar produtos</h3>
-                <input id="fornecedor-pesquisa" type="search" placeholder="Nome, Ref., SKU ou tema">
-                <div class="fornecedor-lista-controles mapas-lista-controles">
-                    <label for="fornecedor-filtro-top">
-                        Filtro Top
-                        <select id="fornecedor-filtro-top">
-                            <option value="todos">Todos</option>
-                            <option value="top">Apenas Top</option>
-                            <option value="sem-top">Sem Top</option>
-                        </select>
-                    </label>
-                    <label for="fornecedor-filtro-descontinuado">
-                        Descontinuado
-                        <select id="fornecedor-filtro-descontinuado">
-                            <option value="todos">Todos</option>
-                            <option value="descontinuado">Apenas descontinuadas</option>
-                            <option value="sem-descontinuado">Sem descontinuadas</option>
-                        </select>
-                    </label>
-                    <label for="fornecedor-filtro-marcacao">
-                        Filtro do fornecedor
-                        <select id="fornecedor-filtro-marcacao">
-                            <option value="todos">Todos</option>
-                            <option value="os">OS</option>
-                            <option value="ex">EX</option>
-                            <option value="disponivel">Disponivel</option>
-                            <option value="encomendado">Marcado no mapa</option>
-                        </select>
-                    </label>
-                </div>
-                <div id="fornecedor-resultados" class="fornecedor-resultados"></div>
-
-                <h3>Produtos selecionados</h3>
-                <div id="fornecedor-selecionados" class="fornecedor-selecionados"></div>
-                <div class="fornecedores-acoes">
-                    <button type="button" id="btn-limpar-fornecedor">Limpar lista</button>
-                    <button type="button" id="btn-criar-fornecedor">Criar encomenda</button>
-                </div>
-                <p class="fornecedores-status" id="fornecedores-status" role="status"></p>
-            </section>
+    <main class="fornecedores-admin">
+        <section class="fornecedores-painel mapas-reservado" aria-label="Mapas">
+            <h2>Mapas</h2>
+            <p>Pagina reservada para futuras funcionalidades.</p>
         </section>
     </main>
-
-
-    <div id="admin-imagem-modal" class="admin-imagem-modal" hidden>
-        <button type="button" id="admin-imagem-modal-fechar" class="admin-imagem-modal-fechar" aria-label="Fechar imagem">x</button>
-        <img id="admin-imagem-modal-foto" src="" alt="">
-    </div>
 
     <script>
         (function atualizarContadorCarrinhoCabecalho(){
@@ -134,6 +45,5 @@
             }
         })();
     </script>
-    <script src="fornecedores.js"></script>
 </body>
 </html>
