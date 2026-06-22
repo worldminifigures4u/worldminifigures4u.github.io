@@ -3002,11 +3002,14 @@
         .fornecedor-resultados{ max-height:420px; overflow:auto; padding-right:6px; }
         .fornecedor-produto,.fornecedor-item,.fornecedor-pedido-linha{ display:grid; grid-template-columns:74px minmax(0,1fr) auto; gap:12px; align-items:center; background:#1d1d1d; border:1px solid #333; border-radius:7px; padding:10px; }
         .fornecedor-pedido-linha{ grid-template-columns:52px minmax(0,1fr) 90px; }
+        .fornecedor-pedido-linha.tem-os,.fornecedor-edicao-produto.tem-os{ border-color:#80612d; background:#211c12; }
         .fornecedor-miniatura{ width:74px; height:74px; object-fit:contain; background:#eee; border-radius:5px; }
         .fornecedor-miniatura.pequena{ width:52px; height:52px; }
         .fornecedor-info{ min-width:0; display:grid; gap:2px; }
         .fornecedor-info strong{ color:#fff; line-height:1.2; }
         .fornecedor-info span{ color:#cfcfcf; font-size:13px; }
+        .fornecedor-ajuste-os{ color:#bdbdbd !important; font-size:12px !important; font-weight:700; }
+        .fornecedor-ajuste-os.ativo{ color:#ffc400 !important; }
         .fornecedor-identificadores{ color:#18c4ff !important; font-weight:700; }
         .fornecedor-stock{ color:#fff !important; font-weight:700; }
         .fornecedor-stock.sem-stock{ color:#ff4d4d !important; }
@@ -3053,8 +3056,8 @@
         .fornecedor-edicao-grid label,.fornecedor-edicao-produto-campos label{ display:grid; gap:6px; color:#ddd; font-weight:700; }
         .fornecedor-edicao-grid input,.fornecedor-edicao-grid select,.fornecedor-edicao-produto-campos input{ width:100%; box-sizing:border-box; border:1px solid #444; border-radius:6px; background:#242424; color:#fff; padding:10px 11px; font:inherit; }
         .fornecedor-edicao-produtos{ display:grid; gap:8px; }
-        .fornecedor-edicao-produto{ display:grid; grid-template-columns:52px minmax(0,1fr) minmax(280px,.45fr); gap:12px; align-items:center; padding:10px; border:1px solid #333; border-radius:7px; background:#1d1d1d; }
-        .fornecedor-edicao-produto-campos{ display:grid; grid-template-columns:1fr 1fr auto; gap:10px; align-items:end; }
+        .fornecedor-edicao-produto{ display:grid; grid-template-columns:52px minmax(0,1fr) minmax(360px,.58fr); gap:12px; align-items:center; padding:10px; border:1px solid #333; border-radius:7px; background:#1d1d1d; }
+        .fornecedor-edicao-produto-campos{ display:grid; grid-template-columns:1fr 1fr 1fr auto; gap:10px; align-items:end; }
         .fornecedor-edicao-remover{ display:flex !important; align-items:center; gap:6px !important; white-space:nowrap; }
         .fornecedor-edicao-remover input{ width:auto; }
         .fornecedor-edicao-status{ min-height:20px; }

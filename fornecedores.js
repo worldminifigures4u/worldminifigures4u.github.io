@@ -325,7 +325,25 @@ function normalizarPedidoFornecedor(pedido) {
         estado: pedido.estado || 'A preparar',
         criado_em: pedido.criado_em || new Date().toISOString(),
         atualizado_em: pedido.atualizado_em || pedido.criado_em || new Date().toISOString(),
-        itens: Array.isArray(pedido.itens) ? pedido.itens : []
+        itens: Array.isArray(pedido.itens) ? pedido.itens.map(normalizarItemPedidoFornecedor).filter(Boolean) : []
+    };
+}
+
+function normalizarItemPedidoFornecedor(item) {
+    if (!item) return null;
+    const quantidade = Math.max(0, Math.floor(Number(item.quantidade || 0)));
+    const quantidadeOriginal = Math.max(
+        quantidade,
+        Math.floor(Number(item.quantidade_original ?? item.quantidade_inicial ?? quantidade) || quantidade)
+    );
+    const faltaOs = Math.max(0, Math.floor(Number(item.falta_os || Math.max(0, quantidadeOriginal - quantidade)) || 0));
+    return {
+        ...item,
+        quantidade,
+        quantidade_original: quantidadeOriginal,
+        falta_os: faltaOs,
+        estado_fornecedor: item.estado_fornecedor || (faltaOs > 0 ? 'OS' : ''),
+        origem_ajuste: item.origem_ajuste || ''
     };
 }
 
@@ -1551,6 +1569,10 @@ async function criarPedidoFornecedor() {
         tema: item.tema || '',
         subtema: item.subtema || '',
         quantidade: Math.max(1, Number(item.quantidade) || 1),
+        quantidade_original: Math.max(1, Number(item.quantidade) || 1),
+        falta_os: 0,
+        estado_fornecedor: '',
+        origem_ajuste: '',
         recebido: 0,
         stock_no_momento: Number(item.stock || 0),
         preco: Number(item.preco || 0),
@@ -1620,6 +1642,123 @@ async function apagarPedidoFornecedor(id) {
     }
 }
 
+async function atualizarPedidoFornecedor(id, alteracoes) {
+    const { data, error } = await fornecedoresClient
+        .from('encomendas_fornecedores')
+        .update(alteracoes)
+        .eq('id', id)
+        .select()
+        .single();
+    if (error) throw error;
+    const atualizado = normalizarPedidoFornecedor(data);
+    fornecedorPedidos = fornecedorPedidos.map(item => item.id === id ? atualizado : item);
+    guardarPedidosFornecedores();
+    renderizarResultadosFornecedor();
+    renderizarSelecionadosFornecedor();
+    renderizarPedidosFornecedores();
+    return atualizado;
+}
+
+function criarItemFornecedorAPartirSelecao(item, origemAjuste = '') {
+    const quantidade = Math.max(1, Math.floor(Number(item.quantidade) || 1));
+    return normalizarItemPedidoFornecedor({
+        id: item.id,
+        nome: item.nome,
+        sku: item.sku || '',
+        referencia: item.referencia || '',
+        tema: item.tema || '',
+        subtema: item.subtema || '',
+        quantidade,
+        quantidade_original: quantidade,
+        falta_os: 0,
+        estado_fornecedor: '',
+        origem_ajuste: origemAjuste,
+        recebido: 0,
+        stock_no_momento: Number(item.stock || 0),
+        preco: Number(item.preco || 0),
+        imagens: item.imagens || []
+    });
+}
+
+function obterObjetoFornecedoresProduto(produto) {
+    if (!produto?.fornecedores) return {};
+    if (typeof produto.fornecedores === 'string') {
+        try {
+            const convertido = JSON.parse(produto.fornecedores);
+            return convertido && typeof convertido === 'object' ? convertido : {};
+        } catch (_) {
+            return {};
+        }
+    }
+    return typeof produto.fornecedores === 'object' ? { ...produto.fornecedores } : {};
+}
+
+function definirFornecedorOsNoProduto(produto, fornecedorNome) {
+    const chaveNormalizada = normalizarChaveFornecedor(fornecedorNome);
+    if (!produto || !chaveNormalizada) return null;
+    const fornecedores = obterObjetoFornecedoresProduto(produto);
+    const chaveExistente = Object.keys(fornecedores).find(chave => normalizarChaveFornecedor(chave) === chaveNormalizada);
+    fornecedores[chaveExistente || fornecedorNome] = 'OS';
+    return fornecedores;
+}
+
+async function sincronizarOsProdutosFornecedor(itens, fornecedorNome) {
+    if (!fornecedoresClient || !fornecedorNome || fornecedorNome === 'Outro') return;
+    const itensOs = (itens || []).filter(item => Number(item?.falta_os || 0) > 0);
+    if (!itensOs.length) return;
+
+    for (const item of itensOs) {
+        const produtoAtual = obterProdutoParaPedidoFornecedor(item);
+        if (!produtoAtual?.id) continue;
+        const fornecedores = definirFornecedorOsNoProduto(produtoAtual, fornecedorNome);
+        if (!fornecedores) continue;
+        const { error } = await fornecedoresClient
+            .from('produtos')
+            .update({ fornecedores })
+            .eq('id', produtoAtual.id);
+        if (error) throw error;
+        fornecedorProdutos = fornecedorProdutos.map(produto =>
+            String(produto.id) === String(produtoAtual.id) ? { ...produto, fornecedores } : produto
+        );
+    }
+}
+
+async function adicionarSelecaoAoPedidoFornecedor(id) {
+    const pedido = fornecedorPedidos.find(item => item.id === id);
+    if (!pedido) return;
+    if (!fornecedorSelecao.length) {
+        definirStatusFornecedor('Escolha primeiro as figuras que vao completar a encomenda.', true);
+        return;
+    }
+    const total = fornecedorSelecao.reduce((soma, item) => soma + Math.max(1, Math.floor(Number(item.quantidade) || 1)), 0);
+    if (!window.confirm(`Adicionar ${total} unidade(s) selecionada(s) a ${pedido.codigo}?`)) return;
+
+    const itens = [...pedido.itens.map(normalizarItemPedidoFornecedor)];
+    fornecedorSelecao.forEach(selecionado => {
+        const existente = itens.find(item => String(item.id) === String(selecionado.id));
+        const quantidade = Math.max(1, Math.floor(Number(selecionado.quantidade) || 1));
+        if (existente) {
+            existente.quantidade = Math.max(0, Number(existente.quantidade || 0)) + quantidade;
+            existente.quantidade_original = Math.max(0, Number(existente.quantidade_original || existente.quantidade || 0)) + quantidade;
+            existente.origem_ajuste = existente.origem_ajuste || 'reforco';
+        } else {
+            itens.push(criarItemFornecedorAPartirSelecao(selecionado, 'substituicao'));
+        }
+    });
+
+    try {
+        definirStatusFornecedor('A completar encomenda com a selecao...');
+        const atualizado = await atualizarPedidoFornecedor(pedido.id, { itens });
+        fornecedorSelecao = [];
+        guardarSelecaoFornecedor();
+        renderizarSelecionadosFornecedor();
+        definirStatusFornecedor(`Encomenda ${atualizado.codigo} completada com os novos produtos.`);
+    } catch (error) {
+        console.error(error);
+        definirStatusFornecedor('Erro ao completar encomenda: ' + (error.message || 'erro desconhecido'), true);
+    }
+}
+
 function garantirModalEdicaoFornecedor() {
     let modal = document.getElementById('fornecedor-edicao-modal');
     if (modal) return modal;
@@ -1631,7 +1770,7 @@ function garantirModalEdicaoFornecedor() {
     modal.innerHTML = `
         <div class="fornecedor-edicao-dialog" role="dialog" aria-modal="true" aria-labelledby="fornecedor-edicao-titulo">
             <div class="fornecedor-edicao-topo">
-                <h3 id="fornecedor-edicao-titulo">Editar ficha do fornecedor</h3>
+                <h3 id="fornecedor-edicao-titulo">Ajustar encomenda do fornecedor</h3>
                 <button type="button" class="fornecedor-edicao-fechar" id="fornecedor-edicao-fechar" aria-label="Fechar">x</button>
             </div>
             <form id="fornecedor-edicao-form" class="fornecedor-edicao-form">
@@ -1658,7 +1797,7 @@ function garantirModalEdicaoFornecedor() {
                 <p class="fornecedores-status fornecedor-edicao-status" id="fornecedor-edicao-status" role="status"></p>
                 <div class="fornecedores-acoes fornecedor-edicao-acoes">
                     <button type="button" id="fornecedor-edicao-cancelar">Cancelar</button>
-                    <button type="submit" id="fornecedor-edicao-guardar">Guardar ficha</button>
+                    <button type="submit" id="fornecedor-edicao-guardar">Guardar ajuste</button>
                 </div>
             </form>
         </div>
@@ -1698,8 +1837,12 @@ function abrirEdicaoPedidoFornecedor(id) {
     lista.replaceChildren();
     pedido.itens.forEach((item, indice) => {
         const produtoAtual = obterProdutoParaPedidoFornecedor(item) || item;
+        const quantidadeOriginal = Math.max(0, Number(item.quantidade_original ?? item.quantidade ?? 0));
+        const quantidadeAtual = Math.max(0, Number(item.quantidade || 0));
+        const faltaAtual = Math.max(0, Number(item.falta_os || Math.max(0, quantidadeOriginal - quantidadeAtual)));
         const linha = document.createElement('div');
         linha.className = 'fornecedor-edicao-produto';
+        if (faltaAtual > 0) linha.classList.add('tem-os');
         linha.dataset.indice = String(indice);
         linha.appendChild(criarImagemFornecedor(produtoAtual, 'fornecedor-miniatura pequena'));
 
@@ -1710,7 +1853,15 @@ function abrirEdicaoPedidoFornecedor(id) {
         const ids = document.createElement('span');
         ids.className = 'fornecedor-identificadores';
         ids.textContent = `Ref. ${item.referencia || produtoAtual.referencia || '-'} | SKU ${item.sku || produtoAtual.sku || '-'}`;
-        info.append(nome, ids);
+        const ajuste = document.createElement('span');
+        ajuste.className = faltaAtual > 0 ? 'fornecedor-ajuste-os ativo' : 'fornecedor-ajuste-os';
+        ajuste.textContent = faltaAtual > 0
+            ? `Inicial: ${quantidadeOriginal} | OS: ${faltaAtual}`
+            : `Inicial: ${quantidadeOriginal}`;
+        if (item.origem_ajuste) {
+            ajuste.textContent += item.origem_ajuste === 'substituicao' ? ' | Substituto' : ' | Reforco';
+        }
+        info.append(nome, ids, ajuste);
 
         const campos = document.createElement('div');
         campos.className = 'fornecedor-edicao-produto-campos';
@@ -1720,9 +1871,19 @@ function abrirEdicaoPedidoFornecedor(id) {
         quantidadeInput.type = 'number';
         quantidadeInput.min = '0';
         quantidadeInput.step = '1';
-        quantidadeInput.value = Math.max(0, Number(item.quantidade || 0));
+        quantidadeInput.value = quantidadeAtual;
         quantidadeInput.dataset.campo = 'quantidade';
         quantidade.appendChild(quantidadeInput);
+
+        const falta = document.createElement('label');
+        falta.textContent = 'OS/Falta';
+        const faltaInput = document.createElement('input');
+        faltaInput.type = 'number';
+        faltaInput.min = '0';
+        faltaInput.step = '1';
+        faltaInput.value = faltaAtual;
+        faltaInput.dataset.campo = 'falta_os';
+        falta.appendChild(faltaInput);
 
         const recebido = document.createElement('label');
         recebido.textContent = 'Recebido';
@@ -1741,7 +1902,25 @@ function abrirEdicaoPedidoFornecedor(id) {
         removerInput.dataset.campo = 'remover';
         remover.append(removerInput, document.createTextNode(' Remover'));
 
-        campos.append(quantidade, recebido, remover);
+        const sincronizarFalta = () => {
+            const pedidoValor = Math.max(0, Math.floor(Number(quantidadeInput.value) || 0));
+            const faltaValor = Math.max(0, quantidadeOriginal - pedidoValor);
+            if (faltaValor > 0 && Number(faltaInput.value || 0) === 0) {
+                faltaInput.value = String(faltaValor);
+            }
+        };
+        const sincronizarQuantidade = () => {
+            const faltaValor = Math.max(0, Math.floor(Number(faltaInput.value) || 0));
+            if (faltaValor > 0) {
+                quantidadeInput.value = String(Math.max(0, quantidadeOriginal - faltaValor));
+            }
+        };
+        quantidadeInput.addEventListener('change', sincronizarFalta);
+        quantidadeInput.addEventListener('blur', sincronizarFalta);
+        faltaInput.addEventListener('change', sincronizarQuantidade);
+        faltaInput.addEventListener('blur', sincronizarQuantidade);
+
+        campos.append(quantidade, falta, recebido, remover);
         linha.append(info, campos);
         lista.appendChild(linha);
     });
@@ -1767,13 +1946,19 @@ function lerItensEditadosPedidoFornecedor(pedido, modal) {
         const remover = linha.querySelector('[data-campo="remover"]')?.checked;
         if (remover) return null;
         const quantidade = Math.max(0, Math.floor(Number(linha.querySelector('[data-campo="quantidade"]')?.value || 0)));
+        const quantidadeOriginal = Math.max(quantidade, Math.floor(Number(item.quantidade_original ?? item.quantidade ?? quantidade) || quantidade));
+        const faltaOsIndicada = Math.max(0, Math.floor(Number(linha.querySelector('[data-campo="falta_os"]')?.value || 0)));
+        const faltaOs = Math.max(faltaOsIndicada, quantidadeOriginal - quantidade);
         const recebido = Math.max(0, Math.floor(Number(linha.querySelector('[data-campo="recebido"]')?.value || 0)));
         return {
             ...item,
+            quantidade_original: quantidadeOriginal,
             quantidade,
+            falta_os: faltaOs,
+            estado_fornecedor: faltaOs > 0 ? 'OS' : (item.estado_fornecedor === 'OS' ? '' : item.estado_fornecedor || ''),
             recebido: Math.min(recebido, quantidade)
         };
-    }).filter(item => item && Number(item.quantidade || 0) > 0);
+    }).filter(item => item && (Number(item.quantidade || 0) > 0 || Number(item.falta_os || 0) > 0));
 }
 
 async function guardarEdicaoPedidoFornecedor(evento) {
@@ -1811,20 +1996,13 @@ async function guardarEdicaoPedidoFornecedor(evento) {
         botao.disabled = true;
         status.textContent = 'A guardar ficha...';
         status.style.color = '#ddd';
-        const { data, error } = await fornecedoresClient
-            .from('encomendas_fornecedores')
-            .update({ codigo, fornecedor, referencia: referencia || null, estado, itens })
-            .eq('id', id)
-            .select()
-            .single();
-        if (error) throw error;
-        const atualizado = normalizarPedidoFornecedor(data);
-        fornecedorPedidos = fornecedorPedidos.map(item => item.id === id ? atualizado : item);
-        guardarPedidosFornecedores();
+        const atualizado = await atualizarPedidoFornecedor(id, { codigo, fornecedor, referencia: referencia || null, estado, itens });
+        status.textContent = 'A marcar OS no mapa do fornecedor...';
+        await sincronizarOsProdutosFornecedor(itens, fornecedor);
         renderizarResultadosFornecedor();
         renderizarPedidosFornecedores();
         fecharEdicaoPedidoFornecedor();
-        definirStatusFornecedor(`Ficha ${atualizado.codigo} guardada.`);
+        definirStatusFornecedor(`Ajuste ${atualizado.codigo} guardado.`);
     } catch (error) {
         console.error(error);
         status.textContent = 'Erro: ' + (error.message || 'Nao foi possivel guardar a ficha.');
@@ -1854,11 +2032,13 @@ function renderizarPedidosFornecedores() {
         const totaisPedido = (pedido.itens || []).reduce((totais, item) => {
             const quantidade = Math.max(0, Number(item.quantidade || 0));
             const recebido = Math.max(0, Number(item.recebido || 0));
+            const faltaOs = Math.max(0, Number(item.falta_os || 0));
             totais.itens += 1;
             totais.quantidade += quantidade;
+            totais.os += faltaOs;
             totais.pendente += Math.max(0, quantidade - recebido);
             return totais;
-        }, { itens: 0, quantidade: 0, pendente: 0 });
+        }, { itens: 0, quantidade: 0, os: 0, pendente: 0 });
 
         const topo = document.createElement('div');
         topo.className = 'fornecedor-pedido-cabecalho';
@@ -1882,7 +2062,7 @@ function renderizarPedidosFornecedores() {
             }
         });
         const titulo = document.createElement('div');
-        titulo.innerHTML = `<strong>${pedido.codigo}</strong><span>${pedido.fornecedor}${pedido.referencia ? ' - ' + pedido.referencia : ''}</span><small>${new Date(pedido.criado_em).toLocaleString('pt-PT')}</small><small>${totaisPedido.itens} artigo(s) | ${totaisPedido.quantidade} unidade(s) | ${totaisPedido.pendente} por receber</small>`;
+        titulo.innerHTML = `<strong>${pedido.codigo}</strong><span>${pedido.fornecedor}${pedido.referencia ? ' - ' + pedido.referencia : ''}</span><small>${new Date(pedido.criado_em).toLocaleString('pt-PT')}</small><small>${totaisPedido.itens} artigo(s) | ${totaisPedido.quantidade} unidade(s) | ${totaisPedido.pendente} por receber${totaisPedido.os > 0 ? ` | ${totaisPedido.os} OS` : ''}</small>`;
         const controlos = document.createElement('div');
         controlos.className = 'fornecedor-pedido-controlos';
         const estado = document.createElement('select');
@@ -1915,12 +2095,14 @@ function renderizarPedidosFornecedores() {
             const produtoAtual = obterProdutoParaPedidoFornecedor(item) || item;
             const recebido = Number(item.recebido || 0);
             const restante = Math.max(0, Number(item.quantidade || 0) - recebido);
+            const faltaOs = Math.max(0, Number(item.falta_os || 0));
             const linha = document.createElement('div');
             linha.className = 'fornecedor-pedido-linha';
+            if (faltaOs > 0) linha.classList.add('tem-os');
             linha.appendChild(criarImagemFornecedor(produtoAtual, 'fornecedor-miniatura pequena'));
             const info = document.createElement('div');
             info.className = 'fornecedor-info';
-            info.innerHTML = `<strong>${item.nome}</strong><span class="fornecedor-identificadores">Ref. ${item.referencia || '-'} | SKU ${item.sku || '-'}</span><span>Pedido: ${item.quantidade} | Recebido: ${recebido} | Stock atual: ${Number(produtoAtual.stock || 0)}</span>`;
+            info.innerHTML = `<strong>${item.nome}</strong><span class="fornecedor-identificadores">Ref. ${item.referencia || '-'} | SKU ${item.sku || '-'}</span><span>Pedido: ${item.quantidade} | Recebido: ${recebido} | Stock atual: ${Number(produtoAtual.stock || 0)}</span>${faltaOs > 0 ? `<span class="fornecedor-ajuste-os ativo">OS/Falta: ${faltaOs}${item.quantidade_original ? ` de ${item.quantidade_original}` : ''}</span>` : ''}${item.origem_ajuste ? `<span class="fornecedor-ajuste-os">${item.origem_ajuste === 'substituicao' ? 'Substituto para completar encomenda' : 'Reforco adicionado'}</span>` : ''}`;
             const input = document.createElement('input');
             input.type = 'number';
             input.min = '0';
@@ -1939,8 +2121,13 @@ function renderizarPedidosFornecedores() {
         const editar = document.createElement('button');
         editar.type = 'button';
         editar.className = 'wallapop-botao';
-        editar.textContent = 'Editar ficha';
+        editar.textContent = 'Ajustar OS';
         editar.addEventListener('click', () => abrirEdicaoPedidoFornecedor(pedido.id));
+        const completar = document.createElement('button');
+        completar.type = 'button';
+        completar.className = 'wallapop-botao';
+        completar.textContent = 'Juntar selecao';
+        completar.addEventListener('click', () => adicionarSelecaoAoPedidoFornecedor(pedido.id));
         const imprimir = document.createElement('button');
         imprimir.type = 'button';
         imprimir.className = 'wallapop-botao';
@@ -1956,7 +2143,7 @@ function renderizarPedidosFornecedores() {
         apagar.className = 'wallapop-botao';
         apagar.textContent = 'Apagar pedido';
         apagar.addEventListener('click', () => apagarPedidoFornecedor(pedido.id));
-        acoes.append(editar, imprimir, receber, apagar);
+        acoes.append(editar, completar, imprimir, receber, apagar);
         detalhes.appendChild(acoes);
         card.appendChild(detalhes);
         caixa.appendChild(card);
