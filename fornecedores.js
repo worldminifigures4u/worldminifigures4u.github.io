@@ -2268,6 +2268,7 @@ function ligarEventoFornecedor(id, evento, handler) {
 }
 
 ligarEventoFornecedor('fornecedor-pesquisa', 'input', renderizarResultadosFornecedor);
+ligarEventoFornecedor('btn-pesquisar-fornecedor', 'click', renderizarResultadosFornecedor);
 ligarEventoFornecedor('fornecedor-nome', 'change', renderizarResultadosFornecedor);
 ligarEventoFornecedor('fornecedor-ordenacao-stock', 'change', renderizarResultadosFornecedor);
 ligarEventoFornecedor('fornecedor-filtro-marcacao', 'change', renderizarResultadosFornecedor);
