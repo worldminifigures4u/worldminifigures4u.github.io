@@ -40,43 +40,44 @@
                     <h2>Escolher figuras</h2>
                     <button type="button" id="btn-atualizar-catalogo-fornecedor">Atualizar catalogo</button>
                 </div>
-                <div class="fornecedores-form-grid">
-                    <label for="fornecedor-nome">Fornecedor</label>
-                    <select id="fornecedor-nome"></select>
+                <div class="fornecedor-topo-config">
+                    <div class="fornecedores-form-grid fornecedor-escolha-box">
+                        <label for="fornecedor-nome">Fornecedor</label>
+                        <select id="fornecedor-nome"></select>
+                    </div>
 
+                    <details class="fornecedor-ficha-box">
+                        <summary>Ficha do fornecedor</summary>
+                        <form class="fornecedor-ficha-form" id="fornecedor-ficha-form">
+                            <input type="hidden" id="fornecedor-ficha-id">
+                            <label for="fornecedor-ficha-lista">
+                                Fornecedor guardado
+                                <select id="fornecedor-ficha-lista"></select>
+                            </label>
+                            <label for="fornecedor-ficha-nome">
+                                Nome
+                                <input id="fornecedor-ficha-nome" type="text" required placeholder="Ex.: Lote 50">
+                            </label>
+                            <label for="fornecedor-ficha-contacto">
+                                Contacto / link
+                                <input id="fornecedor-ficha-contacto" type="text" placeholder="Email, WhatsApp, AliExpress, site...">
+                            </label>
+                            <label for="fornecedor-ficha-notas" class="fornecedor-ficha-largo">
+                                Notas
+                                <textarea id="fornecedor-ficha-notas" rows="3" placeholder="Notas internas, prazos, moedas, regras, observacoes..."></textarea>
+                            </label>
+                            <label class="fornecedor-ficha-ativo">
+                                <input id="fornecedor-ficha-ativo" type="checkbox" checked>
+                                Ativo
+                            </label>
+                            <div class="fornecedores-acoes fornecedor-ficha-acoes">
+                                <button type="button" id="fornecedor-ficha-apagar" class="fornecedor-ficha-apagar">Apagar fornecedor</button>
+                                <button type="button" id="fornecedor-ficha-novo">Novo</button>
+                                <button type="submit">Guardar fornecedor</button>
+                            </div>
+                        </form>
+                    </details>
                 </div>
-
-                <details class="fornecedor-ficha-box">
-                    <summary>Ficha do fornecedor</summary>
-                    <form class="fornecedor-ficha-form" id="fornecedor-ficha-form">
-                        <input type="hidden" id="fornecedor-ficha-id">
-                        <label for="fornecedor-ficha-lista">
-                            Fornecedor guardado
-                            <select id="fornecedor-ficha-lista"></select>
-                        </label>
-                        <label for="fornecedor-ficha-nome">
-                            Nome
-                            <input id="fornecedor-ficha-nome" type="text" required placeholder="Ex.: Lote 50">
-                        </label>
-                        <label for="fornecedor-ficha-contacto">
-                            Contacto / link
-                            <input id="fornecedor-ficha-contacto" type="text" placeholder="Email, WhatsApp, AliExpress, site...">
-                        </label>
-                        <label for="fornecedor-ficha-notas" class="fornecedor-ficha-largo">
-                            Notas
-                            <textarea id="fornecedor-ficha-notas" rows="3" placeholder="Notas internas, prazos, moedas, regras, observacoes..."></textarea>
-                        </label>
-                        <label class="fornecedor-ficha-ativo">
-                            <input id="fornecedor-ficha-ativo" type="checkbox" checked>
-                            Ativo
-                        </label>
-                        <div class="fornecedores-acoes fornecedor-ficha-acoes">
-                            <button type="button" id="fornecedor-ficha-apagar" class="fornecedor-ficha-apagar">Apagar fornecedor</button>
-                            <button type="button" id="fornecedor-ficha-novo">Novo</button>
-                            <button type="submit">Guardar fornecedor</button>
-                        </div>
-                    </form>
-                </details>
 
                 <h3>Adicionar produtos</h3>
                 <input id="fornecedor-pesquisa" type="search" placeholder="Nome, Ref., SKU ou tema">
