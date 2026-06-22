@@ -3024,9 +3024,6 @@
         .fornecedores-cabecalho-lista h2{ margin:0; }
         .fornecedores-cabecalho-acoes{ display:flex; gap:8px; align-items:center; justify-content:flex-end; flex-wrap:wrap; }
         .fornecedores-link-mapas{ display:inline-flex; align-items:center; justify-content:center; min-height:40px; box-sizing:border-box; text-decoration:none; padding:10px 14px; }
-        .fornecedores-tabs{ display:flex; gap:8px; align-items:center; flex-wrap:wrap; margin-bottom:14px; }
-        .fornecedores-tabs a{ display:inline-flex; align-items:center; justify-content:center; min-height:40px; padding:9px 14px; border:1px solid #333; border-radius:6px; background:#202020; color:#fff; text-decoration:none; font-weight:900; }
-        .fornecedores-tabs a:hover,.fornecedores-tabs a:focus-visible{ border-color:#ffc400; color:#ffc400; outline:none; }
         .fornecedores-grid-unificada{ grid-template-columns:minmax(0,1fr); }
         .pagina-fornecedores-unificada .fornecedores-admin{ max-width:1680px; }
         .pagina-fornecedores-unificada .fornecedor-lista-controles.mapas-lista-controles{ grid-template-columns:repeat(4,minmax(0,1fr)); }
