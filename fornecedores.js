@@ -1866,7 +1866,7 @@ function abrirEdicaoPedidoFornecedor(id) {
         const campos = document.createElement('div');
         campos.className = 'fornecedor-edicao-produto-campos';
         const quantidade = document.createElement('label');
-        quantidade.textContent = 'Pedido';
+        quantidade.textContent = 'A receber';
         const quantidadeInput = document.createElement('input');
         quantidadeInput.type = 'number';
         quantidadeInput.min = '0';
@@ -1885,15 +1885,14 @@ function abrirEdicaoPedidoFornecedor(id) {
         faltaInput.dataset.campo = 'falta_os';
         falta.appendChild(faltaInput);
 
-        const recebido = document.createElement('label');
-        recebido.textContent = 'Recebido';
-        const recebidoInput = document.createElement('input');
-        recebidoInput.type = 'number';
-        recebidoInput.min = '0';
-        recebidoInput.step = '1';
-        recebidoInput.value = Math.max(0, Number(item.recebido || 0));
-        recebidoInput.dataset.campo = 'recebido';
-        recebido.appendChild(recebidoInput);
+        const recebido = document.createElement('div');
+        recebido.className = 'fornecedor-edicao-recebido-info';
+        const recebidoAtual = ['A preparar', 'Encomendada'].includes(pedido.estado)
+            ? 0
+            : Math.max(0, Number(item.recebido || 0));
+        recebido.dataset.campo = 'recebido';
+        recebido.dataset.valor = String(recebidoAtual);
+        recebido.innerHTML = `<strong>Recebido</strong><span>${recebidoAtual}</span>`;
 
         const remover = document.createElement('label');
         remover.className = 'fornecedor-edicao-remover';
@@ -1949,7 +1948,7 @@ function lerItensEditadosPedidoFornecedor(pedido, modal) {
         const quantidadeOriginal = Math.max(quantidade, Math.floor(Number(item.quantidade_original ?? item.quantidade ?? quantidade) || quantidade));
         const faltaOsIndicada = Math.max(0, Math.floor(Number(linha.querySelector('[data-campo="falta_os"]')?.value || 0)));
         const faltaOs = Math.max(faltaOsIndicada, quantidadeOriginal - quantidade);
-        const recebido = Math.max(0, Math.floor(Number(linha.querySelector('[data-campo="recebido"]')?.value || 0)));
+        const recebido = Math.max(0, Math.floor(Number(linha.querySelector('[data-campo="recebido"]')?.dataset.valor || item.recebido || 0)));
         return {
             ...item,
             quantidade_original: quantidadeOriginal,

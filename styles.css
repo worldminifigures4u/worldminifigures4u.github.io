@@ -3058,6 +3058,8 @@
         .fornecedor-edicao-produtos{ display:grid; gap:8px; }
         .fornecedor-edicao-produto{ display:grid; grid-template-columns:52px minmax(0,1fr) minmax(360px,.58fr); gap:12px; align-items:center; padding:10px; border:1px solid #333; border-radius:7px; background:#1d1d1d; }
         .fornecedor-edicao-produto-campos{ display:grid; grid-template-columns:1fr 1fr 1fr auto; gap:10px; align-items:end; }
+        .fornecedor-edicao-recebido-info{ display:grid; gap:6px; color:#ddd; font-weight:700; }
+        .fornecedor-edicao-recebido-info span{ min-height:40px; display:flex; align-items:center; border:1px solid #333; border-radius:6px; background:#1a1a1a; color:#aaa; padding:10px 11px; box-sizing:border-box; }
         .fornecedor-edicao-remover{ display:flex !important; align-items:center; gap:6px !important; white-space:nowrap; }
         .fornecedor-edicao-remover input{ width:auto; }
         .fornecedor-edicao-status{ min-height:20px; }
