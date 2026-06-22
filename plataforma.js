@@ -1139,7 +1139,7 @@ function criarTextoClienteOlx() {
 
 function criarCabecalhoCodigoEncomenda() {
     const codigo = obterCodigoEncomendaAtual();
-    return codigo ? [`C\u00f3digo da encomenda:\t${codigo}`, ''] : [];
+    return codigo ? [`Pedido ${codigo}`, ''] : [];
 }
 
 function validarEncomendaRegistadaParaFicheiros() {
