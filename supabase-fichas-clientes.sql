@@ -57,6 +57,11 @@ declare
   v_plataforma text;
   v_utilizador text;
   v_url text := trim(coalesce(p_url_perfil, ''));
+  v_perfis jsonb;
+  v_historico jsonb;
+  v_total numeric;
+  v_quantidade integer;
+  v_ultima timestamptz;
 begin
   if lower(coalesce(auth.jwt() ->> 'email', '')) <> 'worldminifigures4u@gmail.com' then
     raise exception 'Acesso reservado ao administrador';
@@ -141,9 +146,32 @@ begin
     perfil_externo_utilizador = v_utilizador
   where id = v_encomenda.id;
 
+  select coalesce(jsonb_agg(jsonb_build_object(
+    'plataforma', plataforma, 'utilizador', utilizador, 'url', url_perfil
+  ) order by plataforma), '[]'::jsonb)
+  into v_perfis from public.clientes_perfis_externos where cliente_id = v_cliente.id;
+
+  select coalesce(jsonb_agg(jsonb_build_object(
+    'id', id, 'codigo', codigo_encomenda, 'data', created_at, 'origem', origem,
+    'estado', estado, 'total', total
+  ) order by created_at desc), '[]'::jsonb)
+  into v_historico from public.encomendas where cliente_gestao_id = v_cliente.id;
+
+  select count(*), coalesce(sum(total) filter (where estado <> 'Cancelado'), 0), max(created_at)
+  into v_quantidade, v_total, v_ultima
+  from public.encomendas where cliente_gestao_id = v_cliente.id;
+
   return jsonb_build_object(
-    'sucesso', true, 'cliente_id', v_cliente.id,
-    'plataforma', v_plataforma, 'utilizador', v_utilizador, 'url', v_url
+    'sucesso', true,
+    'cliente_id', v_cliente.id,
+    'cliente', to_jsonb(v_cliente),
+    'perfis', v_perfis,
+    'historico', v_historico,
+    'resumo', jsonb_build_object('encomendas', v_quantidade, 'total', v_total, 'ultima_compra', v_ultima),
+    'numero_encomenda_cliente', v_quantidade,
+    'plataforma', v_plataforma,
+    'utilizador', v_utilizador,
+    'url', v_url
   );
 end;
 $$;

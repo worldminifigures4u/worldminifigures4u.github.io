@@ -77,6 +77,20 @@
 
                     <div class="plataforma-envio" id="plataforma-envio" hidden>
                         <p class="plataforma-peso" id="plataforma-peso">Peso estimado: 0g</p>
+                        <label for="plataforma-telefone-cliente">Telefone</label>
+                        <input type="tel" id="plataforma-telefone-cliente" placeholder="Ex.: 912345678" autocomplete="off">
+                        <label for="plataforma-morada-cliente">Morada</label>
+                        <input type="text" id="plataforma-morada-cliente" placeholder="Rua, n&uacute;mero, localidade" autocomplete="off">
+                        <div class="plataforma-morada-grid">
+                            <div>
+                                <label for="plataforma-cp-cliente">C&oacute;digo postal</label>
+                                <input type="text" id="plataforma-cp-cliente" placeholder="Ex.: 1000-001" autocomplete="off">
+                            </div>
+                            <div>
+                                <label for="plataforma-cidade-cliente">Cidade</label>
+                                <input type="text" id="plataforma-cidade-cliente" placeholder="Ex.: Tomar" autocomplete="off">
+                            </div>
+                        </div>
                         <label for="plataforma-pais-envio">Pa&iacute;s de envio</label>
                         <select id="plataforma-pais-envio">
                                         <option value="portugal">Portugal</option>
@@ -115,6 +129,8 @@
                             <span>Total geral</span><strong id="plataforma-total">0,00 &euro;</strong>
                         </div>
                     </div>
+
+                    <div class="plataforma-cliente-ficha" id="plataforma-cliente-ficha" hidden></div>
 
                     <p id="plataforma-ajuda-ficheiros">Ao guardar, escolhe a pasta de destino. Dentro dela ser&aacute; criada uma pasta com o nome da encomenda.</p>
                 </div>

@@ -101,6 +101,11 @@ let encomendaPlataformaParaFicheiros = null;
 let perfilExternoDetetado = null;
 let stockNegativoConfirmado = new Set();
 
+function obterTextoOpcaoSelecionada(selectId) {
+    const select = document.getElementById(selectId);
+    return select?.selectedOptions?.[0]?.textContent?.trim() || select?.value || '';
+}
+
 function analisarLinkPerfilPlataforma(valor) {
     const texto = String(valor || '').trim();
     if (!texto) return null;
@@ -157,6 +162,26 @@ function obterNomeUtilizadorPlataforma() {
     return document.getElementById('wallapop-nome-cliente')?.value.trim() || '';
 }
 
+function obterDadosClientePlataforma() {
+    if (obterPlataformaAtual() !== 'OLX') {
+        return { telefone: '', morada: '', cp: '', cidade: '', pais: '' };
+    }
+    return {
+        telefone: document.getElementById('plataforma-telefone-cliente')?.value.trim() || '',
+        morada: document.getElementById('plataforma-morada-cliente')?.value.trim() || '',
+        cp: document.getElementById('plataforma-cp-cliente')?.value.trim() || '',
+        cidade: document.getElementById('plataforma-cidade-cliente')?.value.trim() || '',
+        pais: obterTextoOpcaoSelecionada('plataforma-pais-envio')
+    };
+}
+
+function limparDadosClientePlataforma() {
+    ['plataforma-telefone-cliente', 'plataforma-morada-cliente', 'plataforma-cp-cliente', 'plataforma-cidade-cliente'].forEach(id => {
+        const campo = document.getElementById(id);
+        if (campo) campo.value = '';
+    });
+}
+
 function obterCodigoEncomendaAtual() {
     return String(
         encomendaPlataformaEmEdicao?.codigo_encomenda
@@ -195,6 +220,65 @@ function atualizarBotaoRegistoPlataforma() {
         ? 'Guardar altera\u00e7\u00f5es'
         : `Registar encomenda ${obterPlataformaAtual()}`;
     botao.disabled = wallapopRegistoConcluido;
+}
+
+function formatarOrdinalEncomendaPlataforma(numero) {
+    const valor = Math.max(0, Number(numero) || 0);
+    if (valor <= 0) return '';
+    return `${valor}.\u00aa encomenda`;
+}
+
+function renderizarFichaClientePlataforma(dados) {
+    const caixa = document.getElementById('plataforma-cliente-ficha');
+    if (!caixa) return;
+    caixa.replaceChildren();
+    if (!dados?.sucesso) {
+        caixa.hidden = true;
+        return;
+    }
+
+    const cliente = dados.cliente || {};
+    const resumo = dados.resumo || {};
+    const historico = Array.isArray(dados.historico) ? dados.historico : [];
+    const totalEncomendas = Number(resumo.encomendas || dados.numero_encomenda_cliente || historico.length || 0);
+
+    const titulo = document.createElement('strong');
+    titulo.textContent = cliente.nome || dados.utilizador || 'Cliente externo';
+    const contador = document.createElement('span');
+    contador.textContent = totalEncomendas > 1
+        ? `${formatarOrdinalEncomendaPlataforma(totalEncomendas)} deste cliente`
+        : '1.\u00aa encomenda deste cliente';
+    caixa.append(titulo, contador);
+
+    const morada = [cliente.morada, cliente.cp, cliente.cidade, cliente.pais].filter(Boolean).join(', ');
+    if (morada) {
+        const linhaMorada = document.createElement('span');
+        linhaMorada.textContent = morada;
+        caixa.appendChild(linhaMorada);
+    }
+
+    const lista = document.createElement('ul');
+    historico.slice(0, 4).forEach(item => {
+        const linha = document.createElement('li');
+        const codigo = document.createElement('span');
+        codigo.textContent = item.codigo || '';
+        const origem = document.createElement('span');
+        origem.textContent = `${item.origem || ''} ${item.total ? formatarEuroWallapop(item.total) + ' \u20ac' : ''}`.trim();
+        linha.append(codigo, origem);
+        lista.appendChild(linha);
+    });
+    if (lista.childElementCount) caixa.appendChild(lista);
+    caixa.hidden = false;
+}
+
+async function carregarFichaClientePlataforma(encomendaId) {
+    if (!encomendaId) return null;
+    const { data, error } = await wallapopClient.rpc('obter_ficha_cliente_admin', {
+        p_encomenda_id: String(encomendaId)
+    });
+    if (error || data?.sucesso === false) throw error || new Error(data?.erro || 'Nao foi possivel carregar a ficha do cliente.');
+    renderizarFichaClientePlataforma(data);
+    return data;
 }
 
 function formatarEuroWallapop(valor) {
@@ -1255,7 +1339,7 @@ function obterItensEncomendaWallapop() {
 
 function extrairCodigoEncomendaDoTxt(conteudo) {
     const correspondencia = String(conteudo || '').match(
-        /(?:c[o\u00f3]digo\s+da\s+encomenda|encomenda)\s*:\s*([a-z0-9]+)/i
+        /(?:pedido|c[o\u00f3]digo\s+da\s+encomenda|encomenda)\s*:?\s*([a-z0-9]+)/i
     );
     return correspondencia ? correspondencia[1].toUpperCase() : '';
 }
@@ -1387,6 +1471,10 @@ async function carregarEncomendaPlataformaPorCodigo(codigo) {
     document.getElementById('plataforma-link-perfil').value = encomenda.perfil_externo_url || '';
     atualizarPerfilExternoPlataforma();
     document.getElementById('wallapop-referencia').value = encomenda.referencia_externa || '';
+    document.getElementById('plataforma-telefone-cliente').value = encomenda.telefone_cliente || '';
+    document.getElementById('plataforma-morada-cliente').value = encomenda.morada_cliente || '';
+    document.getElementById('plataforma-cp-cliente').value = encomenda.cp_cliente || '';
+    document.getElementById('plataforma-cidade-cliente').value = encomenda.cidade_cliente || '';
 
     if (encomenda.origem === 'OLX') {
         document.getElementById('plataforma-pais-envio').value = encomenda.regiao_envio || 'portugal';
@@ -1400,6 +1488,12 @@ async function carregarEncomendaPlataformaPorCodigo(codigo) {
     renderizarResultadosWallapop();
     renderizarSelecionadosWallapop();
     renderizarFolhaWallapop();
+    try {
+        await carregarFichaClientePlataforma(encomenda.id);
+    } catch (error) {
+        console.warn('Nao foi possivel carregar a ficha do cliente externo.', error);
+        renderizarFichaClientePlataforma(null);
+    }
     return encomenda;
 }
 
@@ -1434,9 +1528,11 @@ function novaEncomendaPlataforma() {
     document.getElementById('wallapop-nome-encomenda').value = '';
     document.getElementById('wallapop-nome-cliente').value = '';
     document.getElementById('plataforma-link-perfil').value = '';
+    limparDadosClientePlataforma();
     perfilExternoDetetado = null;
     atualizarPerfilExternoPlataforma();
     document.getElementById('wallapop-referencia').value = '';
+    renderizarFichaClientePlataforma(null);
     mostrarEdicaoPlataforma(null);
     atualizarModoPlataforma();
     renderizarSelecionadosWallapop();
@@ -1485,6 +1581,7 @@ async function registarEncomendaWallapop() {
     }
 
     const envio = plataforma === 'OLX' ? obterEnvioPlataforma() : { regiao: '', id: '', nome: '', portes: 0 };
+    const dadosCliente = obterDadosClientePlataforma();
     const total = calcularSubtotalPlataforma() + envio.portes;
     const naoReporStock = encomendaPlataformaEmEdicao
         ? await escolherReposicaoStockPlataforma()
@@ -1511,7 +1608,12 @@ async function registarEncomendaWallapop() {
             p_regiao_envio: envio.regiao || null,
             p_metodo_envio: envio.id || null,
             p_metodo_envio_nome: envio.nome || null,
-            p_portes: envio.portes || 0
+            p_portes: envio.portes || 0,
+            p_telefone_cliente: dadosCliente.telefone || null,
+            p_morada_cliente: dadosCliente.morada || null,
+            p_cp_cliente: dadosCliente.cp || null,
+            p_cidade_cliente: dadosCliente.cidade || null,
+            p_pais_cliente: dadosCliente.pais || null
         };
         const nomeFuncao = encomendaPlataformaEmEdicao
             ? 'atualizar_encomenda_plataforma_admin'
@@ -1545,7 +1647,13 @@ async function registarEncomendaWallapop() {
             if (associacao.error || associacao.data?.sucesso === false) {
                 avisoPerfil = ' A encomenda foi guardada, mas o perfil do cliente n\u00e3o ficou associado.';
                 console.error('Erro ao associar perfil externo:', associacao.error || associacao.data);
+            } else {
+                renderizarFichaClientePlataforma(associacao.data);
+                const numeroCliente = Number(associacao.data?.resumo?.encomendas || associacao.data?.numero_encomenda_cliente || 0);
+                if (numeroCliente > 1) avisoPerfil = ` ${formatarOrdinalEncomendaPlataforma(numeroCliente)} deste cliente.`;
             }
+        } else {
+            renderizarFichaClientePlataforma(null);
         }
         const encomendaGuardada = {
             id: data.encomenda?.id || encomendaPlataformaEmEdicao?.id,
@@ -1583,6 +1691,7 @@ async function registarEncomendaWallapop() {
             document.getElementById('wallapop-nome-encomenda').value = '';
             document.getElementById('wallapop-nome-cliente').value = '';
             document.getElementById('plataforma-link-perfil').value = '';
+            limparDadosClientePlataforma();
             document.getElementById('wallapop-referencia').value = '';
             perfilExternoDetetado = null;
             atualizarPerfilExternoPlataforma();
@@ -1661,6 +1770,10 @@ document.getElementById('btn-nova-encomenda-plataforma')?.addEventListener('clic
 document.getElementById('wallapop-nome-encomenda').addEventListener('input', marcarWallapopPorRegistar);
 document.getElementById('wallapop-nome-cliente').addEventListener('input', marcarWallapopPorRegistar);
 document.getElementById('wallapop-referencia').addEventListener('input', marcarWallapopPorRegistar);
+document.getElementById('plataforma-telefone-cliente')?.addEventListener('input', marcarWallapopPorRegistar);
+document.getElementById('plataforma-morada-cliente')?.addEventListener('input', marcarWallapopPorRegistar);
+document.getElementById('plataforma-cp-cliente')?.addEventListener('input', marcarWallapopPorRegistar);
+document.getElementById('plataforma-cidade-cliente')?.addEventListener('input', marcarWallapopPorRegistar);
 document.getElementById('plataforma-tipo').addEventListener('change', atualizarModoPlataforma);
 document.getElementById('plataforma-link-perfil').addEventListener('input', () => {
     atualizarPerfilExternoPlataforma();

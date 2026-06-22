@@ -3516,3 +3516,54 @@ body.mapas-produto-modal-aberto {
     margin:0;
     color:#bbb;
 }
+
+.plataforma-morada-grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:10px;
+}
+
+.plataforma-cliente-ficha{
+    margin-top:12px;
+    padding:12px;
+    border:1px solid #3a3a3a;
+    border-radius:6px;
+    background:#171717;
+    color:#ddd;
+}
+
+.plataforma-cliente-ficha strong{
+    display:block;
+    margin-bottom:6px;
+    color:#ffc400;
+}
+
+.plataforma-cliente-ficha span{
+    display:block;
+    margin-top:4px;
+    color:#aaa;
+    font-size:13px;
+}
+
+.plataforma-cliente-ficha ul{
+    margin:8px 0 0;
+    padding:0;
+    list-style:none;
+    display:grid;
+    gap:5px;
+}
+
+.plataforma-cliente-ficha li{
+    display:flex;
+    justify-content:space-between;
+    gap:10px;
+    padding-top:5px;
+    border-top:1px solid #292929;
+    font-size:13px;
+}
+
+@media (max-width: 700px){
+    .plataforma-morada-grid{
+        grid-template-columns:1fr;
+    }
+}

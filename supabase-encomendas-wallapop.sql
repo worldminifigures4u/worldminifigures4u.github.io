@@ -10,7 +10,12 @@ alter table public.produtos add column if not exists fornecedores jsonb not null
 alter table public.encomendas
   add column if not exists origem text not null default 'Site',
   add column if not exists referencia_externa text,
-  add column if not exists stock_reposto boolean not null default false;
+  add column if not exists stock_reposto boolean not null default false,
+  add column if not exists telefone_cliente text,
+  add column if not exists morada_cliente text,
+  add column if not exists cp_cliente text,
+  add column if not exists cidade_cliente text,
+  add column if not exists pais_cliente text;
 
 alter table public.encomendas alter column id_cliente drop not null;
 
@@ -49,6 +54,10 @@ $$;
 revoke execute on function public.listar_produtos_plataforma_admin() from public, anon;
 grant execute on function public.listar_produtos_plataforma_admin() to authenticated;
 
+drop function if exists public.criar_encomenda_plataforma_admin(
+  text, jsonb, text, text, text, text, text, numeric
+);
+
 create or replace function public.criar_encomenda_plataforma_admin(
   p_plataforma text,
   p_itens jsonb,
@@ -57,7 +66,12 @@ create or replace function public.criar_encomenda_plataforma_admin(
   p_regiao_envio text default null,
   p_metodo_envio text default null,
   p_metodo_envio_nome text default null,
-  p_portes numeric default 0
+  p_portes numeric default 0,
+  p_telefone_cliente text default null,
+  p_morada_cliente text default null,
+  p_cp_cliente text default null,
+  p_cidade_cliente text default null,
+  p_pais_cliente text default null
 )
 returns jsonb
 language plpgsql
@@ -202,7 +216,8 @@ begin
   insert into public.encomendas (
     codigo_encomenda, id_cliente, nome_cliente, produtos, produtos_texto,
     produtos_texto_cliente, regiao_envio, metodo_envio, metodo_envio_nome,
-    portes, peso_total, total, metodo_pagamento, estado, origem, referencia_externa
+    portes, peso_total, total, metodo_pagamento, estado, origem, referencia_externa,
+    telefone_cliente, morada_cliente, cp_cliente, cidade_cliente, pais_cliente
   ) values (
     v_codigo,
     null,
@@ -219,7 +234,12 @@ begin
     v_plataforma,
     'A aguardar pagamento',
     v_plataforma,
-    nullif(trim(p_referencia_externa), '')
+    nullif(trim(p_referencia_externa), ''),
+    nullif(trim(coalesce(p_telefone_cliente, '')), ''),
+    nullif(trim(coalesce(p_morada_cliente, '')), ''),
+    nullif(trim(coalesce(p_cp_cliente, '')), ''),
+    nullif(trim(coalesce(p_cidade_cliente, '')), ''),
+    nullif(trim(coalesce(p_pais_cliente, '')), '')
   ) returning * into v_encomenda;
 
   return jsonb_build_object('sucesso', true, 'encomenda', to_jsonb(v_encomenda));
@@ -227,11 +247,11 @@ end;
 $$;
 
 revoke execute on function public.criar_encomenda_plataforma_admin(
-  text, jsonb, text, text, text, text, text, numeric
+  text, jsonb, text, text, text, text, text, numeric, text, text, text, text, text
 ) from public, anon;
 
 grant execute on function public.criar_encomenda_plataforma_admin(
-  text, jsonb, text, text, text, text, text, numeric
+  text, jsonb, text, text, text, text, text, numeric, text, text, text, text, text
 ) to authenticated;
 
 create or replace function public.cancelar_encomenda_plataforma_admin(
@@ -354,6 +374,9 @@ to authenticated;
 drop function if exists public.atualizar_encomenda_plataforma_admin(
   text, jsonb, text, text, text, text, text, numeric
 );
+drop function if exists public.atualizar_encomenda_plataforma_admin(
+  text, jsonb, text, text, text, text, text, numeric, text[]
+);
 
 create or replace function public.atualizar_encomenda_plataforma_admin(
   p_encomenda_id text,
@@ -364,6 +387,11 @@ create or replace function public.atualizar_encomenda_plataforma_admin(
   p_metodo_envio text default null,
   p_metodo_envio_nome text default null,
   p_portes numeric default 0,
+  p_telefone_cliente text default null,
+  p_morada_cliente text default null,
+  p_cp_cliente text default null,
+  p_cidade_cliente text default null,
+  p_pais_cliente text default null,
   p_nao_repor_ids text[] default array[]::text[]
 )
 returns jsonb
@@ -554,6 +582,11 @@ begin
       peso_total = v_peso_total,
       total = v_subtotal + v_portes,
       referencia_externa = nullif(trim(p_referencia_externa), ''),
+      telefone_cliente = nullif(trim(coalesce(p_telefone_cliente, '')), ''),
+      morada_cliente = nullif(trim(coalesce(p_morada_cliente, '')), ''),
+      cp_cliente = nullif(trim(coalesce(p_cp_cliente, '')), ''),
+      cidade_cliente = nullif(trim(coalesce(p_cidade_cliente, '')), ''),
+      pais_cliente = nullif(trim(coalesce(p_pais_cliente, '')), ''),
       stock_reposto = false
   where id::text = p_encomenda_id
   returning * into v_encomenda;
@@ -563,9 +596,9 @@ end;
 $$;
 
 revoke execute on function public.atualizar_encomenda_plataforma_admin(
-  text, jsonb, text, text, text, text, text, numeric, text[]
+  text, jsonb, text, text, text, text, text, numeric, text, text, text, text, text, text[]
 ) from public, anon;
 
 grant execute on function public.atualizar_encomenda_plataforma_admin(
-  text, jsonb, text, text, text, text, text, numeric, text[]
+  text, jsonb, text, text, text, text, text, numeric, text, text, text, text, text, text[]
 ) to authenticated;
