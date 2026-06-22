@@ -438,7 +438,7 @@ async function carregarProdutosCompletosPedidoFornecedor(pedido) {
     const ids = [...new Set(pedido.itens.map(item => item.id).filter(Boolean).map(String))];
     const skus = [...new Set(pedido.itens.map(item => String(item.sku || '').trim()).filter(Boolean))];
     const referencias = [...new Set(pedido.itens.map(item => String(item.referencia || '').trim()).filter(Boolean))];
-    const campos = 'id,nome,sku,referencia,tema,subtema,stock,preco,imagens';
+    const campos = 'id,nome,sku,referencia,tema,subtema,stock,preco,imagens,novidade';
     const produtos = [];
 
     const executarConsulta = async (coluna, valores) => {
@@ -492,6 +492,7 @@ async function imprimirPedidoFornecedor(id) {
         const produtoAtual = obterProdutoParaPedidoFornecedor(item, produtosImpressao) || item;
         const subtemaProduto = produtoAtual.subtema && produtoAtual.subtema !== 'semsubtema' ? produtoAtual.subtema : '';
         const subtemaItem = item.subtema && item.subtema !== 'semsubtema' ? item.subtema : '';
+        const novidade = obterBooleanoProdutoFornecedor(produtoAtual.novidade ?? item.novidade);
         return `
             <tr>
                 <td>${escaparHtmlFornecedor(produtoAtual.nome || item.nome || '')}</td>
@@ -499,6 +500,7 @@ async function imprimirPedidoFornecedor(id) {
                 <td>${escaparHtmlFornecedor(subtemaProduto || subtemaItem || '')}</td>
                 <td>${escaparHtmlFornecedor(produtoAtual.referencia || item.referencia || '')}</td>
                 <td class="quantidade">${escaparHtmlFornecedor(item.quantidade || 0)}</td>
+                <td class="novidade">${novidade ? 'NOVA' : ''}</td>
             </tr>`;
     }).join('');
 
@@ -517,6 +519,7 @@ async function imprimirPedidoFornecedor(id) {
         th, td { border: 1px solid #444; padding: 7px 8px; text-align: left; vertical-align: top; }
         th { background: #f2c200; color: #000; font-weight: 700; }
         td.quantidade, th.quantidade { width: 90px; text-align: center; }
+        td.novidade, th.novidade { width: 70px; text-align: center; font-weight: 700; }
     </style>
 </head>
 <body>
@@ -529,10 +532,11 @@ async function imprimirPedidoFornecedor(id) {
                 <th>Subtema</th>
                 <th>Referência</th>
                 <th class="quantidade">Quantidade encomendada</th>
+                <th class="novidade">Nota</th>
             </tr>
         </thead>
         <tbody>
-            ${linhas || '<tr><td colspan="5">Sem produtos.</td></tr>'}
+            ${linhas || '<tr><td colspan="6">Sem produtos.</td></tr>'}
         </tbody>
     </table>
     <script>
@@ -946,6 +950,7 @@ async function carregarCatalogoFornecedores() {
         && Object.prototype.hasOwnProperty.call(produto, "tema")
         && Object.prototype.hasOwnProperty.call(produto, "subtema")
         && Object.prototype.hasOwnProperty.call(produto, "referencia")
+        && Object.prototype.hasOwnProperty.call(produto, "novidade")
     )) {
         try {
             const produtosDiretos = await carregarCatalogoFornecedoresDireto();
@@ -1107,6 +1112,7 @@ function abrirEdicaoProdutoMapa(produtoId) {
     criarInputEdicaoMapa(secaoIdentificacao, "mapas-editar-sku", "SKU", produto.sku || "", "text", { required: true });
     criarInputEdicaoMapa(secaoIdentificacao, "mapas-editar-top", "Top", obterTopProdutoFornecedor(produto) || "");
     criarCheckboxEdicaoMapa(secaoIdentificacao, "mapas-editar-descontinuado", "Descontinuado", obterBooleanoProdutoFornecedor(produto.descontinuado));
+    criarCheckboxEdicaoMapa(secaoIdentificacao, "mapas-editar-novidade", "Novidade", obterBooleanoProdutoFornecedor(produto.novidade));
     campos.appendChild(secaoIdentificacao);
 
     const secaoDetalhes = criarSecaoEdicaoMapa("Detalhes", "mapas-produto-secao-detalhes");
@@ -1154,6 +1160,7 @@ function lerProdutoEditadoMapa() {
         sku: normalizarSkuFornecedor(document.getElementById("mapas-editar-sku").value),
         top: document.getElementById("mapas-editar-top").value.trim(),
         descontinuado: document.getElementById("mapas-editar-descontinuado").checked,
+        novidade: document.getElementById("mapas-editar-novidade").checked,
         preco: Number(document.getElementById("mapas-editar-preco").value),
         peso: Number(document.getElementById("mapas-editar-peso").value || 10),
         stock: Math.max(0, Math.floor(Number(document.getElementById("mapas-editar-stock").value || 0))),
@@ -1621,6 +1628,7 @@ async function criarPedidoFornecedor() {
         estado_fornecedor: '',
         origem_ajuste: '',
         recebido: 0,
+        novidade: obterBooleanoProdutoFornecedor(item.novidade),
         stock_no_momento: Number(item.stock || 0),
         preco: Number(item.preco || 0),
         imagens: item.imagens || []
@@ -1724,6 +1732,7 @@ function criarItemFornecedorAPartirSelecao(item, origemAjuste = '') {
         estado_fornecedor: '',
         origem_ajuste: origemAjuste,
         recebido: 0,
+        novidade: obterBooleanoProdutoFornecedor(item.novidade),
         stock_no_momento: Number(item.stock || 0),
         preco: Number(item.preco || 0),
         imagens: item.imagens || []

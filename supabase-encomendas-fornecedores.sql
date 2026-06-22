@@ -3,6 +3,9 @@
 
 create extension if not exists pgcrypto;
 
+alter table public.produtos
+    add column if not exists novidade boolean not null default false;
+
 create table if not exists public.encomendas_fornecedores (
     id uuid primary key default gen_random_uuid(),
     codigo text not null unique,
@@ -304,7 +307,8 @@ begin
         if produto_id_text is not null and qtd_recebida > 0 then
             update public.produtos
             set stock = coalesce(stock, 0) + qtd_recebida,
-                ativo = (coalesce(stock, 0) + qtd_recebida) > 0
+                ativo = (coalesce(stock, 0) + qtd_recebida) > 0,
+                novidade = false
             where id::text = produto_id_text;
         end if;
     end loop;

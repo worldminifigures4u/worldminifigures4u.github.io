@@ -9,6 +9,9 @@ alter table public.produtos
   add column if not exists descontinuado boolean not null default false;
 
 alter table public.produtos
+  add column if not exists novidade boolean not null default false;
+
+alter table public.produtos
   add column if not exists fornecedores jsonb not null default '{}'::jsonb;
 
 create or replace function public.importar_produtos_admin(p_produtos jsonb)
@@ -33,7 +36,7 @@ begin
   for v_produto in select value from jsonb_array_elements(p_produtos)
   loop
     insert into public.produtos (
-      sku, referencia, nome, preco, top, descontinuado, stock, tema, subtema, peso, fornecedores, ativo
+      sku, referencia, nome, preco, top, descontinuado, novidade, stock, tema, subtema, peso, fornecedores, ativo
     ) values (
       upper(trim(v_produto->>'sku')),
       nullif(trim(v_produto->>'referencia'), ''),
@@ -41,6 +44,10 @@ begin
       (v_produto->>'preco')::numeric,
       nullif(trim(v_produto->>'top'), ''),
       coalesce((v_produto->>'descontinuado')::boolean, false),
+      case
+        when lower(trim(coalesce(v_produto->>'novidade', ''))) in ('1', 'true', 't', 'yes', 'y', 'sim', 's', 'x', 'verdadeiro') then true
+        else false
+      end,
       (v_produto->>'stock')::integer,
       trim(v_produto->>'tema'),
       coalesce(nullif(trim(v_produto->>'subtema'), ''), 'semsubtema'),
@@ -54,6 +61,7 @@ begin
       preco = excluded.preco,
       top = excluded.top,
       descontinuado = excluded.descontinuado,
+      novidade = excluded.novidade,
       stock = excluded.stock,
       tema = excluded.tema,
       subtema = excluded.subtema,
@@ -93,6 +101,7 @@ begin
       'preco', coalesce(produto.preco, 0),
       'top', coalesce(produto.top, ''),
       'descontinuado', coalesce(produto.descontinuado, false),
+      'novidade', coalesce(produto.novidade, false),
       'peso', coalesce(produto.peso, 10),
       'tema', coalesce(produto.tema, ''),
       'subtema', coalesce(produto.subtema, ''),

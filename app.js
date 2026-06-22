@@ -915,7 +915,7 @@ function normalizarCabecalhoStock(valor) {
         .toLowerCase();
 }
 
-const COLUNAS_CATALOGO_BASE = new Set(['nome', 'preco', 'sku', 'top', 'descontinuado', 'descontinuada', 'descontinuados', 'descontinuadas', 'discontinued', 'stock', 'tema', 'subtema', 'peso', 'referencia']);
+const COLUNAS_CATALOGO_BASE = new Set(['nome', 'preco', 'sku', 'top', 'descontinuado', 'descontinuada', 'descontinuados', 'descontinuadas', 'discontinued', 'novidade', 'nova', 'novo', 'stock', 'tema', 'subtema', 'peso', 'referencia']);
 const FORNECEDORES_IMPORTACAO = [
     { chave:'lote50', nome:'Lote 50' },
     { chave:'ruishengtu', nome:'Ruishengtu' },
@@ -1279,6 +1279,7 @@ async function analisarFicheiroCatalogoAdmin(input) {
             sku:obterIndiceColuna(cabecalhos, 'sku'),
             top:obterIndiceColuna(cabecalhos, 'top', false),
             descontinuado:obterIndiceColuna(cabecalhos, ['descontinuado', 'descontinuada', 'descontinuados', 'descontinuadas', 'discontinued'], false),
+            novidade:obterIndiceColuna(cabecalhos, ['novidade', 'nova', 'novo'], false),
             referencia:obterIndiceColuna(cabecalhos, 'referencia', false),
             stock:obterIndiceColuna(cabecalhos, 'stock'),
             tema:obterIndiceColuna(cabecalhos, 'tema'),
@@ -1295,6 +1296,7 @@ async function analisarFicheiroCatalogoAdmin(input) {
             const sku = normalizarTextoSku(linha[colunas.sku]).replace(/[^A-Z0-9]/g, '');
             const top = colunas.top >= 0 ? String(linha[colunas.top] || '').trim() : '';
             const descontinuado = colunas.descontinuado >= 0 ? obterBooleanoImportacao(linha[colunas.descontinuado]) : false;
+            const novidade = colunas.novidade >= 0 ? obterBooleanoImportacao(linha[colunas.novidade]) : false;
             const referencia = colunas.referencia >= 0 ? String(linha[colunas.referencia] || '').trim() : '';
             const preco = Number(linha[colunas.preco]);
             const stock = Number(linha[colunas.stock]);
@@ -1314,6 +1316,7 @@ async function analisarFicheiroCatalogoAdmin(input) {
                 sku,
                 top,
                 descontinuado,
+                novidade,
                 referencia,
                 stock,
                 tema,
@@ -1726,6 +1729,8 @@ function preencherEdicaoProdutoAdmin(produtoId) {
     document.getElementById('admin-editar-imagens').value = imagensParaTextoAdmin(produto);
     document.getElementById('admin-editar-observacoes').value = produto.observacoes || '';
     document.getElementById('admin-editar-ativo').checked = produto.ativo !== false;
+    const novidadeEditar = document.getElementById('admin-editar-novidade');
+    if(novidadeEditar) novidadeEditar.checked = Boolean(produto.novidade);
 
     if(status) status.textContent = '';
     atualizarPreviewEditarImagensAdmin();
@@ -1756,6 +1761,7 @@ function lerProdutoEditadoAdmin() {
     const stock = Number(document.getElementById('admin-editar-stock').value || 0);
     const observacoes = document.getElementById('admin-editar-observacoes').value.trim();
     const ativo = document.getElementById('admin-editar-ativo').checked;
+    const novidade = document.getElementById('admin-editar-novidade')?.checked || false;
     const imagens = obterUrlsImagensEditarAdmin();
 
     if(!id || !nome || !sku || !tema || !Number.isFinite(preco) || preco < 0 || !Number.isFinite(peso) || peso < 1 || !Number.isInteger(stock) || stock < 0) {
@@ -1776,6 +1782,7 @@ function lerProdutoEditadoAdmin() {
             stock,
             observacoes,
             ativo,
+            novidade,
             imagens
         }
     };
@@ -1863,6 +1870,7 @@ async function criarProdutoAdmin(event) {
         const stock = Number(document.getElementById('admin-produto-stock').value || 0);
         const observacoes = document.getElementById('admin-produto-observacoes').value.trim();
         const ativo = document.getElementById('admin-produto-ativo').checked;
+        const novidade = document.getElementById('admin-produto-novidade')?.checked !== false;
         const imagens = obterUrlsImagensAdmin();
 
         if(!nome || !sku || !tema || !Number.isFinite(preco) || preco < 0 || !Number.isFinite(peso) || peso < 1 || !Number.isInteger(stock) || stock < 0) {
@@ -1885,6 +1893,7 @@ async function criarProdutoAdmin(event) {
             stock,
             observacoes,
             ativo,
+            novidade,
             imagens
         };
 
@@ -1899,6 +1908,8 @@ async function criarProdutoAdmin(event) {
         todosOsProdutos.push({ ...novoProduto, id:data.id });
         document.getElementById('form-admin-produto').reset();
         document.getElementById('admin-produto-ativo').checked = true;
+        const novidadeInput = document.getElementById('admin-produto-novidade');
+        if(novidadeInput) novidadeInput.checked = true;
         atualizarPreviewImagensAdmin();
         mostrarMensagem(status, 'Produto criado com sucesso.', 'msg-sucesso');
         await carregarProdutosAdminDaNuvem();

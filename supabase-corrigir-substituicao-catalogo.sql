@@ -2,6 +2,7 @@
 alter table public.produtos add column if not exists referencia text;
 alter table public.produtos add column if not exists top text;
 alter table public.produtos add column if not exists descontinuado boolean not null default false;
+alter table public.produtos add column if not exists novidade boolean not null default false;
 alter table public.produtos add column if not exists fornecedores jsonb not null default '{}'::jsonb;
 
 create or replace function public.importar_produtos_admin(p_produtos jsonb)
@@ -32,6 +33,7 @@ begin
       preco,
       top,
       descontinuado,
+      novidade,
       stock,
       tema,
       subtema,
@@ -45,6 +47,10 @@ begin
       (v_produto->>'preco')::numeric,
       nullif(trim(v_produto->>'top'), ''),
       coalesce((v_produto->>'descontinuado')::boolean, false),
+      case
+        when lower(trim(coalesce(v_produto->>'novidade', ''))) in ('1', 'true', 't', 'yes', 'y', 'sim', 's', 'x', 'verdadeiro') then true
+        else false
+      end,
       (v_produto->>'stock')::integer,
       trim(v_produto->>'tema'),
       coalesce(nullif(trim(v_produto->>'subtema'), ''), 'semsubtema'),
@@ -58,6 +64,7 @@ begin
       preco = excluded.preco,
       top = excluded.top,
       descontinuado = excluded.descontinuado,
+      novidade = excluded.novidade,
       stock = excluded.stock,
       tema = excluded.tema,
       subtema = excluded.subtema,
