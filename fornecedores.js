@@ -371,6 +371,41 @@ function escaparHtmlFornecedor(valor) {
     }[caracter]));
 }
 
+function limparCampoExportacaoFornecedor(valor) {
+    return String(valor ?? '').replace(/[\t\r\n]+/g, ' ').trim();
+}
+
+function criarNomeFicheiroExportacaoFornecedor(pedido) {
+    const codigo = limparCampoExportacaoFornecedor(pedido?.codigo || 'encomenda').replace(/[^a-z0-9_-]+/gi, '-');
+    const data = new Date().toISOString().slice(0, 19).replace(/[-:T]/g, '');
+    return `${codigo || 'encomenda'}-${data}.txt`;
+}
+
+function obterTextoExportacaoPedidoFornecedor(pedido) {
+    return (pedido?.itens || [])
+        .map(item => {
+            const referencia = limparCampoExportacaoFornecedor(item.referencia);
+            const quantidade = Math.max(0, Math.floor(Number(item.quantidade || 0)));
+            return `${referencia}\t${quantidade}`;
+        })
+        .filter(Boolean)
+        .join('\r\n');
+}
+
+function exportarTxtPedidoFornecedor(pedido) {
+    const texto = obterTextoExportacaoPedidoFornecedor(pedido);
+    if (!texto) return;
+    const blob = new Blob([texto], { type: 'text/plain;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = criarNomeFicheiroExportacaoFornecedor(pedido);
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
 function fundirProdutosFornecedor(produtos) {
     if (!Array.isArray(produtos) || !produtos.length) return;
     produtos.forEach(produto => {
@@ -1599,6 +1634,7 @@ async function criarPedidoFornecedor() {
         renderizarResultadosFornecedor();
         renderizarSelecionadosFornecedor();
         renderizarPedidosFornecedores();
+        exportarTxtPedidoFornecedor(pedido);
         definirStatusFornecedor(`Encomenda ${pedido.codigo} criada.`);
     } catch (error) {
         console.error(error);
@@ -1755,6 +1791,7 @@ async function adicionarSelecaoAoPedidoFornecedor(id) {
         fornecedorSelecao = [];
         guardarSelecaoFornecedor();
         renderizarSelecionadosFornecedor();
+        exportarTxtPedidoFornecedor(atualizado);
         definirStatusFornecedor(`Encomenda ${atualizado.codigo} completada com os novos produtos.`);
     } catch (error) {
         console.error(error);
