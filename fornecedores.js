@@ -1266,15 +1266,18 @@ function renderizarContadorMapa(caixa, resultados, fornecedor) {
     const contador = document.createElement("div");
     contador.className = "mapas-contador-filtros";
     contador.setAttribute("aria-live", "polite");
+
+    const pesquisa = document.getElementById("fornecedor-pesquisa");
+    if (pesquisa) contador.appendChild(pesquisa);
+
     contador.append(
         criarItemContadorMapa(resultados.length === 1 ? "figura" : "figuras", resultados.length, true),
-        criarItemContadorMapa("Top", contadores.top),
-        criarItemContadorMapa("Descontinuadas", contadores.descontinuado),
+        criarItemContadorMapa("Disponivel", contadores.disponivel),
         criarItemContadorMapa("OS", contadores.os),
         criarItemContadorMapa("EX", contadores.ex),
-        criarItemContadorMapa("em stock", contadores.stock),
-        criarItemContadorMapa("Disponivel", contadores.disponivel),
-        criarItemContadorMapa("Marcado no mapa", contadores.encomendado)
+        criarItemContadorMapa("Top", contadores.top),
+        criarItemContadorMapa("Descontinuadas", contadores.descontinuado),
+        criarItemContadorMapa("em stock", contadores.stock)
     );
     caixa.appendChild(contador);
 }
@@ -2268,7 +2271,6 @@ function ligarEventoFornecedor(id, evento, handler) {
 }
 
 ligarEventoFornecedor('fornecedor-pesquisa', 'input', renderizarResultadosFornecedor);
-ligarEventoFornecedor('btn-pesquisar-fornecedor', 'click', renderizarResultadosFornecedor);
 ligarEventoFornecedor('fornecedor-nome', 'change', renderizarResultadosFornecedor);
 ligarEventoFornecedor('fornecedor-ordenacao-stock', 'change', renderizarResultadosFornecedor);
 ligarEventoFornecedor('fornecedor-filtro-marcacao', 'change', renderizarResultadosFornecedor);
