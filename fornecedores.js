@@ -1263,12 +1263,11 @@ function renderizarContadorMapa(caixa, resultados, fornecedor) {
         stock: 0
     });
 
-    const contador = document.createElement("div");
+    const contadorExistente = document.getElementById("fornecedor-contador-barra");
+    const contador = contadorExistente || document.createElement("div");
     contador.className = "mapas-contador-filtros";
     contador.setAttribute("aria-live", "polite");
-
-    const pesquisa = document.getElementById("fornecedor-pesquisa");
-    if (pesquisa) contador.appendChild(pesquisa);
+    contador.querySelectorAll(".mapas-contador-item").forEach(item => item.remove());
 
     contador.append(
         criarItemContadorMapa(resultados.length === 1 ? "figura" : "figuras", resultados.length, true),
@@ -1279,7 +1278,7 @@ function renderizarContadorMapa(caixa, resultados, fornecedor) {
         criarItemContadorMapa("Descontinuadas", contadores.descontinuado),
         criarItemContadorMapa("em stock", contadores.stock)
     );
-    caixa.appendChild(contador);
+    if (!contadorExistente) caixa.appendChild(contador);
 }
 
 function renderizarResultadosFornecedorMapa(caixa, resultados, fornecedor) {
