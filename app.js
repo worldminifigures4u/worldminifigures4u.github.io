@@ -1154,11 +1154,11 @@ async function confirmarImportacaoStockAdmin() {
         for(let inicio = 0; inicio < importacao.alteracoes.length; inicio += tamanhoLote) {
             const lote = importacao.alteracoes.slice(inicio, inicio + tamanhoLote);
             const resultados = await Promise.all(lote.map(async item => {
-                const { data, error } = await dbClient
-                    .from('produtos')
-                    .update({ stock:item.stockNovo, ativo:item.ativoNovo })
-                    .eq('sku', item.sku)
-                    .select('sku');
+                const { data, error } = await dbClient.rpc('atualizar_stock_produto_admin', {
+                    p_sku: item.sku,
+                    p_stock: item.stockNovo,
+                    p_ativo: item.ativoNovo
+                });
                 if(error) throw error;
                 if(!data || data.length === 0) throw new Error('Produto não atualizado.');
                 return item.sku;
@@ -1880,15 +1880,13 @@ async function criarProdutoAdmin(event) {
             imagens
         };
 
-        const { data, error } = await dbClient
-            .from('produtos')
-            .insert([novoProduto])
-            .select('id, sku')
-            .single();
+        const { data, error } = await dbClient.rpc('criar_produto_admin', {
+            p_produto: novoProduto
+        });
 
         if(error) throw error;
 
-        todosOsProdutos.push({ ...novoProduto, id:data.id });
+        todosOsProdutos.push({ ...novoProduto, ...data });
         document.getElementById('form-admin-produto').reset();
         document.getElementById('admin-produto-ativo').checked = true;
         const novidadeInput = document.getElementById('admin-produto-novidade');

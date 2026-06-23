@@ -1771,10 +1771,10 @@ async function sincronizarOsProdutosFornecedor(itens, fornecedorNome) {
         if (!produtoAtual?.id) continue;
         const fornecedores = definirFornecedorOsNoProduto(produtoAtual, fornecedorNome);
         if (!fornecedores) continue;
-        const { error } = await fornecedoresClient
-            .from('produtos')
-            .update({ fornecedores })
-            .eq('id', produtoAtual.id);
+        const { error } = await fornecedoresClient.rpc("atualizar_fornecedores_produto_admin", {
+            p_id: produtoAtual.id,
+            p_fornecedores: fornecedores
+        });
         if (error) throw error;
         fornecedorProdutos = fornecedorProdutos.map(produto =>
             String(produto.id) === String(produtoAtual.id) ? { ...produto, fornecedores } : produto
