@@ -546,6 +546,70 @@ $$;
 revoke execute on function public.guardar_perfis_cliente_admin(uuid, jsonb) from public, anon;
 grant execute on function public.guardar_perfis_cliente_admin(uuid, jsonb) to authenticated;
 
+create or replace function public.obter_ficha_cliente_por_perfil_admin(p_url_perfil text)
+returns jsonb
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_normalizado jsonb;
+  v_cliente public.clientes_gestao%rowtype;
+  v_perfis jsonb;
+  v_historico jsonb;
+  v_total numeric;
+  v_quantidade integer;
+  v_ultima timestamptz;
+begin
+  if lower(coalesce(auth.jwt() ->> 'email', '')) <> 'worldminifigures4u@gmail.com' then
+    raise exception 'Acesso reservado ao administrador';
+  end if;
+
+  v_normalizado := public.normalizar_url_perfil_externo_admin(p_url_perfil);
+
+  select cg.* into v_cliente
+  from public.clientes_perfis_externos pe
+  join public.clientes_gestao cg on cg.id = pe.cliente_id
+  where pe.plataforma = v_normalizado->>'plataforma'
+    and pe.utilizador_normalizado = v_normalizado->>'utilizador_normalizado'
+  limit 1;
+
+  if not found then
+    return jsonb_build_object(
+      'sucesso', false,
+      'erro', 'Ficha de cliente nao encontrada para este perfil',
+      'perfil', v_normalizado
+    );
+  end if;
+
+  select coalesce(jsonb_agg(jsonb_build_object(
+    'plataforma', plataforma, 'utilizador', utilizador, 'url', url_perfil
+  ) order by plataforma, utilizador), '[]'::jsonb)
+  into v_perfis from public.clientes_perfis_externos where cliente_id = v_cliente.id;
+
+  select coalesce(jsonb_agg(jsonb_build_object(
+    'id', id, 'codigo', codigo_encomenda, 'data', created_at, 'origem', origem,
+    'estado', estado, 'total', total
+  ) order by created_at desc), '[]'::jsonb)
+  into v_historico from public.encomendas where cliente_gestao_id = v_cliente.id;
+
+  select count(*), coalesce(sum(total) filter (where estado <> 'Cancelado'), 0), max(created_at)
+  into v_quantidade, v_total, v_ultima
+  from public.encomendas where cliente_gestao_id = v_cliente.id;
+
+  return jsonb_build_object(
+    'sucesso', true,
+    'cliente', to_jsonb(v_cliente),
+    'perfis', v_perfis,
+    'historico', v_historico,
+    'resumo', jsonb_build_object('encomendas', v_quantidade, 'total', v_total, 'ultima_compra', v_ultima)
+  );
+end;
+$$;
+
+revoke execute on function public.obter_ficha_cliente_por_perfil_admin(text) from public, anon;
+grant execute on function public.obter_ficha_cliente_por_perfil_admin(text) to authenticated;
+
 create or replace function public.obter_ficha_cliente_por_id_admin(p_cliente_id uuid)
 returns jsonb
 language plpgsql
