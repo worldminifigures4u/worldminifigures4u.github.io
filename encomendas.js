@@ -950,7 +950,7 @@ function criarCardEncomenda(encomenda) {
 function encomendasFiltradasAdmin() {
     const pesquisa = normalizarEncomenda(document.getElementById('pesquisa-encomendas-admin').value);
     const estado = document.getElementById('filtro-estado-encomendas-admin').value;
-    return encomendasAdmin.filter(encomenda => {
+    const filtradas = encomendasAdmin.filter(encomenda => {
         const correspondeEstado = estado === 'todos' || estadoNormalizadoEncomenda(encomenda.estado) === estado;
         const texto = normalizarEncomenda([
             encomenda.codigo_encomenda,
@@ -961,6 +961,17 @@ function encomendasFiltradasAdmin() {
         ].join(' '));
         return correspondeEstado && (!pesquisa || texto.includes(pesquisa));
     });
+
+    if (estado === 'Pago') {
+        filtradas.sort((a, b) => {
+            const dataA = new Date(a.created_at).getTime();
+            const dataB = new Date(b.created_at).getTime();
+            return (Number.isNaN(dataA) ? Number.MAX_SAFE_INTEGER : dataA)
+                - (Number.isNaN(dataB) ? Number.MAX_SAFE_INTEGER : dataB);
+        });
+    }
+
+    return filtradas;
 }
 
 function renderizarEncomendasAdmin() {
