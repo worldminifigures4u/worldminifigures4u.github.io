@@ -3672,6 +3672,23 @@ body.mapas-produto-modal-aberto {
     color:#ffc107;
 }
 
+.clientes-ficha-acoes{
+    display:flex;
+    gap:10px;
+    justify-content:flex-end;
+    flex-wrap:wrap;
+}
+
+.clientes-botao-apagar{
+    background:#7a1f1f;
+    color:#fff;
+}
+
+.clientes-botao-apagar:hover,
+.clientes-botao-apagar:focus-visible{
+    background:#a52828;
+}
+
 .clientes-formulario{
     margin-top:8px;
 }
@@ -3689,5 +3706,14 @@ body.mapas-produto-modal-aberto {
     .clientes-ficha-topo{
         align-items:flex-start;
         flex-direction:column;
+    }
+
+    .clientes-ficha-acoes{
+        width:100%;
+        justify-content:stretch;
+    }
+
+    .clientes-ficha-acoes .wallapop-botao{
+        flex:1;
     }
 }

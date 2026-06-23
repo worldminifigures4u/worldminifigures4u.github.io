@@ -224,6 +224,35 @@ function criarClienteNovo() {
     }, "novo");
 }
 
+async function apagarFichaCliente(dados, botao) {
+    const cliente = dados.cliente || {};
+    const nome = cliente.nome || "Cliente sem nome";
+    const encomendas = Number(dados.resumo?.encomendas || 0);
+    const avisoHistorico = encomendas > 0
+        ? `\n\nEste cliente tem ${encomendas} encomenda(s). As encomendas ficam guardadas, mas deixam de estar ligadas a esta ficha.`
+        : "";
+    if (!window.confirm(`Apagar definitivamente a ficha de ${nome}?${avisoHistorico}`)) return;
+    if (!window.confirm("Confirmar eliminação definitiva da ficha do cliente?")) return;
+
+    botao.disabled = true;
+    definirStatusClientes("A apagar ficha do cliente...");
+    const { data, error } = await clientesClient.rpc("apagar_cliente_admin", {
+        p_cliente_id: cliente.id
+    });
+    if (error || data?.sucesso === false) {
+        botao.disabled = false;
+        definirStatusClientes("Erro ao apagar ficha: " + (error?.message || data?.erro || "sem detalhe"), true);
+        return;
+    }
+
+    clienteAbertoId = "";
+    document.getElementById("clientes-ficha").replaceChildren(
+        criarElementoCliente("p", "admin-cliente-vazio", "Escolha um cliente para abrir a ficha.")
+    );
+    await pesquisarClientes();
+    definirStatusClientes(`Ficha de ${nome} apagada.`);
+}
+
 function renderizarFichaCliente(dados) {
     const ficha = document.getElementById("clientes-ficha");
     const cliente = dados.cliente || {};
@@ -239,7 +268,12 @@ function renderizarFichaCliente(dados) {
     const editar = criarElementoCliente("button", "wallapop-botao wallapop-botao-destaque", "Editar ficha");
     editar.type = "button";
     editar.addEventListener("click", () => renderizarFormularioCliente(dados));
-    topo.appendChild(editar);
+    const apagar = criarElementoCliente("button", "wallapop-botao clientes-botao-apagar", "Apagar ficha");
+    apagar.type = "button";
+    apagar.addEventListener("click", () => apagarFichaCliente(dados, apagar));
+    const acoesTopo = criarElementoCliente("div", "clientes-ficha-acoes");
+    acoesTopo.append(editar, apagar);
+    topo.appendChild(acoesTopo);
 
     const grelha = criarElementoCliente("div", "admin-cliente-grelha");
     grelha.append(

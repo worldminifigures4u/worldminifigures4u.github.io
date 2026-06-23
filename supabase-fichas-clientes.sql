@@ -595,6 +595,51 @@ $$;
 revoke execute on function public.obter_ficha_cliente_por_id_admin(uuid) from public, anon;
 grant execute on function public.obter_ficha_cliente_por_id_admin(uuid) to authenticated;
 
+create or replace function public.apagar_cliente_admin(p_cliente_id uuid)
+returns jsonb
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_cliente public.clientes_gestao%rowtype;
+  v_encomendas integer;
+begin
+  if lower(coalesce(auth.jwt() ->> 'email', '')) <> 'worldminifigures4u@gmail.com' then
+    raise exception 'Acesso reservado ao administrador';
+  end if;
+
+  select * into v_cliente
+  from public.clientes_gestao
+  where id = p_cliente_id
+  for update;
+
+  if not found then
+    raise exception 'Cliente nao encontrado';
+  end if;
+
+  update public.encomendas
+  set cliente_gestao_id = null
+  where cliente_gestao_id = p_cliente_id;
+  get diagnostics v_encomendas = row_count;
+
+  delete from public.clientes_perfis_externos
+  where cliente_id = p_cliente_id;
+
+  delete from public.clientes_gestao
+  where id = p_cliente_id;
+
+  return jsonb_build_object(
+    'sucesso', true,
+    'cliente_id', p_cliente_id,
+    'encomendas_desassociadas', v_encomendas
+  );
+end;
+$$;
+
+revoke execute on function public.apagar_cliente_admin(uuid) from public, anon;
+grant execute on function public.apagar_cliente_admin(uuid) to authenticated;
+
 create or replace function public.listar_clientes_admin(p_pesquisa text default '')
 returns jsonb
 language plpgsql
