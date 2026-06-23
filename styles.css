@@ -2706,13 +2706,15 @@
         }
 
         .select-envio{
+            display:block;
             width:100%;
             padding:10px;
             border-radius:8px;
             border:1px solid #333;
             background:#222;
             color:white;
-            margin-top:10px;
+            margin:8px 0 14px;
+            box-sizing:border-box;
         }
 
         .total-box{
