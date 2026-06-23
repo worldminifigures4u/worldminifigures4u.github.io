@@ -276,7 +276,7 @@ from public, anon;
 grant execute on function public.atualizar_fornecedores_produto_admin(text, jsonb)
 to authenticated;
 
-create or replace function public.editar_produto_admin(
+create or replace function public.editar_produto_admin_v2(
   p_id text,
   p_sku_original text,
   p_produto jsonb
@@ -380,9 +380,9 @@ begin
 end;
 $$;
 
-revoke execute on function public.editar_produto_admin(text, text, jsonb)
+revoke execute on function public.editar_produto_admin_v2(text, text, jsonb)
 from public, anon;
-grant execute on function public.editar_produto_admin(text, text, jsonb)
+grant execute on function public.editar_produto_admin_v2(text, text, jsonb)
 to authenticated;
 
 create or replace function public.obter_imagens_produtos_encomendas_admin(

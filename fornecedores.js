@@ -1167,7 +1167,7 @@ async function guardarEdicaoProdutoMapa(evento) {
         );
         if (skuDuplicado) throw new Error("Este SKU ja existe noutro produto.");
 
-        const { data, error } = await fornecedoresClient.rpc("editar_produto_admin", {
+        const { data, error } = await fornecedoresClient.rpc("editar_produto_admin_v2", {
             p_id: id,
             p_sku_original: skuOriginal,
             p_produto: produto

@@ -1808,7 +1808,7 @@ async function guardarEdicaoProdutoAdmin(event) {
             throw new Error('Este SKU já existe noutro produto.');
         }
 
-        const { data, error } = await dbClient.rpc('editar_produto_admin', {
+        const { data, error } = await dbClient.rpc('editar_produto_admin_v2', {
             p_id: id,
             p_sku_original: skuOriginal,
             p_produto: produto
