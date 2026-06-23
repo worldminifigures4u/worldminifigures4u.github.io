@@ -3,6 +3,9 @@
 
 alter table public.encomendas enable row level security;
 
+alter table public.encomendas
+add column if not exists prioritaria boolean not null default false;
+
 drop policy if exists "Administrador pode ler todas as encomendas" on public.encomendas;
 create policy "Administrador pode ler todas as encomendas"
 on public.encomendas
@@ -63,6 +66,41 @@ revoke execute on function public.atualizar_estado_encomenda_admin(text, text)
 from public, anon;
 
 grant execute on function public.atualizar_estado_encomenda_admin(text, text)
+to authenticated;
+
+create or replace function public.atualizar_prioridade_encomenda_admin(
+  p_encomenda_id text,
+  p_prioritaria boolean
+)
+returns jsonb
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  if coalesce(auth.jwt() ->> 'email', '') <> 'worldminifigures4u@gmail.com' then
+    raise exception 'Acesso reservado ao administrador';
+  end if;
+
+  update public.encomendas
+  set prioritaria = coalesce(p_prioritaria, false)
+  where id::text = p_encomenda_id;
+
+  if not found then
+    raise exception 'Encomenda nao encontrada';
+  end if;
+
+  return jsonb_build_object(
+    'sucesso', true,
+    'prioritaria', coalesce(p_prioritaria, false)
+  );
+end;
+$$;
+
+revoke execute on function public.atualizar_prioridade_encomenda_admin(text, boolean)
+from public, anon;
+
+grant execute on function public.atualizar_prioridade_encomenda_admin(text, boolean)
 to authenticated;
 
 -- Devolve apenas as imagens necessarias ao painel de encomendas. Ao usar uma

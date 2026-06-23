@@ -1125,6 +1125,10 @@
             border-color:#7a6200;
         }
 
+        .admin-encomenda-card.prioritaria{
+            border-color:#ffc107;
+        }
+
         .admin-encomenda-cabecalho{
             width:100%;
             padding:14px;
@@ -1222,6 +1226,24 @@
         .admin-encomenda-valor strong{
             color:#29b6f6;
             font-size:18px;
+        }
+
+        .admin-encomenda-prioridade{
+            display:flex;
+            align-items:center;
+            gap:6px;
+            color:#ffc107;
+            font-size:12px;
+            font-weight:800;
+            cursor:pointer;
+        }
+
+        .admin-encomenda-prioridade input{
+            width:17px;
+            height:17px;
+            margin:0;
+            accent-color:#ffc107;
+            cursor:pointer;
         }
 
         .estado-encomenda{

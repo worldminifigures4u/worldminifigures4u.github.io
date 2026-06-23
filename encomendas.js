@@ -77,6 +77,31 @@ async function atualizarEstadoDiretoEncomendaAdmin(encomenda, estado) {
     return data;
 }
 
+async function atualizarPrioridadeEncomendaAdmin(encomenda, prioritaria, checkbox) {
+    checkbox.disabled = true;
+    definirStatusEncomendas('A guardar prioridade...');
+    try {
+        const { data, error } = await encomendasClient.rpc('atualizar_prioridade_encomenda_admin', {
+            p_encomenda_id: String(encomenda.id),
+            p_prioritaria: prioritaria
+        });
+        if (error || data?.sucesso === false) {
+            throw error || new Error(data?.erro || 'N\u00e3o foi poss\u00edvel guardar a prioridade.');
+        }
+        encomenda.prioritaria = prioritaria;
+        renderizarEncomendasAdmin();
+        definirStatusEncomendas(prioritaria ? 'Encomenda marcada como priorit\u00e1ria.' : 'Prioridade removida.');
+    } catch (error) {
+        checkbox.checked = !prioritaria;
+        checkbox.disabled = false;
+        definirStatusEncomendas(
+            'Erro ao guardar prioridade: ' + detalheErroEncomendas(error)
+            + '. Execute o SQL atualizado do painel de encomendas no Supabase.',
+            true
+        );
+    }
+}
+
 function criarElementoEncomenda(tag, classe, texto) {
     const elemento = document.createElement(tag);
     if (classe) elemento.className = classe;
@@ -816,7 +841,10 @@ async function abrirFichaClienteAdmin(encomenda) {
 }
 
 function criarCardEncomenda(encomenda) {
-    const card = criarElementoEncomenda('article', 'admin-encomenda-card');
+    const card = criarElementoEncomenda(
+        'article',
+        `admin-encomenda-card${encomenda.prioritaria ? ' prioritaria' : ''}`
+    );
     const cabecalho = criarElementoEncomenda('div', 'admin-encomenda-cabecalho');
     cabecalho.tabIndex = 0;
     cabecalho.setAttribute('role', 'button');
@@ -853,6 +881,21 @@ function criarCardEncomenda(encomenda) {
         criarElementoEncomenda('strong', '', formatarEuroEncomenda(encomenda.total)),
         criarElementoEncomenda('span', `estado-encomenda estado-${normalizarEncomenda(estadoNormalizadoEncomenda(encomenda.estado)).replace(/\s+/g, '-')}`, estadoNormalizadoEncomenda(encomenda.estado))
     );
+    const filtroEstado = document.getElementById('filtro-estado-encomendas-admin').value;
+    if (filtroEstado === 'Pago' && estadoNormalizadoEncomenda(encomenda.estado) === 'Pago') {
+        const prioridade = criarElementoEncomenda('label', 'admin-encomenda-prioridade');
+        const checkbox = document.createElement('input');
+        checkbox.type = 'checkbox';
+        checkbox.checked = Boolean(encomenda.prioritaria);
+        checkbox.addEventListener('click', evento => evento.stopPropagation());
+        checkbox.addEventListener('keydown', evento => evento.stopPropagation());
+        checkbox.addEventListener('change', () => {
+            atualizarPrioridadeEncomendaAdmin(encomenda, checkbox.checked, checkbox);
+        });
+        prioridade.addEventListener('click', evento => evento.stopPropagation());
+        prioridade.append(checkbox, criarElementoEncomenda('span', '', 'Priorit\u00e1ria'));
+        resumo.appendChild(prioridade);
+    }
     cabecalho.append(identificacao, cliente, resumo, criarElementoEncomenda('span', 'admin-encomenda-seta', '▾'));
 
     const detalhes = criarElementoEncomenda('div', 'admin-encomenda-detalhes');
@@ -964,6 +1007,9 @@ function encomendasFiltradasAdmin() {
 
     if (estado === 'Pago') {
         filtradas.sort((a, b) => {
+            const prioridadeA = a.prioritaria ? 1 : 0;
+            const prioridadeB = b.prioritaria ? 1 : 0;
+            if (prioridadeA !== prioridadeB) return prioridadeB - prioridadeA;
             const dataA = new Date(a.created_at).getTime();
             const dataB = new Date(b.created_at).getTime();
             return (Number.isNaN(dataA) ? Number.MAX_SAFE_INTEGER : dataA)
