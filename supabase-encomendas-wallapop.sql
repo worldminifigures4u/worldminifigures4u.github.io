@@ -125,7 +125,7 @@ begin
       raise exception 'Lista de produtos invalida';
     end if;
 
-    select produto.id::text as id, produto.nome, produto.sku,
+    select produto.id::text as id, produto.nome, produto.referencia, produto.sku,
            coalesce(produto.preco, 0)::numeric as preco,
            coalesce(produto.peso, 10)::numeric as peso,
            coalesce(produto.stock, 0)::integer as stock,
@@ -164,7 +164,7 @@ begin
     group by item->>'id_produto'
     order by ordem
   loop
-    select produto.id::text as id, produto.nome, produto.sku,
+    select produto.id::text as id, produto.nome, produto.referencia, produto.sku,
            coalesce(produto.preco, 0)::numeric as preco,
            coalesce(produto.peso, 10)::numeric as peso
     into v_produto
@@ -174,6 +174,7 @@ begin
     v_produtos := v_produtos || jsonb_build_array(jsonb_build_object(
       'id_produto', v_produto.id,
       'nome', v_produto.nome,
+      'referencia', v_produto.referencia,
       'sku', v_produto.sku,
       'quantidade', v_item.quantidade,
       'preco_unitario', v_produto.preco,
@@ -532,7 +533,7 @@ begin
     group by item->>'id_produto'
     order by ordem
   loop
-    select produto.id::text as id, produto.nome, produto.sku,
+    select produto.id::text as id, produto.nome, produto.referencia, produto.sku,
            coalesce(produto.preco, 0)::numeric as preco,
            coalesce(produto.peso, 10)::numeric as peso
     into v_produto
@@ -542,6 +543,7 @@ begin
     v_produtos := v_produtos || jsonb_build_array(jsonb_build_object(
       'id_produto', v_produto.id,
       'nome', v_produto.nome,
+      'referencia', v_produto.referencia,
       'sku', v_produto.sku,
       'quantidade', v_item.quantidade,
       'preco_unitario', v_produto.preco,

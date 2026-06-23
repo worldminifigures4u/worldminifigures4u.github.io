@@ -570,8 +570,29 @@ function criarCampoEdicaoCliente(rotulo, nome, valor, tipo = 'text', obrigatorio
     return campo;
 }
 
+function obterPerfisFormularioCliente(formulario) {
+    return Array.from(formulario.querySelectorAll('[name^="perfil_url_"]'))
+        .map(input => ({ url: input.value.trim() }))
+        .filter(perfil => perfil.url);
+}
+
+function criarCamposPerfisCliente(perfis = []) {
+    const fragmento = document.createDocumentFragment();
+    for (let indice = 0; indice < 5; indice += 1) {
+        const perfil = perfis[indice] || {};
+        fragmento.appendChild(criarCampoEdicaoCliente(
+            `Link externo ${indice + 1}`,
+            `perfil_url_${indice + 1}`,
+            perfil.url || '',
+            'url'
+        ));
+    }
+    return fragmento;
+}
+
 function renderizarFormularioClienteExterno(dados, secao) {
     const cliente = dados.cliente || {};
+    const perfis = Array.isArray(dados.perfis) ? dados.perfis : [];
     const formulario = document.createElement('form');
     formulario.className = 'admin-cliente-formulario';
     formulario.append(
@@ -583,6 +604,9 @@ function renderizarFormularioClienteExterno(dados, secao) {
         criarCampoEdicaoCliente('Cidade', 'cidade', cliente.cidade),
         criarCampoEdicaoCliente('Pa\u00eds', 'pais', cliente.pais)
     );
+    const tituloPerfis = criarElementoEncomenda('h3', 'admin-cliente-formulario-subtitulo', 'Links externos');
+    formulario.appendChild(tituloPerfis);
+    formulario.appendChild(criarCamposPerfisCliente(perfis));
 
     const acoes = criarElementoEncomenda('div', 'admin-cliente-formulario-acoes');
     const cancelar = criarElementoEncomenda('button', 'wallapop-botao', 'Cancelar');
@@ -615,8 +639,20 @@ function renderizarFormularioClienteExterno(dados, secao) {
             definirStatusFichaCliente('Erro ao guardar dados: ' + (error?.message || data?.erro || 'sem detalhe'), true);
             return;
         }
+        const perfisAtualizados = obterPerfisFormularioCliente(formulario);
+        const resultadoPerfis = await encomendasClient.rpc('guardar_perfis_cliente_admin', {
+            p_cliente_id: cliente.id,
+            p_perfis: perfisAtualizados
+        });
+        if (resultadoPerfis.error || resultadoPerfis.data?.sucesso === false) {
+            definirStatusFichaCliente('Dados guardados, mas erro nos links: ' + (resultadoPerfis.error?.message || resultadoPerfis.data?.erro || 'sem detalhe'), true);
+            return;
+        }
         dados.cliente = data.cliente;
-        renderizarFichaClienteAdmin(dados);
+        const fichaAtualizada = await encomendasClient.rpc('obter_ficha_cliente_por_id_admin', {
+            p_cliente_id: cliente.id
+        });
+        renderizarFichaClienteAdmin(fichaAtualizada.data?.sucesso ? fichaAtualizada.data : dados);
         definirStatusFichaCliente('Dados do cliente atualizados.');
     });
 

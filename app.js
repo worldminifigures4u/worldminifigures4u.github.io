@@ -876,7 +876,7 @@ function utilizadorAdmin(user) {
 function atualizarVisibilidadeAdmin(user) {
     const painel = document.getElementById('painel-admin');
     const adminAtivo = utilizadorAdmin(user);
-    const atalhosAdmin = document.querySelectorAll('.acao-plataforma-admin, .acao-anuncio-admin, .acao-mapas-admin, .acao-fornecedores-admin, .acao-encomendas-admin');
+    const atalhosAdmin = document.querySelectorAll('.acao-plataforma-admin, .acao-anuncio-admin, .acao-mapas-admin, .acao-fornecedores-admin, .acao-encomendas-admin, .acao-clientes-admin');
     atalhosAdmin.forEach(atalho => { atalho.hidden = !adminAtivo; });
     document.querySelector('.acoes-cabecalho')?.classList.toggle('com-atalhos-admin', adminAtivo);
     if(!painel) return;

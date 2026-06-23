@@ -125,7 +125,7 @@ begin
       raise exception 'Lista de produtos invalida';
     end if;
 
-    select produto.id::text as id, produto.nome, produto.sku,
+    select produto.id::text as id, produto.nome, produto.referencia, produto.sku,
            coalesce(produto.preco, 0)::numeric as preco,
            coalesce(produto.peso, 10)::numeric as peso,
            coalesce(produto.stock, 0)::integer as stock,
@@ -164,7 +164,7 @@ begin
     group by item->>'id_produto'
     order by ordem
   loop
-    select produto.id::text as id, produto.nome, produto.sku,
+    select produto.id::text as id, produto.nome, produto.referencia, produto.sku,
            coalesce(produto.preco, 0)::numeric as preco,
            coalesce(produto.peso, 10)::numeric as peso
     into v_produto
@@ -534,7 +534,7 @@ begin
     group by item->>'id_produto'
     order by ordem
   loop
-    select produto.id::text as id, produto.nome, produto.sku,
+    select produto.id::text as id, produto.nome, produto.referencia, produto.sku,
            coalesce(produto.preco, 0)::numeric as preco,
            coalesce(produto.peso, 10)::numeric as peso
     into v_produto

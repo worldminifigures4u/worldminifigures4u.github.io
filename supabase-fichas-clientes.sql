@@ -353,3 +353,218 @@ revoke execute on function public.atualizar_cliente_externo_admin(
 grant execute on function public.atualizar_cliente_externo_admin(
   uuid, text, text, text, text, text, text, text
 ) to authenticated;
+
+create or replace function public.normalizar_url_perfil_externo_admin(p_url text)
+returns jsonb
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_url text := trim(coalesce(p_url, ''));
+  v_plataforma text;
+  v_utilizador text;
+begin
+  if v_url = '' then
+    return null;
+  end if;
+
+  if v_url ~* '^https?://([^/]+\.)?wallapop\.com/user/[^/?#]+' then
+    v_plataforma := 'Wallapop';
+    v_utilizador := substring(v_url from '(?i)/user/([^/?#]+)');
+  elsif v_url ~* '^https?://([^/]+\.)?olx\.pt/ads/user/[^/?#]+' then
+    v_plataforma := 'OLX';
+    v_utilizador := substring(v_url from '(?i)/ads/user/([^/?#]+)');
+  elsif v_url ~* '^https?://([^/]+\.)?todocoleccion\.net/usuario/[^/?#]+' then
+    v_plataforma := 'Todocoleccion';
+    v_utilizador := substring(v_url from '(?i)/usuario/([^/?#]+)');
+  else
+    raise exception 'Link de perfil nao reconhecido: %', v_url;
+  end if;
+
+  return jsonb_build_object(
+    'plataforma', v_plataforma,
+    'utilizador', v_utilizador,
+    'utilizador_normalizado', lower(v_utilizador),
+    'url', v_url
+  );
+end;
+$$;
+
+revoke execute on function public.normalizar_url_perfil_externo_admin(text) from public, anon;
+grant execute on function public.normalizar_url_perfil_externo_admin(text) to authenticated;
+
+create or replace function public.guardar_perfis_cliente_admin(
+  p_cliente_id uuid,
+  p_perfis jsonb
+)
+returns jsonb
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_perfil jsonb;
+  v_normalizado jsonb;
+begin
+  if lower(coalesce(auth.jwt() ->> 'email', '')) <> 'worldminifigures4u@gmail.com' then
+    raise exception 'Acesso reservado ao administrador';
+  end if;
+
+  if not exists (select 1 from public.clientes_gestao where id = p_cliente_id) then
+    raise exception 'Cliente nao encontrado';
+  end if;
+
+  if jsonb_typeof(coalesce(p_perfis, '[]'::jsonb)) <> 'array' then
+    raise exception 'Lista de perfis invalida';
+  end if;
+  if jsonb_array_length(coalesce(p_perfis, '[]'::jsonb)) > 5 then
+    raise exception 'A ficha permite no maximo 5 links externos';
+  end if;
+
+  delete from public.clientes_perfis_externos
+  where cliente_id = p_cliente_id;
+
+  for v_perfil in select value from jsonb_array_elements(coalesce(p_perfis, '[]'::jsonb))
+  loop
+    if nullif(trim(coalesce(v_perfil->>'url', v_perfil#>>'{}')), '') is null then
+      continue;
+    end if;
+    v_normalizado := public.normalizar_url_perfil_externo_admin(coalesce(v_perfil->>'url', v_perfil#>>'{}'));
+    insert into public.clientes_perfis_externos (
+      cliente_id, plataforma, utilizador, utilizador_normalizado, url_perfil
+    ) values (
+      p_cliente_id,
+      v_normalizado->>'plataforma',
+      v_normalizado->>'utilizador',
+      v_normalizado->>'utilizador_normalizado',
+      v_normalizado->>'url'
+    )
+    on conflict (plataforma, utilizador_normalizado) do update set
+      cliente_id = excluded.cliente_id,
+      utilizador = excluded.utilizador,
+      url_perfil = excluded.url_perfil,
+      updated_at = now();
+  end loop;
+
+  return jsonb_build_object('sucesso', true);
+end;
+$$;
+
+revoke execute on function public.guardar_perfis_cliente_admin(uuid, jsonb) from public, anon;
+grant execute on function public.guardar_perfis_cliente_admin(uuid, jsonb) to authenticated;
+
+create or replace function public.obter_ficha_cliente_por_id_admin(p_cliente_id uuid)
+returns jsonb
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_cliente public.clientes_gestao%rowtype;
+  v_perfis jsonb;
+  v_historico jsonb;
+  v_total numeric;
+  v_quantidade integer;
+  v_ultima timestamptz;
+begin
+  if lower(coalesce(auth.jwt() ->> 'email', '')) <> 'worldminifigures4u@gmail.com' then
+    raise exception 'Acesso reservado ao administrador';
+  end if;
+
+  select * into v_cliente from public.clientes_gestao where id = p_cliente_id;
+  if not found then raise exception 'Cliente nao encontrado'; end if;
+
+  select coalesce(jsonb_agg(jsonb_build_object(
+    'plataforma', plataforma, 'utilizador', utilizador, 'url', url_perfil
+  ) order by plataforma, utilizador), '[]'::jsonb)
+  into v_perfis from public.clientes_perfis_externos where cliente_id = v_cliente.id;
+
+  select coalesce(jsonb_agg(jsonb_build_object(
+    'id', id, 'codigo', codigo_encomenda, 'data', created_at, 'origem', origem,
+    'estado', estado, 'total', total
+  ) order by created_at desc), '[]'::jsonb)
+  into v_historico from public.encomendas where cliente_gestao_id = v_cliente.id;
+
+  select count(*), coalesce(sum(total) filter (where estado <> 'Cancelado'), 0), max(created_at)
+  into v_quantidade, v_total, v_ultima
+  from public.encomendas where cliente_gestao_id = v_cliente.id;
+
+  return jsonb_build_object(
+    'sucesso', true,
+    'cliente', to_jsonb(v_cliente),
+    'perfis', v_perfis,
+    'historico', v_historico,
+    'resumo', jsonb_build_object('encomendas', v_quantidade, 'total', v_total, 'ultima_compra', v_ultima)
+  );
+end;
+$$;
+
+revoke execute on function public.obter_ficha_cliente_por_id_admin(uuid) from public, anon;
+grant execute on function public.obter_ficha_cliente_por_id_admin(uuid) to authenticated;
+
+create or replace function public.listar_clientes_admin(p_pesquisa text default '')
+returns jsonb
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_pesquisa text := lower(trim(coalesce(p_pesquisa, '')));
+begin
+  if lower(coalesce(auth.jwt() ->> 'email', '')) <> 'worldminifigures4u@gmail.com' then
+    raise exception 'Acesso reservado ao administrador';
+  end if;
+
+  return coalesce((
+    select jsonb_agg(jsonb_build_object(
+      'cliente', to_jsonb(cliente),
+      'perfis', coalesce(perfis.perfis, '[]'::jsonb),
+      'resumo', jsonb_build_object(
+        'encomendas', coalesce(resumo.encomendas, 0),
+        'total', coalesce(resumo.total, 0),
+        'ultima_compra', resumo.ultima_compra
+      )
+    ) order by coalesce(resumo.ultima_compra, cliente.updated_at, cliente.created_at) desc)
+    from public.clientes_gestao cliente
+    left join lateral (
+      select jsonb_agg(jsonb_build_object(
+        'plataforma', pe.plataforma,
+        'utilizador', pe.utilizador,
+        'url', pe.url_perfil
+      ) order by pe.plataforma, pe.utilizador) as perfis
+      from public.clientes_perfis_externos pe
+      where pe.cliente_id = cliente.id
+    ) perfis on true
+    left join lateral (
+      select count(*)::integer as encomendas,
+             coalesce(sum(total) filter (where estado <> 'Cancelado'), 0) as total,
+             max(created_at) as ultima_compra
+      from public.encomendas encomenda
+      where encomenda.cliente_gestao_id = cliente.id
+    ) resumo on true
+    where v_pesquisa = ''
+       or lower(coalesce(cliente.nome, '')) like '%' || v_pesquisa || '%'
+       or lower(coalesce(cliente.email, '')) like '%' || v_pesquisa || '%'
+       or lower(coalesce(cliente.telefone, '')) like '%' || v_pesquisa || '%'
+       or lower(coalesce(cliente.morada, '')) like '%' || v_pesquisa || '%'
+       or lower(coalesce(cliente.cp, '')) like '%' || v_pesquisa || '%'
+       or lower(coalesce(cliente.cidade, '')) like '%' || v_pesquisa || '%'
+       or lower(coalesce(cliente.pais, '')) like '%' || v_pesquisa || '%'
+       or lower(coalesce(cliente.notas, '')) like '%' || v_pesquisa || '%'
+       or exists (
+         select 1
+         from public.clientes_perfis_externos pe
+         where pe.cliente_id = cliente.id
+           and (
+             lower(pe.url_perfil) like '%' || v_pesquisa || '%'
+             or lower(pe.utilizador) like '%' || v_pesquisa || '%'
+             or lower(pe.plataforma) like '%' || v_pesquisa || '%'
+           )
+       )
+  ), '[]'::jsonb);
+end;
+$$;
+
+revoke execute on function public.listar_clientes_admin(text) from public, anon;
+grant execute on function public.listar_clientes_admin(text) to authenticated;

@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex, nofollow, noarchive, nosnippet">
+    <title>Clientes | Figures Planet</title>
+    <link rel="icon" type="image/png" href="figures-planet-logo-transparent.png">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body class="pagina-clientes-admin">
+    <header class="admin-encomendas-topo">
+        <h1>Clientes</h1>
+        <nav class="acoes-cabecalho com-atalhos-admin" aria-label="Navegacao principal">
+            <a class="acao-cabecalho" href="index.html">Produtos</a>
+            <a class="acao-cabecalho" href="conta.html">Conta Cliente</a>
+            <a class="acao-cabecalho" href="plataforma.html">Plataforma</a>
+            <a class="acao-cabecalho" href="mapas.html">Mapas</a>
+            <a class="acao-cabecalho" href="fornecedores.html">Fornecedores</a>
+            <a class="acao-cabecalho" href="encomendas.html">Encomendas</a>
+            <a class="acao-cabecalho ativa" href="clientes.html">Clientes</a>
+            <a class="acao-cabecalho acao-carrinho" href="carrinho.html">
+                <span>Carrinho</span>
+                <span class="badge-carrinho" id="contador-carrinho-cabecalho">0</span>
+            </a>
+        </nav>
+    </header>
+
+    <div class="wallapop-bloqueio" id="clientes-bloqueio">A verificar acesso administrativo...</div>
+
+    <main class="clientes-admin" id="clientes-aplicacao" hidden>
+        <section class="clientes-pesquisa" aria-label="Pesquisa de clientes">
+            <input type="search" id="clientes-pesquisa" placeholder="Pesquisar por nome, telefone, cidade, notas ou link externo" autocomplete="off">
+            <button type="button" class="wallapop-botao wallapop-botao-destaque" id="btn-pesquisar-clientes">Pesquisar</button>
+        </section>
+        <section class="clientes-layout">
+            <div class="clientes-lista" id="clientes-lista"></div>
+            <article class="clientes-ficha" id="clientes-ficha">
+                <p class="admin-cliente-vazio">Escolha um cliente para abrir a ficha.</p>
+            </article>
+        </section>
+        <p class="wallapop-status" id="clientes-status" aria-live="polite"></p>
+    </main>
+
+    <script>
+        (function () {
+            function atualizarContadorCarrinhoTopo() {
+                const contador = document.getElementById('contador-carrinho-cabecalho');
+                if (!contador) return;
+                try {
+                    const itens = JSON.parse(localStorage.getItem('carrinho') || '[]');
+                    contador.textContent = Array.isArray(itens)
+                        ? itens.reduce((soma, item) => soma + Number(item && item.quantidade || 0), 0)
+                        : 0;
+                } catch (_) {
+                    contador.textContent = '0';
+                }
+            }
+            document.addEventListener('DOMContentLoaded', atualizarContadorCarrinhoTopo);
+            window.addEventListener('storage', atualizarContadorCarrinhoTopo);
+        })();
+    </script>
+    <script src="clientes.js"></script>
+</body>
+</html>
