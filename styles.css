@@ -477,6 +477,10 @@
             display:none !important;
         }
 
+        .pagina-wallapop [hidden]{
+            display:none !important;
+        }
+
         .wallapop-botao{
             border:0;
             border-radius:6px;
@@ -746,9 +750,7 @@
         }
 
         .plataforma-peso{
-            color:#fff !important;
-            font-weight:700;
-            text-align:center;
+            display:none;
         }
 
         .plataforma-totais{

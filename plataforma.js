@@ -303,17 +303,6 @@ function renderizarFichaClientePlataforma(dados) {
         caixa.appendChild(linhaTelefone);
     }
 
-    const lista = document.createElement('ul');
-    historico.slice(0, 4).forEach(item => {
-        const linha = document.createElement('li');
-        const codigo = document.createElement('span');
-        codigo.textContent = item.codigo || '';
-        const origem = document.createElement('span');
-        origem.textContent = `${item.origem || ''} ${item.total ? formatarEuroWallapop(item.total) + ' \u20ac' : ''}`.trim();
-        linha.append(codigo, origem);
-        lista.appendChild(linha);
-    });
-    if (lista.childElementCount) caixa.appendChild(lista);
     caixa.hidden = false;
 }
 
@@ -428,7 +417,7 @@ function atualizarModoPlataforma() {
     document.getElementById('wallapop-nome-cliente').placeholder = `Nome ou utilizador no ${plataforma}`;
     document.getElementById('plataforma-envio').hidden = !olx;
     document.getElementById('wallapop-folha-escala').hidden = !wallapop;
-    document.getElementById('plataforma-resumo').hidden = wallapop;
+    document.getElementById('plataforma-resumo').hidden = true;
     document.getElementById('plataforma-resumo-titulo').textContent = plataforma === 'OLX'
         ? 'Ficheiros OLX'
         : 'Ficheiro Todocoleccion';
