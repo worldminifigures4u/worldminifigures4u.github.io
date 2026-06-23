@@ -8,25 +8,34 @@
     <link rel="icon" type="image/png" href="figures-planet-logo-transparent.png">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
-    <link rel="stylesheet" href="styles.css?v=20260623-lista-produtos">
+    <link rel="stylesheet" href="styles.css?v=20260623-cabecalho-duplo">
 </head>
-<body class="pagina-wallapop">
-    <div class="wallapop-topo">
-        <h1>Plataforma</h1>
-        <nav class="acoes-cabecalho com-atalhos-admin" aria-label="Navegacao principal">
-            <a class="acao-cabecalho" href="index.html">Produtos</a>
-            <a class="acao-cabecalho" href="conta.html">Conta Cliente</a>
+<body class="pagina-wallapop cabecalho-com-admin pagina-com-cabecalho-site">
+    <header class="cabecalho-site-admin">
+        <div class="cabecalho-loja">
+            <a class="logo-loja" href="index.html" aria-label="Figures Planet - Produtos">
+                <img src="figures-planet-logo-transparent.png" alt="Figures Planet">
+            </a>
+            <form class="cabecalho-pesquisa" action="index.html" method="get">
+                <input type="search" name="q" class="input-pesquisa" placeholder="O que estás à procura?">
+                <span class="icone-pesquisa" aria-hidden="true"></span>
+            </form>
+            <div class="acoes-cabecalho acoes-cabecalho-publicas">
+                <a class="acao-cabecalho" href="index.html">Produtos</a>
+                <a class="acao-cabecalho" href="conta.html">Conta Cliente</a>
+                <a class="acao-cabecalho acao-carrinho" href="carrinho.html">
+                    <span class="badge-carrinho" id="contador-carrinho-cabecalho">0</span>
+                </a>
+            </div>
+            <nav class="navegacao-admin-cabecalho" aria-label="Navegação administrativa">
             <a class="acao-cabecalho ativa" href="plataforma.html">Plataforma</a>
             <a class="acao-cabecalho" href="mapas.html">Mapas</a>
             <a class="acao-cabecalho" href="fornecedores.html">Fornecedores</a>
             <a class="acao-cabecalho" href="encomendas.html">Encomendas</a>
             <a class="acao-cabecalho" href="clientes.html">Clientes</a>
-            <a class="acao-cabecalho acao-carrinho" href="carrinho.html">
-                <span>Carrinho</span>
-                <span class="badge-carrinho" id="contador-carrinho-cabecalho">0</span>
-            </a>
-        </nav>
-    </div>
+            </nav>
+        </div>
+    </header>
 
     <div class="wallapop-bloqueio" id="wallapop-bloqueio">A verificar acesso administrativo...</div>
 

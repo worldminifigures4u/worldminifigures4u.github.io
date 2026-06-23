@@ -3744,3 +3744,75 @@ body.mapas-produto-modal-aberto {
         flex:1;
     }
 }
+
+/* Cabecalho publico com uma segunda linha exclusiva para administracao. */
+.navegacao-admin-cabecalho{
+    grid-column:1 / -1;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    gap:8px;
+    min-width:0;
+    padding-top:10px;
+    border-top:1px solid #292929;
+}
+
+.navegacao-admin-cabecalho[hidden]{
+    display:none !important;
+}
+
+.navegacao-admin-cabecalho .acao-cabecalho{
+    min-width:132px;
+    justify-content:center;
+    white-space:nowrap;
+}
+
+body.cabecalho-com-admin{
+    padding-top:206px;
+}
+
+body.pagina-com-cabecalho-site{
+    padding-top:206px !important;
+}
+
+.cabecalho-site-admin{
+    position:fixed;
+    top:0;
+    left:0;
+    right:0;
+    z-index:1000;
+}
+
+@media(max-width:1100px){
+    body.cabecalho-com-admin,
+    body.pagina-com-cabecalho-site{
+        padding-top:246px !important;
+    }
+
+    .navegacao-admin-cabecalho{
+        grid-column:1 / -1;
+        grid-row:3;
+    }
+}
+
+@media(max-width:560px){
+    body.cabecalho-com-admin,
+    body.pagina-com-cabecalho-site{
+        padding-top:266px !important;
+    }
+
+    .navegacao-admin-cabecalho{
+        grid-column:1;
+        grid-row:4;
+        justify-content:flex-start;
+        overflow-x:auto;
+        padding:8px 0 2px;
+        scrollbar-width:thin;
+    }
+
+    .navegacao-admin-cabecalho .acao-cabecalho{
+        width:auto;
+        min-width:max-content;
+        padding:0 14px;
+    }
+}

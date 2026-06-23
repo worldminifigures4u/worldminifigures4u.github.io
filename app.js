@@ -878,7 +878,9 @@ function atualizarVisibilidadeAdmin(user) {
     const adminAtivo = utilizadorAdmin(user);
     const atalhosAdmin = document.querySelectorAll('.acao-plataforma-admin, .acao-anuncio-admin, .acao-mapas-admin, .acao-fornecedores-admin, .acao-encomendas-admin, .acao-clientes-admin');
     atalhosAdmin.forEach(atalho => { atalho.hidden = !adminAtivo; });
-    document.querySelector('.acoes-cabecalho')?.classList.toggle('com-atalhos-admin', adminAtivo);
+    const navegacaoAdmin = document.querySelector('.navegacao-admin-cabecalho');
+    if (navegacaoAdmin) navegacaoAdmin.hidden = !adminAtivo;
+    document.body.classList.toggle('cabecalho-com-admin', adminAtivo);
     if(!painel) return;
     const zonaEliminacao = document.getElementById('zona-eliminacao-conta');
     painel.style.display = adminAtivo ? 'block' : 'none';
