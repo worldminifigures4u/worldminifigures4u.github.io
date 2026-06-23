@@ -169,8 +169,9 @@ function atualizarCabecalhoCliente(nome = '') {
     if (!nomeEl) return;
 
     const nomeLimpo = String(nome || '').trim();
-    nomeEl.textContent = nomeLimpo;
-    nomeEl.style.display = nomeLimpo ? 'inline' : 'none';
+    const primeiroNome = nomeLimpo.split(/\s+/)[0] || '';
+    nomeEl.textContent = primeiroNome;
+    nomeEl.style.display = primeiroNome ? 'inline' : 'none';
 }
 
 function atualizarContadorCarrinhoCabecalho() {
