@@ -16,6 +16,23 @@ create table if not exists public.clientes_gestao (
   updated_at timestamptz not null default now()
 );
 
+alter table public.clientes_gestao
+  add column if not exists auth_user_id uuid,
+  add column if not exists nome text,
+  add column if not exists email text,
+  add column if not exists telefone text,
+  add column if not exists morada text,
+  add column if not exists cp text,
+  add column if not exists cidade text,
+  add column if not exists pais text,
+  add column if not exists notas text not null default '',
+  add column if not exists created_at timestamptz not null default now(),
+  add column if not exists updated_at timestamptz not null default now();
+
+create unique index if not exists clientes_gestao_auth_user_id_unico
+on public.clientes_gestao (auth_user_id)
+where auth_user_id is not null;
+
 create unique index if not exists clientes_gestao_email_unico
 on public.clientes_gestao (lower(email))
 where nullif(trim(email), '') is not null;
@@ -32,10 +49,27 @@ create table if not exists public.clientes_perfis_externos (
   unique (plataforma, utilizador_normalizado)
 );
 
+alter table public.clientes_perfis_externos
+  add column if not exists cliente_id uuid references public.clientes_gestao(id) on delete cascade,
+  add column if not exists plataforma text,
+  add column if not exists utilizador text,
+  add column if not exists utilizador_normalizado text,
+  add column if not exists url_perfil text,
+  add column if not exists created_at timestamptz not null default now(),
+  add column if not exists updated_at timestamptz not null default now();
+
+create unique index if not exists clientes_perfis_externos_plataforma_utilizador_unico
+on public.clientes_perfis_externos (plataforma, utilizador_normalizado);
+
 alter table public.encomendas
   add column if not exists cliente_gestao_id uuid references public.clientes_gestao(id),
   add column if not exists perfil_externo_url text,
-  add column if not exists perfil_externo_utilizador text;
+  add column if not exists perfil_externo_utilizador text,
+  add column if not exists telefone_cliente text,
+  add column if not exists morada_cliente text,
+  add column if not exists cp_cliente text,
+  add column if not exists cidade_cliente text,
+  add column if not exists pais_cliente text;
 
 alter table public.clientes_gestao enable row level security;
 alter table public.clientes_perfis_externos enable row level security;
