@@ -1190,26 +1190,36 @@ function criarTextoEncomendaWallapop() {
     return '\ufeff' + linhas.join('\r\n');
 }
 
-function criarTextoInternoPlataforma() {
-    const linhas = criarCabecalhoCodigoEncomenda().concat(obterItensParaFicheirosPlataforma().map(item => [
-        Math.max(1, Number(item.quantidade) || 1),
-        String(item.nome || '').trim(),
-        String(item.sku || '').trim()
-    ].join('\t')));
-    return '\ufeff' + linhas.join('\r\n');
-}
-
-function criarTextoClienteOlx() {
-    const itens = obterItensParaFicheirosPlataforma();
-    const envio = obterEnvioParaFicheirosPlataforma();
+function criarLinhasDadosClienteOlx() {
     const dadosCliente = obterDadosClientePlataforma();
-    const nomeCliente = obterNomeClientePlataforma();
     const moradaCliente = [
         dadosCliente.morada,
         dadosCliente.cp,
         dadosCliente.cidade,
         dadosCliente.pais
     ].filter(Boolean).join(', ');
+    return [
+        `Nome:\t${obterNomeClientePlataforma()}`,
+        `Morada:\t${moradaCliente}`,
+        `Telefone:\t${dadosCliente.telefone}`
+    ];
+}
+
+function criarTextoInternoPlataforma() {
+    const linhas = criarCabecalhoCodigoEncomenda().concat(obterItensParaFicheirosPlataforma().map(item => [
+        Math.max(1, Number(item.quantidade) || 1),
+        String(item.nome || '').trim(),
+        String(item.sku || '').trim()
+    ].join('\t')));
+    if (obterPlataformaAtual() === 'OLX') {
+        linhas.push('', ...criarLinhasDadosClienteOlx());
+    }
+    return '\ufeff' + linhas.join('\r\n');
+}
+
+function criarTextoClienteOlx() {
+    const itens = obterItensParaFicheirosPlataforma();
+    const envio = obterEnvioParaFicheirosPlataforma();
     const subtotal = itens.reduce((total, item) => (
         total + Math.max(1, Number(item.quantidade) || 1) * Number(item.preco || 0)
     ), 0);
@@ -1227,9 +1237,7 @@ function criarTextoClienteOlx() {
         '',
         `Total geral:\t${formatarEuroWallapop(subtotal + envio.portes)} \u20ac`,
         '',
-        `Nome:\t${nomeCliente}`,
-        `Morada:\t${moradaCliente}`,
-        `Telefone:\t${dadosCliente.telefone}`
+        ...criarLinhasDadosClienteOlx()
     );
     return '\ufeff' + linhas.join('\r\n');
 }
