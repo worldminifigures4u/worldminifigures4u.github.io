@@ -1202,6 +1202,14 @@ function criarTextoInternoPlataforma() {
 function criarTextoClienteOlx() {
     const itens = obterItensParaFicheirosPlataforma();
     const envio = obterEnvioParaFicheirosPlataforma();
+    const dadosCliente = obterDadosClientePlataforma();
+    const nomeCliente = obterNomeClientePlataforma();
+    const moradaCliente = [
+        dadosCliente.morada,
+        dadosCliente.cp,
+        dadosCliente.cidade,
+        dadosCliente.pais
+    ].filter(Boolean).join(', ');
     const subtotal = itens.reduce((total, item) => (
         total + Math.max(1, Number(item.quantidade) || 1) * Number(item.preco || 0)
     ), 0);
@@ -1216,7 +1224,12 @@ function criarTextoClienteOlx() {
     linhas.push(
         '',
         `Portes de envio (${envio.nome}):\t${formatarEuroWallapop(envio.portes)} \u20ac`,
-        `Total geral:\t${formatarEuroWallapop(subtotal + envio.portes)} \u20ac`
+        '',
+        `Total geral:\t${formatarEuroWallapop(subtotal + envio.portes)} \u20ac`,
+        '',
+        `Nome:\t${nomeCliente}`,
+        `Morada:\t${moradaCliente}`,
+        `Telefone:\t${dadosCliente.telefone}`
     );
     return '\ufeff' + linhas.join('\r\n');
 }
