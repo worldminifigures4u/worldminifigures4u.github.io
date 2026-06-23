@@ -1808,35 +1808,18 @@ async function guardarEdicaoProdutoAdmin(event) {
             throw new Error('Este SKU já existe noutro produto.');
         }
 
-        let data = null;
-        let error = null;
-
-        if(id && id !== skuOriginal) {
-            const resultadoPorId = await dbClient
-                .from('produtos')
-                .update(produto)
-                .eq('id', id)
-                .select('id, sku');
-            data = resultadoPorId.data;
-            error = resultadoPorId.error;
-        }
-
-        if(!error && (!data || data.length === 0) && skuOriginal) {
-            const resultadoPorSku = await dbClient
-                .from('produtos')
-                .update(produto)
-                .eq('sku', skuOriginal)
-                .select('id, sku');
-            data = resultadoPorSku.data;
-            error = resultadoPorSku.error;
-        }
+        const { data, error } = await dbClient.rpc('editar_produto_admin', {
+            p_id: id,
+            p_sku_original: skuOriginal,
+            p_produto: produto
+        });
 
         if(error) throw error;
-        if(!data || data.length === 0) {
+        if(!data || !data.id) {
             throw new Error('Produto não atualizado. Verifique se existe uma policy UPDATE no Supabase para o administrador.');
         }
 
-        const produtoAtualizado = { ...produto, id:data[0].id };
+        const produtoAtualizado = { ...produto, ...data };
 
         todosOsProdutos = todosOsProdutos.map(item => String(item.sku || '').toUpperCase() === String(skuOriginal || '').toUpperCase() ? produtoAtualizado : item);
         document.getElementById('admin-editar-sku-original').value = produtoAtualizado.sku || produto.sku;
