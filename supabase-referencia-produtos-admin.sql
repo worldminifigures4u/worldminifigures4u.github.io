@@ -320,10 +320,13 @@ begin
     preco = (p_produto->>'preco')::numeric,
     peso = (p_produto->>'peso')::numeric,
     stock = (p_produto->>'stock')::integer,
+    top = nullif(trim(coalesce(p_produto->>'top', '')), ''),
+    descontinuado = coalesce((p_produto->>'descontinuado')::boolean, false),
     observacoes = nullif(trim(coalesce(p_produto->>'observacoes', '')), ''),
     ativo = coalesce((p_produto->>'ativo')::boolean, true),
     novidade = coalesce((p_produto->>'novidade')::boolean, false),
-    imagens = v_imagens
+    imagens = v_imagens,
+    fornecedores = coalesce(p_produto->'fornecedores', produto.fornecedores, '{}'::jsonb)
   where nullif(trim(coalesce(p_id, '')), '') is not null
     and produto.id::text = trim(p_id)
   returning produto.*
@@ -340,10 +343,13 @@ begin
       preco = (p_produto->>'preco')::numeric,
       peso = (p_produto->>'peso')::numeric,
       stock = (p_produto->>'stock')::integer,
+      top = nullif(trim(coalesce(p_produto->>'top', '')), ''),
+      descontinuado = coalesce((p_produto->>'descontinuado')::boolean, false),
       observacoes = nullif(trim(coalesce(p_produto->>'observacoes', '')), ''),
       ativo = coalesce((p_produto->>'ativo')::boolean, true),
       novidade = coalesce((p_produto->>'novidade')::boolean, false),
-      imagens = v_imagens
+      imagens = v_imagens,
+      fornecedores = coalesce(p_produto->'fornecedores', produto.fornecedores, '{}'::jsonb)
     where upper(produto.sku) = upper(trim(coalesce(p_sku_original, '')))
     returning produto.*
     into v_produto;

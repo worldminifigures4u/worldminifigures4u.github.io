@@ -433,27 +433,17 @@ function fundirProdutosFornecedor(produtos) {
 }
 
 async function carregarProdutosCompletosPedidoFornecedor(pedido) {
-    if (!pedido?.itens?.length || !fornecedoresClient) return [];
+    if (!pedido?.itens?.length) return [];
 
     const ids = [...new Set(pedido.itens.map(item => item.id).filter(Boolean).map(String))];
     const skus = [...new Set(pedido.itens.map(item => String(item.sku || '').trim()).filter(Boolean))];
     const referencias = [...new Set(pedido.itens.map(item => String(item.referencia || '').trim()).filter(Boolean))];
-    const campos = 'id,nome,sku,referencia,tema,subtema,stock,preco,imagens,novidade';
-    const produtos = [];
-
-    const executarConsulta = async (coluna, valores) => {
-        if (!valores.length) return;
-        const { data, error } = await fornecedoresClient
-            .from('produtos')
-            .select(campos)
-            .in(coluna, valores);
-        if (error) throw error;
-        if (Array.isArray(data)) produtos.push(...data);
-    };
-
-    await executarConsulta('id', ids);
-    await executarConsulta('sku', skus);
-    await executarConsulta('referencia', referencias);
+    const produtos = fornecedorProdutos.filter(produto => {
+        const id = String(produto.id || '');
+        const sku = String(produto.sku || '').trim();
+        const referencia = String(produto.referencia || '').trim();
+        return ids.includes(id) || skus.includes(sku) || referencias.includes(referencia);
+    });
 
     const unicos = [];
     const vistos = new Set();
@@ -941,8 +931,8 @@ async function carregarCatalogoFornecedores() {
     let produtos = Array.isArray(respostaAdmin.data) ? respostaAdmin.data : [];
 
     if (respostaAdmin.error) {
-        console.warn('Catalogo administrativo indisponivel; a usar consulta direta.', respostaAdmin.error);
-        produtos = await carregarCatalogoFornecedoresDireto();
+        console.warn('Catalogo administrativo indisponivel.', respostaAdmin.error);
+        throw new Error('Execute o SQL atualizado no Supabase para carregar o catalogo administrativo.');
     } else if (produtos.length && !produtos.some(produto =>
         Object.prototype.hasOwnProperty.call(produto, "top")
         && Object.prototype.hasOwnProperty.call(produto, "descontinuado")
@@ -952,14 +942,8 @@ async function carregarCatalogoFornecedores() {
         && Object.prototype.hasOwnProperty.call(produto, "referencia")
         && Object.prototype.hasOwnProperty.call(produto, "novidade")
     )) {
-        try {
-            const produtosDiretos = await carregarCatalogoFornecedoresDireto();
-            if (produtosDiretos.length) produtos = produtosDiretos;
-        } catch (error) {
-            console.warn('Catalogo direto indisponivel; a RPC nao devolveu todos os campos dos mapas.', error);
-            if (estaPaginaMapasFornecedor()) {
-                definirStatusFornecedor('O Supabase ainda nao esta a devolver todos os campos dos mapas. Execute o SQL atualizado e volte a importar o mapas.ods.', true);
-            }
+        if (estaPaginaMapasFornecedor()) {
+            definirStatusFornecedor('O Supabase ainda nao esta a devolver todos os campos dos mapas. Execute o SQL atualizado e volte a importar o mapas.ods.', true);
         }
     }
 
@@ -972,25 +956,6 @@ async function carregarCatalogoFornecedores() {
         return { ...atual, quantidade: Math.max(1, Number(item.quantidade) || 1) };
     }).filter(Boolean);
     guardarSelecaoFornecedor();
-}
-
-async function carregarCatalogoFornecedoresDireto() {
-    const produtos = [];
-    let inicio = 0;
-    const tamanho = 500;
-    while (true) {
-        const { data, error } = await fornecedoresClient
-            .from('produtos')
-            .select('*')
-            .order('nome', { ascending: true })
-            .range(inicio, inicio + tamanho - 1);
-        if (error) throw error;
-        if (!data?.length) break;
-        produtos.push(...data);
-        if (data.length < tamanho) break;
-        inicio += tamanho;
-    }
-    return produtos;
 }
 
 function estaPaginaMapasFornecedor() {
@@ -1202,16 +1167,18 @@ async function guardarEdicaoProdutoMapa(evento) {
         );
         if (skuDuplicado) throw new Error("Este SKU ja existe noutro produto.");
 
-        let query = fornecedoresClient.from("produtos").update(produto);
-        query = id ? query.eq("id", id) : query.eq("sku", skuOriginal);
-        const { data, error } = await query.select("*");
+        const { data, error } = await fornecedoresClient.rpc("editar_produto_admin", {
+            p_id: id,
+            p_sku_original: skuOriginal,
+            p_produto: produto
+        });
         if (error) throw error;
-        if (!data?.length) throw new Error("Produto nao encontrado no Supabase.");
+        if (!data?.id) throw new Error("Produto nao encontrado no Supabase.");
 
         const atualizado = {
-            ...data[0],
-            stock: Number.isFinite(Number(data[0].stock)) ? Number(data[0].stock) : 0,
-            preco: Number.isFinite(Number(data[0].preco)) ? Number(data[0].preco) : 0
+            ...data,
+            stock: Number.isFinite(Number(data.stock)) ? Number(data.stock) : 0,
+            preco: Number.isFinite(Number(data.preco)) ? Number(data.preco) : 0
         };
         fornecedorProdutos = fornecedorProdutos.map(item =>
             String(item.id) === String(atualizado.id) || String(item.sku || "").toUpperCase() === String(skuOriginal || "").toUpperCase()
