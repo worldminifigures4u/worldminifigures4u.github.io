@@ -133,7 +133,7 @@ set search_path = public
 as $$
 declare
   v_produto public.produtos%rowtype;
-  v_imagens text[];
+  v_imagens json[];
   v_sku text;
 begin
   if lower(coalesce(auth.jwt() ->> 'email', '')) <>
@@ -150,7 +150,7 @@ begin
     raise exception 'SKU invalido.';
   end if;
 
-  select coalesce(array_agg(trim(valor)), array[]::text[])
+  select coalesce(array_agg(to_json(trim(valor))), array[]::json[])
   into v_imagens
   from jsonb_array_elements_text(coalesce(p_produto->'imagens', '[]'::jsonb)) as imagens(valor)
   where trim(valor) <> '';
@@ -288,7 +288,7 @@ set search_path = public
 as $$
 declare
   v_produto public.produtos%rowtype;
-  v_imagens text[];
+  v_imagens json[];
   v_sku text;
 begin
   if lower(coalesce(auth.jwt() ->> 'email', '')) <>
@@ -305,7 +305,7 @@ begin
     raise exception 'SKU invalido.';
   end if;
 
-  select coalesce(array_agg(trim(valor)), array[]::text[])
+  select coalesce(array_agg(to_json(trim(valor))), array[]::json[])
   into v_imagens
   from jsonb_array_elements_text(coalesce(p_produto->'imagens', '[]'::jsonb)) as imagens(valor)
   where trim(valor) <> '';
