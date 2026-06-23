@@ -317,6 +317,64 @@ $$;
 revoke execute on function public.guardar_notas_cliente_admin(uuid, text) from public, anon;
 grant execute on function public.guardar_notas_cliente_admin(uuid, text) to authenticated;
 
+create or replace function public.criar_cliente_externo_admin(
+  p_nome text,
+  p_email text,
+  p_telefone text,
+  p_morada text,
+  p_cp text,
+  p_cidade text,
+  p_pais text
+)
+returns jsonb
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_cliente public.clientes_gestao%rowtype;
+  v_email text := nullif(trim(coalesce(p_email, '')), '');
+begin
+  if lower(coalesce(auth.jwt() ->> 'email', '')) <> 'worldminifigures4u@gmail.com' then
+    raise exception 'Acesso reservado ao administrador';
+  end if;
+
+  if nullif(trim(coalesce(p_nome, '')), '') is null then
+    raise exception 'O nome do cliente e obrigatorio';
+  end if;
+
+  if v_email is not null and exists (
+    select 1
+    from public.clientes_gestao
+    where lower(email) = lower(v_email)
+  ) then
+    raise exception 'Ja existe outro cliente com este e-mail';
+  end if;
+
+  insert into public.clientes_gestao (
+    nome, email, telefone, morada, cp, cidade, pais
+  ) values (
+    trim(p_nome),
+    v_email,
+    nullif(trim(coalesce(p_telefone, '')), ''),
+    nullif(trim(coalesce(p_morada, '')), ''),
+    nullif(trim(coalesce(p_cp, '')), ''),
+    nullif(trim(coalesce(p_cidade, '')), ''),
+    nullif(trim(coalesce(p_pais, '')), '')
+  )
+  returning * into v_cliente;
+
+  return jsonb_build_object('sucesso', true, 'cliente', to_jsonb(v_cliente));
+end;
+$$;
+
+revoke execute on function public.criar_cliente_externo_admin(
+  text, text, text, text, text, text, text
+) from public, anon;
+grant execute on function public.criar_cliente_externo_admin(
+  text, text, text, text, text, text, text
+) to authenticated;
+
 create or replace function public.atualizar_cliente_externo_admin(
   p_cliente_id uuid,
   p_nome text,

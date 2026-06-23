@@ -123,10 +123,13 @@ async function abrirCliente(clienteId) {
     renderizarFichaCliente(data);
 }
 
-function renderizarFormularioCliente(dados) {
+function renderizarFormularioCliente(dados, modo = "editar") {
     const ficha = document.getElementById("clientes-ficha");
     const cliente = dados.cliente || {};
     const perfis = Array.isArray(dados.perfis) ? dados.perfis : [];
+    const novoCliente = modo === "novo";
+    clienteAbertoId = novoCliente ? "" : String(cliente.id || "");
+    renderizarClientesLista();
     const formulario = document.createElement("form");
     formulario.className = "admin-cliente-formulario clientes-formulario";
     formulario.append(
@@ -152,8 +155,15 @@ function renderizarFormularioCliente(dados) {
     const acoes = criarElementoCliente("div", "admin-cliente-formulario-acoes");
     const cancelar = criarElementoCliente("button", "wallapop-botao", "Cancelar");
     cancelar.type = "button";
-    cancelar.addEventListener("click", () => renderizarFichaCliente(dados));
-    const guardar = criarElementoCliente("button", "wallapop-botao wallapop-botao-destaque", "Guardar ficha");
+    cancelar.addEventListener("click", () => {
+        if (novoCliente) {
+            ficha.replaceChildren(criarElementoCliente("p", "admin-cliente-vazio", "Escolha um cliente para abrir a ficha."));
+            definirStatusClientes("");
+        } else {
+            renderizarFichaCliente(dados);
+        }
+    });
+    const guardar = criarElementoCliente("button", "wallapop-botao wallapop-botao-destaque", novoCliente ? "Criar cliente" : "Guardar ficha");
     guardar.type = "submit";
     acoes.append(cancelar, guardar);
     formulario.appendChild(acoes);
@@ -162,10 +172,9 @@ function renderizarFormularioCliente(dados) {
         evento.preventDefault();
         guardar.disabled = true;
         cancelar.disabled = true;
-        definirStatusClientes("A guardar ficha...");
+        definirStatusClientes(novoCliente ? "A criar cliente..." : "A guardar ficha...");
         const campos = new FormData(formulario);
-        const { data, error } = await clientesClient.rpc("atualizar_cliente_externo_admin", {
-            p_cliente_id: cliente.id,
+        const parametrosCliente = {
             p_nome: String(campos.get("nome") || ""),
             p_email: String(campos.get("email") || ""),
             p_telefone: String(campos.get("telefone") || ""),
@@ -173,16 +182,23 @@ function renderizarFormularioCliente(dados) {
             p_cp: String(campos.get("cp") || ""),
             p_cidade: String(campos.get("cidade") || ""),
             p_pais: String(campos.get("pais") || "")
-        });
+        };
+        const { data, error } = novoCliente
+            ? await clientesClient.rpc("criar_cliente_externo_admin", parametrosCliente)
+            : await clientesClient.rpc("atualizar_cliente_externo_admin", {
+                p_cliente_id: cliente.id,
+                ...parametrosCliente
+            });
         if (error || data?.sucesso === false) {
             guardar.disabled = false;
             cancelar.disabled = false;
             definirStatusClientes("Erro ao guardar dados: " + (error?.message || data?.erro || "sem detalhe"), true);
             return;
         }
+        const clienteId = data?.cliente?.id || cliente.id;
 
         const perfis = await clientesClient.rpc("guardar_perfis_cliente_admin", {
-            p_cliente_id: cliente.id,
+            p_cliente_id: clienteId,
             p_perfis: obterPerfisFormularioCliente(formulario)
         });
         guardar.disabled = false;
@@ -191,12 +207,21 @@ function renderizarFormularioCliente(dados) {
             definirStatusClientes("Dados guardados, mas erro nos links: " + (perfis.error?.message || perfis.data?.erro || "sem detalhe"), true);
             return;
         }
-        definirStatusClientes("Ficha guardada.");
+        definirStatusClientes(novoCliente ? "Cliente criado." : "Ficha guardada.");
         await pesquisarClientes();
-        await abrirCliente(cliente.id);
+        await abrirCliente(clienteId);
     });
 
-    ficha.replaceChildren(criarElementoCliente("h2", "", "Editar ficha"), formulario);
+    ficha.replaceChildren(criarElementoCliente("h2", "", novoCliente ? "Criar cliente" : "Editar ficha"), formulario);
+}
+
+function criarClienteNovo() {
+    renderizarFormularioCliente({
+        cliente: { nome: "", email: "", telefone: "", morada: "", cp: "", cidade: "", pais: "" },
+        perfis: [],
+        historico: [],
+        resumo: {}
+    }, "novo");
 }
 
 function renderizarFichaCliente(dados) {
@@ -306,6 +331,7 @@ async function iniciarClientesAdmin() {
 }
 
 document.getElementById("btn-pesquisar-clientes").addEventListener("click", pesquisarClientes);
+document.getElementById("btn-criar-cliente").addEventListener("click", criarClienteNovo);
 document.getElementById("clientes-pesquisa").addEventListener("input", () => {
     clearTimeout(window.__clientesPesquisaTimer);
     window.__clientesPesquisaTimer = setTimeout(pesquisarClientes, 250);
