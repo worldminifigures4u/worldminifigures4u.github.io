@@ -527,7 +527,7 @@ function analisarListaProdutosPlataforma(texto) {
 
 function textoOpcaoProdutoPlataforma(produto) {
     const stock = Number.isFinite(Number(produto.stock)) ? Number(produto.stock) : 0;
-    return `${produto.nome} (Ref. ${produto.referencia || '-'} | SKU ${produto.sku || '-'} | Stock: ${stock})`;
+    return `${produto.nome} (Ref. ${produto.referencia || '-'} | Stock: ${stock})`;
 }
 
 function buscarProdutosCatalogoPlataforma(termo, limite = 30) {
