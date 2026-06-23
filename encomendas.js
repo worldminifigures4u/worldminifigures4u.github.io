@@ -524,6 +524,40 @@ async function atualizarEstadoEncomendaAdmin(encomenda, estado, select) {
     }
 }
 
+async function apagarEncomendaAdmin(encomenda, botao) {
+    const codigo = encomenda.codigo_encomenda || `#${encomenda.id}`;
+    const avisoStock = estadoNormalizadoEncomenda(encomenda.estado) !== 'Cancelado'
+        ? '\n\nAtenção: isto não repõe stock. Para repor stock, cancele primeiro a encomenda.'
+        : '';
+    if (!window.confirm(`Apagar definitivamente a encomenda ${codigo}?${avisoStock}`)) return;
+    if (!window.confirm('Confirmar eliminação definitiva? Esta ação não pode ser desfeita.')) return;
+
+    botao.disabled = true;
+    definirStatusEncomendas('A apagar encomenda...');
+    try {
+        try {
+            await apagarAnexosEncomenda(encomenda);
+        } catch (erroAnexos) {
+            console.warn('Nao foi possivel eliminar anexos antes de apagar a encomenda.', erroAnexos);
+        }
+
+        const { data, error } = await encomendasClient.rpc('apagar_encomenda_admin', {
+            p_encomenda_id: String(encomenda.id)
+        });
+        if (error || data?.sucesso === false) {
+            throw error || new Error(data?.erro || 'Erro ao apagar encomenda');
+        }
+
+        encomendasAdmin = encomendasAdmin.filter(item => String(item.id) !== String(encomenda.id));
+        atualizarResumoEncomendas();
+        renderizarEncomendasAdmin();
+        definirStatusEncomendas(`Encomenda ${codigo} apagada.`);
+    } catch (error) {
+        botao.disabled = false;
+        definirStatusEncomendas('Erro ao apagar encomenda: ' + detalheErroEncomendas(error), true);
+    }
+}
+
 function criarLinhaDetalhe(rotulo, valor) {
     const linha = criarElementoEncomenda('div', 'admin-encomenda-detalhe-linha');
     linha.append(
@@ -900,7 +934,11 @@ function criarCardEncomenda(encomenda) {
         editar.href = `plataforma.html?editar=${encodeURIComponent(encomenda.codigo_encomenda)}`;
         botoes.appendChild(editar);
     }
+    const apagar = criarElementoEncomenda('button', 'wallapop-botao admin-encomenda-apagar', 'Apagar encomenda');
+    apagar.type = 'button';
+    apagar.addEventListener('click', () => apagarEncomendaAdmin(encomenda, apagar));
     botoes.appendChild(copiar);
+    botoes.appendChild(apagar);
     acoes.append(grupoEstado, botoes);
 
     gestaoEncomenda = criarGestaoEncomenda(encomenda);

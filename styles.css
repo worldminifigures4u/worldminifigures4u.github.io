@@ -1700,6 +1700,16 @@
             color:#000;
         }
 
+        .admin-encomenda-apagar{
+            background:#7a1f1f;
+            color:#fff;
+        }
+
+        .admin-encomenda-apagar:hover,
+        .admin-encomenda-apagar:focus-visible{
+            background:#a52828;
+        }
+
         .plataforma-stock-modal{
             position:fixed;
             z-index:12000;

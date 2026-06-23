@@ -314,6 +314,46 @@ from public, anon;
 grant execute on function public.cancelar_encomenda_plataforma_admin(text, boolean)
 to authenticated;
 
+create or replace function public.apagar_encomenda_admin(
+  p_encomenda_id text
+)
+returns jsonb
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_codigo text;
+begin
+  if coalesce(auth.jwt() ->> 'email', '') <> 'worldminifigures4u@gmail.com' then
+    raise exception 'Acesso reservado ao administrador';
+  end if;
+
+  select codigo_encomenda into v_codigo
+  from public.encomendas
+  where id::text = p_encomenda_id
+  limit 1;
+
+  if not found then
+    raise exception 'Encomenda nao encontrada';
+  end if;
+
+  delete from public.encomendas
+  where id::text = p_encomenda_id;
+
+  return jsonb_build_object(
+    'sucesso', true,
+    'codigo', v_codigo
+  );
+end;
+$$;
+
+revoke execute on function public.apagar_encomenda_admin(text)
+from public, anon;
+
+grant execute on function public.apagar_encomenda_admin(text)
+to authenticated;
+
 create or replace function public.obter_encomenda_plataforma_admin(
   p_codigo_encomenda text
 )
