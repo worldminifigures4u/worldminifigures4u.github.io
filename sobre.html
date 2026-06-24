@@ -12,7 +12,7 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
 
-    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="styles.css?v=20260624-cabecalho-uniforme">
 </head>
 <body data-page="sobre">
 
@@ -25,7 +25,7 @@
             <input type="text" id="campo-pesquisa" class="input-pesquisa" placeholder="O que est&aacute;s &agrave; procura?" oninput="pesquisarNoCabecalho()" onkeydown="verificarTeclaEnter(event)">
             <span class="icone-pesquisa" aria-hidden="true"></span>
         </div>
-        <div class="acoes-cabecalho">
+        <div class="acoes-cabecalho acoes-cabecalho-publicas">
             <a class="acao-cabecalho acao-produtos" href="index.html" aria-label="Ver produtos" data-vista-nav="loja">
                 <span class="texto-acao">
                     <strong>Produtos</strong>
@@ -38,13 +38,18 @@
                     <span class="detalhe-conta-cabecalho" id="nome-login-cabecalho"></span>
                 </span>
             </a>
+            <a class="acao-cabecalho acao-carrinho" href="carrinho.html" aria-label="Abrir carrinho" data-vista-nav="carrinho">
+                <span class="icone-acao" aria-hidden="true"></span>
+                <span class="badge-carrinho" id="contador-carrinho-cabecalho">0</span>
+            </a>
+        </div>
+        <nav class="navegacao-admin-cabecalho" aria-label="Navegação administrativa" hidden>
             <a class="acao-cabecalho acao-plataforma-admin" href="plataforma.html" aria-label="Gerir plataformas" hidden>
                 <span class="texto-acao"><strong>Plataforma</strong></span>
             </a>
             <a class="acao-cabecalho acao-mapas-admin" href="mapas.html" aria-label="Gerir mapas" hidden>
                 <span class="texto-acao"><strong>Mapas</strong></span>
             </a>
-
             <a class="acao-cabecalho acao-fornecedores-admin" href="fornecedores.html" aria-label="Gerir fornecedores" hidden>
                 <span class="texto-acao"><strong>Fornecedores</strong></span>
             </a>
@@ -54,11 +59,7 @@
             <a class="acao-cabecalho acao-clientes-admin" href="clientes.html" aria-label="Gerir clientes" hidden>
                 <span class="texto-acao"><strong>Clientes</strong></span>
             </a>
-            <a class="acao-cabecalho acao-carrinho" href="carrinho.html" aria-label="Abrir carrinho" data-vista-nav="carrinho">
-                <span class="icone-acao" aria-hidden="true"></span>
-                <span class="badge-carrinho" id="contador-carrinho-cabecalho">0</span>
-            </a>
-        </div>
+        </nav>
     </div>
 </header>
 
