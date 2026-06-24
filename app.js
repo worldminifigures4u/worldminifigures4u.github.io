@@ -2104,6 +2104,18 @@ function otimizarImagemCloudinary(url, largura = 700) {
     );
 }
 
+const imagensProdutoPrecarregadas = new Set();
+
+function precarregarImagemProduto(url) {
+    const src = String(url || '').trim();
+    if (!src || imagensProdutoPrecarregadas.has(src)) return;
+
+    imagensProdutoPrecarregadas.add(src);
+    const imagem = new Image();
+    imagem.decoding = 'async';
+    imagem.src = src;
+}
+
 function obterImagemPrincipalProduto(prod = {}) {
     let listaImagens = [];
 
@@ -2378,15 +2390,24 @@ function gerarProdutos(listaProdutos){
 
         listaImagens = listaImagens.filter(url => url && typeof url === 'string' && url.trim() !== "");
         const imagemFallback = 'img/sem-imagem.png';
-        const imagemInicial = listaImagens.length > 0
-            ? otimizarImagemCloudinary(listaImagens[0], 700)
-            : imagemFallback;
+        const imagensOtimizadas = listaImagens.map(url => otimizarImagemCloudinary(url, 520));
+        const imagemInicial = imagensOtimizadas[0] || imagemFallback;
 
         const imagemPrincipal = document.createElement('img');
         imagemPrincipal.className = 'produto-img';
         imagemPrincipal.loading = 'lazy';
         imagemPrincipal.decoding = 'async';
         imagemPrincipal.dataset.srcOriginal = imagemInicial;
+        imagemPrincipal.addEventListener('load', () => {
+            const iniciarPrecarregamento = () => {
+                imagensOtimizadas.slice(1).forEach(precarregarImagemProduto);
+            };
+            if ('requestIdleCallback' in window) {
+                window.requestIdleCallback(iniciarPrecarregamento, { timeout: 1200 });
+            } else {
+                setTimeout(iniciarPrecarregamento, 100);
+            }
+        }, { once:true });
         imagemPrincipal.src = imagemInicial;
         imagemPrincipal.onerror = () => {
             if (imagemPrincipal.src.indexOf(imagemFallback) === -1) {
@@ -2399,14 +2420,16 @@ function gerarProdutos(listaProdutos){
             const miniaturasDiv = document.createElement('div');
             miniaturasDiv.className = 'produto-miniaturas';
             
-            listaImagens.forEach((url, index) => {
+            imagensOtimizadas.forEach((imagemOtimizada, index) => {
                 const mini = document.createElement('button');
                 mini.className = 'miniatura-img';
                 mini.type = 'button';
                 mini.title = 'Ver imagem ' + (index + 1);
                 mini.textContent = index + 1;
+                mini.addEventListener('pointerenter', () => precarregarImagemProduto(imagemOtimizada), { once:true });
+                mini.addEventListener('focus', () => precarregarImagemProduto(imagemOtimizada), { once:true });
+                mini.addEventListener('touchstart', () => precarregarImagemProduto(imagemOtimizada), { once:true, passive:true });
                 mini.onclick = function() {
-                    const imagemOtimizada = otimizarImagemCloudinary(url, 700);
                     imagemPrincipal.dataset.srcOriginal = imagemOtimizada;
                     imagemPrincipal.src = imagemOtimizada;
                 };
