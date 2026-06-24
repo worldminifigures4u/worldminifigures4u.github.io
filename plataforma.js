@@ -1273,8 +1273,14 @@ function criarTextoInternoPlataforma() {
         String(item.nome || '').trim(),
         String(item.sku || '').trim()
     ].join('\t')));
-    if (obterPlataformaAtual() === 'OLX') {
-        linhas.push('', ...criarLinhasDadosClienteOlx());
+    if (obterPlataformaParaFicheiros() === 'OLX') {
+        const envio = obterEnvioParaFicheirosPlataforma();
+        linhas.push(
+            '',
+            `Envio:\t${envio.nome} - ${formatarEuroWallapop(envio.portes)} \u20ac`,
+            '',
+            ...criarLinhasDadosClienteOlx()
+        );
     }
     return '\ufeff' + linhas.join('\r\n');
 }
