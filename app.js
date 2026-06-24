@@ -880,6 +880,8 @@ function utilizadorAdmin(user) {
 function atualizarVisibilidadeAdmin(user) {
     const painel = document.getElementById('painel-admin');
     const adminAtivo = utilizadorAdmin(user);
+    const tituloConta = document.querySelector('[data-vista-nav="conta"] .texto-acao strong');
+    if (tituloConta) tituloConta.textContent = adminAtivo ? 'Conta Admin' : 'Conta';
     const atalhosAdmin = document.querySelectorAll('.acao-plataforma-admin, .acao-anuncio-admin, .acao-mapas-admin, .acao-fornecedores-admin, .acao-encomendas-admin, .acao-clientes-admin');
     atalhosAdmin.forEach(atalho => { atalho.hidden = !adminAtivo; });
     const navegacaoAdmin = document.querySelector('.navegacao-admin-cabecalho');
