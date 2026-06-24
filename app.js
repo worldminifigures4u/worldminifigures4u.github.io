@@ -8,18 +8,21 @@ const PESO_PADRAO_PRODUTO_GRAMAS = 10;
 const TABELA_PORTES_POR_PESO = {
     portugal: [
         { ate: 100, opcoes: [
+            { id: 'entrega_tomar', nome: 'Entrega em Tomar (Portugal)', valor: 0 },
             { id: 'ctt_normal', nome: 'CTT Normal', valor: 1.75 },
             { id: 'ctt_azul', nome: 'CTT Azul', valor: 2.20 },
             { id: 'ctt_registado', nome: 'CTT Registado', valor: 4.50 },
             { id: 'inpost_registado', nome: 'InPost Registado (com seguro de 25\u20ac)', valor: 4.95 }
         ]},
         { ate: 500, opcoes: [
+            { id: 'entrega_tomar', nome: 'Entrega em Tomar (Portugal)', valor: 0 },
             { id: 'ctt_normal', nome: 'CTT Normal', valor: 2.50 },
             { id: 'ctt_azul', nome: 'CTT Azul', valor: 3.95 },
             { id: 'ctt_registado', nome: 'CTT Registado', valor: 5.30 },
             { id: 'inpost_registado', nome: 'InPost Registado (com seguro de 25\u20ac)', valor: 4.95 }
         ]},
         { ate: Infinity, opcoes: [
+            { id: 'entrega_tomar', nome: 'Entrega em Tomar (Portugal)', valor: 0 },
             { id: 'ctt_normal', nome: 'CTT Normal', valor: 5.75 },
             { id: 'ctt_azul', nome: 'CTT Azul', valor: 7.95 },
             { id: 'ctt_registado', nome: 'CTT Registado', valor: 8.95 },
