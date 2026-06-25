@@ -881,12 +881,17 @@ function atualizarVisibilidadeAdmin(user) {
     const painel = document.getElementById('painel-admin');
     const adminAtivo = utilizadorAdmin(user);
     const tituloConta = document.querySelector('[data-vista-nav="conta"] .texto-acao strong');
-    if (tituloConta) tituloConta.textContent = adminAtivo ? 'Conta Admin' : 'Conta';
-    const atalhosAdmin = document.querySelectorAll('.acao-plataforma-admin, .acao-anuncio-admin, .acao-mapas-admin, .acao-fornecedores-admin, .acao-encomendas-admin, .acao-clientes-admin');
+    if (tituloConta) tituloConta.textContent = 'Conta';
+    const atalhosAdmin = document.querySelectorAll('.acao-gestao-admin, .acao-plataforma-admin, .acao-anuncio-admin, .acao-mapas-admin, .acao-fornecedores-admin, .acao-encomendas-admin, .acao-clientes-admin');
     atalhosAdmin.forEach(atalho => { atalho.hidden = !adminAtivo; });
     const navegacaoAdmin = document.querySelector('.navegacao-admin-cabecalho');
     if (navegacaoAdmin) navegacaoAdmin.hidden = !adminAtivo;
     document.body.classList.toggle('cabecalho-com-admin', adminAtivo);
+    const bloqueioGestao = document.getElementById('gestao-bloqueio');
+    if (bloqueioGestao) {
+        bloqueioGestao.hidden = adminAtivo;
+        bloqueioGestao.textContent = adminAtivo ? '' : 'Acesso reservado ao administrador.';
+    }
     if(!painel) return;
     const zonaEliminacao = document.getElementById('zona-eliminacao-conta');
     painel.style.display = adminAtivo ? 'block' : 'none';

@@ -6,15 +6,15 @@
     <meta name="robots" content="noindex, nofollow, noarchive, nosnippet">
     <meta name="googlebot" content="noindex, nofollow, noarchive, nosnippet">
     <meta name="bingbot" content="noindex, nofollow, noarchive, nosnippet">
-    <title>Carrinho | Figures Planet</title>
+    <title>Gestão | Figures Planet</title>
     <link rel="icon" type="image/png" href="figures-planet-logo-transparent.png">
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
 
-    <link rel="stylesheet" href="styles.css?v=20260623-cabecalho-duplo">
+    <link rel="stylesheet" href="styles.css?v=20260625-conta-gestao">
 </head>
-<body data-page="carrinho">
+<body data-page="conta" class="pagina-gestao">
 
 <header>
     <div class="cabecalho-loja">
@@ -44,7 +44,7 @@
             </a>
         </div>
         <nav class="navegacao-admin-cabecalho" aria-label="Navegação administrativa" hidden>
-            <a class="acao-cabecalho acao-gestao-admin" href="gestao.html" aria-label="Abrir gestão administrativa" hidden>
+            <a class="acao-cabecalho acao-gestao-admin ativa" href="gestao.html" aria-label="Abrir gestão administrativa" hidden>
                 <span class="texto-acao"><strong>Gestão</strong></span>
             </a>
             <a class="acao-cabecalho acao-plataforma-admin" href="plataforma.html" aria-label="Gerir plataformas" hidden>
@@ -53,6 +53,7 @@
             <a class="acao-cabecalho acao-mapas-admin" href="mapas.html" aria-label="Gerir mapas" hidden>
                 <span class="texto-acao"><strong>Mapas</strong></span>
             </a>
+
             <a class="acao-cabecalho acao-fornecedores-admin" href="fornecedores.html" aria-label="Gerir fornecedores" hidden>
                 <span class="texto-acao"><strong>Fornecedores</strong></span>
             </a>
@@ -84,7 +85,8 @@
     </div>
     </section>
 
-    <section class="vista vista-conta" id="vista-conta">
+    <section class="vista vista-conta ativa" id="vista-conta">
+        <div class="gestao-bloqueio" id="gestao-bloqueio">A verificar acesso administrativo...</div>
         <aside class="area-cliente" id="painel-cliente">
             <div id="conteudo-cliente-autenticado" style="display: none;">
                 <h2> Minha Conta</h2>
@@ -216,6 +218,10 @@
                             <input type="checkbox" id="admin-produto-ativo" checked>
                             Produto ativo na loja
                         </label>
+                        <label class="opcao-admin-inline">
+                            <input type="checkbox" id="admin-produto-novidade" checked>
+                            Novidade
+                        </label>
                         <button type="submit" class="btn-acao-cliente">Criar Produto</button>
                         <div id="status-admin-produto" class="msg-status"></div>
                     </form>
@@ -313,6 +319,10 @@
                                 <input type="checkbox" id="admin-editar-ativo">
                                 Produto ativo na loja
                             </label>
+                            <label class="opcao-admin-inline">
+                                <input type="checkbox" id="admin-editar-novidade">
+                                Novidade
+                            </label>
                             <div class="acoes-form-admin">
                                 <button type="submit" class="btn-acao-cliente">Guardar alterações</button>
                                 <button type="button" class="btn-admin-secundario" onclick="cancelarEdicaoProdutoAdmin()">Cancelar</button>
@@ -401,7 +411,7 @@
         </aside>
     </section>
 
-    <section class="vista vista-carrinho ativa" id="vista-carrinho">
+    <section class="vista vista-carrinho" id="vista-carrinho">
         <aside class="carrinho">
 <h2> Carrinho</h2>
         <div class="lista-carrinho" id="lista-carrinho">
@@ -494,7 +504,7 @@
         </nav>
     </div>
 </footer>
-<script src="app.js?v=20260624-conta-admin"></script>
+<script src="app.js?v=20260625-conta-gestao"></script>
 </body>
 </html>
 
