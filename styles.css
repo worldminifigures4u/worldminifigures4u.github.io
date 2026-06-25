@@ -3869,3 +3869,21 @@ body.pagina-com-cabecalho-site{
     padding-top: 0;
     border-top: 0;
 }
+
+
+/* Separação visual entre a lista de produtos e o formulário de criação. */
+.pagina-gestao .admin-adicionar-produto-titulo {
+    position: relative;
+    z-index: 1;
+    clear: both;
+    margin: 24px 0 10px;
+    padding-top: 18px;
+    border-top: 1px solid #333;
+    background: #111;
+}
+
+.pagina-gestao .admin-adicionar-produto-formulario {
+    position: relative;
+    z-index: 1;
+    background: #111;
+}

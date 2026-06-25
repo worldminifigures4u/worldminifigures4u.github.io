@@ -910,6 +910,8 @@ function atualizarVisibilidadeAdmin(user) {
         if(gestaoProdutos && tituloAdicionarProduto && formularioAdicionarProduto) {
             const primeiraSeccaoAposProdutos = gestaoProdutos.querySelector(':scope > .admin-seccao');
             tituloAdicionarProduto.textContent = 'Adicionar produto';
+            tituloAdicionarProduto.classList.add('admin-adicionar-produto-titulo');
+            formularioAdicionarProduto.classList.add('admin-adicionar-produto-formulario');
             gestaoProdutos.insertBefore(tituloAdicionarProduto, primeiraSeccaoAposProdutos);
             gestaoProdutos.insertBefore(formularioAdicionarProduto, primeiraSeccaoAposProdutos);
         }
