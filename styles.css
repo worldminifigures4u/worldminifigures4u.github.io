@@ -3887,3 +3887,21 @@ body.pagina-com-cabecalho-site{
     z-index: 1;
     background: #111;
 }
+
+
+/* No telemóvel, o carrinho usa apenas o scroll geral da página. */
+@media (max-width: 560px) {
+    .vista-carrinho .carrinho {
+        height: auto;
+        max-height: none;
+        overflow: visible;
+        touch-action: pan-y;
+    }
+
+    .vista-carrinho .lista-carrinho {
+        max-height: none;
+        overflow: visible;
+        overscroll-behavior: auto;
+        touch-action: pan-y;
+    }
+}
