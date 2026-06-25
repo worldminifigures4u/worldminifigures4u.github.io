@@ -3855,3 +3855,17 @@ body.pagina-com-cabecalho-site{
 .gestao-bloqueio[hidden] {
     display: none;
 }
+
+
+/* Remove separadores vazios herdados da antiga área Conta/Admin. */
+.pagina-gestao #painel-admin {
+    margin-top: 0;
+    padding-top: 0;
+    border-top: 0;
+}
+
+.pagina-gestao #painel-admin > .admin-seccao:first-child {
+    margin-top: 0;
+    padding-top: 0;
+    border-top: 0;
+}
