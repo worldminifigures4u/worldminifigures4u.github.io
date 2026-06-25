@@ -3905,3 +3905,28 @@ body.pagina-com-cabecalho-site{
         touch-action: pan-y;
     }
 }
+
+
+/* No telemóvel, a pesquisa pertence apenas à página Produtos. */
+@media (max-width: 560px) {
+    body:not([data-page="loja"]) .cabecalho-pesquisa {
+        display: none;
+    }
+
+    body:not([data-page="loja"]) {
+        padding-top: 138px;
+    }
+
+    body:not([data-page="loja"]) .cabecalho-loja {
+        grid-template-rows: auto auto;
+    }
+
+    body:not([data-page="loja"]) .acoes-cabecalho {
+        grid-row: 2;
+    }
+
+    body.cabecalho-com-admin:not([data-page="loja"]),
+    body.pagina-com-cabecalho-site:not([data-page="loja"]) {
+        padding-top: 188px;
+    }
+}
