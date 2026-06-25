@@ -901,14 +901,17 @@ function atualizarVisibilidadeAdmin(user) {
         const dadosPessoais = document.getElementById('form-editar-dados-cliente')?.closest('.historico-encomendas');
         const gestaoProdutos = painel.querySelector('.admin-seccao');
         const tituloAdicionarProduto = painel.querySelector(':scope > h3');
+        const formularioAdicionarProduto = document.getElementById('form-admin-produto');
 
         if(conteudoConta && dadosPessoais) {
             conteudoConta.insertBefore(painel, dadosPessoais);
         }
 
-        if(gestaoProdutos && tituloAdicionarProduto) {
+        if(gestaoProdutos && tituloAdicionarProduto && formularioAdicionarProduto) {
+            const primeiraSeccaoAposProdutos = gestaoProdutos.querySelector(':scope > .admin-seccao');
             tituloAdicionarProduto.textContent = 'Adicionar produto';
-            painel.insertBefore(gestaoProdutos, tituloAdicionarProduto);
+            gestaoProdutos.insertBefore(tituloAdicionarProduto, primeiraSeccaoAposProdutos);
+            gestaoProdutos.insertBefore(formularioAdicionarProduto, primeiraSeccaoAposProdutos);
         }
 
         carregarProdutosAdminDaNuvem().catch(error => {
