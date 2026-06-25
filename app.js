@@ -2503,6 +2503,18 @@ function limparCarrinho() {
 
 
 
+function recolherMenuTemasNoTelemovel() {
+    if (!window.matchMedia || !window.matchMedia('(max-width: 560px)').matches) return;
+
+    const listaTemas = document.querySelector('#menu-lateral-temas .lista-temas');
+    const botaoToggle = document.querySelector('#menu-lateral-temas .btn-toggle-menu');
+    if (!listaTemas) return;
+
+    listaTemas.classList.add('recolhida');
+    if (botaoToggle) botaoToggle.textContent = 'Mostrar';
+    agendarAtualizacaoStickyTemas();
+}
+
 function filtrarTema(filtro, botao){
     document.querySelectorAll('.btn-tema, .btn-subtema').forEach(btn => { btn.classList.remove('ativo'); });
     botao.classList.add('ativo');
@@ -2526,6 +2538,7 @@ function filtrarTema(filtro, botao){
     }
 
     executarFiltrosCombinados();
+    recolherMenuTemasNoTelemovel();
 }
 
 function verificarTeclaEnter(evento) {
