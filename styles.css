@@ -1932,6 +1932,14 @@
             text-align:center;
         }
 
+        .admin-encomendas > .wallapop-status{
+            margin:10px 0 0;
+        }
+
+        .admin-encomendas > .wallapop-status:empty{
+            display:none;
+        }
+
         .admin-encomendas > .wallapop-status.msg-sucesso{ color:#28a745; }
         .admin-encomendas > .wallapop-status.msg-erro{ color:#ff4d4d; }
 
