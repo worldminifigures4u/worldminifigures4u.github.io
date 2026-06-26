@@ -1728,6 +1728,181 @@ function imagensParaTextoAdmin(produto) {
     return imagens.filter(url => typeof url === 'string' && url.trim()).join('\n');
 }
 
+function obterContainerEncomendasFornecedorProduto() {
+    let container = document.getElementById('admin-editar-encomendas-fornecedor');
+    const form = document.getElementById('form-admin-editar-produto');
+    if(container || !form) return container;
+
+    container = document.createElement('section');
+    container.id = 'admin-editar-encomendas-fornecedor';
+    container.className = 'admin-produto-encomendas-fornecedor';
+
+    const titulo = document.createElement('h4');
+    titulo.textContent = 'Encomendas a fornecedor deste produto';
+
+    const conteudo = document.createElement('div');
+    conteudo.className = 'admin-produto-encomendas-fornecedor-conteudo';
+    conteudo.textContent = 'Escolha um produto para carregar o histórico.';
+
+    container.append(titulo, conteudo);
+
+    const acoes = form.querySelector('.acoes-form-admin');
+    form.insertBefore(container, acoes || document.getElementById('status-admin-editar-produto') || null);
+    return container;
+}
+
+function definirEncomendasFornecedorProduto(mensagem, tipo = '') {
+    const container = obterContainerEncomendasFornecedorProduto();
+    const conteudo = container?.querySelector('.admin-produto-encomendas-fornecedor-conteudo');
+    if(!conteudo) return;
+    conteudo.replaceChildren();
+    const aviso = document.createElement('p');
+    aviso.className = `ajuda-admin ${tipo}`.trim();
+    aviso.textContent = mensagem;
+    conteudo.appendChild(aviso);
+}
+
+function produtoCorrespondeItemFornecedor(produto, item) {
+    if(!produto || !item) return false;
+    const produtoId = obterProdutoId(produto);
+    const itemId = String(item.id || item.id_produto || '').trim();
+    const produtoSku = String(produto.sku || '').trim().toUpperCase();
+    const itemSku = String(item.sku || '').trim().toUpperCase();
+    const produtoReferencia = String(produto.referencia || '').trim().toUpperCase();
+    const itemReferencia = String(item.referencia || '').trim().toUpperCase();
+
+    return Boolean(
+        (produtoId && itemId && produtoId === itemId)
+        || (produtoSku && itemSku && produtoSku === itemSku)
+        || (produtoReferencia && itemReferencia && produtoReferencia === itemReferencia)
+    );
+}
+
+function obterPrecoCustoFornecedor(item) {
+    const candidatos = [
+        item?.preco_custo,
+        item?.custo,
+        item?.preco_compra,
+        item?.preco_fornecedor,
+        item?.preco
+    ];
+    const valor = candidatos.find(candidato => candidato !== undefined && candidato !== null && candidato !== '');
+    const numero = Number(valor);
+    return Number.isFinite(numero) ? numero : null;
+}
+
+function normalizarPedidoFornecedorProduto(pedido) {
+    if(!pedido) return null;
+    let itens = pedido.itens;
+    if(typeof itens === 'string') {
+        try { itens = JSON.parse(itens); }
+        catch(_) { itens = []; }
+    }
+    return {
+        codigo: pedido.codigo || '',
+        fornecedor: pedido.fornecedor || '',
+        referencia: pedido.referencia || '',
+        estado: pedido.estado || '',
+        criado_em: pedido.criado_em || pedido.data || pedido.created_at || '',
+        itens: Array.isArray(itens) ? itens : []
+    };
+}
+
+function obterEncomendasFornecedorLocaisProduto() {
+    try {
+        const dados = JSON.parse(localStorage.getItem(FORNECEDORES_STORAGE_KEY) || '[]');
+        return Array.isArray(dados) ? dados.map(normalizarPedidoFornecedorProduto).filter(Boolean) : [];
+    } catch(_) {
+        return [];
+    }
+}
+
+async function carregarEncomendasFornecedorProduto(produto) {
+    if(!produto) return [];
+    try {
+        if(!dbClient) throw new Error('Supabase indisponível.');
+        const { data, error } = await dbClient
+            .from('encomendas_fornecedores')
+            .select('codigo,fornecedor,referencia,estado,criado_em,itens')
+            .order('criado_em', { ascending:false })
+            .limit(500);
+        if(error) throw error;
+        return (data || []).map(normalizarPedidoFornecedorProduto).filter(Boolean);
+    } catch(error) {
+        console.warn('Não foi possível carregar encomendas a fornecedor do Supabase; a usar cópia local.', error);
+        return obterEncomendasFornecedorLocaisProduto();
+    }
+}
+
+function renderizarEncomendasFornecedorProduto(produto, pedidos) {
+    const container = obterContainerEncomendasFornecedorProduto();
+    const conteudo = container?.querySelector('.admin-produto-encomendas-fornecedor-conteudo');
+    if(!conteudo) return;
+
+    const linhas = [];
+    (pedidos || []).forEach(pedido => {
+        (pedido.itens || []).forEach(item => {
+            if(!produtoCorrespondeItemFornecedor(produto, item)) return;
+            linhas.push({ pedido, item });
+        });
+    });
+
+    conteudo.replaceChildren();
+    if(!linhas.length) {
+        const vazio = document.createElement('p');
+        vazio.className = 'ajuda-admin';
+        vazio.textContent = 'Ainda não há encomendas a fornecedor registadas para este produto.';
+        conteudo.appendChild(vazio);
+        return;
+    }
+
+    const tabela = document.createElement('table');
+    tabela.className = 'admin-produto-encomendas-fornecedor-tabela';
+
+    const thead = document.createElement('thead');
+    const linhaCabecalho = document.createElement('tr');
+    ['Data', 'Encomenda fornecedor', 'Fornecedor', 'Qtd.', 'Preço custo', 'Estado'].forEach(rotulo => {
+        const th = document.createElement('th');
+        th.textContent = rotulo;
+        linhaCabecalho.appendChild(th);
+    });
+    thead.appendChild(linhaCabecalho);
+
+    const tbody = document.createElement('tbody');
+    linhas.forEach(({ pedido, item }) => {
+        const tr = document.createElement('tr');
+        const data = pedido.criado_em ? new Date(pedido.criado_em).toLocaleDateString('pt-PT') : '—';
+        const quantidade = Number(item.quantidade_original ?? item.quantidade ?? item.qtd ?? 0) || '—';
+        const precoCusto = obterPrecoCustoFornecedor(item);
+        [
+            data,
+            pedido.codigo || pedido.referencia || '—',
+            pedido.fornecedor || '—',
+            String(quantidade),
+            precoCusto === null ? '—' : `${formatarEuro(precoCusto)} €`,
+            pedido.estado || '—'
+        ].forEach(valor => {
+            const td = document.createElement('td');
+            td.textContent = valor;
+            tr.appendChild(td);
+        });
+        tbody.appendChild(tr);
+    });
+
+    tabela.append(thead, tbody);
+    conteudo.appendChild(tabela);
+}
+
+async function atualizarEncomendasFornecedorProduto(produto) {
+    const container = obterContainerEncomendasFornecedorProduto();
+    if(!container) return;
+    container.dataset.produtoId = obterProdutoId(produto);
+    definirEncomendasFornecedorProduto('A carregar encomendas a fornecedor...');
+    const pedidos = await carregarEncomendasFornecedorProduto(produto);
+    if(container.dataset.produtoId !== obterProdutoId(produto)) return;
+    renderizarEncomendasFornecedorProduto(produto, pedidos);
+}
+
 function preencherEdicaoProdutoAdmin(produtoId) {
     const produto = todosOsProdutos.find(item => obterProdutoId(item) === String(produtoId));
     const form = document.getElementById('form-admin-editar-produto');
@@ -1752,6 +1927,7 @@ function preencherEdicaoProdutoAdmin(produtoId) {
 
     if(status) status.textContent = '';
     atualizarPreviewEditarImagensAdmin();
+    atualizarEncomendasFornecedorProduto(produto);
     form.style.display = 'flex';
     form.scrollIntoView({ behavior:'smooth', block:'start' });
 }

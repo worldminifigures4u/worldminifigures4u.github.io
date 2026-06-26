@@ -2216,6 +2216,50 @@
             line-height:1.4;
         }
 
+        .admin-produto-encomendas-fornecedor{
+            display:grid;
+            gap:10px;
+            border:1px solid #333;
+            border-radius:8px;
+            background:#151515;
+            padding:12px;
+        }
+
+        .admin-produto-encomendas-fornecedor h4{
+            margin:0;
+            color:#ffc107;
+            font-size:15px;
+        }
+
+        .admin-produto-encomendas-fornecedor-conteudo{
+            overflow-x:auto;
+        }
+
+        .admin-produto-encomendas-fornecedor-tabela{
+            width:100%;
+            border-collapse:collapse;
+            min-width:640px;
+            font-size:13px;
+        }
+
+        .admin-produto-encomendas-fornecedor-tabela th,
+        .admin-produto-encomendas-fornecedor-tabela td{
+            border-bottom:1px solid #2c2c2c;
+            padding:8px 9px;
+            text-align:left;
+            vertical-align:top;
+        }
+
+        .admin-produto-encomendas-fornecedor-tabela th{
+            color:#ddd;
+            background:#202020;
+            font-weight:800;
+        }
+
+        .admin-produto-encomendas-fornecedor-tabela td{
+            color:#f0f0f0;
+        }
+
         .btn-admin-secundario{
             background:#222;
             border:1px solid #444;
