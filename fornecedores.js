@@ -337,11 +337,13 @@ function normalizarItemPedidoFornecedor(item) {
         Math.floor(Number(item.quantidade_original ?? item.quantidade_inicial ?? quantidade) || quantidade)
     );
     const faltaOs = Math.max(0, Math.floor(Number(item.falta_os || Math.max(0, quantidadeOriginal - quantidade)) || 0));
+    const precoCusto = Number(item.preco_custo ?? item.custo ?? item.preco_compra ?? item.preco_fornecedor ?? item.preco ?? 0);
     return {
         ...item,
         quantidade,
         quantidade_original: quantidadeOriginal,
         falta_os: faltaOs,
+        preco_custo: Number.isFinite(precoCusto) ? Math.max(0, precoCusto) : 0,
         estado_fornecedor: item.estado_fornecedor || (faltaOs > 0 ? 'OS' : ''),
         origem_ajuste: item.origem_ajuste || ''
     };
@@ -1488,6 +1490,15 @@ function alterarQuantidadeFornecedor(id, delta) {
     renderizarSelecionadosFornecedor();
 }
 
+function definirPrecoCustoFornecedor(id, valor) {
+    const precoCusto = Math.max(0, Number(String(valor || '').replace(',', '.')) || 0);
+    fornecedorSelecao = fornecedorSelecao.map(item => {
+        if (String(item.id) !== String(id)) return item;
+        return { ...item, preco_custo: precoCusto };
+    });
+    guardarSelecaoFornecedor();
+}
+
 function removerProdutoFornecedor(id) {
     fornecedorSelecao = fornecedorSelecao.filter(item => String(item.id) !== String(id));
     guardarSelecaoFornecedor();
@@ -1549,6 +1560,21 @@ function renderizarSelecionadosFornecedor() {
         qtd.addEventListener("change", () => definirQuantidadeFornecedor(atual.id, qtd.value));
         qtd.addEventListener("blur", () => definirQuantidadeFornecedor(atual.id, qtd.value));
 
+        const precoCusto = document.createElement("label");
+        precoCusto.className = "fornecedor-preco-custo-label";
+        precoCusto.textContent = "Preço custo";
+        const precoCustoInput = document.createElement("input");
+        precoCustoInput.type = "number";
+        precoCustoInput.min = "0";
+        precoCustoInput.step = "0.01";
+        precoCustoInput.inputMode = "decimal";
+        precoCustoInput.className = "fornecedor-preco-custo-input";
+        precoCustoInput.value = Number(item.preco_custo ?? item.custo ?? 0).toFixed(2);
+        precoCustoInput.setAttribute("aria-label", `Preço de custo de ${atual.nome || "produto"}`);
+        precoCustoInput.addEventListener("change", () => definirPrecoCustoFornecedor(atual.id, precoCustoInput.value));
+        precoCustoInput.addEventListener("blur", () => definirPrecoCustoFornecedor(atual.id, precoCustoInput.value));
+        precoCusto.appendChild(precoCustoInput);
+
         const mais = document.createElement("button");
         mais.type = "button";
         mais.textContent = "+";
@@ -1560,7 +1586,7 @@ function renderizarSelecionadosFornecedor() {
         remover.className = "fornecedor-remover";
         remover.addEventListener("click", () => removerProdutoFornecedor(atual.id));
 
-        controlos.append(menos, qtd, mais, remover);
+        controlos.append(menos, qtd, mais, precoCusto, remover);
         linha.appendChild(controlos);
         caixa.appendChild(linha);
     });
@@ -1597,7 +1623,8 @@ async function criarPedidoFornecedor() {
         recebido: 0,
         novidade: obterBooleanoProdutoFornecedor(item.novidade),
         stock_no_momento: Number(item.stock || 0),
-        preco: Number(item.preco || 0),
+        preco_custo: Number(item.preco_custo ?? item.custo ?? 0) || 0,
+        preco: Number(item.preco_custo ?? item.custo ?? 0) || 0,
         imagens: item.imagens || []
     }));
 
@@ -1701,7 +1728,8 @@ function criarItemFornecedorAPartirSelecao(item, origemAjuste = '') {
         recebido: 0,
         novidade: obterBooleanoProdutoFornecedor(item.novidade),
         stock_no_momento: Number(item.stock || 0),
-        preco: Number(item.preco || 0),
+        preco_custo: Number(item.preco_custo ?? item.custo ?? 0) || 0,
+        preco: Number(item.preco_custo ?? item.custo ?? 0) || 0,
         imagens: item.imagens || []
     });
 }
@@ -1869,6 +1897,7 @@ function abrirEdicaoPedidoFornecedor(id) {
         const quantidadeOriginal = Math.max(0, Number(item.quantidade_original ?? item.quantidade ?? 0));
         const quantidadeAtual = Math.max(0, Number(item.quantidade || 0));
         const faltaAtual = Math.max(0, Number(item.falta_os || Math.max(0, quantidadeOriginal - quantidadeAtual)));
+        const precoCustoAtual = Number(item.preco_custo ?? item.custo ?? item.preco ?? 0) || 0;
         const linha = document.createElement('div');
         linha.className = 'fornecedor-edicao-produto';
         if (faltaAtual > 0) linha.classList.add('tem-os');
@@ -1914,6 +1943,16 @@ function abrirEdicaoPedidoFornecedor(id) {
         faltaInput.dataset.campo = 'falta_os';
         falta.appendChild(faltaInput);
 
+        const precoCusto = document.createElement('label');
+        precoCusto.textContent = 'Preço custo';
+        const precoCustoInput = document.createElement('input');
+        precoCustoInput.type = 'number';
+        precoCustoInput.min = '0';
+        precoCustoInput.step = '0.01';
+        precoCustoInput.value = precoCustoAtual.toFixed(2);
+        precoCustoInput.dataset.campo = 'preco_custo';
+        precoCusto.appendChild(precoCustoInput);
+
         const recebido = document.createElement('div');
         recebido.className = 'fornecedor-edicao-recebido-info';
         const recebidoAtual = ['A preparar', 'Encomendada'].includes(pedido.estado)
@@ -1948,7 +1987,7 @@ function abrirEdicaoPedidoFornecedor(id) {
         faltaInput.addEventListener('change', sincronizarQuantidade);
         faltaInput.addEventListener('blur', sincronizarQuantidade);
 
-        campos.append(quantidade, falta, recebido, remover);
+        campos.append(quantidade, falta, precoCusto, recebido, remover);
         linha.append(info, campos);
         lista.appendChild(linha);
     });
@@ -1977,12 +2016,15 @@ function lerItensEditadosPedidoFornecedor(pedido, modal) {
         const quantidadeOriginal = Math.max(quantidade, Math.floor(Number(item.quantidade_original ?? item.quantidade ?? quantidade) || quantidade));
         const faltaOsIndicada = Math.max(0, Math.floor(Number(linha.querySelector('[data-campo="falta_os"]')?.value || 0)));
         const faltaOs = Math.max(faltaOsIndicada, quantidadeOriginal - quantidade);
+        const precoCusto = Math.max(0, Number(String(linha.querySelector('[data-campo="preco_custo"]')?.value || '').replace(',', '.')) || 0);
         const recebido = Math.max(0, Math.floor(Number(linha.querySelector('[data-campo="recebido"]')?.dataset.valor || item.recebido || 0)));
         return {
             ...item,
             quantidade_original: quantidadeOriginal,
             quantidade,
             falta_os: faltaOs,
+            preco_custo: precoCusto,
+            preco: precoCusto,
             estado_fornecedor: faltaOs > 0 ? 'OS' : (item.estado_fornecedor === 'OS' ? '' : item.estado_fornecedor || ''),
             recebido: Math.min(recebido, quantidade)
         };
