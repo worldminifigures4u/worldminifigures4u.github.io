@@ -874,7 +874,7 @@ function produtoPassaFiltroStockMapaFornecedor(produto, filtroStockMapa) {
 function formatarProdutoMapaParaCopiar(produto) {
     const nome = String(produto?.nome || "Produto sem nome").trim();
     const preco = formatarEuroFornecedor(produto?.preco || 0);
-    return `${nome} - ${preco}`;
+    return `${nome}\t${preco}`;
 }
 
 async function copiarListaMapaVisivel() {
