@@ -1147,6 +1147,7 @@ function abrirEdicaoProdutoMapa(produtoId) {
     criarInputEdicaoMapa(secaoIdentificacao, "mapas-editar-nome", "Nome", produto.nome || "", "text", { required: true, largo: true });
     criarInputEdicaoMapa(secaoIdentificacao, "mapas-editar-referencia", "Ref.", produto.referencia || "");
     criarInputEdicaoMapa(secaoIdentificacao, "mapas-editar-sku", "SKU", produto.sku || "", "text", { required: true });
+    criarCheckboxEdicaoMapa(secaoIdentificacao, "mapas-editar-lego", "Lego", Boolean(String(obterLegoProdutoFornecedor(produto) || "").trim()));
     criarCheckboxEdicaoMapa(secaoIdentificacao, "mapas-editar-top", "Top", Boolean(String(obterTopProdutoFornecedor(produto) || "").trim()));
     criarCheckboxEdicaoMapa(secaoIdentificacao, "mapas-editar-descontinuado", "Descontinuado", obterBooleanoProdutoFornecedor(produto.descontinuado));
     criarCheckboxEdicaoMapa(secaoIdentificacao, "mapas-editar-novidade", "Novidade", obterBooleanoProdutoFornecedor(produto.novidade));
@@ -1195,6 +1196,7 @@ function lerProdutoEditadoMapa() {
         nome: document.getElementById("mapas-editar-nome").value.trim(),
         referencia: document.getElementById("mapas-editar-referencia").value.trim(),
         sku: normalizarSkuFornecedor(document.getElementById("mapas-editar-sku").value),
+        lego: document.getElementById("mapas-editar-lego").checked ? "sim" : "",
         top: document.getElementById("mapas-editar-top").checked ? "sim" : "",
         descontinuado: document.getElementById("mapas-editar-descontinuado").checked,
         novidade: document.getElementById("mapas-editar-novidade").checked,
