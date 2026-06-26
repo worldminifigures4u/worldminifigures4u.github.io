@@ -3225,6 +3225,33 @@
     background: #121212;
 }
 
+.mapas-filtro-stock,
+.mapas-copiar-lista {
+    min-height: 36px;
+    border-radius: 6px;
+    font: inherit;
+}
+
+.mapas-filtro-stock {
+    border: 1px solid #555;
+    background: #242424;
+    color: #fff;
+    padding: 8px 10px;
+}
+
+.mapas-copiar-lista {
+    border: 0;
+    background: #ffc400;
+    color: #000;
+    padding: 8px 14px;
+    font-weight: 800;
+    cursor: pointer;
+}
+
+.mapas-copiar-lista:hover {
+    filter: brightness(1.05);
+}
+
 .mapas-contador-item {
     display: inline-flex;
     align-items: baseline;
