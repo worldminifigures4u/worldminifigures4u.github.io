@@ -1283,7 +1283,7 @@ function criarItemContadorMapa(rotulo, valor, destaque = false) {
     const texto = document.createElement("span");
     texto.textContent = rotulo;
 
-    item.append(numero, texto);
+    item.append(texto, numero);
     return item;
 }
 
