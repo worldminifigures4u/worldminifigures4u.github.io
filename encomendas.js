@@ -446,8 +446,6 @@ async function copiarEncomendaAdmin(encomenda) {
 
 async function atualizarEstadoEncomendaAdmin(encomenda, estado, select) {
     const estadoAnterior = estadoNormalizadoEncomenda(encomenda.estado);
-    const origem = String(encomenda.origem || 'Site').toLowerCase();
-    const plataformaExterna = ['wallapop', 'olx', 'todocoleccion'].includes(origem);
     let reporStock = false;
 
     if (estado === 'Conclu\u00eddo' && estadoAnterior !== 'Conclu\u00eddo') {
@@ -466,14 +464,15 @@ async function atualizarEstadoEncomendaAdmin(encomenda, estado, select) {
         return;
     }
 
-    if (estado === 'Cancelado' && plataformaExterna) {
-        if (!window.confirm(`Cancelar esta encomenda ${encomenda.origem}?`)) {
+    if (estado === 'Cancelado') {
+        const mensagemCancelamento = encomenda.stock_reposto
+            ? `Cancelar esta encomenda ${encomenda.codigo_encomenda || ''}? O stock já foi reposto anteriormente.`
+            : `Cancelar esta encomenda ${encomenda.codigo_encomenda || ''} e repor automaticamente o stock dos produtos?`;
+        if (!window.confirm(mensagemCancelamento)) {
             select.value = estadoAnterior;
             return;
         }
-        reporStock = !encomenda.stock_reposto && window.confirm(
-            'Pretende repor no stock as unidades desta encomenda?'
-        );
+        reporStock = !encomenda.stock_reposto;
     }
 
     select.disabled = true;
@@ -482,7 +481,7 @@ async function atualizarEstadoEncomendaAdmin(encomenda, estado, select) {
         let data = null;
         let error = null;
 
-        if (estado === 'Cancelado' && plataformaExterna) {
+        if (estado === 'Cancelado') {
             ({ data, error } = await encomendasClient.rpc('cancelar_encomenda_plataforma_admin', {
                 p_encomenda_id: String(encomenda.id),
                 p_repor_stock: reporStock
@@ -539,7 +538,10 @@ async function atualizarEstadoEncomendaAdmin(encomenda, estado, select) {
             const limpeza = estado === 'Conclu\u00eddo'
                 ? ` ${anexosEliminados} anexo(s) eliminado(s).`
                 : '';
-            definirStatusEncomendas(`Estado da encomenda ${encomenda.codigo_encomenda || ''} atualizado.${limpeza}`);
+            const reposicao = estado === 'Cancelado' && data?.stock_reposto
+                ? ' Stock reposto.'
+                : '';
+            definirStatusEncomendas(`Estado da encomenda ${encomenda.codigo_encomenda || ''} atualizado.${limpeza}${reposicao}`);
         }
     } catch (error) {
         select.value = estadoAnterior;

@@ -280,10 +280,6 @@ begin
   if not found then
     raise exception 'Encomenda nao encontrada';
   end if;
-  if lower(coalesce(v_encomenda.origem, 'site')) not in ('wallapop', 'olx', 'todocoleccion') then
-    raise exception 'Esta operacao destina-se a encomendas de plataformas externas';
-  end if;
-
   if p_repor_stock and not coalesce(v_encomenda.stock_reposto, false) then
     for v_item in select value from jsonb_array_elements(v_encomenda.produtos)
     loop
