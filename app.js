@@ -870,6 +870,7 @@ window.gerarSkuProduto = gerarSkuProduto;
 
 let importacaoStockPendente = null;
 let importacaoCatalogoPendente = null;
+const FORNECEDORES_STORAGE_KEY = "figures-planet-fornecedores-pedidos";
 const FORNECEDORES_FICHAS_KEY = "figures-planet-fornecedores-fichas";
 
 function utilizadorAdmin(user) {
