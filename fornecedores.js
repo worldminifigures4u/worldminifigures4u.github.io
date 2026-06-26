@@ -868,6 +868,10 @@ function produtoPassaFiltroStockMapaFornecedor(produto, filtroStockMapa) {
     const stock = Number(produto?.stock || 0);
     if (filtroStockMapa === "com-stock") return stock > 0;
     if (filtroStockMapa === "sem-stock") return stock <= 0;
+    if (String(filtroStockMapa).startsWith("maior-")) {
+        const minimo = Number(String(filtroStockMapa).replace("maior-", ""));
+        return stock > minimo;
+    }
     return true;
 }
 
