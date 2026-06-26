@@ -1990,7 +1990,7 @@ function renderizarSelecionadosFornecedor() {
 
         const precoCusto = document.createElement("label");
         precoCusto.className = "fornecedor-preco-custo-label";
-        precoCusto.textContent = "Preço custo";
+        precoCusto.textContent = "preço compra";
         const precoCustoInput = document.createElement("input");
         precoCustoInput.type = "number";
         precoCustoInput.min = "0";
@@ -1998,7 +1998,7 @@ function renderizarSelecionadosFornecedor() {
         precoCustoInput.inputMode = "decimal";
         precoCustoInput.className = "fornecedor-preco-custo-input";
         precoCustoInput.value = Number(item.preco_custo ?? item.custo ?? 0).toFixed(2);
-        precoCustoInput.setAttribute("aria-label", `Preço de custo de ${atual.nome || "produto"}`);
+        precoCustoInput.setAttribute("aria-label", `preço compra de ${atual.nome || "produto"}`);
         precoCustoInput.addEventListener("change", () => definirPrecoCustoFornecedor(atual.id, precoCustoInput.value));
         precoCustoInput.addEventListener("blur", () => definirPrecoCustoFornecedor(atual.id, precoCustoInput.value));
         precoCusto.appendChild(precoCustoInput);
@@ -2280,7 +2280,7 @@ function garantirModalEdicaoFornecedor() {
                 </div>
                 <section class="fornecedor-lista-final-box fornecedor-lista-final-edicao" aria-label="Lista final enviada pelo fornecedor">
                     <h4>Colar lista final do fornecedor</h4>
-                    <p>Depois de o fornecedor responder, cola aqui referência, quantidade e preço. A encomenda abaixo é corrigida automaticamente.</p>
+                    <p>Depois de o fornecedor responder, cola aqui referência, quantidade e preço compra. A encomenda abaixo é corrigida automaticamente.</p>
                     <textarea id="fornecedor-edicao-lista-final" rows="5" placeholder="Ex.:&#10;AF301	2	1,25&#10;PG634	1	0,85"></textarea>
                     <div class="fornecedor-lista-final-acoes">
                         <button type="button" id="fornecedor-edicao-limpar-lista-final">Limpar texto</button>
@@ -2387,7 +2387,7 @@ function abrirEdicaoPedidoFornecedor(id) {
         falta.appendChild(faltaInput);
 
         const precoCusto = document.createElement('label');
-        precoCusto.textContent = 'Preço custo';
+        precoCusto.textContent = 'preço compra';
         const precoCustoInput = document.createElement('input');
         precoCustoInput.type = 'number';
         precoCustoInput.min = '0';
