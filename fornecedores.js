@@ -773,6 +773,7 @@ function obterValorOrdenacaoFornecedor(item, coluna) {
     if (coluna === "lego") return obterLegoProdutoFornecedor(produto);
     if (coluna === "sku") return produto.sku || "";
     if (coluna === "ref") return produto.referencia || "";
+    if (coluna === "preco_compra") return Number(produto.preco_compra || 0);
     if (coluna === "preco") return Number(produto.preco || 0);
     if (coluna === "top") return obterTopProdutoFornecedor(produto) || "";
     if (coluna === "descontinuado") return obterBooleanoProdutoFornecedor(produto.descontinuado) ? 1 : 0;
@@ -1602,7 +1603,8 @@ function renderizarResultadosFornecedorMapa(caixa, resultados, fornecedor) {
         ["stock", "mapas-col-stock", "stock"],
         ["tema", "mapas-col-tema", "tema"],
         ["subtema", "mapas-col-subtema", "subtema"],
-        ["preço", "mapas-col-preco", "preco"],
+        ["preço compra", "mapas-col-preco-compra", "preco_compra"],
+        ["preço venda", "mapas-col-preco", "preco"],
         ["novidade", "mapas-col-novidade", "novidade"],
         ["descontinuado", "mapas-col-descontinuado", "descontinuado"],
         ["lego", "mapas-col-lego", "lego"],
@@ -1664,6 +1666,7 @@ function renderizarResultadosFornecedorMapa(caixa, resultados, fornecedor) {
             linha.appendChild(criarCelulaMapaFornecedor(stockNumero, `mapas-col-stock mapa-stock-celula ${stockNumero <= 0 ? "sem-stock" : ""}`));
             linha.appendChild(criarCelulaMapaFornecedor(atual.tema || "", "mapas-col-tema"));
             linha.appendChild(criarCelulaMapaFornecedor(atual.subtema === "semsubtema" ? "" : (atual.subtema || ""), "mapas-col-subtema"));
+            linha.appendChild(criarCelulaMapaFornecedor(Number(atual.preco_compra || 0).toFixed(2), "mapas-col-preco-compra"));
             linha.appendChild(criarCelulaMapaFornecedor(Number(atual.preco || 0).toFixed(2), "mapas-col-preco"));
             linha.appendChild(criarCelulaMapaFornecedor(obterBooleanoProdutoFornecedor(atual.novidade) ? "sim" : "", "mapas-col-novidade"));
             linha.appendChild(criarCelulaMapaFornecedor(obterBooleanoProdutoFornecedor(atual.descontinuado) ? "sim" : "", "mapas-col-descontinuado"));

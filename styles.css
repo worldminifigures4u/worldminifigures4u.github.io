@@ -3364,6 +3364,7 @@
 
 .mapas-col-lego { width: 70px; }
 .mapas-col-nome { width: 260px; }
+.mapas-col-preco-compra { width: 96px; }
 .mapas-col-preco { width: 70px; }
 .mapas-col-sku { width: 70px; }
 .mapas-col-top { width: 64px; }
@@ -3379,6 +3380,7 @@
 .mapas-col-qtd { width: 82px; }
 
 .mapas-col-lego,
+.mapas-col-preco-compra,
 .mapas-col-preco,
 .mapas-col-sku,
 .mapas-col-top,
