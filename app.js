@@ -934,7 +934,7 @@ function normalizarCabecalhoStock(valor) {
         .toLowerCase();
 }
 
-const COLUNAS_CATALOGO_BASE = new Set(['nome', 'preco', 'sku', 'top', 'descontinuado', 'descontinuada', 'descontinuados', 'descontinuadas', 'discontinued', 'novidade', 'nova', 'novo', 'stock', 'tema', 'subtema', 'peso', 'referencia']);
+const COLUNAS_CATALOGO_BASE = new Set(['lego', 'nome', 'preco', 'sku', 'top', 'descontinuado', 'descontinuada', 'descontinuados', 'descontinuadas', 'discontinued', 'novidade', 'nova', 'novo', 'stock', 'tema', 'subtema', 'peso', 'referencia']);
 const FORNECEDORES_IMPORTACAO = [
     { chave:'lote50', nome:'Lote 50' },
     { chave:'ruishengtu', nome:'Ruishengtu' },
@@ -1293,6 +1293,7 @@ async function analisarFicheiroCatalogoAdmin(input) {
         const conteudo = await ficheiro.arrayBuffer();
         const { linhas, cabecalhos, primeiraLinhaDados } = lerFolhaMapas(conteudo);
         const colunas = {
+            lego:obterIndiceColuna(cabecalhos, 'lego', false),
             nome:obterIndiceColuna(cabecalhos, 'nome'),
             preco:obterIndiceColuna(cabecalhos, 'preco'),
             sku:obterIndiceColuna(cabecalhos, 'sku'),
@@ -1311,6 +1312,7 @@ async function analisarFicheiroCatalogoAdmin(input) {
 
         linhas.forEach((linha, indice) => {
             if(!linha.some(valor => valor !== null && valor !== '')) return;
+            const lego = colunas.lego >= 0 ? String(linha[colunas.lego] || '').trim() : '';
             const nome = String(linha[colunas.nome] || '').trim();
             const sku = normalizarTextoSku(linha[colunas.sku]).replace(/[^A-Z0-9]/g, '');
             const top = colunas.top >= 0 ? String(linha[colunas.top] || '').trim() : '';
@@ -1330,6 +1332,7 @@ async function analisarFicheiroCatalogoAdmin(input) {
             }
 
             produtosPorSku.set(sku, {
+                lego,
                 nome,
                 preco,
                 sku,

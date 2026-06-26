@@ -3296,17 +3296,27 @@
     background: #171717;
 }
 
-.mapas-col-nome { width: 36%; }
-.mapas-col-stock { width: 8%; }
-.mapas-col-pendente { width: 9%; }
-.mapas-col-previsto { width: 9%; }
-.mapas-col-ref { width: 24%; }
-.mapas-col-qtd { width: 90px; }
+.mapas-col-lego { width: 70px; }
+.mapas-col-nome { width: 260px; }
+.mapas-col-preco { width: 70px; }
+.mapas-col-sku { width: 70px; }
+.mapas-col-top { width: 64px; }
+.mapas-col-descontinuado { width: 112px; }
+.mapas-col-novidade { width: 90px; }
+.mapas-col-stock { width: 70px; }
+.mapas-col-tema { width: 130px; }
+.mapas-col-subtema { width: 150px; }
+.mapas-col-peso { width: 70px; }
+.mapas-col-ref { width: 130px; }
 
+.mapas-col-lego,
+.mapas-col-preco,
+.mapas-col-sku,
+.mapas-col-top,
+.mapas-col-descontinuado,
+.mapas-col-novidade,
 .mapas-col-stock,
-.mapas-col-pendente,
-.mapas-col-previsto,
-.mapas-col-qtd {
+.mapas-col-peso {
     text-align: center;
 }
 

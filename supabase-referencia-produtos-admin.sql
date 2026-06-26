@@ -3,6 +3,9 @@ alter table public.produtos
   add column if not exists referencia text;
 
 alter table public.produtos
+  add column if not exists lego text;
+
+alter table public.produtos
   add column if not exists top text;
 
 alter table public.produtos
@@ -39,10 +42,11 @@ begin
   for v_produto in select value from jsonb_array_elements(p_produtos)
   loop
     insert into public.produtos (
-      sku, referencia, nome, preco, top, descontinuado, novidade, stock, tema, subtema, peso, fornecedores, ativo
+      sku, referencia, lego, nome, preco, top, descontinuado, novidade, stock, tema, subtema, peso, fornecedores, ativo
     ) values (
       upper(trim(v_produto->>'sku')),
       nullif(trim(v_produto->>'referencia'), ''),
+      nullif(trim(v_produto->>'lego'), ''),
       trim(v_produto->>'nome'),
       (v_produto->>'preco')::numeric,
       nullif(trim(v_produto->>'top'), ''),
@@ -60,6 +64,7 @@ begin
     )
     on conflict (sku) do update set
       referencia = excluded.referencia,
+      lego = excluded.lego,
       nome = excluded.nome,
       preco = excluded.preco,
       top = excluded.top,
@@ -99,6 +104,7 @@ begin
     select jsonb_agg(jsonb_build_object(
       'id', produto.id,
       'referencia', produto.referencia,
+      'lego', coalesce(produto.lego, ''),
       'sku', produto.sku,
       'nome', produto.nome,
       'preco', coalesce(produto.preco, 0),
@@ -156,11 +162,12 @@ begin
   where trim(valor) <> '';
 
   insert into public.produtos (
-    sku, referencia, nome, tema, subtema, preco, peso, stock,
+    sku, referencia, lego, nome, tema, subtema, preco, peso, stock,
     observacoes, ativo, novidade, imagens
   ) values (
     v_sku,
     nullif(trim(coalesce(p_produto->>'referencia', '')), ''),
+    nullif(trim(coalesce(p_produto->>'lego', '')), ''),
     trim(coalesce(p_produto->>'nome', '')),
     trim(coalesce(p_produto->>'tema', '')),
     coalesce(nullif(trim(coalesce(p_produto->>'subtema', '')), ''), 'semsubtema'),
@@ -178,6 +185,7 @@ begin
   return jsonb_build_object(
     'id', v_produto.id,
     'referencia', v_produto.referencia,
+    'lego', coalesce(v_produto.lego, ''),
     'sku', v_produto.sku,
     'nome', v_produto.nome,
     'preco', coalesce(v_produto.preco, 0),
@@ -314,6 +322,7 @@ begin
   set
     sku = v_sku,
     referencia = nullif(trim(coalesce(p_produto->>'referencia', '')), ''),
+    lego = nullif(trim(coalesce(p_produto->>'lego', produto.lego, '')), ''),
     nome = trim(coalesce(p_produto->>'nome', '')),
     tema = trim(coalesce(p_produto->>'tema', '')),
     subtema = coalesce(nullif(trim(coalesce(p_produto->>'subtema', '')), ''), 'semsubtema'),
@@ -337,6 +346,7 @@ begin
     set
       sku = v_sku,
       referencia = nullif(trim(coalesce(p_produto->>'referencia', '')), ''),
+      lego = nullif(trim(coalesce(p_produto->>'lego', produto.lego, '')), ''),
       nome = trim(coalesce(p_produto->>'nome', '')),
       tema = trim(coalesce(p_produto->>'tema', '')),
       subtema = coalesce(nullif(trim(coalesce(p_produto->>'subtema', '')), ''), 'semsubtema'),
@@ -362,6 +372,7 @@ begin
   return jsonb_build_object(
     'id', v_produto.id,
     'referencia', v_produto.referencia,
+    'lego', coalesce(v_produto.lego, ''),
     'sku', v_produto.sku,
     'nome', v_produto.nome,
     'preco', coalesce(v_produto.preco, 0),

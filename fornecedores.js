@@ -766,10 +766,17 @@ function compararTextoFornecedor(a, b) {
 
 function obterValorOrdenacaoFornecedor(item, coluna) {
     const produto = item.produto || item;
+    if (coluna === "lego") return obterLegoProdutoFornecedor(produto);
     if (coluna === "sku") return produto.sku || "";
     if (coluna === "ref") return produto.referencia || "";
+    if (coluna === "preco") return Number(produto.preco || 0);
     if (coluna === "top") return obterTopProdutoFornecedor(produto) || "";
+    if (coluna === "descontinuado") return obterBooleanoProdutoFornecedor(produto.descontinuado) ? 1 : 0;
+    if (coluna === "novidade") return obterBooleanoProdutoFornecedor(produto.novidade) ? 1 : 0;
     if (coluna === "stock") return Number(produto.stock || 0);
+    if (coluna === "tema") return produto.tema || "";
+    if (coluna === "subtema") return produto.subtema || "";
+    if (coluna === "peso") return Number(produto.peso || 0);
     if (coluna === "pendente") return obterPendentesProdutoFornecedor(produto);
     if (coluna === "previsto") return Number(produto.stock || 0) + obterPendentesProdutoFornecedor(produto);
     if (coluna === "qtd") {
@@ -936,7 +943,8 @@ async function carregarCatalogoFornecedores() {
         console.warn('Catalogo administrativo indisponivel.', respostaAdmin.error);
         throw new Error('Execute o SQL atualizado no Supabase para carregar o catalogo administrativo.');
     } else if (produtos.length && !produtos.some(produto =>
-        Object.prototype.hasOwnProperty.call(produto, "top")
+        Object.prototype.hasOwnProperty.call(produto, "lego")
+        && Object.prototype.hasOwnProperty.call(produto, "top")
         && Object.prototype.hasOwnProperty.call(produto, "descontinuado")
         && Object.prototype.hasOwnProperty.call(produto, "fornecedores")
         && Object.prototype.hasOwnProperty.call(produto, "tema")
@@ -969,6 +977,10 @@ function estaPaginaMapasFornecedor() {
 
 function obterTopProdutoFornecedor(produto) {
     return produto?.top || produto?.tipo || produto?.destaque || "";
+}
+
+function obterLegoProdutoFornecedor(produto) {
+    return String(produto?.lego || produto?.marca || "").trim();
 }
 
 function criarCelulaMapaFornecedor(texto, className = "") {
@@ -1279,12 +1291,18 @@ function renderizarResultadosFornecedorMapa(caixa, resultados, fornecedor) {
     const thead = document.createElement("thead");
     const cabecalho = document.createElement("tr");
     [
+        ["lego", "mapas-col-lego", "lego"],
         ["nome", "mapas-col-nome", "nome"],
-        ["Ref.", "mapas-col-ref", "ref"],
+        ["preço", "mapas-col-preco", "preco"],
+        ["sku", "mapas-col-sku", "sku"],
+        ["top", "mapas-col-top", "top"],
+        ["descontinuado", "mapas-col-descontinuado", "descontinuado"],
+        ["novidade", "mapas-col-novidade", "novidade"],
         ["stock", "mapas-col-stock", "stock"],
-        ["a chegar", "mapas-col-pendente", "pendente"],
-        ["previsto", "mapas-col-previsto", "previsto"],
-        ["qtd", "mapas-col-qtd", "qtd"],
+        ["tema", "mapas-col-tema", "tema"],
+        ["subtema", "mapas-col-subtema", "subtema"],
+        ["peso", "mapas-col-peso", "peso"],
+        ["referência", "mapas-col-ref", "ref"],
     ].forEach(([texto, classe, coluna]) => {
         const th = document.createElement("th");
         th.className = `${classe} mapas-th-ordenavel`;
@@ -1321,9 +1339,8 @@ function renderizarResultadosFornecedorMapa(caixa, resultados, fornecedor) {
             const atual = produto;
             const linha = document.createElement("tr");
             const stockNumero = Number(atual.stock || 0);
-            const pendentes = obterPendentesDetalhadosProdutoFornecedor(atual);
-            const pendente = pendentes.total;
-            const previsto = stockNumero + pendente;
+
+            linha.appendChild(criarCelulaMapaFornecedor(obterLegoProdutoFornecedor(atual), "mapas-col-lego"));
 
             const nomeCelula = document.createElement("td");
             nomeCelula.className = "mapas-col-nome";
@@ -1337,43 +1354,16 @@ function renderizarResultadosFornecedorMapa(caixa, resultados, fornecedor) {
             nomeCelula.appendChild(nomeBotao);
             linha.appendChild(nomeCelula);
 
-            const refCelula = document.createElement("td");
-            refCelula.className = "mapas-col-ref";
-            const refConteudo = document.createElement("div");
-            refConteudo.className = "mapas-ref-com-imagem";
-            const imagemRef = criarImagemFornecedor(atual, "fornecedor-miniatura pequena");
-            imagemRef.tabIndex = -1;
-            refConteudo.appendChild(imagemRef);
-            const refTexto = document.createElement("span");
-            refTexto.textContent = atual.referencia || "-";
-            refConteudo.appendChild(refTexto);
-            refCelula.appendChild(refConteudo);
-            linha.appendChild(refCelula);
-
+            linha.appendChild(criarCelulaMapaFornecedor(Number(atual.preco || 0).toFixed(2), "mapas-col-preco"));
+            linha.appendChild(criarCelulaMapaFornecedor(atual.sku || "-", "mapas-col-sku"));
+            linha.appendChild(criarCelulaMapaFornecedor(obterTopProdutoFornecedor(atual) || "", "mapas-col-top"));
+            linha.appendChild(criarCelulaMapaFornecedor(obterBooleanoProdutoFornecedor(atual.descontinuado) ? "sim" : "", "mapas-col-descontinuado"));
+            linha.appendChild(criarCelulaMapaFornecedor(obterBooleanoProdutoFornecedor(atual.novidade) ? "sim" : "", "mapas-col-novidade"));
             linha.appendChild(criarCelulaMapaFornecedor(stockNumero, `mapas-col-stock mapa-stock-celula ${stockNumero <= 0 ? "sem-stock" : ""}`));
-            const pendenteCelula = criarCelulaMapaFornecedor(pendente, `mapas-col-pendente mapa-pendente-celula ${pendente > 0 ? "com-pendente" : ""}`);
-            if (pendentes.detalhes.length) {
-                pendenteCelula.title = pendentes.detalhes.join("\n");
-            }
-            linha.appendChild(pendenteCelula);
-            linha.appendChild(criarCelulaMapaFornecedor(previsto, `mapas-col-previsto mapa-previsto-celula ${previsto > stockNumero ? "com-pendente" : ""}`));
-
-            const qtdCelula = document.createElement("td");
-            qtdCelula.className = "mapas-col-qtd";
-            const input = document.createElement("input");
-            input.type = "number";
-            input.min = "0";
-            input.step = "1";
-            const quantidadeSelecionada = obterQuantidadeSelecionadaFornecedor(atual.id);
-            input.value = quantidadeSelecionada > 0 ? String(quantidadeSelecionada) : "";
-            if (quantidadeSelecionada <= 0) input.removeAttribute("value");
-            input.className = "mapa-quantidade-input";
-            input.setAttribute("aria-label", `Quantidade de ${atual.nome || "produto"}`);
-            input.addEventListener("keydown", tratarTeclaQuantidadeMapa);
-            input.addEventListener("change", () => definirQuantidadeMapaFornecedor(atual, input.value));
-            input.addEventListener("blur", () => definirQuantidadeMapaFornecedor(atual, input.value));
-            qtdCelula.appendChild(input);
-            linha.appendChild(qtdCelula);
+            linha.appendChild(criarCelulaMapaFornecedor(atual.tema || "", "mapas-col-tema"));
+            linha.appendChild(criarCelulaMapaFornecedor(atual.subtema === "semsubtema" ? "" : (atual.subtema || ""), "mapas-col-subtema"));
+            linha.appendChild(criarCelulaMapaFornecedor(Number(atual.peso || 0), "mapas-col-peso"));
+            linha.appendChild(criarCelulaMapaFornecedor(atual.referencia || "-", "mapas-col-ref"));
 
             tbody.appendChild(linha);
         });
