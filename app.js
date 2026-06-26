@@ -2022,15 +2022,15 @@ function renderizarHistoricoEncomendas(encomendas) {
         id.textContent = encomenda.codigo_encomenda || ('#' + (encomenda.id || 'sem-id'));
 
         const estadoAtual = String(encomenda.estado || 'Pendente');
-        const mostrarEstadoCliente = !['concluido', 'concluído'].includes(estadoAtual.trim().toLowerCase());
+        const estadoCliente = ['concluido', 'concluído'].includes(estadoAtual.trim().toLowerCase())
+            ? 'Enviado'
+            : estadoAtual;
 
         topo.appendChild(id);
-        if (mostrarEstadoCliente) {
-            const estado = document.createElement('span');
-            estado.className = 'encomenda-estado';
-            estado.textContent = estadoAtual;
-            topo.appendChild(estado);
-        }
+        const estado = document.createElement('span');
+        estado.className = 'encomenda-estado';
+        estado.textContent = estadoCliente;
+        topo.appendChild(estado);
 
         const data = document.createElement('div');
         const dataValor = encomenda.created_at || encomenda.data || encomenda.inserted_at;
