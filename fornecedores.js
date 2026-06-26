@@ -1351,18 +1351,18 @@ function renderizarResultadosFornecedorMapa(caixa, resultados, fornecedor) {
     const thead = document.createElement("thead");
     const cabecalho = document.createElement("tr");
     [
-        ["lego", "mapas-col-lego", "lego"],
         ["nome", "mapas-col-nome", "nome"],
-        ["preço", "mapas-col-preco", "preco"],
-        ["sku", "mapas-col-sku", "sku"],
-        ["top", "mapas-col-top", "top"],
-        ["descontinuado", "mapas-col-descontinuado", "descontinuado"],
-        ["novidade", "mapas-col-novidade", "novidade"],
+        ["referência", "mapas-col-ref", "ref"],
         ["stock", "mapas-col-stock", "stock"],
         ["tema", "mapas-col-tema", "tema"],
         ["subtema", "mapas-col-subtema", "subtema"],
+        ["preço", "mapas-col-preco", "preco"],
+        ["novidade", "mapas-col-novidade", "novidade"],
+        ["descontinuado", "mapas-col-descontinuado", "descontinuado"],
+        ["lego", "mapas-col-lego", "lego"],
+        ["sku", "mapas-col-sku", "sku"],
+        ["top", "mapas-col-top", "top"],
         ["peso", "mapas-col-peso", "peso"],
-        ["referência", "mapas-col-ref", "ref"],
     ].forEach(([texto, classe, coluna]) => {
         const th = document.createElement("th");
         th.className = `${classe} mapas-th-ordenavel`;
@@ -1402,8 +1402,6 @@ function renderizarResultadosFornecedorMapa(caixa, resultados, fornecedor) {
             const linha = document.createElement("tr");
             const stockNumero = Number(atual.stock || 0);
 
-            linha.appendChild(criarCelulaMapaFornecedor(obterLegoProdutoFornecedor(atual), "mapas-col-lego"));
-
             const nomeCelula = document.createElement("td");
             nomeCelula.className = "mapas-col-nome";
             const nomeBotao = document.createElement("button");
@@ -1416,16 +1414,17 @@ function renderizarResultadosFornecedorMapa(caixa, resultados, fornecedor) {
             nomeCelula.appendChild(nomeBotao);
             linha.appendChild(nomeCelula);
 
-            linha.appendChild(criarCelulaMapaFornecedor(Number(atual.preco || 0).toFixed(2), "mapas-col-preco"));
-            linha.appendChild(criarCelulaMapaFornecedor(atual.sku || "-", "mapas-col-sku"));
-            linha.appendChild(criarCelulaMapaFornecedor(String(obterTopProdutoFornecedor(atual) || "").trim() ? "sim" : "", "mapas-col-top"));
-            linha.appendChild(criarCelulaMapaFornecedor(obterBooleanoProdutoFornecedor(atual.descontinuado) ? "sim" : "", "mapas-col-descontinuado"));
-            linha.appendChild(criarCelulaMapaFornecedor(obterBooleanoProdutoFornecedor(atual.novidade) ? "sim" : "", "mapas-col-novidade"));
+            linha.appendChild(criarCelulaMapaFornecedor(atual.referencia || "-", "mapas-col-ref"));
             linha.appendChild(criarCelulaMapaFornecedor(stockNumero, `mapas-col-stock mapa-stock-celula ${stockNumero <= 0 ? "sem-stock" : ""}`));
             linha.appendChild(criarCelulaMapaFornecedor(atual.tema || "", "mapas-col-tema"));
             linha.appendChild(criarCelulaMapaFornecedor(atual.subtema === "semsubtema" ? "" : (atual.subtema || ""), "mapas-col-subtema"));
+            linha.appendChild(criarCelulaMapaFornecedor(Number(atual.preco || 0).toFixed(2), "mapas-col-preco"));
+            linha.appendChild(criarCelulaMapaFornecedor(obterBooleanoProdutoFornecedor(atual.novidade) ? "sim" : "", "mapas-col-novidade"));
+            linha.appendChild(criarCelulaMapaFornecedor(obterBooleanoProdutoFornecedor(atual.descontinuado) ? "sim" : "", "mapas-col-descontinuado"));
+            linha.appendChild(criarCelulaMapaFornecedor(obterLegoProdutoFornecedor(atual), "mapas-col-lego"));
+            linha.appendChild(criarCelulaMapaFornecedor(atual.sku || "-", "mapas-col-sku"));
+            linha.appendChild(criarCelulaMapaFornecedor(String(obterTopProdutoFornecedor(atual) || "").trim() ? "sim" : "", "mapas-col-top"));
             linha.appendChild(criarCelulaMapaFornecedor(Number(atual.peso || 0), "mapas-col-peso"));
-            linha.appendChild(criarCelulaMapaFornecedor(atual.referencia || "-", "mapas-col-ref"));
 
             tbody.appendChild(linha);
         });
