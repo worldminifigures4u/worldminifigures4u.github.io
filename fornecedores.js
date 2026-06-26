@@ -1218,7 +1218,6 @@ async function carregarCatalogoFornecedores() {
         && Object.prototype.hasOwnProperty.call(produto, "subtema")
         && Object.prototype.hasOwnProperty.call(produto, "referencia")
         && Object.prototype.hasOwnProperty.call(produto, "novidade")
-        && Object.prototype.hasOwnProperty.call(produto, "preco_compra")
     )) {
         if (estaPaginaMapasFornecedor()) {
             definirStatusFornecedor('O Supabase ainda nao esta a devolver todos os campos dos mapas. Execute o SQL atualizado e volte a importar o mapas.ods.', true);
@@ -2559,11 +2558,18 @@ async function guardarEdicaoPedidoFornecedor(evento) {
         status.textContent = 'A marcar OS no mapa do fornecedor...';
         await sincronizarOsProdutosFornecedor(itens, fornecedor);
         status.textContent = 'A atualizar preço compra nos produtos...';
-        const produtosComPrecoAtualizado = await sincronizarPrecoCompraProdutosFornecedor(itens);
+        let produtosComPrecoAtualizado = 0;
+        let avisoPrecoCompra = '';
+        try {
+            produtosComPrecoAtualizado = await sincronizarPrecoCompraProdutosFornecedor(itens);
+        } catch (erroPrecoCompra) {
+            console.warn('Nao foi possivel sincronizar preço compra nos produtos.', erroPrecoCompra);
+            avisoPrecoCompra = ' O preço compra ficou guardado na encomenda, mas ainda não foi atualizado na ficha do produto. Execute o SQL atualizado no Supabase.';
+        }
         renderizarResultadosFornecedor();
         renderizarPedidosFornecedores();
         fecharEdicaoPedidoFornecedor();
-        definirStatusFornecedor(`Ajuste ${atualizado.codigo} guardado.${produtosComPrecoAtualizado ? ` Preço compra atualizado em ${produtosComPrecoAtualizado} produto(s).` : ''}`);
+        definirStatusFornecedor(`Ajuste ${atualizado.codigo} guardado.${produtosComPrecoAtualizado ? ` Preço compra atualizado em ${produtosComPrecoAtualizado} produto(s).` : ''}${avisoPrecoCompra}`, Boolean(avisoPrecoCompra));
     } catch (error) {
         console.error(error);
         status.textContent = 'Erro: ' + (error.message || 'Nao foi possivel guardar a ficha.');
