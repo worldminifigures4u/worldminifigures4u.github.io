@@ -888,7 +888,15 @@ async function copiarListaMapaVisivel() {
         return;
     }
 
-    const texto = produtos.map(formatarProdutoMapaParaCopiar).join("\n");
+    const linhasProdutos = produtos.map(formatarProdutoMapaParaCopiar);
+    const total = produtos.reduce((soma, produto) => soma + Number(produto?.preco || 0), 0);
+    const texto = [
+        ...linhasProdutos,
+        "",
+        `Total\t${formatarEuroFornecedor(total)}`,
+        "",
+        "Acresce as despesas com portes de envio e manuseamento para pacote postal de acordo com a sua escolha."
+    ].join("\n");
     try {
         if (navigator.clipboard?.writeText) {
             await navigator.clipboard.writeText(texto);
