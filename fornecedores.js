@@ -1138,7 +1138,7 @@ function abrirEdicaoProdutoMapa(produtoId) {
     criarInputEdicaoMapa(secaoIdentificacao, "mapas-editar-nome", "Nome", produto.nome || "", "text", { required: true, largo: true });
     criarInputEdicaoMapa(secaoIdentificacao, "mapas-editar-referencia", "Ref.", produto.referencia || "");
     criarInputEdicaoMapa(secaoIdentificacao, "mapas-editar-sku", "SKU", produto.sku || "", "text", { required: true });
-    criarInputEdicaoMapa(secaoIdentificacao, "mapas-editar-top", "Top", obterTopProdutoFornecedor(produto) || "");
+    criarCheckboxEdicaoMapa(secaoIdentificacao, "mapas-editar-top", "Top", Boolean(String(obterTopProdutoFornecedor(produto) || "").trim()));
     criarCheckboxEdicaoMapa(secaoIdentificacao, "mapas-editar-descontinuado", "Descontinuado", obterBooleanoProdutoFornecedor(produto.descontinuado));
     criarCheckboxEdicaoMapa(secaoIdentificacao, "mapas-editar-novidade", "Novidade", obterBooleanoProdutoFornecedor(produto.novidade));
     campos.appendChild(secaoIdentificacao);
@@ -1186,7 +1186,7 @@ function lerProdutoEditadoMapa() {
         nome: document.getElementById("mapas-editar-nome").value.trim(),
         referencia: document.getElementById("mapas-editar-referencia").value.trim(),
         sku: normalizarSkuFornecedor(document.getElementById("mapas-editar-sku").value),
-        top: document.getElementById("mapas-editar-top").value.trim(),
+        top: document.getElementById("mapas-editar-top").checked ? "sim" : "",
         descontinuado: document.getElementById("mapas-editar-descontinuado").checked,
         novidade: document.getElementById("mapas-editar-novidade").checked,
         preco: Number(document.getElementById("mapas-editar-preco").value),
@@ -1410,7 +1410,7 @@ function renderizarResultadosFornecedorMapa(caixa, resultados, fornecedor) {
 
             linha.appendChild(criarCelulaMapaFornecedor(Number(atual.preco || 0).toFixed(2), "mapas-col-preco"));
             linha.appendChild(criarCelulaMapaFornecedor(atual.sku || "-", "mapas-col-sku"));
-            linha.appendChild(criarCelulaMapaFornecedor(obterTopProdutoFornecedor(atual) || "", "mapas-col-top"));
+            linha.appendChild(criarCelulaMapaFornecedor(String(obterTopProdutoFornecedor(atual) || "").trim() ? "sim" : "", "mapas-col-top"));
             linha.appendChild(criarCelulaMapaFornecedor(obterBooleanoProdutoFornecedor(atual.descontinuado) ? "sim" : "", "mapas-col-descontinuado"));
             linha.appendChild(criarCelulaMapaFornecedor(obterBooleanoProdutoFornecedor(atual.novidade) ? "sim" : "", "mapas-col-novidade"));
             linha.appendChild(criarCelulaMapaFornecedor(stockNumero, `mapas-col-stock mapa-stock-celula ${stockNumero <= 0 ? "sem-stock" : ""}`));
