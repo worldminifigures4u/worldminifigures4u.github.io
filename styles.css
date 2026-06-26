@@ -3207,12 +3207,20 @@
 .pagina-mapas-admin .fornecedor-resultados,
 .pagina-fornecedores-unificada .fornecedor-resultados {
     display: block;
-    max-height: 62vh;
-    overflow: auto;
     padding-right: 0;
     border: 1px solid #333;
     border-radius: 8px;
     background: #101010;
+}
+
+.pagina-mapas-admin .fornecedor-resultados {
+    max-height: none;
+    overflow: visible;
+}
+
+.pagina-fornecedores-unificada .fornecedor-resultados {
+    max-height: 62vh;
+    overflow: auto;
 }
 
 .mapas-contador-filtros {
@@ -3290,6 +3298,10 @@
 
 .mapas-tabela-wrapper {
     overflow: auto;
+}
+
+.pagina-mapas-admin .mapas-tabela-wrapper {
+    overflow: visible;
 }
 
 .mapas-produtos-tabela {
@@ -3626,9 +3638,12 @@ body.mapas-produto-modal-aberto {
         grid-template-columns: 1fr;
     }
 
-    .pagina-mapas-admin .fornecedor-resultados,
     .pagina-fornecedores-unificada .fornecedor-resultados {
         max-height: 65vh;
+    }
+
+    .pagina-mapas-admin .fornecedor-resultados {
+        max-height: none;
     }
 
     .fornecedor-pesquisa-compacta {
