@@ -1029,7 +1029,12 @@ async function carregarCatalogoFornecedores() {
 function estaPaginaMapasFornecedor() {
     return Boolean(
         document.body?.classList.contains("pagina-mapas-admin")
-        || document.body?.classList.contains("pagina-fornecedores-unificada")
+    );
+}
+
+function estaPaginaFornecedoresUnificada() {
+    return Boolean(
+        document.body?.classList.contains("pagina-fornecedores-unificada")
     );
 }
 
@@ -1463,6 +1468,130 @@ function renderizarResultadosFornecedorMapa(caixa, resultados, fornecedor) {
     caixa.appendChild(envoltorio);
 }
 
+function renderizarResultadosFornecedorTabelaEncomenda(caixa, resultados) {
+    caixa.classList.add("fornecedor-resultados-mapa");
+
+    const resumo = document.createElement("p");
+    resumo.className = "fornecedor-contagem-lista mapas-tabela-resumo";
+    resumo.textContent = resultados.length
+        ? `${resultados.length} produto(s) apresentados`
+        : "Nenhum produto encontrado.";
+    caixa.appendChild(resumo);
+
+    if (!resultados.length) return;
+
+    const envoltorio = document.createElement("div");
+    envoltorio.className = "mapas-tabela-wrapper";
+
+    const tabela = document.createElement("table");
+    tabela.className = "mapas-produtos-tabela";
+
+    const thead = document.createElement("thead");
+    const cabecalho = document.createElement("tr");
+    [
+        ["nome", "mapas-col-nome", "nome"],
+        ["Ref.", "mapas-col-ref", "ref"],
+        ["stock", "mapas-col-stock", "stock"],
+        ["a chegar", "mapas-col-pendente", "pendente"],
+        ["previsto", "mapas-col-previsto", "previsto"],
+        ["qtd", "mapas-col-qtd", "qtd"],
+    ].forEach(([texto, classe, coluna]) => {
+        const th = document.createElement("th");
+        th.className = `${classe} mapas-th-ordenavel`;
+        const botao = document.createElement("button");
+        botao.type = "button";
+        botao.textContent = texto;
+        botao.tabIndex = -1;
+        const ativo = fornecedorMapaOrdenacao.coluna === coluna;
+        if (ativo) {
+            botao.setAttribute("aria-sort", fornecedorMapaOrdenacao.direcao === "asc" ? "ascending" : "descending");
+            botao.textContent += fornecedorMapaOrdenacao.direcao === "asc" ? " ▲" : " ▼";
+        }
+        botao.addEventListener("click", () => {
+            const mesmaColuna = fornecedorMapaOrdenacao.coluna === coluna;
+            fornecedorMapaOrdenacao = {
+                coluna,
+                direcao: mesmaColuna && fornecedorMapaOrdenacao.direcao === "asc" ? "desc" : "asc"
+            };
+            renderizarResultadosFornecedor();
+        });
+        th.appendChild(botao);
+        cabecalho.appendChild(th);
+    });
+    thead.appendChild(cabecalho);
+    tabela.appendChild(thead);
+
+    const tbody = document.createElement("tbody");
+    const resultadosOrdenados = resultados
+        .slice()
+        .sort((a, b) => compararProdutosPorColunaFornecedor(a, b, fornecedorMapaOrdenacao.coluna, fornecedorMapaOrdenacao.direcao));
+
+    resultadosOrdenados.forEach(({ produto }) => {
+        const atual = produto;
+        const linha = document.createElement("tr");
+        const stockNumero = Number(atual.stock || 0);
+        const pendentes = obterPendentesDetalhadosProdutoFornecedor(atual);
+        const pendente = pendentes.total;
+        const previsto = stockNumero + pendente;
+
+        const nomeCelula = document.createElement("td");
+        nomeCelula.className = "mapas-col-nome";
+        const nomeBotao = document.createElement("button");
+        nomeBotao.type = "button";
+        nomeBotao.className = "mapas-produto-nome-botao";
+        nomeBotao.textContent = atual.nome || "Produto sem nome";
+        nomeBotao.title = "Editar produto";
+        nomeBotao.tabIndex = -1;
+        nomeBotao.addEventListener("click", () => abrirEdicaoProdutoMapa(atual.id));
+        nomeCelula.appendChild(nomeBotao);
+        linha.appendChild(nomeCelula);
+
+        const refCelula = document.createElement("td");
+        refCelula.className = "mapas-col-ref";
+        const refConteudo = document.createElement("div");
+        refConteudo.className = "mapas-ref-com-imagem";
+        const imagemRef = criarImagemFornecedor(atual, "fornecedor-miniatura pequena");
+        imagemRef.tabIndex = -1;
+        refConteudo.appendChild(imagemRef);
+        const refTexto = document.createElement("span");
+        refTexto.textContent = atual.referencia || "-";
+        refConteudo.appendChild(refTexto);
+        refCelula.appendChild(refConteudo);
+        linha.appendChild(refCelula);
+
+        linha.appendChild(criarCelulaMapaFornecedor(stockNumero, `mapas-col-stock mapa-stock-celula ${stockNumero <= 0 ? "sem-stock" : ""}`));
+        const pendenteCelula = criarCelulaMapaFornecedor(pendente, `mapas-col-pendente mapa-pendente-celula ${pendente > 0 ? "com-pendente" : ""}`);
+        if (pendentes.detalhes.length) {
+            pendenteCelula.title = pendentes.detalhes.join("\n");
+        }
+        linha.appendChild(pendenteCelula);
+        linha.appendChild(criarCelulaMapaFornecedor(previsto, `mapas-col-previsto mapa-previsto-celula ${previsto > stockNumero ? "com-pendente" : ""}`));
+
+        const qtdCelula = document.createElement("td");
+        qtdCelula.className = "mapas-col-qtd";
+        const input = document.createElement("input");
+        input.type = "number";
+        input.min = "0";
+        input.step = "1";
+        const quantidadeSelecionada = obterQuantidadeSelecionadaFornecedor(atual.id);
+        input.value = quantidadeSelecionada > 0 ? String(quantidadeSelecionada) : "";
+        if (quantidadeSelecionada <= 0) input.removeAttribute("value");
+        input.className = "mapa-quantidade-input";
+        input.setAttribute("aria-label", `Quantidade de ${atual.nome || "produto"}`);
+        input.addEventListener("keydown", tratarTeclaQuantidadeMapa);
+        input.addEventListener("change", () => definirQuantidadeMapaFornecedor(atual, input.value));
+        input.addEventListener("blur", () => definirQuantidadeMapaFornecedor(atual, input.value));
+        qtdCelula.appendChild(input);
+        linha.appendChild(qtdCelula);
+
+        tbody.appendChild(linha);
+    });
+
+    tabela.appendChild(tbody);
+    envoltorio.appendChild(tabela);
+    caixa.appendChild(envoltorio);
+}
+
 function renderizarResultadosFornecedor() {
     const caixa = document.getElementById("fornecedor-resultados");
     if (!caixa) return;
@@ -1486,6 +1615,11 @@ function renderizarResultadosFornecedor() {
 
     if (estaPaginaMapasFornecedor()) {
         renderizarResultadosFornecedorMapa(caixa, resultados, fornecedor);
+        return;
+    }
+
+    if (estaPaginaFornecedoresUnificada()) {
+        renderizarResultadosFornecedorTabelaEncomenda(caixa, resultados);
         return;
     }
 

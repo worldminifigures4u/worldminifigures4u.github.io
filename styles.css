@@ -3364,6 +3364,9 @@
 .mapas-col-subtema { width: 150px; }
 .mapas-col-peso { width: 70px; }
 .mapas-col-ref { width: 130px; }
+.mapas-col-pendente { width: 88px; }
+.mapas-col-previsto { width: 88px; }
+.mapas-col-qtd { width: 82px; }
 
 .mapas-col-lego,
 .mapas-col-preco,
@@ -3372,7 +3375,10 @@
 .mapas-col-descontinuado,
 .mapas-col-novidade,
 .mapas-col-stock,
-.mapas-col-peso {
+.mapas-col-peso,
+.mapas-col-pendente,
+.mapas-col-previsto,
+.mapas-col-qtd {
     text-align: center;
 }
 
