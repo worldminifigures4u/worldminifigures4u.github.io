@@ -3557,6 +3557,7 @@
 }
 
 .mapas-produto-form-grid input,
+.mapas-produto-form-grid select,
 .mapas-produto-form-grid textarea,
 .mapas-produto-fornecedores input {
     width: 100%;
