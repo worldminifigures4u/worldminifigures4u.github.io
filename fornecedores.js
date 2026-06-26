@@ -941,6 +941,129 @@ function definirQuantidadeMapaFornecedor(produto, valor) {
     renderizarSelecionadosFornecedor();
 }
 
+function normalizarReferenciaListaFornecedor(valor) {
+    return String(valor || "")
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .trim()
+        .toUpperCase()
+        .replace(/\s+/g, "");
+}
+
+function converterNumeroListaFornecedor(valor) {
+    const texto = String(valor || "")
+        .replace(/[€\s]/g, "")
+        .replace(",", ".")
+        .replace(/[^0-9.-]/g, "");
+    const numero = Number(texto);
+    return Number.isFinite(numero) ? numero : 0;
+}
+
+function dividirLinhaListaFinalFornecedor(linha) {
+    const texto = String(linha || "").trim();
+    if (!texto) return [];
+    if (texto.includes("\t")) return texto.split("\t");
+    if (texto.includes(";")) return texto.split(";");
+    if (/^[^,]+,\s*\d+,\s*[\d,.]+\s*€?$/i.test(texto)) return texto.split(",");
+    return texto.split(/\s+/);
+}
+
+function analisarLinhaListaFinalFornecedor(linha, numeroLinha) {
+    const partes = dividirLinhaListaFinalFornecedor(linha).map(parte => String(parte || "").trim()).filter(Boolean);
+    if (!partes.length) return null;
+    if (partes.length < 2) {
+        return { erro: `linha ${numeroLinha}: falta quantidade`, original: linha };
+    }
+
+    const referencia = partes[0];
+    const quantidade = Math.floor(converterNumeroListaFornecedor(partes[1]));
+    if (!referencia || quantidade <= 0) {
+        return { erro: `linha ${numeroLinha}: referência ou quantidade inválida`, original: linha };
+    }
+
+    const precoTexto = partes.slice(2).join(" ");
+    const precoCusto = Math.max(0, converterNumeroListaFornecedor(precoTexto));
+    return { referencia, quantidade, preco_custo: precoCusto, original: linha };
+}
+
+function encontrarProdutoListaFinalFornecedor(referencia) {
+    const alvo = normalizarReferenciaListaFornecedor(referencia);
+    if (!alvo) return null;
+    return fornecedorProdutos.find(produto => {
+        const refProduto = normalizarReferenciaListaFornecedor(produto.referencia);
+        const skuProduto = normalizarReferenciaListaFornecedor(produto.sku);
+        return refProduto === alvo || skuProduto === alvo;
+    }) || null;
+}
+
+function aplicarListaFinalFornecedor() {
+    const area = document.getElementById("fornecedor-lista-final");
+    if (!area) return;
+    const linhas = String(area.value || "").split(/\r?\n/);
+    const importados = [];
+    const erros = [];
+    const naoEncontrados = [];
+    const porProduto = new Map();
+
+    linhas.forEach((linha, indice) => {
+        const analisada = analisarLinhaListaFinalFornecedor(linha, indice + 1);
+        if (!analisada) return;
+        if (analisada.erro) {
+            erros.push(analisada.erro);
+            return;
+        }
+
+        const produto = encontrarProdutoListaFinalFornecedor(analisada.referencia);
+        if (!produto) {
+            naoEncontrados.push(analisada.referencia);
+            return;
+        }
+
+        const chave = String(produto.id);
+        const existente = porProduto.get(chave);
+        const quantidade = Math.max(1, Number(analisada.quantidade) || 1);
+        const precoCusto = Math.max(0, Number(analisada.preco_custo) || 0);
+        if (existente) {
+            existente.quantidade += quantidade;
+            if (precoCusto > 0) existente.preco_custo = precoCusto;
+        } else {
+            porProduto.set(chave, {
+                ...produto,
+                quantidade,
+                preco_custo: precoCusto,
+                preco: precoCusto
+            });
+        }
+    });
+
+    porProduto.forEach(item => importados.push(item));
+    if (!importados.length) {
+        const detalhe = naoEncontrados.length ? ` Referências não encontradas: ${naoEncontrados.join(", ")}.` : "";
+        definirStatusFornecedor(`Não foi possível importar produtos da lista.${detalhe}`, true);
+        return;
+    }
+
+    if (fornecedorSelecao.length && !window.confirm("Substituir a lista atual pela lista final enviada pelo fornecedor?")) {
+        return;
+    }
+
+    fornecedorSelecao = importados;
+    guardarSelecaoFornecedor();
+    renderizarResultadosFornecedor();
+    renderizarSelecionadosFornecedor();
+
+    const avisos = [];
+    if (naoEncontrados.length) avisos.push(`Não encontradas: ${naoEncontrados.join(", ")}`);
+    if (erros.length) avisos.push(erros.join("; "));
+    definirStatusFornecedor(`${importados.length} produto(s) aplicado(s) à encomenda final.${avisos.length ? " " + avisos.join(" | ") : ""}`, Boolean(avisos.length));
+}
+
+function limparTextoListaFinalFornecedor() {
+    const area = document.getElementById("fornecedor-lista-final");
+    if (area) area.value = "";
+    definirStatusFornecedor("Texto da lista final limpo.");
+}
+
 function focarQuantidadeMapaRelativa(inputAtual, direcao) {
     const inputs = Array.from(document.querySelectorAll(".mapa-quantidade-input"));
     const indiceAtual = inputs.indexOf(inputAtual);
@@ -2516,6 +2639,8 @@ ligarEventoFornecedor('fornecedor-filtro-top', 'change', agendarRenderizacaoResu
 ligarEventoFornecedor('fornecedor-filtro-descontinuado', 'change', agendarRenderizacaoResultadosFornecedor);
 ligarEventoFornecedor('mapas-filtro-stock', 'change', agendarRenderizacaoResultadosFornecedor);
 ligarEventoFornecedor('mapas-copiar-lista', 'click', copiarListaMapaVisivel);
+ligarEventoFornecedor('fornecedor-aplicar-lista-final', 'click', aplicarListaFinalFornecedor);
+ligarEventoFornecedor('fornecedor-limpar-lista-final', 'click', limparTextoListaFinalFornecedor);
 ligarEventoFornecedor('btn-limpar-fornecedor', 'click', limparSelecaoFornecedor);
 ligarEventoFornecedor('btn-criar-fornecedor', 'click', criarPedidoFornecedor);
 ligarEventoFornecedor('fornecedor-filtro-estado', 'change', renderizarPedidosFornecedores);

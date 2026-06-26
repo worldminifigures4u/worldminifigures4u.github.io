@@ -7,7 +7,7 @@
     <title>Fornecedores | Figures Planet</title>
     <link rel="icon" type="image/jpeg" href="assets/logo-figures-planet.jpg">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <link rel="stylesheet" href="styles.css?v=20260626-fornecedores-desbloqueio">
+    <link rel="stylesheet" href="styles.css?v=20260626-lista-final-fornecedor">
 </head>
 <body class="pagina-fornecedores-admin pagina-fornecedores-unificada cabecalho-com-admin pagina-com-cabecalho-site">
     <header class="cabecalho-site-admin">
@@ -81,7 +81,20 @@
                 <div id="fornecedor-resultados" class="fornecedor-resultados"></div>
 
                 <h3>Produtos selecionados</h3>
+                <section class="fornecedor-lista-final-box" aria-label="Lista final enviada pelo fornecedor">
+                    <h4>Colar lista final do fornecedor</h4>
+                    <p>Cola uma linha por produto: referência, quantidade e preço de custo.</p>
+                    <textarea id="fornecedor-lista-final" rows="5" placeholder="Ex.:&#10;AF301	2	1,25&#10;PG634	1	0,85"></textarea>
+                    <div class="fornecedor-lista-final-acoes">
+                        <button type="button" id="fornecedor-limpar-lista-final">Limpar texto</button>
+                        <button type="button" id="fornecedor-aplicar-lista-final" class="wallapop-botao-destaque">Aplicar lista do fornecedor</button>
+                    </div>
+                </section>
                 <div id="fornecedor-selecionados" class="fornecedor-selecionados"></div>
+                <label class="fornecedor-referencia-final" for="fornecedor-referencia">
+                    Número / referência da encomenda ao fornecedor
+                    <input id="fornecedor-referencia" type="text" placeholder="Ex.: FV4WG8">
+                </label>
                 <div class="fornecedores-acoes">
                     <button type="button" id="btn-limpar-fornecedor">Limpar lista</button>
                     <button type="button" id="btn-criar-fornecedor">Criar encomenda</button>
@@ -161,6 +174,6 @@
             }
         })();
     </script>
-    <script src="fornecedores.js?v=20260626-fornecedores-desbloqueio"></script>
+    <script src="fornecedores.js?v=20260626-lista-final-fornecedor"></script>
 </body>
 </html>
