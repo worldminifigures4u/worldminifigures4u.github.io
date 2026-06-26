@@ -429,7 +429,8 @@ function fundirProdutosFornecedor(produtos) {
         const produtoNormalizado = {
             ...produto,
             stock: Number.isFinite(Number(produto.stock)) ? Number(produto.stock) : 0,
-            preco: Number.isFinite(Number(produto.preco)) ? Number(produto.preco) : 0
+            preco: Number.isFinite(Number(produto.preco)) ? Number(produto.preco) : 0,
+            preco_compra: Number.isFinite(Number(produto.preco_compra)) ? Number(produto.preco_compra) : 0
         };
         if (indice >= 0) fornecedorProdutos[indice] = { ...fornecedorProdutos[indice], ...produtoNormalizado };
         else fornecedorProdutos.push(produtoNormalizado);
@@ -1216,6 +1217,7 @@ async function carregarCatalogoFornecedores() {
         && Object.prototype.hasOwnProperty.call(produto, "subtema")
         && Object.prototype.hasOwnProperty.call(produto, "referencia")
         && Object.prototype.hasOwnProperty.call(produto, "novidade")
+        && Object.prototype.hasOwnProperty.call(produto, "preco_compra")
     )) {
         if (estaPaginaMapasFornecedor()) {
             definirStatusFornecedor('O Supabase ainda nao esta a devolver todos os campos dos mapas. Execute o SQL atualizado e volte a importar o mapas.ods.', true);
@@ -1393,7 +1395,8 @@ function abrirEdicaoProdutoMapa(produtoId) {
     campos.appendChild(secaoIdentificacao);
 
     const secaoDetalhes = criarSecaoEdicaoMapa("Detalhes", "mapas-produto-secao-detalhes");
-    criarInputEdicaoMapa(secaoDetalhes, "mapas-editar-preco", "Preco", Number(produto.preco || 0).toFixed(2), "number", { required: true, min: 0, step: "0.01" });
+    criarInputEdicaoMapa(secaoDetalhes, "mapas-editar-preco", "preço venda", Number(produto.preco || 0).toFixed(2), "number", { required: true, min: 0, step: "0.01" });
+    criarInputEdicaoMapa(secaoDetalhes, "mapas-editar-preco-compra", "preço compra", Number(produto.preco_compra ?? produto.preco_custo ?? produto.custo ?? 0).toFixed(2), "number", { min: 0, step: "0.01" });
     criarInputEdicaoMapa(secaoDetalhes, "mapas-editar-peso", "Peso (g)", Number(produto.peso || 10), "number", { required: true, min: 1, step: 1 });
     criarInputEdicaoMapa(secaoDetalhes, "mapas-editar-stock", "Stock", Number(produto.stock || 0), "number", { required: true, min: 0, step: 1 });
     criarInputEdicaoMapa(secaoDetalhes, "mapas-editar-tema", "Tema", produto.tema || "", "text", { required: true });
@@ -1440,6 +1443,7 @@ function lerProdutoEditadoMapa() {
         descontinuado: document.getElementById("mapas-editar-descontinuado").checked,
         novidade: document.getElementById("mapas-editar-novidade").checked,
         preco: Number(document.getElementById("mapas-editar-preco").value),
+        preco_compra: Number(document.getElementById("mapas-editar-preco-compra").value || 0),
         peso: Number(document.getElementById("mapas-editar-peso").value || 10),
         stock: Math.max(0, Math.floor(Number(document.getElementById("mapas-editar-stock").value || 0))),
         tema: document.getElementById("mapas-editar-tema").value.trim(),
@@ -1450,8 +1454,8 @@ function lerProdutoEditadoMapa() {
         ativo: document.getElementById("mapas-editar-ativo").checked
     };
 
-    if (!produto.nome || !produto.sku || !produto.tema || !Number.isFinite(produto.preco) || produto.preco < 0 || !Number.isFinite(produto.peso) || produto.peso < 1) {
-        throw new Error("Preencha nome, SKU, tema, preco e peso corretamente.");
+    if (!produto.nome || !produto.sku || !produto.tema || !Number.isFinite(produto.preco) || produto.preco < 0 || !Number.isFinite(produto.preco_compra) || produto.preco_compra < 0 || !Number.isFinite(produto.peso) || produto.peso < 1) {
+        throw new Error("Preencha nome, SKU, tema, preço venda, preço compra e peso corretamente.");
     }
 
     return {
@@ -1491,7 +1495,8 @@ async function guardarEdicaoProdutoMapa(evento) {
         const atualizado = {
             ...data,
             stock: Number.isFinite(Number(data.stock)) ? Number(data.stock) : 0,
-            preco: Number.isFinite(Number(data.preco)) ? Number(data.preco) : 0
+            preco: Number.isFinite(Number(data.preco)) ? Number(data.preco) : 0,
+            preco_compra: Number.isFinite(Number(data.preco_compra)) ? Number(data.preco_compra) : 0
         };
         fornecedorProdutos = fornecedorProdutos.map(item =>
             String(item.id) === String(atualizado.id) || String(item.sku || "").toUpperCase() === String(skuOriginal || "").toUpperCase()

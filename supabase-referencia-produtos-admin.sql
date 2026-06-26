@@ -20,6 +20,9 @@ alter table public.produtos
 alter table public.produtos
   add column if not exists observacoes text;
 
+alter table public.produtos
+  add column if not exists preco_compra numeric not null default 0;
+
 create or replace function public.importar_produtos_admin(p_produtos jsonb)
 returns jsonb
 language plpgsql
@@ -42,13 +45,14 @@ begin
   for v_produto in select value from jsonb_array_elements(p_produtos)
   loop
     insert into public.produtos (
-      sku, referencia, lego, nome, preco, top, descontinuado, novidade, stock, tema, subtema, peso, fornecedores, ativo
+      sku, referencia, lego, nome, preco, preco_compra, top, descontinuado, novidade, stock, tema, subtema, peso, fornecedores, ativo
     ) values (
       upper(trim(v_produto->>'sku')),
       nullif(trim(v_produto->>'referencia'), ''),
       nullif(trim(v_produto->>'lego'), ''),
       trim(v_produto->>'nome'),
       (v_produto->>'preco')::numeric,
+      coalesce(nullif(trim(coalesce(v_produto->>'preco_compra', '')), '')::numeric, 0),
       nullif(trim(v_produto->>'top'), ''),
       coalesce((v_produto->>'descontinuado')::boolean, false),
       case
@@ -67,6 +71,7 @@ begin
       lego = excluded.lego,
       nome = excluded.nome,
       preco = excluded.preco,
+      preco_compra = excluded.preco_compra,
       top = excluded.top,
       descontinuado = excluded.descontinuado,
       novidade = excluded.novidade,
@@ -108,6 +113,7 @@ begin
       'sku', produto.sku,
       'nome', produto.nome,
       'preco', coalesce(produto.preco, 0),
+      'preco_compra', coalesce(produto.preco_compra, 0),
       'top', coalesce(produto.top, ''),
       'descontinuado', coalesce(produto.descontinuado, false),
       'novidade', coalesce(produto.novidade, false),
@@ -162,7 +168,7 @@ begin
   where trim(valor) <> '';
 
   insert into public.produtos (
-    sku, referencia, lego, nome, tema, subtema, preco, peso, stock,
+    sku, referencia, lego, nome, tema, subtema, preco, preco_compra, peso, stock,
     observacoes, ativo, novidade, imagens
   ) values (
     v_sku,
@@ -172,6 +178,7 @@ begin
     trim(coalesce(p_produto->>'tema', '')),
     coalesce(nullif(trim(coalesce(p_produto->>'subtema', '')), ''), 'semsubtema'),
     (p_produto->>'preco')::numeric,
+    coalesce(nullif(trim(coalesce(p_produto->>'preco_compra', '')), '')::numeric, 0),
     (p_produto->>'peso')::numeric,
     (p_produto->>'stock')::integer,
     nullif(trim(coalesce(p_produto->>'observacoes', '')), ''),
@@ -189,6 +196,7 @@ begin
     'sku', v_produto.sku,
     'nome', v_produto.nome,
     'preco', coalesce(v_produto.preco, 0),
+    'preco_compra', coalesce(v_produto.preco_compra, 0),
     'top', coalesce(v_produto.top, ''),
     'descontinuado', coalesce(v_produto.descontinuado, false),
     'novidade', coalesce(v_produto.novidade, false),
@@ -327,6 +335,7 @@ begin
     tema = trim(coalesce(p_produto->>'tema', '')),
     subtema = coalesce(nullif(trim(coalesce(p_produto->>'subtema', '')), ''), 'semsubtema'),
     preco = (p_produto->>'preco')::numeric,
+    preco_compra = coalesce(nullif(trim(coalesce(p_produto->>'preco_compra', '')), '')::numeric, 0),
     peso = (p_produto->>'peso')::numeric,
     stock = (p_produto->>'stock')::integer,
     top = nullif(trim(coalesce(p_produto->>'top', '')), ''),
@@ -351,6 +360,7 @@ begin
       tema = trim(coalesce(p_produto->>'tema', '')),
       subtema = coalesce(nullif(trim(coalesce(p_produto->>'subtema', '')), ''), 'semsubtema'),
       preco = (p_produto->>'preco')::numeric,
+      preco_compra = coalesce(nullif(trim(coalesce(p_produto->>'preco_compra', '')), '')::numeric, 0),
       peso = (p_produto->>'peso')::numeric,
       stock = (p_produto->>'stock')::integer,
       top = nullif(trim(coalesce(p_produto->>'top', '')), ''),
@@ -376,6 +386,7 @@ begin
     'sku', v_produto.sku,
     'nome', v_produto.nome,
     'preco', coalesce(v_produto.preco, 0),
+    'preco_compra', coalesce(v_produto.preco_compra, 0),
     'top', coalesce(v_produto.top, ''),
     'descontinuado', coalesce(v_produto.descontinuado, false),
     'novidade', coalesce(v_produto.novidade, false),
