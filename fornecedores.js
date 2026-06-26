@@ -22,6 +22,7 @@ let fornecedorPedidos = carregarPedidosFornecedores();
 let fornecedorFichas = carregarFichasFornecedores();
 let fornecedorMapaOrdenacao = { coluna: "nome", direcao: "asc" };
 let mapasProdutosVisiveis = [];
+let fornecedorRenderizacaoPendente = null;
 let fornecedorPedidosAbertos = new Set();
 
 function normalizarFornecedor(texto) {
@@ -1311,7 +1312,6 @@ function renderizarContadorMapa(caixa, resultados, fornecedor) {
     const contadorExistente = document.getElementById("fornecedor-contador-barra");
     const contador = contadorExistente || document.createElement("div");
     contador.className = "mapas-contador-filtros";
-    contador.setAttribute("aria-live", "polite");
     contador.querySelectorAll(".mapas-contador-item").forEach(item => item.remove());
 
     contador.append(
@@ -1522,6 +1522,16 @@ function renderizarResultadosFornecedor() {
 
         caixa.appendChild(linha);
     });
+}
+
+function agendarRenderizacaoResultadosFornecedor() {
+    if (fornecedorRenderizacaoPendente) {
+        clearTimeout(fornecedorRenderizacaoPendente);
+    }
+    fornecedorRenderizacaoPendente = setTimeout(() => {
+        fornecedorRenderizacaoPendente = null;
+        renderizarResultadosFornecedor();
+    }, 120);
 }
 
 function adicionarProdutoFornecedor(produto, quantidade = 1) {
@@ -2340,13 +2350,13 @@ function ligarEventoFornecedor(id, evento, handler) {
     }
 }
 
-ligarEventoFornecedor('fornecedor-pesquisa', 'input', renderizarResultadosFornecedor);
-ligarEventoFornecedor('fornecedor-nome', 'change', renderizarResultadosFornecedor);
-ligarEventoFornecedor('fornecedor-ordenacao-stock', 'change', renderizarResultadosFornecedor);
-ligarEventoFornecedor('fornecedor-filtro-marcacao', 'change', renderizarResultadosFornecedor);
-ligarEventoFornecedor('fornecedor-filtro-top', 'change', renderizarResultadosFornecedor);
-ligarEventoFornecedor('fornecedor-filtro-descontinuado', 'change', renderizarResultadosFornecedor);
-ligarEventoFornecedor('mapas-filtro-stock', 'change', renderizarResultadosFornecedor);
+ligarEventoFornecedor('fornecedor-pesquisa', 'input', agendarRenderizacaoResultadosFornecedor);
+ligarEventoFornecedor('fornecedor-nome', 'change', agendarRenderizacaoResultadosFornecedor);
+ligarEventoFornecedor('fornecedor-ordenacao-stock', 'change', agendarRenderizacaoResultadosFornecedor);
+ligarEventoFornecedor('fornecedor-filtro-marcacao', 'change', agendarRenderizacaoResultadosFornecedor);
+ligarEventoFornecedor('fornecedor-filtro-top', 'change', agendarRenderizacaoResultadosFornecedor);
+ligarEventoFornecedor('fornecedor-filtro-descontinuado', 'change', agendarRenderizacaoResultadosFornecedor);
+ligarEventoFornecedor('mapas-filtro-stock', 'change', agendarRenderizacaoResultadosFornecedor);
 ligarEventoFornecedor('mapas-copiar-lista', 'click', copiarListaMapaVisivel);
 ligarEventoFornecedor('btn-limpar-fornecedor', 'click', limparSelecaoFornecedor);
 ligarEventoFornecedor('btn-criar-fornecedor', 'click', criarPedidoFornecedor);
