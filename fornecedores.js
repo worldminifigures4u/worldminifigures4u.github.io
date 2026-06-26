@@ -1064,6 +1064,90 @@ function limparTextoListaFinalFornecedor() {
     definirStatusFornecedor("Texto da lista final limpo.");
 }
 
+function aplicarListaFinalNaEdicaoFornecedor() {
+    const modal = document.getElementById("fornecedor-edicao-modal");
+    if (!modal || modal.hidden) return;
+    const area = modal.querySelector("#fornecedor-edicao-lista-final");
+    const status = modal.querySelector("#fornecedor-edicao-status");
+    const texto = String(area?.value || "");
+    const linhas = texto.split(/\r?\n/);
+    const porReferencia = new Map();
+    const erros = [];
+
+    linhas.forEach((linha, indice) => {
+        const analisada = analisarLinhaListaFinalFornecedor(linha, indice + 1);
+        if (!analisada) return;
+        if (analisada.erro) {
+            erros.push(analisada.erro);
+            return;
+        }
+        const chave = normalizarReferenciaListaFornecedor(analisada.referencia);
+        if (!chave) return;
+        const existente = porReferencia.get(chave);
+        if (existente) {
+            existente.quantidade += analisada.quantidade;
+            if (Number(analisada.preco_custo || 0) > 0) existente.preco_custo = analisada.preco_custo;
+        } else {
+            porReferencia.set(chave, { ...analisada });
+        }
+    });
+
+    if (!porReferencia.size) {
+        if (status) {
+            status.textContent = "Cole a lista final do fornecedor antes de aplicar.";
+            status.style.color = "#ff6262";
+        }
+        return;
+    }
+
+    const usados = new Set();
+    let atualizados = 0;
+    let colocadosEmFalta = 0;
+    const linhasProdutos = Array.from(modal.querySelectorAll(".fornecedor-edicao-produto"));
+    linhasProdutos.forEach(linha => {
+        const referencia = normalizarReferenciaListaFornecedor(linha.dataset.referencia);
+        const sku = normalizarReferenciaListaFornecedor(linha.dataset.sku);
+        const encontrada = porReferencia.get(referencia) || porReferencia.get(sku);
+        const quantidadeInput = linha.querySelector('[data-campo="quantidade"]');
+        const faltaInput = linha.querySelector('[data-campo="falta_os"]');
+        const precoInput = linha.querySelector('[data-campo="preco_custo"]');
+        const quantidadeOriginal = Math.max(0, Math.floor(Number(linha.dataset.quantidadeOriginal || quantidadeInput?.value || 0)));
+
+        if (encontrada) {
+            const quantidade = Math.max(0, Math.floor(Number(encontrada.quantidade) || 0));
+            const falta = Math.max(0, quantidadeOriginal - quantidade);
+            if (quantidadeInput) quantidadeInput.value = String(quantidade);
+            if (faltaInput) faltaInput.value = String(falta);
+            if (precoInput) precoInput.value = Number(encontrada.preco_custo || 0).toFixed(2);
+            usados.add(normalizarReferenciaListaFornecedor(encontrada.referencia));
+            atualizados += 1;
+        } else {
+            if (quantidadeInput) quantidadeInput.value = "0";
+            if (faltaInput) faltaInput.value = String(quantidadeOriginal);
+            colocadosEmFalta += 1;
+        }
+    });
+
+    const naoUsados = Array.from(porReferencia.entries())
+        .filter(([chave]) => !usados.has(chave))
+        .map(([, item]) => item.referencia);
+
+    if (status) {
+        const avisos = [];
+        if (colocadosEmFalta) avisos.push(`${colocadosEmFalta} produto(s) ficaram em falta/OS`);
+        if (naoUsados.length) avisos.push(`não estavam nesta encomenda: ${naoUsados.join(", ")}`);
+        if (erros.length) avisos.push(erros.join("; "));
+        status.textContent = `Lista aplicada: ${atualizados} produto(s) corrigido(s).${avisos.length ? " " + avisos.join(" | ") : ""}`;
+        status.style.color = avisos.length ? "#ffc400" : "#39d353";
+    }
+}
+
+function limparListaFinalEdicaoFornecedor() {
+    const modal = document.getElementById("fornecedor-edicao-modal");
+    const area = modal?.querySelector("#fornecedor-edicao-lista-final");
+    if (area) area.value = "";
+}
+
 function focarQuantidadeMapaRelativa(inputAtual, direcao) {
     const inputs = Array.from(document.querySelectorAll(".mapa-quantidade-input"));
     const indiceAtual = inputs.indexOf(inputAtual);
@@ -2194,6 +2278,15 @@ function garantirModalEdicaoFornecedor() {
                         <select id="fornecedor-edicao-estado"></select>
                     </label>
                 </div>
+                <section class="fornecedor-lista-final-box fornecedor-lista-final-edicao" aria-label="Lista final enviada pelo fornecedor">
+                    <h4>Colar lista final do fornecedor</h4>
+                    <p>Depois de o fornecedor responder, cola aqui referência, quantidade e preço. A encomenda abaixo é corrigida automaticamente.</p>
+                    <textarea id="fornecedor-edicao-lista-final" rows="5" placeholder="Ex.:&#10;AF301	2	1,25&#10;PG634	1	0,85"></textarea>
+                    <div class="fornecedor-lista-final-acoes">
+                        <button type="button" id="fornecedor-edicao-limpar-lista-final">Limpar texto</button>
+                        <button type="button" id="fornecedor-edicao-aplicar-lista-final" class="wallapop-botao-destaque">Aplicar à encomenda</button>
+                    </div>
+                </section>
                 <div class="fornecedor-edicao-produtos" id="fornecedor-edicao-produtos"></div>
                 <p class="fornecedores-status fornecedor-edicao-status" id="fornecedor-edicao-status" role="status"></p>
                 <div class="fornecedores-acoes fornecedor-edicao-acoes">
@@ -2207,6 +2300,8 @@ function garantirModalEdicaoFornecedor() {
     document.body.appendChild(modal);
     modal.querySelector('#fornecedor-edicao-fechar')?.addEventListener('click', fecharEdicaoPedidoFornecedor);
     modal.querySelector('#fornecedor-edicao-cancelar')?.addEventListener('click', fecharEdicaoPedidoFornecedor);
+    modal.querySelector('#fornecedor-edicao-aplicar-lista-final')?.addEventListener('click', aplicarListaFinalNaEdicaoFornecedor);
+    modal.querySelector('#fornecedor-edicao-limpar-lista-final')?.addEventListener('click', limparListaFinalEdicaoFornecedor);
     modal.addEventListener('click', (evento) => {
         if (evento.target === modal) fecharEdicaoPedidoFornecedor();
     });
@@ -2233,6 +2328,7 @@ function abrirEdicaoPedidoFornecedor(id) {
     modal.querySelector('#fornecedor-edicao-nome').value = pedido.fornecedor || '';
     modal.querySelector('#fornecedor-edicao-referencia').value = pedido.referencia || '';
     modal.querySelector('#fornecedor-edicao-status').textContent = '';
+    modal.querySelector('#fornecedor-edicao-lista-final').value = '';
 
     const lista = modal.querySelector('#fornecedor-edicao-produtos');
     lista.replaceChildren();
@@ -2246,6 +2342,9 @@ function abrirEdicaoPedidoFornecedor(id) {
         linha.className = 'fornecedor-edicao-produto';
         if (faltaAtual > 0) linha.classList.add('tem-os');
         linha.dataset.indice = String(indice);
+        linha.dataset.referencia = item.referencia || produtoAtual.referencia || '';
+        linha.dataset.sku = item.sku || produtoAtual.sku || '';
+        linha.dataset.quantidadeOriginal = String(quantidadeOriginal);
         linha.appendChild(criarImagemFornecedor(produtoAtual, 'fornecedor-miniatura pequena'));
 
         const info = document.createElement('div');
@@ -2639,8 +2738,6 @@ ligarEventoFornecedor('fornecedor-filtro-top', 'change', agendarRenderizacaoResu
 ligarEventoFornecedor('fornecedor-filtro-descontinuado', 'change', agendarRenderizacaoResultadosFornecedor);
 ligarEventoFornecedor('mapas-filtro-stock', 'change', agendarRenderizacaoResultadosFornecedor);
 ligarEventoFornecedor('mapas-copiar-lista', 'click', copiarListaMapaVisivel);
-ligarEventoFornecedor('fornecedor-aplicar-lista-final', 'click', aplicarListaFinalFornecedor);
-ligarEventoFornecedor('fornecedor-limpar-lista-final', 'click', limparTextoListaFinalFornecedor);
 ligarEventoFornecedor('btn-limpar-fornecedor', 'click', limparSelecaoFornecedor);
 ligarEventoFornecedor('btn-criar-fornecedor', 'click', criarPedidoFornecedor);
 ligarEventoFornecedor('fornecedor-filtro-estado', 'change', renderizarPedidosFornecedores);
