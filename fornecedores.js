@@ -1470,10 +1470,13 @@ function renderizarResultadosFornecedorMapa(caixa, resultados, fornecedor) {
 
 function renderizarResultadosFornecedorTabelaEncomenda(caixa, resultados) {
     caixa.classList.add("fornecedor-resultados-mapa");
+    const limiteResultados = 250;
 
     const resumo = document.createElement("p");
     resumo.className = "fornecedor-contagem-lista mapas-tabela-resumo";
-    resumo.textContent = resultados.length
+    resumo.textContent = resultados.length > limiteResultados
+        ? `${limiteResultados} de ${resultados.length} produto(s) apresentados. Pesquise ou filtre para encontrar mais rapidamente.`
+        : resultados.length
         ? `${resultados.length} produto(s) apresentados`
         : "Nenhum produto encontrado.";
     caixa.appendChild(resumo);
@@ -1524,7 +1527,8 @@ function renderizarResultadosFornecedorTabelaEncomenda(caixa, resultados) {
     const tbody = document.createElement("tbody");
     const resultadosOrdenados = resultados
         .slice()
-        .sort((a, b) => compararProdutosPorColunaFornecedor(a, b, fornecedorMapaOrdenacao.coluna, fornecedorMapaOrdenacao.direcao));
+        .sort((a, b) => compararProdutosPorColunaFornecedor(a, b, fornecedorMapaOrdenacao.coluna, fornecedorMapaOrdenacao.direcao))
+        .slice(0, limiteResultados);
 
     resultadosOrdenados.forEach(({ produto }) => {
         const atual = produto;
@@ -1548,15 +1552,7 @@ function renderizarResultadosFornecedorTabelaEncomenda(caixa, resultados) {
 
         const refCelula = document.createElement("td");
         refCelula.className = "mapas-col-ref";
-        const refConteudo = document.createElement("div");
-        refConteudo.className = "mapas-ref-com-imagem";
-        const imagemRef = criarImagemFornecedor(atual, "fornecedor-miniatura pequena");
-        imagemRef.tabIndex = -1;
-        refConteudo.appendChild(imagemRef);
-        const refTexto = document.createElement("span");
-        refTexto.textContent = atual.referencia || "-";
-        refConteudo.appendChild(refTexto);
-        refCelula.appendChild(refConteudo);
+        refCelula.textContent = atual.referencia || "-";
         linha.appendChild(refCelula);
 
         linha.appendChild(criarCelulaMapaFornecedor(stockNumero, `mapas-col-stock mapa-stock-celula ${stockNumero <= 0 ? "sem-stock" : ""}`));
