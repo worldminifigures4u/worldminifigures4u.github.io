@@ -2213,6 +2213,44 @@ async function sincronizarOsProdutosFornecedor(itens, fornecedorNome) {
     }
 }
 
+async function sincronizarPrecoCompraProdutosFornecedor(itens) {
+    if (!fornecedoresClient) return 0;
+    const porProduto = new Map();
+    (itens || []).forEach(item => {
+        const precoCompra = Math.max(0, Number(item?.preco_custo ?? item?.preco_compra ?? item?.custo ?? 0) || 0);
+        if (precoCompra <= 0) return;
+        const produtoAtual = obterProdutoParaPedidoFornecedor(item);
+        const chave = String(produtoAtual?.id || item?.id || item?.sku || item?.referencia || "").trim();
+        if (!chave) return;
+        porProduto.set(chave, { item, produtoAtual, precoCompra });
+    });
+
+    let atualizados = 0;
+    for (const { item, produtoAtual, precoCompra } of porProduto.values()) {
+        const { data, error } = await fornecedoresClient.rpc("atualizar_preco_compra_produto_admin", {
+            p_id: produtoAtual?.id || item.id || null,
+            p_sku: produtoAtual?.sku || item.sku || null,
+            p_referencia: produtoAtual?.referencia || item.referencia || null,
+            p_preco_compra: precoCompra
+        });
+        if (error) throw error;
+        const idAtualizado = String(data?.id || produtoAtual?.id || item.id || "");
+        fornecedorProdutos = fornecedorProdutos.map(produto => {
+            const mesmoId = idAtualizado && String(produto.id || "") === idAtualizado;
+            const mesmoSku = !idAtualizado && String(produto.sku || "").trim().toUpperCase() === String(item.sku || "").trim().toUpperCase();
+            const mesmaRef = !idAtualizado && String(produto.referencia || "").trim().toUpperCase() === String(item.referencia || "").trim().toUpperCase();
+            return mesmoId || mesmoSku || mesmaRef ? { ...produto, preco_compra: precoCompra } : produto;
+        });
+        fornecedorSelecao = fornecedorSelecao.map(produto =>
+            String(produto.id || "") === idAtualizado ? { ...produto, preco_compra: precoCompra } : produto
+        );
+        atualizados += 1;
+    }
+
+    if (atualizados) guardarSelecaoFornecedor();
+    return atualizados;
+}
+
 async function adicionarSelecaoAoPedidoFornecedor(id) {
     const pedido = fornecedorPedidos.find(item => item.id === id);
     if (!pedido) return;
@@ -2520,10 +2558,12 @@ async function guardarEdicaoPedidoFornecedor(evento) {
         const atualizado = await atualizarPedidoFornecedor(id, { codigo, fornecedor, referencia: referencia || null, estado, itens });
         status.textContent = 'A marcar OS no mapa do fornecedor...';
         await sincronizarOsProdutosFornecedor(itens, fornecedor);
+        status.textContent = 'A atualizar preço compra nos produtos...';
+        const produtosComPrecoAtualizado = await sincronizarPrecoCompraProdutosFornecedor(itens);
         renderizarResultadosFornecedor();
         renderizarPedidosFornecedores();
         fecharEdicaoPedidoFornecedor();
-        definirStatusFornecedor(`Ajuste ${atualizado.codigo} guardado.`);
+        definirStatusFornecedor(`Ajuste ${atualizado.codigo} guardado.${produtosComPrecoAtualizado ? ` Preço compra atualizado em ${produtosComPrecoAtualizado} produto(s).` : ''}`);
     } catch (error) {
         console.error(error);
         status.textContent = 'Erro: ' + (error.message || 'Nao foi possivel guardar a ficha.');

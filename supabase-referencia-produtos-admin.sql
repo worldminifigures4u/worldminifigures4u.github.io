@@ -292,6 +292,58 @@ from public, anon;
 grant execute on function public.atualizar_fornecedores_produto_admin(text, jsonb)
 to authenticated;
 
+create or replace function public.atualizar_preco_compra_produto_admin(
+  p_id text,
+  p_sku text,
+  p_referencia text,
+  p_preco_compra numeric
+)
+returns jsonb
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_produto public.produtos%rowtype;
+begin
+  if lower(coalesce(auth.jwt() ->> 'email', '')) <>
+     'worldminifigures4u@gmail.com' then
+    raise exception 'Acesso administrativo negado.' using errcode = '42501';
+  end if;
+
+  update public.produtos as produto
+  set preco_compra = greatest(coalesce(p_preco_compra, 0), 0)
+  where (
+    nullif(trim(coalesce(p_id, '')), '') is not null
+    and produto.id::text = trim(p_id)
+  ) or (
+    nullif(trim(coalesce(p_sku, '')), '') is not null
+    and upper(produto.sku) = upper(trim(p_sku))
+  ) or (
+    nullif(trim(coalesce(p_referencia, '')), '') is not null
+    and upper(coalesce(produto.referencia, '')) = upper(trim(p_referencia))
+  )
+  returning produto.*
+  into v_produto;
+
+  if not found then
+    raise exception 'Produto nao encontrado para atualizar preço compra.';
+  end if;
+
+  return jsonb_build_object(
+    'id', v_produto.id,
+    'referencia', v_produto.referencia,
+    'sku', v_produto.sku,
+    'preco_compra', coalesce(v_produto.preco_compra, 0)
+  );
+end;
+$$;
+
+revoke execute on function public.atualizar_preco_compra_produto_admin(text, text, text, numeric)
+from public, anon;
+grant execute on function public.atualizar_preco_compra_produto_admin(text, text, text, numeric)
+to authenticated;
+
 create or replace function public.editar_produto_admin_v2(
   p_id text,
   p_sku_original text,
