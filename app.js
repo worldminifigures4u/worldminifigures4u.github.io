@@ -2021,12 +2021,16 @@ function renderizarHistoricoEncomendas(encomendas) {
         id.className = 'encomenda-id';
         id.textContent = encomenda.codigo_encomenda || ('#' + (encomenda.id || 'sem-id'));
 
-        const estado = document.createElement('span');
-        estado.className = 'encomenda-estado';
-        estado.textContent = encomenda.estado || 'Pendente';
+        const estadoAtual = String(encomenda.estado || 'Pendente');
+        const mostrarEstadoCliente = !['concluido', 'concluído'].includes(estadoAtual.trim().toLowerCase());
 
         topo.appendChild(id);
-        topo.appendChild(estado);
+        if (mostrarEstadoCliente) {
+            const estado = document.createElement('span');
+            estado.className = 'encomenda-estado';
+            estado.textContent = estadoAtual;
+            topo.appendChild(estado);
+        }
 
         const data = document.createElement('div');
         const dataValor = encomenda.created_at || encomenda.data || encomenda.inserted_at;
