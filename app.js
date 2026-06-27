@@ -185,6 +185,17 @@ function atualizarContadorCarrinhoCabecalho() {
     contador.textContent = totalItens;
 }
 
+function existeAreaClientePagina() {
+    return !!document.getElementById('painel-cliente');
+}
+
+function mostrarContaAnonimaSeExistir() {
+    const autenticado = document.getElementById('conteudo-cliente-autenticado');
+    const anonimo = document.getElementById('conteudo-cliente-anonimo');
+    if (autenticado) autenticado.style.display = 'none';
+    if (anonimo) anonimo.style.display = 'block';
+}
+
 const PAGINAS_VISTA = {
     loja: 'index.html',
     conta: 'conta.html',
@@ -352,8 +363,7 @@ window.addEventListener('load', async () => {
                     await obterDadosPerfilDaTabela(session.user.id, session.user);
                 } else {
                     atualizarVisibilidadeAdmin(null);
-                    document.getElementById('conteudo-cliente-autenticado').style.display = 'none';
-                    document.getElementById('conteudo-cliente-anonimo').style.display = 'block';
+                    mostrarContaAnonimaSeExistir();
                     atualizarCabecalhoCliente();
                 }
             }, 0);
@@ -783,9 +793,18 @@ async function obterDadosPerfilDaTabela(userId, user = null) {
             .eq('id', userId)
             .single();
 
+        if (!existeAreaClientePagina()) {
+            atualizarCabecalhoCliente(data?.nome || user?.user_metadata?.nome || '');
+            atualizarVisibilidadeAdmin(user);
+            restaurarCarrinhoGuardado();
+            return;
+        }
+
         if (error) {
-            document.getElementById('conteudo-cliente-anonimo').style.display = 'none';
-            document.getElementById('conteudo-cliente-autenticado').style.display = 'block';
+            const anonimo = document.getElementById('conteudo-cliente-anonimo');
+            const autenticado = document.getElementById('conteudo-cliente-autenticado');
+            if (anonimo) anonimo.style.display = 'none';
+            if (autenticado) autenticado.style.display = 'block';
             preencherFormularioDadosCliente({}, user);
             atualizarVisibilidadeAdmin(user);
             restaurarCarrinhoGuardado();
@@ -794,8 +813,10 @@ async function obterDadosPerfilDaTabela(userId, user = null) {
         }
 
         if (data) {
-            document.getElementById('conteudo-cliente-anonimo').style.display = 'none';
-            document.getElementById('conteudo-cliente-autenticado').style.display = 'block';
+            const anonimo = document.getElementById('conteudo-cliente-anonimo');
+            const autenticado = document.getElementById('conteudo-cliente-autenticado');
+            if (anonimo) anonimo.style.display = 'none';
+            if (autenticado) autenticado.style.display = 'block';
             preencherFormularioDadosCliente(data, user);
             atualizarVisibilidadeAdmin(user);
             restaurarCarrinhoGuardado();
@@ -810,12 +831,12 @@ async function fazerLogout() {
     await dbClient.auth.signOut();
     restaurarCarrinhoGuardado();
     atualizarVisibilidadeAdmin(null);
-    document.getElementById('conteudo-cliente-autenticado').style.display = 'none';
-    document.getElementById('conteudo-cliente-anonimo').style.display = 'block';
-    document.getElementById('status-cliente').innerText = '';
+    mostrarContaAnonimaSeExistir();
+    const statusCliente = document.getElementById('status-cliente');
+    if (statusCliente) statusCliente.innerText = '';
     atualizarCabecalhoCliente();
     definirHistoricoVazio('Entre na conta para carregar o histórico.');
-    mudarAba('login');
+    if (existeAreaClientePagina()) mudarAba('login');
     if (paginaPrecisaProdutosLoja()) {
         await carregarProdutosDaNuvem();
     }
