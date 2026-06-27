@@ -1,6 +1,24 @@
 // Codigo de carrinho e portes.
 // Separado de app.js para modularizar o site.
 
+function guardarCarrinho() {
+    localStorage.setItem('carrinho', JSON.stringify(carrinho));
+}
+
+function restaurarCarrinhoGuardado() {
+    carrinho = carregarCarrinhoLocal();
+    atualizarCarrinho();
+}
+
+function limparCarrinho() {
+    carrinho = [];
+    guardarCarrinho();
+    atualizarCarrinho();
+}
+
+
+
+
 function adicionarAoCarrinho(prod) {
 
     const itemExistente = carrinho.find(item => item.id === prod.id);
