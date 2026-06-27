@@ -431,6 +431,13 @@ function fundirProdutosFornecedor(produtos) {
             preco: Number.isFinite(Number(produto.preco)) ? Number(produto.preco) : 0,
             preco_compra: Number.isFinite(Number(produto.preco_compra)) ? Number(produto.preco_compra) : 0
         };
+        produtoNormalizado._pesquisaFornecedor = {
+            nome: normalizarFornecedor(produtoNormalizado.nome),
+            sku: normalizarFornecedor(produtoNormalizado.sku),
+            referencia: normalizarFornecedor(produtoNormalizado.referencia),
+            tema: normalizarFornecedor(produtoNormalizado.tema),
+            subtema: normalizarFornecedor(produtoNormalizado.subtema)
+        };
         if (indice >= 0) fornecedorProdutos[indice] = { ...fornecedorProdutos[indice], ...produtoNormalizado };
         else fornecedorProdutos.push(produtoNormalizado);
     });
@@ -748,11 +755,12 @@ function obterControlosResultadosFornecedor() {
 
 function calcularScoreResultadoFornecedor(produto, termo) {
     if (!termo) return 5;
-    const nome = normalizarFornecedor(produto.nome);
-    const sku = normalizarFornecedor(produto.sku);
-    const referencia = normalizarFornecedor(produto.referencia);
-    const tema = normalizarFornecedor(produto.tema);
-    const subtema = normalizarFornecedor(produto.subtema);
+    const pesquisa = produto._pesquisaFornecedor || {};
+    const nome = pesquisa.nome ?? normalizarFornecedor(produto.nome);
+    const sku = pesquisa.sku ?? normalizarFornecedor(produto.sku);
+    const referencia = pesquisa.referencia ?? normalizarFornecedor(produto.referencia);
+    const tema = pesquisa.tema ?? normalizarFornecedor(produto.tema);
+    const subtema = pesquisa.subtema ?? normalizarFornecedor(produto.subtema);
 
     if (sku === termo || referencia === termo) return 0;
     if (nome === termo) return 1;
