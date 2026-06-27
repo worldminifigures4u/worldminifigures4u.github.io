@@ -2664,6 +2664,7 @@ function gerarMenus(listaProdutos){
 
 function gerarProdutos(listaProdutos){
     const vitrine = document.getElementById('vitrine-produtos');
+    if (!vitrine) return;
     vitrine.replaceChildren();
 
     listaProdutos.forEach(prod => {
@@ -2864,7 +2865,9 @@ function atualizarContadorProdutos(totalVisiveis, totalProdutos, pesquisaAtiva) 
 }
 
 function executarFiltrosCombinados() {
-    const inputRaw = document.getElementById('campo-pesquisa').value || '';
+    const campoPesquisa = document.getElementById('campo-pesquisa');
+    if (!campoPesquisa) return;
+    const inputRaw = campoPesquisa.value || '';
     // Normaliza acentos e remove caracteres especiais
     const textoPesquisa = inputRaw.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
     const pesquisaAtiva = textoPesquisa.length > 0;
