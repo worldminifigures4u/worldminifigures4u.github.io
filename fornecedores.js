@@ -1203,8 +1203,33 @@ function obterPendentesDetalhadosProdutoFornecedor(produto) {
 }
 
 async function carregarCatalogoFornecedores() {
-    const respostaAdmin = await fornecedoresClient.rpc('listar_produtos_plataforma_admin');
-    let produtos = Array.isArray(respostaAdmin.data) ? respostaAdmin.data : [];
+    let respostaAdmin = null;
+    let produtos = [];
+
+    if (estaPaginaMapasFornecedor()) {
+        const tamanhoPagina = 500;
+        let inicio = 0;
+        while (true) {
+            const respostaPagina = await fornecedoresClient.rpc('listar_produtos_admin', {
+                p_limite: tamanhoPagina,
+                p_offset: inicio
+            });
+            if (respostaPagina.error) {
+                respostaAdmin = respostaPagina;
+                break;
+            }
+            const pagina = Array.isArray(respostaPagina.data) ? respostaPagina.data : [];
+            produtos.push(...pagina);
+            if (pagina.length < tamanhoPagina) {
+                respostaAdmin = { data: produtos, error: null };
+                break;
+            }
+            inicio += tamanhoPagina;
+        }
+    } else {
+        respostaAdmin = await fornecedoresClient.rpc('listar_produtos_plataforma_admin');
+        produtos = Array.isArray(respostaAdmin.data) ? respostaAdmin.data : [];
+    }
 
     if (respostaAdmin.error) {
         console.warn('Catalogo administrativo indisponivel.', respostaAdmin.error);
