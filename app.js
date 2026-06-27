@@ -209,7 +209,7 @@ function paginaPrecisaProdutosLoja() {
 }
 
 function paginaPrecisaCatalogoAdmin() {
-    return obterVistaPagina() === 'gestao';
+    return document.body?.classList?.contains('pagina-gestao') || obterVistaPagina() === 'gestao';
 }
 
 function mostrarVista(vista, navegar = true) {
