@@ -1401,7 +1401,7 @@ async function guardarFicheirosPlataforma() {
         const pastaEncomenda = await pastaBase.getDirectoryHandle(nomeEncomenda, { create: true });
         if (plataforma === 'OLX') {
             await escreverFicheiroWallapop(pastaEncomenda, 'informacao cliente.txt', criarTextoClienteOlx());
-            await escreverFicheiroWallapop(pastaEncomenda, 'lista interna.txt', criarTextoInternoPlataforma());
+            await escreverFicheiroWallapop(pastaEncomenda, `${nomeEncomenda}.txt`, criarTextoInternoPlataforma());
             definirStatusWallapop(`Pasta "${nomeEncomenda}" guardada com os dois ficheiros OLX.`);
         } else {
             await escreverFicheiroWallapop(pastaEncomenda, `${nomeEncomenda}.txt`, criarTextoInternoPlataforma());
