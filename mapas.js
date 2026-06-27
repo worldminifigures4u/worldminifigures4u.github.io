@@ -25,6 +25,7 @@ let mapasProdutosVisiveis = [];
 let mapasOrdenacao = { coluna: "nome", direcao: "asc" };
 let mapasLinhaAltura = 39;
 let mapasRenderPendente = 0;
+let mapasAtualizacaoPendente = 0;
 
 function normalizarMapa(texto) {
     return String(texto || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
@@ -67,7 +68,7 @@ function obterTopMapa(produto) {
 }
 
 function normalizarProdutoMapa(produto) {
-    return {
+    const normalizado = {
         id: produto.id,
         referencia: produto.referencia || "",
         lego: produto.lego || "",
@@ -87,17 +88,19 @@ function normalizarProdutoMapa(produto) {
         observacoes: produto.observacoes || "",
         fornecedores: produto.fornecedores || {}
     };
+    normalizado.pesquisa = normalizarMapa([
+        normalizado.nome,
+        normalizado.referencia,
+        normalizado.sku,
+        normalizado.tema,
+        normalizado.subtema
+    ].join(" "));
+    return normalizado;
 }
 
 function produtoPassaPesquisaMapa(produto, termo) {
     if (!termo) return true;
-    return [
-        produto.nome,
-        produto.referencia,
-        produto.sku,
-        produto.tema,
-        produto.subtema
-    ].some(valor => normalizarMapa(valor).includes(termo));
+    return String(produto.pesquisa || "").includes(termo);
 }
 
 function produtoPassaFiltroStockMapa(produto, filtro) {
@@ -285,6 +288,7 @@ function renderizarTabelaMapa() {
 }
 
 function atualizarResultadosMapa() {
+    mapasAtualizacaoPendente = 0;
     const termo = normalizarMapa(document.getElementById("fornecedor-pesquisa")?.value || "");
     const filtroStock = document.getElementById("mapas-filtro-stock")?.value || "todos";
     mapasResultados = mapasProdutos
@@ -292,6 +296,11 @@ function atualizarResultadosMapa() {
         .filter(produto => produtoPassaFiltroStockMapa(produto, filtroStock))
         .sort(compararProdutosMapa);
     renderizarTabelaMapa();
+}
+
+function agendarAtualizacaoResultadosMapa() {
+    clearTimeout(mapasAtualizacaoPendente);
+    mapasAtualizacaoPendente = setTimeout(atualizarResultadosMapa, 90);
 }
 
 function copiarListaMapaVisivel() {
@@ -584,7 +593,7 @@ async function iniciarMapas() {
     }
 }
 
-document.getElementById("fornecedor-pesquisa")?.addEventListener("input", atualizarResultadosMapa);
+document.getElementById("fornecedor-pesquisa")?.addEventListener("input", agendarAtualizacaoResultadosMapa);
 document.getElementById("mapas-filtro-stock")?.addEventListener("change", atualizarResultadosMapa);
 document.getElementById("mapas-copiar-lista")?.addEventListener("click", copiarListaMapaVisivel);
 window.addEventListener("scroll", agendarRenderVirtualMapa, { passive: true });
