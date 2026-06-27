@@ -408,6 +408,10 @@ function mudarAba(tipo) {
 }
 
 function mostrarFormularioRecuperacaoPassword() {
+    if (!existeAreaClientePagina()) {
+        window.location.href = 'conta.html' + (window.location.hash || '');
+        return;
+    }
     document.getElementById('conteudo-cliente-autenticado').style.display = 'none';
     document.getElementById('conteudo-cliente-anonimo').style.display = 'block';
     document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('ativa'));
