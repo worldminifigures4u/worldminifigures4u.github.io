@@ -21,7 +21,6 @@ let fornecedorSelecao = carregarSelecaoFornecedor();
 let fornecedorPedidos = carregarPedidosFornecedores();
 let fornecedorFichas = carregarFichasFornecedores();
 let fornecedorMapaOrdenacao = { coluna: "nome", direcao: "asc" };
-let mapasProdutosVisiveis = [];
 let fornecedorRenderizacaoPendente = null;
 let fornecedorPedidosAbertos = new Set();
 
@@ -743,7 +742,6 @@ function obterControlosResultadosFornecedor() {
         filtroFornecedor: document.getElementById("fornecedor-filtro-marcacao")?.value || "todos",
         filtroTop: document.getElementById("fornecedor-filtro-top")?.value || "todos",
         filtroDescontinuado: document.getElementById("fornecedor-filtro-descontinuado")?.value || "todos",
-        filtroStockMapa: document.getElementById("mapas-filtro-stock")?.value || "todos",
         ordenacao: document.getElementById("fornecedor-ordenacao-stock")?.value || "nome",
     };
 }
@@ -864,61 +862,6 @@ function produtoPassaFiltroDescontinuadoFornecedor(produto, filtroDescontinuado)
     if (filtroDescontinuado === "descontinuado") return descontinuado;
     if (filtroDescontinuado === "sem-descontinuado") return !descontinuado;
     return true;
-}
-
-function produtoPassaFiltroStockMapaFornecedor(produto, filtroStockMapa) {
-    if (!estaPaginaMapasFornecedor() || !filtroStockMapa || filtroStockMapa === "todos") return true;
-    const stock = Number(produto?.stock || 0);
-    if (filtroStockMapa === "com-stock") return stock > 0;
-    if (filtroStockMapa === "sem-stock") return stock <= 0;
-    if (String(filtroStockMapa).startsWith("maior-")) {
-        const minimo = Number(String(filtroStockMapa).replace("maior-", ""));
-        return stock > minimo;
-    }
-    return true;
-}
-
-function formatarProdutoMapaParaCopiar(produto) {
-    const nome = String(produto?.nome || "Produto sem nome").trim();
-    const preco = formatarEuroFornecedor(produto?.preco || 0);
-    return `${nome}\t${preco}`;
-}
-
-async function copiarListaMapaVisivel() {
-    const produtos = mapasProdutosVisiveis || [];
-    if (!produtos.length) {
-        definirStatusFornecedor("Nao ha produtos visiveis para copiar.", true);
-        return;
-    }
-
-    const linhasProdutos = produtos.map(formatarProdutoMapaParaCopiar);
-    const total = produtos.reduce((soma, produto) => soma + Number(produto?.preco || 0), 0);
-    const texto = [
-        ...linhasProdutos,
-        "",
-        `Total\t${formatarEuroFornecedor(total)}`,
-        "",
-        "Acresce as despesas com portes de envio e manuseamento para pacote postal de acordo com a sua escolha."
-    ].join("\n");
-    try {
-        if (navigator.clipboard?.writeText) {
-            await navigator.clipboard.writeText(texto);
-        } else {
-            const area = document.createElement("textarea");
-            area.value = texto;
-            area.setAttribute("readonly", "readonly");
-            area.style.position = "fixed";
-            area.style.left = "-9999px";
-            document.body.appendChild(area);
-            area.select();
-            document.execCommand("copy");
-            area.remove();
-        }
-        definirStatusFornecedor(`${produtos.length} produto(s) copiado(s) para colar no site.`);
-    } catch (erro) {
-        console.error(erro);
-        definirStatusFornecedor("Nao foi possivel copiar automaticamente. Selecione a tabela e copie manualmente.", true);
-    }
 }
 
 function obterQuantidadeSelecionadaFornecedor(id) {
@@ -1203,35 +1146,8 @@ function obterPendentesDetalhadosProdutoFornecedor(produto) {
 }
 
 async function carregarCatalogoFornecedores() {
-    let respostaAdmin = null;
-    let produtos = [];
-    let origemCatalogo = "listar_produtos_plataforma_admin";
-
-    if (estaPaginaMapasFornecedor()) {
-        origemCatalogo = "listar_produtos_admin";
-        const tamanhoPagina = 500;
-        let inicio = 0;
-        while (true) {
-            const respostaPagina = await fornecedoresClient.rpc('listar_produtos_admin', {
-                p_limite: tamanhoPagina,
-                p_offset: inicio
-            });
-            if (respostaPagina.error) {
-                respostaAdmin = respostaPagina;
-                break;
-            }
-            const pagina = Array.isArray(respostaPagina.data) ? respostaPagina.data : [];
-            produtos.push(...pagina);
-            if (pagina.length < tamanhoPagina) {
-                respostaAdmin = { data: produtos, error: null };
-                break;
-            }
-            inicio += tamanhoPagina;
-        }
-    } else {
-        respostaAdmin = await fornecedoresClient.rpc('listar_produtos_plataforma_admin');
-        produtos = Array.isArray(respostaAdmin.data) ? respostaAdmin.data : [];
-    }
+    const respostaAdmin = await fornecedoresClient.rpc('listar_produtos_plataforma_admin');
+    const produtos = Array.isArray(respostaAdmin.data) ? respostaAdmin.data : [];
 
     if (respostaAdmin.error) {
         console.warn('Catalogo administrativo indisponivel.', respostaAdmin.error);
@@ -1246,17 +1162,11 @@ async function carregarCatalogoFornecedores() {
         && Object.prototype.hasOwnProperty.call(produto, "referencia")
         && Object.prototype.hasOwnProperty.call(produto, "novidade")
     )) {
-        if (estaPaginaMapasFornecedor()) {
-            definirStatusFornecedor('O Supabase ainda nao esta a devolver todos os campos dos mapas. Execute o SQL atualizado e volte a importar o mapas.ods.', true);
-        }
+        definirStatusFornecedor('O Supabase ainda nao esta a devolver todos os campos dos fornecedores. Execute o SQL atualizado.', true);
     }
 
     fornecedorProdutos = [];
     fundirProdutosFornecedor(produtos);
-    if (estaPaginaMapasFornecedor()) {
-        const stockTotalMapa = fornecedorProdutos.reduce((soma, produto) => soma + Math.max(0, Number(produto?.stock || 0)), 0);
-        definirStatusFornecedor(`Diagnóstico Mapas: ${fornecedorProdutos.length} linhas carregadas por ${origemCatalogo}; stock recebido ${stockTotalMapa}.`);
-    }
 
     fornecedorSelecao = fornecedorSelecao.map(item => {
         const atual = obterProdutoAtual(item.id);
@@ -1264,12 +1174,6 @@ async function carregarCatalogoFornecedores() {
         return { ...atual, quantidade: Math.max(1, Number(item.quantidade) || 1) };
     }).filter(Boolean);
     guardarSelecaoFornecedor();
-}
-
-function estaPaginaMapasFornecedor() {
-    return Boolean(
-        document.body?.classList.contains("pagina-mapas-admin")
-    );
 }
 
 function estaPaginaFornecedoresUnificada() {
@@ -1551,168 +1455,6 @@ async function guardarEdicaoProdutoMapa(evento) {
     }
 }
 
-function criarItemContadorMapa(rotulo, valor, destaque = false) {
-    const item = document.createElement("span");
-    item.className = destaque ? "mapas-contador-item destaque" : "mapas-contador-item";
-
-    const numero = document.createElement("strong");
-    numero.textContent = String(valor);
-
-    const texto = document.createElement("span");
-    texto.textContent = rotulo;
-
-    item.append(texto, numero);
-    return item;
-}
-
-function renderizarContadorMapa(caixa, resultados, fornecedor) {
-    const contadores = resultados.reduce((totais, { produto }) => {
-        const estado = classificarValorFornecedor(obterValorFornecedorProduto(produto, fornecedor));
-        if (estado.tipo === "os") totais.os += 1;
-        if (estado.tipo === "ex") totais.ex += 1;
-        if (estado.tipo === "disponivel") totais.disponivel += 1;
-        if (estado.tipo === "encomendado") totais.encomendado += 1;
-        if (String(obterTopProdutoFornecedor(produto) || "").trim()) totais.top += 1;
-        if (obterBooleanoProdutoFornecedor(produto?.descontinuado)) totais.descontinuado += 1;
-        totais.stock += Math.max(0, Number(produto?.stock || 0));
-        return totais;
-    }, {
-        top: 0,
-        descontinuado: 0,
-        os: 0,
-        ex: 0,
-        disponivel: 0,
-        encomendado: 0,
-        stock: 0
-    });
-
-    const contadorExistente = document.getElementById("fornecedor-contador-barra");
-    const contador = contadorExistente || document.createElement("div");
-    contador.className = "mapas-contador-filtros";
-    contador.querySelectorAll(".mapas-contador-item").forEach(item => item.remove());
-
-    contador.append(
-        criarItemContadorMapa(resultados.length === 1 ? "figura" : "figuras", resultados.length, true),
-        criarItemContadorMapa("Disponivel", contadores.disponivel),
-        criarItemContadorMapa("OS", contadores.os),
-        criarItemContadorMapa("EX", contadores.ex),
-        criarItemContadorMapa("Top", contadores.top),
-        criarItemContadorMapa("Descontinuadas", contadores.descontinuado),
-        criarItemContadorMapa("em stock", contadores.stock)
-    );
-    if (!contadorExistente) caixa.appendChild(contador);
-}
-
-function renderizarResultadosFornecedorMapa(caixa, resultados, fornecedor) {
-    caixa.classList.add("fornecedor-resultados-mapa");
-    renderizarContadorMapa(caixa, resultados, fornecedor);
-
-    const resumo = document.createElement("p");
-    resumo.className = "fornecedor-contagem-lista mapas-tabela-resumo";
-    resumo.textContent = resultados.length
-        ? `${resultados.length} produto(s) no mapa`
-        : "Nenhum produto encontrado.";
-    caixa.appendChild(resumo);
-
-    if (!resultados.length) {
-        mapasProdutosVisiveis = [];
-        return;
-    }
-
-    const envoltorio = document.createElement("div");
-    envoltorio.className = "mapas-tabela-wrapper";
-
-    const tabela = document.createElement("table");
-    tabela.className = "mapas-produtos-tabela";
-
-    const thead = document.createElement("thead");
-    const cabecalho = document.createElement("tr");
-    [
-        ["nome", "mapas-col-nome", "nome"],
-        ["referência", "mapas-col-ref", "ref"],
-        ["stock", "mapas-col-stock", "stock"],
-        ["tema", "mapas-col-tema", "tema"],
-        ["subtema", "mapas-col-subtema", "subtema"],
-        ["preço compra", "mapas-col-preco-compra", "preco_compra"],
-        ["preço venda", "mapas-col-preco", "preco"],
-        ["novidade", "mapas-col-novidade", "novidade"],
-        ["descontinuado", "mapas-col-descontinuado", "descontinuado"],
-        ["lego", "mapas-col-lego", "lego"],
-        ["sku", "mapas-col-sku", "sku"],
-        ["top", "mapas-col-top", "top"],
-        ["peso", "mapas-col-peso", "peso"],
-    ].forEach(([texto, classe, coluna]) => {
-        const th = document.createElement("th");
-        th.className = `${classe} mapas-th-ordenavel`;
-        const botao = document.createElement("button");
-        botao.type = "button";
-        botao.textContent = texto;
-        botao.tabIndex = -1;
-        const ativo = fornecedorMapaOrdenacao.coluna === coluna;
-        if (ativo) {
-            botao.setAttribute("aria-sort", fornecedorMapaOrdenacao.direcao === "asc" ? "ascending" : "descending");
-            botao.textContent += fornecedorMapaOrdenacao.direcao === "asc" ? " ▲" : " ▼";
-        }
-        botao.addEventListener("click", () => {
-            const mesmaColuna = fornecedorMapaOrdenacao.coluna === coluna;
-            fornecedorMapaOrdenacao = {
-                coluna,
-                direcao: mesmaColuna && fornecedorMapaOrdenacao.direcao === "asc" ? "desc" : "asc"
-            };
-            renderizarResultadosFornecedor();
-        });
-        th.appendChild(botao);
-        cabecalho.appendChild(th);
-    });
-    thead.appendChild(cabecalho);
-    tabela.appendChild(thead);
-
-    const tbody = document.createElement("tbody");
-    const resultadosOrdenados = resultados
-        .slice()
-        .sort((a, b) => compararProdutosPorColunaFornecedor(a, b, fornecedorMapaOrdenacao.coluna, fornecedorMapaOrdenacao.direcao));
-
-    mapasProdutosVisiveis = resultadosOrdenados.map(({ produto }) => produto);
-
-    resultadosOrdenados
-        .forEach(({ produto }) => {
-            const atual = produto;
-            const linha = document.createElement("tr");
-            const stockNumero = Number(atual.stock || 0);
-
-            const nomeCelula = document.createElement("td");
-            nomeCelula.className = "mapas-col-nome";
-            const nomeBotao = document.createElement("button");
-            nomeBotao.type = "button";
-            nomeBotao.className = "mapas-produto-nome-botao";
-            nomeBotao.textContent = atual.nome || "Produto sem nome";
-            nomeBotao.title = "Editar produto";
-            nomeBotao.tabIndex = -1;
-            nomeBotao.addEventListener("click", () => abrirEdicaoProdutoMapa(atual.id));
-            nomeCelula.appendChild(nomeBotao);
-            linha.appendChild(nomeCelula);
-
-            linha.appendChild(criarCelulaMapaFornecedor(atual.referencia || "-", "mapas-col-ref"));
-            linha.appendChild(criarCelulaMapaFornecedor(stockNumero, `mapas-col-stock mapa-stock-celula ${stockNumero <= 0 ? "sem-stock" : ""}`));
-            linha.appendChild(criarCelulaMapaFornecedor(atual.tema || "", "mapas-col-tema"));
-            linha.appendChild(criarCelulaMapaFornecedor(atual.subtema === "semsubtema" ? "" : (atual.subtema || ""), "mapas-col-subtema"));
-            linha.appendChild(criarCelulaMapaFornecedor(Number(atual.preco_compra || 0).toFixed(2), "mapas-col-preco-compra"));
-            linha.appendChild(criarCelulaMapaFornecedor(Number(atual.preco || 0).toFixed(2), "mapas-col-preco"));
-            linha.appendChild(criarCelulaMapaFornecedor(obterBooleanoProdutoFornecedor(atual.novidade) ? "sim" : "", "mapas-col-novidade"));
-            linha.appendChild(criarCelulaMapaFornecedor(obterBooleanoProdutoFornecedor(atual.descontinuado) ? "sim" : "", "mapas-col-descontinuado"));
-            linha.appendChild(criarCelulaMapaFornecedor(obterLegoProdutoFornecedor(atual), "mapas-col-lego"));
-            linha.appendChild(criarCelulaMapaFornecedor(atual.sku || "-", "mapas-col-sku"));
-            linha.appendChild(criarCelulaMapaFornecedor(String(obterTopProdutoFornecedor(atual) || "").trim() ? "sim" : "", "mapas-col-top"));
-            linha.appendChild(criarCelulaMapaFornecedor(Number(atual.peso || 0), "mapas-col-peso"));
-
-            tbody.appendChild(linha);
-        });
-
-    tabela.appendChild(tbody);
-    envoltorio.appendChild(tabela);
-    caixa.appendChild(envoltorio);
-}
-
 function renderizarResultadosFornecedorTabelaEncomenda(caixa, resultados) {
     caixa.classList.add("fornecedor-resultados-mapa");
     const limiteResultados = 250;
@@ -1837,7 +1579,7 @@ function renderizarResultadosFornecedor() {
     const caixa = document.getElementById("fornecedor-resultados");
     if (!caixa) return;
 
-    const { termo, fornecedor, filtroFornecedor, filtroTop, filtroDescontinuado, filtroStockMapa, ordenacao } = obterControlosResultadosFornecedor();
+    const { termo, fornecedor, filtroFornecedor, filtroTop, filtroDescontinuado, ordenacao } = obterControlosResultadosFornecedor();
     caixa.innerHTML = "";
 
     const resultados = fornecedorProdutos
@@ -1850,14 +1592,8 @@ function renderizarResultadosFornecedor() {
             && produtoPassaFiltroFornecedor(item.produto, fornecedor, filtroFornecedor)
             && produtoPassaFiltroTopFornecedor(item.produto, filtroTop)
             && produtoPassaFiltroDescontinuadoFornecedor(item.produto, filtroDescontinuado)
-            && produtoPassaFiltroStockMapaFornecedor(item.produto, filtroStockMapa)
         ))
         .sort((a, b) => compararProdutosFornecedor(a, b, ordenacao));
-
-    if (estaPaginaMapasFornecedor()) {
-        renderizarResultadosFornecedorMapa(caixa, resultados, fornecedor);
-        return;
-    }
 
     if (estaPaginaFornecedoresUnificada()) {
         renderizarResultadosFornecedorTabelaEncomenda(caixa, resultados);
@@ -2821,8 +2557,6 @@ ligarEventoFornecedor('fornecedor-ordenacao-stock', 'change', agendarRenderizaca
 ligarEventoFornecedor('fornecedor-filtro-marcacao', 'change', agendarRenderizacaoResultadosFornecedor);
 ligarEventoFornecedor('fornecedor-filtro-top', 'change', agendarRenderizacaoResultadosFornecedor);
 ligarEventoFornecedor('fornecedor-filtro-descontinuado', 'change', agendarRenderizacaoResultadosFornecedor);
-ligarEventoFornecedor('mapas-filtro-stock', 'change', agendarRenderizacaoResultadosFornecedor);
-ligarEventoFornecedor('mapas-copiar-lista', 'click', copiarListaMapaVisivel);
 ligarEventoFornecedor('btn-limpar-fornecedor', 'click', limparSelecaoFornecedor);
 ligarEventoFornecedor('btn-criar-fornecedor', 'click', criarPedidoFornecedor);
 ligarEventoFornecedor('fornecedor-filtro-estado', 'change', renderizarPedidosFornecedores);
