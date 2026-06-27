@@ -1328,6 +1328,26 @@ function canvasParaBlobWallapop(canvas) {
     });
 }
 
+let html2canvasPromessaPlataforma = null;
+
+function garantirHtml2CanvasPlataforma() {
+    if (typeof html2canvas === 'function') return Promise.resolve();
+    if (html2canvasPromessaPlataforma) return html2canvasPromessaPlataforma;
+
+    html2canvasPromessaPlataforma = new Promise((resolve, reject) => {
+        const script = document.createElement('script');
+        script.src = 'https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js';
+        script.async = true;
+        script.onload = () => typeof html2canvas === 'function'
+            ? resolve()
+            : reject(new Error('A ferramenta de imagem nao ficou disponivel.'));
+        script.onerror = () => reject(new Error('Nao foi possivel carregar a ferramenta de imagem.'));
+        document.head.appendChild(script);
+    });
+
+    return html2canvasPromessaPlataforma;
+}
+
 async function descarregarImagemWallapop() {
     if (!validarEncomendaRegistadaParaFicheiros()) return;
     const campoNome = document.getElementById('wallapop-nome-encomenda');
@@ -1342,13 +1362,9 @@ async function descarregarImagemWallapop() {
         definirStatusWallapop('Adicione pelo menos um produto.', true);
         return;
     }
-    if (typeof html2canvas !== 'function') {
-        definirStatusWallapop('A ferramenta de imagem não carregou. Atualize a página.', true);
-        return;
-    }
-
     definirStatusWallapop('A preparar a pasta e os ficheiros...');
     try {
+        await garantirHtml2CanvasPlataforma();
         const pastaBase = await obterPastaBaseWallapop();
         const paginasItens = dividirItensWallapop(itensFicheiros);
         if (!paginasItens.length) throw new Error('Nao existem folhas para exportar.');
