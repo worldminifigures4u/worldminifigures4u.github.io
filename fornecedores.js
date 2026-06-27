@@ -1205,8 +1205,10 @@ function obterPendentesDetalhadosProdutoFornecedor(produto) {
 async function carregarCatalogoFornecedores() {
     let respostaAdmin = null;
     let produtos = [];
+    let origemCatalogo = "listar_produtos_plataforma_admin";
 
     if (estaPaginaMapasFornecedor()) {
+        origemCatalogo = "listar_produtos_admin";
         const tamanhoPagina = 500;
         let inicio = 0;
         while (true) {
@@ -1251,6 +1253,10 @@ async function carregarCatalogoFornecedores() {
 
     fornecedorProdutos = [];
     fundirProdutosFornecedor(produtos);
+    if (estaPaginaMapasFornecedor()) {
+        const stockTotalMapa = fornecedorProdutos.reduce((soma, produto) => soma + Math.max(0, Number(produto?.stock || 0)), 0);
+        definirStatusFornecedor(`Diagnóstico Mapas: ${fornecedorProdutos.length} linhas carregadas por ${origemCatalogo}; stock recebido ${stockTotalMapa}.`);
+    }
 
     fornecedorSelecao = fornecedorSelecao.map(item => {
         const atual = obterProdutoAtual(item.id);
