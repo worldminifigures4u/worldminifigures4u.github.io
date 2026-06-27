@@ -2381,6 +2381,7 @@ async function carregarHistoricoEncomendas(userId) {
 
 function definirEstadoVitrine(mensagem, tipo = ''){
     const vitrine = document.getElementById('vitrine-produtos');
+    if (!vitrine) return;
     vitrine.replaceChildren();
     const estado = document.createElement('div');
     estado.className = `estado-vitrine ${tipo}`.trim();
@@ -2556,6 +2557,7 @@ async function carregarProdutosConformeUtilizador(){
 
 function gerarMenus(listaProdutos){
     const menu = document.getElementById('menu-lateral-temas');
+    if (!menu) return;
     menu.replaceChildren();
 
     const cabecalho = document.createElement('div');
@@ -2989,6 +2991,7 @@ function atualizarCarrinho() {
     atualizarContadorCarrinhoCabecalho();
 
 const carrinhoDiv = document.getElementById("lista-carrinho");
+    if (!carrinhoDiv) return;
 
     carrinhoDiv.replaceChildren();
 
