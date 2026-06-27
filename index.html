@@ -240,86 +240,6 @@
         </aside>
     </section>
 
-    <section class="vista vista-carrinho" id="vista-carrinho">
-        <aside class="carrinho">
-<h2> Carrinho</h2>
-        <div class="lista-carrinho" id="lista-carrinho">
-            <p id="carrinho-vazio">Nenhum produto adicionado.</p>
-        </div>
-        <div id="info-envio" class="msg-status"></div>
-
-        <label>Pa&iacute;s de envio:</label>
-        <select class="select-envio" id="pais-envio" onchange="atualizarOpcoesEnvio()">
-                        <option value="portugal">Portugal</option>
-            <option value="espanha">Espanha</option>
-            <option value="alemanha">Alemanha</option>
-            <option value="austria">&Aacute;ustria</option>
-            <option value="belgica">B&eacute;lgica</option>
-            <option value="bulgaria">Bulg&aacute;ria</option>
-            <option value="chequia">Ch&eacute;quia</option>
-            <option value="chipre">Chipre</option>
-            <option value="croacia">Cro&aacute;cia</option>
-            <option value="dinamarca">Dinamarca</option>
-            <option value="eslovaquia">Eslov&aacute;quia</option>
-            <option value="eslovenia">Eslov&eacute;nia</option>
-            <option value="estonia">Est&oacute;nia</option>
-            <option value="finlandia">Finl&acirc;ndia</option>
-            <option value="franca">Fran&ccedil;a</option>
-            <option value="grecia">Gr&eacute;cia</option>
-            <option value="hungria">Hungria</option>
-            <option value="irlanda">Irlanda</option>
-            <option value="italia">It&aacute;lia</option>
-            <option value="letonia">Let&oacute;nia</option>
-            <option value="lituania">Litu&acirc;nia</option>
-            <option value="luxemburgo">Luxemburgo</option>
-            <option value="malta">Malta</option>
-            <option value="paises_baixos">Pa&iacute;ses Baixos</option>
-            <option value="polonia">Pol&oacute;nia</option>
-            <option value="romenia">Rom&eacute;nia</option>
-            <option value="suecia">Su&eacute;cia</option>
-        </select>
-
-        <label>M&eacute;todo de envio:</label>
-        <select class="select-envio" id="metodo-envio" onchange="recalcularTotais()"></select>
-
-        <div class="total-box">
-            <div class="linha-total">
-                <span>Subtotal:</span>
-                <span id="subtotal">0,00 €</span>
-            </div>
-            <div class="linha-total">
-                <span>Portes de envio (IVA incluído):</span>
-                <span id="portes">0,00 €</span>
-            </div>
-            <div id="aviso-envio-nao-registado" class="msg-status msg-erro"></div>
-            <div class="linha-total valor-final">
-                <span>Total:</span>
-                <span id="total">0,00 €</span>
-            </div>
-        </div>
-
-        <div class="seccao-pagamento">
-            <h3> Método de Pagamento</h3>
-            <label class="opcao-pagamento">
-                <input type="radio" name="metodo-pagamento" value="MB WAY" checked>
-                <span> MB WAY</span>
-            </label>
-            <label class="opcao-pagamento">
-                <input type="radio" name="metodo-pagamento" value="Transferência Bancária">
-                <span> Transferência Bancária</span>
-            </label>
-            <label class="opcao-pagamento">
-                <input type="radio" name="metodo-pagamento" value="PayPal">
-                <span> PayPal</span>
-            </label>
-        </div>
-
-        <button class="btn-confirmar" onclick="criarNovaEncomenda()">Confirmar Encomenda</button>
-        <div id="status-encomenda" class="msg-status"></div>
-
-
-        </aside>
-    </section>
 
 </div>
 
@@ -333,7 +253,7 @@
         </nav>
     </div>
 </footer>
-<script src="app.js?v=20260627-load-leve"></script>
+<script src="app.js?v=20260627-produtos-leve"></script>
 </body>
 </html>
 
