@@ -10,8 +10,6 @@
     <link rel="icon" type="image/png" href="figures-planet-logo-transparent.png">
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
-
     <link rel="stylesheet" href="styles.css?v=20260625-pesquisa-mobile-produtos">
 </head>
 <body data-page="carrinho">
@@ -159,166 +157,6 @@
                             <button type="submit" class="btn-solicitar-eliminacao">Eliminar a minha conta</button>
                         </form>
                         <div id="status-eliminacao-conta" class="msg-status"></div>
-                    </div>
-                </div>
-                <div class="painel-admin" id="painel-admin">
-                    <h3>Admin</h3>
-                    <form class="form-admin" id="form-admin-produto" onsubmit="criarProdutoAdmin(event)">
-                        <div>
-                            <label for="admin-produto-nome">Nome do produto:</label>
-                            <input type="text" id="admin-produto-nome" required placeholder="Ex: Darth Vader v1" oninput="sugerirSkuAdmin()">
-                        </div>
-                        <div class="linha-admin-dupla">
-                            <div>
-                                <label for="admin-produto-referencia">Ref.:</label>
-                                <input type="text" id="admin-produto-referencia" placeholder="Ex: TV8149">
-                            </div>
-                            <div>
-                                <label for="admin-produto-sku">SKU:</label>
-                                <input type="text" id="admin-produto-sku" required placeholder="DV01">
-                            </div>
-                            <div>
-                                <label for="admin-produto-preco">Preço:</label>
-                                <input type="number" id="admin-produto-preco" required min="0" step="0.01" placeholder="4.95">
-                            </div>
-                            <div>
-                                <label for="admin-produto-peso">Peso (g):</label>
-                                <input type="number" id="admin-produto-peso" required min="1" step="1" value="10">
-                            </div>
-                            <div>
-                                <label for="admin-produto-stock">Stock:</label>
-                                <input type="number" id="admin-produto-stock" required min="0" step="1" value="1">
-                            </div>
-                        </div>
-                        <div>
-                            <label for="admin-produto-tema">Tema:</label>
-                            <input type="text" id="admin-produto-tema" required placeholder="Star Wars">
-                        </div>
-                        <div>
-                            <label for="admin-produto-subtema">Subtema:</label>
-                            <input type="text" id="admin-produto-subtema" placeholder="Darth Vader">
-                        </div>
-                        <div>
-                            <label for="admin-produto-imagens">URLs das imagens:</label>
-                            <div class="upload-admin-fotos">
-                                <input class="input-upload-admin" type="file" id="admin-produto-upload-imagens" accept="image/jpeg,image/png,image/webp" multiple onchange="enviarFotosCloudinaryAdmin(this, 'admin-produto-imagens', atualizarPreviewImagensAdmin, 'status-upload-admin-produto')">
-                                <p class="ajuda-admin">Selecione fotos do PC para enviar para o Cloudinary. Os URLs serão adicionados automaticamente.</p>
-                                <div id="status-upload-admin-produto" class="msg-status"></div>
-                            </div>
-                            <textarea id="admin-produto-imagens" placeholder="Um URL por linha" oninput="atualizarPreviewImagensAdmin()"></textarea>
-                            <div id="preview-imagens-admin" class="preview-imagens-admin"></div>
-                        </div>
-                        <div>
-                            <label for="admin-produto-observacoes">Observações:</label>
-                            <textarea id="admin-produto-observacoes" placeholder="Notas internas sobre estado, acessórios, origem, etc."></textarea>
-                        </div>
-                        <label class="opcao-admin-inline">
-                            <input type="checkbox" id="admin-produto-ativo" checked>
-                            Produto ativo na loja
-                        </label>
-                        <button type="submit" class="btn-acao-cliente">Criar Produto</button>
-                        <div id="status-admin-produto" class="msg-status"></div>
-                    </form>
-                    <div class="admin-seccao">
-                        <h3>Gestão de produtos</h3>
-                        <div class="form-admin">
-                            <div class="linha-admin-pesquisa">
-                                <div>
-                                    <label for="admin-pesquisa-produtos">Pesquisar produto:</label>
-                                    <input type="text" id="admin-pesquisa-produtos" placeholder="Nome, Ref., SKU ou tema" oninput="renderizarListaProdutosAdmin()">
-                                </div>
-                                <button type="button" class="btn-admin-secundario" onclick="renderizarListaProdutosAdmin()">Pesquisar</button>
-                            </div>
-                            <div id="lista-admin-produtos" class="lista-admin-produtos"></div>
-                        </div>
-                        <div class="admin-seccao">
-                            <h3>Atualizar stock pelo Mapas.ods</h3>
-                            <div class="form-admin">
-                                <input class="input-upload-admin" type="file" id="admin-ficheiro-stock" accept=".ods,.xlsx,.xls" onchange="analisarFicheiroStockAdmin(this)">
-                                <p class="ajuda-admin">Apenas as colunas SKU e stock são utilizadas. As encomendas aos fornecedores não alteram o stock atual.</p>
-                                <div id="resumo-importacao-stock" class="resumo-importacao-stock" style="display:none;"></div>
-                                <div id="detalhes-importacao-stock" class="lista-importacao-stock" style="display:none;"></div>
-                                <button type="button" id="btn-confirmar-importacao-stock" class="btn-acao-cliente" onclick="confirmarImportacaoStockAdmin()" disabled>Atualizar stock no Supabase</button>
-                                <div id="status-importacao-stock" class="msg-status"></div>
-                            </div>
-                        </div>
-                        <div class="admin-seccao">
-                            <h3>Substituir catálogo pelo Mapas.ods</h3>
-                            <div class="form-admin">
-                                <input class="input-upload-admin" type="file" id="admin-ficheiro-catalogo" accept=".ods,.xlsx,.xls" onchange="analisarFicheiroCatalogoAdmin(this)">
-                                <p class="ajuda-admin">Importa nome, preço, Ref., SKU, stock, tema, subtema, peso e dados dos fornecedores. Produtos que não constem do ficheiro serão removidos.</p>
-                                <div id="resumo-importacao-catalogo" class="resumo-importacao-stock" style="display:none;"></div>
-                                <div id="detalhes-importacao-catalogo" class="lista-importacao-stock" style="display:none;"></div>
-                                <div>
-                                    <label for="confirmacao-substituir-catalogo">Para confirmar, escreva SUBSTITUIR:</label>
-                                    <input type="text" id="confirmacao-substituir-catalogo" autocomplete="off" oninput="atualizarConfirmacaoCatalogoAdmin()">
-                                </div>
-                                <button type="button" id="btn-confirmar-importacao-catalogo" class="btn-logout" onclick="confirmarImportacaoCatalogoAdmin()" disabled>Substituir catálogo completo</button>
-                                <div id="status-importacao-catalogo" class="msg-status"></div>
-                            </div>
-                        </div>
-                        <form class="form-admin admin-seccao" id="form-admin-editar-produto" onsubmit="guardarEdicaoProdutoAdmin(event)" style="display:none;">
-                            <input type="hidden" id="admin-editar-id">
-                            <input type="hidden" id="admin-editar-sku-original">
-                            <h3>Editar produto</h3>
-                            <div>
-                                <label for="admin-editar-nome">Nome do produto:</label>
-                                <input type="text" id="admin-editar-nome" required>
-                            </div>
-                            <div class="linha-admin-dupla">
-                                <div>
-                                    <label for="admin-editar-referencia">Ref.:</label>
-                                    <input type="text" id="admin-editar-referencia">
-                                </div>
-                                <div>
-                                    <label for="admin-editar-sku">SKU:</label>
-                                    <input type="text" id="admin-editar-sku" required>
-                                </div>
-                                <div>
-                                    <label for="admin-editar-preco">Preço:</label>
-                                    <input type="number" id="admin-editar-preco" required min="0" step="0.01">
-                                </div>
-                                <div>
-                                    <label for="admin-editar-peso">Peso (g):</label>
-                                    <input type="number" id="admin-editar-peso" required min="1" step="1">
-                                </div>
-                                <div>
-                                    <label for="admin-editar-stock">Stock:</label>
-                                    <input type="number" id="admin-editar-stock" required min="0" step="1">
-                                </div>
-                            </div>
-                            <div>
-                                <label for="admin-editar-tema">Tema:</label>
-                                <input type="text" id="admin-editar-tema" required>
-                            </div>
-                            <div>
-                                <label for="admin-editar-subtema">Subtema:</label>
-                                <input type="text" id="admin-editar-subtema">
-                            </div>
-                            <div>
-                                <label for="admin-editar-imagens">URLs das imagens:</label>
-                                <div class="upload-admin-fotos">
-                                    <input class="input-upload-admin" type="file" id="admin-editar-upload-imagens" accept="image/jpeg,image/png,image/webp" multiple onchange="enviarFotosCloudinaryAdmin(this, 'admin-editar-imagens', atualizarPreviewEditarImagensAdmin, 'status-upload-admin-editar')">
-                                    <p class="ajuda-admin">Selecione fotos do PC para enviar para o Cloudinary. Os URLs serão adicionados automaticamente.</p>
-                                    <div id="status-upload-admin-editar" class="msg-status"></div>
-                                </div>
-                                <textarea id="admin-editar-imagens" placeholder="Um URL por linha" oninput="atualizarPreviewEditarImagensAdmin()"></textarea>
-                                <div id="preview-editar-imagens-admin" class="preview-imagens-admin"></div>
-                            </div>
-                            <div>
-                                <label for="admin-editar-observacoes">Observações:</label>
-                                <textarea id="admin-editar-observacoes" placeholder="Notas internas sobre estado, acessórios, origem, etc."></textarea>
-                            </div>
-                            <label class="opcao-admin-inline">
-                                <input type="checkbox" id="admin-editar-ativo">
-                                Produto ativo na loja
-                            </label>
-                            <div class="acoes-form-admin">
-                                <button type="submit" class="btn-acao-cliente">Guardar alterações</button>
-                                <button type="button" class="btn-admin-secundario" onclick="cancelarEdicaoProdutoAdmin()">Cancelar</button>
-                            </div>
-                            <div id="status-admin-editar-produto" class="msg-status"></div>
-                        </form>
                     </div>
                 </div>
                 <div class="historico-encomendas">
@@ -494,7 +332,7 @@
         </nav>
     </div>
 </footer>
-<script src="app.js?v=20260624-conta-admin"></script>
+<script src="app.js?v=20260627-load-leve"></script>
 </body>
 </html>
 

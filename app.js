@@ -204,6 +204,14 @@ function obterVistaHash() {
     return Object.hasOwn(PAGINAS_VISTA, hash) ? hash : '';
 }
 
+function paginaPrecisaProdutosLoja() {
+    return obterVistaPagina() === 'loja';
+}
+
+function paginaPrecisaCatalogoAdmin() {
+    return obterVistaPagina() === 'gestao';
+}
+
 function mostrarVista(vista, navegar = true) {
     const destino = Object.hasOwn(PAGINAS_VISTA, vista) ? vista : 'loja';
     const paginaAtual = obterVistaPagina();
@@ -350,8 +358,10 @@ window.addEventListener('load', async () => {
                 }
             }, 0);
         });
-        await carregarProdutosDaNuvem();
-        aplicarPesquisaUrl();
+        if (paginaPrecisaProdutosLoja()) {
+            await carregarProdutosDaNuvem();
+            aplicarPesquisaUrl();
+        }
         if(urlTemRecuperacaoPassword()) {
             await prepararRecuperacaoPassword();
             return;
@@ -806,7 +816,9 @@ async function fazerLogout() {
     atualizarCabecalhoCliente();
     definirHistoricoVazio('Entre na conta para carregar o histórico.');
     mudarAba('login');
-    await carregarProdutosDaNuvem();
+    if (paginaPrecisaProdutosLoja()) {
+        await carregarProdutosDaNuvem();
+    }
 }
 
 async function verificarSessaoSupabase() {
@@ -917,9 +929,11 @@ function atualizarVisibilidadeAdmin(user) {
             gestaoProdutos.insertBefore(formularioAdicionarProduto, primeiraSeccaoAposProdutos);
         }
 
+        if (paginaPrecisaCatalogoAdmin()) {
         carregarProdutosAdminDaNuvem().catch(error => {
             console.error('Erro ao carregar catálogo administrativo:', error);
         });
+        }
     } else {
         catalogoAdminCarregado = false;
         cancelarEdicaoProdutoAdmin();
@@ -2529,6 +2543,9 @@ async function carregarProdutosAdminDaNuvem(){
 }
 
 async function carregarProdutosConformeUtilizador(){
+    if (!paginaPrecisaProdutosLoja() && !paginaPrecisaCatalogoAdmin()) {
+        return;
+    }
     const { data:{ user } } = await dbClient.auth.getUser();
     if(utilizadorAdmin(user)) {
         await carregarProdutosAdminDaNuvem();
