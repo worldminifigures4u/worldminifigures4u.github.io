@@ -424,7 +424,7 @@ function fundirProdutosFornecedor(produtos) {
         const indice = fornecedorProdutos.findIndex(item => (
             (produto.id && String(item.id) === String(produto.id))
             || (produto.sku && String(item.sku || '').trim().toUpperCase() === String(produto.sku).trim().toUpperCase())
-            || (produto.referencia && String(item.referencia || '').trim().toUpperCase() === String(produto.referencia).trim().toUpperCase())
+            || (!produto.id && !produto.sku && produto.referencia && String(item.referencia || '').trim().toUpperCase() === String(produto.referencia).trim().toUpperCase())
         ));
         const produtoNormalizado = {
             ...produto,
