@@ -1010,6 +1010,20 @@ function criarIndicadorImportacaoStock(valor, legenda) {
     return bloco;
 }
 
+function somarStockProdutos(lista) {
+    return (Array.isArray(lista) ? lista : []).reduce((total, produto) => {
+        const stock = Number(produto?.stock || 0);
+        return total + (Number.isFinite(stock) ? stock : 0);
+    }, 0);
+}
+
+function somarStockAlteracoes(lista, campo) {
+    return (Array.isArray(lista) ? lista : []).reduce((total, item) => {
+        const stock = Number(item?.[campo] || 0);
+        return total + (Number.isFinite(stock) ? stock : 0);
+    }, 0);
+}
+
 function renderizarResumoImportacaoStock(resultado) {
     const resumo = document.getElementById('resumo-importacao-stock');
     const detalhes = document.getElementById('detalhes-importacao-stock');
@@ -1017,6 +1031,9 @@ function renderizarResumoImportacaoStock(resultado) {
 
     resumo.replaceChildren(
         criarIndicadorImportacaoStock(resultado.totalLinhas, 'SKUs no ficheiro'),
+        criarIndicadorImportacaoStock(resultado.totalStockFicheiro, 'Stock no ficheiro'),
+        criarIndicadorImportacaoStock(resultado.totalStockAtual, 'Stock atual site'),
+        criarIndicadorImportacaoStock(resultado.totalStockPrevisto, 'Stock previsto'),
         criarIndicadorImportacaoStock(resultado.alteracoes.length, 'Alterações'),
         criarIndicadorImportacaoStock(resultado.aumentos, 'Aumentam'),
         criarIndicadorImportacaoStock(resultado.reducoes, 'Diminuem'),
@@ -1026,7 +1043,15 @@ function renderizarResumoImportacaoStock(resultado) {
     resumo.style.display = 'grid';
 
     detalhes.replaceChildren();
-    const linhas = [];
+    const diferencaPrevista = resultado.totalStockPrevisto - resultado.totalStockFicheiro;
+    const linhas = [
+        `Stock lido no ficheiro: ${resultado.totalStockFicheiro}`,
+        `Stock atual no site antes da importação: ${resultado.totalStockAtual}`,
+        `Stock previsto no site depois da importação: ${resultado.totalStockPrevisto}`
+    ];
+    if(diferencaPrevista !== 0) {
+        linhas.push(`Diferença prevista face ao ficheiro: ${diferencaPrevista > 0 ? '+' : ''}${diferencaPrevista}. Verifique SKUs não encontrados, duplicados ou produtos ausentes no ficheiro.`);
+    }
     resultado.alteracoes.slice(0, 60).forEach(item => {
         linhas.push(`${item.sku} | ${item.nome} | ${item.stockAtual} → ${item.stockNovo} | ${item.ativoNovo ? 'ativo' : 'inativo'}`);
     });
@@ -1035,6 +1060,10 @@ function renderizarResumoImportacaoStock(resultado) {
     });
     if(resultado.ausentesNoFicheiro.length > 0) {
         linhas.push(`${resultado.ausentesNoFicheiro.length} produto(s) do Supabase não constam do ficheiro e não serão alterados.`);
+    }
+    if(resultado.duplicados.length > 0) {
+        linhas.push(`${resultado.duplicados.length} SKU(s) duplicado(s) no ficheiro. Foi usado o último valor encontrado.`);
+        resultado.duplicados.slice(0, 20).forEach(item => linhas.push(`Duplicado: ${item.sku} | linha ${item.linha}`));
     }
     if(resultado.invalidos.length > 0) {
         linhas.push(`${resultado.invalidos.length} linha(s) foram ignoradas por SKU ou stock inválido.`);
@@ -1080,6 +1109,7 @@ async function analisarFicheiroStockAdmin(input) {
         const colunaStock = cabecalhos.indexOf('stock');
         const stockPorSku = new Map();
         const invalidos = [];
+        const duplicados = [];
 
         linhas.slice(indiceCabecalho + 1).forEach((linha, indice) => {
             const sku = normalizarTextoSku(linha[colunaSku]).replace(/[^A-Z0-9]/g, '');
@@ -1087,6 +1117,9 @@ async function analisarFicheiroStockAdmin(input) {
             if(!sku || !Number.isInteger(stock) || stock < 0) {
                 if(linha.some(valor => valor !== null && valor !== '')) invalidos.push(indice + indiceCabecalho + 2);
                 return;
+            }
+            if(stockPorSku.has(sku)) {
+                duplicados.push({ sku, linha: indice + indiceCabecalho + 2 });
             }
             stockPorSku.set(sku, stock);
         });
@@ -1125,13 +1158,22 @@ async function analisarFicheiroStockAdmin(input) {
         const ausentesNoFicheiro = todosOsProdutos
             .filter(produto => !stockPorSku.has(String(produto.sku || '').trim().toUpperCase()))
             .map(produto => produto.sku);
+        const totalStockFicheiro = [...stockPorSku.values()].reduce((total, stock) => total + stock, 0);
+        const totalStockAtual = somarStockProdutos(todosOsProdutos);
+        const totalStockAtualAlterado = somarStockAlteracoes(alteracoes, 'stockAtual');
+        const totalStockNovoAlterado = somarStockAlteracoes(alteracoes, 'stockNovo');
+        const totalStockPrevisto = totalStockAtual - totalStockAtualAlterado + totalStockNovoAlterado;
 
         importacaoStockPendente = {
             nomeFicheiro:ficheiro.name,
             totalLinhas:stockPorSku.size,
+            totalStockFicheiro,
+            totalStockAtual,
+            totalStockPrevisto,
             alteracoes,
             naoEncontrados,
             ausentesNoFicheiro,
+            duplicados,
             invalidos,
             aumentos,
             reducoes,
@@ -1194,9 +1236,17 @@ async function confirmarImportacaoStockAdmin() {
             throw new Error(`${erros.length} produto(s) não foram atualizados.`);
         }
 
-        mostrarMensagem(status, `${atualizados} produto(s) atualizados com sucesso.`, 'msg-sucesso');
         importacaoStockPendente = null;
         await carregarProdutosAdminDaNuvem();
+        const totalStockGravado = somarStockProdutos(todosOsProdutos);
+        const diferenca = totalStockGravado - importacao.totalStockFicheiro;
+        mostrarMensagem(
+            status,
+            diferenca === 0
+                ? `${atualizados} produto(s) atualizados com sucesso. Stock gravado: ${totalStockGravado}. Bate certo com o ficheiro.`
+                : `${atualizados} produto(s) atualizados. Stock gravado: ${totalStockGravado}. Diferença face ao ficheiro: ${diferenca > 0 ? '+' : ''}${diferenca}. Veja os detalhes da importação.`,
+            diferenca === 0 ? 'msg-sucesso' : 'msg-erro'
+        );
     } catch(error) {
         console.error('Erro ao atualizar stock:', error);
         botao.disabled = false;
@@ -1246,6 +1296,7 @@ function renderizarResumoImportacaoCatalogo(resultado) {
 
     resumo.replaceChildren(
         criarIndicadorImportacaoStock(resultado.produtos.length, 'Produtos válidos'),
+        criarIndicadorImportacaoStock(resultado.totalStockFicheiro, 'Stock no ficheiro'),
         criarIndicadorImportacaoStock(resultado.novos.length, 'Novos'),
         criarIndicadorImportacaoStock(resultado.existentes.length, 'Atualizados'),
         criarIndicadorImportacaoStock(resultado.remover.length, 'A remover'),
@@ -1257,6 +1308,7 @@ function renderizarResumoImportacaoCatalogo(resultado) {
     detalhes.replaceChildren();
     const linhas = [
         `${resultado.produtos.length} produtos serão importados do ficheiro.`,
+        `Stock total do ficheiro: ${resultado.totalStockFicheiro}.`,
         `${resultado.novos.length} produtos serão adicionados.`,
         `${resultado.existentes.length} produtos existentes serão atualizados por SKU.`,
         `${resultado.remover.length} produtos atuais não constam do ficheiro e serão removidos.`
@@ -1361,10 +1413,12 @@ async function analisarFicheiroCatalogoAdmin(input) {
         const novos = produtos.filter(produto => !atuaisPorSku.has(produto.sku));
         const existentes = produtos.filter(produto => atuaisPorSku.has(produto.sku));
         const remover = todosOsProdutos.filter(produto => !produtosPorSku.has(String(produto.sku || '').trim().toUpperCase()));
+        const totalStockFicheiro = somarStockProdutos(produtos);
 
         importacaoCatalogoPendente = {
             nomeFicheiro:ficheiro.name,
             produtos,
+            totalStockFicheiro,
             novos,
             existentes,
             remover,
@@ -1447,7 +1501,15 @@ async function confirmarImportacaoCatalogoAdmin() {
         importacaoCatalogoPendente = null;
         document.getElementById('confirmacao-substituir-catalogo').value = '';
         await carregarProdutosAdminDaNuvem();
-        mostrarMensagem(status, `${importados} produtos importados e ${removidos} produtos antigos removidos.`, 'msg-sucesso');
+        const totalStockGravado = somarStockProdutos(todosOsProdutos);
+        const diferenca = totalStockGravado - importacao.totalStockFicheiro;
+        mostrarMensagem(
+            status,
+            diferenca === 0
+                ? `${importados} produtos importados e ${removidos} produtos antigos removidos. Stock gravado: ${totalStockGravado}. Bate certo com o ficheiro.`
+                : `${importados} produtos importados e ${removidos} produtos antigos removidos. Stock gravado: ${totalStockGravado}. Diferença face ao ficheiro: ${diferenca > 0 ? '+' : ''}${diferenca}.`,
+            diferenca === 0 ? 'msg-sucesso' : 'msg-erro'
+        );
     } catch(error) {
         console.error('Erro ao substituir catálogo:', error);
         botao.disabled = false;
