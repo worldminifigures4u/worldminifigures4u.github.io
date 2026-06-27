@@ -3362,6 +3362,28 @@
     background: #171717;
 }
 
+.mapas-spacer-virtual td {
+    padding: 0 !important;
+    border: 0 !important;
+    background: transparent !important;
+}
+
+.mapas-celula-nome {
+    appearance: none;
+    border: 0;
+    background: transparent;
+    color: inherit;
+    font: inherit;
+    font-weight: 900;
+    padding: 0;
+    cursor: pointer;
+    text-align: left;
+}
+
+.mapas-celula-nome:hover {
+    color: #ffc400;
+}
+
 .mapas-col-lego { width: 70px; }
 .mapas-col-nome { width: 260px; }
 .mapas-col-preco-compra { width: 96px; }

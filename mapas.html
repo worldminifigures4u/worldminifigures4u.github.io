@@ -7,7 +7,7 @@
     <title>Mapas | Figures Planet</title>
     <link rel="icon" type="image/jpeg" href="assets/logo-figures-planet.jpg">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <link rel="stylesheet" href="styles.css?v=20260626-sync-preco-compra-safe">
+    <link rel="stylesheet" href="styles.css?v=20260627-mapas-leve-virtual">
 </head>
 <body class="pagina-fornecedores-admin pagina-mapas-admin cabecalho-com-admin pagina-com-cabecalho-site">
     <header class="cabecalho-site-admin">
@@ -69,11 +69,6 @@
         <p class="fornecedores-status" id="fornecedores-status" role="status"></p>
     </main>
 
-    <div id="admin-imagem-modal" class="admin-imagem-modal" hidden>
-        <button type="button" id="admin-imagem-modal-fechar" class="admin-imagem-modal-fechar" aria-label="Fechar imagem">x</button>
-        <img id="admin-imagem-modal-foto" src="" alt="">
-    </div>
-
     <script>
         (function atualizarContadorCarrinhoCabecalho(){
             const el = document.getElementById('contador-carrinho-cabecalho');
@@ -87,6 +82,6 @@
             }
         })();
     </script>
-    <script src="fornecedores.js?v=20260627-mapas-sem-fundir-referencia"></script>
+    <script src="mapas.js?v=20260627-mapas-leve-virtual"></script>
 </body>
 </html>
