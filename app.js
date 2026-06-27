@@ -1122,6 +1122,26 @@ function renderizarResumoImportacaoStock(resultado) {
     detalhes.style.display = linhas.length ? 'block' : 'none';
 }
 
+let xlsxAdminPromessa = null;
+
+function garantirXlsxAdmin() {
+    if(typeof XLSX !== 'undefined') return Promise.resolve();
+    if(xlsxAdminPromessa) return xlsxAdminPromessa;
+
+    xlsxAdminPromessa = new Promise((resolve, reject) => {
+        const script = document.createElement('script');
+        script.src = 'https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js';
+        script.async = true;
+        script.onload = () => typeof XLSX !== 'undefined'
+            ? resolve()
+            : reject(new Error('A ferramenta de Excel nao ficou disponivel.'));
+        script.onerror = () => reject(new Error('Nao foi possivel carregar a ferramenta de Excel.'));
+        document.head.appendChild(script);
+    });
+
+    return xlsxAdminPromessa;
+}
+
 async function analisarFicheiroStockAdmin(input) {
     const status = document.getElementById('status-importacao-stock');
     const botao = document.getElementById('btn-confirmar-importacao-stock');
@@ -1131,6 +1151,7 @@ async function analisarFicheiroStockAdmin(input) {
     try {
         const ficheiro = input.files?.[0];
         if(!ficheiro) return;
+        await garantirXlsxAdmin();
         if(typeof XLSX === 'undefined') {
             throw new Error('O leitor de folhas de cálculo não foi carregado. Atualize a página e tente novamente.');
         }
@@ -1397,6 +1418,7 @@ async function analisarFicheiroCatalogoAdmin(input) {
     try {
         const ficheiro = input.files?.[0];
         if(!ficheiro) return;
+        await garantirXlsxAdmin();
         mostrarMensagem(status, 'A analisar o catálogo completo...');
 
         const conteudo = await ficheiro.arrayBuffer();
