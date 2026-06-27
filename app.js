@@ -1031,6 +1031,7 @@ function renderizarResumoImportacaoStock(resultado) {
 
     resumo.replaceChildren(
         criarIndicadorImportacaoStock(resultado.totalLinhas, 'SKUs no ficheiro'),
+        criarIndicadorImportacaoStock(resultado.totalStockLinhasFicheiro, 'Stock linhas ficheiro'),
         criarIndicadorImportacaoStock(resultado.totalStockFicheiro, 'Stock no ficheiro'),
         criarIndicadorImportacaoStock(resultado.totalStockAtual, 'Stock atual site'),
         criarIndicadorImportacaoStock(resultado.totalStockPrevisto, 'Stock previsto'),
@@ -1044,11 +1045,16 @@ function renderizarResumoImportacaoStock(resultado) {
 
     detalhes.replaceChildren();
     const diferencaPrevista = resultado.totalStockPrevisto - resultado.totalStockFicheiro;
+    const diferencaLinhas = resultado.totalStockFicheiro - resultado.totalStockLinhasFicheiro;
     const linhas = [
+        `Stock bruto nas linhas do ficheiro: ${resultado.totalStockLinhasFicheiro}`,
         `Stock lido no ficheiro: ${resultado.totalStockFicheiro}`,
         `Stock atual no site antes da importação: ${resultado.totalStockAtual}`,
         `Stock previsto no site depois da importação: ${resultado.totalStockPrevisto}`
     ];
+    if(diferencaLinhas !== 0) {
+        linhas.push(`Diferença entre linhas do ficheiro e SKUs importados: ${diferencaLinhas > 0 ? '+' : ''}${diferencaLinhas}. Normalmente isto indica SKUs duplicados ou linhas ignoradas.`);
+    }
     if(diferencaPrevista !== 0) {
         linhas.push(`Diferença prevista face ao ficheiro: ${diferencaPrevista > 0 ? '+' : ''}${diferencaPrevista}. Verifique SKUs não encontrados, duplicados ou produtos ausentes no ficheiro.`);
     }
@@ -1110,6 +1116,7 @@ async function analisarFicheiroStockAdmin(input) {
         const stockPorSku = new Map();
         const invalidos = [];
         const duplicados = [];
+        let totalStockLinhasFicheiro = 0;
 
         linhas.slice(indiceCabecalho + 1).forEach((linha, indice) => {
             const sku = normalizarTextoSku(linha[colunaSku]).replace(/[^A-Z0-9]/g, '');
@@ -1118,6 +1125,7 @@ async function analisarFicheiroStockAdmin(input) {
                 if(linha.some(valor => valor !== null && valor !== '')) invalidos.push(indice + indiceCabecalho + 2);
                 return;
             }
+            totalStockLinhasFicheiro += stock;
             if(stockPorSku.has(sku)) {
                 duplicados.push({ sku, linha: indice + indiceCabecalho + 2 });
             }
@@ -1167,6 +1175,7 @@ async function analisarFicheiroStockAdmin(input) {
         importacaoStockPendente = {
             nomeFicheiro:ficheiro.name,
             totalLinhas:stockPorSku.size,
+            totalStockLinhasFicheiro,
             totalStockFicheiro,
             totalStockAtual,
             totalStockPrevisto,
@@ -1240,12 +1249,17 @@ async function confirmarImportacaoStockAdmin() {
         await carregarProdutosAdminDaNuvem();
         const totalStockGravado = somarStockProdutos(todosOsProdutos);
         const diferenca = totalStockGravado - importacao.totalStockFicheiro;
+        const diferencaLinhas = totalStockGravado - importacao.totalStockLinhasFicheiro;
         mostrarMensagem(
             status,
             diferenca === 0
-                ? `${atualizados} produto(s) atualizados com sucesso. Stock gravado: ${totalStockGravado}. Bate certo com o ficheiro.`
+                ? (
+                    diferencaLinhas === 0
+                        ? `${atualizados} produto(s) atualizados com sucesso. Stock gravado: ${totalStockGravado}. Bate certo com as linhas do ficheiro.`
+                        : `${atualizados} produto(s) atualizados. Stock gravado: ${totalStockGravado}. Bate com os SKUs importados, mas difere das linhas do ficheiro: ${diferencaLinhas > 0 ? '+' : ''}${diferencaLinhas}. Veja duplicados/linhas ignoradas.`
+                )
                 : `${atualizados} produto(s) atualizados. Stock gravado: ${totalStockGravado}. Diferença face ao ficheiro: ${diferenca > 0 ? '+' : ''}${diferenca}. Veja os detalhes da importação.`,
-            diferenca === 0 ? 'msg-sucesso' : 'msg-erro'
+            diferenca === 0 && diferencaLinhas === 0 ? 'msg-sucesso' : 'msg-erro'
         );
     } catch(error) {
         console.error('Erro ao atualizar stock:', error);
@@ -1296,6 +1310,7 @@ function renderizarResumoImportacaoCatalogo(resultado) {
 
     resumo.replaceChildren(
         criarIndicadorImportacaoStock(resultado.produtos.length, 'Produtos válidos'),
+        criarIndicadorImportacaoStock(resultado.totalStockLinhasFicheiro, 'Stock linhas ficheiro'),
         criarIndicadorImportacaoStock(resultado.totalStockFicheiro, 'Stock no ficheiro'),
         criarIndicadorImportacaoStock(resultado.novos.length, 'Novos'),
         criarIndicadorImportacaoStock(resultado.existentes.length, 'Atualizados'),
@@ -1306,13 +1321,16 @@ function renderizarResumoImportacaoCatalogo(resultado) {
     resumo.style.display = 'grid';
 
     detalhes.replaceChildren();
+    const diferencaLinhas = resultado.totalStockFicheiro - resultado.totalStockLinhasFicheiro;
     const linhas = [
         `${resultado.produtos.length} produtos serão importados do ficheiro.`,
+        `Stock bruto nas linhas do ficheiro: ${resultado.totalStockLinhasFicheiro}.`,
         `Stock total do ficheiro: ${resultado.totalStockFicheiro}.`,
         `${resultado.novos.length} produtos serão adicionados.`,
         `${resultado.existentes.length} produtos existentes serão atualizados por SKU.`,
         `${resultado.remover.length} produtos atuais não constam do ficheiro e serão removidos.`
     ];
+    if(diferencaLinhas !== 0) linhas.push(`Diferença entre linhas do ficheiro e produtos importados: ${diferencaLinhas > 0 ? '+' : ''}${diferencaLinhas}. Verifique duplicados ou linhas ignoradas.`);
     if(resultado.invalidos.length) linhas.push(`${resultado.invalidos.length} linha(s) inválida(s) foram ignoradas.`);
     resultado.remover.slice(0, 30).forEach(produto => linhas.push(`Remover: ${produto.sku} | ${produto.nome || ''}`));
 
@@ -1361,6 +1379,7 @@ async function analisarFicheiroCatalogoAdmin(input) {
 
         const produtosPorSku = new Map();
         const invalidos = [];
+        let totalStockLinhasFicheiro = 0;
 
         linhas.forEach((linha, indice) => {
             if(!linha.some(valor => valor !== null && valor !== '')) return;
@@ -1377,6 +1396,9 @@ async function analisarFicheiroCatalogoAdmin(input) {
             const subtema = colunas.subtema >= 0 ? String(linha[colunas.subtema] || '').trim() : '';
             const peso = Number(linha[colunas.peso]);
             const fornecedores = extrairFornecedoresImportacao(linha, cabecalhos);
+            if(Number.isInteger(stock) && stock >= 0) {
+                totalStockLinhasFicheiro += stock;
+            }
 
             if(!nome || !sku || !tema || !Number.isFinite(preco) || preco < 0 || !Number.isInteger(stock) || stock < 0 || !Number.isFinite(peso) || peso < 1 || produtosPorSku.has(sku)) {
                 invalidos.push(indice + primeiraLinhaDados);
@@ -1418,6 +1440,7 @@ async function analisarFicheiroCatalogoAdmin(input) {
         importacaoCatalogoPendente = {
             nomeFicheiro:ficheiro.name,
             produtos,
+            totalStockLinhasFicheiro,
             totalStockFicheiro,
             novos,
             existentes,
@@ -1503,12 +1526,17 @@ async function confirmarImportacaoCatalogoAdmin() {
         await carregarProdutosAdminDaNuvem();
         const totalStockGravado = somarStockProdutos(todosOsProdutos);
         const diferenca = totalStockGravado - importacao.totalStockFicheiro;
+        const diferencaLinhas = totalStockGravado - importacao.totalStockLinhasFicheiro;
         mostrarMensagem(
             status,
             diferenca === 0
-                ? `${importados} produtos importados e ${removidos} produtos antigos removidos. Stock gravado: ${totalStockGravado}. Bate certo com o ficheiro.`
+                ? (
+                    diferencaLinhas === 0
+                        ? `${importados} produtos importados e ${removidos} produtos antigos removidos. Stock gravado: ${totalStockGravado}. Bate certo com as linhas do ficheiro.`
+                        : `${importados} produtos importados e ${removidos} produtos antigos removidos. Stock gravado: ${totalStockGravado}. Bate com os produtos importados, mas difere das linhas do ficheiro: ${diferencaLinhas > 0 ? '+' : ''}${diferencaLinhas}. Veja duplicados/linhas ignoradas.`
+                )
                 : `${importados} produtos importados e ${removidos} produtos antigos removidos. Stock gravado: ${totalStockGravado}. Diferença face ao ficheiro: ${diferenca > 0 ? '+' : ''}${diferenca}.`,
-            diferenca === 0 ? 'msg-sucesso' : 'msg-erro'
+            diferenca === 0 && diferencaLinhas === 0 ? 'msg-sucesso' : 'msg-erro'
         );
     } catch(error) {
         console.error('Erro ao substituir catálogo:', error);
