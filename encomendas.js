@@ -3,6 +3,7 @@ const ENCOMENDAS_SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOi
 const ENCOMENDAS_ADMIN_EMAILS = ["worldminifigures4u@gmail.com"];
 const ENCOMENDAS_ANEXOS_BUCKET = 'anexos-encomendas';
 const ENCOMENDAS_ANEXO_MAX_BYTES = 10 * 1024 * 1024;
+const ENCOMENDAS_ESTADO_INICIAL = 'A aguardar pagamento';
 const ESTADOS_ENCOMENDA = [
     'A aguardar pagamento',
     'Pago',
@@ -1115,6 +1116,8 @@ async function iniciarPainelEncomendas() {
         }
         bloqueio.hidden = true;
         document.getElementById('encomendas-aplicacao').hidden = false;
+        const filtroEstado = document.getElementById('filtro-estado-encomendas-admin');
+        if (filtroEstado) filtroEstado.value = ENCOMENDAS_ESTADO_INICIAL;
         await carregarEncomendasAdmin();
     } catch (error) {
         console.error(error);
