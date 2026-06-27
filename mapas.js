@@ -82,7 +82,10 @@ function normalizarProdutoMapa(produto) {
         tema: produto.tema || "",
         subtema: produto.subtema || "",
         stock: Math.max(0, Number(produto.stock || 0)),
-        ativo: produto.ativo !== false
+        ativo: produto.ativo !== false,
+        imagens: Array.isArray(produto.imagens) ? produto.imagens : [],
+        observacoes: produto.observacoes || "",
+        fornecedores: produto.fornecedores || {}
     };
 }
 
@@ -509,9 +512,9 @@ async function guardarEdicaoProdutoMapa(evento) {
             && String(item.sku || "").trim().toUpperCase() === produto.sku
         );
         if (skuDuplicado) throw new Error("Este SKU já existe noutro produto.");
-        let { data, error } = await mapasClient.rpc("editar_produto_mapa_admin", { p_id: id, p_sku_original: skuOriginal, p_produto: produto });
-        if (error) {
-            ({ data, error } = await mapasClient.rpc("editar_produto_admin_v2", { p_id: id, p_sku_original: skuOriginal, p_produto: produto }));
+        const { data, error } = await mapasClient.rpc("editar_produto_mapa_admin", { p_id: id, p_sku_original: skuOriginal, p_produto: produto });
+        if (error && /editar_produto_mapa_admin/i.test(String(error.message || ""))) {
+            throw new Error("Execute primeiro o SQL atualizado do Mapas no Supabase para editar produtos nesta página.");
         }
         if (error) throw error;
         const atualizado = normalizarProdutoMapa({ ...data, imagens: produto.imagens, observacoes: produto.observacoes, fornecedores: produto.fornecedores });
