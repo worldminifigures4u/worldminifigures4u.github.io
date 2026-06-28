@@ -1,0 +1,41 @@
+        .admin-imagem-modal[hidden]{ display:none; }
+
+        .admin-imagem-modal{
+            position:fixed;
+            z-index:10000;
+            inset:0;
+            padding:28px;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            background:rgba(0,0,0,.88);
+        }
+
+        .admin-imagem-modal img{
+            display:block;
+            max-width:min(94vw, 1200px);
+            max-height:92vh;
+            width:auto;
+            height:auto;
+            object-fit:contain;
+            background:#111;
+        }
+
+        .admin-imagem-modal-fechar{
+            position:fixed;
+            top:18px;
+            right:22px;
+            width:44px;
+            height:44px;
+            border:0;
+            border-radius:4px;
+            background:#ff4d4d;
+            color:#fff;
+            font-size:30px;
+            line-height:1;
+            cursor:pointer;
+        }
+
+        body.admin-imagem-modal-aberto{
+            overflow:hidden;
+        }
