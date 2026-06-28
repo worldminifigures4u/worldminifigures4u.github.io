@@ -7,7 +7,7 @@
         }
 
         body{
-            padding-top: 156px;
+            padding-top: 146px;
         }
 
         header{
@@ -28,7 +28,7 @@
             padding:6px 32px;
             box-sizing:border-box;
             display:grid;
-            grid-template-columns:minmax(590px, 640px) minmax(360px, 560px) minmax(230px, 1fr);
+            grid-template-columns:minmax(550px, 600px) minmax(360px, 560px) minmax(230px, 1fr);
             gap:10px 22px;
             align-items:center;
         }
@@ -43,7 +43,7 @@
 
         .logo-loja img{
             display:block;
-            width:560px;
+            width:520px;
             height:auto;
             object-fit:contain;
             object-position:center;
@@ -818,7 +818,7 @@
         .erro{ color:#ff4d4d; }
 
         @media(max-width:1100px){
-            body{ padding-top:187px; }
+            body{ padding-top:180px; }
             .cabecalho-loja{
                 grid-template-columns:1fr auto;
                 gap:8px 14px;
@@ -829,7 +829,7 @@
                 grid-row:2;
             }
             .logo-loja img{
-                width:390px;
+                width:370px;
                 height:auto;
             }
             .texto-acao span{ max-width:120px; }
@@ -976,11 +976,11 @@
 }
 
 body.cabecalho-com-admin{
-    padding-top:218px;
+    padding-top:206px;
 }
 
 body.pagina-com-cabecalho-site{
-    padding-top:218px !important;
+    padding-top:206px !important;
 }
 
 .cabecalho-site-admin{
@@ -994,7 +994,7 @@ body.pagina-com-cabecalho-site{
 @media(max-width:1100px){
     body.cabecalho-com-admin,
     body.pagina-com-cabecalho-site{
-        padding-top:248px !important;
+        padding-top:240px !important;
     }
 
     .navegacao-admin-cabecalho{
