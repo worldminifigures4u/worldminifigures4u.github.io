@@ -1,3 +1,9 @@
+
+function mostrarNavegacaoAdminValidada() {
+    const navegacao = document.querySelector('.navegacao-admin-cabecalho');
+    if (navegacao) navegacao.hidden = false;
+}
+
 const WALLAPOP_SUPABASE_URL = "https://gksndzxadndrsynvzgzb.supabase.co";
 const WALLAPOP_SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imdrc25kenhhZG5kcnN5bnZ6Z3piIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkwODc5NzMsImV4cCI6MjA5NDY2Mzk3M30.EHZgacYr27dqoc4CJHsOwkNnJFGlLIteSHBi4B1HfVE";
 const WALLAPOP_ADMIN_EMAILS = ["worldminifigures4u@gmail.com"];
@@ -1853,6 +1859,7 @@ async function iniciarWallapopAdmin() {
             return;
         }
 
+        mostrarNavegacaoAdminValidada();
         await carregarCatalogoWallapop();
         bloqueio.hidden = true;
         document.getElementById('wallapop-aplicacao').hidden = false;
