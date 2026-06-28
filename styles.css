@@ -232,8 +232,7 @@
             align-items:flex-start;
         }
 
-        .vista-conta.ativa,
-        .vista-carrinho.ativa{
+        .vista-conta.ativa{
             max-width:760px;
             margin:0 auto;
         }
@@ -260,13 +259,6 @@
 
         .vista-conta .area-cliente{
             margin:0 auto;
-        }
-
-        .vista-carrinho .carrinho{
-            width:100%;
-            max-width:860px;
-            margin:0 auto;
-            box-sizing:border-box;
         }
 
         .menu-temas h2, .area-cliente h2{
@@ -1054,202 +1046,6 @@
 
         .erro{ color:#ff4d4d; }
 
-        .carrinho{
-            width:320px;
-            background:#111;
-            border-radius:12px;
-            padding:15px;
-            border:1px solid #333;
-            height:fit-content;
-            box-shadow:0 12px 30px rgba(0,0,0,0.25);
-        }
-
-        .carrinho h2{
-            margin-top:0;
-            border-bottom:1px solid #333;
-            padding-bottom:10px;
-        }
-
-        .lista-carrinho{
-            max-height:430px;
-            overflow-y:auto;
-            display:flex;
-            flex-direction:column;
-            gap:10px;
-        }
-
-        .linha-carrinho{
-            background:#181818;
-            border:1px solid #303030;
-            border-radius:10px;
-            padding:10px;
-            display:flex;
-            justify-content:space-between;
-            align-items:center;
-            gap:10px;
-        }
-
-        .imagem-carrinho{
-            width:74px;
-            height:74px;
-            flex:0 0 74px;
-            object-fit:contain;
-            background:#222;
-            border:1px solid #333;
-            border-radius:8px;
-        }
-
-        .linha-carrinho strong{ color:#ffc107; }
-
-        .info-carrinho{
-            min-width:0;
-            flex:1;
-            overflow-wrap:anywhere;
-            line-height:1.35;
-        }
-
-        .preco-carrinho{
-            color:#35c7ff;
-            font-weight:bold;
-            margin-top:4px;
-        }
-
-        .controlos-carrinho{
-            display:flex;
-            align-items:center;
-            gap:6px;
-            flex:0 0 auto;
-        }
-
-        .btn-quantidade,
-        .btn-remover{
-            min-width:30px;
-            height:30px;
-            border:none;
-            border-radius:8px;
-            cursor:pointer;
-            font-weight:bold;
-        }
-
-        .btn-quantidade{
-            background:#2a2a2a;
-            color:#ffc107;
-            border:1px solid #444;
-        }
-
-        .quantidade-carrinho{
-            min-width:22px;
-            text-align:center;
-            color:#fff;
-            font-weight:bold;
-        }
-
-        .btn-remover{
-            background:#ff4d4d;
-            color:white;
-        }
-
-        .select-envio{
-            display:block;
-            width:100%;
-            padding:10px;
-            border-radius:8px;
-            border:1px solid #333;
-            background:#222;
-            color:white;
-            margin:8px 0 14px;
-            box-sizing:border-box;
-        }
-
-        .total-box{
-            margin-top:20px;
-            background:#181818;
-            border:1px solid #333;
-            border-radius:10px;
-            padding:12px;
-            margin-bottom: 15px;
-        }
-
-        .linha-total{
-            display:flex;
-            justify-content:space-between;
-            margin-bottom:10px;
-        }
-
-        .valor-final{
-            color:#35c7ff;
-            font-size:24px;
-            font-weight:bold;
-            border-top:1px dashed #444;
-            padding-top:10px;
-            margin-top:8px;
-        }
-
-        .seccao-pagamento {
-            margin-top: 15px;
-            border-top: 1px dashed #333;
-            padding-top: 15px;
-        }
-        .seccao-pagamento h3 {
-            font-size: 15px;
-            color: #ffc107;
-            margin-top: 0;
-            margin-bottom: 10px;
-        }
-        .opcao-pagamento {
-            display: flex;
-            align-items: center;
-            background: #1c1c1c;
-            padding: 10px;
-            border-radius: 8px;
-            margin-bottom: 8px;
-            cursor: pointer;
-            border: 1px solid #222;
-            transition: 0.2s;
-        }
-        .opcao-pagamento:hover {
-            border-color: #444;
-        }
-
-        .opcao-pagamento:has(input:checked){
-            border-color:#ffc107;
-            background:#221c0a;
-        }
-
-        .opcao-pagamento input {
-            margin-right: 10px;
-            cursor: pointer;
-        }
-
-        .btn-confirmar {
-            background: #28a745;
-            color: white;
-            width: 100%;
-            padding: 14px;
-            border: none;
-            border-radius: 8px;
-            font-weight: bold;
-            font-size: 16px;
-            cursor: pointer;
-            transition: 0.2s;
-            margin-top: 15px;
-        }
-        .btn-confirmar:hover {
-            background: #218838;
-        }
-
-        #status-encomenda{
-            background:#181818;
-            border:1px solid #333;
-            border-radius:8px;
-            padding:10px;
-            min-height:18px;
-        }
-
-        #status-encomenda:empty{
-            display:none;
-        }
-
         @media(max-width:1100px){
             body{ padding-top:156px; }
             .cabecalho-loja{
@@ -1269,7 +1065,7 @@
             .texto-acao strong{ max-width:120px; }
             .acao-cabecalho{ padding:0 12px; }
             .vista-loja.ativa{ flex-direction:column; }
-            .coluna-esquerda, .carrinho{ width:100%; box-sizing:border-box; }
+            .coluna-esquerda{ width:100%; box-sizing:border-box; }
             .coluna-esquerda{
                 position:static;
             }
@@ -1328,11 +1124,6 @@
             .badge-carrinho{
                 top:3px;
                 right:3px;
-            }
-            .imagem-carrinho{
-                width:58px;
-                height:58px;
-                flex-basis:58px;
             }
         }
 
@@ -1512,24 +1303,6 @@ body.pagina-com-cabecalho-site{
         width:auto;
         min-width:max-content;
         padding:0 14px;
-    }
-}
-
-
-/* No telemóvel, o carrinho usa apenas o scroll geral da página. */
-@media (max-width: 560px) {
-    .vista-carrinho .carrinho {
-        height: auto;
-        max-height: none;
-        overflow: visible;
-        touch-action: pan-y;
-    }
-
-    .vista-carrinho .lista-carrinho {
-        max-height: none;
-        overflow: visible;
-        overscroll-behavior: auto;
-        touch-action: pan-y;
     }
 }
 
