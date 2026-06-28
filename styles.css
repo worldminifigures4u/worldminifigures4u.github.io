@@ -420,19 +420,6 @@
             .rodape-links{ justify-content:center; }
         }
 
-.admin-produto-identificadores{
-    color:#fff !important;
-    font-size:13px;
-    font-weight:700;
-    margin-top:2px;
-}
-
-@media (max-width: 700px){
-    .plataforma-morada-grid{
-        grid-template-columns:1fr;
-    }
-}
-
 /* Cabecalho publico com uma segunda linha exclusiva para administracao. */
 .navegacao-admin-cabecalho{
     grid-column:1 / -1;

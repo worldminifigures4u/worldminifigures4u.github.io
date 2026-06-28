@@ -869,3 +869,9 @@ body.pagina-wallapop{
     border-top:1px solid #292929;
     font-size:13px;
 }
+
+@media (max-width: 700px){
+    .plataforma-morada-grid{
+        grid-template-columns:1fr;
+    }
+}
