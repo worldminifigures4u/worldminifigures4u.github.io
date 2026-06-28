@@ -28,7 +28,7 @@
             padding:6px 32px;
             box-sizing:border-box;
             display:grid;
-            grid-template-columns:minmax(550px, 600px) minmax(360px, 560px) minmax(230px, 1fr);
+            grid-template-columns:minmax(550px, 600px) minmax(280px, 420px) minmax(390px, 1fr);
             gap:10px 22px;
             align-items:center;
         }
