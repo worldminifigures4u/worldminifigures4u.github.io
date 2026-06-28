@@ -1,0 +1,212 @@
+        .admin-cliente-modal[hidden]{ display:none; }
+
+        .admin-cliente-modal{
+            position:fixed;
+            z-index:10001;
+            inset:0;
+            padding:24px;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            background:rgba(0,0,0,.84);
+        }
+
+        .admin-cliente-dialogo{
+            position:relative;
+            width:min(900px, 100%);
+            max-height:92vh;
+            overflow:auto;
+            box-sizing:border-box;
+            padding:24px;
+            border:1px solid #444;
+            border-radius:8px;
+            background:#111;
+            color:#fff;
+        }
+
+        .admin-cliente-dialogo > h2{
+            margin:0 52px 18px 0;
+            color:#ffc107;
+        }
+
+        .admin-cliente-fechar{
+            position:absolute;
+            top:14px;
+            right:14px;
+            width:38px;
+            height:38px;
+            border:0;
+            border-radius:5px;
+            background:#ff4d4d;
+            color:#fff;
+            font-size:26px;
+            cursor:pointer;
+        }
+
+        .admin-cliente-secao{
+            margin-top:18px;
+            padding-top:16px;
+            border-top:1px solid #333;
+        }
+
+        .admin-cliente-secao h3{
+            margin:0 0 12px;
+            color:#ffc107;
+            font-size:16px;
+        }
+
+        .admin-cliente-secao-cabecalho{
+            margin-bottom:12px;
+            display:flex;
+            align-items:center;
+            justify-content:space-between;
+            gap:12px;
+        }
+
+        .admin-cliente-secao-cabecalho h3{ margin:0; }
+        .admin-cliente-editar{ flex:0 0 auto; padding:8px 12px; }
+
+        .admin-cliente-formulario{
+            display:grid;
+            grid-template-columns:repeat(2, minmax(0, 1fr));
+            gap:12px 18px;
+        }
+
+        .admin-cliente-formulario-campo{
+            min-width:0;
+            display:flex;
+            flex-direction:column;
+            gap:6px;
+            color:#aaa;
+            font-size:12px;
+            font-weight:700;
+        }
+
+        .admin-cliente-formulario-campo input{
+            width:100%;
+            min-width:0;
+            box-sizing:border-box;
+            padding:10px 11px;
+            border:1px solid #555;
+            border-radius:5px;
+            background:#222;
+            color:#fff;
+            font:inherit;
+            font-size:14px;
+            font-weight:400;
+        }
+
+        .admin-cliente-formulario-campo input:focus{
+            border-color:#ffc107;
+            outline:2px solid rgba(255,193,7,.2);
+        }
+
+        .admin-cliente-formulario-acoes{
+            grid-column:1 / -1;
+            display:flex;
+            justify-content:flex-end;
+            gap:10px;
+        }
+
+        .admin-cliente-formulario-subtitulo{
+            grid-column:1 / -1;
+            margin:4px 0 0;
+            color:#ffc107;
+            font-size:16px;
+        }
+
+        .admin-cliente-aviso-conta{
+            margin:10px 0 0;
+            color:#aaa;
+            font-size:13px;
+        }
+
+        .admin-cliente-grelha,
+        .admin-cliente-resumo{
+            display:grid;
+            grid-template-columns:repeat(2, minmax(0, 1fr));
+            gap:10px 18px;
+        }
+
+        .admin-cliente-resumo{
+            margin-top:16px;
+            grid-template-columns:repeat(3, minmax(0, 1fr));
+        }
+
+        .admin-cliente-campo{
+            min-width:0;
+            padding:10px 12px;
+            border:1px solid #303030;
+            border-radius:5px;
+            background:#181818;
+            display:flex;
+            flex-direction:column;
+            gap:5px;
+        }
+
+        .admin-cliente-campo strong{ color:#aaa; font-size:12px; }
+        .admin-cliente-campo span{ overflow-wrap:anywhere; }
+        .admin-cliente-perfis{ display:flex; flex-wrap:wrap; gap:8px; }
+
+        .admin-cliente-perfil{
+            padding:9px 11px;
+            border:1px solid #ffc107;
+            border-radius:5px;
+            color:#ffc107;
+            text-decoration:none;
+            font-weight:700;
+        }
+
+        .admin-cliente-perfil:hover,
+        .admin-cliente-perfil:focus-visible{ background:#ffc107; color:#111; }
+
+        .admin-cliente-historico{
+            max-height:260px;
+            overflow:auto;
+            border:1px solid #303030;
+            border-radius:5px;
+        }
+
+        .admin-cliente-historico-linha{
+            padding:9px 11px;
+            border-bottom:1px solid #292929;
+            display:grid;
+            grid-template-columns:90px 110px minmax(130px, 1fr) 150px 90px;
+            gap:10px;
+            align-items:center;
+            font-size:13px;
+        }
+
+        .admin-cliente-historico-linha:last-child{ border-bottom:0; }
+        .admin-cliente-historico-linha strong:first-child{ color:#ffc107; }
+        .admin-cliente-historico-linha strong:last-child{ color:#29b6f6; text-align:right; }
+
+        .admin-cliente-notas{
+            width:100%;
+            box-sizing:border-box;
+            margin-bottom:10px;
+            padding:11px;
+            border:1px solid #555;
+            border-radius:5px;
+            background:#222;
+            color:#fff;
+            font:inherit;
+            resize:vertical;
+        }
+
+        .admin-cliente-vazio,
+        .admin-cliente-carregar{ color:#aaa; }
+        body.admin-cliente-modal-aberto{ overflow:hidden; }
+
+        @media(max-width:700px){
+            .admin-cliente-modal{ padding:8px; }
+            .admin-cliente-dialogo{ padding:18px 14px; max-height:96vh; }
+            .admin-cliente-grelha,
+            .admin-cliente-resumo,
+            .admin-cliente-formulario{ grid-template-columns:1fr; }
+            .admin-cliente-formulario-acoes{ flex-direction:column-reverse; }
+            .admin-cliente-formulario-acoes button{ width:100%; }
+            .admin-cliente-historico-linha{
+                grid-template-columns:1fr 1fr;
+            }
+        }
