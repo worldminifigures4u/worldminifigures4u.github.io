@@ -13,8 +13,8 @@
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.108.2"></script>
 
-    <link rel="stylesheet" href="styles.css?v=20260628-css-split-restos-pagina">
-    <link rel="stylesheet" href="conta.css?v=20260628-css-split-conta">
+    <link rel="stylesheet" href="styles.css?v=20260629-sem-inline-style">
+    <link rel="stylesheet" href="conta.css?v=20260629-sem-inline-style">
     <link rel="stylesheet" href="gestao.css?v=20260628-css-split-restos-pagina">
 </head>
 <body data-page="conta" class="pagina-gestao">
@@ -75,13 +75,13 @@
     <section class="vista vista-conta ativa" id="vista-conta">
         <div class="gestao-bloqueio" id="gestao-bloqueio">A verificar acesso administrativo...</div>
         <aside class="area-cliente" id="painel-cliente">
-            <div id="conteudo-cliente-autenticado" style="display: none;">
+            <div id="conteudo-cliente-autenticado" class="oculto">
                 <h2> Minha Conta</h2>
                 <div class="perfil-logado">
                     <p>Bem-vindo(a),</p>
-                    <strong id="nome-perfil-logado" style="color: #ffc107; font-size: 16px;"></strong>
-                    <p id="email-perfil-logado" style="color: #888; font-size: 12px; margin-top: 5px;"></p>
-                    <p id="cp-perfil-logado" style="color: #aaa; font-size: 12px;"></p>
+                    <strong id="nome-perfil-logado" class="perfil-nome-logado"></strong>
+                    <p id="email-perfil-logado" class="perfil-email-logado"></p>
+                    <p id="cp-perfil-logado" class="perfil-cp-logado"></p>
                     <button class="btn-logout" data-acao-cliente="logout">Sair da Conta</button>
                 </div>
                 <div class="historico-encomendas">
@@ -233,8 +233,8 @@
                             <div class="form-admin">
                                 <input class="input-upload-admin" type="file" id="admin-ficheiro-stock" accept=".ods,.xlsx,.xls">
                                 <p class="ajuda-admin">Apenas as colunas SKU e stock são utilizadas. As encomendas aos fornecedores não alteram o stock atual.</p>
-                                <div id="resumo-importacao-stock" class="resumo-importacao-stock" style="display:none;"></div>
-                                <div id="detalhes-importacao-stock" class="lista-importacao-stock" style="display:none;"></div>
+                                <div id="resumo-importacao-stock" class="resumo-importacao-stock oculto"></div>
+                                <div id="detalhes-importacao-stock" class="lista-importacao-stock oculto"></div>
                                 <button type="button" id="btn-confirmar-importacao-stock" class="btn-acao-cliente" disabled>Atualizar stock no Supabase</button>
                                 <div id="status-importacao-stock" class="msg-status"></div>
                             </div>
@@ -244,8 +244,8 @@
                             <div class="form-admin">
                                 <input class="input-upload-admin" type="file" id="admin-ficheiro-catalogo" accept=".ods,.xlsx,.xls">
                                 <p class="ajuda-admin">Importa nome, preço, Ref., SKU, stock, tema, subtema, peso e dados dos fornecedores. Produtos que não constem do ficheiro serão removidos.</p>
-                                <div id="resumo-importacao-catalogo" class="resumo-importacao-stock" style="display:none;"></div>
-                                <div id="detalhes-importacao-catalogo" class="lista-importacao-stock" style="display:none;"></div>
+                                <div id="resumo-importacao-catalogo" class="resumo-importacao-stock oculto"></div>
+                                <div id="detalhes-importacao-catalogo" class="lista-importacao-stock oculto"></div>
                                 <div>
                                     <label for="confirmacao-substituir-catalogo">Para confirmar, escreva SUBSTITUIR:</label>
                                     <input type="text" id="confirmacao-substituir-catalogo" autocomplete="off">
@@ -254,7 +254,7 @@
                                 <div id="status-importacao-catalogo" class="msg-status"></div>
                             </div>
                         </div>
-                        <form class="form-admin admin-seccao" id="form-admin-editar-produto" style="display:none;">
+                        <form class="form-admin admin-seccao oculto" id="form-admin-editar-produto">
                             <input type="hidden" id="admin-editar-id">
                             <input type="hidden" id="admin-editar-sku-original">
                             <h3>Editar produto</h3>
@@ -349,7 +349,7 @@
                     <button type="submit" class="btn-acao-cliente">Entrar na Conta</button>
                 </form>
 
-                <form class="form-cliente" id="form-registo" style="display: none;">
+                <form class="form-cliente oculto" id="form-registo">
                     <div>
                         <label for="registo-nome">Nome Completo:</label>
                         <input type="text" id="registo-nome" required placeholder="Ex: Fábio Lopes">
@@ -385,7 +385,7 @@
                     <button type="submit" class="btn-acao-cliente">Criar Conta</button>
                 </form>
 
-                <form class="form-cliente" id="form-recuperar-password" style="display: none;">
+                <form class="form-cliente oculto" id="form-recuperar-password">
                     <div>
                         <label for="nova-password">Nova palavra-passe:</label>
                         <input type="password" id="nova-password" required minlength="8" placeholder="Mínimo 8 caracteres">
@@ -414,12 +414,12 @@
         </nav>
     </div>
 </footer>
-<script src="app.js?v=20260627-app-split-5"></script>
+<script src="app.js?v=20260629-sem-inline-style"></script>
 <script src="carrinho-loja.js?v=20260627-app-split-5"></script>
 <script src="loja-produtos.js?v=20260627-app-split-5"></script>
-<script src="conta-cliente.js?v=20260629-password-atual"></script>
-<script src="gestao-admin.js?v=20260627-app-split-5"></script>
-<script src="gestao-importacao.js?v=20260627-app-split-5"></script>
+<script src="conta-cliente.js?v=20260629-sem-inline-style"></script>
+<script src="gestao-admin.js?v=20260629-sem-inline-style"></script>
+<script src="gestao-importacao.js?v=20260629-sem-inline-style"></script>
 <script src="inline-listeners.js?v=20260629-csp-inline"></script>
 </body>
 </html>

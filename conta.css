@@ -263,3 +263,20 @@
             font-size:13px;
             line-height:1.4;
         }
+
+
+.perfil-nome-logado{
+    color:#ffc107;
+    font-size:16px;
+}
+
+.perfil-email-logado{
+    color:#888;
+    font-size:12px;
+    margin-top:5px;
+}
+
+.perfil-cp-logado{
+    color:#aaa;
+    font-size:12px;
+}

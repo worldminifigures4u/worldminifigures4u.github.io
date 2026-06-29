@@ -119,7 +119,7 @@ function renderizarResumoImportacaoStock(resultado) {
         criarIndicadorImportacaoStock(resultado.desativados, 'Ficam inativos'),
         criarIndicadorImportacaoStock(resultado.naoEncontrados.length, 'Não encontrados')
     );
-    resumo.style.display = 'grid';
+    resumo.classList.remove('oculto');
 
     detalhes.replaceChildren();
     const diferencaPrevista = resultado.totalStockPrevisto - resultado.totalStockFicheiro;
@@ -158,7 +158,7 @@ function renderizarResumoImportacaoStock(resultado) {
         div.textContent = linha;
         detalhes.appendChild(div);
     });
-    detalhes.style.display = linhas.length ? 'block' : 'none';
+    detalhes.classList.toggle('oculto', !linhas.length);
 }
 
 let xlsxAdminPromessa = null;
@@ -417,7 +417,7 @@ function renderizarResumoImportacaoCatalogo(resultado) {
         criarIndicadorImportacaoStock(resultado.ativos, 'Ativos'),
         criarIndicadorImportacaoStock(resultado.inativos, 'Inativos')
     );
-    resumo.style.display = 'grid';
+    resumo.classList.remove('oculto');
 
     detalhes.replaceChildren();
     const diferencaLinhas = resultado.totalStockFicheiro - resultado.totalStockLinhasFicheiro;
@@ -438,7 +438,7 @@ function renderizarResumoImportacaoCatalogo(resultado) {
         div.textContent = linha;
         detalhes.appendChild(div);
     });
-    detalhes.style.display = 'block';
+    detalhes.classList.remove('oculto');
 }
 
 function atualizarConfirmacaoCatalogoAdmin() {

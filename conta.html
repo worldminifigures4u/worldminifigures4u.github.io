@@ -12,8 +12,8 @@
     <link rel="icon" type="image/png" href="figures-planet-logo-transparent.png">
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.108.2"></script>
-    <link rel="stylesheet" href="styles.css?v=20260628-css-split-restos-pagina">
-    <link rel="stylesheet" href="conta.css?v=20260628-css-split-conta">
+    <link rel="stylesheet" href="styles.css?v=20260629-sem-inline-style">
+    <link rel="stylesheet" href="conta.css?v=20260629-sem-inline-style">
 </head>
 <body data-page="conta">
 
@@ -72,13 +72,13 @@
 
     <section class="vista vista-conta ativa" id="vista-conta">
         <aside class="area-cliente" id="painel-cliente">
-            <div id="conteudo-cliente-autenticado" style="display: none;">
+            <div id="conteudo-cliente-autenticado" class="oculto">
                 <h2> Minha Conta</h2>
                 <div class="perfil-logado">
                     <p>Bem-vindo(a),</p>
-                    <strong id="nome-perfil-logado" style="color: #ffc107; font-size: 16px;"></strong>
-                    <p id="email-perfil-logado" style="color: #888; font-size: 12px; margin-top: 5px;"></p>
-                    <p id="cp-perfil-logado" style="color: #aaa; font-size: 12px;"></p>
+                    <strong id="nome-perfil-logado" class="perfil-nome-logado"></strong>
+                    <p id="email-perfil-logado" class="perfil-email-logado"></p>
+                    <p id="cp-perfil-logado" class="perfil-cp-logado"></p>
                     <button class="btn-logout" data-acao-cliente="logout">Sair da Conta</button>
                 </div>
                 <div class="historico-encomendas">
@@ -184,7 +184,7 @@
                     <button type="submit" class="btn-acao-cliente">Entrar na Conta</button>
                 </form>
 
-                <form class="form-cliente" id="form-registo" style="display: none;">
+                <form class="form-cliente oculto" id="form-registo">
                     <div>
                         <label for="registo-nome">Nome Completo:</label>
                         <input type="text" id="registo-nome" required placeholder="Ex: Fábio Lopes">
@@ -220,7 +220,7 @@
                     <button type="submit" class="btn-acao-cliente">Criar Conta</button>
                 </form>
 
-                <form class="form-cliente" id="form-recuperar-password" style="display: none;">
+                <form class="form-cliente oculto" id="form-recuperar-password">
                     <div>
                         <label for="nova-password">Nova palavra-passe:</label>
                         <input type="password" id="nova-password" required minlength="8" placeholder="Mínimo 8 caracteres">
@@ -249,9 +249,9 @@
         </nav>
     </div>
 </footer>
-<script src="app.js?v=20260627-app-split-5"></script>
+<script src="app.js?v=20260629-sem-inline-style"></script>
 <script src="carrinho-loja.js?v=20260627-app-split-5"></script>
-<script src="conta-cliente.js?v=20260629-password-atual"></script>
+<script src="conta-cliente.js?v=20260629-sem-inline-style"></script>
 <script src="inline-listeners.js?v=20260629-csp-inline"></script>
 </body>
 </html>

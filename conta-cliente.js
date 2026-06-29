@@ -10,18 +10,18 @@ function mudarAba(tipo) {
     const statusDiv = document.getElementById('status-cliente');
 
     statusDiv.innerText = '';
-    if(formRecuperar) formRecuperar.style.display = 'none';
+    if(formRecuperar) formRecuperar.classList.add('oculto');
 
     if (tipo === 'login') {
         btnLogin.classList.add('ativa');
         btnRegisto.classList.remove('ativa');
-        formLogin.style.display = 'flex';
-        formRegisto.style.display = 'none';
+        formLogin.classList.remove('oculto');
+        formRegisto.classList.add('oculto');
     } else {
         btnLogin.classList.remove('ativa');
         btnRegisto.classList.add('ativa');
-        formLogin.style.display = 'none';
-        formRegisto.style.display = 'flex';
+        formLogin.classList.add('oculto');
+        formRegisto.classList.remove('oculto');
     }
 }
 
@@ -30,12 +30,12 @@ function mostrarFormularioRecuperacaoPassword() {
         window.location.href = 'conta.html' + (window.location.hash || '');
         return;
     }
-    document.getElementById('conteudo-cliente-autenticado').style.display = 'none';
-    document.getElementById('conteudo-cliente-anonimo').style.display = 'block';
+    document.getElementById('conteudo-cliente-autenticado').classList.add('oculto');
+    document.getElementById('conteudo-cliente-anonimo').classList.remove('oculto');
     document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('ativa'));
-    document.getElementById('form-login').style.display = 'none';
-    document.getElementById('form-registo').style.display = 'none';
-    document.getElementById('form-recuperar-password').style.display = 'flex';
+    document.getElementById('form-login').classList.add('oculto');
+    document.getElementById('form-registo').classList.add('oculto');
+    document.getElementById('form-recuperar-password').classList.remove('oculto');
     mostrarMensagem(
         document.getElementById('status-cliente'),
         'Defina a nova palavra-passe para concluir a recuperação da conta.',

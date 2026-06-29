@@ -54,7 +54,7 @@ function criarPreviewOrdenavelImagens(preview, urls, textareaId, atualizarPrevie
         imagem.src = otimizarImagemCloudinary(url, 240);
         imagem.alt = 'Imagem ' + (index + 1);
         imagem.loading = 'lazy';
-        imagem.onerror = () => { item.style.display = 'none'; };
+        imagem.onerror = () => { item.classList.add('oculto'); };
         item.appendChild(imagem);
 
         if(index === 0) {
@@ -478,7 +478,7 @@ function preencherEdicaoProdutoAdmin(produtoId) {
     if(status) status.textContent = '';
     atualizarPreviewEditarImagensAdmin();
     atualizarEncomendasFornecedorProduto(produto);
-    form.style.display = 'flex';
+    form.classList.remove('oculto');
     form.scrollIntoView({ behavior:'smooth', block:'start' });
 }
 
@@ -487,7 +487,7 @@ function cancelarEdicaoProdutoAdmin() {
     const status = document.getElementById('status-admin-editar-produto');
     if(!form) return;
     form.reset();
-    form.style.display = 'none';
+    form.classList.add('oculto');
     if(status) status.textContent = '';
     atualizarPreviewEditarImagensAdmin();
 }

@@ -174,7 +174,7 @@ function atualizarCabecalhoCliente(nome = '') {
     const nomeLimpo = String(nome || '').trim();
     const primeiroNome = nomeLimpo.split(/\s+/)[0] || '';
     nomeEl.textContent = primeiroNome;
-    nomeEl.style.display = primeiroNome ? 'inline' : 'none';
+    nomeEl.classList.toggle('oculto', !primeiroNome);
 }
 
 function atualizarContadorCarrinhoCabecalho() {
@@ -192,8 +192,8 @@ function existeAreaClientePagina() {
 function mostrarContaAnonimaSeExistir() {
     const autenticado = document.getElementById('conteudo-cliente-autenticado');
     const anonimo = document.getElementById('conteudo-cliente-anonimo');
-    if (autenticado) autenticado.style.display = 'none';
-    if (anonimo) anonimo.style.display = 'block';
+    if (autenticado) autenticado.classList.add('oculto');
+    if (anonimo) anonimo.classList.remove('oculto');
 }
 
 const PAGINAS_VISTA = {
@@ -401,8 +401,8 @@ async function obterDadosPerfilDaTabela(userId, user = null) {
         if (error) {
             const anonimo = document.getElementById('conteudo-cliente-anonimo');
             const autenticado = document.getElementById('conteudo-cliente-autenticado');
-            if (anonimo) anonimo.style.display = 'none';
-            if (autenticado) autenticado.style.display = 'block';
+            if (anonimo) anonimo.classList.add('oculto');
+            if (autenticado) autenticado.classList.remove('oculto');
             if(typeof preencherFormularioDadosCliente === 'function') preencherFormularioDadosCliente({}, user);
             atualizarVisibilidadeAdmin(user);
             restaurarCarrinhoGuardado();
@@ -413,8 +413,8 @@ async function obterDadosPerfilDaTabela(userId, user = null) {
         if (data) {
             const anonimo = document.getElementById('conteudo-cliente-anonimo');
             const autenticado = document.getElementById('conteudo-cliente-autenticado');
-            if (anonimo) anonimo.style.display = 'none';
-            if (autenticado) autenticado.style.display = 'block';
+            if (anonimo) anonimo.classList.add('oculto');
+            if (autenticado) autenticado.classList.remove('oculto');
             if(typeof preencherFormularioDadosCliente === 'function') preencherFormularioDadosCliente(data, user);
             atualizarVisibilidadeAdmin(user);
             restaurarCarrinhoGuardado();
@@ -509,8 +509,8 @@ function atualizarVisibilidadeAdmin(user) {
     }
     if(!painel) return;
     const zonaEliminacao = document.getElementById('zona-eliminacao-conta');
-    painel.style.display = adminAtivo ? 'block' : 'none';
-    if(zonaEliminacao) zonaEliminacao.style.display = adminAtivo ? 'none' : 'block';
+    painel.classList.toggle('oculto', !adminAtivo);
+    if(zonaEliminacao) zonaEliminacao.classList.toggle('oculto', adminAtivo);
     if(adminAtivo) {
         const conteudoConta = document.getElementById('conteudo-cliente-autenticado');
         const dadosPessoais = document.getElementById('form-editar-dados-cliente')?.closest('.historico-encomendas');
