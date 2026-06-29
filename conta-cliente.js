@@ -219,8 +219,14 @@ async function atualizarPasswordRecuperacao(event) {
 async function alterarPasswordConta(event) {
     event.preventDefault();
     const statusDiv = document.getElementById('status-alterar-password');
+    const passwordAtual = document.getElementById('conta-password-atual')?.value || '';
     const novaPassword = document.getElementById('conta-nova-password').value;
     const confirmarPassword = document.getElementById('conta-confirmar-password').value;
+
+    if(!passwordAtual) {
+        mostrarMensagem(statusDiv, 'Introduza a password atual.', 'msg-erro');
+        return;
+    }
 
     if(novaPassword.length < 8) {
         mostrarMensagem(statusDiv, 'A nova password deve ter pelo menos 8 caracteres.', 'msg-erro');
@@ -234,7 +240,19 @@ async function alterarPasswordConta(event) {
 
     try {
         mostrarMensagem(statusDiv, 'A atualizar password...');
-        const { error } = await dbClient.auth.updateUser({ password: novaPassword });
+        let { error } = await dbClient.auth.updateUser({
+            password: novaPassword,
+            current_password: passwordAtual
+        });
+
+        if(error && /current password required/i.test(error.message || '')) {
+            const tentativaAlternativa = await dbClient.auth.updateUser({
+                password: novaPassword,
+                currentPassword: passwordAtual
+            });
+            error = tentativaAlternativa.error;
+        }
+
         if(error) throw error;
 
         document.getElementById('form-alterar-password').reset();

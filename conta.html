@@ -119,6 +119,10 @@
                     <h3>Alterar password</h3>
                     <form class="form-cliente" id="form-alterar-password">
                         <div>
+                            <label for="conta-password-atual">Password atual:</label>
+                            <input type="password" id="conta-password-atual" required autocomplete="current-password" placeholder="Password atual">
+                        </div>
+                        <div>
                             <label for="conta-nova-password">Nova palavra-passe:</label>
                             <input type="password" id="conta-nova-password" required minlength="8" placeholder="Mínimo 8 caracteres">
                         </div>
@@ -246,7 +250,7 @@
 </footer>
 <script src="app.js?v=20260627-app-split-5"></script>
 <script src="carrinho-loja.js?v=20260627-app-split-5"></script>
-<script src="conta-cliente.js?v=20260627-app-split-5"></script>
+<script src="conta-cliente.js?v=20260629-password-atual"></script>
 <script src="inline-listeners.js?v=20260629-csp-inline"></script>
 </body>
 </html>
