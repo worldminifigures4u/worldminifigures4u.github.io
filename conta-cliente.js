@@ -187,8 +187,8 @@ async function atualizarPasswordRecuperacao(event) {
     const novaPassword = document.getElementById('nova-password').value;
     const confirmarPassword = document.getElementById('confirmar-nova-password').value;
 
-    if(novaPassword.length < 6) {
-        mostrarMensagem(statusDiv, 'A nova password deve ter pelo menos 6 caracteres.', 'msg-erro');
+    if(novaPassword.length < 8) {
+        mostrarMensagem(statusDiv, 'A nova password deve ter pelo menos 8 caracteres.', 'msg-erro');
         return;
     }
 
@@ -222,8 +222,8 @@ async function alterarPasswordConta(event) {
     const novaPassword = document.getElementById('conta-nova-password').value;
     const confirmarPassword = document.getElementById('conta-confirmar-password').value;
 
-    if(novaPassword.length < 6) {
-        mostrarMensagem(statusDiv, 'A nova password deve ter pelo menos 6 caracteres.', 'msg-erro');
+    if(novaPassword.length < 8) {
+        mostrarMensagem(statusDiv, 'A nova password deve ter pelo menos 8 caracteres.', 'msg-erro');
         return;
     }
 
@@ -563,4 +563,3 @@ async function carregarHistoricoEncomendas(userId) {
         definirHistoricoVazio('Não foi possível carregar o histórico de encomendas.');
     }
 }
-
