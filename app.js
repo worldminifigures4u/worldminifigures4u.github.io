@@ -268,6 +268,16 @@ function aplicarPesquisaUrl() {
 
 let frameAtualizacaoStickyTemas = null;
 let observadorTamanhoMenuTemas = null;
+let folhaDinamicaTemas = null;
+
+function definirCssDinamicoTemas(cssTexto) {
+    if (!('adoptedStyleSheets' in document) || typeof CSSStyleSheet === 'undefined') return;
+    if (!folhaDinamicaTemas) {
+        folhaDinamicaTemas = new CSSStyleSheet();
+        document.adoptedStyleSheets = [...document.adoptedStyleSheets, folhaDinamicaTemas];
+    }
+    folhaDinamicaTemas.replaceSync(cssTexto || '');
+}
 
 function atualizarStickyTemas() {
     const coluna = document.querySelector('.coluna-esquerda');
@@ -276,7 +286,7 @@ function atualizarStickyTemas() {
     if (!coluna || !menu) return;
 
     if (window.matchMedia && window.matchMedia('(max-width: 1100px)').matches) {
-        coluna.style.removeProperty('--temas-sticky-top');
+        definirCssDinamicoTemas('');
         return;
     }
 
@@ -287,7 +297,7 @@ function atualizarStickyTemas() {
     const topoComFundoVisivel = Math.floor(window.innerHeight - alturaMenu - margem);
     const stickyTop = Math.min(topoNormal, topoComFundoVisivel);
 
-    coluna.style.setProperty('--temas-sticky-top', `${stickyTop}px`);
+    definirCssDinamicoTemas(`.coluna-esquerda { --temas-sticky-top: ${stickyTop}px; }`);
 }
 
 function agendarAtualizacaoStickyTemas() {

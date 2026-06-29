@@ -1041,6 +1041,17 @@ function renderizarSelecionadosWallapop() {
     else atualizarResumoPlataforma();
 }
 
+let folhaDinamicaWallapop = null;
+
+function definirCssDinamicoWallapop(cssTexto) {
+    if (!('adoptedStyleSheets' in document) || typeof CSSStyleSheet === 'undefined') return;
+    if (!folhaDinamicaWallapop) {
+        folhaDinamicaWallapop = new CSSStyleSheet();
+        document.adoptedStyleSheets = [...document.adoptedStyleSheets, folhaDinamicaWallapop];
+    }
+    folhaDinamicaWallapop.replaceSync(cssTexto || '');
+}
+
 const WALLAPOP_ITENS_POR_FOLHA = 10;
 
 function dividirItensWallapop(itens, tamanho = WALLAPOP_ITENS_POR_FOLHA) {
@@ -1057,7 +1068,8 @@ function atualizarAlturaPrevisualizacaoWallapop(totalPaginas) {
     const estilos = getComputedStyle(escala);
     const alturaPagina = parseFloat(estilos.getPropertyValue('--wallapop-preview-page-height')) || 674;
     const intervalo = parseFloat(estilos.getPropertyValue('--wallapop-preview-gap')) || 14;
-    escala.style.height = `${(totalPaginas * alturaPagina) + ((totalPaginas - 1) * intervalo)}px`;
+    const alturaTotal = Math.max(0, (totalPaginas * alturaPagina) + ((totalPaginas - 1) * intervalo));
+    definirCssDinamicoWallapop(`#wallapop-folha-escala { height: ${alturaTotal}px; }`);
 }
 
 function criarLinhaFolhaWallapop(item) {

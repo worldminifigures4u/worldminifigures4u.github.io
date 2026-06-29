@@ -32,6 +32,16 @@ let mapasOrdenacao = { coluna: "nome", direcao: "asc" };
 let mapasLinhaAltura = 39;
 let mapasRenderPendente = 0;
 let mapasAtualizacaoPendente = 0;
+let folhaDinamicaMapas = null;
+
+function definirCssDinamicoMapas(cssTexto) {
+    if (!('adoptedStyleSheets' in document) || typeof CSSStyleSheet === 'undefined') return;
+    if (!folhaDinamicaMapas) {
+        folhaDinamicaMapas = new CSSStyleSheet();
+        document.adoptedStyleSheets = [...document.adoptedStyleSheets, folhaDinamicaMapas];
+    }
+    folhaDinamicaMapas.replaceSync(cssTexto || '');
+}
 
 function normalizarMapa(texto) {
     return String(texto || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
@@ -239,8 +249,9 @@ function renderizarJanelaVirtualMapa() {
     const quantidade = Math.min(mapasResultados.length - inicio, Math.ceil(viewport / mapasLinhaAltura) + overscan * 2);
     const fim = Math.max(inicio, inicio + quantidade);
 
-    spacerTopo.style.height = `${inicio * mapasLinhaAltura}px`;
-    spacerFundo.style.height = `${Math.max(0, (mapasResultados.length - fim) * mapasLinhaAltura)}px`;
+    const alturaTopo = Math.max(0, inicio * mapasLinhaAltura);
+    const alturaFundo = Math.max(0, (mapasResultados.length - fim) * mapasLinhaAltura);
+    definirCssDinamicoMapas(`#mapas-spacer-topo > td { height: ${alturaTopo}px; } #mapas-spacer-fundo > td { height: ${alturaFundo}px; }`);
     tbody.replaceChildren(spacerTopo);
     mapasResultados.slice(inicio, fim).forEach(produto => tbody.appendChild(criarLinhaProdutoMapa(produto)));
     tbody.appendChild(spacerFundo);
