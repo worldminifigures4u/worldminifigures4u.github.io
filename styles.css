@@ -521,3 +521,27 @@ body.pagina-com-cabecalho-site{
 .oculto{
     display:none !important;
 }
+
+.status-erro{
+    color:#ff6262 !important;
+}
+
+.status-sucesso{
+    color:#28d75f !important;
+}
+
+.status-aviso{
+    color:#ffc400 !important;
+}
+
+.status-neutro{
+    color:#ddd !important;
+}
+
+.status-discreto{
+    color:#bbb !important;
+}
+
+.produto-card.oculto{
+    display:none !important;
+}

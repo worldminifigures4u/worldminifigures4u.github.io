@@ -58,7 +58,8 @@ function definirStatusFornecedor(texto, erro = false) {
     const el = document.getElementById('fornecedores-status');
     if (!el) return;
     el.textContent = texto || '';
-    el.style.color = erro ? '#ff6262' : '#28d75f';
+    el.classList.remove('status-erro', 'status-sucesso', 'status-aviso', 'status-neutro', 'status-discreto');
+    el.classList.add(erro ? 'status-erro' : 'status-sucesso');
 }
 
 function carregarSelecaoFornecedor() {
@@ -1051,7 +1052,8 @@ function aplicarListaFinalNaEdicaoFornecedor() {
     if (!porReferencia.size) {
         if (status) {
             status.textContent = "Cole a lista final do fornecedor antes de aplicar.";
-            status.style.color = "#ff6262";
+            status.classList.remove('status-aviso', 'status-sucesso', 'status-neutro');
+            status.classList.add('status-erro');
         }
         return;
     }
@@ -1094,7 +1096,8 @@ function aplicarListaFinalNaEdicaoFornecedor() {
         if (naoUsados.length) avisos.push(`não estavam nesta encomenda: ${naoUsados.join(", ")}`);
         if (erros.length) avisos.push(erros.join("; "));
         status.textContent = `Lista aplicada: ${atualizados} produto(s) corrigido(s).${avisos.length ? " " + avisos.join(" | ") : ""}`;
-        status.style.color = avisos.length ? "#ffc400" : "#39d353";
+        status.classList.remove('status-erro', 'status-sucesso', 'status-aviso', 'status-neutro');
+        status.classList.add(avisos.length ? 'status-aviso' : 'status-sucesso');
     }
 }
 
@@ -1419,7 +1422,8 @@ async function guardarEdicaoProdutoMapa(evento) {
     try {
         if (status) {
             status.textContent = "A guardar produto...";
-            status.style.color = "#ddd";
+            status.classList.remove('status-erro', 'status-sucesso', 'status-aviso');
+            status.classList.add('status-neutro');
         }
         if (botao) botao.disabled = true;
 
@@ -1459,7 +1463,8 @@ async function guardarEdicaoProdutoMapa(evento) {
         console.error(error);
         if (status) {
             status.textContent = "Erro: " + (error.message || "Nao foi possivel guardar o produto.");
-            status.style.color = "#ff6262";
+            status.classList.remove('status-aviso', 'status-sucesso', 'status-neutro');
+            status.classList.add('status-erro');
         }
     } finally {
         if (botao) botao.disabled = false;
@@ -2314,24 +2319,28 @@ async function guardarEdicaoPedidoFornecedor(evento) {
 
     if (!codigo) {
         status.textContent = 'Indique o nome da encomenda.';
-        status.style.color = '#ff6262';
+        status.classList.remove('status-aviso', 'status-sucesso', 'status-neutro');
+        status.classList.add('status-erro');
         return;
     }
     if (!fornecedor) {
         status.textContent = 'Indique o fornecedor.';
-        status.style.color = '#ff6262';
+        status.classList.remove('status-aviso', 'status-sucesso', 'status-neutro');
+        status.classList.add('status-erro');
         return;
     }
     if (!itens.length) {
         status.textContent = 'A ficha precisa de pelo menos um produto.';
-        status.style.color = '#ff6262';
+        status.classList.remove('status-aviso', 'status-sucesso', 'status-neutro');
+        status.classList.add('status-erro');
         return;
     }
 
     try {
         botao.disabled = true;
         status.textContent = 'A guardar ficha...';
-        status.style.color = '#ddd';
+        status.classList.remove('status-erro', 'status-sucesso', 'status-aviso');
+        status.classList.add('status-neutro');
         const atualizado = await atualizarPedidoFornecedor(id, { codigo, fornecedor, referencia: referencia || null, estado, itens });
         status.textContent = 'A marcar OS no mapa do fornecedor...';
         await sincronizarOsProdutosFornecedor(itens, fornecedor);
@@ -2351,7 +2360,8 @@ async function guardarEdicaoPedidoFornecedor(evento) {
     } catch (error) {
         console.error(error);
         status.textContent = 'Erro: ' + (error.message || 'Nao foi possivel guardar a ficha.');
-        status.style.color = '#ff6262';
+        status.classList.remove('status-aviso', 'status-sucesso', 'status-neutro');
+        status.classList.add('status-erro');
     } finally {
         botao.disabled = false;
     }

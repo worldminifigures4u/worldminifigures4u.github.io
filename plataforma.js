@@ -780,7 +780,8 @@ function marcarWallapopPorRegistar() {
 function definirStatusWallapop(texto, erro = false) {
     const elemento = document.getElementById('wallapop-status');
     elemento.textContent = texto || '';
-    elemento.style.color = erro ? '#ff6262' : '#bbb';
+    elemento.classList.remove('status-erro', 'status-sucesso', 'status-aviso', 'status-neutro', 'status-discreto');
+    elemento.classList.add(erro ? 'status-erro' : 'status-discreto');
 }
 
 async function carregarCatalogoWallapop() {

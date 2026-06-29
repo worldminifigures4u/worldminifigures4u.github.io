@@ -382,13 +382,13 @@ function executarFiltrosCombinados() {
         const imagem = card.querySelector('.produto-img');
 
         if (correspondeAoTema && correspondeAoNome) {
-            card.style.display = 'flex';
+            card.classList.remove('oculto');
             if(imagem && imagem.dataset.srcOriginal && !imagem.src) {
                 imagem.src = imagem.dataset.srcOriginal;
             }
             totalVisiveis++;
         } else {
-            card.style.display = 'none';
+            card.classList.add('oculto');
             if(imagem) {
                 imagem.removeAttribute('src');
             }

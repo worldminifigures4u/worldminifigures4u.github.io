@@ -66,7 +66,8 @@ function definirStatusMapa(texto, erro = false) {
     const el = document.getElementById("fornecedores-status");
     if (!el) return;
     el.textContent = texto || "";
-    el.style.color = erro ? "#ff6262" : "#28d75f";
+    el.classList.remove('status-erro', 'status-sucesso', 'status-aviso', 'status-neutro', 'status-discreto');
+    el.classList.add(erro ? 'status-erro' : 'status-sucesso');
 }
 
 function obterTopMapa(produto) {
@@ -519,7 +520,8 @@ async function guardarEdicaoProdutoMapa(evento) {
         botao.disabled = true;
         if (status) {
             status.textContent = "A guardar...";
-            status.style.color = "#ffc400";
+            status.classList.remove('status-erro', 'status-sucesso', 'status-neutro');
+            status.classList.add('status-aviso');
         }
         const { id, skuOriginal, produto } = lerProdutoEditadoMapa();
         const skuDuplicado = mapasProdutos.some(item =>
@@ -541,7 +543,8 @@ async function guardarEdicaoProdutoMapa(evento) {
         console.error(erro);
         if (status) {
             status.textContent = "Erro: " + (erro.message || "Não foi possível guardar.");
-            status.style.color = "#ff6262";
+            status.classList.remove('status-aviso', 'status-sucesso', 'status-neutro');
+            status.classList.add('status-erro');
         }
     } finally {
         if (botao) botao.disabled = false;
