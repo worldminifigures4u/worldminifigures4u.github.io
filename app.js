@@ -525,6 +525,12 @@ function atualizarVisibilidadeAdmin(user) {
     }
     if(!painel) return;
     const zonaEliminacao = document.getElementById('zona-eliminacao-conta');
+    if(adminAtivo) {
+        const autenticado = document.getElementById('conteudo-cliente-autenticado');
+        const anonimo = document.getElementById('conteudo-cliente-anonimo');
+        if(autenticado) autenticado.classList.remove('oculto');
+        if(anonimo) anonimo.classList.add('oculto');
+    }
     painel.classList.toggle('oculto', !adminAtivo);
     if(zonaEliminacao) zonaEliminacao.classList.toggle('oculto', adminAtivo);
     if(adminAtivo) {
