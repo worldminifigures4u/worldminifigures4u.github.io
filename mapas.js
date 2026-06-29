@@ -330,8 +330,7 @@ function copiarListaMapaVisivel() {
         .catch(() => {
             const area = document.createElement("textarea");
             area.value = texto;
-            area.style.position = "fixed";
-            area.style.left = "-9999px";
+            area.classList.add("campo-copia-fora-ecran");
             document.body.appendChild(area);
             area.select();
             document.execCommand("copy");

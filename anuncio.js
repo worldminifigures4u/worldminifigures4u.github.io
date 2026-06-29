@@ -372,8 +372,7 @@ async function descarregarImagemWallapop() {
         const pastaBase = await obterPastaBaseWallapop();
         await esperarImagensWallapop();
         const folha = document.getElementById('wallapop-folha');
-        const transformAnterior = folha.style.transform;
-        folha.style.transform = 'none';
+        folha.classList.add('sem-transform-captura');
         let canvas;
         try {
             canvas = await html2canvas(folha, {
@@ -385,7 +384,7 @@ async function descarregarImagemWallapop() {
                 windowHeight: folha.scrollHeight
             });
         } finally {
-            folha.style.transform = transformAnterior;
+            folha.classList.remove('sem-transform-captura');
         }
         const pastaEncomenda = await pastaBase.getDirectoryHandle(nomeEncomenda, { create: true });
         const imagem = await canvasParaBlobWallapop(canvas);

@@ -545,3 +545,12 @@ body.pagina-com-cabecalho-site{
 .produto-card.oculto{
     display:none !important;
 }
+.sem-transform-captura {
+    transform: none !important;
+}
+
+.campo-copia-fora-ecran {
+    position: fixed !important;
+    left: -9999px !important;
+    top: 0 !important;
+}
