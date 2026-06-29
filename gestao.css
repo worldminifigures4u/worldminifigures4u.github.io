@@ -353,3 +353,16 @@
     font-weight:700;
     margin-top:2px;
 }
+
+/* Hotfix: na pagina Gestao, se o utilizador ja foi validado como admin,
+   o painel administrativo deve aparecer mesmo que a antiga area Conta
+   mantenha alguma classe oculto presa por timing/cache. */
+.pagina-gestao.cabecalho-com-admin #conteudo-cliente-autenticado,
+.pagina-gestao.cabecalho-com-admin #painel-admin {
+    display: block !important;
+}
+
+.pagina-gestao.cabecalho-com-admin #conteudo-cliente-anonimo,
+.pagina-gestao.cabecalho-com-admin .gestao-bloqueio {
+    display: none !important;
+}
