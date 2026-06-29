@@ -35,12 +35,18 @@ let mapasAtualizacaoPendente = 0;
 let folhaDinamicaMapas = null;
 
 function definirCssDinamicoMapas(cssTexto) {
-    if (!('adoptedStyleSheets' in document) || typeof CSSStyleSheet === 'undefined') return;
-    if (!folhaDinamicaMapas) {
-        folhaDinamicaMapas = new CSSStyleSheet();
-        document.adoptedStyleSheets = [...document.adoptedStyleSheets, folhaDinamicaMapas];
+    try {
+        if (!('adoptedStyleSheets' in document) || typeof CSSStyleSheet === 'undefined') return;
+        if (!folhaDinamicaMapas) {
+            folhaDinamicaMapas = new CSSStyleSheet();
+            document.adoptedStyleSheets = Array.from(document.adoptedStyleSheets || []).concat(folhaDinamicaMapas);
+        }
+        if (typeof folhaDinamicaMapas.replaceSync === 'function') {
+            folhaDinamicaMapas.replaceSync(cssTexto || '');
+        }
+    } catch (error) {
+        console.warn('CSS dinâmico ignorado:', error);
     }
-    folhaDinamicaMapas.replaceSync(cssTexto || '');
 }
 
 function normalizarMapa(texto) {

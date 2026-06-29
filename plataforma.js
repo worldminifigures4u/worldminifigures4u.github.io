@@ -1044,12 +1044,18 @@ function renderizarSelecionadosWallapop() {
 let folhaDinamicaWallapop = null;
 
 function definirCssDinamicoWallapop(cssTexto) {
-    if (!('adoptedStyleSheets' in document) || typeof CSSStyleSheet === 'undefined') return;
-    if (!folhaDinamicaWallapop) {
-        folhaDinamicaWallapop = new CSSStyleSheet();
-        document.adoptedStyleSheets = [...document.adoptedStyleSheets, folhaDinamicaWallapop];
+    try {
+        if (!('adoptedStyleSheets' in document) || typeof CSSStyleSheet === 'undefined') return;
+        if (!folhaDinamicaWallapop) {
+            folhaDinamicaWallapop = new CSSStyleSheet();
+            document.adoptedStyleSheets = Array.from(document.adoptedStyleSheets || []).concat(folhaDinamicaWallapop);
+        }
+        if (typeof folhaDinamicaWallapop.replaceSync === 'function') {
+            folhaDinamicaWallapop.replaceSync(cssTexto || '');
+        }
+    } catch (error) {
+        console.warn('CSS dinâmico ignorado:', error);
     }
-    folhaDinamicaWallapop.replaceSync(cssTexto || '');
 }
 
 const WALLAPOP_ITENS_POR_FOLHA = 10;

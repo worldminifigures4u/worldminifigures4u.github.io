@@ -271,12 +271,18 @@ let observadorTamanhoMenuTemas = null;
 let folhaDinamicaTemas = null;
 
 function definirCssDinamicoTemas(cssTexto) {
-    if (!('adoptedStyleSheets' in document) || typeof CSSStyleSheet === 'undefined') return;
-    if (!folhaDinamicaTemas) {
-        folhaDinamicaTemas = new CSSStyleSheet();
-        document.adoptedStyleSheets = [...document.adoptedStyleSheets, folhaDinamicaTemas];
+    try {
+        if (!('adoptedStyleSheets' in document) || typeof CSSStyleSheet === 'undefined') return;
+        if (!folhaDinamicaTemas) {
+            folhaDinamicaTemas = new CSSStyleSheet();
+            document.adoptedStyleSheets = Array.from(document.adoptedStyleSheets || []).concat(folhaDinamicaTemas);
+        }
+        if (typeof folhaDinamicaTemas.replaceSync === 'function') {
+            folhaDinamicaTemas.replaceSync(cssTexto || '');
+        }
+    } catch (error) {
+        console.warn('CSS dinâmico ignorado:', error);
     }
-    folhaDinamicaTemas.replaceSync(cssTexto || '');
 }
 
 function atualizarStickyTemas() {
