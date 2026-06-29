@@ -2,7 +2,7 @@
 <html lang="pt">
 <head>
     <meta charset="UTF-8">
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdn.sheetjs.com; connect-src 'self' https://gksndzxadndrsynvzgzb.supabase.co wss://gksndzxadndrsynvzgzb.supabase.co https://api.cloudinary.com; img-src 'self' data: blob: https://res.cloudinary.com https://gksndzxadndrsynvzgzb.supabase.co; style-src 'self' 'unsafe-inline'; font-src 'self' data:; object-src 'none'; base-uri 'self'; form-action 'self';">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdn.jsdelivr.net https://cdn.sheetjs.com; connect-src 'self' https://gksndzxadndrsynvzgzb.supabase.co wss://gksndzxadndrsynvzgzb.supabase.co https://api.cloudinary.com; img-src 'self' data: blob: https://res.cloudinary.com https://gksndzxadndrsynvzgzb.supabase.co; style-src 'self' 'unsafe-inline'; font-src 'self' data:; object-src 'none'; base-uri 'self'; form-action 'self';">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="robots" content="noindex,nofollow">
     <title>Mapas | Figures Planet</title>
@@ -70,20 +70,7 @@
         </section>
         <p class="fornecedores-status" id="fornecedores-status" role="status"></p>
     </main>
-
-    <script>
-        (function atualizarContadorCarrinhoCabecalho(){
-            const el = document.getElementById('contador-carrinho-cabecalho');
-            if (!el) return;
-            try {
-                const dados = JSON.parse(localStorage.getItem('wmf_cart') || '[]');
-                const total = Array.isArray(dados) ? dados.reduce((soma, item) => soma + (Number(item.quantidade) || 0), 0) : 0;
-                el.textContent = String(total);
-            } catch (erro) {
-                el.textContent = '0';
-            }
-        })();
-    </script>
     <script src="mapas.js?v=20260627-mapas-leve-virtual"></script>
+<script src="inline-listeners.js?v=20260629-csp-inline"></script>
 </body>
 </html>

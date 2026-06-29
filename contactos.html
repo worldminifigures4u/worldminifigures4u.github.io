@@ -2,7 +2,7 @@
 <html lang="pt">
 <head>
     <meta charset="UTF-8">
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdn.sheetjs.com; connect-src 'self' https://gksndzxadndrsynvzgzb.supabase.co wss://gksndzxadndrsynvzgzb.supabase.co https://api.cloudinary.com; img-src 'self' data: blob: https://res.cloudinary.com https://gksndzxadndrsynvzgzb.supabase.co; style-src 'self' 'unsafe-inline'; font-src 'self' data:; object-src 'none'; base-uri 'self'; form-action 'self';">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdn.jsdelivr.net https://cdn.sheetjs.com; connect-src 'self' https://gksndzxadndrsynvzgzb.supabase.co wss://gksndzxadndrsynvzgzb.supabase.co https://api.cloudinary.com; img-src 'self' data: blob: https://res.cloudinary.com https://gksndzxadndrsynvzgzb.supabase.co; style-src 'self' 'unsafe-inline'; font-src 'self' data:; object-src 'none'; base-uri 'self'; form-action 'self';">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="robots" content="noindex, nofollow, noarchive, nosnippet">
     <meta name="googlebot" content="noindex, nofollow, noarchive, nosnippet">
@@ -20,7 +20,7 @@
             <img src="figures-planet-logo-transparent.png" alt="Figures Planet">
         </a>
         <div class="cabecalho-pesquisa">
-            <input type="text" id="campo-pesquisa" class="input-pesquisa" placeholder="O que estás à procura?" oninput="pesquisarNoCabecalho()" onkeydown="verificarTeclaEnter(event)">
+            <input type="text" id="campo-pesquisa" class="input-pesquisa" placeholder="O que estás à procura?">
             <span class="icone-pesquisa" aria-hidden="true"></span>
         </div>
         <div class="acoes-cabecalho acoes-cabecalho-publicas">
@@ -69,5 +69,6 @@
     </div>
 </footer>
 <script src="site-leve.js?v=20260627-paginas-institucionais"></script>
+<script src="inline-listeners.js?v=20260629-csp-inline"></script>
 </body>
 </html>

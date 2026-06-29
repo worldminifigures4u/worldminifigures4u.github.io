@@ -2,7 +2,7 @@
 <html lang="pt">
 <head>
     <meta charset="UTF-8">
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdn.sheetjs.com; connect-src 'self' https://gksndzxadndrsynvzgzb.supabase.co wss://gksndzxadndrsynvzgzb.supabase.co https://api.cloudinary.com; img-src 'self' data: blob: https://res.cloudinary.com https://gksndzxadndrsynvzgzb.supabase.co; style-src 'self' 'unsafe-inline'; font-src 'self' data:; object-src 'none'; base-uri 'self'; form-action 'self';">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdn.jsdelivr.net https://cdn.sheetjs.com; connect-src 'self' https://gksndzxadndrsynvzgzb.supabase.co wss://gksndzxadndrsynvzgzb.supabase.co https://api.cloudinary.com; img-src 'self' data: blob: https://res.cloudinary.com https://gksndzxadndrsynvzgzb.supabase.co; style-src 'self' 'unsafe-inline'; font-src 'self' data:; object-src 'none'; base-uri 'self'; form-action 'self';">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="robots" content="noindex, nofollow, noarchive, nosnippet">
     <meta name="googlebot" content="noindex, nofollow, noarchive, nosnippet">
@@ -22,7 +22,7 @@
                 <img src="figures-planet-logo-transparent.png" alt="Figures Planet">
         </a>
         <div class="cabecalho-pesquisa">
-            <input type="text" id="campo-pesquisa" class="input-pesquisa" placeholder="O que est&aacute;s &agrave; procura?" oninput="pesquisarNoCabecalho()" onkeydown="verificarTeclaEnter(event)">
+            <input type="text" id="campo-pesquisa" class="input-pesquisa" placeholder="O que est&aacute;s &agrave; procura?">
             <span class="icone-pesquisa" aria-hidden="true"></span>
         </div>
         <div class="acoes-cabecalho acoes-cabecalho-publicas">
@@ -78,11 +78,11 @@
                     <strong id="nome-perfil-logado" style="color: #ffc107; font-size: 16px;"></strong>
                     <p id="email-perfil-logado" style="color: #888; font-size: 12px; margin-top: 5px;"></p>
                     <p id="cp-perfil-logado" style="color: #aaa; font-size: 12px;"></p>
-                    <button class="btn-logout" onclick="fazerLogout()">Sair da Conta</button>
+                    <button class="btn-logout" data-acao-cliente="logout">Sair da Conta</button>
                 </div>
                 <div class="historico-encomendas">
                     <h3>Dados pessoais</h3>
-                    <form class="form-cliente" id="form-editar-dados-cliente" onsubmit="guardarDadosCliente(event)">
+                    <form class="form-cliente" id="form-editar-dados-cliente">
                         <div>
                             <label for="editar-nome">Nome:</label>
                             <input type="text" id="editar-nome" required placeholder="Nome completo">
@@ -117,7 +117,7 @@
                 </div>
                 <div class="historico-encomendas">
                     <h3>Alterar password</h3>
-                    <form class="form-cliente" id="form-alterar-password" onsubmit="alterarPasswordConta(event)">
+                    <form class="form-cliente" id="form-alterar-password">
                         <div>
                             <label for="conta-nova-password">Nova palavra-passe:</label>
                             <input type="password" id="conta-nova-password" required minlength="8" placeholder="Mínimo 8 caracteres">
@@ -144,7 +144,7 @@
                     <div class="zona-perigo-conta" id="zona-eliminacao-conta">
                         <h3>Eliminar conta</h3>
                         <p>Esta ação é irreversível. A sua conta e os seus dados pessoais serão eliminados.</p>
-                        <form class="form-cliente form-eliminar-conta" onsubmit="eliminarContaUtilizador(event)">
+                        <form class="form-cliente form-eliminar-conta">
                             <div>
                                 <label for="eliminar-conta-password">Palavra-passe atual:</label>
                                 <input type="password" id="eliminar-conta-password" required autocomplete="current-password">
@@ -162,11 +162,11 @@
 
             <div id="conteudo-cliente-anonimo">
                 <div class="abas-cliente">
-                    <button class="tab-btn ativa" onclick="mudarAba('login')">Entrar</button>
-                    <button class="tab-btn" onclick="mudarAba('registo')">Registar</button>
+                    <button class="tab-btn ativa" data-aba-cliente="login">Entrar</button>
+                    <button class="tab-btn" data-aba-cliente="registo">Registar</button>
                 </div>
 
-                <form class="form-cliente" id="form-login" onsubmit="fazerLogin(event)">
+                <form class="form-cliente" id="form-login">
                     <div>
                         <label for="login-email">E-mail:</label>
                         <input type="email" id="login-email" required placeholder="exemplo@gmail.com">
@@ -175,11 +175,11 @@
                         <label for="login-password">Palavra-passe:</label>
                         <input type="password" id="login-password" required placeholder="••••••••">
                     </div>
-                    <button type="button" class="btn-link-cliente" onclick="pedirRecuperacaoPassword()">Esqueci-me da palavra-passe</button>
+                    <button type="button" class="btn-link-cliente" data-acao-cliente="recuperar-password">Esqueci-me da palavra-passe</button>
                     <button type="submit" class="btn-acao-cliente">Entrar na Conta</button>
                 </form>
 
-                <form class="form-cliente" id="form-registo" onsubmit="registarCliente(event)" style="display: none;">
+                <form class="form-cliente" id="form-registo" style="display: none;">
                     <div>
                         <label for="registo-nome">Nome Completo:</label>
                         <input type="text" id="registo-nome" required placeholder="Ex: Fábio Lopes">
@@ -215,7 +215,7 @@
                     <button type="submit" class="btn-acao-cliente">Criar Conta</button>
                 </form>
 
-                <form class="form-cliente" id="form-recuperar-password" onsubmit="atualizarPasswordRecuperacao(event)" style="display: none;">
+                <form class="form-cliente" id="form-recuperar-password" style="display: none;">
                     <div>
                         <label for="nova-password">Nova palavra-passe:</label>
                         <input type="password" id="nova-password" required minlength="8" placeholder="Mínimo 8 caracteres">
@@ -247,6 +247,7 @@
 <script src="app.js?v=20260627-app-split-5"></script>
 <script src="carrinho-loja.js?v=20260627-app-split-5"></script>
 <script src="conta-cliente.js?v=20260627-app-split-5"></script>
+<script src="inline-listeners.js?v=20260629-csp-inline"></script>
 </body>
 </html>
 

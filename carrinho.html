@@ -2,7 +2,7 @@
 <html lang="pt">
 <head>
     <meta charset="UTF-8">
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdn.sheetjs.com; connect-src 'self' https://gksndzxadndrsynvzgzb.supabase.co wss://gksndzxadndrsynvzgzb.supabase.co https://api.cloudinary.com; img-src 'self' data: blob: https://res.cloudinary.com https://gksndzxadndrsynvzgzb.supabase.co; style-src 'self' 'unsafe-inline'; font-src 'self' data:; object-src 'none'; base-uri 'self'; form-action 'self';">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdn.jsdelivr.net https://cdn.sheetjs.com; connect-src 'self' https://gksndzxadndrsynvzgzb.supabase.co wss://gksndzxadndrsynvzgzb.supabase.co https://api.cloudinary.com; img-src 'self' data: blob: https://res.cloudinary.com https://gksndzxadndrsynvzgzb.supabase.co; style-src 'self' 'unsafe-inline'; font-src 'self' data:; object-src 'none'; base-uri 'self'; form-action 'self';">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="robots" content="noindex, nofollow, noarchive, nosnippet">
     <meta name="googlebot" content="noindex, nofollow, noarchive, nosnippet">
@@ -22,7 +22,7 @@
                 <img src="figures-planet-logo-transparent.png" alt="Figures Planet">
         </a>
         <div class="cabecalho-pesquisa">
-            <input type="text" id="campo-pesquisa" class="input-pesquisa" placeholder="O que est&aacute;s &agrave; procura?" oninput="pesquisarNoCabecalho()" onkeydown="verificarTeclaEnter(event)">
+            <input type="text" id="campo-pesquisa" class="input-pesquisa" placeholder="O que est&aacute;s &agrave; procura?">
             <span class="icone-pesquisa" aria-hidden="true"></span>
         </div>
         <div class="acoes-cabecalho acoes-cabecalho-publicas">
@@ -77,7 +77,7 @@
         <div id="info-envio" class="msg-status"></div>
 
         <label>Pa&iacute;s de envio:</label>
-        <select class="select-envio" id="pais-envio" onchange="atualizarOpcoesEnvio()">
+        <select class="select-envio" id="pais-envio">
                         <option value="portugal">Portugal</option>
             <option value="espanha">Espanha</option>
             <option value="alemanha">Alemanha</option>
@@ -108,7 +108,7 @@
         </select>
 
         <label>M&eacute;todo de envio:</label>
-        <select class="select-envio" id="metodo-envio" onchange="recalcularTotais()"></select>
+        <select class="select-envio" id="metodo-envio"></select>
 
         <div class="total-box">
             <div class="linha-total">
@@ -142,7 +142,7 @@
             </label>
         </div>
 
-        <button class="btn-confirmar" onclick="criarNovaEncomenda()">Confirmar Encomenda</button>
+        <button class="btn-confirmar" data-acao-carrinho="confirmar-encomenda">Confirmar Encomenda</button>
         <div id="status-encomenda" class="msg-status"></div>
 
 
@@ -164,6 +164,7 @@
 <script src="app.js?v=20260627-app-split-5"></script>
 <script src="carrinho-loja.js?v=20260627-app-split-5"></script>
 <script src="checkout.js?v=20260627-app-split-5"></script>
+<script src="inline-listeners.js?v=20260629-csp-inline"></script>
 </body>
 </html>
 

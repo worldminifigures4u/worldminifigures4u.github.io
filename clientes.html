@@ -2,7 +2,7 @@
 <html lang="pt">
 <head>
     <meta charset="UTF-8">
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdn.sheetjs.com; connect-src 'self' https://gksndzxadndrsynvzgzb.supabase.co wss://gksndzxadndrsynvzgzb.supabase.co https://api.cloudinary.com; img-src 'self' data: blob: https://res.cloudinary.com https://gksndzxadndrsynvzgzb.supabase.co; style-src 'self' 'unsafe-inline'; font-src 'self' data:; object-src 'none'; base-uri 'self'; form-action 'self';">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdn.jsdelivr.net https://cdn.sheetjs.com; connect-src 'self' https://gksndzxadndrsynvzgzb.supabase.co wss://gksndzxadndrsynvzgzb.supabase.co https://api.cloudinary.com; img-src 'self' data: blob: https://res.cloudinary.com https://gksndzxadndrsynvzgzb.supabase.co; style-src 'self' 'unsafe-inline'; font-src 'self' data:; object-src 'none'; base-uri 'self'; form-action 'self';">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="robots" content="noindex, nofollow, noarchive, nosnippet">
     <title>Clientes | Figures Planet</title>
@@ -58,25 +58,7 @@
         </section>
         <p class="wallapop-status" id="clientes-status" aria-live="polite"></p>
     </main>
-
-    <script>
-        (function () {
-            function atualizarContadorCarrinhoTopo() {
-                const contador = document.getElementById('contador-carrinho-cabecalho');
-                if (!contador) return;
-                try {
-                    const itens = JSON.parse(localStorage.getItem('carrinho') || '[]');
-                    contador.textContent = Array.isArray(itens)
-                        ? itens.reduce((soma, item) => soma + Number(item && item.quantidade || 0), 0)
-                        : 0;
-                } catch (_) {
-                    contador.textContent = '0';
-                }
-            }
-            document.addEventListener('DOMContentLoaded', atualizarContadorCarrinhoTopo);
-            window.addEventListener('storage', atualizarContadorCarrinhoTopo);
-        })();
-    </script>
     <script src="clientes.js"></script>
+<script src="inline-listeners.js?v=20260629-csp-inline"></script>
 </body>
 </html>

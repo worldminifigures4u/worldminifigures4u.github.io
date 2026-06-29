@@ -546,14 +546,11 @@ async function imprimirPedidoFornecedor(id) {
             ${linhas || '<tr><td colspan="6">Sem produtos.</td></tr>'}
         </tbody>
     </table>
-    <script>
-        window.addEventListener('load', () => {
-            window.print();
-        });
-    <\/script>
 </body>
 </html>`);
     janela.document.close();
+    janela.focus();
+    setTimeout(() => janela.print(), 250);
 }
 
 async function carregarPedidosFornecedoresRemotos() {

@@ -1,0 +1,189 @@
+(function () {
+    function quandoPronto(callback) {
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', callback);
+        } else {
+            callback();
+        }
+    }
+
+    function ligar(id, evento, handler) {
+        const elemento = document.getElementById(id);
+        if (!elemento || typeof handler !== 'function') return;
+        elemento.addEventListener(evento, handler);
+    }
+
+    function atualizarContadorCarrinhoTopo() {
+        const contador = document.getElementById('contador-carrinho-cabecalho');
+        if (!contador) return;
+        try {
+            const carrinho = JSON.parse(localStorage.getItem('carrinho') || '[]');
+            const total = Array.isArray(carrinho)
+                ? carrinho.reduce((soma, item) => soma + (Number(item.quantidade) || 0), 0)
+                : 0;
+            contador.textContent = String(total);
+        } catch (erro) {
+            contador.textContent = '0';
+        }
+    }
+
+    function ligarPesquisaCabecalho() {
+        const campo = document.getElementById('campo-pesquisa');
+        if (!campo) return;
+
+        campo.addEventListener('input', function () {
+            if (typeof window.pesquisarNoCabecalho === 'function') {
+                window.pesquisarNoCabecalho();
+            } else if (typeof pesquisarNoCabecalho === 'function') {
+                pesquisarNoCabecalho();
+            }
+        });
+
+        campo.addEventListener('keydown', function (evento) {
+            if (typeof window.verificarTeclaEnter === 'function') {
+                window.verificarTeclaEnter(evento);
+            } else if (typeof verificarTeclaEnter === 'function') {
+                verificarTeclaEnter(evento);
+            }
+        });
+    }
+
+    function ligarContaCliente() {
+        ligar('form-editar-dados-cliente', 'submit', function (evento) {
+            if (typeof guardarDadosCliente === 'function') guardarDadosCliente(evento);
+        });
+        ligar('form-alterar-password', 'submit', function (evento) {
+            if (typeof alterarPasswordConta === 'function') alterarPasswordConta(evento);
+        });
+        ligar('form-login', 'submit', function (evento) {
+            if (typeof fazerLogin === 'function') fazerLogin(evento);
+        });
+        ligar('form-registo', 'submit', function (evento) {
+            if (typeof registarCliente === 'function') registarCliente(evento);
+        });
+        ligar('form-recuperar-password', 'submit', function (evento) {
+            if (typeof atualizarPasswordRecuperacao === 'function') atualizarPasswordRecuperacao(evento);
+        });
+
+        document.querySelectorAll('.form-eliminar-conta').forEach(function (form) {
+            form.addEventListener('submit', function (evento) {
+                if (typeof eliminarContaUtilizador === 'function') eliminarContaUtilizador(evento);
+            });
+        });
+
+        document.querySelectorAll('[data-aba-cliente]').forEach(function (botao) {
+            botao.addEventListener('click', function () {
+                if (typeof mudarAba === 'function') mudarAba(botao.dataset.abaCliente);
+            });
+        });
+
+        document.querySelectorAll('[data-acao-cliente="recuperar-password"]').forEach(function (botao) {
+            botao.addEventListener('click', function () {
+                if (typeof pedirRecuperacaoPassword === 'function') pedirRecuperacaoPassword();
+            });
+        });
+
+        document.querySelectorAll('[data-acao-cliente="logout"]').forEach(function (botao) {
+            botao.addEventListener('click', function () {
+                if (typeof fazerLogout === 'function') fazerLogout();
+            });
+        });
+    }
+
+    function ligarCarrinho() {
+        ligar('pais-envio', 'change', function () {
+            if (typeof atualizarOpcoesEnvio === 'function') atualizarOpcoesEnvio();
+        });
+        ligar('metodo-envio', 'change', function () {
+            if (typeof recalcularTotais === 'function') recalcularTotais();
+        });
+        document.querySelectorAll('[data-acao-carrinho="confirmar-encomenda"]').forEach(function (botao) {
+            botao.addEventListener('click', function () {
+                if (typeof criarNovaEncomenda === 'function') criarNovaEncomenda();
+            });
+        });
+    }
+
+    function ligarLoja() {
+        document.querySelectorAll('[data-tema-filtro]').forEach(function (botao) {
+            botao.addEventListener('click', function () {
+                if (typeof filtrarTema === 'function') filtrarTema(botao.dataset.temaFiltro, botao);
+            });
+        });
+    }
+
+    function ligarGestaoAdmin() {
+        ligar('form-admin-produto', 'submit', function (evento) {
+            if (typeof criarProdutoAdmin === 'function') criarProdutoAdmin(evento);
+        });
+        ligar('admin-produto-nome', 'input', function () {
+            if (typeof sugerirSkuAdmin === 'function') sugerirSkuAdmin();
+        });
+        ligar('admin-produto-imagens', 'input', function () {
+            if (typeof atualizarPreviewImagensAdmin === 'function') atualizarPreviewImagensAdmin();
+        });
+        ligar('admin-pesquisa-produtos', 'input', function () {
+            if (typeof renderizarListaProdutosAdmin === 'function') renderizarListaProdutosAdmin();
+        });
+        ligar('admin-ficheiro-stock', 'change', function () {
+            if (typeof analisarFicheiroStockAdmin === 'function') analisarFicheiroStockAdmin(this);
+        });
+        ligar('btn-confirmar-importacao-stock', 'click', function () {
+            if (typeof confirmarImportacaoStockAdmin === 'function') confirmarImportacaoStockAdmin();
+        });
+        ligar('admin-ficheiro-catalogo', 'change', function () {
+            if (typeof analisarFicheiroCatalogoAdmin === 'function') analisarFicheiroCatalogoAdmin(this);
+        });
+        ligar('confirmacao-substituir-catalogo', 'input', function () {
+            if (typeof atualizarConfirmacaoCatalogoAdmin === 'function') atualizarConfirmacaoCatalogoAdmin();
+        });
+        ligar('btn-confirmar-importacao-catalogo', 'click', function () {
+            if (typeof confirmarImportacaoCatalogoAdmin === 'function') confirmarImportacaoCatalogoAdmin();
+        });
+        ligar('form-admin-editar-produto', 'submit', function (evento) {
+            if (typeof guardarEdicaoProdutoAdmin === 'function') guardarEdicaoProdutoAdmin(evento);
+        });
+        ligar('admin-editar-imagens', 'input', function () {
+            if (typeof atualizarPreviewEditarImagensAdmin === 'function') atualizarPreviewEditarImagensAdmin();
+        });
+
+        document.querySelectorAll('[data-acao-admin="pesquisar-produtos"]').forEach(function (botao) {
+            botao.addEventListener('click', function () {
+                if (typeof renderizarListaProdutosAdmin === 'function') renderizarListaProdutosAdmin();
+            });
+        });
+        document.querySelectorAll('[data-acao-admin="cancelar-edicao-produto"]').forEach(function (botao) {
+            botao.addEventListener('click', function () {
+                if (typeof cancelarEdicaoProdutoAdmin === 'function') cancelarEdicaoProdutoAdmin();
+            });
+        });
+
+        const uploadNovo = document.getElementById('admin-produto-upload-imagens');
+        if (uploadNovo) {
+            uploadNovo.addEventListener('change', function () {
+                if (typeof enviarFotosCloudinaryAdmin === 'function') {
+                    enviarFotosCloudinaryAdmin(this, 'admin-produto-imagens', atualizarPreviewImagensAdmin, 'status-upload-admin-produto');
+                }
+            });
+        }
+
+        const uploadEditar = document.getElementById('admin-editar-upload-imagens');
+        if (uploadEditar) {
+            uploadEditar.addEventListener('change', function () {
+                if (typeof enviarFotosCloudinaryAdmin === 'function') {
+                    enviarFotosCloudinaryAdmin(this, 'admin-editar-imagens', atualizarPreviewEditarImagensAdmin, 'status-upload-admin-editar');
+                }
+            });
+        }
+    }
+
+    quandoPronto(function () {
+        atualizarContadorCarrinhoTopo();
+        window.addEventListener('storage', atualizarContadorCarrinhoTopo);
+        ligarPesquisaCabecalho();
+        ligarContaCliente();
+        ligarCarrinho();
+        ligarLoja();
+        ligarGestaoAdmin();
+    });
+})();

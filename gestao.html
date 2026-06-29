@@ -2,7 +2,7 @@
 <html lang="pt">
 <head>
     <meta charset="UTF-8">
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdn.sheetjs.com; connect-src 'self' https://gksndzxadndrsynvzgzb.supabase.co wss://gksndzxadndrsynvzgzb.supabase.co https://api.cloudinary.com; img-src 'self' data: blob: https://res.cloudinary.com https://gksndzxadndrsynvzgzb.supabase.co; style-src 'self' 'unsafe-inline'; font-src 'self' data:; object-src 'none'; base-uri 'self'; form-action 'self';">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdn.jsdelivr.net https://cdn.sheetjs.com; connect-src 'self' https://gksndzxadndrsynvzgzb.supabase.co wss://gksndzxadndrsynvzgzb.supabase.co https://api.cloudinary.com; img-src 'self' data: blob: https://res.cloudinary.com https://gksndzxadndrsynvzgzb.supabase.co; style-src 'self' 'unsafe-inline'; font-src 'self' data:; object-src 'none'; base-uri 'self'; form-action 'self';">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="robots" content="noindex, nofollow, noarchive, nosnippet">
     <meta name="googlebot" content="noindex, nofollow, noarchive, nosnippet">
@@ -24,7 +24,7 @@
                 <img src="figures-planet-logo-transparent.png" alt="Figures Planet">
         </a>
         <div class="cabecalho-pesquisa">
-            <input type="text" id="campo-pesquisa" class="input-pesquisa" placeholder="O que est&aacute;s &agrave; procura?" oninput="pesquisarNoCabecalho()" onkeydown="verificarTeclaEnter(event)">
+            <input type="text" id="campo-pesquisa" class="input-pesquisa" placeholder="O que est&aacute;s &agrave; procura?">
             <span class="icone-pesquisa" aria-hidden="true"></span>
         </div>
         <div class="acoes-cabecalho acoes-cabecalho-publicas">
@@ -81,11 +81,11 @@
                     <strong id="nome-perfil-logado" style="color: #ffc107; font-size: 16px;"></strong>
                     <p id="email-perfil-logado" style="color: #888; font-size: 12px; margin-top: 5px;"></p>
                     <p id="cp-perfil-logado" style="color: #aaa; font-size: 12px;"></p>
-                    <button class="btn-logout" onclick="fazerLogout()">Sair da Conta</button>
+                    <button class="btn-logout" data-acao-cliente="logout">Sair da Conta</button>
                 </div>
                 <div class="historico-encomendas">
                     <h3>Dados pessoais</h3>
-                    <form class="form-cliente" id="form-editar-dados-cliente" onsubmit="guardarDadosCliente(event)">
+                    <form class="form-cliente" id="form-editar-dados-cliente">
                         <div>
                             <label for="editar-nome">Nome:</label>
                             <input type="text" id="editar-nome" required placeholder="Nome completo">
@@ -120,7 +120,7 @@
                 </div>
                 <div class="historico-encomendas">
                     <h3>Alterar password</h3>
-                    <form class="form-cliente" id="form-alterar-password" onsubmit="alterarPasswordConta(event)">
+                    <form class="form-cliente" id="form-alterar-password">
                         <div>
                             <label for="conta-nova-password">Nova palavra-passe:</label>
                             <input type="password" id="conta-nova-password" required minlength="8" placeholder="Mínimo 8 caracteres">
@@ -135,7 +135,7 @@
                     <div class="zona-perigo-conta" id="zona-eliminacao-conta">
                         <h3>Eliminar conta</h3>
                         <p>Esta ação é irreversível. A sua conta e os seus dados pessoais serão eliminados.</p>
-                        <form class="form-cliente form-eliminar-conta" onsubmit="eliminarContaUtilizador(event)">
+                        <form class="form-cliente form-eliminar-conta">
                             <div>
                                 <label for="eliminar-conta-password">Palavra-passe atual:</label>
                                 <input type="password" id="eliminar-conta-password" required autocomplete="current-password">
@@ -151,10 +151,10 @@
                 </div>
                 <div class="painel-admin" id="painel-admin">
                     <h3>Admin</h3>
-                    <form class="form-admin" id="form-admin-produto" onsubmit="criarProdutoAdmin(event)">
+                    <form class="form-admin" id="form-admin-produto">
                         <div>
                             <label for="admin-produto-nome">Nome do produto:</label>
-                            <input type="text" id="admin-produto-nome" required placeholder="Ex: Darth Vader v1" oninput="sugerirSkuAdmin()">
+                            <input type="text" id="admin-produto-nome" required placeholder="Ex: Darth Vader v1">
                         </div>
                         <div class="linha-admin-dupla">
                             <div>
@@ -189,11 +189,11 @@
                         <div>
                             <label for="admin-produto-imagens">URLs das imagens:</label>
                             <div class="upload-admin-fotos">
-                                <input class="input-upload-admin" type="file" id="admin-produto-upload-imagens" accept="image/jpeg,image/png,image/webp" multiple onchange="enviarFotosCloudinaryAdmin(this, 'admin-produto-imagens', atualizarPreviewImagensAdmin, 'status-upload-admin-produto')">
+                                <input class="input-upload-admin" type="file" id="admin-produto-upload-imagens" accept="image/jpeg,image/png,image/webp" multiple>
                                 <p class="ajuda-admin">Selecione fotos do PC para enviar para o Cloudinary. Os URLs serão adicionados automaticamente.</p>
                                 <div id="status-upload-admin-produto" class="msg-status"></div>
                             </div>
-                            <textarea id="admin-produto-imagens" placeholder="Um URL por linha" oninput="atualizarPreviewImagensAdmin()"></textarea>
+                            <textarea id="admin-produto-imagens" placeholder="Um URL por linha"></textarea>
                             <div id="preview-imagens-admin" class="preview-imagens-admin"></div>
                         </div>
                         <div>
@@ -217,39 +217,39 @@
                             <div class="linha-admin-pesquisa">
                                 <div>
                                     <label for="admin-pesquisa-produtos">Pesquisar produto:</label>
-                                    <input type="text" id="admin-pesquisa-produtos" placeholder="Nome, Ref., SKU ou tema" oninput="renderizarListaProdutosAdmin()">
+                                    <input type="text" id="admin-pesquisa-produtos" placeholder="Nome, Ref., SKU ou tema">
                                 </div>
-                                <button type="button" class="btn-admin-secundario" onclick="renderizarListaProdutosAdmin()">Pesquisar</button>
+                                <button type="button" class="btn-admin-secundario" data-acao-admin="pesquisar-produtos">Pesquisar</button>
                             </div>
                             <div id="lista-admin-produtos" class="lista-admin-produtos"></div>
                         </div>
                         <div class="admin-seccao">
                             <h3>Atualizar stock pelo Mapas.ods</h3>
                             <div class="form-admin">
-                                <input class="input-upload-admin" type="file" id="admin-ficheiro-stock" accept=".ods,.xlsx,.xls" onchange="analisarFicheiroStockAdmin(this)">
+                                <input class="input-upload-admin" type="file" id="admin-ficheiro-stock" accept=".ods,.xlsx,.xls">
                                 <p class="ajuda-admin">Apenas as colunas SKU e stock são utilizadas. As encomendas aos fornecedores não alteram o stock atual.</p>
                                 <div id="resumo-importacao-stock" class="resumo-importacao-stock" style="display:none;"></div>
                                 <div id="detalhes-importacao-stock" class="lista-importacao-stock" style="display:none;"></div>
-                                <button type="button" id="btn-confirmar-importacao-stock" class="btn-acao-cliente" onclick="confirmarImportacaoStockAdmin()" disabled>Atualizar stock no Supabase</button>
+                                <button type="button" id="btn-confirmar-importacao-stock" class="btn-acao-cliente" disabled>Atualizar stock no Supabase</button>
                                 <div id="status-importacao-stock" class="msg-status"></div>
                             </div>
                         </div>
                         <div class="admin-seccao">
                             <h3>Substituir catálogo pelo Mapas.ods</h3>
                             <div class="form-admin">
-                                <input class="input-upload-admin" type="file" id="admin-ficheiro-catalogo" accept=".ods,.xlsx,.xls" onchange="analisarFicheiroCatalogoAdmin(this)">
+                                <input class="input-upload-admin" type="file" id="admin-ficheiro-catalogo" accept=".ods,.xlsx,.xls">
                                 <p class="ajuda-admin">Importa nome, preço, Ref., SKU, stock, tema, subtema, peso e dados dos fornecedores. Produtos que não constem do ficheiro serão removidos.</p>
                                 <div id="resumo-importacao-catalogo" class="resumo-importacao-stock" style="display:none;"></div>
                                 <div id="detalhes-importacao-catalogo" class="lista-importacao-stock" style="display:none;"></div>
                                 <div>
                                     <label for="confirmacao-substituir-catalogo">Para confirmar, escreva SUBSTITUIR:</label>
-                                    <input type="text" id="confirmacao-substituir-catalogo" autocomplete="off" oninput="atualizarConfirmacaoCatalogoAdmin()">
+                                    <input type="text" id="confirmacao-substituir-catalogo" autocomplete="off">
                                 </div>
-                                <button type="button" id="btn-confirmar-importacao-catalogo" class="btn-logout" onclick="confirmarImportacaoCatalogoAdmin()" disabled>Substituir catálogo completo</button>
+                                <button type="button" id="btn-confirmar-importacao-catalogo" class="btn-logout" disabled>Substituir catálogo completo</button>
                                 <div id="status-importacao-catalogo" class="msg-status"></div>
                             </div>
                         </div>
-                        <form class="form-admin admin-seccao" id="form-admin-editar-produto" onsubmit="guardarEdicaoProdutoAdmin(event)" style="display:none;">
+                        <form class="form-admin admin-seccao" id="form-admin-editar-produto" style="display:none;">
                             <input type="hidden" id="admin-editar-id">
                             <input type="hidden" id="admin-editar-sku-original">
                             <h3>Editar produto</h3>
@@ -290,11 +290,11 @@
                             <div>
                                 <label for="admin-editar-imagens">URLs das imagens:</label>
                                 <div class="upload-admin-fotos">
-                                    <input class="input-upload-admin" type="file" id="admin-editar-upload-imagens" accept="image/jpeg,image/png,image/webp" multiple onchange="enviarFotosCloudinaryAdmin(this, 'admin-editar-imagens', atualizarPreviewEditarImagensAdmin, 'status-upload-admin-editar')">
+                                    <input class="input-upload-admin" type="file" id="admin-editar-upload-imagens" accept="image/jpeg,image/png,image/webp" multiple>
                                     <p class="ajuda-admin">Selecione fotos do PC para enviar para o Cloudinary. Os URLs serão adicionados automaticamente.</p>
                                     <div id="status-upload-admin-editar" class="msg-status"></div>
                                 </div>
-                                <textarea id="admin-editar-imagens" placeholder="Um URL por linha" oninput="atualizarPreviewEditarImagensAdmin()"></textarea>
+                                <textarea id="admin-editar-imagens" placeholder="Um URL por linha"></textarea>
                                 <div id="preview-editar-imagens-admin" class="preview-imagens-admin"></div>
                             </div>
                             <div>
@@ -311,7 +311,7 @@
                             </label>
                             <div class="acoes-form-admin">
                                 <button type="submit" class="btn-acao-cliente">Guardar alterações</button>
-                                <button type="button" class="btn-admin-secundario" onclick="cancelarEdicaoProdutoAdmin()">Cancelar</button>
+                                <button type="button" class="btn-admin-secundario" data-acao-admin="cancelar-edicao-produto">Cancelar</button>
                             </div>
                             <div id="status-admin-editar-produto" class="msg-status"></div>
                         </form>
@@ -327,11 +327,11 @@
 
             <div id="conteudo-cliente-anonimo">
                 <div class="abas-cliente">
-                    <button class="tab-btn ativa" onclick="mudarAba('login')">Entrar</button>
-                    <button class="tab-btn" onclick="mudarAba('registo')">Registar</button>
+                    <button class="tab-btn ativa" data-aba-cliente="login">Entrar</button>
+                    <button class="tab-btn" data-aba-cliente="registo">Registar</button>
                 </div>
 
-                <form class="form-cliente" id="form-login" onsubmit="fazerLogin(event)">
+                <form class="form-cliente" id="form-login">
                     <div>
                         <label for="login-email">E-mail:</label>
                         <input type="email" id="login-email" required placeholder="exemplo@gmail.com">
@@ -340,11 +340,11 @@
                         <label for="login-password">Palavra-passe:</label>
                         <input type="password" id="login-password" required placeholder="••••••••">
                     </div>
-                    <button type="button" class="btn-link-cliente" onclick="pedirRecuperacaoPassword()">Esqueci-me da palavra-passe</button>
+                    <button type="button" class="btn-link-cliente" data-acao-cliente="recuperar-password">Esqueci-me da palavra-passe</button>
                     <button type="submit" class="btn-acao-cliente">Entrar na Conta</button>
                 </form>
 
-                <form class="form-cliente" id="form-registo" onsubmit="registarCliente(event)" style="display: none;">
+                <form class="form-cliente" id="form-registo" style="display: none;">
                     <div>
                         <label for="registo-nome">Nome Completo:</label>
                         <input type="text" id="registo-nome" required placeholder="Ex: Fábio Lopes">
@@ -380,7 +380,7 @@
                     <button type="submit" class="btn-acao-cliente">Criar Conta</button>
                 </form>
 
-                <form class="form-cliente" id="form-recuperar-password" onsubmit="atualizarPasswordRecuperacao(event)" style="display: none;">
+                <form class="form-cliente" id="form-recuperar-password" style="display: none;">
                     <div>
                         <label for="nova-password">Nova palavra-passe:</label>
                         <input type="password" id="nova-password" required minlength="8" placeholder="Mínimo 8 caracteres">
@@ -415,6 +415,7 @@
 <script src="conta-cliente.js?v=20260627-app-split-5"></script>
 <script src="gestao-admin.js?v=20260627-app-split-5"></script>
 <script src="gestao-importacao.js?v=20260627-app-split-5"></script>
+<script src="inline-listeners.js?v=20260629-csp-inline"></script>
 </body>
 </html>
 
