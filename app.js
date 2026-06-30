@@ -97,6 +97,8 @@ let produtosClient = null;
 let todosOsProdutos = [];
 let catalogoAdminCarregado = false;
 let carrinho = carregarCarrinhoLocal();
+let favoritosProdutos = new Set(carregarFavoritosLocal());
+let favoritosChaveAtual = 'figures-planet-favoritos';
 let filtroTemaAtual = 'todos';
 let emRecuperacaoPassword = false;
 function obterUrlPublicoAtual() {
@@ -163,6 +165,88 @@ function carregarCarrinhoLocal() {
         localStorage.removeItem('carrinho');
         return [];
     }
+}
+
+function obterChaveFavoritos(userId = '') {
+    const id = String(userId || '').trim();
+    return id ? `figures-planet-favoritos-${id}` : 'figures-planet-favoritos';
+}
+
+function normalizarIdFavorito(id) {
+    return String(id || '').trim();
+}
+
+function carregarFavoritosLocal(chave = obterChaveFavoritos()) {
+    try {
+        const guardados = JSON.parse(localStorage.getItem(chave)) || [];
+        if (!Array.isArray(guardados)) return [];
+        return [...new Set(guardados.map(normalizarIdFavorito).filter(Boolean))];
+    } catch (_) {
+        localStorage.removeItem(chave);
+        return [];
+    }
+}
+
+function guardarFavoritosLocal() {
+    localStorage.setItem(favoritosChaveAtual, JSON.stringify([...favoritosProdutos]));
+}
+
+function carregarFavoritosUtilizador(userId = '') {
+    favoritosChaveAtual = obterChaveFavoritos(userId);
+    const favoritosConta = carregarFavoritosLocal(favoritosChaveAtual);
+    const favoritosAnonimos = userId ? carregarFavoritosLocal(obterChaveFavoritos()) : [];
+    favoritosProdutos = new Set([...favoritosConta, ...favoritosAnonimos]);
+    if (userId && favoritosAnonimos.length) guardarFavoritosLocal();
+    atualizarBotoesFavoritos();
+    if (typeof renderizarFavoritosCliente === 'function') renderizarFavoritosCliente();
+}
+
+function obterFavoritosIds() {
+    return [...favoritosProdutos];
+}
+
+function produtoEstaNosFavoritos(id) {
+    return favoritosProdutos.has(normalizarIdFavorito(id));
+}
+
+function atualizarBotaoFavorito(botao, ativo) {
+    if (!botao) return;
+    botao.classList.toggle('ativo', ativo);
+    botao.setAttribute('aria-pressed', ativo ? 'true' : 'false');
+    botao.title = ativo ? 'Remover dos favoritos' : 'Adicionar aos favoritos';
+    botao.setAttribute('aria-label', ativo ? 'Remover dos favoritos' : 'Adicionar aos favoritos');
+}
+
+function atualizarBotoesFavoritos() {
+    document.querySelectorAll('[data-favorito-produto-id]').forEach(botao => {
+        atualizarBotaoFavorito(botao, produtoEstaNosFavoritos(botao.dataset.favoritoProdutoId));
+    });
+}
+
+function alternarFavoritoProduto(produto) {
+    const id = normalizarIdFavorito(produto?.id);
+    if (!id) return false;
+    const ativo = favoritosProdutos.has(id);
+    if (ativo) favoritosProdutos.delete(id);
+    else favoritosProdutos.add(id);
+    guardarFavoritosLocal();
+    atualizarBotoesFavoritos();
+    if (typeof renderizarFavoritosCliente === 'function') renderizarFavoritosCliente();
+    return !ativo;
+}
+
+function removerFavoritoProduto(id) {
+    const chave = normalizarIdFavorito(id);
+    if (!chave || !favoritosProdutos.has(chave)) return;
+    favoritosProdutos.delete(chave);
+    guardarFavoritosLocal();
+    atualizarBotoesFavoritos();
+    if (typeof renderizarFavoritosCliente === 'function') renderizarFavoritosCliente();
+}
+
+function obterProdutoPorIdLocal(id) {
+    const chave = normalizarIdFavorito(id);
+    return (todosOsProdutos || []).find(produto => normalizarIdFavorito(produto.id) === chave) || null;
 }
 
 function atualizarCabecalhoCliente(nome = '') {
@@ -379,6 +463,7 @@ window.addEventListener('load', async () => {
                     atualizarVisibilidadeAdmin(null);
                     mostrarContaAnonimaSeExistir();
                     atualizarCabecalhoCliente();
+                    carregarFavoritosUtilizador();
                 }
             }, 0);
         });
@@ -408,6 +493,7 @@ async function obterDadosPerfilDaTabela(userId, user = null) {
         if (!existeAreaClientePagina()) {
             atualizarCabecalhoCliente(data?.nome || user?.user_metadata?.nome || '');
             atualizarVisibilidadeAdmin(user);
+            carregarFavoritosUtilizador(userId);
             restaurarCarrinhoGuardado();
             return;
         }
@@ -419,6 +505,7 @@ async function obterDadosPerfilDaTabela(userId, user = null) {
             if (autenticado) autenticado.classList.remove('oculto');
             if(typeof preencherFormularioDadosCliente === 'function') preencherFormularioDadosCliente({}, user);
             atualizarVisibilidadeAdmin(user);
+            carregarFavoritosUtilizador(userId);
             restaurarCarrinhoGuardado();
             if(typeof carregarHistoricoEncomendas === 'function') carregarHistoricoEncomendas(userId);
             return;
@@ -431,6 +518,7 @@ async function obterDadosPerfilDaTabela(userId, user = null) {
             if (autenticado) autenticado.classList.remove('oculto');
             if(typeof preencherFormularioDadosCliente === 'function') preencherFormularioDadosCliente(data, user);
             atualizarVisibilidadeAdmin(user);
+            carregarFavoritosUtilizador(userId);
             restaurarCarrinhoGuardado();
             if(typeof carregarHistoricoEncomendas === 'function') carregarHistoricoEncomendas(userId);
         }

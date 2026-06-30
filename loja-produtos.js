@@ -202,6 +202,19 @@ function gerarProdutos(listaProdutos){
         const imagensOtimizadas = listaImagens.map(url => otimizarImagemCloudinary(url, 520));
         const imagemInicial = imagensOtimizadas[0] || imagemFallback;
 
+        const botaoFavorito = document.createElement('button');
+        botaoFavorito.className = 'btn-favorito-produto';
+        botaoFavorito.type = 'button';
+        botaoFavorito.dataset.favoritoProdutoId = String(prod.id);
+        botaoFavorito.textContent = '♥';
+        atualizarBotaoFavorito(botaoFavorito, produtoEstaNosFavoritos(prod.id));
+        botaoFavorito.addEventListener('click', evento => {
+            evento.preventDefault();
+            evento.stopPropagation();
+            alternarFavoritoProduto(prod);
+        });
+        card.appendChild(botaoFavorito);
+
         const imagemPrincipal = document.createElement('img');
         imagemPrincipal.className = 'produto-img';
         imagemPrincipal.loading = 'lazy';
@@ -278,6 +291,7 @@ function gerarProdutos(listaProdutos){
     });
 
     executarFiltrosCombinados();
+    atualizarBotoesFavoritos();
 }
 
 
@@ -409,4 +423,3 @@ function executarFiltrosCombinados() {
         vitrine.appendChild(erroDiv);
     }
 }
-

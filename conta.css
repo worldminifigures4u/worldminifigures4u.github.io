@@ -188,6 +188,94 @@
             gap:10px;
         }
 
+        .lista-favoritos-cliente{
+            display:flex;
+            flex-direction:column;
+            gap:10px;
+        }
+
+        .favorito-card{
+            display:grid;
+            grid-template-columns:72px minmax(0, 1fr) auto;
+            gap:10px;
+            align-items:center;
+            background:#181818;
+            border:1px solid #333;
+            border-radius:8px;
+            padding:10px;
+        }
+
+        .favorito-imagem{
+            width:72px;
+            height:72px;
+            object-fit:contain;
+            background:#222;
+            border-radius:7px;
+        }
+
+        .favorito-info{
+            min-width:0;
+            display:flex;
+            flex-direction:column;
+            gap:4px;
+            font-size:12px;
+            color:#aaa;
+        }
+
+        .favorito-info strong{
+            color:#fff;
+            font-size:13px;
+            overflow:hidden;
+            text-overflow:ellipsis;
+            white-space:nowrap;
+        }
+
+        .favorito-preco{
+            color:#35c7ff;
+            font-weight:800;
+        }
+
+        .favorito-disponivel{
+            color:#8bdc8b;
+            font-weight:800;
+        }
+
+        .favorito-indisponivel{
+            color:#ff8a8a;
+            font-weight:800;
+        }
+
+        .favorito-acoes{
+            display:flex;
+            flex-direction:column;
+            gap:7px;
+        }
+
+        .btn-favorito-adicionar,
+        .btn-favorito-remover{
+            border:0;
+            border-radius:6px;
+            padding:8px 10px;
+            font-weight:800;
+            cursor:pointer;
+            white-space:nowrap;
+        }
+
+        .btn-favorito-adicionar{
+            background:#ffc107;
+            color:#000;
+        }
+
+        .btn-favorito-remover{
+            background:#242424;
+            color:#ff8a8a;
+        }
+
+        .btn-favorito-adicionar:disabled{
+            cursor:not-allowed;
+            opacity:.5;
+        }
+
         .encomenda-card{
             background:#181818;
             border:1px solid #333;
@@ -262,6 +350,27 @@
             color:#999;
             font-size:13px;
             line-height:1.4;
+        }
+
+        @media(max-width:560px){
+            .favorito-card{
+                grid-template-columns:62px minmax(0, 1fr);
+            }
+
+            .favorito-imagem{
+                width:62px;
+                height:62px;
+            }
+
+            .favorito-acoes{
+                grid-column:1 / -1;
+                flex-direction:row;
+            }
+
+            .btn-favorito-adicionar,
+            .btn-favorito-remover{
+                flex:1;
+            }
         }
 
 
