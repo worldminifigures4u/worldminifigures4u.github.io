@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdn.jsdelivr.net https://cdn.sheetjs.com; connect-src 'self' https://cdn.jsdelivr.net https://gksndzxadndrsynvzgzb.supabase.co wss://gksndzxadndrsynvzgzb.supabase.co https://api.cloudinary.com; img-src 'self' data: blob: https://res.cloudinary.com https://gksndzxadndrsynvzgzb.supabase.co; style-src 'self'; font-src 'self' data:; frame-src 'none'; object-src 'none'; base-uri 'self'; form-action 'self';">
+    <meta name="referrer" content="strict-origin-when-cross-origin">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex, nofollow, noarchive, nosnippet">
+    <title>Estatísticas | Figures Planet</title>
+    <link rel="icon" type="image/png" href="figures-planet-logo-transparent.png">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.108.2"></script>
+    <link rel="stylesheet" href="styles.css?v=20260629-transform-copy-classes">
+    <link rel="stylesheet" href="estatisticas.css?v=20260630-estatisticas-vendas">
+</head>
+<body class="pagina-estatisticas-admin cabecalho-com-admin pagina-com-cabecalho-site">
+    <header class="cabecalho-site-admin">
+        <div class="cabecalho-loja">
+            <a class="logo-loja" href="index.html" aria-label="Figures Planet - Produtos">
+                <img src="figures-planet-logo-transparent.png" alt="Figures Planet">
+            </a>
+            <form class="cabecalho-pesquisa" action="index.html" method="get">
+                <input type="search" name="q" class="input-pesquisa" placeholder="O que estás à procura?">
+                <span class="icone-pesquisa" aria-hidden="true"></span>
+            </form>
+            <div class="acoes-cabecalho acoes-cabecalho-publicas">
+                <a class="acao-cabecalho" href="index.html">Produtos</a>
+                <a class="acao-cabecalho" href="conta.html">Conta</a>
+                <a class="acao-cabecalho acao-carrinho" href="carrinho.html">
+                    <span class="badge-carrinho" id="contador-carrinho-cabecalho">0</span>
+                </a>
+            </div>
+            <nav class="navegacao-admin-cabecalho" aria-label="Navegação administrativa" hidden>
+                <a class="acao-cabecalho acao-gestao-admin" href="gestao.html" aria-label="Abrir gestão administrativa">
+                    <span class="texto-acao"><strong>Gestão</strong></span>
+                </a>
+                <a class="acao-cabecalho" href="plataforma.html">Plataformas</a>
+                <a class="acao-cabecalho" href="mapas.html">Mapas</a>
+                <a class="acao-cabecalho" href="fornecedores.html">Fornecedores</a>
+                <a class="acao-cabecalho" href="encomendas.html">Encomendas</a>
+                <a class="acao-cabecalho ativa" href="estatisticas.html">Estatísticas</a>
+                <a class="acao-cabecalho" href="clientes.html">Clientes</a>
+            </nav>
+        </div>
+    </header>
+
+    <div class="wallapop-bloqueio" id="estatisticas-bloqueio">A verificar acesso administrativo...</div>
+
+    <main class="estatisticas-admin" id="estatisticas-aplicacao" hidden>
+        <section class="estatisticas-topo" aria-label="Filtros das estatísticas">
+            <div>
+                <h1>Estatísticas</h1>
+                <p id="estatisticas-periodo">Vendas registadas nas encomendas.</p>
+            </div>
+            <div class="estatisticas-filtros">
+                <label>
+                    <span>Desde</span>
+                    <input type="month" id="estatisticas-data-inicio">
+                </label>
+                <label>
+                    <span>Até</span>
+                    <input type="month" id="estatisticas-data-fim">
+                </label>
+                <label>
+                    <span>Plataforma</span>
+                    <select id="estatisticas-filtro-plataforma">
+                        <option value="todas">Todas</option>
+                    </select>
+                </label>
+                <label>
+                    <span>Canceladas</span>
+                    <select id="estatisticas-filtro-canceladas">
+                        <option value="excluir">Excluir dos totais</option>
+                        <option value="incluir">Incluir nos totais</option>
+                        <option value="apenas">Apenas canceladas</option>
+                    </select>
+                </label>
+                <button type="button" class="wallapop-botao wallapop-botao-destaque" id="btn-atualizar-estatisticas">Atualizar</button>
+            </div>
+        </section>
+
+        <section class="estatisticas-metricas" aria-label="Indicadores principais">
+            <article><span>Total vendido</span><strong id="estatisticas-total-vendido">0,00 €</strong></article>
+            <article><span>Número de encomendas</span><strong id="estatisticas-numero-encomendas">0</strong></article>
+            <article><span>Ticket médio</span><strong id="estatisticas-ticket-medio">0,00 €</strong></article>
+            <article><span>Unidades vendidas</span><strong id="estatisticas-unidades">0</strong></article>
+            <article><span>Preço médio por figura</span><strong id="estatisticas-preco-medio-figura">0,00 €</strong></article>
+        </section>
+
+        <section class="estatisticas-grid estatisticas-grid-principal">
+            <article class="estatisticas-painel">
+                <h2>Vendas por mês</h2>
+                <div class="estatisticas-barras" id="estatisticas-meses"></div>
+            </article>
+            <article class="estatisticas-painel">
+                <h2>Vendas por ano</h2>
+                <div class="estatisticas-barras" id="estatisticas-anos"></div>
+            </article>
+            <article class="estatisticas-painel">
+                <h2>Vendas por plataforma/site</h2>
+                <div class="estatisticas-barras" id="estatisticas-plataformas"></div>
+            </article>
+            <article class="estatisticas-painel">
+                <h2>Vendas por faixas de preço</h2>
+                <div class="estatisticas-barras" id="estatisticas-faixas-preco"></div>
+            </article>
+        </section>
+
+        <section class="estatisticas-grid">
+            <article class="estatisticas-painel">
+                <h2>Top figuras por receita</h2>
+                <div class="estatisticas-tabela" id="estatisticas-top-receita"></div>
+            </article>
+            <article class="estatisticas-painel">
+                <h2>Top figuras por quantidade</h2>
+                <div class="estatisticas-tabela" id="estatisticas-top-quantidade"></div>
+            </article>
+            <article class="estatisticas-painel">
+                <h2>Vendas por estado</h2>
+                <div class="estatisticas-barras" id="estatisticas-estados"></div>
+            </article>
+            <article class="estatisticas-painel">
+                <h2>Melhores meses</h2>
+                <div class="estatisticas-tabela" id="estatisticas-melhores-meses"></div>
+            </article>
+            <article class="estatisticas-painel estatisticas-painel-largo">
+                <h2>Plataformas com maior valor médio por encomenda</h2>
+                <div class="estatisticas-tabela" id="estatisticas-ticket-plataformas"></div>
+            </article>
+            <article class="estatisticas-painel estatisticas-painel-largo">
+                <h2>Vendas por figura</h2>
+                <div class="estatisticas-tabela estatisticas-tabela-scroll" id="estatisticas-figuras"></div>
+            </article>
+        </section>
+
+        <p class="wallapop-status" id="estatisticas-status" aria-live="polite"></p>
+    </main>
+
+    <script src="estatisticas.js?v=20260630-estatisticas-vendas"></script>
+    <script src="inline-listeners.js?v=20260629-csp-inline"></script>
+</body>
+</html>

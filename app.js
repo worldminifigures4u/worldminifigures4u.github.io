@@ -511,7 +511,7 @@ function atualizarVisibilidadeAdmin(user) {
     const adminAtivo = utilizadorAdmin(user);
     const tituloConta = document.querySelector('[data-vista-nav="conta"] .texto-acao strong');
     if (tituloConta) tituloConta.textContent = 'Conta';
-    const atalhosAdmin = document.querySelectorAll('.acao-gestao-admin, .acao-plataforma-admin, .acao-anuncio-admin, .acao-mapas-admin, .acao-fornecedores-admin, .acao-encomendas-admin, .acao-clientes-admin');
+    const atalhosAdmin = document.querySelectorAll('.acao-gestao-admin, .acao-plataforma-admin, .acao-anuncio-admin, .acao-mapas-admin, .acao-fornecedores-admin, .acao-encomendas-admin, .acao-estatisticas-admin, .acao-clientes-admin');
     atalhosAdmin.forEach(atalho => { atalho.hidden = !adminAtivo; });
     const navegacaoAdmin = document.querySelector('.navegacao-admin-cabecalho');
     if (navegacaoAdmin) navegacaoAdmin.hidden = !adminAtivo;
@@ -696,4 +696,3 @@ async function carregarProdutosConformeUtilizador(){
     }
     await carregarProdutosDaNuvem();
 }
-
