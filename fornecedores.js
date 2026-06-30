@@ -2418,7 +2418,7 @@ function renderizarPedidosFornecedores() {
             }
         });
         const titulo = document.createElement('div');
-        titulo.innerHTML = `<strong>${pedido.codigo}</strong><span>${pedido.fornecedor}${pedido.referencia ? ' - ' + pedido.referencia : ''}</span><small>${new Date(pedido.criado_em).toLocaleString('pt-PT')}</small><small>${totaisPedido.itens} artigo(s) | ${totaisPedido.quantidade} unidade(s) | ${totaisPedido.pendente} por receber${totaisPedido.os > 0 ? ` | ${totaisPedido.os} OS` : ''}</small>`;
+        titulo.innerHTML = `<strong>${escaparHtmlFornecedor(pedido.codigo)}</strong><span>${escaparHtmlFornecedor(pedido.fornecedor)}${pedido.referencia ? ' - ' + escaparHtmlFornecedor(pedido.referencia) : ''}</span><small>${new Date(pedido.criado_em).toLocaleString('pt-PT')}</small><small>${totaisPedido.itens} artigo(s) | ${totaisPedido.quantidade} unidade(s) | ${totaisPedido.pendente} por receber${totaisPedido.os > 0 ? ` | ${totaisPedido.os} OS` : ''}</small>`;
         const controlos = document.createElement('div');
         controlos.className = 'fornecedor-pedido-controlos';
         const estado = document.createElement('select');
@@ -2458,7 +2458,7 @@ function renderizarPedidosFornecedores() {
             linha.appendChild(criarImagemFornecedor(produtoAtual, 'fornecedor-miniatura pequena'));
             const info = document.createElement('div');
             info.className = 'fornecedor-info';
-            info.innerHTML = `<strong>${item.nome}</strong><span class="fornecedor-identificadores">Ref. ${item.referencia || '-'} | SKU ${item.sku || '-'}</span><span>Pedido: ${item.quantidade} | Recebido: ${recebido} | Stock atual: ${Number(produtoAtual.stock || 0)}</span>${faltaOs > 0 ? `<span class="fornecedor-ajuste-os ativo">OS/Falta: ${faltaOs}${item.quantidade_original ? ` de ${item.quantidade_original}` : ''}</span>` : ''}${item.origem_ajuste ? `<span class="fornecedor-ajuste-os">${item.origem_ajuste === 'substituicao' ? 'Substituto para completar encomenda' : 'Reforco adicionado'}</span>` : ''}`;
+            info.innerHTML = `<strong>${escaparHtmlFornecedor(item.nome)}</strong><span class="fornecedor-identificadores">Ref. ${escaparHtmlFornecedor(item.referencia || '-')} | SKU ${escaparHtmlFornecedor(item.sku || '-')}</span><span>Pedido: ${Number(item.quantidade || 0)} | Recebido: ${recebido} | Stock atual: ${Number(produtoAtual.stock || 0)}</span>${faltaOs > 0 ? `<span class="fornecedor-ajuste-os ativo">OS/Falta: ${faltaOs}${item.quantidade_original ? ` de ${Number(item.quantidade_original || 0)}` : ''}</span>` : ''}${item.origem_ajuste ? `<span class="fornecedor-ajuste-os">${item.origem_ajuste === 'substituicao' ? 'Substituto para completar encomenda' : 'Reforco adicionado'}</span>` : ''}`;
             const input = document.createElement('input');
             input.type = 'number';
             input.min = '0';
