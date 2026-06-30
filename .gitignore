@@ -1,5 +1,9 @@
 backups/
-supabase/
+supabase/*
+!supabase/functions/
+supabase/functions/*
+!supabase/functions/cloudinary-sign-upload/
+!supabase/functions/cloudinary-sign-upload/index.ts
 mapas csv/
 API key site envio mails/
 fotos de outros sites/
