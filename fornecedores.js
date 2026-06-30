@@ -28,6 +28,8 @@ let fornecedorPedidos = carregarPedidosFornecedores();
 let fornecedorFichas = carregarFichasFornecedores();
 let fornecedorMapaOrdenacao = { coluna: "nome", direcao: "asc" };
 let fornecedorRenderizacaoPendente = null;
+const FORNECEDOR_LISTA_MAX_CARACTERES = 30000;
+const FORNECEDOR_LISTA_MAX_LINHAS = 500;
 let fornecedorPedidosAbertos = new Set();
 
 function normalizarFornecedor(texto) {
@@ -957,7 +959,16 @@ function encontrarProdutoListaFinalFornecedor(referencia) {
 function aplicarListaFinalFornecedor() {
     const area = document.getElementById("fornecedor-lista-final");
     if (!area) return;
-    const linhas = String(area.value || "").split(/\r?\n/);
+    const textoLista = String(area.value || "");
+    if (textoLista.length > FORNECEDOR_LISTA_MAX_CARACTERES) {
+        definirStatusFornecedor(`A lista é demasiado grande. Limite: ${FORNECEDOR_LISTA_MAX_CARACTERES.toLocaleString('pt-PT')} caracteres.`, true);
+        return;
+    }
+    const linhas = textoLista.split(/\r?\n/);
+    if (linhas.filter(linha => linha.trim()).length > FORNECEDOR_LISTA_MAX_LINHAS) {
+        definirStatusFornecedor(`A lista tem demasiadas linhas. Limite: ${FORNECEDOR_LISTA_MAX_LINHAS} referências por colagem.`, true);
+        return;
+    }
     const importados = [];
     const erros = [];
     const naoEncontrados = [];
@@ -1028,7 +1039,23 @@ function aplicarListaFinalNaEdicaoFornecedor() {
     const area = modal.querySelector("#fornecedor-edicao-lista-final");
     const status = modal.querySelector("#fornecedor-edicao-status");
     const texto = String(area?.value || "");
+    if (texto.length > FORNECEDOR_LISTA_MAX_CARACTERES) {
+        if (status) {
+            status.textContent = `A lista é demasiado grande. Limite: ${FORNECEDOR_LISTA_MAX_CARACTERES.toLocaleString('pt-PT')} caracteres.`;
+            status.classList.remove('status-aviso', 'status-sucesso', 'status-neutro');
+            status.classList.add('status-erro');
+        }
+        return;
+    }
     const linhas = texto.split(/\r?\n/);
+    if (linhas.filter(linha => linha.trim()).length > FORNECEDOR_LISTA_MAX_LINHAS) {
+        if (status) {
+            status.textContent = `A lista tem demasiadas linhas. Limite: ${FORNECEDOR_LISTA_MAX_LINHAS} referências por colagem.`;
+            status.classList.remove('status-aviso', 'status-sucesso', 'status-neutro');
+            status.classList.add('status-erro');
+        }
+        return;
+    }
     const porReferencia = new Map();
     const erros = [];
 

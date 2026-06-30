@@ -107,6 +107,8 @@ let encomendaPlataformaParaFicheiros = null;
 let perfilExternoDetetado = null;
 let fichaClientePlataformaAtual = null;
 let stockNegativoConfirmado = new Set();
+const PLATAFORMA_LISTA_MAX_CARACTERES = 30000;
+const PLATAFORMA_LISTA_MAX_LINHAS = 500;
 
 function obterTextoOpcaoSelecionada(selectId) {
     const select = document.getElementById(selectId);
@@ -623,6 +625,15 @@ function adicionarListaRevistaPlataforma(linhas, modal) {
 
 function abrirRevisaoListaProdutosPlataforma() {
     const texto = document.getElementById('plataforma-lista-produtos').value;
+    if (texto.length > PLATAFORMA_LISTA_MAX_CARACTERES) {
+        definirStatusWallapop(`A lista é demasiado grande. Limite: ${PLATAFORMA_LISTA_MAX_CARACTERES.toLocaleString('pt-PT')} caracteres.`, true);
+        return;
+    }
+    const totalLinhas = texto.split(/\r?\n/).filter(linha => linha.trim()).length;
+    if (totalLinhas > PLATAFORMA_LISTA_MAX_LINHAS) {
+        definirStatusWallapop(`A lista tem demasiadas linhas. Limite: ${PLATAFORMA_LISTA_MAX_LINHAS} figuras por colagem.`, true);
+        return;
+    }
     const linhas = analisarListaProdutosPlataforma(texto);
     if (!linhas.length) {
         definirStatusWallapop('Cola primeiro uma lista com uma figura por linha.', true);
