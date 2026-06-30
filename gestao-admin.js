@@ -1,6 +1,9 @@
 // Codigo de gestao/edicao de produtos.
 // Separado de app.js para as paginas publicas nao carregarem este bloco.
 
+const ADMIN_UPLOAD_IMAGEM_MAX_BYTES = 8 * 1024 * 1024;
+const ADMIN_UPLOAD_IMAGEM_TIPOS_PERMITIDOS = new Set(['image/jpeg', 'image/png', 'image/webp']);
+
 function sugerirSkuAdmin() {
     const nomeInput = document.getElementById('admin-produto-nome');
     const skuInput = document.getElementById('admin-produto-sku');
@@ -155,8 +158,11 @@ async function enviarFotosCloudinaryAdmin(input, textareaId, atualizarPreview, s
         const urls = [];
 
         for(const ficheiro of ficheiros) {
-            if(!ficheiro.type.startsWith('image/')) {
-                throw new Error('Só pode enviar ficheiros de imagem.');
+            if(!ADMIN_UPLOAD_IMAGEM_TIPOS_PERMITIDOS.has(ficheiro.type)) {
+                throw new Error('Só pode enviar imagens JPG, PNG ou WebP.');
+            }
+            if(ficheiro.size > ADMIN_UPLOAD_IMAGEM_MAX_BYTES) {
+                throw new Error('Cada imagem pode ter no máximo 8 MB.');
             }
 
             const formData = new FormData();
