@@ -74,8 +74,6 @@ async function criarNovaEncomenda() {
         : '';
       throw new Error(mensagemStock || resultado.error || "Não foi possível criar a encomenda.");
     }
-
-    console.log("Encomenda gravada com sucesso:", resultado);
     mostrarMensagem(
       statusDiv,
       mensagemSucessoEncomenda(metodoPagamento, resultado.encomenda?.codigo_encomenda || ''),
