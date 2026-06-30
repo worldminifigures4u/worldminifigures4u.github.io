@@ -19,6 +19,17 @@ function criarElementoCliente(tag, classe, texto) {
     return elemento;
 }
 
+function obterUrlExternoSeguroCliente(valor) {
+    const texto = String(valor || "").trim();
+    if (!texto) return "";
+    try {
+        const url = new URL(texto);
+        return ["http:", "https:"].includes(url.protocol) ? url.href : "";
+    } catch (_) {
+        return "";
+    }
+}
+
 function definirStatusClientes(texto, erro = false) {
     const status = document.getElementById("clientes-status");
     status.textContent = texto || "";
@@ -65,7 +76,7 @@ function criarInputCliente(rotulo, nome, valor, tipo = "text", obrigatorio = fal
 
 function obterPerfisFormularioCliente(formulario) {
     return Array.from(formulario.querySelectorAll('[name^="perfil_url_"]'))
-        .map(input => ({ url: input.value.trim() }))
+        .map(input => ({ url: obterUrlExternoSeguroCliente(input.value) }))
         .filter(perfil => perfil.url);
 }
 
@@ -299,7 +310,7 @@ function renderizarFichaCliente(dados) {
     } else {
         perfis.forEach(perfil => {
             const link = criarElementoCliente("a", "admin-cliente-perfil", `${perfil.plataforma}: ${perfil.utilizador}`);
-            link.href = perfil.url;
+            link.href = obterUrlExternoSeguroCliente(perfil.url) || "#";
             link.target = "_blank";
             link.rel = "noopener noreferrer";
             listaPerfis.appendChild(link);

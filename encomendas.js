@@ -34,6 +34,17 @@ function normalizarEncomenda(valor) {
     return String(valor || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
 }
 
+function obterUrlExternoSeguroEncomenda(valor) {
+    const texto = String(valor || '').trim();
+    if (!texto) return '';
+    try {
+        const url = new URL(texto);
+        return ['http:', 'https:'].includes(url.protocol) ? url.href : '';
+    } catch (_) {
+        return '';
+    }
+}
+
 function formatarEuroEncomenda(valor) {
     return Number(valor || 0).toFixed(2).replace('.', ',') + ' €';
 }
@@ -777,7 +788,7 @@ function renderizarFichaClienteAdmin(dados) {
     } else {
         perfis.forEach(perfil => {
             const link = criarElementoEncomenda('a', 'admin-cliente-perfil', `${perfil.plataforma}: ${perfil.utilizador}`);
-            link.href = perfil.url;
+            link.href = obterUrlExternoSeguroEncomenda(perfil.url) || '#';
             link.target = '_blank';
             link.rel = 'noopener noreferrer';
             listaPerfis.appendChild(link);
