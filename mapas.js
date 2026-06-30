@@ -298,11 +298,15 @@ function renderizarTabelaMapa() {
     const spacerTopo = document.createElement("tr");
     spacerTopo.id = "mapas-spacer-topo";
     spacerTopo.className = "mapas-spacer-virtual";
-    spacerTopo.innerHTML = `<td colspan="${MAPAS_COLUNAS.length}"></td>`;
+    const spacerTopoCelula = document.createElement("td");
+    spacerTopoCelula.colSpan = MAPAS_COLUNAS.length;
+    spacerTopo.appendChild(spacerTopoCelula);
     const spacerFundo = document.createElement("tr");
     spacerFundo.id = "mapas-spacer-fundo";
     spacerFundo.className = "mapas-spacer-virtual";
-    spacerFundo.innerHTML = `<td colspan="${MAPAS_COLUNAS.length}"></td>`;
+    const spacerFundoCelula = document.createElement("td");
+    spacerFundoCelula.colSpan = MAPAS_COLUNAS.length;
+    spacerFundo.appendChild(spacerFundoCelula);
     tbody.append(spacerTopo, spacerFundo);
     tabela.appendChild(tbody);
     wrapper.appendChild(tabela);

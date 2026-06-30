@@ -1597,7 +1597,7 @@ function renderizarResultadosFornecedor() {
     if (!caixa) return;
 
     const { termo, fornecedor, filtroFornecedor, filtroTop, filtroDescontinuado, ordenacao } = obterControlosResultadosFornecedor();
-    caixa.innerHTML = "";
+    caixa.replaceChildren();
 
     const resultados = fornecedorProdutos
         .map((produto) => ({
@@ -1727,10 +1727,13 @@ function removerProdutoFornecedor(id) {
 function renderizarSelecionadosFornecedor() {
     const caixa = document.getElementById("fornecedor-selecionados");
     if (!caixa) return;
-    caixa.innerHTML = "";
+    caixa.replaceChildren();
 
     if (!fornecedorSelecao.length) {
-        caixa.innerHTML = '<p class="fornecedor-vazio">A lista esta vazia.</p>';
+        const vazio = document.createElement('p');
+        vazio.className = 'fornecedor-vazio';
+        vazio.textContent = 'A lista esta vazia.';
+        caixa.appendChild(vazio);
         return;
     }
 
@@ -2232,7 +2235,11 @@ function abrirEdicaoPedidoFornecedor(id) {
             : Math.max(0, Number(item.recebido || 0));
         recebido.dataset.campo = 'recebido';
         recebido.dataset.valor = String(recebidoAtual);
-        recebido.innerHTML = `<strong>Recebido</strong><span>${recebidoAtual}</span>`;
+        const recebidoTitulo = document.createElement('strong');
+        recebidoTitulo.textContent = 'Recebido';
+        const recebidoValor = document.createElement('span');
+        recebidoValor.textContent = String(recebidoAtual);
+        recebido.append(recebidoTitulo, recebidoValor);
 
         const remover = document.createElement('label');
         remover.className = 'fornecedor-edicao-remover';
@@ -2372,10 +2379,13 @@ function renderizarPedidosFornecedores() {
     const caixa = document.getElementById('fornecedor-pedidos');
     if (!caixa) return;
     const filtro = document.getElementById('fornecedor-filtro-estado')?.value || 'todos';
-    caixa.innerHTML = '';
+    caixa.replaceChildren();
     const pedidos = fornecedorPedidos.filter(pedido => pedidoFornecedorPassaFiltroEstado(pedido, filtro));
     if (!pedidos.length) {
-        caixa.innerHTML = '<p class="fornecedor-vazio">Ainda nao existem encomendas neste estado.</p>';
+        const vazio = document.createElement('p');
+        vazio.className = 'fornecedor-vazio';
+        vazio.textContent = 'Ainda nao existem encomendas neste estado.';
+        caixa.appendChild(vazio);
         return;
     }
 

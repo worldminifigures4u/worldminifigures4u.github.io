@@ -566,7 +566,7 @@ function buscarProdutosCatalogoPlataforma(termo, limite = 30) {
 }
 
 function preencherSelectProdutosPlataforma(select, produtos, textoVazio, produtoIdSelecionado = '') {
-    select.innerHTML = '';
+    select.replaceChildren();
     const vazio = document.createElement('option');
     vazio.value = '';
     vazio.textContent = textoVazio;
