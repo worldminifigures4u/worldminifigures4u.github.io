@@ -484,6 +484,7 @@ async function imprimirPedidoFornecedor(id) {
         definirStatusFornecedor('O navegador bloqueou a janela de impressao. Autorize pop-ups para imprimir.', true);
         return;
     }
+    try { janela.opener = null; } catch (_) {}
     janela.document.open();
     janela.document.write('<!DOCTYPE html><html lang="pt"><head><meta charset="UTF-8"><title>A preparar impressao</title></head><body>A preparar impressão...</body></html>');
     janela.document.close();
