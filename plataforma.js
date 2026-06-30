@@ -120,12 +120,16 @@ function analisarLinkPerfilPlataforma(valor) {
     try { url = new URL(texto); }
     catch (_) { return { erro: 'O link do perfil n\u00e3o \u00e9 v\u00e1lido.' }; }
 
+    if (!['http:', 'https:'].includes(url.protocol)) {
+        return { erro: 'O link do perfil deve come\u00e7ar por http:// ou https://.' };
+    }
     const host = url.hostname.toLowerCase().replace(/^www\./, '');
+    const dominioValido = dominio => host === dominio || host.endsWith(`.${dominio}`);
     const caminho = decodeURIComponent(url.pathname).replace(/\/+$/, '');
     const regras = [
-        { plataforma: 'Wallapop', valido: host.endsWith('wallapop.com'), expressao: /\/user\/([^/?#]+)$/i },
-        { plataforma: 'OLX', valido: host.endsWith('olx.pt'), expressao: /\/ads\/user\/([^/?#]+)$/i },
-        { plataforma: 'Todocoleccion', valido: host.endsWith('todocoleccion.net'), expressao: /\/usuario\/([^/?#]+)$/i }
+        { plataforma: 'Wallapop', valido: dominioValido('wallapop.com'), expressao: /\/user\/([^/?#]+)$/i },
+        { plataforma: 'OLX', valido: dominioValido('olx.pt'), expressao: /\/ads\/user\/([^/?#]+)$/i },
+        { plataforma: 'Todocoleccion', valido: dominioValido('todocoleccion.net'), expressao: /\/usuario\/([^/?#]+)$/i }
     ];
     const regra = regras.find(item => item.valido && item.expressao.test(caminho));
     if (!regra) return { erro: 'Link n\u00e3o reconhecido. Use um perfil Wallapop, OLX ou Todocoleccion.' };
