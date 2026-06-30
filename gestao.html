@@ -128,11 +128,11 @@
                         </div>
                         <div>
                             <label for="conta-nova-password">Nova palavra-passe:</label>
-                            <input type="password" id="conta-nova-password" required minlength="8" placeholder="Mínimo 8 caracteres">
+                            <input type="password" id="conta-nova-password" required minlength="8" autocomplete="new-password" placeholder="Mínimo 8 caracteres">
                         </div>
                         <div>
                             <label for="conta-confirmar-password">Confirmar nova palavra-passe:</label>
-                            <input type="password" id="conta-confirmar-password" required minlength="8" placeholder="Repita a palavra-passe">
+                            <input type="password" id="conta-confirmar-password" required minlength="8" autocomplete="new-password" placeholder="Repita a palavra-passe">
                         </div>
                         <button type="submit" class="btn-acao-cliente">Guardar nova password</button>
                         <div id="status-alterar-password" class="msg-status"></div>
@@ -343,7 +343,7 @@
                     </div>
                     <div>
                         <label for="login-password">Palavra-passe:</label>
-                        <input type="password" id="login-password" required placeholder="••••••••">
+                        <input type="password" id="login-password" required autocomplete="current-password" placeholder="••••••••">
                     </div>
                     <button type="button" class="btn-link-cliente" data-acao-cliente="recuperar-password">Esqueci-me da palavra-passe</button>
                     <button type="submit" class="btn-acao-cliente">Entrar na Conta</button>
@@ -360,7 +360,7 @@
                     </div>
                     <div>
                         <label for="registo-password">Palavra-passe:</label>
-                        <input type="password" id="registo-password" required minlength="8" placeholder="Mínimo 8 caracteres">
+                        <input type="password" id="registo-password" required minlength="8" autocomplete="new-password" placeholder="Mínimo 8 caracteres">
                     </div>
                     <div>
                         <label for="registo-telemovel">Telemóvel:</label>
@@ -388,11 +388,11 @@
                 <form class="form-cliente oculto" id="form-recuperar-password">
                     <div>
                         <label for="nova-password">Nova palavra-passe:</label>
-                        <input type="password" id="nova-password" required minlength="8" placeholder="Mínimo 8 caracteres">
+                        <input type="password" id="nova-password" required minlength="8" autocomplete="new-password" placeholder="Mínimo 8 caracteres">
                     </div>
                     <div>
                         <label for="confirmar-nova-password">Confirmar nova palavra-passe:</label>
-                        <input type="password" id="confirmar-nova-password" required minlength="8" placeholder="Repita a palavra-passe">
+                        <input type="password" id="confirmar-nova-password" required minlength="8" autocomplete="new-password" placeholder="Repita a palavra-passe">
                     </div>
                     <button type="submit" class="btn-acao-cliente">Definir nova password</button>
                 </form>
