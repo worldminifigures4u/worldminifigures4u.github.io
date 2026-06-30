@@ -143,6 +143,61 @@ function adicionarUrlsAoCampoImagens(textareaId, urls) {
     textarea.value = todas.join('\n');
 }
 
+async function obterAssinaturaCloudinaryAdmin() {
+    const { data: { session }, error: sessionError } = await dbClient.auth.getSession();
+    if(sessionError || !session?.access_token) {
+        throw new Error('Sessão de administrador obrigatória para enviar fotos.');
+    }
+
+    const resposta = await fetch(`${SUPABASE_URL}/functions/v1/cloudinary-sign-upload`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${session.access_token}`,
+            'apikey': SUPABASE_KEY
+        },
+        body: JSON.stringify({ origem: 'gestao-produtos' })
+    });
+    const dados = await resposta.json().catch(() => ({}));
+
+    if(!resposta.ok) {
+        throw new Error(dados?.error || 'Não foi possível obter assinatura segura do Cloudinary.');
+    }
+
+    if(!dados?.cloudName || !dados?.apiKey || !dados?.timestamp || !dados?.signature) {
+        throw new Error('Assinatura Cloudinary incompleta.');
+    }
+
+    return dados;
+}
+
+async function enviarFicheiroCloudinaryAssinadoAdmin(ficheiro) {
+    const assinatura = await obterAssinaturaCloudinaryAdmin();
+    const formData = new FormData();
+    formData.append('file', ficheiro);
+    formData.append('api_key', assinatura.apiKey);
+    formData.append('timestamp', String(assinatura.timestamp));
+    formData.append('signature', assinatura.signature);
+    if(assinatura.folder) {
+        formData.append('folder', assinatura.folder);
+    }
+
+    const resposta = await fetch(`https://api.cloudinary.com/v1_1/${assinatura.cloudName}/image/upload`, {
+        method: 'POST',
+        body: formData
+    });
+    const resultado = await resposta.json().catch(() => ({}));
+
+    if(!resposta.ok) {
+        throw new Error(resultado?.error?.message || 'Falha no upload assinado para o Cloudinary.');
+    }
+    if(!resultado?.secure_url) {
+        throw new Error('O Cloudinary não devolveu URL seguro da imagem.');
+    }
+
+    return resultado.secure_url;
+}
+
 async function enviarFotosCloudinaryAdmin(input, textareaId, atualizarPreview, statusId) {
     const status = document.getElementById(statusId);
     const ficheiros = Array.from(input.files || []);
@@ -165,21 +220,8 @@ async function enviarFotosCloudinaryAdmin(input, textareaId, atualizarPreview, s
                 throw new Error('Cada imagem pode ter no máximo 8 MB.');
             }
 
-            const formData = new FormData();
-            formData.append('file', ficheiro);
-            formData.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
-
-            const resposta = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`, {
-                method: 'POST',
-                body: formData
-            });
-            const resultado = await resposta.json();
-
-            if(!resposta.ok) {
-                throw new Error(resultado?.error?.message || 'Falha no upload para o Cloudinary.');
-            }
-
-            urls.push(resultado.secure_url);
+            const urlImagem = await enviarFicheiroCloudinaryAssinadoAdmin(ficheiro);
+            urls.push(urlImagem);
             mostrarMensagem(status, `Enviadas ${urls.length}/${ficheiros.length} foto(s)...`);
         }
 
@@ -194,7 +236,6 @@ async function enviarFotosCloudinaryAdmin(input, textareaId, atualizarPreview, s
         mostrarMensagem(status, 'Erro: ' + (error.message || 'Não foi possível enviar as fotos.'), 'msg-erro');
     }
 }
-
 function obterProdutoId(produto) {
     return String(produto?.id ?? produto?.sku ?? '');
 }
