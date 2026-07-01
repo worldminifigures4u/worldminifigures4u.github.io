@@ -254,8 +254,26 @@ function obterEnvioParaFicheirosPlataforma() {
 }
 
 function obterNomeParaFicheirosPlataforma() {
-    return encomendaPlataformaParaFicheiros?.nome_encomenda
-        || document.getElementById('wallapop-nome-encomenda').value;
+    if (encomendaPlataformaParaFicheiros?.nome_encomenda) {
+        return encomendaPlataformaParaFicheiros.nome_encomenda;
+    }
+
+    const campoNome = document.getElementById('wallapop-nome-encomenda')?.value.trim() || '';
+    const codigo = obterCodigoEncomendaAtual();
+    const plataforma = obterPlataformaParaFicheiros();
+    if (!codigo) return campoNome;
+
+    const nomeNormalizado = normalizarTextoPlataforma(campoNome);
+    const codigoNormalizado = normalizarTextoPlataforma(codigo);
+    const plataformaNormalizada = normalizarTextoPlataforma(plataforma);
+    if (
+        nomeNormalizado.includes(codigoNormalizado)
+        && nomeNormalizado.includes(plataformaNormalizada)
+    ) {
+        return campoNome;
+    }
+
+    return comporNomeEncomendaPlataforma(codigo, obterNomeClientePlataforma(), plataforma);
 }
 
 function comporNomeEncomendaPlataforma(codigo, cliente, plataforma) {
