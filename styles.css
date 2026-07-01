@@ -185,19 +185,45 @@
             white-space:nowrap;
         }
 
+        [data-vista-nav="conta"]{
+            min-width:70px;
+            justify-content:center;
+            padding:0 12px;
+        }
+
+        [data-vista-nav="conta"]::before{
+            content:"\1F464";
+            font-size:17px;
+            line-height:1;
+        }
+
+        [data-vista-nav="conta"] .texto-acao strong{
+            display:none;
+        }
+
+        [data-vista-nav="conta"] .detalhe-conta-cabecalho{
+            display:block;
+            max-width:74px;
+            font-size:12px;
+            opacity:1;
+        }
+
         .acao-produtos .texto-acao strong{
             max-width:none;
         }
 
         .acao-carrinho{
             position:relative;
-            padding-right:32px;
+            min-width:50px;
+            justify-content:center;
+            padding:0 24px 0 12px;
         }
 
         .acao-carrinho::before{
-            content:"Carrinho";
-            font-size:14px;
-            font-weight:800;
+            content:"\1F6D2";
+            font-size:18px;
+            font-weight:400;
+            line-height:1;
         }
 
         .badge-carrinho{
