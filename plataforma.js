@@ -495,13 +495,38 @@ function pontuarCorrespondenciaPlataforma(termo, produto) {
     return Math.max(similaridade, similaridade * 0.72 + cobertura * 0.28, contem);
 }
 
-function interpretarLinhaProdutosPlataforma(linha, indice) {
+function linhaProdutosTemQuantidadeExplicitaPlataforma(texto) {
+    const linha = String(texto || '').trim().replace(/^[\s\-*\u2022]+/, '');
+    return /^\d+\s*(?:x|un(?:id(?:ades?)?)?\.?)\s+.+$/i.test(linha)
+        || /^.+?\s+[xX]\s*\d+$/.test(linha);
+}
+
+function obterNumeroListaProdutosPlataforma(texto) {
+    const linha = String(texto || '').trim().replace(/^[\s\-*\u2022]+/, '');
+    if (linhaProdutosTemQuantidadeExplicitaPlataforma(linha)) return null;
+    const correspondencia = linha.match(/^(\d+)(?:[.)-]|\s+)\s*(.+)$/);
+    if (!correspondencia || !correspondencia[2]?.trim()) return null;
+    return Number(correspondencia[1]);
+}
+
+function listaProdutosPareceNumeradaPlataforma(linhas) {
+    const numeros = linhas
+        .map(obterNumeroListaProdutosPlataforma)
+        .filter(numero => Number.isInteger(numero));
+    if (numeros.length < 2) return false;
+    return numeros.every((numero, indice) => numero === indice + 1);
+}
+
+function interpretarLinhaProdutosPlataforma(linha, indice, opcoes = {}) {
     let texto = String(linha || '').trim().replace(/^[\s\-*\u2022]+/, '');
     if (!texto) return null;
     let quantidade = 1;
     const inicio = texto.match(/^(\d+)\s*(?:x|un(?:id(?:ades?)?)?\.?|-)??\s+(.+)$/i);
     const fim = texto.match(/^(.+?)\s+[xX]\s*(\d+)$/);
-    if (inicio) {
+    if (opcoes.ignorarNumeracao && !linhaProdutosTemQuantidadeExplicitaPlataforma(texto)) {
+        const numerada = texto.match(/^(\d+)(?:[.)-]|\s+)\s*(.+)$/);
+        if (numerada) texto = numerada[2].trim();
+    } else if (inicio) {
         quantidade = Math.max(1, Number(inicio[1]) || 1);
         texto = inicio[2].trim();
     } else if (fim) {
@@ -512,9 +537,13 @@ function interpretarLinhaProdutosPlataforma(linha, indice) {
 }
 
 function analisarListaProdutosPlataforma(texto) {
-    return String(texto || '')
+    const linhasOriginais = String(texto || '')
         .split(/\r?\n/)
-        .map(interpretarLinhaProdutosPlataforma)
+        .map(linha => String(linha || '').trim())
+        .filter(Boolean);
+    const ignorarNumeracao = listaProdutosPareceNumeradaPlataforma(linhasOriginais);
+    return linhasOriginais
+        .map((linha, indice) => interpretarLinhaProdutosPlataforma(linha, indice, { ignorarNumeracao }))
         .filter(Boolean)
         .map(linha => {
             const termo = normalizarTextoWallapop(linha.original);
