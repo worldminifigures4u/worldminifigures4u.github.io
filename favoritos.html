@@ -8,12 +8,14 @@
     <meta name="robots" content="noindex, nofollow, noarchive, nosnippet">
     <meta name="googlebot" content="noindex, nofollow, noarchive, nosnippet">
     <meta name="bingbot" content="noindex, nofollow, noarchive, nosnippet">
-    <title>Sobre nós | Figures Planet</title>
+    <title>Favoritos | Figures Planet</title>
     <link rel="icon" type="image/png" href="figures-planet-logo-transparent.png">
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.108.2"></script>
     <link rel="stylesheet" href="styles.css?v=20260629-transform-copy-classes">
-    <link rel="stylesheet" href="institucional.css?v=20260628-css-split-institucional">
+    <link rel="stylesheet" href="favoritos.css?v=20260701-pagina-favoritos">
 </head>
-<body data-page="sobre">
+<body data-page="favoritos">
 
 <header>
     <div class="cabecalho-loja">
@@ -21,17 +23,17 @@
             <img src="figures-planet-logo-transparent.png" alt="Figures Planet">
         </a>
         <div class="cabecalho-pesquisa">
-            <input type="text" id="campo-pesquisa" class="input-pesquisa" placeholder="O que estás à procura?">
+            <input type="text" id="campo-pesquisa" class="input-pesquisa" placeholder="O que est&aacute;s &agrave; procura?">
             <span class="icone-pesquisa" aria-hidden="true"></span>
         </div>
         <div class="acoes-cabecalho acoes-cabecalho-publicas">
             <a class="acao-cabecalho acao-produtos" href="index.html" aria-label="Ver produtos" data-vista-nav="loja">
                 <span class="texto-acao"><strong>Produtos</strong></span>
             </a>
-            <a class="acao-cabecalho acao-favoritos" href="favoritos.html" aria-label="Ver favoritos" data-vista-nav="favoritos">
+            <a class="acao-cabecalho acao-favoritos ativa" href="favoritos.html" aria-label="Ver favoritos" data-vista-nav="favoritos">
                 <span class="texto-acao"><strong>Favoritos</strong></span>
             </a>
-            <a class="acao-cabecalho" href="conta.html" aria-label="Abrir área de cliente" data-vista-nav="conta">
+            <a class="acao-cabecalho" href="conta.html" aria-label="Abrir area de cliente" data-vista-nav="conta">
                 <span class="icone-acao" aria-hidden="true"></span>
                 <span class="texto-acao">
                     <strong>Conta</strong>
@@ -43,26 +45,42 @@
                 <span class="badge-carrinho" id="contador-carrinho-cabecalho">0</span>
             </a>
         </div>
+        <nav class="navegacao-admin-cabecalho" aria-label="Navegação administrativa" hidden>
+            <a class="acao-cabecalho acao-gestao-admin" href="gestao.html" aria-label="Abrir gestão administrativa" hidden>
+                <span class="texto-acao"><strong>Gestão</strong></span>
+            </a>
+            <a class="acao-cabecalho acao-plataforma-admin" href="plataforma.html" aria-label="Gerir plataformas" hidden>
+                <span class="texto-acao"><strong>Plataformas</strong></span>
+            </a>
+            <a class="acao-cabecalho acao-mapas-admin" href="mapas.html" aria-label="Gerir mapas" hidden>
+                <span class="texto-acao"><strong>Mapas</strong></span>
+            </a>
+            <a class="acao-cabecalho acao-fornecedores-admin" href="fornecedores.html" aria-label="Gerir fornecedores" hidden>
+                <span class="texto-acao"><strong>Fornecedores</strong></span>
+            </a>
+            <a class="acao-cabecalho acao-encomendas-admin" href="encomendas.html" aria-label="Gerir encomendas" hidden>
+                <span class="texto-acao"><strong>Encomendas</strong></span>
+            </a>
+            <a class="acao-cabecalho acao-estatisticas-admin" href="estatisticas.html" aria-label="Ver estatísticas" hidden>
+                <span class="texto-acao"><strong>Estatísticas</strong></span>
+            </a>
+            <a class="acao-cabecalho acao-clientes-admin" href="clientes.html" aria-label="Gerir clientes" hidden>
+                <span class="texto-acao"><strong>Clientes</strong></span>
+            </a>
+        </nav>
     </div>
 </header>
 
-<div class="container pagina-institucional-container">
-    <section class="vista pagina-institucional ativa" id="vista-sobre">
-        <h1>Sobre a Figures Planet</h1>
-        <div class="bloco-institucional">
-            <p>A Figures Planet nasceu de uma coleção apaixonada por minifiguras, personagens e pequenos universos cheios de detalhe.</p>
-            <p>Selecionamos figuras de diferentes temas para colecionadores, fãs e pessoas que procuram uma personagem especial para oferecer.</p>
-        </div>
-        <div class="bloco-institucional">
-            <h2>O que valorizamos</h2>
-            <ul class="lista-institucional">
-                <li>Fotografias reais dos produtos sempre que disponíveis.</li>
-                <li>Informação clara sobre preços, envio e pagamento.</li>
-                <li>Preparação cuidada de cada encomenda.</li>
-                <li>Contacto direto para esclarecer qualquer dúvida.</li>
-            </ul>
-        </div>
-    </section>
+<div class="container">
+    <main class="favoritos-pagina">
+        <section class="favoritos-topo">
+            <h1>Favoritos</h1>
+            <p id="favoritos-resumo">As minifiguras que guardaste para ver mais tarde.</p>
+        </section>
+        <section class="favoritos-lista" id="lista-favoritos-cliente" aria-live="polite">
+            <p class="favoritos-vazio">A carregar favoritos...</p>
+        </section>
+    </main>
 </div>
 
 <footer class="rodape-site">
@@ -75,7 +93,9 @@
         </nav>
     </div>
 </footer>
-<script src="site-leve.js?v=20260627-paginas-institucionais"></script>
+<script src="app.js?v=20260701-pagina-favoritos"></script>
+<script src="carrinho-loja.js?v=20260627-app-split-5"></script>
+<script src="favoritos.js?v=20260701-pagina-favoritos"></script>
 <script src="inline-listeners.js?v=20260629-csp-inline"></script>
 </body>
 </html>
