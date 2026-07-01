@@ -428,14 +428,21 @@
             width:min(1180px, 100%);
             margin:auto;
             display:flex;
-            justify-content:space-between;
+            justify-content:center;
             align-items:center;
             gap:20px;
+            text-align:center;
         }
 
         .rodape-marca{
             color:#ffc107;
             font-weight:900;
+        }
+
+        .rodape-frase{
+            color:#bbb;
+            font-weight:800;
+            line-height:1.4;
         }
 
         .rodape-links{
