@@ -7,7 +7,7 @@
         }
 
         body{
-            padding-top: 146px;
+            padding-top: 206px;
         }
 
         header{
@@ -28,7 +28,7 @@
             padding:6px 32px;
             box-sizing:border-box;
             display:grid;
-            grid-template-columns:minmax(550px, 600px) minmax(280px, 420px) minmax(390px, 1fr);
+            grid-template-columns:minmax(500px, 600px) minmax(320px, 560px) minmax(210px, 1fr);
             gap:10px 22px;
             align-items:center;
         }
@@ -298,7 +298,7 @@
         .erro{ color:#ff4d4d; }
 
         @media(max-width:1100px){
-            body{ padding-top:180px; }
+            body{ padding-top:238px; }
             .cabecalho-loja{
                 grid-template-columns:1fr auto;
                 gap:8px 14px;
@@ -318,10 +318,10 @@
         }
 
         @media(max-width:560px){
-            body{ padding-top:203px; }
+            body{ padding-top:252px; }
             .cabecalho-loja{
                 grid-template-columns:minmax(0, 1fr);
-                grid-template-rows:auto auto auto;
+                grid-template-rows:auto auto auto auto;
                 gap:6px;
                 padding:6px 10px;
             }
@@ -338,12 +338,12 @@
                 grid-column:1;
                 grid-row:2;
                 display:grid;
-                grid-template-columns:repeat(3, minmax(0, 1fr));
+                grid-template-columns:repeat(2, minmax(0, 1fr));
                 gap:5px;
                 width:100%;
             }
             .acoes-cabecalho.com-atalhos-admin{
-                grid-template-columns:repeat(3, minmax(0, 1fr));
+                grid-template-columns:repeat(2, minmax(0, 1fr));
             }
             .cabecalho-pesquisa{
                 grid-column:1;
@@ -420,7 +420,25 @@
             .rodape-links{ justify-content:center; }
         }
 
-/* Cabecalho publico com uma segunda linha exclusiva para administracao. */
+/* Cabecalho publico com menus em segunda linha. */
+.navegacao-publica-cabecalho{
+    grid-column:1 / -1;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    gap:8px;
+    min-width:0;
+    padding-top:10px;
+    border-top:1px solid #292929;
+}
+
+.navegacao-publica-cabecalho .acao-cabecalho{
+    min-width:132px;
+    justify-content:center;
+    white-space:nowrap;
+}
+
+/* Cabecalho publico com uma terceira linha exclusiva para administracao. */
 .navegacao-admin-cabecalho{
     grid-column:1 / -1;
     display:flex;
@@ -443,11 +461,11 @@
 }
 
 body.cabecalho-com-admin{
-    padding-top:206px;
+    padding-top:266px;
 }
 
 body.pagina-com-cabecalho-site{
-    padding-top:206px !important;
+    padding-top:266px !important;
 }
 
 .cabecalho-site-admin{
@@ -461,22 +479,27 @@ body.pagina-com-cabecalho-site{
 @media(max-width:1100px){
     body.cabecalho-com-admin,
     body.pagina-com-cabecalho-site{
-        padding-top:240px !important;
+        padding-top:300px !important;
+    }
+
+    .navegacao-publica-cabecalho{
+        grid-column:1 / -1;
+        grid-row:3;
     }
 
     .navegacao-admin-cabecalho{
         grid-column:1 / -1;
-        grid-row:3;
+        grid-row:4;
     }
 }
 
 @media(max-width:560px){
     body.cabecalho-com-admin,
     body.pagina-com-cabecalho-site{
-        padding-top:251px !important;
+        padding-top:300px !important;
     }
 
-    .navegacao-admin-cabecalho{
+    .navegacao-publica-cabecalho{
         grid-column:1;
         grid-row:4;
         justify-content:flex-start;
@@ -485,6 +508,16 @@ body.pagina-com-cabecalho-site{
         scrollbar-width:thin;
     }
 
+    .navegacao-admin-cabecalho{
+        grid-column:1;
+        grid-row:5;
+        justify-content:flex-start;
+        overflow-x:auto;
+        padding:8px 0 2px;
+        scrollbar-width:thin;
+    }
+
+    .navegacao-publica-cabecalho .acao-cabecalho,
     .navegacao-admin-cabecalho .acao-cabecalho{
         width:auto;
         min-width:max-content;
@@ -500,20 +533,28 @@ body.pagina-com-cabecalho-site{
     }
 
     body:not([data-page="loja"]) {
-        padding-top: 138px;
+        padding-top: 198px;
     }
 
     body:not([data-page="loja"]) .cabecalho-loja {
-        grid-template-rows: auto auto;
+        grid-template-rows: auto auto auto;
     }
 
     body:not([data-page="loja"]) .acoes-cabecalho {
         grid-row: 2;
     }
 
+    body:not([data-page="loja"]) .navegacao-publica-cabecalho {
+        grid-row: 3;
+    }
+
+    body:not([data-page="loja"]) .navegacao-admin-cabecalho {
+        grid-row: 4;
+    }
+
     body.cabecalho-com-admin:not([data-page="loja"]),
     body.pagina-com-cabecalho-site:not([data-page="loja"]) {
-        padding-top: 186px;
+        padding-top: 250px !important;
     }
 }
 
