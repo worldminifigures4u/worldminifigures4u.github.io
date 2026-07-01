@@ -94,6 +94,11 @@
             border:1px solid #444;
         }
 
+        .btn-quantidade:disabled{
+            cursor:not-allowed;
+            opacity:0.45;
+        }
+
         .quantidade-carrinho{
             min-width:22px;
             text-align:center;

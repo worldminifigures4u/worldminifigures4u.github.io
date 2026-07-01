@@ -67,15 +67,9 @@ function diminuirQuantidade(id) {
 
     if (!item) return;
 
+    if (Number(item.quantidade || 1) <= 1) return;
+
     item.quantidade--;
-
-    if (item.quantidade <= 0) {
-
-        carrinho = carrinho.filter(
-            p => p.id !== id
-        );
-
-    }
 
     guardarCarrinho();
 
@@ -156,6 +150,7 @@ const carrinhoDiv = document.getElementById("lista-carrinho");
         btnMenos.className = "btn-quantidade";
         btnMenos.textContent = "-";
         btnMenos.setAttribute("aria-label", "Diminuir quantidade");
+        btnMenos.disabled = Number(item.quantidade || 1) <= 1;
         btnMenos.onclick = () => diminuirQuantidade(item.id);
 
         // quantidade
@@ -312,4 +307,3 @@ function recalcularTotais(){
         pesoTotal
     };
 }
-
