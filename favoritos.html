@@ -12,8 +12,8 @@
     <link rel="icon" type="image/png" href="figures-planet-logo-transparent.png">
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.108.2"></script>
-    <link rel="stylesheet" href="styles.css?v=20260702-admin-compacto">
-    <link rel="stylesheet" href="favoritos.css?v=20260701-pagina-favoritos">
+    <link rel="stylesheet" href="styles.css?v=20260702-header-limpo">
+    <link rel="stylesheet" href="favoritos.css?v=20260702-ver-produtos">
 </head>
 <body data-page="favoritos">
 
@@ -44,20 +44,6 @@
                 <span class="badge-carrinho" id="contador-carrinho-cabecalho">0</span>
             </a>
         </div>
-        <nav class="navegacao-publica-cabecalho" aria-label="Navegacao principal">
-            <a class="acao-cabecalho acao-produtos" href="index.html" data-vista-nav="loja">
-                <span class="texto-acao"><strong>Produtos</strong></span>
-            </a>
-            <a class="acao-cabecalho" href="sobre.html" data-vista-nav="sobre">
-                <span class="texto-acao"><strong>Sobre n&oacute;s</strong></span>
-            </a>
-            <a class="acao-cabecalho" href="contactos.html" data-vista-nav="contactos">
-                <span class="texto-acao"><strong>Contactos</strong></span>
-            </a>
-            <a class="acao-cabecalho" href="politicas.html" data-vista-nav="politicas">
-                <span class="texto-acao"><strong>Pol&iacute;ticas</strong></span>
-            </a>
-        </nav>
         <nav class="navegacao-admin-cabecalho" aria-label="Navegação administrativa" hidden>
             <a class="acao-cabecalho acao-gestao-admin" href="gestao.html" aria-label="Abrir gestão administrativa" hidden>
                 <span class="texto-acao"><strong>Gestão</strong></span>
@@ -87,8 +73,11 @@
 <div class="container">
     <main class="favoritos-pagina">
         <section class="favoritos-topo">
-            <h1>Favoritos</h1>
-            <p id="favoritos-resumo">As minifiguras que guardaste para ver mais tarde.</p>
+            <div class="favoritos-topo-texto">
+                <h1>Favoritos</h1>
+                <p id="favoritos-resumo">As minifiguras que guardaste para ver mais tarde.</p>
+            </div>
+            <a class="favoritos-continuar" href="index.html">Ver produtos</a>
         </section>
         <section class="favoritos-lista" id="lista-favoritos-cliente" aria-live="polite">
             <p class="favoritos-vazio">A carregar favoritos...</p>
@@ -99,6 +88,12 @@
 <footer class="rodape-site">
     <div class="rodape-conteudo">
         <div class="rodape-frase">Figures Planet &copy; 2026 &middot; Minifiguras, colecion&aacute;veis e pe&ccedil;as especiais</div>
+        <nav class="rodape-links" aria-label="Navegacao secundaria">
+            <a href="index.html">Produtos</a>
+            <a href="sobre.html">Sobre n&oacute;s</a>
+            <a href="contactos.html">Contactos</a>
+            <a href="politicas.html">Pol&iacute;ticas</a>
+        </nav>
     </div>
 </footer>
 <script src="app.js?v=20260702-cache-nome-conta"></script>

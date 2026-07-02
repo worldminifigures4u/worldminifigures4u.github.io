@@ -12,8 +12,8 @@
     <link rel="icon" type="image/png" href="figures-planet-logo-transparent.png">
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.108.2"></script>
-    <link rel="stylesheet" href="styles.css?v=20260702-admin-compacto">
-    <link rel="stylesheet" href="carrinho.css?v=20260701-menos-nao-remove">
+    <link rel="stylesheet" href="styles.css?v=20260702-header-limpo">
+    <link rel="stylesheet" href="carrinho.css?v=20260702-continuar-comprar">
 </head>
 <body data-page="carrinho">
 
@@ -34,25 +34,16 @@
                     <span class="detalhe-conta-cabecalho" id="nome-login-cabecalho"></span>
                 </span>
             </a>
+            <a class="acao-cabecalho acao-favoritos-topo" href="favoritos.html" aria-label="Abrir favoritos" title="Favoritos" data-vista-nav="favoritos">
+                <svg class="icone-coracao-favorito" viewBox="0 0 100 92" aria-hidden="true" focusable="false">
+                    <path d="M50 84 L14 48 C3 37 3 18 15 9 C27 0 44 4 50 20 C56 4 73 0 85 9 C97 18 97 37 86 48 Z" fill="none" stroke="currentColor" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"></path>
+                </svg>
+            </a>
             <a class="acao-cabecalho acao-carrinho ativa" href="carrinho.html" aria-label="Abrir carrinho" data-vista-nav="carrinho">
                 <span class="icone-acao" aria-hidden="true"></span>
                 <span class="badge-carrinho" id="contador-carrinho-cabecalho">0</span>
             </a>
         </div>
-        <nav class="navegacao-publica-cabecalho" aria-label="Navegacao principal">
-            <a class="acao-cabecalho acao-produtos" href="index.html" data-vista-nav="loja">
-                <span class="texto-acao"><strong>Produtos</strong></span>
-            </a>
-            <a class="acao-cabecalho" href="sobre.html" data-vista-nav="sobre">
-                <span class="texto-acao"><strong>Sobre n&oacute;s</strong></span>
-            </a>
-            <a class="acao-cabecalho" href="contactos.html" data-vista-nav="contactos">
-                <span class="texto-acao"><strong>Contactos</strong></span>
-            </a>
-            <a class="acao-cabecalho" href="politicas.html" data-vista-nav="politicas">
-                <span class="texto-acao"><strong>Pol&iacute;ticas</strong></span>
-            </a>
-        </nav>
         <nav class="navegacao-admin-cabecalho" aria-label="Navegação administrativa" hidden>
             <a class="acao-cabecalho acao-gestao-admin" href="gestao.html" aria-label="Abrir gestão administrativa" hidden>
                 <span class="texto-acao"><strong>Gestão</strong></span>
@@ -83,7 +74,10 @@
 
     <section class="vista vista-carrinho ativa" id="vista-carrinho">
         <aside class="carrinho">
-<h2> Carrinho</h2>
+            <div class="carrinho-topo">
+                <h2>Carrinho</h2>
+                <a class="btn-continuar-comprar" href="index.html">Continuar a comprar</a>
+            </div>
         <div class="lista-carrinho" id="lista-carrinho">
             <p id="carrinho-vazio">Nenhum produto adicionado.</p>
         </div>
@@ -167,6 +161,12 @@
 <footer class="rodape-site">
     <div class="rodape-conteudo">
         <div class="rodape-frase">Figures Planet &copy; 2026 &middot; Minifiguras, colecion&aacute;veis e pe&ccedil;as especiais</div>
+        <nav class="rodape-links" aria-label="Navegacao secundaria">
+            <a href="index.html">Produtos</a>
+            <a href="sobre.html">Sobre n&oacute;s</a>
+            <a href="contactos.html">Contactos</a>
+            <a href="politicas.html">Pol&iacute;ticas</a>
+        </nav>
     </div>
 </footer>
 <script src="app.js?v=20260702-cache-nome-conta"></script>

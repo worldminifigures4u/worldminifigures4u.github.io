@@ -27,6 +27,38 @@
             padding-bottom:10px;
         }
 
+        .carrinho-topo{
+            display:flex;
+            justify-content:space-between;
+            align-items:center;
+            gap:12px;
+            border-bottom:1px solid #333;
+            padding-bottom:10px;
+            margin-bottom:12px;
+        }
+
+        .carrinho-topo h2{
+            margin:0;
+            border-bottom:0;
+            padding-bottom:0;
+        }
+
+        .btn-continuar-comprar{
+            background:#ffc107;
+            color:#000;
+            border:0;
+            border-radius:8px;
+            padding:10px 12px;
+            font-weight:900;
+            text-decoration:none;
+            white-space:nowrap;
+        }
+
+        .btn-continuar-comprar:hover,
+        .btn-continuar-comprar:focus-visible{
+            background:#e0a800;
+            outline:none;
+        }
         .lista-carrinho{
             max-height:430px;
             overflow-y:auto;

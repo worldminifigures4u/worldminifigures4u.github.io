@@ -7,7 +7,7 @@ body{
         }
 
         body{
-            padding-top: 158px;
+            padding-top: 128px;
         }
 
         header{
@@ -28,8 +28,8 @@ body{
             padding:6px 36px 8px 42px;
             box-sizing:border-box;
             display:grid;
-            grid-template-columns:minmax(430px, 520px) minmax(320px, 1fr) auto;
-            grid-template-rows:auto auto;
+            grid-template-columns:minmax(360px, 470px) minmax(320px, 1fr) auto;
+            grid-template-rows:auto;
             gap:6px 22px;
             align-items:center;
         }
@@ -39,15 +39,15 @@ body{
             display:flex;
             align-items:center;
             grid-column:1;
-            grid-row:1 / span 2;
+            grid-row:1;
             width:max-content;
             max-width:100%;
         }
 
         .logo-loja img{
             display:block;
-            width:500px;
-            max-height:144px;
+            width:450px;
+            max-height:118px;
             height:auto;
             object-fit:contain;
             object-position:center;
@@ -268,11 +268,11 @@ body{
 
         @media(min-width:1101px){
             body[data-page="loja"]{
-                padding-top:136px;
+                padding-top:122px;
             }
 
             body[data-page="loja"] .container{
-                padding-top:12px;
+                padding-top:10px;
             }
         }
 
@@ -356,7 +356,7 @@ body{
         .erro{ color:#ff4d4d; }
 
         @media(max-width:1100px){
-            body{ padding-top:214px; }
+            body{ padding-top:166px; }
             .cabecalho-loja{
                 grid-template-columns:1fr auto;
                 gap:6px 14px;
@@ -385,7 +385,7 @@ body{
         }
 
         @media(max-width:560px){
-            body{ padding-top:224px; }
+            body{ padding-top:206px; }
             .cabecalho-loja{
                 grid-template-columns:minmax(0, 1fr);
                 grid-template-rows:auto auto auto auto;
@@ -494,38 +494,16 @@ body{
             .rodape-links{ justify-content:center; }
         }
 
-/* Cabecalho publico com menus em segunda linha. */
-.navegacao-publica-cabecalho{
-    grid-column:2;
-    grid-row:2;
-    display:grid;
-    grid-template-columns:repeat(4, minmax(0, 1fr));
-    justify-content:stretch;
-    align-items:center;
-    gap:6px;
-    min-width:0;
-    padding-top:0;
-    border-top:0;
-}
-
-.navegacao-publica-cabecalho .acao-cabecalho{
-    height:34px;
-    min-width:0;
-    border-radius:18px;
-    justify-content:center;
-    white-space:nowrap;
-}
-
-/* Cabecalho publico com uma terceira linha exclusiva para administracao. */
+/* Cabecalho com uma segunda linha exclusiva para administracao. */
 .navegacao-admin-cabecalho{
     grid-column:2 / -1;
-    grid-row:3;
+    grid-row:2;
     display:flex;
     justify-content:center;
     align-items:center;
     gap:5px;
     min-width:0;
-    padding-top:5px;
+    padding-top:4px;
     border-top:1px solid #292929;
 }
 
@@ -544,11 +522,11 @@ body{
 }
 
 body.cabecalho-com-admin{
-    padding-top:204px;
+    padding-top:166px;
 }
 
 body.pagina-com-cabecalho-site{
-    padding-top:204px !important;
+    padding-top:166px !important;
 }
 
 .cabecalho-site-admin{
@@ -562,48 +540,30 @@ body.pagina-com-cabecalho-site{
 @media(max-width:1100px){
     body.cabecalho-com-admin,
     body.pagina-com-cabecalho-site{
-        padding-top:264px !important;
-    }
-
-    .navegacao-publica-cabecalho{
-        grid-column:1 / -1;
-        grid-row:3;
-        display:flex;
-        justify-content:center;
+        padding-top:214px !important;
     }
 
     .navegacao-admin-cabecalho{
         grid-column:1 / -1;
-        grid-row:4;
+        grid-row:3;
     }
 }
 
 @media(max-width:560px){
     body.cabecalho-com-admin,
     body.pagina-com-cabecalho-site{
-        padding-top:264px !important;
-    }
-
-    .navegacao-publica-cabecalho{
-        grid-column:1;
-        grid-row:4;
-        display:flex;
-        justify-content:flex-start;
-        overflow-x:auto;
-        padding:6px 0 1px;
-        scrollbar-width:thin;
+        padding-top:234px !important;
     }
 
     .navegacao-admin-cabecalho{
         grid-column:1;
-        grid-row:5;
+        grid-row:4;
         justify-content:flex-start;
         overflow-x:auto;
         padding:6px 0 1px;
         scrollbar-width:thin;
     }
 
-    .navegacao-publica-cabecalho .acao-cabecalho,
     .navegacao-admin-cabecalho .acao-cabecalho{
         width:auto;
         min-width:max-content;
@@ -619,7 +579,7 @@ body.pagina-com-cabecalho-site{
     }
 
     body:not([data-page="loja"]) {
-        padding-top: 176px;
+        padding-top: 150px;
     }
 
     body:not([data-page="loja"]) .cabecalho-loja {
@@ -630,17 +590,13 @@ body.pagina-com-cabecalho-site{
         grid-row: 2;
     }
 
-    body:not([data-page="loja"]) .navegacao-publica-cabecalho {
-        grid-row: 3;
-    }
-
     body:not([data-page="loja"]) .navegacao-admin-cabecalho {
-        grid-row: 4;
+        grid-row: 3;
     }
 
     body.cabecalho-com-admin:not([data-page="loja"]),
     body.pagina-com-cabecalho-site:not([data-page="loja"]) {
-        padding-top: 218px !important;
+        padding-top: 190px !important;
     }
 }
 
