@@ -212,6 +212,19 @@
             max-width:none;
         }
 
+        .acao-favoritos-topo{
+            min-width:50px;
+            justify-content:center;
+            padding:0 11px;
+        }
+
+        .icone-coracao-favorito{
+            width:24px;
+            height:24px;
+            display:block;
+            flex:0 0 auto;
+        }
+
         .acao-carrinho{
             position:relative;
             min-width:50px;
@@ -486,7 +499,7 @@
     grid-column:2;
     grid-row:2;
     display:grid;
-    grid-template-columns:repeat(5, minmax(0, 1fr));
+    grid-template-columns:repeat(4, minmax(0, 1fr));
     justify-content:stretch;
     align-items:center;
     gap:6px;

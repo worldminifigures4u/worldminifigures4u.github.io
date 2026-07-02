@@ -13,7 +13,7 @@
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.108.2"></script>
 
-    <link rel="stylesheet" href="styles.css?v=20260702-header-gap">
+    <link rel="stylesheet" href="styles.css?v=20260702-favoritos-topo">
     <link rel="stylesheet" href="conta.css?v=20260629-sem-inline-style">
     <link rel="stylesheet" href="gestao.css?v=20260629-admin-visible">
 </head>
@@ -36,6 +36,11 @@
                     <span class="detalhe-conta-cabecalho" id="nome-login-cabecalho"></span>
                 </span>
             </a>
+            <a class="acao-cabecalho acao-favoritos-topo" href="favoritos.html" aria-label="Abrir favoritos" title="Favoritos" data-vista-nav="favoritos">
+                <svg class="icone-coracao-favorito" viewBox="0 0 100 92" aria-hidden="true" focusable="false">
+                    <path d="M50 84 L14 48 C3 37 3 18 15 9 C27 0 44 4 50 20 C56 4 73 0 85 9 C97 18 97 37 86 48 Z" fill="none" stroke="currentColor" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"></path>
+                </svg>
+            </a>
             <a class="acao-cabecalho acao-carrinho" href="carrinho.html" aria-label="Abrir carrinho" data-vista-nav="carrinho">
                 <span class="icone-acao" aria-hidden="true"></span>
                 <span class="badge-carrinho" id="contador-carrinho-cabecalho">0</span>
@@ -44,9 +49,6 @@
         <nav class="navegacao-publica-cabecalho" aria-label="Navegacao principal">
             <a class="acao-cabecalho acao-produtos" href="index.html" data-vista-nav="loja">
                 <span class="texto-acao"><strong>Produtos</strong></span>
-            </a>
-            <a class="acao-cabecalho acao-favoritos" href="favoritos.html" data-vista-nav="favoritos">
-                <span class="texto-acao"><strong>Favoritos</strong></span>
             </a>
             <a class="acao-cabecalho" href="sobre.html" data-vista-nav="sobre">
                 <span class="texto-acao"><strong>Sobre n&oacute;s</strong></span>
