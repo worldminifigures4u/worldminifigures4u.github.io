@@ -489,8 +489,9 @@ body[data-page="conta"]:not(.pagina-gestao) .conta-menu-lateral{
 }
 
 body[data-page="conta"]:not(.pagina-gestao) .conta-menu-item{
-    width:auto;
-    min-width:210px;
+    width:280px;
+    min-width:280px;
+    white-space:nowrap;
 }
 
 body[data-page="conta"]:not(.pagina-gestao) .conta-conteudo-dinamico .btn-acao-cliente,
@@ -510,6 +511,7 @@ body[data-page="conta"]:not(.pagina-gestao) .conta-conteudo-dinamico .btn-solici
     body[data-page="conta"]:not(.pagina-gestao) .conta-conteudo-dinamico .btn-solicitar-eliminacao{
         width:100%;
         min-width:0;
+        white-space:normal;
     }
 }
 
