@@ -1,4 +1,7 @@
 (function () {
+    const SUPABASE_URL = "https://gksndzxadndrsynvzgzb.supabase.co";
+    const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imdrc25kenhhZG5kcnN5bnZ6Z3piIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkwODc5NzMsImV4cCI6MjA5NDY2Mzk3M30.EHZgacYr27dqoc4CJHsOwkNnJFGlLIteSHBi4B1HfVE";
+
     function carregarCarrinhoLocal() {
         try {
             const guardado = JSON.parse(localStorage.getItem('carrinho')) || [];
@@ -16,6 +19,38 @@
         contador.textContent = total;
     }
 
+    function atualizarCabecalhoCliente(nome = '') {
+        const nomeEl = document.getElementById('nome-login-cabecalho');
+        if (!nomeEl) return;
+
+        const primeiroNome = String(nome || '').trim().split(/\s+/)[0] || '';
+        nomeEl.textContent = primeiroNome;
+        nomeEl.classList.toggle('oculto', !primeiroNome);
+    }
+
+    async function atualizarNomeContaCabecalho() {
+        try {
+            if (typeof supabase === 'undefined') return;
+            const client = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+            const { data: { user } } = await client.auth.getUser();
+            if (!user) {
+                atualizarCabecalhoCliente();
+                return;
+            }
+
+            const { data } = await client
+                .from('clientes')
+                .select('nome')
+                .eq('id', user.id)
+                .single();
+
+            atualizarCabecalhoCliente(data?.nome || user?.user_metadata?.nome || '');
+        } catch (erro) {
+            console.warn('Nome da conta indisponivel:', erro);
+            atualizarCabecalhoCliente();
+        }
+    }
+
     window.pesquisarNoCabecalho = function pesquisarNoCabecalho() {
         return;
     };
@@ -27,6 +62,9 @@
         window.location.href = 'index.html' + (pesquisa ? '?q=' + encodeURIComponent(pesquisa) : '');
     };
 
-    document.addEventListener('DOMContentLoaded', atualizarContadorCarrinhoCabecalho);
+    document.addEventListener('DOMContentLoaded', () => {
+        atualizarContadorCarrinhoCabecalho();
+        atualizarNomeContaCabecalho();
+    });
     window.addEventListener('storage', atualizarContadorCarrinhoCabecalho);
 })();
