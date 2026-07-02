@@ -75,7 +75,7 @@ function criarCardFavoritoCliente(produto) {
     const detalhe = document.createElement('span');
     const temaDetalhe = [produto.tema, produto.subtema]
         .map(valor => String(valor || '').trim())
-        .filter(valor => valor && !/^sem\s+subtema$/i.test(valor));
+        .filter(valor => valor && !/^sem\s*subtema$/i.test(valor));
     detalhe.textContent = temaDetalhe.join(' - ') || 'Sem tema';
 
     const preco = document.createElement('span');
