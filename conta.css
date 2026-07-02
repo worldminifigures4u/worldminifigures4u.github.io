@@ -17,6 +17,10 @@
         .vista-conta .area-cliente{
             margin:0 auto;
         }
+body[data-page="conta"]:not(.pagina-gestao) .vista-conta.ativa{
+            max-width:none;
+            width:100%;
+        }
 
         .area-cliente h2{
             margin-top:0;
