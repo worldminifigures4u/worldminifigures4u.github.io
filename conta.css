@@ -393,3 +393,93 @@ body[data-page="conta"]:not(.pagina-gestao) .vista-conta.ativa{
     color:#aaa;
     font-size:12px;
 }
+
+body[data-page="conta"]:not(.pagina-gestao) #conteudo-cliente-autenticado:not(.oculto){
+    display:grid;
+    grid-template-columns:minmax(220px, 280px) minmax(0, 1fr);
+    gap:18px;
+    align-items:start;
+}
+
+.conta-menu-lateral{
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+    position:sticky;
+    top:150px;
+}
+
+.conta-menu-item{
+    width:100%;
+    min-height:48px;
+    padding:11px 14px;
+    border:1px solid #333;
+    border-radius:999px;
+    background:#222;
+    color:#fff;
+    font:inherit;
+    font-weight:800;
+    text-align:left;
+    cursor:pointer;
+}
+
+.conta-menu-item:hover,
+.conta-menu-item:focus-visible{
+    border-color:#ffc107;
+    color:#ffc107;
+    outline:none;
+}
+
+.conta-menu-item.ativa{
+    background:#ffc107;
+    border-color:#ffc107;
+    color:#000;
+}
+
+.conta-conteudo-dinamico{
+    min-width:0;
+}
+
+.conta-seccao{
+    display:none;
+    margin-top:0;
+    padding-top:0;
+    border-top:0;
+}
+
+.conta-seccao.ativa{
+    display:block;
+}
+
+.conta-seccao h2{
+    margin-top:0;
+    border-bottom:1px solid #333;
+    padding-bottom:10px;
+}
+
+body[data-page="conta"]:not(.pagina-gestao) #conteudo-cliente-anonimo{
+    max-width:760px;
+    margin:0 auto;
+}
+
+@media(max-width:900px){
+    body[data-page="conta"]:not(.pagina-gestao) #conteudo-cliente-autenticado:not(.oculto){
+        grid-template-columns:1fr;
+    }
+
+    .conta-menu-lateral{
+        position:static;
+        display:grid;
+        grid-template-columns:repeat(2, minmax(0, 1fr));
+    }
+
+    .conta-menu-item{
+        text-align:center;
+    }
+}
+
+@media(max-width:560px){
+    .conta-menu-lateral{
+        grid-template-columns:1fr;
+    }
+}

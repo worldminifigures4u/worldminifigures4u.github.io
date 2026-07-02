@@ -77,6 +77,18 @@
             });
         });
 
+        document.querySelectorAll('[data-seccao-conta]').forEach(function (botao) {
+            botao.addEventListener('click', function () {
+                const destino = botao.dataset.seccaoConta;
+                document.querySelectorAll('[data-seccao-conta]').forEach(function (item) {
+                    item.classList.toggle('ativa', item === botao);
+                });
+                document.querySelectorAll('[data-conta-seccao]').forEach(function (secao) {
+                    secao.classList.toggle('ativa', secao.dataset.contaSeccao === destino);
+                });
+            });
+        });
+
         document.querySelectorAll('[data-acao-cliente="recuperar-password"]').forEach(function (botao) {
             botao.addEventListener('click', function () {
                 if (typeof pedirRecuperacaoPassword === 'function') pedirRecuperacaoPassword();
