@@ -253,6 +253,16 @@
             padding:20px;
         }
 
+        @media(min-width:1101px){
+            body[data-page="loja"]{
+                padding-top:136px;
+            }
+
+            body[data-page="loja"] .container{
+                padding-top:12px;
+            }
+        }
+
         .vista{
             display:none;
         }
