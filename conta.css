@@ -512,3 +512,9 @@ body[data-page="conta"]:not(.pagina-gestao) .conta-conteudo-dinamico .btn-solici
         min-width:0;
     }
 }
+
+/* conta-eliminacao-compacta */
+body[data-page="conta"]:not(.pagina-gestao) .zona-perigo-conta,
+body[data-page="conta"]:not(.pagina-gestao) .form-eliminar-conta{
+    max-width:460px;
+}
