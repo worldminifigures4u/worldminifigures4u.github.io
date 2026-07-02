@@ -119,38 +119,75 @@
             border-color:rgba(255,255,255,0.22);
         }
 
+        .produto-galeria{
+            position:relative;
+            touch-action:pan-y;
+        }
+
         .produto-img{
             width:100%;
             height:220px;
             object-fit:contain;
             background:#222;
             border-radius:10px;
+            display:block;
         }
 
-        .produto-miniaturas{
-            display:flex;
-            justify-content:center;
-            gap:6px;
-            margin-top:10px;
-            flex-wrap: wrap;
-        }
-
-        .miniatura-img{
-            width:45px;
-            height:45px;
-            border-radius:6px;
-            border:1px solid #444;
+        .produto-galeria-seta{
+            position:absolute;
+            top:50%;
+            z-index:3;
+            width:32px;
+            height:42px;
+            transform:translateY(-50%);
+            border:1px solid rgba(255,255,255,0.2);
+            border-radius:999px;
+            background:rgba(0,0,0,0.58);
+            color:#fff;
             cursor:pointer;
-            background: #222;
-            color:#ffc107;
-            font-weight:bold;
-            padding:0;
-            transition: 0.2s;
+            font-size:21px;
+            font-weight:900;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            opacity:0;
+            transition:0.18s;
         }
 
-        .miniatura-img:hover {
-            border-color: #ffc107;
-            background:#333;
+        .produto-galeria-seta-anterior{ left:8px; }
+        .produto-galeria-seta-seguinte{ right:8px; }
+
+        .produto-card:hover .produto-galeria-seta,
+        .produto-galeria:focus-within .produto-galeria-seta{
+            opacity:1;
+        }
+
+        .produto-galeria-seta:hover,
+        .produto-galeria-seta:focus-visible{
+            border-color:#ffc107;
+            color:#ffc107;
+            outline:none;
+            opacity:1;
+        }
+
+        .produto-galeria-indicador{
+            position:absolute;
+            left:50%;
+            bottom:8px;
+            transform:translateX(-50%);
+            padding:3px 8px;
+            border-radius:999px;
+            background:rgba(0,0,0,0.62);
+            color:#eee;
+            font-size:12px;
+            font-weight:800;
+            line-height:1;
+        }
+
+        @media (hover:none){
+            .produto-galeria-seta{
+                opacity:0.92;
+            }
         }
 
         .categoria{

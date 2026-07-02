@@ -236,29 +236,61 @@ function gerarProdutos(listaProdutos){
                 imagemPrincipal.src = imagemFallback;
             }
         };
-        card.appendChild(imagemPrincipal);
+        const galeria = document.createElement('div');
+        galeria.className = 'produto-galeria';
+        galeria.appendChild(imagemPrincipal);
 
-        if (listaImagens.length > 1) {
-            const miniaturasDiv = document.createElement('div');
-            miniaturasDiv.className = 'produto-miniaturas';
-            
-            imagensOtimizadas.forEach((imagemOtimizada, index) => {
-                const mini = document.createElement('button');
-                mini.className = 'miniatura-img';
-                mini.type = 'button';
-                mini.title = 'Ver imagem ' + (index + 1);
-                mini.textContent = index + 1;
-                mini.addEventListener('pointerenter', () => precarregarImagemProduto(imagemOtimizada), { once:true });
-                mini.addEventListener('focus', () => precarregarImagemProduto(imagemOtimizada), { once:true });
-                mini.addEventListener('touchstart', () => precarregarImagemProduto(imagemOtimizada), { once:true, passive:true });
-                mini.onclick = function() {
-                    imagemPrincipal.dataset.srcOriginal = imagemOtimizada;
-                    imagemPrincipal.src = imagemOtimizada;
-                };
-                miniaturasDiv.appendChild(mini);
+        if (imagensOtimizadas.length > 1) {
+            let imagemAtual = 0;
+            let toqueInicioX = 0;
+            const totalImagens = imagensOtimizadas.length;
+
+            const indicador = document.createElement('span');
+            indicador.className = 'produto-galeria-indicador';
+
+            const atualizarImagem = (proximoIndice) => {
+                imagemAtual = (proximoIndice + totalImagens) % totalImagens;
+                const proximaImagem = imagensOtimizadas[imagemAtual];
+                imagemPrincipal.dataset.srcOriginal = proximaImagem;
+                imagemPrincipal.src = proximaImagem;
+                indicador.textContent = (imagemAtual + 1) + ' / ' + totalImagens;
+
+                const seguinte = imagensOtimizadas[(imagemAtual + 1) % totalImagens];
+                const anterior = imagensOtimizadas[(imagemAtual - 1 + totalImagens) % totalImagens];
+                precarregarImagemProduto(seguinte);
+                precarregarImagemProduto(anterior);
+            };
+
+            const criarSeta = (classe, texto, direcao) => {
+                const botao = document.createElement('button');
+                botao.className = 'produto-galeria-seta ' + classe;
+                botao.type = 'button';
+                botao.textContent = texto;
+                botao.setAttribute('aria-label', direcao < 0 ? 'Imagem anterior' : 'Imagem seguinte');
+                botao.addEventListener('click', evento => {
+                    evento.preventDefault();
+                    evento.stopPropagation();
+                    atualizarImagem(imagemAtual + direcao);
+                });
+                return botao;
+            };
+
+            galeria.appendChild(criarSeta('produto-galeria-seta-anterior', '<', -1));
+            galeria.appendChild(criarSeta('produto-galeria-seta-seguinte', '>', 1));
+            galeria.appendChild(indicador);
+            indicador.textContent = '1 / ' + totalImagens;
+
+            galeria.addEventListener('pointerdown', evento => {
+                toqueInicioX = evento.clientX;
             });
-            card.appendChild(miniaturasDiv);
+            galeria.addEventListener('pointerup', evento => {
+                const deltaX = evento.clientX - toqueInicioX;
+                if (Math.abs(deltaX) < 40) return;
+                atualizarImagem(imagemAtual + (deltaX < 0 ? 1 : -1));
+            });
         }
+
+        card.appendChild(galeria);
 
         const category = document.createElement('div');
         category.className = 'categoria';
