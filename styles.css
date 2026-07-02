@@ -457,10 +457,10 @@ body{
             width:min(1180px, 100%);
             margin:auto;
             display:flex;
-            justify-content:center;
+            justify-content:space-between;
             align-items:center;
-            gap:20px;
-            text-align:center;
+            gap:24px;
+            text-align:left;
         }
 
         .rodape-marca{
@@ -469,9 +469,10 @@ body{
         }
 
         .rodape-frase{
-            color:#bbb;
-            font-weight:800;
+            color:#888;
+            font-weight:700;
             line-height:1.4;
+            flex:1 1 auto;
         }
 
         .rodape-links{
