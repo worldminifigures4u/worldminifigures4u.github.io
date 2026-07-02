@@ -1,4 +1,4 @@
-﻿body{
+body{
             margin:0;
             padding:0;
             background:#000;
@@ -523,9 +523,9 @@
     display:flex;
     justify-content:center;
     align-items:center;
-    gap:6px;
+    gap:5px;
     min-width:0;
-    padding-top:6px;
+    padding-top:5px;
     border-top:1px solid #292929;
 }
 
@@ -534,10 +534,13 @@
 }
 
 .navegacao-admin-cabecalho .acao-cabecalho{
-    min-width:124px;
+    height:32px;
+    min-width:104px;
+    padding:0 14px;
     border-radius:18px;
     justify-content:center;
     white-space:nowrap;
+    font-size:14px;
 }
 
 body.cabecalho-com-admin{
