@@ -58,7 +58,10 @@ body{
             position:relative;
             grid-column:2;
             grid-row:1;
+            width:100%;
+            max-width:760px;
             min-width:0;
+            justify-self:center;
         }
 
         .cabecalho-pesquisa .input-pesquisa{
@@ -186,9 +189,10 @@ body{
         }
 
         [data-vista-nav="conta"]{
-            min-width:70px;
+            min-width:104px;
+            max-width:190px;
             justify-content:center;
-            padding:0 12px;
+            padding:0 14px;
         }
 
         [data-vista-nav="conta"]::before{
@@ -203,7 +207,7 @@ body{
 
         [data-vista-nav="conta"] .detalhe-conta-cabecalho{
             display:block;
-            max-width:74px;
+            max-width:132px;
             font-size:12px;
             opacity:1;
         }
@@ -365,6 +369,7 @@ body{
             .cabecalho-pesquisa{
                 grid-column:1 / -1;
                 grid-row:2;
+                max-width:none;
             }
             .logo-loja{
                 grid-column:1;
@@ -415,6 +420,7 @@ body{
             .cabecalho-pesquisa{
                 grid-column:1;
                 grid-row:3;
+                max-width:none;
             }
             .cabecalho-pesquisa .input-pesquisa{
                 height:38px;
