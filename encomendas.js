@@ -90,12 +90,31 @@ function detalheErroEncomendas(error) {
     return partes.join(' | ') || String(error);
 }
 
-async function atualizarEstadoDiretoEncomendaAdmin(encomenda, estado) {
+async function atualizarEstadoDiretoEncomendaAdmin(encomenda, estado, dataPagamentoIso = null) {
+    const atualizacao = { estado };
+    if (dataPagamentoIso) atualizacao.created_at = dataPagamentoIso;
+
     const { data, error } = await encomendasClient
         .from('encomendas')
-        .update({ estado })
+        .update(atualizacao)
         .eq('id', String(encomenda.id))
-        .select('id, estado')
+        .select('id, estado, created_at')
+        .single();
+    if (error) throw error;
+    return data;
+}
+
+function deveAtualizarDataPagamentoEncomenda(estadoAnterior, estadoNovo) {
+    return estadoNormalizadoEncomenda(estadoNovo) === 'Pago'
+        && estadoNormalizadoEncomenda(estadoAnterior) !== 'Pago';
+}
+
+async function atualizarDataPagamentoEncomendaAdmin(encomenda, dataPagamentoIso) {
+    const { data, error } = await encomendasClient
+        .from('encomendas')
+        .update({ created_at: dataPagamentoIso })
+        .eq('id', String(encomenda.id))
+        .select('id, created_at')
         .single();
     if (error) throw error;
     return data;
@@ -475,6 +494,8 @@ async function copiarEncomendaAdmin(encomenda) {
 
 async function atualizarEstadoEncomendaAdmin(encomenda, estado, select) {
     const estadoAnterior = estadoNormalizadoEncomenda(encomenda.estado);
+    const atualizarDataPagamento = deveAtualizarDataPagamentoEncomenda(estadoAnterior, estado);
+    const dataPagamentoIso = atualizarDataPagamento ? new Date().toISOString() : null;
     let reporStock = false;
 
     if (estado === 'Conclu\u00eddo' && estadoAnterior !== 'Conclu\u00eddo') {
@@ -530,8 +551,8 @@ async function atualizarEstadoEncomendaAdmin(encomenda, estado, select) {
 
             if (error) {
                 try {
-                    await atualizarEstadoDiretoEncomendaAdmin(encomenda, estado);
-                    data = { sucesso: true, estado };
+                    const dataAtualizada = await atualizarEstadoDiretoEncomendaAdmin(encomenda, estado, dataPagamentoIso);
+                    data = { sucesso: true, estado, created_at: dataAtualizada?.created_at || dataPagamentoIso };
                     error = null;
                     console.warn('Estado atualizado por fallback direto depois de falha na RPC.', respostaRpc.error);
                 } catch (erroFallback) {
@@ -539,11 +560,16 @@ async function atualizarEstadoEncomendaAdmin(encomenda, estado, select) {
                         `RPC: ${detalheErroEncomendas(respostaRpc.error)}. Atualização direta: ${detalheErroEncomendas(erroFallback)}`
                     );
                 }
+            } else if (dataPagamentoIso) {
+                const dataAtualizada = await atualizarDataPagamentoEncomendaAdmin(encomenda, dataPagamentoIso);
+                data = { ...(data || {}), created_at: dataAtualizada?.created_at || dataPagamentoIso };
             }
         }
         if (error) throw error;
         if (data?.sucesso === false) throw new Error(data.erro || 'Não foi possível atualizar.');
         encomenda.estado = estado;
+        if (data?.created_at) encomenda.created_at = data.created_at;
+        else if (dataPagamentoIso) encomenda.created_at = dataPagamentoIso;
         if (data?.stock_reposto) encomenda.stock_reposto = true;
         let anexosEliminados = 0;
         let erroAnexos = null;
