@@ -176,7 +176,7 @@ function gerarProdutos(listaProdutos){
 
         const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
         path.setAttribute('d', 'M50 84 L14 48 C3 37 3 18 15 9 C27 0 44 4 50 20 C56 4 73 0 85 9 C97 18 97 37 86 48 Z');
-        path.setAttribute('fill', 'none');
+        path.setAttribute('fill', 'currentColor');
         path.setAttribute('stroke', 'currentColor');
         path.setAttribute('stroke-width', '9');
         path.setAttribute('stroke-linecap', 'round');

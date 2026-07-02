@@ -117,10 +117,23 @@
             border-color:rgba(255,255,255,0.22);
         }
 
-        .icone-coracao-favorito{
-            width:29px;
-            height:29px;
+        .btn-favorito-produto .icone-coracao-favorito{
+            width:26px;
+            height:26px;
             display:block;
+            flex:0 0 auto;
+            transform:translateY(1px);
+        }
+
+        .btn-favorito-produto .icone-coracao-favorito path{
+            fill:transparent;
+            stroke:currentColor;
+            transition:fill 0.16s ease, stroke 0.16s ease;
+        }
+
+        .btn-favorito-produto.ativo .icone-coracao-favorito path{
+            fill:currentColor;
+            stroke:currentColor;
         }
 
         .produto-galeria{
