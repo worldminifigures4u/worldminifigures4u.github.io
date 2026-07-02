@@ -518,3 +518,16 @@ body[data-page="conta"]:not(.pagina-gestao) .zona-perigo-conta,
 body[data-page="conta"]:not(.pagina-gestao) .form-eliminar-conta{
     max-width:460px;
 }
+/* conta-formularios-compactos */
+body[data-page="conta"]:not(.pagina-gestao) #form-editar-dados-cliente{
+    max-width:520px;
+}
+
+body[data-page="conta"]:not(.pagina-gestao) #form-alterar-password{
+    max-width:460px;
+}
+
+body[data-page="conta"]:not(.pagina-gestao) #form-editar-dados-cliente,
+body[data-page="conta"]:not(.pagina-gestao) #form-alterar-password{
+    width:100%;
+}
