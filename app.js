@@ -249,12 +249,19 @@ function obterProdutoPorIdLocal(id) {
     return (todosOsProdutos || []).find(produto => normalizarIdFavorito(produto.id) === chave) || null;
 }
 
+const NOME_CONTA_CABECALHO_KEY = 'figures-planet-conta-primeiro-nome';
+
 function atualizarCabecalhoCliente(nome = '') {
     const nomeEl = document.getElementById('nome-login-cabecalho');
     if (!nomeEl) return;
 
     const nomeLimpo = String(nome || '').trim();
     const primeiroNome = nomeLimpo.split(/\s+/)[0] || '';
+    if (primeiroNome) {
+        localStorage.setItem(NOME_CONTA_CABECALHO_KEY, primeiroNome);
+    } else {
+        localStorage.removeItem(NOME_CONTA_CABECALHO_KEY);
+    }
     nomeEl.textContent = primeiroNome;
     nomeEl.classList.toggle('oculto', !primeiroNome);
 }
