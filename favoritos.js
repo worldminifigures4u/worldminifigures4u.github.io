@@ -83,7 +83,11 @@ function criarCardFavoritoCliente(produto) {
     estado.className = produto.ativo === false ? 'favorito-indisponivel' : 'favorito-disponivel';
     estado.textContent = produto.ativo === false ? 'Sem stock / indisponível' : 'Disponível';
 
-    info.append(nome, detalhe, preco, estado);
+    info.append(nome, detalhe);
+
+    const meta = document.createElement('div');
+    meta.className = 'favorito-meta';
+    meta.append(preco, estado);
 
     const acoes = document.createElement('div');
     acoes.className = 'favorito-acoes';
@@ -102,7 +106,7 @@ function criarCardFavoritoCliente(produto) {
     remover.addEventListener('click', () => removerFavoritoProduto(produto.id));
 
     acoes.append(adicionar, remover);
-    card.append(imagem, info, acoes);
+    card.append(imagem, info, meta, acoes);
     return card;
 }
 
