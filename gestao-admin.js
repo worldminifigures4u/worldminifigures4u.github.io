@@ -283,7 +283,8 @@ function renderizarListaProdutosAdmin() {
         detalhes.className = 'admin-produto-detalhes-linha';
         const estado = produto.ativo === false ? 'Inativo' : 'Ativo';
         detalhes.textContent = `Ref.: ${produto.referencia || '-'} | SKU: ${produto.sku || '-'} | ${formatarEuro(produto.preco)} € | Stock: ${produto.stock ?? '-'} | ${estado}`;
-        info.appendChild(detalhes);        item.appendChild(info);
+        info.appendChild(detalhes);
+        item.appendChild(info);
 
         const botao = document.createElement('button');
         botao.type = 'button';

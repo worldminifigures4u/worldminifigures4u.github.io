@@ -285,9 +285,9 @@
 }
 
 .pagina-gestao .area-cliente {
-    width: min(1360px, calc(100% - 48px));
-    max-width: 1360px;
-    margin: 24px auto 48px;
+    width: min(1632px, calc(100% - 48px));
+    max-width: 1632px;
+    margin: 12px auto 48px;
 }
 
 .pagina-gestao #conteudo-cliente-autenticado > :not(#painel-admin),
@@ -368,7 +368,7 @@
 }
 .pagina-gestao #painel-admin{
     display:grid !important;
-    grid-template-columns:minmax(180px, 220px) minmax(0, 980px);
+    grid-template-columns:minmax(180px, 220px) minmax(0, 1176px);
     gap:14px;
     justify-content:center;
     align-items:start;
@@ -392,9 +392,12 @@
     cursor:pointer;
     font:inherit;
     font-weight:800;
+    display:flex;
+    align-items:center;
+    justify-content:center;
     padding:8px 12px;
-    text-align:left;
-    font-size:15px;
+    text-align:center;
+    font-size:16px;
 }
 
 .gestao-tab:hover,
@@ -464,7 +467,7 @@
 }
 .pagina-gestao .gestao-tab-painel{
     width:100%;
-    max-width:980px;
+    max-width:1176px;
 }
 
 .pagina-gestao .linha-admin-pesquisa{
