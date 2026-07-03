@@ -672,8 +672,8 @@ select
   produto.subtema,
   produto.imagens,
   produto.ativo,
-  coalesce(produto.arquivado, false) as arquivado,
-  coalesce(produto.descontinuado, false) as descontinuado
+  coalesce(produto.descontinuado, false) as descontinuado,
+  coalesce(produto.arquivado, false) as arquivado
 from public.produtos as produto;
 
 grant select on public.produtos_loja to anon, authenticated;
