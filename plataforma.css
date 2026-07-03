@@ -201,8 +201,7 @@ body.pagina-wallapop{
             display:flex;
             flex-direction:column;
             gap:7px;
-            max-height:430px;
-            overflow:auto;
+            overflow:visible;
         }
 
         .wallapop-quantidade{
