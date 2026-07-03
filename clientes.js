@@ -63,6 +63,7 @@ function criarCampoCliente(rotulo, valor) {
 function criarInputCliente(rotulo, nome, valor, tipo = "text", obrigatorio = false) {
     const campo = document.createElement("label");
     campo.className = "admin-cliente-formulario-campo";
+    campo.classList.add(`admin-cliente-campo-${nome}`);
     campo.appendChild(criarElementoCliente("span", "", rotulo));
     const input = document.createElement("input");
     input.type = tipo;

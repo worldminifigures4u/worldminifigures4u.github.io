@@ -134,3 +134,65 @@
         flex:1;
     }
 }
+@media (min-width: 701px){
+    .clientes-formulario{
+        grid-template-columns:190px 260px 260px minmax(0, 1fr);
+        align-items:start;
+    }
+
+    .clientes-formulario .admin-cliente-campo-nome{
+        grid-column:1 / span 2;
+        max-width:520px;
+    }
+
+    .clientes-formulario .admin-cliente-campo-morada{
+        grid-column:1 / span 3;
+    }
+
+    .clientes-formulario .admin-cliente-campo-cp,
+    .clientes-formulario .admin-cliente-campo-cidade,
+    .clientes-formulario .admin-cliente-campo-pais{
+        grid-column:auto;
+    }
+
+    .clientes-formulario .admin-cliente-campo-cp{
+        max-width:190px;
+    }
+
+    .clientes-formulario .admin-cliente-campo-cidade,
+    .clientes-formulario .admin-cliente-campo-pais{
+        max-width:260px;
+    }
+
+    .clientes-formulario .admin-cliente-campo-email{
+        grid-column:1 / span 2;
+        max-width:420px;
+    }
+
+    .clientes-formulario .admin-cliente-campo-telefone{
+        grid-column:3;
+        max-width:260px;
+    }
+
+    .clientes-formulario [class*="admin-cliente-campo-perfil_url_"]{
+        grid-column:span 2;
+    }
+}
+
+.clientes-formulario .admin-cliente-campo-cp input,
+.clientes-formulario .admin-cliente-campo-cidade input,
+.clientes-formulario .admin-cliente-campo-pais input,
+.clientes-formulario .admin-cliente-campo-email input,
+.clientes-formulario .admin-cliente-campo-telefone input{
+    width:100%;
+}
+
+@media (max-width: 700px){
+    .clientes-formulario .admin-cliente-campo-cp,
+    .clientes-formulario .admin-cliente-campo-cidade,
+    .clientes-formulario .admin-cliente-campo-pais,
+    .clientes-formulario .admin-cliente-campo-email,
+    .clientes-formulario .admin-cliente-campo-telefone{
+        max-width:none;
+    }
+}
