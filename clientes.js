@@ -229,7 +229,7 @@ function renderizarFormularioCliente(dados, modo = "editar") {
         await abrirCliente(clienteId);
     });
 
-    ficha.replaceChildren(criarElementoCliente("h2", "", novoCliente ? "Criar cliente" : "Editar ficha"), formulario);
+    ficha.replaceChildren(formulario);
 }
 
 function criarClienteNovo() {
