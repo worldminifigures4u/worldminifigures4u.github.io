@@ -285,8 +285,8 @@
 }
 
 .pagina-gestao .area-cliente {
-    width: min(1180px, calc(100% - 32px));
-    max-width: 1180px;
+    width: min(1500px, calc(100% - 32px));
+    max-width: 1500px;
     margin: 24px auto 48px;
 }
 
@@ -366,37 +366,50 @@
 .pagina-gestao.cabecalho-com-admin .gestao-bloqueio {
     display: none !important;
 }
+.pagina-gestao #painel-admin{
+    display:grid !important;
+    grid-template-columns:minmax(220px, 280px) minmax(0, 1fr);
+    gap:18px;
+    align-items:start;
+}
+
 .gestao-tabs{
     display:flex;
+    flex-direction:column;
     gap:10px;
-    flex-wrap:wrap;
-    margin-bottom:16px;
-    padding-bottom:12px;
-    border-bottom:1px solid #333;
+    position:sticky;
+    top:150px;
 }
 
 .gestao-tab{
-    border:0;
+    width:100%;
+    min-height:48px;
+    border:1px solid #333;
     border-radius:999px;
     background:#222;
     color:#fff;
     cursor:pointer;
     font:inherit;
     font-weight:800;
-    padding:10px 18px;
-    min-height:42px;
+    padding:11px 14px;
+    text-align:left;
 }
 
 .gestao-tab:hover,
 .gestao-tab:focus-visible{
-    background:#2d2d2d;
-    outline:2px solid rgba(255, 193, 7, .24);
-    outline-offset:2px;
+    border-color:#ffc107;
+    color:#ffc107;
+    outline:none;
 }
 
 .gestao-tab.ativa{
     background:#ffc107;
+    border-color:#ffc107;
     color:#000;
+}
+
+.gestao-tab-painel{
+    min-width:0;
 }
 
 .gestao-tab-painel[hidden]{
@@ -419,12 +432,28 @@
     padding-top:15px;
 }
 
-@media(max-width:700px){
+@media(max-width:900px){
+    .pagina-gestao #painel-admin{
+        grid-template-columns:1fr;
+    }
+
     .gestao-tabs{
+        position:static;
+        display:grid;
+        grid-template-columns:repeat(3, minmax(0, 1fr));
         gap:8px;
     }
 
     .gestao-tab{
-        flex:1 1 100%;
+        text-align:center;
     }
+}
+
+@media(max-width:560px){
+    .gestao-tabs{
+        grid-template-columns:1fr;
+    }
+}
+.pagina-gestao.cabecalho-com-admin #painel-admin{
+    display:grid !important;
 }
