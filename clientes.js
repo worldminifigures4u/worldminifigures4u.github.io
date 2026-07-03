@@ -151,12 +151,12 @@ function renderizarFormularioCliente(dados, modo = "editar") {
     formulario.className = "admin-cliente-formulario clientes-formulario";
     formulario.append(
         criarInputCliente("Nome", "nome", cliente.nome, "text", true),
-        criarInputCliente("E-mail", "email", cliente.email, "email"),
-        criarInputCliente("Telemóvel", "telefone", cliente.telefone),
         criarInputCliente("Morada", "morada", cliente.morada),
-        criarInputCliente("Código postal", "cp", cliente.cp),
+        criarInputCliente("C\u00f3digo postal", "cp", cliente.cp),
         criarInputCliente("Cidade", "cidade", cliente.cidade),
-        criarInputCliente("País", "pais", cliente.pais)
+        criarInputCliente("Pa\u00eds", "pais", cliente.pais),
+        criarInputCliente("E-mail", "email", cliente.email, "email"),
+        criarInputCliente("Telem\u00f3vel", "telefone", cliente.telefone)
     );
 
     formulario.appendChild(criarElementoCliente("h3", "admin-cliente-formulario-subtitulo", "Links externos"));
