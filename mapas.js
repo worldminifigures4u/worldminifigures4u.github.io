@@ -172,20 +172,10 @@ function renderizarContadoresMapa(resultados) {
     const contador = document.getElementById("fornecedor-contador-barra");
     if (!contador) return;
     contador.querySelectorAll(".mapas-contador-item").forEach(item => item.remove());
-    const totais = resultados.reduce((acc, produto) => {
-        if (String(obterTopMapa(produto)).trim()) acc.top += 1;
-        if (valorBooleanoMapa(produto.descontinuado)) acc.descontinuado += 1;
-        acc.stock += Math.max(0, Number(produto.stock || 0));
-        return acc;
-    }, { top: 0, descontinuado: 0, stock: 0 });
+    const totalStock = resultados.reduce((acc, produto) => acc + Math.max(0, Number(produto.stock || 0)), 0);
     contador.append(
         criarItemContadorMapa(resultados.length === 1 ? "figura" : "figuras", resultados.length, true),
-        criarItemContadorMapa("Disponível", resultados.length),
-        criarItemContadorMapa("OS", 0),
-        criarItemContadorMapa("EX", 0),
-        criarItemContadorMapa("Top", totais.top),
-        criarItemContadorMapa("Descontinuadas", totais.descontinuado),
-        criarItemContadorMapa("em stock", totais.stock)
+        criarItemContadorMapa("stock", totalStock)
     );
 }
 

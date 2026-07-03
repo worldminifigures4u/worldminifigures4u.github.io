@@ -195,37 +195,34 @@ body.pagina-fornecedores-admin{ margin:0; padding:0; min-height:100vh; backgroun
 
 .mapas-contador-item {
     display: inline-flex;
-    flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 5px;
-    min-width: 72px;
-    min-height: 48px;
-    padding: 7px 10px;
+    gap: 8px;
+    min-width: 112px;
+    height: 36px;
+    box-sizing: border-box;
+    padding: 0 12px;
     border: 1px solid #333;
     border-radius: 6px;
-    background: #1d1d1d;
-    color: #d8d8d8;
-    font-size: 12px;
+    background: #1f1f1f;
+    color: #fff;
     line-height: 1;
     text-align: center;
 }
 
 .mapas-contador-item strong {
-    display: block;
-    width: 100%;
+    display: inline;
     color: #fff;
     font-size: 18px;
-    line-height: 1.05;
+    line-height: 1;
     text-align: center;
 }
 
 .mapas-contador-item span {
-    display: block;
-    width: 100%;
+    display: inline;
     color: #d8d8d8;
-    font-size: 11px;
-    line-height: 1.05;
+    font-size: 12px;
+    line-height: 1;
     text-align: center;
 }
 
