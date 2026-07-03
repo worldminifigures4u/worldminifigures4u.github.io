@@ -15,7 +15,7 @@
 
     <link rel="stylesheet" href="styles.css?v=20260702-rodape-leve">
     <link rel="stylesheet" href="conta.css?v=20260629-sem-inline-style">
-    <link rel="stylesheet" href="gestao.css?v=20260629-admin-visible">
+    <link rel="stylesheet" href="gestao.css?v=20260703-tabs-gestao">
 </head>
 <body data-page="conta" class="pagina-gestao">
 
@@ -158,70 +158,15 @@
                     </div>
                 </div>
                 <div class="painel-admin" id="painel-admin">
-                    <h3>Admin</h3>
-                    <form class="form-admin" id="form-admin-produto">
-                        <div>
-                            <label for="admin-produto-nome">Nome do produto:</label>
-                            <input type="text" id="admin-produto-nome" required placeholder="Ex: Darth Vader v1">
-                        </div>
-                        <div class="linha-admin-dupla">
-                            <div>
-                                <label for="admin-produto-referencia">Ref.:</label>
-                                <input type="text" id="admin-produto-referencia" placeholder="Ex: TV8149">
-                            </div>
-                            <div>
-                                <label for="admin-produto-sku">SKU:</label>
-                                <input type="text" id="admin-produto-sku" required placeholder="DV01">
-                            </div>
-                            <div>
-                                <label for="admin-produto-preco">Preço:</label>
-                                <input type="number" id="admin-produto-preco" required min="0" step="0.01" placeholder="4.95">
-                            </div>
-                            <div>
-                                <label for="admin-produto-peso">Peso (g):</label>
-                                <input type="number" id="admin-produto-peso" required min="1" step="1" value="10">
-                            </div>
-                            <div>
-                                <label for="admin-produto-stock">Stock:</label>
-                                <input type="number" id="admin-produto-stock" required min="0" step="1" value="1">
-                            </div>
-                        </div>
-                        <div>
-                            <label for="admin-produto-tema">Tema:</label>
-                            <input type="text" id="admin-produto-tema" required placeholder="Star Wars">
-                        </div>
-                        <div>
-                            <label for="admin-produto-subtema">Subtema:</label>
-                            <input type="text" id="admin-produto-subtema" placeholder="Darth Vader">
-                        </div>
-                        <div>
-                            <label for="admin-produto-imagens">URLs das imagens:</label>
-                            <div class="upload-admin-fotos">
-                                <input class="input-upload-admin" type="file" id="admin-produto-upload-imagens" accept="image/jpeg,image/png,image/webp" multiple>
-                                <p class="ajuda-admin">Selecione fotos do PC para enviar para o Cloudinary. Os URLs serão adicionados automaticamente.</p>
-                                <div id="status-upload-admin-produto" class="msg-status"></div>
-                            </div>
-                            <textarea id="admin-produto-imagens" placeholder="Um URL por linha"></textarea>
-                            <div id="preview-imagens-admin" class="preview-imagens-admin"></div>
-                        </div>
-                        <div>
-                            <label for="admin-produto-observacoes">Observações:</label>
-                            <textarea id="admin-produto-observacoes" placeholder="Notas internas sobre estado, acessórios, origem, etc."></textarea>
-                        </div>
-                        <label class="opcao-admin-inline">
-                            <input type="checkbox" id="admin-produto-ativo" checked>
-                            Produto ativo na loja
-                        </label>
-                        <label class="opcao-admin-inline">
-                            <input type="checkbox" id="admin-produto-novidade" checked>
-                            Novidade
-                        </label>
-                        <button type="submit" class="btn-acao-cliente">Criar Produto</button>
-                        <div id="status-admin-produto" class="msg-status"></div>
-                    </form>
-                    <div class="admin-seccao">
-                        <h3>Gestão de produtos</h3>
-                        <div class="form-admin">
+                    <div class="gestao-tabs" role="tablist" aria-label="Gestão de produtos">
+                        <button type="button" class="gestao-tab ativa" data-tab-gestao="lista" role="tab" aria-selected="true">Lista de Produtos</button>
+                        <button type="button" class="gestao-tab" data-tab-gestao="novo" role="tab" aria-selected="false">Adicionar Novo Produto</button>
+                        <button type="button" class="gestao-tab" data-tab-gestao="importar" role="tab" aria-selected="false">Importar / Exportar</button>
+                    </div>
+                    <section class="gestao-tab-painel ativa" data-painel-gestao="lista" role="tabpanel">
+                        <div class="admin-seccao admin-seccao-tab">
+                            <h3>Lista de Produtos</h3>
+                            <div class="form-admin">
                             <div class="linha-admin-pesquisa">
                                 <div>
                                     <label for="admin-pesquisa-produtos">Pesquisar produto:</label>
@@ -231,33 +176,7 @@
                             </div>
                             <div id="lista-admin-produtos" class="lista-admin-produtos"></div>
                         </div>
-                        <div class="admin-seccao">
-                            <h3>Atualizar stock pelo Mapas.ods</h3>
-                            <div class="form-admin">
-                                <input class="input-upload-admin" type="file" id="admin-ficheiro-stock" accept=".ods,.xlsx,.xls">
-                                <p class="ajuda-admin">Apenas as colunas SKU e stock são utilizadas. As encomendas aos fornecedores não alteram o stock atual.</p>
-                                <div id="resumo-importacao-stock" class="resumo-importacao-stock oculto"></div>
-                                <div id="detalhes-importacao-stock" class="lista-importacao-stock oculto"></div>
-                                <button type="button" id="btn-confirmar-importacao-stock" class="btn-acao-cliente" disabled>Atualizar stock no Supabase</button>
-                                <div id="status-importacao-stock" class="msg-status"></div>
-                            </div>
-                        </div>
-                        <div class="admin-seccao">
-                            <h3>Substituir catálogo pelo Mapas.ods</h3>
-                            <div class="form-admin">
-                                <input class="input-upload-admin" type="file" id="admin-ficheiro-catalogo" accept=".ods,.xlsx,.xls">
-                                <p class="ajuda-admin">Importa nome, preço, Ref., SKU, stock, tema, subtema, peso e dados dos fornecedores. Produtos que não constem do ficheiro serão removidos.</p>
-                                <div id="resumo-importacao-catalogo" class="resumo-importacao-stock oculto"></div>
-                                <div id="detalhes-importacao-catalogo" class="lista-importacao-stock oculto"></div>
-                                <div>
-                                    <label for="confirmacao-substituir-catalogo">Para confirmar, escreva SUBSTITUIR:</label>
-                                    <input type="text" id="confirmacao-substituir-catalogo" autocomplete="off">
-                                </div>
-                                <button type="button" id="btn-confirmar-importacao-catalogo" class="btn-logout" disabled>Substituir catálogo completo</button>
-                                <div id="status-importacao-catalogo" class="msg-status"></div>
-                            </div>
-                        </div>
-                        <form class="form-admin admin-seccao oculto" id="form-admin-editar-produto">
+                            <form class="form-admin admin-seccao oculto" id="form-admin-editar-produto">
                             <input type="hidden" id="admin-editar-id">
                             <input type="hidden" id="admin-editar-sku-original">
                             <h3>Editar produto</h3>
@@ -323,7 +242,106 @@
                             </div>
                             <div id="status-admin-editar-produto" class="msg-status"></div>
                         </form>
-                    </div>
+                        </div>
+                    </section>
+                    <section class="gestao-tab-painel" data-painel-gestao="novo" role="tabpanel" hidden>
+                        <div class="admin-seccao admin-seccao-tab">
+                            <h3>Adicionar Novo Produto</h3>
+                            <form class="form-admin" id="form-admin-produto">
+                        <div>
+                            <label for="admin-produto-nome">Nome do produto:</label>
+                            <input type="text" id="admin-produto-nome" required placeholder="Ex: Darth Vader v1">
+                        </div>
+                        <div class="linha-admin-dupla">
+                            <div>
+                                <label for="admin-produto-referencia">Ref.:</label>
+                                <input type="text" id="admin-produto-referencia" placeholder="Ex: TV8149">
+                            </div>
+                            <div>
+                                <label for="admin-produto-sku">SKU:</label>
+                                <input type="text" id="admin-produto-sku" required placeholder="DV01">
+                            </div>
+                            <div>
+                                <label for="admin-produto-preco">Preço:</label>
+                                <input type="number" id="admin-produto-preco" required min="0" step="0.01" placeholder="4.95">
+                            </div>
+                            <div>
+                                <label for="admin-produto-peso">Peso (g):</label>
+                                <input type="number" id="admin-produto-peso" required min="1" step="1" value="10">
+                            </div>
+                            <div>
+                                <label for="admin-produto-stock">Stock:</label>
+                                <input type="number" id="admin-produto-stock" required min="0" step="1" value="1">
+                            </div>
+                        </div>
+                        <div>
+                            <label for="admin-produto-tema">Tema:</label>
+                            <input type="text" id="admin-produto-tema" required placeholder="Star Wars">
+                        </div>
+                        <div>
+                            <label for="admin-produto-subtema">Subtema:</label>
+                            <input type="text" id="admin-produto-subtema" placeholder="Darth Vader">
+                        </div>
+                        <div>
+                            <label for="admin-produto-imagens">URLs das imagens:</label>
+                            <div class="upload-admin-fotos">
+                                <input class="input-upload-admin" type="file" id="admin-produto-upload-imagens" accept="image/jpeg,image/png,image/webp" multiple>
+                                <p class="ajuda-admin">Selecione fotos do PC para enviar para o Cloudinary. Os URLs serão adicionados automaticamente.</p>
+                                <div id="status-upload-admin-produto" class="msg-status"></div>
+                            </div>
+                            <textarea id="admin-produto-imagens" placeholder="Um URL por linha"></textarea>
+                            <div id="preview-imagens-admin" class="preview-imagens-admin"></div>
+                        </div>
+                        <div>
+                            <label for="admin-produto-observacoes">Observações:</label>
+                            <textarea id="admin-produto-observacoes" placeholder="Notas internas sobre estado, acessórios, origem, etc."></textarea>
+                        </div>
+                        <label class="opcao-admin-inline">
+                            <input type="checkbox" id="admin-produto-ativo" checked>
+                            Produto ativo na loja
+                        </label>
+                        <label class="opcao-admin-inline">
+                            <input type="checkbox" id="admin-produto-novidade" checked>
+                            Novidade
+                        </label>
+                        <button type="submit" class="btn-acao-cliente">Criar Produto</button>
+                        <div id="status-admin-produto" class="msg-status"></div>
+                    </form>
+                        </div>
+                    </section>
+                    <section class="gestao-tab-painel" data-painel-gestao="importar" role="tabpanel" hidden>
+                        <div class="admin-seccao admin-seccao-tab">
+                            <h3>Importar / Exportar</h3>
+                            <div class="admin-seccao">
+                            <h3>Atualizar stock pelo Mapas.ods</h3>
+                            <div class="form-admin">
+                                <input class="input-upload-admin" type="file" id="admin-ficheiro-stock" accept=".ods,.xlsx,.xls">
+                                <p class="ajuda-admin">Apenas as colunas SKU e stock são utilizadas. As encomendas aos fornecedores não alteram o stock atual.</p>
+                                <div id="resumo-importacao-stock" class="resumo-importacao-stock oculto"></div>
+                                <div id="detalhes-importacao-stock" class="lista-importacao-stock oculto"></div>
+                                <button type="button" id="btn-confirmar-importacao-stock" class="btn-acao-cliente" disabled>Atualizar stock no Supabase</button>
+                                <div id="status-importacao-stock" class="msg-status"></div>
+                            </div>
+                        </div>
+
+                            <div class="admin-seccao">
+                            <h3>Substituir catálogo pelo Mapas.ods</h3>
+                            <div class="form-admin">
+                                <input class="input-upload-admin" type="file" id="admin-ficheiro-catalogo" accept=".ods,.xlsx,.xls">
+                                <p class="ajuda-admin">Importa nome, preço, Ref., SKU, stock, tema, subtema, peso e dados dos fornecedores. Produtos que não constem do ficheiro serão removidos.</p>
+                                <div id="resumo-importacao-catalogo" class="resumo-importacao-stock oculto"></div>
+                                <div id="detalhes-importacao-catalogo" class="lista-importacao-stock oculto"></div>
+                                <div>
+                                    <label for="confirmacao-substituir-catalogo">Para confirmar, escreva SUBSTITUIR:</label>
+                                    <input type="text" id="confirmacao-substituir-catalogo" autocomplete="off">
+                                </div>
+                                <button type="button" id="btn-confirmar-importacao-catalogo" class="btn-logout" disabled>Substituir catálogo completo</button>
+                                <div id="status-importacao-catalogo" class="msg-status"></div>
+                            </div>
+                        </div>
+
+                        </div>
+                    </section>
                 </div>
                 <div class="historico-encomendas">
                     <h3>Histórico de encomendas</h3>
@@ -418,12 +436,12 @@
         </nav>
     </div>
 </footer>
-<script src="app.js?v=20260702-cache-nome-conta"></script>
+<script src="app.js?v=20260703-tabs-gestao"></script>
 <script src="carrinho-loja.js?v=20260701-menos-nao-remove"></script>
 <script src="loja-produtos.js?v=20260629-dynamic-style-classes"></script>
 <script src="conta-cliente.js?v=20260629-sem-inline-style"></script>
 <script src="gestao-admin.js?v=20260629-sem-inline-style"></script>
 <script src="gestao-importacao.js?v=20260629-sem-inline-style"></script>
-<script src="inline-listeners.js?v=20260629-csp-inline"></script>
+<script src="inline-listeners.js?v=20260703-tabs-gestao"></script>
 </body>
 </html>

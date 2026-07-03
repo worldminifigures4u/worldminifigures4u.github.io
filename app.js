@@ -628,6 +628,11 @@ function atualizarVisibilidadeAdmin(user) {
     painel.classList.toggle('oculto', !adminAtivo);
     if(zonaEliminacao) zonaEliminacao.classList.toggle('oculto', adminAtivo);
     if(adminAtivo) {
+        if(painel.querySelector('.gestao-tabs')) {
+            carregarCatalogoAdminQuandoDisponivel();
+            return;
+        }
+
         const conteudoConta = document.getElementById('conteudo-cliente-autenticado');
         const dadosPessoais = document.getElementById('form-editar-dados-cliente')?.closest('.historico-encomendas');
         const gestaoProdutos = painel.querySelector('.admin-seccao');

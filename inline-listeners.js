@@ -170,6 +170,22 @@
             });
         });
 
+        document.querySelectorAll('[data-tab-gestao]').forEach(function (botao) {
+            botao.addEventListener('click', function () {
+                const destino = botao.dataset.tabGestao;
+                document.querySelectorAll('[data-tab-gestao]').forEach(function (item) {
+                    const ativo = item === botao;
+                    item.classList.toggle('ativa', ativo);
+                    item.setAttribute('aria-selected', ativo ? 'true' : 'false');
+                });
+                document.querySelectorAll('[data-painel-gestao]').forEach(function (painel) {
+                    const ativo = painel.dataset.painelGestao === destino;
+                    painel.classList.toggle('ativa', ativo);
+                    painel.hidden = !ativo;
+                });
+            });
+        });
+
         const uploadNovo = document.getElementById('admin-produto-upload-imagens');
         if (uploadNovo) {
             uploadNovo.addEventListener('change', function () {

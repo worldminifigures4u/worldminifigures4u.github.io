@@ -366,3 +366,65 @@
 .pagina-gestao.cabecalho-com-admin .gestao-bloqueio {
     display: none !important;
 }
+.gestao-tabs{
+    display:flex;
+    gap:10px;
+    flex-wrap:wrap;
+    margin-bottom:16px;
+    padding-bottom:12px;
+    border-bottom:1px solid #333;
+}
+
+.gestao-tab{
+    border:0;
+    border-radius:999px;
+    background:#222;
+    color:#fff;
+    cursor:pointer;
+    font:inherit;
+    font-weight:800;
+    padding:10px 18px;
+    min-height:42px;
+}
+
+.gestao-tab:hover,
+.gestao-tab:focus-visible{
+    background:#2d2d2d;
+    outline:2px solid rgba(255, 193, 7, .24);
+    outline-offset:2px;
+}
+
+.gestao-tab.ativa{
+    background:#ffc107;
+    color:#000;
+}
+
+.gestao-tab-painel[hidden]{
+    display:none !important;
+}
+
+.pagina-gestao .admin-seccao-tab{
+    margin-top:0;
+    padding-top:0;
+    border-top:0;
+}
+
+.pagina-gestao .gestao-tab-painel > .admin-seccao > h3:first-child{
+    margin-top:0;
+}
+
+.pagina-gestao .gestao-tab-painel .admin-seccao .admin-seccao{
+    border-top:1px solid #333;
+    margin-top:18px;
+    padding-top:15px;
+}
+
+@media(max-width:700px){
+    .gestao-tabs{
+        gap:8px;
+    }
+
+    .gestao-tab{
+        flex:1 1 100%;
+    }
+}
