@@ -16,11 +16,12 @@ const MAPAS_COLUNAS = [
     { chave: "subtema", rotulo: "subtema", classe: "mapas-col-subtema" },
     { chave: "preco_compra", rotulo: "preço compra", classe: "mapas-col-preco", numero: true, dinheiro: true },
     { chave: "preco", rotulo: "preço venda", classe: "mapas-col-preco", numero: true, dinheiro: true },
-    { chave: "novidade", rotulo: "novidade", classe: "mapas-col-novidade" },
-    { chave: "descontinuado", rotulo: "descontinuado", classe: "mapas-col-descontinuado" },
     { chave: "lego", rotulo: "lego", classe: "mapas-col-lego" },
     { chave: "sku", rotulo: "sku", classe: "mapas-col-sku" },
     { chave: "top", rotulo: "top", classe: "mapas-col-top" },
+    { chave: "arquivado", rotulo: "arquivado", classe: "mapas-col-arquivado" },
+    { chave: "descontinuado", rotulo: "descontinuado", classe: "mapas-col-descontinuado" },
+    { chave: "novidade", rotulo: "novidade", classe: "mapas-col-novidade" },
     { chave: "peso", rotulo: "peso", classe: "mapas-col-peso", numero: true }
 ];
 
@@ -100,6 +101,7 @@ function normalizarProdutoMapa(produto) {
         preco: Number(produto.preco || 0),
         preco_compra: Number(produto.preco_compra || 0),
         top: produto.top || "",
+        arquivado: valorBooleanoMapa(produto.arquivado),
         descontinuado: valorBooleanoMapa(produto.descontinuado),
         novidade: valorBooleanoMapa(produto.novidade),
         peso: Number(produto.peso || 10),
@@ -137,7 +139,7 @@ function produtoPassaFiltroStockMapa(produto, filtro) {
 
 function valorOrdenacaoMapa(produto, coluna) {
     if (coluna === "preco" || coluna === "preco_compra" || coluna === "stock" || coluna === "peso") return Number(produto[coluna] || 0);
-    if (coluna === "descontinuado" || coluna === "novidade") return valorBooleanoMapa(produto[coluna]) ? 1 : 0;
+    if (coluna === "arquivado" || coluna === "descontinuado" || coluna === "novidade") return valorBooleanoMapa(produto[coluna]) ? 1 : 0;
     return String(produto[coluna] || "");
 }
 
@@ -202,7 +204,7 @@ function criarCabecalhoTabelaMapa() {
 
 function valorCelulaMapa(produto, coluna) {
     if (coluna.chave === "preco" || coluna.chave === "preco_compra") return formatarEuroMapa(produto[coluna.chave]);
-    if (coluna.chave === "descontinuado" || coluna.chave === "novidade") return textoBooleanoMapa(produto[coluna.chave]);
+    if (coluna.chave === "arquivado" || coluna.chave === "descontinuado" || coluna.chave === "novidade") return textoBooleanoMapa(produto[coluna.chave]);
     if (coluna.chave === "lego") return textoLegoMapa(produto.lego);
     if (coluna.chave === "subtema") return produto.subtema === "semsubtema" ? "" : produto.subtema;
     return produto[coluna.chave] ?? "";
@@ -465,6 +467,7 @@ function abrirEdicaoProdutoMapa(produtoId) {
         { valor: "não", texto: "não" }
     ]);
     criarCheckboxEdicaoMapa(secaoIdentificacao, "mapas-editar-top", "Top", Boolean(String(produto.top || "").trim()));
+    criarCheckboxEdicaoMapa(secaoIdentificacao, "mapas-editar-arquivado", "Arquivado", produto.arquivado);
     criarCheckboxEdicaoMapa(secaoIdentificacao, "mapas-editar-descontinuado", "Descontinuado", produto.descontinuado);
     criarCheckboxEdicaoMapa(secaoIdentificacao, "mapas-editar-novidade", "Novidade", produto.novidade);
     campos.appendChild(secaoIdentificacao);
@@ -499,6 +502,7 @@ function lerProdutoEditadoMapa() {
         sku: normalizarSkuMapa(document.getElementById("mapas-editar-sku").value),
         lego: document.getElementById("mapas-editar-lego").value,
         top: document.getElementById("mapas-editar-top").checked ? "sim" : "",
+        arquivado: document.getElementById("mapas-editar-arquivado").checked,
         descontinuado: document.getElementById("mapas-editar-descontinuado").checked,
         novidade: document.getElementById("mapas-editar-novidade").checked,
         preco_compra: Number(document.getElementById("mapas-editar-preco-compra").value || 0),

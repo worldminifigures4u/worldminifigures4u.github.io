@@ -310,6 +310,7 @@ body.pagina-fornecedores-admin{ margin:0; padding:0; min-height:100vh; backgroun
 .mapas-col-preco { width: 70px; }
 .mapas-col-sku { width: 70px; }
 .mapas-col-top { width: 64px; }
+.mapas-col-arquivado { width: 96px; }
 .mapas-col-descontinuado { width: 112px; }
 .mapas-col-novidade { width: 90px; }
 .mapas-col-stock { width: 70px; }
@@ -326,6 +327,7 @@ body.pagina-fornecedores-admin{ margin:0; padding:0; min-height:100vh; backgroun
 .mapas-col-preco,
 .mapas-col-sku,
 .mapas-col-top,
+.mapas-col-arquivado,
 .mapas-col-descontinuado,
 .mapas-col-novidade,
 .mapas-col-stock,

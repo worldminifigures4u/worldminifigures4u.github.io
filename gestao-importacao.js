@@ -12,7 +12,7 @@ function normalizarCabecalhoStock(valor) {
         .toLowerCase();
 }
 
-const COLUNAS_CATALOGO_BASE = new Set(['lego', 'nome', 'preco', 'sku', 'top', 'descontinuado', 'descontinuada', 'descontinuados', 'descontinuadas', 'discontinued', 'novidade', 'nova', 'novo', 'stock', 'tema', 'subtema', 'peso', 'referencia']);
+const COLUNAS_CATALOGO_BASE = new Set(['lego', 'nome', 'preco', 'sku', 'top', 'arquivado', 'arquivada', 'arquivados', 'arquivadas', 'archived', 'descontinuado', 'descontinuada', 'descontinuados', 'descontinuadas', 'discontinued', 'novidade', 'nova', 'novo', 'stock', 'tema', 'subtema', 'peso', 'referencia']);
 const FORNECEDORES_IMPORTACAO = [
     { chave:'lote50', nome:'Lote 50' },
     { chave:'ruishengtu', nome:'Ruishengtu' },
@@ -468,6 +468,7 @@ async function analisarFicheiroCatalogoAdmin(input) {
             preco:obterIndiceColuna(cabecalhos, 'preco'),
             sku:obterIndiceColuna(cabecalhos, 'sku'),
             top:obterIndiceColuna(cabecalhos, 'top', false),
+            arquivado:obterIndiceColuna(cabecalhos, ['arquivado', 'arquivada', 'arquivados', 'arquivadas', 'archived'], false),
             descontinuado:obterIndiceColuna(cabecalhos, ['descontinuado', 'descontinuada', 'descontinuados', 'descontinuadas', 'discontinued'], false),
             novidade:obterIndiceColuna(cabecalhos, ['novidade', 'nova', 'novo'], false),
             referencia:obterIndiceColuna(cabecalhos, 'referencia', false),
@@ -487,6 +488,7 @@ async function analisarFicheiroCatalogoAdmin(input) {
             const nome = String(linha[colunas.nome] || '').trim();
             const sku = normalizarTextoSku(linha[colunas.sku]).replace(/[^A-Z0-9]/g, '');
             const top = colunas.top >= 0 ? String(linha[colunas.top] || '').trim() : '';
+            const arquivado = colunas.arquivado >= 0 ? obterBooleanoImportacao(linha[colunas.arquivado]) : false;
             const descontinuado = colunas.descontinuado >= 0 ? obterBooleanoImportacao(linha[colunas.descontinuado]) : false;
             const novidade = colunas.novidade >= 0 ? obterBooleanoImportacao(linha[colunas.novidade]) : false;
             const referencia = colunas.referencia >= 0 ? String(linha[colunas.referencia] || '').trim() : '';
@@ -511,6 +513,7 @@ async function analisarFicheiroCatalogoAdmin(input) {
                 preco,
                 sku,
                 top,
+                arquivado,
                 descontinuado,
                 novidade,
                 referencia,

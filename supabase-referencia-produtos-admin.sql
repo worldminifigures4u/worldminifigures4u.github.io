@@ -15,6 +15,9 @@ alter table public.produtos
   add column if not exists novidade boolean not null default false;
 
 alter table public.produtos
+  add column if not exists arquivado boolean not null default false;
+
+alter table public.produtos
   add column if not exists fornecedores jsonb not null default '{}'::jsonb;
 
 alter table public.produtos
@@ -45,7 +48,7 @@ begin
   for v_produto in select value from jsonb_array_elements(p_produtos)
   loop
     insert into public.produtos (
-      sku, referencia, lego, nome, preco, preco_compra, top, descontinuado, novidade, stock, tema, subtema, peso, fornecedores, ativo
+      sku, referencia, lego, nome, preco, preco_compra, top, arquivado, descontinuado, novidade, stock, tema, subtema, peso, fornecedores, ativo
     ) values (
       upper(trim(v_produto->>'sku')),
       nullif(trim(v_produto->>'referencia'), ''),
@@ -54,6 +57,7 @@ begin
       (v_produto->>'preco')::numeric,
       coalesce(nullif(trim(coalesce(v_produto->>'preco_compra', '')), '')::numeric, 0),
       nullif(trim(v_produto->>'top'), ''),
+      coalesce((v_produto->>'arquivado')::boolean, false),
       coalesce((v_produto->>'descontinuado')::boolean, false),
       case
         when lower(trim(coalesce(v_produto->>'novidade', ''))) in ('1', 'true', 't', 'yes', 'y', 'sim', 's', 'x', 'verdadeiro') then true
@@ -73,6 +77,7 @@ begin
       preco = excluded.preco,
       preco_compra = excluded.preco_compra,
       top = excluded.top,
+      arquivado = excluded.arquivado,
       descontinuado = excluded.descontinuado,
       novidade = excluded.novidade,
       stock = excluded.stock,
@@ -115,6 +120,7 @@ begin
       'preco', coalesce(produto.preco, 0),
       'preco_compra', coalesce(produto.preco_compra, 0),
       'top', coalesce(produto.top, ''),
+      'arquivado', coalesce(produto.arquivado, false),
       'descontinuado', coalesce(produto.descontinuado, false),
       'novidade', coalesce(produto.novidade, false),
       'peso', coalesce(produto.peso, 10),
@@ -198,7 +204,8 @@ begin
     'preco', coalesce(v_produto.preco, 0),
     'preco_compra', coalesce(v_produto.preco_compra, 0),
     'top', coalesce(v_produto.top, ''),
-    'descontinuado', coalesce(v_produto.descontinuado, false),
+      'arquivado', coalesce(v_produto.arquivado, false),
+      'descontinuado', coalesce(v_produto.descontinuado, false),
     'novidade', coalesce(v_produto.novidade, false),
     'peso', coalesce(v_produto.peso, 10),
     'tema', coalesce(v_produto.tema, ''),
@@ -391,6 +398,7 @@ begin
     peso = (p_produto->>'peso')::numeric,
     stock = (p_produto->>'stock')::integer,
     top = nullif(trim(coalesce(p_produto->>'top', '')), ''),
+    arquivado = coalesce((p_produto->>'arquivado')::boolean, false),
     descontinuado = coalesce((p_produto->>'descontinuado')::boolean, false),
     observacoes = nullif(trim(coalesce(p_produto->>'observacoes', '')), ''),
     ativo = coalesce((p_produto->>'ativo')::boolean, true),
@@ -416,7 +424,8 @@ begin
       peso = (p_produto->>'peso')::numeric,
       stock = (p_produto->>'stock')::integer,
       top = nullif(trim(coalesce(p_produto->>'top', '')), ''),
-      descontinuado = coalesce((p_produto->>'descontinuado')::boolean, false),
+    arquivado = coalesce((p_produto->>'arquivado')::boolean, false),
+    descontinuado = coalesce((p_produto->>'descontinuado')::boolean, false),
       observacoes = nullif(trim(coalesce(p_produto->>'observacoes', '')), ''),
       ativo = coalesce((p_produto->>'ativo')::boolean, true),
       novidade = coalesce((p_produto->>'novidade')::boolean, false),
@@ -440,7 +449,8 @@ begin
     'preco', coalesce(v_produto.preco, 0),
     'preco_compra', coalesce(v_produto.preco_compra, 0),
     'top', coalesce(v_produto.top, ''),
-    'descontinuado', coalesce(v_produto.descontinuado, false),
+      'arquivado', coalesce(v_produto.arquivado, false),
+      'descontinuado', coalesce(v_produto.descontinuado, false),
     'novidade', coalesce(v_produto.novidade, false),
     'peso', coalesce(v_produto.peso, 10),
     'tema', coalesce(v_produto.tema, ''),
@@ -484,6 +494,7 @@ begin
       'preco', coalesce(produto.preco, 0),
       'preco_compra', coalesce(produto.preco_compra, 0),
       'top', coalesce(produto.top, ''),
+      'arquivado', coalesce(produto.arquivado, false),
       'descontinuado', coalesce(produto.descontinuado, false),
       'novidade', coalesce(produto.novidade, false),
       'peso', coalesce(produto.peso, 10),
@@ -549,6 +560,7 @@ begin
     peso = (p_produto->>'peso')::numeric,
     stock = (p_produto->>'stock')::integer,
     top = nullif(trim(coalesce(p_produto->>'top', '')), ''),
+    arquivado = coalesce((p_produto->>'arquivado')::boolean, false),
     descontinuado = coalesce((p_produto->>'descontinuado')::boolean, false),
     ativo = coalesce((p_produto->>'ativo')::boolean, true),
     novidade = coalesce((p_produto->>'novidade')::boolean, false)
@@ -571,7 +583,8 @@ begin
       peso = (p_produto->>'peso')::numeric,
       stock = (p_produto->>'stock')::integer,
       top = nullif(trim(coalesce(p_produto->>'top', '')), ''),
-      descontinuado = coalesce((p_produto->>'descontinuado')::boolean, false),
+    arquivado = coalesce((p_produto->>'arquivado')::boolean, false),
+    descontinuado = coalesce((p_produto->>'descontinuado')::boolean, false),
       ativo = coalesce((p_produto->>'ativo')::boolean, true),
       novidade = coalesce((p_produto->>'novidade')::boolean, false)
     where upper(produto.sku) = upper(trim(coalesce(p_sku_original, '')))
@@ -592,7 +605,8 @@ begin
     'preco', coalesce(v_produto.preco, 0),
     'preco_compra', coalesce(v_produto.preco_compra, 0),
     'top', coalesce(v_produto.top, ''),
-    'descontinuado', coalesce(v_produto.descontinuado, false),
+      'arquivado', coalesce(v_produto.arquivado, false),
+      'descontinuado', coalesce(v_produto.descontinuado, false),
     'novidade', coalesce(v_produto.novidade, false),
     'peso', coalesce(v_produto.peso, 10),
     'tema', coalesce(v_produto.tema, ''),
@@ -658,6 +672,7 @@ select
   produto.subtema,
   produto.imagens,
   produto.ativo,
+  coalesce(produto.arquivado, false) as arquivado,
   coalesce(produto.descontinuado, false) as descontinuado
 from public.produtos as produto;
 
