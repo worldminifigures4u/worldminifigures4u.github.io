@@ -285,8 +285,8 @@
 }
 
 .pagina-gestao .area-cliente {
-    width: calc(100vw - 32px);
-    max-width: none;
+    width: min(1360px, calc(100% - 48px));
+    max-width: 1360px;
     margin: 24px auto 48px;
 }
 
@@ -368,8 +368,9 @@
 }
 .pagina-gestao #painel-admin{
     display:grid !important;
-    grid-template-columns:minmax(180px, 220px) minmax(0, 1fr);
+    grid-template-columns:minmax(180px, 220px) minmax(0, 980px);
     gap:14px;
+    justify-content:center;
     align-items:start;
 }
 
@@ -458,12 +459,18 @@
 .pagina-gestao.cabecalho-com-admin #painel-admin{
     display:grid !important;
 }
-.pagina-gestao .container,
-.pagina-gestao .vista-conta.ativa{
-    width:100%;
-    max-width:none;
-}
-
 .pagina-gestao .area-cliente{
     border-radius:8px;
+}
+.pagina-gestao .gestao-tab-painel{
+    width:100%;
+    max-width:980px;
+}
+
+.pagina-gestao .linha-admin-pesquisa{
+    grid-template-columns:minmax(260px, 1fr) auto;
+}
+
+.pagina-gestao{
+    overflow-x:hidden;
 }
