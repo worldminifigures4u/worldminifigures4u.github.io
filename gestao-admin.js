@@ -279,20 +279,11 @@ function renderizarListaProdutosAdmin() {
         nome.textContent = produto.nome || 'Produto sem nome';
         info.appendChild(nome);
 
-        const identificadores = document.createElement('span');
-        identificadores.className = 'admin-produto-identificadores';
-        const referencia = document.createElement('span');
-        referencia.textContent = `Ref.: ${produto.referencia || '—'}`;
-        const sku = document.createElement('span');
-        sku.textContent = `SKU: ${produto.sku || '—'}`;
-        identificadores.append(referencia, sku);
-        info.appendChild(identificadores);
-
         const detalhes = document.createElement('span');
+        detalhes.className = 'admin-produto-detalhes-linha';
         const estado = produto.ativo === false ? 'Inativo' : 'Ativo';
-        detalhes.textContent = `${formatarEuro(produto.preco)} € | Stock: ${produto.stock ?? '-'} | ${estado}`;
-        info.appendChild(detalhes);
-        item.appendChild(info);
+        detalhes.textContent = `Ref.: ${produto.referencia || '-'} | SKU: ${produto.sku || '-'} | ${formatarEuro(produto.preco)} € | Stock: ${produto.stock ?? '-'} | ${estado}`;
+        info.appendChild(detalhes);        item.appendChild(info);
 
         const botao = document.createElement('button');
         botao.type = 'button';
