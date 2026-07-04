@@ -335,15 +335,18 @@ function preencherFormularioDadosCliente(data = {}, user = null) {
     const cidade = data.cidade || '';
     const pais = data.pais || user?.user_metadata?.pais || '';
 
-    document.getElementById('nome-perfil-logado').innerText = nome || 'Cliente Autenticado';
+    const nomePerfilLogado = document.getElementById('nome-perfil-logado');
+    if (nomePerfilLogado) nomePerfilLogado.innerText = nome || 'Cliente Autenticado';
     const nomeSessaoConta = document.getElementById('sessao-conta-nome');
     const emailSessaoConta = document.getElementById('sessao-conta-email');
     if (nomeSessaoConta) nomeSessaoConta.innerText = nome || 'Cliente Autenticado';
     if (emailSessaoConta) emailSessaoConta.innerText = email || '';
     atualizarCabecalhoCliente(nome || 'Cliente');
-    document.getElementById('email-perfil-logado').innerText = '';
+    const emailPerfilLogado = document.getElementById('email-perfil-logado');
+    if (emailPerfilLogado) emailPerfilLogado.innerText = '';
     const moradaResumo = [morada, [cp, cidade].filter(Boolean).join(' '), pais].filter(Boolean).join(', ');
-    document.getElementById('cp-perfil-logado').innerText = '';
+    const cpPerfilLogado = document.getElementById('cp-perfil-logado');
+    if (cpPerfilLogado) cpPerfilLogado.innerText = '';
 
     const campoNome = document.getElementById('editar-nome');
     const campoEmail = document.getElementById('editar-email');
