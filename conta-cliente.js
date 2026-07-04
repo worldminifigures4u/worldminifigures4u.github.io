@@ -336,6 +336,10 @@ function preencherFormularioDadosCliente(data = {}, user = null) {
     const pais = data.pais || user?.user_metadata?.pais || '';
 
     document.getElementById('nome-perfil-logado').innerText = nome || 'Cliente Autenticado';
+    const nomeSessaoConta = document.getElementById('sessao-conta-nome');
+    const emailSessaoConta = document.getElementById('sessao-conta-email');
+    if (nomeSessaoConta) nomeSessaoConta.innerText = nome || 'Cliente Autenticado';
+    if (emailSessaoConta) emailSessaoConta.innerText = email || '';
     atualizarCabecalhoCliente(nome || 'Cliente');
     document.getElementById('email-perfil-logado').innerText = '';
     const moradaResumo = [morada, [cp, cidade].filter(Boolean).join(' '), pais].filter(Boolean).join(', ');

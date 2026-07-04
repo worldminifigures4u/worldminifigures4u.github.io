@@ -12,7 +12,7 @@
     <link rel="icon" type="image/png" href="figures-planet-logo-transparent.png">
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.108.2"></script>
-    <link rel="stylesheet" href="styles.css?v=20260704-cabecalho-uniforme">
+    <link rel="stylesheet" href="styles.css?v=20260704-sessao-iniciada">
     <link rel="stylesheet" href="conta.css?v=20260702-menu-uma-linha">
 </head>
 <body data-page="conta">
@@ -157,6 +157,11 @@
 
                     <section class="historico-encomendas conta-seccao ativa" data-conta-seccao="gestao">
                         <h2>Conta</h2>
+                        <div class="sessao-conta-resumo">
+                            <span class="sessao-conta-titulo">Sessão iniciada</span>
+                            <strong id="sessao-conta-nome" class="sessao-conta-nome"></strong>
+                            <span id="sessao-conta-email" class="sessao-conta-email"></span>
+                        </div>
                         <button class="btn-logout" data-acao-cliente="logout">Sair da Conta</button>
                         <div class="zona-perigo-conta" id="zona-eliminacao-conta">
                             <h3>Eliminar conta</h3>
@@ -264,7 +269,7 @@
 </footer>
 <script src="app.js?v=20260702-cache-nome-conta"></script>
 <script src="carrinho-loja.js?v=20260701-menos-nao-remove"></script>
-<script src="conta-cliente.js?v=20260704-conta-menu-primeiro"></script>
+<script src="conta-cliente.js?v=20260704-sessao-iniciada"></script>
 <script src="inline-listeners.js?v=20260702-conta-menu"></script>
 </body>
 </html>

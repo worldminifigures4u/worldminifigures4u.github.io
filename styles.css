@@ -615,6 +615,32 @@ body.pagina-com-cabecalho-site{
 }
 
 
+
+.sessao-conta-resumo{
+    display:flex;
+    flex-direction:column;
+    gap:5px;
+    margin:0 0 18px;
+}
+
+.sessao-conta-titulo{
+    color:#bdbdbd;
+    font-size:14px;
+    font-weight:800;
+}
+
+.sessao-conta-nome{
+    color:#ffc107;
+    font-size:18px;
+    font-weight:900;
+    line-height:1.2;
+}
+
+.sessao-conta-email{
+    color:#888;
+    font-size:14px;
+    font-weight:700;
+}
 .oculto{
     display:none !important;
 }
