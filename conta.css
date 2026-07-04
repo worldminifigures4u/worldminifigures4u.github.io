@@ -404,21 +404,22 @@ body[data-page="conta"]:not(.pagina-gestao) #conteudo-cliente-autenticado:not(.o
 .conta-menu-lateral{
     display:flex;
     flex-direction:column;
-    gap:10px;
+    gap:8px;
     position:sticky;
     top:150px;
 }
 
 .conta-menu-item{
     width:100%;
-    min-height:48px;
-    padding:11px 14px;
+    min-height:42px;
+    padding:7px 12px;
     border:1px solid #333;
     border-radius:999px;
     background:#222;
     color:#fff;
     font:inherit;
     font-weight:800;
+    font-size:16px;
     text-align:left;
     cursor:pointer;
 }
