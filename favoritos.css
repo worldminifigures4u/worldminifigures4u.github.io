@@ -1,5 +1,5 @@
 .favoritos-pagina{
-    width:min(1180px, 100%);
+    width:min(960px, 100%);
     margin:0 auto;
 }
 
@@ -37,8 +37,9 @@
     border-radius:10px;
     padding:8px 10px;
     display:grid;
-    grid-template-columns:58px minmax(0, 1fr) minmax(100px, auto) auto;
+    grid-template-columns:58px minmax(260px, 420px) minmax(100px, auto) auto;
     gap:8px;
+    justify-content:start;
     align-items:center;
     min-width:0;
 }
