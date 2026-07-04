@@ -28,7 +28,7 @@ body{
             padding:6px 36px 8px 42px;
             box-sizing:border-box;
             display:grid;
-            grid-template-columns:minmax(360px, 470px) minmax(320px, 1fr) auto;
+            grid-template-columns:minmax(360px, 470px) minmax(360px, 760px) 258px;
             grid-template-rows:auto;
             gap:6px 22px;
             align-items:center;
@@ -59,9 +59,9 @@ body{
             grid-column:2;
             grid-row:1;
             width:100%;
-            max-width:760px;
+            max-width:none;
             min-width:0;
-            justify-self:center;
+            justify-self:stretch;
         }
 
         .cabecalho-pesquisa .input-pesquisa{
@@ -116,6 +116,9 @@ body{
             grid-row:1;
             gap:8px;
             min-width:0;
+            width:258px;
+            flex:0 0 258px;
+            justify-self:end;
         }
 
         .acao-cabecalho{
@@ -189,8 +192,9 @@ body{
         }
 
         [data-vista-nav="conta"]{
-            min-width:104px;
-            max-width:190px;
+            width:142px;
+            min-width:142px;
+            max-width:142px;
             justify-content:center;
             padding:0 14px;
         }
@@ -383,6 +387,8 @@ body{
             .acoes-cabecalho{
                 grid-column:2;
                 grid-row:1;
+                width:auto;
+                flex-basis:auto;
             }
             .texto-acao span{ max-width:120px; }
             .texto-acao strong{ max-width:120px; }
@@ -410,12 +416,13 @@ body{
                 grid-column:1;
                 grid-row:2;
                 display:grid;
-                grid-template-columns:repeat(2, minmax(0, 1fr));
+                grid-template-columns:repeat(3, minmax(0, 1fr));
                 gap:5px;
                 width:100%;
+                flex-basis:auto;
             }
             .acoes-cabecalho.com-atalhos-admin{
-                grid-template-columns:repeat(2, minmax(0, 1fr));
+                grid-template-columns:repeat(3, minmax(0, 1fr));
             }
             .cabecalho-pesquisa{
                 grid-column:1;
