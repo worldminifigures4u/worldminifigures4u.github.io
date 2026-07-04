@@ -246,11 +246,50 @@ function atualizarAvisoEnvio(metodoEnvio) {
         : '';
 }
 
+const CODIGO_BANDEIRA_POR_PAIS_ENVIO = {
+    portugal: 'pt',
+    espanha: 'es',
+    alemanha: 'de',
+    austria: 'at',
+    belgica: 'be',
+    bulgaria: 'bg',
+    chequia: 'cz',
+    chipre: 'cy',
+    croacia: 'hr',
+    dinamarca: 'dk',
+    eslovaquia: 'sk',
+    eslovenia: 'si',
+    estonia: 'ee',
+    finlandia: 'fi',
+    franca: 'fr',
+    grecia: 'gr',
+    hungria: 'hu',
+    irlanda: 'ie',
+    italia: 'it',
+    letonia: 'lv',
+    lituania: 'lt',
+    luxemburgo: 'lu',
+    malta: 'mt',
+    paises_baixos: 'nl',
+    polonia: 'pl',
+    romenia: 'ro',
+    suecia: 'se'
+};
+
+function atualizarBandeiraPaisEnvio() {
+    const selectPais = document.getElementById('pais-envio');
+    const bandeira = document.getElementById('pais-envio-bandeira');
+    if (!selectPais || !bandeira) return;
+
+    const codigo = CODIGO_BANDEIRA_POR_PAIS_ENVIO[selectPais.value] || 'pt';
+    bandeira.src = `https://flagcdn.com/w40/${codigo}.png`;
+}
 function atualizarOpcoesEnvio() {
     const selectPais = document.getElementById('pais-envio');
     const selectMetodo = document.getElementById('metodo-envio');
     const infoEnvio = document.getElementById('info-envio');
     if(!selectPais || !selectMetodo) return;
+    atualizarBandeiraPaisEnvio();
 
     const metodoAnterior = selectMetodo.value;
     const pesoTotal = calcularPesoTotalCarrinho();

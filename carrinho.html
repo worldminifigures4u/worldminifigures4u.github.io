@@ -2,7 +2,7 @@
 <html lang="pt">
 <head>
     <meta charset="UTF-8">
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdn.jsdelivr.net https://cdn.sheetjs.com; connect-src 'self' https://cdn.jsdelivr.net https://gksndzxadndrsynvzgzb.supabase.co wss://gksndzxadndrsynvzgzb.supabase.co https://api.cloudinary.com; img-src 'self' data: blob: https://res.cloudinary.com https://gksndzxadndrsynvzgzb.supabase.co; style-src 'self'; font-src 'self' data:; frame-src 'none'; object-src 'none'; base-uri 'self'; form-action 'self';">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdn.jsdelivr.net https://cdn.sheetjs.com; connect-src 'self' https://cdn.jsdelivr.net https://gksndzxadndrsynvzgzb.supabase.co wss://gksndzxadndrsynvzgzb.supabase.co https://api.cloudinary.com; img-src 'self' data: blob: https://res.cloudinary.com https://gksndzxadndrsynvzgzb.supabase.co https://flagcdn.com; style-src 'self'; font-src 'self' data:; frame-src 'none'; object-src 'none'; base-uri 'self'; form-action 'self';">
     <meta name="referrer" content="strict-origin-when-cross-origin">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="robots" content="noindex, nofollow, noarchive, nosnippet">
@@ -13,7 +13,7 @@
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.108.2"></script>
     <link rel="stylesheet" href="styles.css?v=20260704-sessao-iniciada">
-    <link rel="stylesheet" href="carrinho.css?v=20260702-continuar-comprar">
+    <link rel="stylesheet" href="carrinho.css?v=20260704-bandeira-pais-img">
 </head>
 <body data-page="carrinho">
 
@@ -84,35 +84,38 @@
         <div id="info-envio" class="msg-status"></div>
 
         <label>Pa&iacute;s de envio:</label>
-        <select class="select-envio" id="pais-envio">
-                        <option value="portugal">🇵🇹 Portugal</option>
-            <option value="espanha">🇪🇸 Espanha</option>
-            <option value="alemanha">🇩🇪 Alemanha</option>
-            <option value="austria">🇦🇹 &Aacute;ustria</option>
-            <option value="belgica">🇧🇪 B&eacute;lgica</option>
-            <option value="bulgaria">🇧🇬 Bulg&aacute;ria</option>
-            <option value="chequia">🇨🇿 Ch&eacute;quia</option>
-            <option value="chipre">🇨🇾 Chipre</option>
-            <option value="croacia">🇭🇷 Cro&aacute;cia</option>
-            <option value="dinamarca">🇩🇰 Dinamarca</option>
-            <option value="eslovaquia">🇸🇰 Eslov&aacute;quia</option>
-            <option value="eslovenia">🇸🇮 Eslov&eacute;nia</option>
-            <option value="estonia">🇪🇪 Est&oacute;nia</option>
-            <option value="finlandia">🇫🇮 Finl&acirc;ndia</option>
-            <option value="franca">🇫🇷 Fran&ccedil;a</option>
-            <option value="grecia">🇬🇷 Gr&eacute;cia</option>
-            <option value="hungria">🇭🇺 Hungria</option>
-            <option value="irlanda">🇮🇪 Irlanda</option>
-            <option value="italia">🇮🇹 It&aacute;lia</option>
-            <option value="letonia">🇱🇻 Let&oacute;nia</option>
-            <option value="lituania">🇱🇹 Litu&acirc;nia</option>
-            <option value="luxemburgo">🇱🇺 Luxemburgo</option>
-            <option value="malta">🇲🇹 Malta</option>
-            <option value="paises_baixos">🇳🇱 Pa&iacute;ses Baixos</option>
-            <option value="polonia">🇵🇱 Pol&oacute;nia</option>
-            <option value="romenia">🇷🇴 Rom&eacute;nia</option>
-            <option value="suecia">🇸🇪 Su&eacute;cia</option>
-        </select>
+        <div class="select-pais-envio-wrap">
+            <img id="pais-envio-bandeira" class="bandeira-pais-envio" src="https://flagcdn.com/w40/pt.png" width="24" height="18" alt="">
+            <select class="select-envio select-pais-envio" id="pais-envio">
+                <option value="portugal">Portugal</option>
+                <option value="espanha">Espanha</option>
+                <option value="alemanha">Alemanha</option>
+                <option value="austria">&Aacute;ustria</option>
+                <option value="belgica">B&eacute;lgica</option>
+                <option value="bulgaria">Bulg&aacute;ria</option>
+                <option value="chequia">Ch&eacute;quia</option>
+                <option value="chipre">Chipre</option>
+                <option value="croacia">Cro&aacute;cia</option>
+                <option value="dinamarca">Dinamarca</option>
+                <option value="eslovaquia">Eslov&aacute;quia</option>
+                <option value="eslovenia">Eslov&eacute;nia</option>
+                <option value="estonia">Est&oacute;nia</option>
+                <option value="finlandia">Finl&acirc;ndia</option>
+                <option value="franca">Fran&ccedil;a</option>
+                <option value="grecia">Gr&eacute;cia</option>
+                <option value="hungria">Hungria</option>
+                <option value="irlanda">Irlanda</option>
+                <option value="italia">It&aacute;lia</option>
+                <option value="letonia">Let&oacute;nia</option>
+                <option value="lituania">Litu&acirc;nia</option>
+                <option value="luxemburgo">Luxemburgo</option>
+                <option value="malta">Malta</option>
+                <option value="paises_baixos">Pa&iacute;ses Baixos</option>
+                <option value="polonia">Pol&oacute;nia</option>
+                <option value="romenia">Rom&eacute;nia</option>
+                <option value="suecia">Su&eacute;cia</option>
+            </select>
+        </div>
 
         <label>M&eacute;todo de envio:</label>
         <select class="select-envio" id="metodo-envio"></select>
@@ -170,7 +173,7 @@
     </div>
 </footer>
 <script src="app.js?v=20260702-cache-nome-conta"></script>
-<script src="carrinho-loja.js?v=20260701-menos-nao-remove"></script>
+<script src="carrinho-loja.js?v=20260704-bandeira-pais-img"></script>
 <script src="checkout.js?v=20260627-app-split-5"></script>
 <script src="inline-listeners.js?v=20260629-csp-inline"></script>
 </body>

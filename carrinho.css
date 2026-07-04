@@ -155,6 +155,32 @@
             box-sizing:border-box;
         }
 
+
+        .select-pais-envio-wrap{
+            position:relative;
+            margin:8px 0 14px;
+        }
+
+        .select-pais-envio-wrap .select-envio{
+            margin:0;
+        }
+
+        .select-pais-envio{
+            padding-left:42px;
+        }
+
+        .bandeira-pais-envio{
+            position:absolute;
+            left:12px;
+            top:50%;
+            width:22px;
+            height:16px;
+            object-fit:cover;
+            border-radius:2px;
+            transform:translateY(-50%);
+            pointer-events:none;
+            box-shadow:0 0 0 1px rgba(255,255,255,0.18);
+        }
         .total-box{
             margin-top:20px;
             background:#181818;
