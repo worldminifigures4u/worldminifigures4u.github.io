@@ -18,7 +18,7 @@
             margin:0 auto;
         }
 body[data-page="conta"]:not(.pagina-gestao) .vista-conta.ativa{
-            max-width:960px;
+            max-width:760px;
             width:100%;
             margin:0 auto;
         }
