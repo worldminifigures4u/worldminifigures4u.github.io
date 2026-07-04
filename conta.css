@@ -396,7 +396,7 @@ body[data-page="conta"]:not(.pagina-gestao) .vista-conta.ativa{
 
 body[data-page="conta"]:not(.pagina-gestao) #conteudo-cliente-autenticado:not(.oculto){
     display:grid;
-    grid-template-columns:minmax(220px, 280px) minmax(0, 1fr);
+    grid-template-columns:minmax(180px, 220px) minmax(0, 1fr);
     gap:18px;
     align-items:start;
 }
@@ -411,16 +411,19 @@ body[data-page="conta"]:not(.pagina-gestao) #conteudo-cliente-autenticado:not(.o
 
 .conta-menu-item{
     width:100%;
-    min-height:42px;
-    padding:7px 12px;
+    min-height:36px;
+    padding:6px 10px;
     border:1px solid #333;
     border-radius:999px;
     background:#222;
     color:#fff;
     font:inherit;
     font-weight:800;
-    font-size:16px;
-    text-align:left;
+    font-size:15px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    text-align:center;
     cursor:pointer;
 }
 
@@ -490,8 +493,8 @@ body[data-page="conta"]:not(.pagina-gestao) .conta-menu-lateral{
 }
 
 body[data-page="conta"]:not(.pagina-gestao) .conta-menu-item{
-    width:280px;
-    min-width:280px;
+    width:220px;
+    min-width:220px;
     white-space:nowrap;
 }
 
