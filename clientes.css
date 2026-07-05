@@ -149,9 +149,18 @@
 
 .clientes-formulario-rodape .admin-cliente-campo-tem_aviso{
     grid-column:auto;
-    width:auto;
-    max-width:none;
+    width:max-content;
+    min-width:max-content;
+    max-width:calc(100% - 220px);
     flex:0 0 auto;
+    flex-direction:row;
+    align-items:center;
+}
+
+.clientes-formulario-rodape .admin-cliente-formulario-checkbox input[type="checkbox"]{
+    width:18px;
+    height:18px;
+    flex:0 0 18px;
 }
 
 .clientes-formulario-rodape .admin-cliente-formulario-acoes{
