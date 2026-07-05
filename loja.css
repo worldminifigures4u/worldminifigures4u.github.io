@@ -294,8 +294,9 @@
         .btn-subtema{ background:#181818; color:#ccc; }
 
         .btn-tema:hover, .btn-subtema:hover, .btn-tema.ativo, .btn-subtema.ativo{
-            background:#ffc107;
+            background:#ffc400;
             color:#000;
+            font-weight:700;
         }
 
         .grupo-subtemas{
