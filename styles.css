@@ -205,13 +205,13 @@ body{
             height:18px;
             display:block;
             flex:0 0 18px;
-            background:#fff;
+            background:currentColor;
             -webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='black' d='M12 12a5 5 0 1 0 0-10 5 5 0 0 0 0 10Zm0 2c-4.42 0-8 2.24-8 5v1.2c0 .44.36.8.8.8h14.4c.44 0 .8-.36.8-.8V19c0-2.76-3.58-5-8-5Z'/%3E%3C/svg%3E") center/contain no-repeat;
             mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='black' d='M12 12a5 5 0 1 0 0-10 5 5 0 0 0 0 10Zm0 2c-4.42 0-8 2.24-8 5v1.2c0 .44.36.8.8.8h14.4c.44 0 .8-.36.8-.8V19c0-2.76-3.58-5-8-5Z'/%3E%3C/svg%3E") center/contain no-repeat;
         }
 
         [data-vista-nav="conta"].ativa{
-            color:#fff;
+            color:#000;
         }
 
         [data-vista-nav="conta"] .texto-acao strong{
@@ -221,7 +221,7 @@ body{
         [data-vista-nav="conta"] .detalhe-conta-cabecalho{
             display:block;
             max-width:132px;
-            color:#fff;
+            color:inherit;
             font-size:14px;
             opacity:1;
         }
