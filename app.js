@@ -211,7 +211,7 @@ function produtoEstaNosFavoritos(id) {
 
 function atualizarBotaoFavorito(botao, ativo) {
     if (!botao) return;
-    botao.classList.toggle('ativo', ativo);
+    botao.classList.toggle('is-favorite', ativo);
     botao.setAttribute('aria-pressed', ativo ? 'true' : 'false');
     botao.title = ativo ? 'Remover dos favoritos' : 'Adicionar aos favoritos';
     botao.setAttribute('aria-label', ativo ? 'Remover dos favoritos' : 'Adicionar aos favoritos');

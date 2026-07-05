@@ -169,18 +169,12 @@ function gerarProdutos(listaProdutos){
 
     function criarIconeCoracaoFavorito() {
         const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-        svg.setAttribute('class', 'icone-coracao-favorito');
-        svg.setAttribute('viewBox', '0 0 100 92');
+        svg.setAttribute('viewBox', '0 0 24 24');
         svg.setAttribute('aria-hidden', 'true');
         svg.setAttribute('focusable', 'false');
 
         const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-        path.setAttribute('d', 'M50 84 L14 48 C3 37 3 18 15 9 C27 0 44 4 50 20 C56 4 73 0 85 9 C97 18 97 37 86 48 Z');
-        path.setAttribute('fill', 'currentColor');
-        path.setAttribute('stroke', 'currentColor');
-        path.setAttribute('stroke-width', '9');
-        path.setAttribute('stroke-linecap', 'round');
-        path.setAttribute('stroke-linejoin', 'round');
+        path.setAttribute('d', 'M12 21s-7.5-4.6-10-9.2C-0.3 7.5 2.2 3 6.7 3c2.1 0 4 1.2 5.3 3 1.3-1.8 3.2-3 5.3-3 4.5 0 7 4.5 4.7 8.8C19.5 16.4 12 21 12 21z');
 
         svg.appendChild(path);
         return svg;
@@ -222,7 +216,7 @@ function gerarProdutos(listaProdutos){
         const imagemInicial = imagensOtimizadas[0] || imagemFallback;
 
         const botaoFavorito = document.createElement('button');
-        botaoFavorito.className = 'btn-favorito-produto';
+        botaoFavorito.className = 'favorite-btn';
         botaoFavorito.type = 'button';
         botaoFavorito.dataset.favoritoProdutoId = String(prod.id);
         botaoFavorito.appendChild(criarIconeCoracaoFavorito());

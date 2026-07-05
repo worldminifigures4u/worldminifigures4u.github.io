@@ -86,55 +86,82 @@
             border-color:rgba(255, 196, 0, 0.45);
         }
 
-        .btn-favorito-produto{
-            position:absolute;
-            top:22px;
-            right:22px;
-            z-index:2;
-            width:38px;
-            height:38px;
-            border:1px solid rgba(255,255,255,0.22);
-            border-radius:999px;
-            background:rgba(0,0,0,0.72);
-            color:#fff;
-            line-height:0.9;
-            cursor:pointer;
-            display:flex;
-            align-items:center;
-            justify-content:center;
-            transition:0.2s;
+        .favorite-btn {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            z-index: 2;
+
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            background: rgba(20, 20, 20, 0.78);
+            border: 1px solid rgba(255, 255, 255, 0.22);
+
+            color: #ffffff;
+            cursor: pointer;
+
+            transition:
+                transform 0.18s ease,
+                background 0.18s ease,
+                border-color 0.18s ease,
+                box-shadow 0.18s ease;
         }
 
-        .btn-favorito-produto:hover,
-        .btn-favorito-produto:focus-visible{
-            border-color:#ffc107;
-            color:#ffc107;
-            outline:none;
+        .favorite-btn svg {
+            width: 22px;
+            height: 22px;
+            stroke: currentColor;
+            stroke-width: 2.8;
+            fill: none;
+
+            transition:
+                transform 0.18s ease,
+                fill 0.18s ease,
+                stroke 0.18s ease;
         }
 
-        .btn-favorito-produto.ativo{
-            background:rgba(0,0,0,0.72);
-            color:#ff3b3b;
-            border-color:rgba(255,255,255,0.22);
+        .favorite-btn:hover {
+            transform: scale(1.08);
+            background: rgba(35, 35, 35, 0.9);
+            border-color: rgba(255, 255, 255, 0.38);
+            box-shadow: 0 0 12px rgba(255, 255, 255, 0.12);
         }
 
-        .btn-favorito-produto .icone-coracao-favorito{
-            width:26px;
-            height:26px;
-            display:block;
-            flex:0 0 auto;
-            transform:translateY(1px);
+        .favorite-btn:active {
+            transform: scale(0.94);
         }
 
-        .btn-favorito-produto .icone-coracao-favorito path{
-            fill:transparent;
-            stroke:currentColor;
-            transition:fill 0.16s ease, stroke 0.16s ease;
+        .favorite-btn.is-favorite {
+            color: #ff3b3b;
+            background: rgba(25, 25, 25, 0.9);
+            border-color: rgba(255, 59, 59, 0.45);
+            box-shadow: 0 0 14px rgba(255, 59, 59, 0.18);
         }
 
-        .btn-favorito-produto.ativo .icone-coracao-favorito path{
-            fill:currentColor;
-            stroke:currentColor;
+        .favorite-btn.is-favorite svg {
+            fill: #ff3b3b;
+            stroke: #ff3b3b;
+            animation: favorite-pop 0.28s ease;
+        }
+
+        @keyframes favorite-pop {
+            0% {
+                transform: scale(0.75);
+            }
+
+            55% {
+                transform: scale(1.18);
+            }
+
+            100% {
+                transform: scale(1);
+            }
         }
 
         .produto-galeria{
