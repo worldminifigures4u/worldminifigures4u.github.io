@@ -245,7 +245,7 @@ body[data-page="conta"]:not(.pagina-gestao) #conteudo-cliente-autenticado:not(.o
         }
 
         .favorito-preco{
-            color:#35c7ff;
+            color:#fff;
             font-weight:800;
         }
 
@@ -322,7 +322,7 @@ body[data-page="conta"]:not(.pagina-gestao) #conteudo-cliente-autenticado:not(.o
         }
 
         .encomenda-total{
-            color:#35c7ff;
+            color:#fff;
             font-weight:bold;
         }
 
