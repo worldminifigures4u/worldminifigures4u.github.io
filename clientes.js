@@ -133,17 +133,21 @@ function renderizarClientesLista() {
         botao.classList.toggle("ativo", String(cliente.id) === String(clienteAbertoId));
         botao.addEventListener("click", () => abrirCliente(cliente.id));
 
-        const nome = criarElementoCliente("strong", "", cliente.nome || "Cliente sem nome");
+        const linhaNome = criarElementoCliente("div", "clientes-lista-linha-nome");
         if (cliente.tem_aviso) {
-            nome.prepend(criarElementoCliente("span", "clientes-lista-aviso", "\u26a0 "));
+            const aviso = criarElementoCliente("span", "clientes-lista-aviso", "\u26a0");
+            aviso.title = "Cliente com aviso a ler.";
+            aviso.setAttribute("aria-label", "Cliente com aviso a ler");
+            linhaNome.appendChild(aviso);
         }
+        linhaNome.appendChild(criarElementoCliente("strong", "", cliente.nome || "Cliente sem nome"));
         const detalhes = criarElementoCliente("span", "", [
             cliente.telefone,
             cliente.cidade,
             `${Number(resumo.encomendas || 0)} encomenda(s)`
         ].filter(Boolean).join(" | "));
         const links = criarElementoCliente("small", "", perfis.map(perfil => `${perfil.plataforma}: ${perfil.utilizador}`).join(" | "));
-        botao.append(nome, detalhes, links);
+        botao.append(linhaNome, detalhes, links);
         caixa.appendChild(botao);
     });
 }
