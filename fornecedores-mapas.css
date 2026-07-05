@@ -1,8 +1,8 @@
 /* Estilos especificos das paginas Fornecedores e Mapas. */
 
-body.pagina-fornecedores-admin{ margin:0; padding:0; min-height:100vh; background:#000; color:#fff; font-family:Arial, Helvetica, sans-serif; }
+body.pagina-fornecedores-admin{ margin:0; padding-left:0; padding-right:0; padding-bottom:0; min-height:100vh; background:#000; color:#fff; font-family:Arial, Helvetica, sans-serif; }
         .fornecedores-topo h1{ color:#ffc400; }
-        .fornecedores-admin{ max-width:1480px; margin:0 auto; padding:24px 18px 48px; }
+        .fornecedores-admin{ width:100%; margin:0 auto var(--espaco-acima-rodape); padding:0; }
         .fornecedores-grid{ display:grid; grid-template-columns:minmax(420px,0.95fr) minmax(520px,1.05fr); gap:22px; align-items:start; }
         .fornecedores-painel{ background:#141414; border:1px solid #333; border-radius:8px; padding:18px; }
         .fornecedores-painel h2,.fornecedores-painel h3{ margin:0 0 14px; color:#ffc400; }

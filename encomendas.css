@@ -1,7 +1,9 @@
 /* Estilos específicos da página Encomendas. */
 body.pagina-encomendas-admin{
             min-height:100vh;
-            padding:0;
+            padding-left:0;
+            padding-right:0;
+            padding-bottom:0;
             background:#080808;
             color:#fff;
         }
@@ -43,8 +45,8 @@ body.pagina-encomendas-admin{
         }
 
         .admin-encomendas{
-            width:min(1180px, calc(100% - 32px));
-            margin:24px auto 50px;
+            width:100%;
+            margin:0 auto var(--espaco-acima-rodape);
         }
 
         .admin-encomendas-resumo{

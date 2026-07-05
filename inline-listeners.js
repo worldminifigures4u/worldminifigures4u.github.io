@@ -27,12 +27,44 @@
         }
     }
 
+    function obterEspacoAbaixoCabecalho() {
+        const valor = getComputedStyle(document.documentElement)
+            .getPropertyValue('--espaco-abaixo-cabecalho')
+            .trim();
+        const numero = parseFloat(valor);
+        return Number.isFinite(numero) ? numero : 24;
+    }
+
     function sincronizarEspacamentoCabecalho() {
         const header = document.querySelector('header');
         if (!header) return;
         const altura = Math.ceil(header.getBoundingClientRect().height);
-        const margem = 8;
+        const margem = obterEspacoAbaixoCabecalho();
         document.documentElement.style.setProperty('--cabecalho-offset', `${altura + margem}px`);
+    }
+
+    function inserirRodapeSite() {
+        if (document.querySelector('.rodape-site')) return;
+
+        const rodape = document.createElement('footer');
+        rodape.className = 'rodape-site';
+        rodape.innerHTML = ''
+            + '<div class="rodape-conteudo">'
+            + '<div class="rodape-frase">Figures Planet &copy; 2026 &middot; Minifiguras, colecion&aacute;veis e pe&ccedil;as especiais</div>'
+            + '<nav class="rodape-links" aria-label="Navegacao secundaria">'
+            + '<a href="index.html">Produtos</a>'
+            + '<a href="sobre.html">Sobre n&oacute;s</a>'
+            + '<a href="contactos.html">Contactos</a>'
+            + '<a href="politicas.html">Pol&iacute;ticas</a>'
+            + '</nav>'
+            + '</div>';
+
+        const primeiroScript = document.body.querySelector('script');
+        if (primeiroScript) {
+            document.body.insertBefore(rodape, primeiroScript);
+        } else {
+            document.body.appendChild(rodape);
+        }
     }
 
     function iniciarSincronizacaoCabecalho() {
@@ -235,6 +267,7 @@
 
     quandoPronto(function () {
         iniciarSincronizacaoCabecalho();
+        inserirRodapeSite();
         atualizarContadorCarrinhoTopo();
         window.addEventListener('storage', atualizarContadorCarrinhoTopo);
         ligarPesquisaCabecalho();
