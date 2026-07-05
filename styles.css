@@ -46,8 +46,8 @@ body{
 
         .logo-loja img{
             display:block;
-            width:450px;
-            max-height:118px;
+            width:383px;
+            max-height:100px;
             height:auto;
             object-fit:contain;
             object-position:center;
@@ -398,7 +398,7 @@ body{
                 grid-row:1;
             }
             .logo-loja img{
-                width:370px;
+                width:315px;
                 height:auto;
                 max-height:none;
             }
@@ -427,7 +427,7 @@ body{
                 justify-self:center;
             }
             .logo-loja img{
-                width:280px;
+                width:238px;
                 height:auto;
             }
             .acoes-cabecalho{
