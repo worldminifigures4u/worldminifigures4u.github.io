@@ -228,9 +228,9 @@ body.pagina-encomendas-admin{
         }
 
         .admin-encomenda-identificacao .admin-encomenda-origem.plataforma-olx{
-            border-color:#23e4d1;
-            color:#23e4d1;
-            background:rgba(35, 228, 209, .08);
+            border-color:#ffffff;
+            color:#ffffff;
+            background:rgba(255, 255, 255, .08);
         }
 
         .admin-encomenda-identificacao .admin-encomenda-origem.plataforma-wallapop{
