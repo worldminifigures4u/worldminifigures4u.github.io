@@ -118,7 +118,10 @@
         </div>
 
         <label>M&eacute;todo de envio:</label>
-        <select class="select-envio" id="metodo-envio"></select>
+        <div id="metodos-envio" class="metodos-envio" role="radiogroup" aria-label="M&eacute;todo de envio"></div>
+        <input type="hidden" id="metodo-envio" value="">
+        <p id="aviso-recomendacao-registado" class="envio-aviso-recomendacao" hidden>Para maior seguran&ccedil;a e acompanhamento da encomenda, recomendamos o Envio Registado.</p>
+        <p id="aviso-limite-sem-rastreamento" class="envio-aviso-limite" hidden>Envio sem rastreamento dispon&iacute;vel apenas at&eacute; 15,00 &euro;.</p>
 
         <div class="total-box">
             <div class="linha-total">
@@ -129,7 +132,7 @@
                 <span>Portes de envio (IVA incluído):</span>
                 <span id="portes">0,00 €</span>
             </div>
-            <div id="aviso-envio-nao-registado" class="msg-status msg-erro"></div>
+            <div id="aviso-envio-nao-registado" class="msg-status msg-erro" hidden></div>
             <div class="linha-total valor-final">
                 <span>Total:</span>
                 <span id="total">0,00 €</span>
@@ -172,9 +175,9 @@
         </nav>
     </div>
 </footer>
-<script src="app.js?v=20260705-cabecalho-admin"></script>
-<script src="carrinho-loja.js?v=20260704-bandeira-pais-img"></script>
-<script src="checkout.js?v=20260627-app-split-5"></script>
-<script src="inline-listeners.js?v=20260705-pesquisa-cabecalho"></script>
+<script src="app.js?v=20260705-envio-registado"></script>
+<script src="carrinho-loja.js?v=20260705-envio-registado"></script>
+<script src="checkout.js?v=20260705-envio-registado"></script>
+<script src="inline-listeners.js?v=20260705-envio-registado"></script>
 </body>
 </html>

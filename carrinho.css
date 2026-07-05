@@ -157,6 +157,89 @@
             font-weight:700;
         }
 
+        .metodos-envio{
+            display:flex;
+            flex-direction:column;
+            gap:8px;
+            margin:8px 0 10px;
+        }
+
+        .metodos-envio-vazio{
+            margin:0;
+            color:#aaa;
+            font-size:14px;
+        }
+
+        .opcao-envio{
+            display:flex;
+            align-items:flex-start;
+            gap:10px;
+            background:#1c1c1c;
+            padding:12px;
+            border-radius:8px;
+            cursor:pointer;
+            border:1px solid #222;
+            transition:border-color 0.18s ease, background 0.18s ease;
+        }
+
+        .opcao-envio:hover{
+            border-color:#444;
+        }
+
+        .opcao-envio:has(input:checked){
+            border-color:#ffc107;
+            background:#221c0a;
+        }
+
+        .opcao-envio input{
+            margin-top:3px;
+            flex:0 0 auto;
+            cursor:pointer;
+            accent-color:#ffc107;
+        }
+
+        .opcao-envio-conteudo{
+            display:flex;
+            flex-direction:column;
+            align-items:flex-start;
+            gap:4px;
+            min-width:0;
+        }
+
+        .opcao-envio-titulo{
+            color:#fff;
+            font-size:15px;
+            font-weight:700;
+            line-height:1.3;
+        }
+
+        .opcao-envio-subtitulo{
+            color:#aaa;
+            font-size:12px;
+            font-weight:600;
+        }
+
+        .opcao-envio-badge{
+            display:inline-flex;
+            align-items:center;
+            padding:2px 8px;
+            border-radius:999px;
+            background:rgba(255,196,0,0.16);
+            color:#ffc400;
+            font-size:11px;
+            font-weight:800;
+            letter-spacing:0.02em;
+            text-transform:uppercase;
+        }
+
+        .envio-aviso-recomendacao,
+        .envio-aviso-limite{
+            margin:0 0 14px;
+            color:#888;
+            font-size:12px;
+            line-height:1.45;
+        }
+
 
         .select-pais-envio-wrap{
             position:relative;

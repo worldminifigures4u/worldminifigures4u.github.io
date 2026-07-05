@@ -232,18 +232,130 @@ function obterOpcaoEnvioSelecionada(paisEnvio, pesoTotal, metodoEnvio) {
     return opcoes.find(opcao => opcao.id === metodoEnvio) || opcoes[0] || { id: '', nome: '', valor: 0 };
 }
 
+function obterOpcaoEnvioSelecionadaCheckout(paisEnvio, pesoTotal, metodoEnvio, subtotal) {
+    const opcoes = filtrarOpcoesEnvioCheckout(obterOpcoesEnvio(paisEnvio, pesoTotal), subtotal);
+    return opcoes.find(opcao => opcao.id === metodoEnvio)
+        || opcoes.find(opcao => opcao.id === 'ctt_registado')
+        || opcoes.find(opcao => metodoEnvioRegistado(opcao.id))
+        || opcoes[0]
+        || { id: '', nome: '', valor: 0 };
+}
+
 function valorPortesComIva(valorBase) {
     return Math.round(Number(valorBase || 0) * 100) / 100;
 }
 
-function atualizarAvisoEnvio(metodoEnvio) {
-    const aviso = document.getElementById('aviso-envio-nao-registado');
-    if(!aviso) return;
+function calcularSubtotalCarrinho() {
+    return carrinho.reduce((total, item) => total + Number(item.preco || 0) * Number(item.quantidade || 1), 0);
+}
 
-    const mostrarAviso = metodoEnvio === 'ctt_normal' || metodoEnvio === 'ctt_azul';
-    aviso.textContent = mostrarAviso
-        ? 'Recomendado o Envio Registado. Não nos responsabilizamos pelo extravio de encomendas.'
-        : '';
+function metodoEnvioSemRastreamento(id) {
+    return METODOS_ENVIO_SEM_RASTREAMENTO.has(id);
+}
+
+function metodoEnvioRegistado(id) {
+    return METODOS_ENVIO_REGISTADOS.has(id);
+}
+
+function filtrarOpcoesEnvioCheckout(opcoes, subtotal) {
+    if (subtotal <= LIMITE_SUBTOTAL_ENVIO_SEM_RASTREAMENTO) return opcoes;
+    return opcoes.filter(opcao => !metodoEnvioSemRastreamento(opcao.id));
+}
+
+function obterRotuloOpcaoEnvio(opcao) {
+    const preco = formatarEuro(valorPortesComIva(opcao.valor)) + ' \u20ac';
+
+    if (opcao.id === 'ctt_normal') {
+        return {
+            titulo: `CTT Normal \u2014 ${preco}`,
+            subtitulo: 'Sem rastreamento'
+        };
+    }
+
+    if (opcao.id === 'ctt_azul') {
+        return {
+            titulo: `CTT Azul \u2014 ${preco}`,
+            subtitulo: 'Sem rastreamento'
+        };
+    }
+
+    if (opcao.id === 'ctt_registado') {
+        return {
+            titulo: `CTT Registado \u2014 ${preco}`,
+            badge: 'Recomendado'
+        };
+    }
+
+    if (opcao.id === 'inpost_registado') {
+        return {
+            titulo: `InPost Registado \u2014 ${preco}`,
+            badge: 'Recomendado'
+        };
+    }
+
+    return {
+        titulo: `${opcao.nome} \u2014 ${preco}`
+    };
+}
+
+function criarOpcaoEnvioCheckout(opcao, selecionado) {
+    const rotulo = obterRotuloOpcaoEnvio(opcao);
+    const label = document.createElement('label');
+    label.className = 'opcao-envio';
+
+    const input = document.createElement('input');
+    input.type = 'radio';
+    input.name = 'metodo-envio-radio';
+    input.value = opcao.id;
+    input.checked = selecionado;
+
+    const conteudo = document.createElement('span');
+    conteudo.className = 'opcao-envio-conteudo';
+
+    const titulo = document.createElement('span');
+    titulo.className = 'opcao-envio-titulo';
+    titulo.textContent = rotulo.titulo;
+    conteudo.appendChild(titulo);
+
+    if (rotulo.subtitulo) {
+        const subtitulo = document.createElement('span');
+        subtitulo.className = 'opcao-envio-subtitulo';
+        subtitulo.textContent = rotulo.subtitulo;
+        conteudo.appendChild(subtitulo);
+    }
+
+    if (rotulo.badge) {
+        const badge = document.createElement('span');
+        badge.className = 'opcao-envio-badge';
+        badge.textContent = rotulo.badge;
+        conteudo.appendChild(badge);
+    }
+
+    label.append(input, conteudo);
+    return label;
+}
+
+function atualizarAvisosEnvioCheckout(opcoesCompletas, opcoesVisiveis, subtotal) {
+    const recomendacao = document.getElementById('aviso-recomendacao-registado');
+    const limite = document.getElementById('aviso-limite-sem-rastreamento');
+    const avisoAntigo = document.getElementById('aviso-envio-nao-registado');
+
+    const temSemRastreamentoVisivel = opcoesVisiveis.some(opcao => metodoEnvioSemRastreamento(opcao.id));
+    const bloqueadoPorValor = subtotal > LIMITE_SUBTOTAL_ENVIO_SEM_RASTREAMENTO
+        && opcoesCompletas.some(opcao => metodoEnvioSemRastreamento(opcao.id));
+
+    if (recomendacao) {
+        recomendacao.hidden = !temSemRastreamentoVisivel;
+    }
+
+    if (limite) {
+        limite.hidden = !bloqueadoPorValor;
+    }
+
+    if (avisoAntigo) {
+        avisoAntigo.hidden = true;
+        avisoAntigo.textContent = '';
+    }
 }
 
 const CODIGO_BANDEIRA_POR_PAIS_ENVIO = {
@@ -286,37 +398,45 @@ function atualizarBandeiraPaisEnvio() {
 }
 function atualizarOpcoesEnvio() {
     const selectPais = document.getElementById('pais-envio');
-    const selectMetodo = document.getElementById('metodo-envio');
+    const containerMetodos = document.getElementById('metodos-envio');
+    const inputMetodo = document.getElementById('metodo-envio');
     const infoEnvio = document.getElementById('info-envio');
-    if(!selectPais || !selectMetodo) return;
+    if(!selectPais || !containerMetodos || !inputMetodo) return;
     atualizarBandeiraPaisEnvio();
 
-    const metodoAnterior = selectMetodo.value;
+    const metodoAnterior = inputMetodo.value;
     const pesoTotal = calcularPesoTotalCarrinho();
-    const opcoes = obterOpcoesEnvio(selectPais.value, pesoTotal);
-    selectMetodo.replaceChildren();
+    const subtotal = calcularSubtotalCarrinho();
+    const opcoesCompletas = obterOpcoesEnvio(selectPais.value, pesoTotal);
+    const opcoes = filtrarOpcoesEnvioCheckout(opcoesCompletas, subtotal);
+    containerMetodos.replaceChildren();
 
     if(opcoes.length === 0) {
-        const option = document.createElement('option');
-        option.value = '';
-        option.textContent = 'Adicione produtos para calcular o envio';
-        selectMetodo.appendChild(option);
+        inputMetodo.value = '';
+        const vazio = document.createElement('p');
+        vazio.className = 'metodos-envio-vazio';
+        vazio.textContent = 'Adicione produtos para calcular o envio';
+        containerMetodos.appendChild(vazio);
         if(infoEnvio) infoEnvio.textContent = '';
+        atualizarAvisosEnvioCheckout(opcoesCompletas, opcoes, subtotal);
         recalcularTotais();
         return;
     }
 
+    const metodoAindaDisponivel = opcoes.some(opcao => opcao.id === metodoAnterior);
+    const metodoRegistado = opcoes.find(opcao => opcao.id === 'ctt_registado')
+        || opcoes.find(opcao => metodoEnvioRegistado(opcao.id));
+    const metodoSelecionado = metodoAindaDisponivel
+        ? metodoAnterior
+        : (metodoRegistado?.id || opcoes[0].id);
+
     opcoes.forEach(opcao => {
-        const option = document.createElement('option');
-        option.value = opcao.id;
-        option.textContent = opcao.nome + ' - ' + formatarEuro(valorPortesComIva(opcao.valor)) + ' \u20ac';
-        selectMetodo.appendChild(option);
+        containerMetodos.appendChild(criarOpcaoEnvioCheckout(opcao, opcao.id === metodoSelecionado));
     });
 
-    const metodoAindaDisponivel = opcoes.some(opcao => opcao.id === metodoAnterior);
-    const metodoRegistado = opcoes.find(opcao => opcao.id === 'ctt_registado');
-    selectMetodo.value = metodoAindaDisponivel ? metodoAnterior : (metodoRegistado?.id || opcoes[0].id);
+    inputMetodo.value = metodoSelecionado;
     if(infoEnvio) infoEnvio.textContent = '';
+    atualizarAvisosEnvioCheckout(opcoesCompletas, opcoes, subtotal);
     recalcularTotais();
 }
 
@@ -327,9 +447,18 @@ function recalcularTotais(){
     const paisEnvio = document.getElementById('pais-envio')?.value || 'portugal';
     const metodoEnvio = document.getElementById('metodo-envio')?.value || '';
     const pesoTotal = calcularPesoTotalCarrinho();
-    const opcaoEnvio = obterOpcaoEnvioSelecionada(paisEnvio, pesoTotal, metodoEnvio);
+    const opcaoEnvio = obterOpcaoEnvioSelecionadaCheckout(paisEnvio, pesoTotal, metodoEnvio, subtotal);
+    const inputMetodo = document.getElementById('metodo-envio');
+    if (inputMetodo && inputMetodo.value !== opcaoEnvio.id) {
+        inputMetodo.value = opcaoEnvio.id;
+        document.querySelectorAll('input[name="metodo-envio-radio"]').forEach(radio => {
+            radio.checked = radio.value === opcaoEnvio.id;
+        });
+    }
     const portes = valorPortesComIva(opcaoEnvio.valor);
-    atualizarAvisoEnvio(opcaoEnvio.id);
+    const opcoesCompletas = obterOpcoesEnvio(paisEnvio, pesoTotal);
+    const opcoesVisiveis = filtrarOpcoesEnvioCheckout(opcoesCompletas, subtotal);
+    atualizarAvisosEnvioCheckout(opcoesCompletas, opcoesVisiveis, subtotal);
 
     document.getElementById('subtotal').innerText = formatarEuro(subtotal) + ' \u20ac';
     document.getElementById('portes').innerText = formatarEuro(portes) + ' \u20ac';

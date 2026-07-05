@@ -92,6 +92,10 @@ function obterZonaPortesPorPais(paisEnvio) {
     return ZONA_PORTES_POR_PAIS[paisEnvio] || 'europa';
 }
 
+const LIMITE_SUBTOTAL_ENVIO_SEM_RASTREAMENTO = 15;
+const METODOS_ENVIO_SEM_RASTREAMENTO = new Set(['ctt_normal', 'ctt_azul']);
+const METODOS_ENVIO_REGISTADOS = new Set(['ctt_registado', 'inpost_registado']);
+
 let dbClient = null;
 let produtosClient = null;
 let todosOsProdutos = [];

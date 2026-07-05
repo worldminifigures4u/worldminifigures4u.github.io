@@ -221,9 +221,16 @@
         ligar('pais-envio', 'change', function () {
             if (typeof atualizarOpcoesEnvio === 'function') atualizarOpcoesEnvio();
         });
-        ligar('metodo-envio', 'change', function () {
-            if (typeof recalcularTotais === 'function') recalcularTotais();
-        });
+        const metodosEnvio = document.getElementById('metodos-envio');
+        if (metodosEnvio) {
+            metodosEnvio.addEventListener('change', function (evento) {
+                const radio = evento.target;
+                if (!radio || radio.name !== 'metodo-envio-radio') return;
+                const inputMetodo = document.getElementById('metodo-envio');
+                if (inputMetodo) inputMetodo.value = radio.value;
+                if (typeof recalcularTotais === 'function') recalcularTotais();
+            });
+        }
         document.querySelectorAll('[data-acao-carrinho="confirmar-encomenda"]').forEach(function (botao) {
             botao.addEventListener('click', function () {
                 if (typeof criarNovaEncomenda === 'function') criarNovaEncomenda();
