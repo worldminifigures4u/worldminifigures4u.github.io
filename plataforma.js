@@ -1121,6 +1121,11 @@ function definirCssDinamicoWallapop(cssTexto) {
 }
 
 const WALLAPOP_ITENS_POR_FOLHA = 10;
+const WALLAPOP_LARGURA_FOLHA = 794;
+const WALLAPOP_ALTURA_FOLHA = 1123;
+const WALLAPOP_MARGEM_FOLHA = 42;
+const WALLAPOP_ALTURA_LINHA = 96;
+const WALLAPOP_MARGEM_FINAL = 24;
 
 function dividirItensWallapop(itens, tamanho = WALLAPOP_ITENS_POR_FOLHA) {
     const paginas = [];
@@ -1130,13 +1135,30 @@ function dividirItensWallapop(itens, tamanho = WALLAPOP_ITENS_POR_FOLHA) {
     return paginas;
 }
 
-function atualizarAlturaPrevisualizacaoWallapop(totalPaginas) {
+function calcularAlturaFolhaWallapop(totalItens) {
+    const itens = Math.max(1, Math.min(WALLAPOP_ITENS_POR_FOLHA, Number(totalItens) || 0));
+    return Math.min(
+        WALLAPOP_ALTURA_FOLHA,
+        WALLAPOP_MARGEM_FOLHA + (itens * WALLAPOP_ALTURA_LINHA) + WALLAPOP_MARGEM_FINAL
+    );
+}
+
+function obterEscalaPrevisualizacaoWallapop() {
     const escala = document.getElementById('wallapop-folha-escala');
     if (!escala) return;
     const estilos = getComputedStyle(escala);
     const alturaPagina = parseFloat(estilos.getPropertyValue('--wallapop-preview-page-height')) || 674;
+    return alturaPagina / WALLAPOP_ALTURA_FOLHA;
+}
+
+function atualizarAlturaPrevisualizacaoWallapop(paginas) {
+    const escala = document.getElementById('wallapop-folha-escala');
+    if (!escala) return;
+    const estilos = getComputedStyle(escala);
+    const fatorEscala = obterEscalaPrevisualizacaoWallapop() || 0.6;
     const intervalo = parseFloat(estilos.getPropertyValue('--wallapop-preview-gap')) || 14;
-    const alturaTotal = Math.max(0, (totalPaginas * alturaPagina) + ((totalPaginas - 1) * intervalo));
+    const alturas = paginas.length ? paginas.map(pagina => calcularAlturaFolhaWallapop(pagina.length) * fatorEscala) : [120];
+    const alturaTotal = Math.max(0, alturas.reduce((total, altura) => total + altura, 0) + ((alturas.length - 1) * intervalo));
     definirCssDinamicoWallapop(`#wallapop-folha-escala { height: ${alturaTotal}px; }`);
 }
 
@@ -1218,11 +1240,11 @@ function quebrarTextoCanvasWallapop(ctx, texto, larguraMaxima, maximoLinhas = 2)
 }
 
 async function gerarCanvasFolhaWallapop(itensPagina) {
-    const largura = 794;
-    const altura = 1123;
+    const largura = WALLAPOP_LARGURA_FOLHA;
+    const altura = calcularAlturaFolhaWallapop(itensPagina.length);
     const escala = 2;
-    const margem = 42;
-    const alturaLinha = 96;
+    const margem = WALLAPOP_MARGEM_FOLHA;
+    const alturaLinha = WALLAPOP_ALTURA_LINHA;
     const canvas = document.createElement('canvas');
     canvas.width = largura * escala;
     canvas.height = altura * escala;
@@ -1263,8 +1285,7 @@ function renderizarFolhaWallapop(itens = wallapopItens) {
     const folha = document.getElementById('wallapop-folha');
     folha.replaceChildren();
     const paginas = dividirItensWallapop(itens);
-    const totalPaginas = Math.max(1, paginas.length);
-    atualizarAlturaPrevisualizacaoWallapop(totalPaginas);
+    atualizarAlturaPrevisualizacaoWallapop(paginas);
 
     if (!itens.length) {
         const pagina = document.createElement('section');
@@ -1281,6 +1302,7 @@ function renderizarFolhaWallapop(itens = wallapopItens) {
         const pagina = document.createElement('section');
         pagina.className = 'wallapop-pagina';
         pagina.setAttribute('aria-label', `Folha A4 ${indice + 1}`);
+        pagina.style.height = `${calcularAlturaFolhaWallapop(itensPagina.length)}px`;
         const lista = document.createElement('div');
         lista.className = 'wallapop-lista';
         itensPagina.forEach(item => lista.appendChild(criarLinhaFolhaWallapop(item)));

@@ -451,7 +451,8 @@ body.pagina-wallapop{
 
         .wallapop-pagina{
             width:794px;
-            min-height:1123px;
+            min-height:0;
+            height:1123px;
             padding:42px;
             box-sizing:border-box;
             background:#fff;
