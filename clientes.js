@@ -87,6 +87,46 @@ function criarCheckboxCliente(rotulo, nome, marcado = false) {
     return campo;
 }
 
+function criarIconeAvisoCliente(classe = "clientes-lista-aviso") {
+    const aviso = document.createElement("span");
+    aviso.className = classe;
+    aviso.title = "Cliente com aviso a ler.";
+    aviso.setAttribute("aria-label", "Cliente com aviso a ler");
+
+    const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    svg.setAttribute("viewBox", "0 0 24 24");
+    svg.setAttribute("aria-hidden", "true");
+    svg.setAttribute("focusable", "false");
+
+    const triangulo = document.createElementNS("http://www.w3.org/2000/svg", "path");
+    triangulo.setAttribute(
+        "d",
+        "M12 2.8c.45 0 .87.24 1.1.63l8.52 14.75c.45.78-.12 1.77-1.1 1.77H3.48c-.98 0-1.55-.99-1.1-1.77L10.9 3.43c.23-.39.65-.63 1.1-.63z"
+    );
+    triangulo.setAttribute("fill", "#ffcc00");
+    triangulo.setAttribute("stroke", "#111");
+    triangulo.setAttribute("stroke-width", "1.4");
+    triangulo.setAttribute("stroke-linejoin", "round");
+
+    const barra = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+    barra.setAttribute("x", "11");
+    barra.setAttribute("y", "9.2");
+    barra.setAttribute("width", "2");
+    barra.setAttribute("height", "5.8");
+    barra.setAttribute("rx", "1");
+    barra.setAttribute("fill", "#111");
+
+    const ponto = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+    ponto.setAttribute("cx", "12");
+    ponto.setAttribute("cy", "17.2");
+    ponto.setAttribute("r", "1.15");
+    ponto.setAttribute("fill", "#111");
+
+    svg.append(triangulo, barra, ponto);
+    aviso.appendChild(svg);
+    return aviso;
+}
+
 function criarTextareaCliente(rotulo, nome, valor, linhas = 6) {
     const campo = document.createElement("label");
     campo.className = "admin-cliente-formulario-campo admin-cliente-formulario-notas";
@@ -135,10 +175,7 @@ function renderizarClientesLista() {
 
         const linhaNome = criarElementoCliente("div", "clientes-lista-linha-nome");
         if (cliente.tem_aviso) {
-            const aviso = criarElementoCliente("span", "clientes-lista-aviso", "\u26a0");
-            aviso.title = "Cliente com aviso a ler.";
-            aviso.setAttribute("aria-label", "Cliente com aviso a ler");
-            linhaNome.appendChild(aviso);
+            linhaNome.appendChild(criarIconeAvisoCliente());
         }
         linhaNome.appendChild(criarElementoCliente("strong", "", cliente.nome || "Cliente sem nome"));
         const detalhes = criarElementoCliente("span", "", [
@@ -348,8 +385,8 @@ function renderizarFichaCliente(dados) {
     const topo = criarElementoCliente("div", "clientes-ficha-topo");
     const titulo = criarElementoCliente("h2", "", cliente.nome || "Cliente sem nome");
     if (cliente.tem_aviso) {
-        const aviso = criarElementoCliente("span", "clientes-aviso-badge", "\u26a0 Aviso a ler");
-        aviso.title = "Este cliente tem um aviso interno a ler.";
+        const aviso = criarIconeAvisoCliente("clientes-aviso-badge");
+        aviso.append(document.createTextNode("Aviso a ler"));
         titulo.appendChild(aviso);
     }
     topo.append(titulo);
