@@ -107,24 +107,59 @@
     window.atualizarCabecalhoAdmin = atualizarCabecalhoAdmin;
     window.mostrarNavegacaoAdminValidada = mostrarNavegacaoAdminValidada;
 
+    function obterCampoPesquisaCabecalho() {
+        return document.getElementById('campo-pesquisa')
+            || document.querySelector('.cabecalho-pesquisa input[name="q"]')
+            || document.querySelector('.cabecalho-pesquisa .input-pesquisa');
+    }
+
+    function paginaAtualEhLoja() {
+        return String(document.body?.dataset?.page || '').toLowerCase() === 'loja';
+    }
+
+    function irParaPesquisaProdutos(termo) {
+        const pesquisa = String(termo ?? '').trim();
+        window.location.href = 'index.html' + (pesquisa ? '?q=' + encodeURIComponent(pesquisa) : '');
+    }
+
+    window.irParaPesquisaProdutos = irParaPesquisaProdutos;
+
     function ligarPesquisaCabecalho() {
-        const campo = document.getElementById('campo-pesquisa');
+        const campo = obterCampoPesquisaCabecalho();
+        const formulario = campo?.closest('form.cabecalho-pesquisa');
+
+        if (formulario) {
+            formulario.addEventListener('submit', function (evento) {
+                if (paginaAtualEhLoja()) return;
+                evento.preventDefault();
+                irParaPesquisaProdutos(campo?.value);
+            });
+        }
+
         if (!campo) return;
 
         campo.addEventListener('input', function () {
+            if (!paginaAtualEhLoja()) return;
             if (typeof window.pesquisarNoCabecalho === 'function') {
                 window.pesquisarNoCabecalho();
-            } else if (typeof pesquisarNoCabecalho === 'function') {
-                pesquisarNoCabecalho();
             }
         });
 
         campo.addEventListener('keydown', function (evento) {
-            if (typeof window.verificarTeclaEnter === 'function') {
-                window.verificarTeclaEnter(evento);
-            } else if (typeof verificarTeclaEnter === 'function') {
-                verificarTeclaEnter(evento);
+            if (evento.key !== 'Enter') return;
+
+            if (paginaAtualEhLoja()) {
+                if (typeof window.verificarTeclaEnter === 'function') {
+                    window.verificarTeclaEnter(evento);
+                } else if (typeof executarFiltrosCombinados === 'function') {
+                    evento.preventDefault();
+                    executarFiltrosCombinados();
+                }
+                return;
             }
+
+            evento.preventDefault();
+            irParaPesquisaProdutos(campo.value);
         });
     }
 
