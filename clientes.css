@@ -139,10 +139,25 @@
     margin-top:8px;
 }
 
-.clientes-formulario .admin-cliente-campo-tem_aviso{
-    grid-column:1;
-    width:max-content;
-    max-width:100%;
+.clientes-formulario-rodape{
+    grid-column:1 / -1;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:16px;
+}
+
+.clientes-formulario-rodape .admin-cliente-campo-tem_aviso{
+    grid-column:auto;
+    width:auto;
+    max-width:none;
+    flex:0 0 auto;
+}
+
+.clientes-formulario-rodape .admin-cliente-formulario-acoes{
+    grid-column:auto;
+    flex:0 0 auto;
+    margin-left:auto;
 }
 
 @media (max-width: 700px){
@@ -215,7 +230,8 @@
 .clientes-formulario .admin-cliente-campo-cidade input,
 .clientes-formulario .admin-cliente-campo-pais input,
 .clientes-formulario .admin-cliente-campo-email input,
-.clientes-formulario .admin-cliente-campo-telefone input{
+.clientes-formulario .admin-cliente-campo-telefone input,
+.clientes-formulario [class*="admin-cliente-campo-perfil_url_"] input{
     width:100%;
 }
 

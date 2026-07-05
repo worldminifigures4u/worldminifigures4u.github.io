@@ -255,7 +255,9 @@ function renderizarFormularioCliente(dados, modo = "editar") {
     }
 
     formulario.appendChild(criarTextareaCliente("Notas internas", "notas", cliente.notas));
-    formulario.appendChild(criarCheckboxCliente("Cliente com aviso a ler", "tem_aviso", cliente.tem_aviso));
+
+    const rodapeFormulario = criarElementoCliente("div", "clientes-formulario-rodape");
+    rodapeFormulario.appendChild(criarCheckboxCliente("Cliente com aviso a ler", "tem_aviso", cliente.tem_aviso));
 
     const acoes = criarElementoCliente("div", "admin-cliente-formulario-acoes");
     const cancelar = criarElementoCliente("button", "wallapop-botao", "Cancelar");
