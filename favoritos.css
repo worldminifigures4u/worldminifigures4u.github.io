@@ -137,6 +137,13 @@
     color:#000;
 }
 
+.btn-favorito-adicionar{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    gap:8px;
+}
+
 .btn-favorito-remover{
     background:#222;
     color:#ff8a8a;

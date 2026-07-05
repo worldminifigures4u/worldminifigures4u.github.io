@@ -98,7 +98,12 @@ function criarCardFavoritoCliente(produto) {
     const adicionar = document.createElement('button');
     adicionar.type = 'button';
     adicionar.className = 'btn-favorito-adicionar';
-    adicionar.textContent = 'Adicionar ao carrinho 🛒';
+    const textoAdicionar = document.createElement('span');
+    textoAdicionar.textContent = 'Adicionar ao carrinho';
+    const iconeCarrinho = document.createElement('span');
+    iconeCarrinho.className = 'icone-carrinho';
+    iconeCarrinho.setAttribute('aria-hidden', 'true');
+    adicionar.append(textoAdicionar, iconeCarrinho);
     adicionar.disabled = produto.ativo === false;
     adicionar.addEventListener('click', () => adicionarAoCarrinho(produto));
 

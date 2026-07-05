@@ -273,7 +273,8 @@ body{
             content:none;
         }
 
-        .acao-carrinho .icone-acao{
+        .acao-carrinho .icone-acao,
+        .icone-carrinho{
             width:22px;
             height:22px;
             display:block;
