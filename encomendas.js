@@ -40,6 +40,11 @@ function normalizarEncomenda(valor) {
     return String(valor || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
 }
 
+function obterClassePlataformaEncomenda(origem) {
+    const normalizada = normalizarEncomenda(origem).replace(/\s+/g, '-');
+    return normalizada ? ` plataforma-${normalizada}` : '';
+}
+
 function obterUrlExternoSeguroEncomenda(valor) {
     const texto = String(valor || '').trim();
     if (!texto) return '';
@@ -910,7 +915,7 @@ function criarCardEncomenda(encomenda) {
     identificacao.append(
         criarElementoEncomenda('strong', '', encomenda.codigo_encomenda || `#${encomenda.id}`),
         criarElementoEncomenda('span', '', formatarDataEncomenda(encomenda.created_at)),
-        criarElementoEncomenda('span', 'admin-encomenda-origem', encomenda.origem || 'Site')
+        criarElementoEncomenda('span', `admin-encomenda-origem${obterClassePlataformaEncomenda(encomenda.origem)}`, encomenda.origem || 'Site')
     );
     const cliente = criarElementoEncomenda('div', 'admin-encomenda-cliente');
     const abrirCliente = criarElementoEncomenda('button', 'admin-encomenda-cliente-link', encomenda.nome_cliente || 'Cliente sem nome');

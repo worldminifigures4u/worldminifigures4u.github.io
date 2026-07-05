@@ -227,6 +227,24 @@ body.pagina-encomendas-admin{
             padding:2px 6px;
         }
 
+        .admin-encomenda-identificacao .admin-encomenda-origem.plataforma-olx{
+            border-color:#23e4d1;
+            color:#23e4d1;
+            background:rgba(35, 228, 209, .08);
+        }
+
+        .admin-encomenda-identificacao .admin-encomenda-origem.plataforma-wallapop{
+            border-color:#13c9b7;
+            color:#13c9b7;
+            background:rgba(19, 201, 183, .08);
+        }
+
+        .admin-encomenda-identificacao .admin-encomenda-origem.plataforma-todocoleccion{
+            border-color:#b55cff;
+            color:#b55cff;
+            background:rgba(181, 92, 255, .1);
+        }
+
         .admin-encomenda-valor{
             align-items:flex-end;
         }
