@@ -344,21 +344,27 @@
             cursor: pointer;
         }
 
-        .btn-confirmar {
-            background: #28a745;
-            color: white;
+        .confirm-order-btn {
             width: 100%;
-            padding: 14px;
-            border: none;
+            height: 44px;
             border-radius: 8px;
-            font-weight: bold;
+            background: #25a943;
+            color: #ffffff;
             font-size: 16px;
+            font-weight: 800;
+            border: none;
             cursor: pointer;
-            transition: 0.2s;
+            transition: background 0.18s ease, transform 0.18s ease;
             margin-top: 15px;
         }
-        .btn-confirmar:hover {
-            background: #218838;
+
+        .confirm-order-btn:hover {
+            background: #2fbd4f;
+            transform: translateY(-1px);
+        }
+
+        .confirm-order-btn:active {
+            transform: translateY(0);
         }
 
         #status-encomenda{
