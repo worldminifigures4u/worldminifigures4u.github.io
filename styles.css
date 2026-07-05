@@ -7,7 +7,7 @@ body{
         }
 
         body{
-            padding-top: 112px;
+            padding-top: var(--cabecalho-offset, 112px);
         }
 
         header{
@@ -560,6 +560,29 @@ body{
 body.cabecalho-com-admin,
 body.pagina-com-cabecalho-site{
     padding-top: var(--cabecalho-offset, 128px);
+}
+
+body.pagina-com-cabecalho-site > main{
+    width: min(1180px, calc(100% - 32px));
+    margin: 0 auto 50px;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body.pagina-clientes-admin > main.clientes-admin{
+    width: min(1500px, calc(100% - 32px));
+}
+
+body.pagina-wallapop > main.wallapop-layout{
+    width: min(1440px, calc(100% - 32px));
+}
+
+body.pagina-fornecedores-admin > main.fornecedores-admin{
+    width: min(1480px, calc(100% - 32px));
+}
+
+body.pagina-estatisticas-admin > main.estatisticas-admin{
+    width: min(1600px, calc(100% - 32px));
 }
 
 .cabecalho-site-admin{

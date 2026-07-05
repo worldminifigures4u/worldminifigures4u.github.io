@@ -31,7 +31,7 @@
         const header = document.querySelector('header');
         if (!header) return;
         const altura = Math.ceil(header.getBoundingClientRect().height);
-        const margem = 8;
+        const margem = 24;
         document.documentElement.style.setProperty('--cabecalho-offset', `${altura + margem}px`);
     }
 

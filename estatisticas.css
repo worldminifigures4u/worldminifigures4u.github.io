@@ -4,9 +4,9 @@
 }
 
 .estatisticas-admin {
-    width: min(1600px, calc(100% - 32px));
-    margin: 0 auto;
-    padding: 22px 0 42px;
+    width: 100%;
+    margin: 0 auto 50px;
+    padding: 0;
 }
 
 .estatisticas-topo {

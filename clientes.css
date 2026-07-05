@@ -1,8 +1,8 @@
 /* Estilos específicos da página Clientes. */
 .clientes-admin{
-    width:min(1500px, 100%);
-    margin:0 auto;
-    padding:10px 14px 40px;
+    width:100%;
+    margin:0 auto 50px;
+    padding:0;
 }
 
 .clientes-pesquisa{

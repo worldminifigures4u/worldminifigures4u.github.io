@@ -2,7 +2,9 @@
 
 /* Layout principal da pagina Plataforma */
 body.pagina-wallapop{
-            padding:0;
+            padding-left:0;
+            padding-right:0;
+            padding-bottom:0;
             background:#080808;
             min-height:100vh;
         }
@@ -67,8 +69,8 @@ body.pagina-wallapop{
         }
 
         .wallapop-layout{
-            width:min(1440px, calc(100% - 32px));
-            margin:22px auto 50px;
+            width:100%;
+            margin:0 auto 50px;
             display:grid;
             grid-template-columns:minmax(0, 3fr) minmax(0, 2fr);
             gap:24px;
