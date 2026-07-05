@@ -10,6 +10,8 @@ body{
             --espaco-abaixo-cabecalho:24px;
             --espaco-acima-rodape:50px;
             --largura-conteudo-site:min(1180px, calc(100% - 32px));
+            --cor-ativo-fundo:#ffc400;
+            --cor-ativo-texto:#000000;
         }
 
         body{
@@ -154,8 +156,6 @@ body{
         }
 
         .acao-cabecalho.ativa{
-            background:#ffc107;
-            color:#000;
             box-shadow:none;
         }
 
@@ -709,4 +709,17 @@ body.pagina-estatisticas-admin > main.estatisticas-admin{
     position: fixed !important;
     left: -9999px !important;
     top: 0 !important;
+}
+
+.selected,
+.active,
+.acao-cabecalho.ativa,
+.tab-btn.ativa,
+.conta-menu-item.ativa,
+.gestao-tab.ativa,
+.btn-tema.ativo,
+.btn-subtema.ativo{
+    background:var(--cor-ativo-fundo, #ffc400);
+    color:var(--cor-ativo-texto, #000000);
+    font-weight:700;
 }

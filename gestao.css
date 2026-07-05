@@ -408,9 +408,7 @@
 }
 
 .gestao-tab.ativa{
-    background:#ffc107;
-    border-color:#ffc107;
-    color:#000;
+    border-color:#ffc400;
 }
 
 .gestao-tab-painel{

@@ -59,8 +59,7 @@ body[data-page="conta"]:not(.pagina-gestao) #conteudo-cliente-autenticado:not(.o
         }
 
         .tab-btn.ativa {
-            background: #ffc107;
-            color: #000;
+            border-color:#ffc400;
         }
 
         .form-cliente {
@@ -445,9 +444,7 @@ body[data-page="conta"]:not(.pagina-gestao) #conteudo-cliente-autenticado:not(.o
 }
 
 .conta-menu-item.ativa{
-    background:#ffc107;
-    border-color:#ffc107;
-    color:#000;
+    border-color:#ffc400;
 }
 
 .conta-conteudo-dinamico{
