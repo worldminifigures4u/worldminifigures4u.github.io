@@ -201,8 +201,13 @@ body{
 
         [data-vista-nav="conta"]::before{
             content:"\1F464";
+            color:#fff;
             font-size:17px;
             line-height:1;
+        }
+
+        [data-vista-nav="conta"].ativa{
+            color:#fff;
         }
 
         [data-vista-nav="conta"] .texto-acao strong{
@@ -212,7 +217,8 @@ body{
         [data-vista-nav="conta"] .detalhe-conta-cabecalho{
             display:block;
             max-width:132px;
-            font-size:12px;
+            color:#fff;
+            font-size:14px;
             opacity:1;
         }
 
