@@ -201,16 +201,13 @@
     .clientes-formulario .admin-cliente-campo-perfil_url_1,
     .clientes-formulario .admin-cliente-campo-perfil_url_3,
     .clientes-formulario .admin-cliente-campo-perfil_url_5{
-        grid-column:1;
+        grid-column:1 / span 2;
+        max-width:520px;
     }
 
     .clientes-formulario .admin-cliente-campo-perfil_url_2,
     .clientes-formulario .admin-cliente-campo-perfil_url_4{
-        grid-column:2;
-    }
-
-    .clientes-formulario [class*="admin-cliente-campo-perfil_url_"]{
-        max-width:none;
+        grid-column:3;
     }
 }
 
