@@ -10,6 +10,7 @@ body{
             --espaco-abaixo-cabecalho:24px;
             --espaco-acima-rodape:50px;
             --largura-conteudo-site:min(1180px, calc(100% - 32px));
+            --largura-pagina-cliente:min(960px, calc(100% - 32px));
         }
 
         body{
@@ -538,6 +539,41 @@ body{
                 text-align:center;
             }
             .rodape-links{ justify-content:center; }
+        }
+
+        body[data-page="conta"]:not(.pagina-gestao) .container,
+        body[data-page="favoritos"] .container,
+        body[data-page="carrinho"] .container{
+            padding:0 16px;
+            margin:0 auto var(--espaco-acima-rodape);
+            box-sizing:border-box;
+        }
+
+        body[data-page="conta"]:not(.pagina-gestao) .vista-conta.ativa,
+        body[data-page="favoritos"] .favoritos-pagina,
+        body[data-page="carrinho"] .vista-carrinho.ativa{
+            width:var(--largura-pagina-cliente);
+            max-width:none;
+            margin-left:auto;
+            margin-right:auto;
+        }
+
+        body[data-page="conta"]:not(.pagina-gestao) .rodape-conteudo,
+        body[data-page="favoritos"] .rodape-conteudo,
+        body[data-page="carrinho"] .rodape-conteudo{
+            width:var(--largura-pagina-cliente);
+        }
+
+        body[data-page="conta"]:not(.pagina-gestao) .area-cliente,
+        body[data-page="favoritos"] .favoritos-pagina,
+        body[data-page="carrinho"] .carrinho{
+            width:100%;
+            background:#111;
+            border:1px solid #333;
+            border-radius:12px;
+            padding:15px 15px 28px;
+            box-sizing:border-box;
+            box-shadow:0 12px 30px rgba(0,0,0,0.25);
         }
 
 /* Cabecalho com uma segunda linha exclusiva para administracao. */
