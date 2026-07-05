@@ -49,14 +49,14 @@ body.pagina-encomendas-admin{
 
         .admin-encomendas-resumo{
             display:grid;
-            grid-template-columns:repeat(4, minmax(0, 1fr));
-            gap:10px;
-            margin-bottom:16px;
+            grid-template-columns:repeat(6, minmax(0, 1fr));
+            gap:8px;
+            margin-bottom:14px;
         }
 
         .admin-encomendas-resumo div{
-            min-height:82px;
-            padding:14px;
+            min-height:58px;
+            padding:9px 12px;
             border:1px solid #333;
             border-radius:6px;
             background:#151515;
@@ -67,13 +67,15 @@ body.pagina-encomendas-admin{
 
         .admin-encomendas-resumo strong{
             color:#ffc107;
-            font-size:26px;
+            font-size:22px;
+            line-height:1;
         }
 
         .admin-encomendas-resumo span{
             margin-top:3px;
             color:#bbb;
-            font-size:13px;
+            font-size:12px;
+            line-height:1.15;
         }
 
         .admin-encomendas-filtros{

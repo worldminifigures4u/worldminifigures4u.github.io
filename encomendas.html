@@ -12,7 +12,7 @@
     <link rel="stylesheet" href="styles.css?v=20260705-pesquisa-compacta">
     <link rel="stylesheet" href="admin-cliente.css?v=20260628-css-split-admin-cliente">
     <link rel="stylesheet" href="admin-imagem.css?v=20260628-css-split-admin-imagem">
-    <link rel="stylesheet" href="encomendas.css?v=20260705-olx-branco">
+    <link rel="stylesheet" href="encomendas.css?v=20260705-resumo-estados">
 </head>
 <body class="pagina-encomendas-admin cabecalho-com-admin pagina-com-cabecalho-site">
     <header class="cabecalho-site-admin">
@@ -62,8 +62,10 @@
         <section class="admin-encomendas-resumo" aria-label="Resumo das encomendas">
             <div><strong id="encomendas-total">0</strong><span>Total</span></div>
             <div><strong id="encomendas-pendentes">0</strong><span>A aguardar pagamento</span></div>
+            <div><strong id="encomendas-pagas">0</strong><span>Pago</span></div>
             <div><strong id="encomendas-preparacao">0</strong><span>Em preparação</span></div>
             <div><strong id="encomendas-enviadas">0</strong><span>Enviadas</span></div>
+            <div><strong id="encomendas-concluidas">0</strong><span>Concluídas</span></div>
         </section>
 
         <section class="admin-encomendas-filtros" aria-label="Pesquisa e filtros">
@@ -104,7 +106,7 @@
             <p class="wallapop-status" id="admin-cliente-status" aria-live="polite"></p>
         </div>
     </div>
-    <script src="encomendas.js?v=20260705-cores-plataformas"></script>
+    <script src="encomendas.js?v=20260705-resumo-estados"></script>
 <script src="inline-listeners.js?v=20260629-csp-inline"></script>
 </body>
 </html>

@@ -1098,8 +1098,10 @@ function atualizarResumoEncomendas() {
     const contar = estado => encomendasAdmin.filter(item => estadoNormalizadoEncomenda(item.estado) === estado).length;
     document.getElementById('encomendas-total').textContent = encomendasAdmin.length;
     document.getElementById('encomendas-pendentes').textContent = contar('A aguardar pagamento');
+    document.getElementById('encomendas-pagas').textContent = contar('Pago');
     document.getElementById('encomendas-preparacao').textContent = contar('Em preparação');
     document.getElementById('encomendas-enviadas').textContent = contar('Enviado');
+    document.getElementById('encomendas-concluidas').textContent = contar('Concluído');
 }
 
 async function carregarEncomendasAdmin() {
