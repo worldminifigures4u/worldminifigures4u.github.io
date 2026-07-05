@@ -314,7 +314,15 @@ function renderizarFichaClientePlataforma(dados) {
     const totalEncomendas = Number(resumo.encomendas || dados.numero_encomenda_cliente || historico.length || 0);
 
     const titulo = document.createElement('strong');
-    titulo.textContent = cliente.nome || dados.utilizador || 'Cliente externo';
+    if (cliente.tem_aviso) {
+        const aviso = document.createElement('span');
+        aviso.className = 'plataforma-cliente-aviso';
+        aviso.textContent = '\u26a0';
+        aviso.title = 'Este cliente tem um aviso interno a ler.';
+        titulo.appendChild(aviso);
+        titulo.appendChild(document.createTextNode(' '));
+    }
+    titulo.appendChild(document.createTextNode(cliente.nome || dados.utilizador || 'Cliente externo'));
     const contador = document.createElement('span');
     contador.textContent = totalEncomendas > 1
         ? `${formatarOrdinalEncomendaPlataforma(totalEncomendas)} deste cliente`

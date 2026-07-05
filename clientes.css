@@ -69,6 +69,11 @@
     color:#ffc107;
 }
 
+.clientes-lista-aviso{
+    color:#ff6b72;
+    font-weight:900;
+}
+
 .clientes-lista-item span,
 .clientes-lista-item small{
     color:#aaa;

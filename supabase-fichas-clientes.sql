@@ -12,6 +12,7 @@ create table if not exists public.clientes_gestao (
   cidade text,
   pais text,
   notas text not null default '',
+  tem_aviso boolean not null default false,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );
@@ -26,6 +27,7 @@ alter table public.clientes_gestao
   add column if not exists cidade text,
   add column if not exists pais text,
   add column if not exists notas text not null default '',
+  add column if not exists tem_aviso boolean not null default false,
   add column if not exists created_at timestamptz not null default now(),
   add column if not exists updated_at timestamptz not null default now();
 
@@ -316,6 +318,27 @@ $$;
 
 revoke execute on function public.guardar_notas_cliente_admin(uuid, text) from public, anon;
 grant execute on function public.guardar_notas_cliente_admin(uuid, text) to authenticated;
+
+create or replace function public.guardar_aviso_cliente_admin(p_cliente_id uuid, p_tem_aviso boolean)
+returns jsonb
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  if lower(coalesce(auth.jwt() ->> 'email', '')) <> 'worldminifigures4u@gmail.com' then
+    raise exception 'Acesso reservado ao administrador';
+  end if;
+  update public.clientes_gestao
+  set tem_aviso = coalesce(p_tem_aviso, false), updated_at = now()
+  where id = p_cliente_id;
+  if not found then raise exception 'Cliente nao encontrado'; end if;
+  return jsonb_build_object('sucesso', true);
+end;
+$$;
+
+revoke execute on function public.guardar_aviso_cliente_admin(uuid, boolean) from public, anon;
+grant execute on function public.guardar_aviso_cliente_admin(uuid, boolean) to authenticated;
 
 create or replace function public.criar_cliente_externo_admin(
   p_nome text,

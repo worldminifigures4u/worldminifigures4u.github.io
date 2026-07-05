@@ -846,6 +846,13 @@ body.pagina-wallapop{
     color:#ffc400;
 }
 
+.plataforma-cliente-ficha .plataforma-cliente-aviso{
+    display:inline;
+    margin:0;
+    color:#ff6b72;
+    font-size:15px;
+}
+
 .plataforma-cliente-ficha span{
     display:block;
     margin-top:4px;

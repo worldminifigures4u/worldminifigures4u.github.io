@@ -75,6 +75,26 @@ function criarInputCliente(rotulo, nome, valor, tipo = "text", obrigatorio = fal
     return campo;
 }
 
+function criarCheckboxCliente(rotulo, nome, marcado = false) {
+    const campo = document.createElement("label");
+    campo.className = "admin-cliente-formulario-campo admin-cliente-formulario-checkbox";
+    campo.classList.add(`admin-cliente-campo-${nome}`);
+    const input = document.createElement("input");
+    input.type = "checkbox";
+    input.name = nome;
+    input.checked = Boolean(marcado);
+    campo.append(input, criarElementoCliente("span", "", rotulo));
+    return campo;
+}
+
+async function guardarAvisoClienteAdmin(clienteId, temAviso) {
+    if (!clienteId) return { data: null, error: null };
+    return clientesClient.rpc("guardar_aviso_cliente_admin", {
+        p_cliente_id: clienteId,
+        p_tem_aviso: Boolean(temAviso)
+    });
+}
+
 function obterPerfisFormularioCliente(formulario) {
     return Array.from(formulario.querySelectorAll('[name^="perfil_url_"]'))
         .map(input => ({ url: obterUrlExternoSeguroCliente(input.value) }))
@@ -99,6 +119,9 @@ function renderizarClientesLista() {
         botao.addEventListener("click", () => abrirCliente(cliente.id));
 
         const nome = criarElementoCliente("strong", "", cliente.nome || "Cliente sem nome");
+        if (cliente.tem_aviso) {
+            nome.prepend(criarElementoCliente("span", "clientes-lista-aviso", "\u26a0 "));
+        }
         const detalhes = criarElementoCliente("span", "", [
             cliente.telefone,
             cliente.cidade,
@@ -157,7 +180,8 @@ function renderizarFormularioCliente(dados, modo = "editar") {
         criarInputCliente("Cidade", "cidade", cliente.cidade),
         criarInputCliente("Pa\u00eds", "pais", cliente.pais),
         criarInputCliente("E-mail", "email", cliente.email, "email"),
-        criarInputCliente("Telem\u00f3vel", "telefone", cliente.telefone)
+        criarInputCliente("Telem\u00f3vel", "telefone", cliente.telefone),
+        criarCheckboxCliente("Cliente com aviso a ler", "tem_aviso", cliente.tem_aviso)
     );
 
     formulario.appendChild(criarElementoCliente("h3", "admin-cliente-formulario-subtitulo", "Links externos"));
@@ -214,6 +238,10 @@ function renderizarFormularioCliente(dados, modo = "editar") {
             return;
         }
         const clienteId = data?.cliente?.id || cliente.id;
+        const aviso = await guardarAvisoClienteAdmin(clienteId, campos.get("tem_aviso") === "on");
+        const avisoErro = aviso.error || aviso.data?.sucesso === false
+            ? (aviso.error?.message || aviso.data?.erro || "sem detalhe")
+            : "";
 
         const perfis = await clientesClient.rpc("guardar_perfis_cliente_admin", {
             p_cliente_id: clienteId,
@@ -225,7 +253,11 @@ function renderizarFormularioCliente(dados, modo = "editar") {
             definirStatusClientes("Dados guardados, mas erro nos links: " + (perfis.error?.message || perfis.data?.erro || "sem detalhe"), true);
             return;
         }
-        definirStatusClientes(novoCliente ? "Cliente criado." : "Ficha guardada.");
+        definirStatusClientes(avisoErro
+            ? "Ficha guardada, mas o aviso nao foi atualizado: " + avisoErro
+            : (novoCliente ? "Cliente criado." : "Ficha guardada."),
+            Boolean(avisoErro)
+        );
         await pesquisarClientes();
         await abrirCliente(clienteId);
     });
@@ -235,7 +267,7 @@ function renderizarFormularioCliente(dados, modo = "editar") {
 
 function criarClienteNovo() {
     renderizarFormularioCliente({
-        cliente: { nome: "", email: "", telefone: "", morada: "", cp: "", cidade: "", pais: "" },
+        cliente: { nome: "", email: "", telefone: "", morada: "", cp: "", cidade: "", pais: "", tem_aviso: false },
         perfis: [],
         historico: [],
         resumo: {}
@@ -280,9 +312,13 @@ function renderizarFichaCliente(dados) {
     ficha.replaceChildren();
 
     const topo = criarElementoCliente("div", "clientes-ficha-topo");
-    topo.append(
-        criarElementoCliente("h2", "", cliente.nome || "Cliente sem nome")
-    );
+    const titulo = criarElementoCliente("h2", "", cliente.nome || "Cliente sem nome");
+    if (cliente.tem_aviso) {
+        const aviso = criarElementoCliente("span", "clientes-aviso-badge", "\u26a0 Aviso a ler");
+        aviso.title = "Este cliente tem um aviso interno a ler.";
+        titulo.appendChild(aviso);
+    }
+    topo.append(titulo);
     const editar = criarElementoCliente("button", "wallapop-botao wallapop-botao-destaque", "Editar ficha");
     editar.type = "button";
     editar.addEventListener("click", () => renderizarFormularioCliente(dados));
@@ -298,6 +334,7 @@ function renderizarFichaCliente(dados) {
         criarCampoCliente("E-mail", cliente.email),
         criarCampoCliente("Telemóvel", cliente.telefone),
         criarCampoCliente("Morada", [cliente.morada, cliente.cp, cliente.cidade, cliente.pais].filter(Boolean).join(", ")),
+        criarCampoCliente("Aviso", cliente.tem_aviso ? "Sim - ler notas internas" : "N\u00e3o"),
         criarCampoCliente("Encomendas", String(resumo.encomendas || 0)),
         criarCampoCliente("Total comprado", formatarEuroCliente(resumo.total)),
         criarCampoCliente("Última compra", formatarDataCliente(resumo.ultima_compra))
