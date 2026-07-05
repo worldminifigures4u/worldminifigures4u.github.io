@@ -98,31 +98,37 @@ function criarIconeAvisoCliente(classe = "clientes-lista-aviso") {
     svg.setAttribute("aria-hidden", "true");
     svg.setAttribute("focusable", "false");
 
+    const circuloBranco = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+    circuloBranco.setAttribute("cx", "12");
+    circuloBranco.setAttribute("cy", "12");
+    circuloBranco.setAttribute("r", "11.5");
+    circuloBranco.setAttribute("fill", "#fff");
+
     const triangulo = document.createElementNS("http://www.w3.org/2000/svg", "path");
     triangulo.setAttribute(
         "d",
-        "M12 2.8c.45 0 .87.24 1.1.63l8.52 14.75c.45.78-.12 1.77-1.1 1.77H3.48c-.98 0-1.55-.99-1.1-1.77L10.9 3.43c.23-.39.65-.63 1.1-.63z"
+        "M12 6.1c.34 0 .66.18.84.46l6.35 10.98c.34.58-.09 1.31-.84 1.31H5.65c-.75 0-1.18-.73-.84-1.31l6.35-10.98c.18-.28.5-.46.84-.46z"
     );
     triangulo.setAttribute("fill", "#ffcc00");
     triangulo.setAttribute("stroke", "#111");
-    triangulo.setAttribute("stroke-width", "1.4");
+    triangulo.setAttribute("stroke-width", "1.35");
     triangulo.setAttribute("stroke-linejoin", "round");
 
     const barra = document.createElementNS("http://www.w3.org/2000/svg", "rect");
-    barra.setAttribute("x", "11");
-    barra.setAttribute("y", "9.2");
-    barra.setAttribute("width", "2");
-    barra.setAttribute("height", "5.8");
-    barra.setAttribute("rx", "1");
+    barra.setAttribute("x", "11.2");
+    barra.setAttribute("y", "10.1");
+    barra.setAttribute("width", "1.6");
+    barra.setAttribute("height", "4.9");
+    barra.setAttribute("rx", "0.8");
     barra.setAttribute("fill", "#111");
 
     const ponto = document.createElementNS("http://www.w3.org/2000/svg", "circle");
     ponto.setAttribute("cx", "12");
-    ponto.setAttribute("cy", "17.2");
-    ponto.setAttribute("r", "1.15");
+    ponto.setAttribute("cy", "16.55");
+    ponto.setAttribute("r", "0.95");
     ponto.setAttribute("fill", "#111");
 
-    svg.append(triangulo, barra, ponto);
+    svg.append(circuloBranco, triangulo, barra, ponto);
     aviso.appendChild(svg);
     return aviso;
 }

@@ -173,22 +173,25 @@
             align-items:center;
             gap:6px;
             margin-left:10px;
-            padding:4px 10px 4px 6px;
-            border:1px solid #d9d9d9;
-            border-radius:999px;
-            background:#fff;
-            color:#111;
+            padding:0;
+            border:0;
+            border-radius:0;
+            background:transparent;
+            color:#ffc107;
             font-size:12px;
             font-weight:800;
             vertical-align:middle;
-            box-shadow:0 1px 3px rgba(0,0,0,0.18);
+            box-shadow:none;
         }
 
         .clientes-aviso-badge svg{
             display:block;
-            width:18px;
-            height:18px;
+            width:22px;
+            height:22px;
             flex:0 0 auto;
+            border-radius:50%;
+            overflow:hidden;
+            box-shadow:0 1px 3px rgba(0,0,0,0.22);
         }
         .admin-cliente-perfis{ display:flex; flex-wrap:wrap; gap:8px; }
 
