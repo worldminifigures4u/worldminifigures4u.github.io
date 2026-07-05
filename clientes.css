@@ -139,6 +139,12 @@
     margin-top:8px;
 }
 
+.clientes-formulario .admin-cliente-campo-tem_aviso{
+    grid-column:1;
+    width:max-content;
+    max-width:100%;
+}
+
 @media (max-width: 700px){
     .clientes-pesquisa,
     .clientes-layout{

@@ -241,8 +241,7 @@ function renderizarFormularioCliente(dados, modo = "editar") {
         criarInputCliente("Cidade", "cidade", cliente.cidade),
         criarInputCliente("Pa\u00eds", "pais", cliente.pais),
         criarInputCliente("E-mail", "email", cliente.email, "email"),
-        criarInputCliente("Telem\u00f3vel", "telefone", cliente.telefone),
-        criarCheckboxCliente("Cliente com aviso a ler", "tem_aviso", cliente.tem_aviso)
+        criarInputCliente("Telem\u00f3vel", "telefone", cliente.telefone)
     );
 
     formulario.appendChild(criarElementoCliente("h3", "admin-cliente-formulario-subtitulo", "Links externos"));
@@ -256,6 +255,7 @@ function renderizarFormularioCliente(dados, modo = "editar") {
     }
 
     formulario.appendChild(criarTextareaCliente("Notas internas", "notas", cliente.notas));
+    formulario.appendChild(criarCheckboxCliente("Cliente com aviso a ler", "tem_aviso", cliente.tem_aviso));
 
     const acoes = criarElementoCliente("div", "admin-cliente-formulario-acoes");
     const cancelar = criarElementoCliente("button", "wallapop-botao", "Cancelar");
