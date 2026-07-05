@@ -241,10 +241,14 @@ body{
         }
 
         .acao-carrinho::before{
-            content:"\1F6D2";
-            font-size:18px;
-            font-weight:400;
-            line-height:1;
+            content:"";
+            width:22px;
+            height:22px;
+            display:block;
+            flex:0 0 auto;
+            background:currentColor;
+            -webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='8' cy='21' r='1'/%3E%3Ccircle cx='19' cy='21' r='1'/%3E%3Cpath d='M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12'/%3E%3C/svg%3E") center/contain no-repeat;
+            mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='8' cy='21' r='1'/%3E%3Ccircle cx='19' cy='21' r='1'/%3E%3Cpath d='M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12'/%3E%3C/svg%3E") center/contain no-repeat;
         }
 
         .badge-carrinho{
@@ -445,7 +449,7 @@ body{
             .texto-acao span,
             .texto-acao strong{ max-width:88px; }
             .texto-acao strong,
-            .acao-carrinho::before{ font-size:13px; }
+            .acao-carrinho::before{ width:18px; height:18px; }
             .texto-acao span{ font-size:13px; }
             .badge-carrinho{
                 top:2px;
