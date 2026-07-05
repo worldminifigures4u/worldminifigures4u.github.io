@@ -7,7 +7,7 @@ body{
         }
 
         body{
-            padding-top: 128px;
+            padding-top: 112px;
         }
 
         header{
@@ -304,11 +304,11 @@ body{
 
         @media(min-width:1101px){
             body[data-page="loja"]{
-                padding-top:122px;
+                padding-top:106px;
             }
 
             body[data-page="loja"] .container{
-                padding-top:10px;
+                padding-top:0;
             }
         }
 
@@ -564,11 +564,11 @@ body{
 }
 
 body.cabecalho-com-admin{
-    padding-top:166px;
+    padding-top:150px;
 }
 
 body.pagina-com-cabecalho-site{
-    padding-top:166px !important;
+    padding-top:150px !important;
 }
 
 .cabecalho-site-admin{
