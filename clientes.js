@@ -268,7 +268,7 @@ function renderizarFormularioCliente(dados, modo = "editar") {
             renderizarFichaCliente(dados);
         }
     });
-    const guardar = criarElementoCliente("button", "wallapop-botao wallapop-botao-destaque", novoCliente ? "Criar cliente" : "Guardar ficha");
+    const guardar = criarElementoCliente("button", "wallapop-botao wallapop-botao-destaque", novoCliente ? "Gravar" : "Guardar ficha");
     guardar.type = "submit";
     acoes.append(cancelar, guardar);
     formulario.appendChild(acoes);
