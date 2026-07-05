@@ -287,40 +287,46 @@ function obterRotuloOpcaoEnvio(opcao) {
 
     if (opcao.id === 'entrega_tomar') {
         return {
-            titulo: `Entrega em m\u00e3o em Tomar \u2014 ${preco}`
+            nome: 'Entrega em m\u00e3o em Tomar',
+            preco
         };
     }
 
     if (opcao.id === 'ctt_normal') {
         return {
-            titulo: `CTT Normal \u2014 ${preco}`,
+            nome: 'CTT Normal',
+            preco,
             subtitulo: 'Sem rastreamento'
         };
     }
 
     if (opcao.id === 'ctt_azul') {
         return {
-            titulo: `CTT Azul \u2014 ${preco}`,
+            nome: 'CTT Azul',
+            preco,
             subtitulo: 'Sem rastreamento'
         };
     }
 
     if (opcao.id === 'ctt_registado') {
         return {
-            titulo: `CTT Registado \u2014 ${preco}`,
+            nome: 'CTT Registado',
+            preco,
             badge: 'Recomendado'
         };
     }
 
     if (opcao.id === 'inpost_registado') {
         return {
-            titulo: `InPost Registado \u2014 ${preco}`,
+            nome: 'InPost Registado',
+            preco,
             badge: 'Recomendado'
         };
     }
 
     return {
-        titulo: `${opcao.nome} \u2014 ${preco}`
+        nome: opcao.nome,
+        preco
     };
 }
 
@@ -338,10 +344,19 @@ function criarOpcaoEnvioCheckout(opcao, selecionado) {
     const conteudo = document.createElement('span');
     conteudo.className = 'opcao-envio-conteudo';
 
-    const titulo = document.createElement('span');
-    titulo.className = 'opcao-envio-titulo';
-    titulo.textContent = rotulo.titulo;
-    conteudo.appendChild(titulo);
+    const principal = document.createElement('span');
+    principal.className = 'opcao-envio-principal';
+
+    const nome = document.createElement('span');
+    nome.className = 'opcao-envio-nome';
+    nome.textContent = rotulo.nome;
+
+    const preco = document.createElement('span');
+    preco.className = 'opcao-envio-preco';
+    preco.textContent = rotulo.preco;
+
+    principal.append(nome, preco);
+    conteudo.appendChild(principal);
 
     if (rotulo.subtitulo) {
         const subtitulo = document.createElement('span');
