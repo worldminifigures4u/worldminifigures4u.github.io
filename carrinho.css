@@ -178,7 +178,7 @@
             padding:12px;
             border-radius:8px;
             cursor:pointer;
-            border:1px solid #222;
+            border:1px solid #2b2b2b;
             transition:border-color 0.18s ease, background 0.18s ease;
         }
 
@@ -187,15 +187,15 @@
         }
 
         .opcao-envio:has(input:checked){
-            border-color:#ffc107;
-            background:#221c0a;
+            background:rgba(255, 193, 7, 0.08);
+            border:1px solid #ffc400;
         }
 
         .opcao-envio input{
             margin-top:3px;
             flex:0 0 auto;
             cursor:pointer;
-            accent-color:#ffc107;
+            accent-color:#ffc400;
         }
 
         .opcao-envio-conteudo{
