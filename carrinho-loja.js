@@ -262,8 +262,34 @@ function filtrarOpcoesEnvioCheckout(opcoes, subtotal) {
     return opcoes.filter(opcao => !metodoEnvioSemRastreamento(opcao.id));
 }
 
+function metodoEnvioEmMao(id) {
+    return id === 'entrega_tomar';
+}
+
+function obterAvisoMetodoEnvioSelecionado(metodoId) {
+    if (metodoEnvioSemRastreamento(metodoId)) {
+        return 'Este m\u00e9todo n\u00e3o inclui rastreamento. Para maior seguran\u00e7a, recomendamos CTT Registado ou InPost Registado.';
+    }
+
+    if (metodoEnvioRegistado(metodoId)) {
+        return 'Este m\u00e9todo inclui rastreamento da encomenda.';
+    }
+
+    if (metodoEnvioEmMao(metodoId)) {
+        return 'A entrega ser\u00e1 combinada ap\u00f3s a confirma\u00e7\u00e3o da encomenda.';
+    }
+
+    return '';
+}
+
 function obterRotuloOpcaoEnvio(opcao) {
     const preco = formatarEuro(valorPortesComIva(opcao.valor)) + ' \u20ac';
+
+    if (opcao.id === 'entrega_tomar') {
+        return {
+            titulo: `Entrega em m\u00e3o em Tomar \u2014 ${preco}`
+        };
+    }
 
     if (opcao.id === 'ctt_normal') {
         return {
@@ -335,17 +361,18 @@ function criarOpcaoEnvioCheckout(opcao, selecionado) {
     return label;
 }
 
-function atualizarAvisosEnvioCheckout(opcoesCompletas, opcoesVisiveis, subtotal) {
-    const recomendacao = document.getElementById('aviso-recomendacao-registado');
+function atualizarAvisosEnvioCheckout(opcoesCompletas, opcoesVisiveis, subtotal, metodoSelecionado = '') {
+    const avisoMetodo = document.getElementById('aviso-recomendacao-registado');
     const limite = document.getElementById('aviso-limite-sem-rastreamento');
     const avisoAntigo = document.getElementById('aviso-envio-nao-registado');
 
-    const temSemRastreamentoVisivel = opcoesVisiveis.some(opcao => metodoEnvioSemRastreamento(opcao.id));
     const bloqueadoPorValor = subtotal > LIMITE_SUBTOTAL_ENVIO_SEM_RASTREAMENTO
         && opcoesCompletas.some(opcao => metodoEnvioSemRastreamento(opcao.id));
+    const textoAviso = obterAvisoMetodoEnvioSelecionado(metodoSelecionado);
 
-    if (recomendacao) {
-        recomendacao.hidden = !temSemRastreamentoVisivel;
+    if (avisoMetodo) {
+        avisoMetodo.textContent = textoAviso;
+        avisoMetodo.hidden = !textoAviso;
     }
 
     if (limite) {
@@ -418,7 +445,7 @@ function atualizarOpcoesEnvio() {
         vazio.textContent = 'Adicione produtos para calcular o envio';
         containerMetodos.appendChild(vazio);
         if(infoEnvio) infoEnvio.textContent = '';
-        atualizarAvisosEnvioCheckout(opcoesCompletas, opcoes, subtotal);
+        atualizarAvisosEnvioCheckout(opcoesCompletas, opcoes, subtotal, '');
         recalcularTotais();
         return;
     }
@@ -436,7 +463,7 @@ function atualizarOpcoesEnvio() {
 
     inputMetodo.value = metodoSelecionado;
     if(infoEnvio) infoEnvio.textContent = '';
-    atualizarAvisosEnvioCheckout(opcoesCompletas, opcoes, subtotal);
+    atualizarAvisosEnvioCheckout(opcoesCompletas, opcoes, subtotal, metodoSelecionado);
     recalcularTotais();
 }
 
@@ -458,7 +485,7 @@ function recalcularTotais(){
     const portes = valorPortesComIva(opcaoEnvio.valor);
     const opcoesCompletas = obterOpcoesEnvio(paisEnvio, pesoTotal);
     const opcoesVisiveis = filtrarOpcoesEnvioCheckout(opcoesCompletas, subtotal);
-    atualizarAvisosEnvioCheckout(opcoesCompletas, opcoesVisiveis, subtotal);
+    atualizarAvisosEnvioCheckout(opcoesCompletas, opcoesVisiveis, subtotal, opcaoEnvio.id);
 
     document.getElementById('subtotal').innerText = formatarEuro(subtotal) + ' \u20ac';
     document.getElementById('portes').innerText = formatarEuro(portes) + ' \u20ac';
