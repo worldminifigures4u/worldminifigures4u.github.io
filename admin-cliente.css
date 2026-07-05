@@ -133,6 +133,10 @@
             font-size:16px;
         }
 
+        .admin-cliente-formulario-notas{
+            grid-column:1 / -1;
+        }
+
         .admin-cliente-aviso-conta{
             margin:10px 0 0;
             color:#aaa;
