@@ -110,25 +110,25 @@ function criarIconeAvisoCliente(classe = "clientes-lista-aviso") {
     const triangulo = document.createElementNS("http://www.w3.org/2000/svg", "path");
     triangulo.setAttribute(
         "d",
-        "M0 -6.35 L5.55 3.95 L-5.55 3.95 Z"
+        "M0 -10.6 L9.18 5.3 L-9.18 5.3 Z"
     );
     triangulo.setAttribute("fill", "#ffcc00");
     triangulo.setAttribute("stroke", "#111");
-    triangulo.setAttribute("stroke-width", "1.25");
+    triangulo.setAttribute("stroke-width", "1.2");
     triangulo.setAttribute("stroke-linejoin", "round");
 
     const barra = document.createElementNS("http://www.w3.org/2000/svg", "rect");
-    barra.setAttribute("x", "-0.75");
-    barra.setAttribute("y", "-1.05");
-    barra.setAttribute("width", "1.5");
-    barra.setAttribute("height", "4.1");
-    barra.setAttribute("rx", "0.75");
+    barra.setAttribute("x", "-0.9");
+    barra.setAttribute("y", "-3");
+    barra.setAttribute("width", "1.8");
+    barra.setAttribute("height", "6");
+    barra.setAttribute("rx", "0.9");
     barra.setAttribute("fill", "#111");
 
     const ponto = document.createElementNS("http://www.w3.org/2000/svg", "circle");
     ponto.setAttribute("cx", "0");
-    ponto.setAttribute("cy", "3.35");
-    ponto.setAttribute("r", "0.85");
+    ponto.setAttribute("cy", "4.7");
+    ponto.setAttribute("r", "1");
     ponto.setAttribute("fill", "#111");
 
     grupo.append(triangulo, barra, ponto);
