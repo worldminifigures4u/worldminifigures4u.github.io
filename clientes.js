@@ -104,31 +104,35 @@ function criarIconeAvisoCliente(classe = "clientes-lista-aviso") {
     circuloBranco.setAttribute("r", "11.5");
     circuloBranco.setAttribute("fill", "#fff");
 
+    const grupo = document.createElementNS("http://www.w3.org/2000/svg", "g");
+    grupo.setAttribute("transform", "translate(12 12)");
+
     const triangulo = document.createElementNS("http://www.w3.org/2000/svg", "path");
     triangulo.setAttribute(
         "d",
-        "M12 6.1c.34 0 .66.18.84.46l6.35 10.98c.34.58-.09 1.31-.84 1.31H5.65c-.75 0-1.18-.73-.84-1.31l6.35-10.98c.18-.28.5-.46.84-.46z"
+        "M0 -6.35 L5.55 3.95 L-5.55 3.95 Z"
     );
     triangulo.setAttribute("fill", "#ffcc00");
     triangulo.setAttribute("stroke", "#111");
-    triangulo.setAttribute("stroke-width", "1.35");
+    triangulo.setAttribute("stroke-width", "1.25");
     triangulo.setAttribute("stroke-linejoin", "round");
 
     const barra = document.createElementNS("http://www.w3.org/2000/svg", "rect");
-    barra.setAttribute("x", "11.2");
-    barra.setAttribute("y", "10.1");
-    barra.setAttribute("width", "1.6");
-    barra.setAttribute("height", "4.9");
-    barra.setAttribute("rx", "0.8");
+    barra.setAttribute("x", "-0.75");
+    barra.setAttribute("y", "-1.05");
+    barra.setAttribute("width", "1.5");
+    barra.setAttribute("height", "4.1");
+    barra.setAttribute("rx", "0.75");
     barra.setAttribute("fill", "#111");
 
     const ponto = document.createElementNS("http://www.w3.org/2000/svg", "circle");
-    ponto.setAttribute("cx", "12");
-    ponto.setAttribute("cy", "16.55");
-    ponto.setAttribute("r", "0.95");
+    ponto.setAttribute("cx", "0");
+    ponto.setAttribute("cy", "3.35");
+    ponto.setAttribute("r", "0.85");
     ponto.setAttribute("fill", "#111");
 
-    svg.append(circuloBranco, triangulo, barra, ponto);
+    grupo.append(triangulo, barra, ponto);
+    svg.append(circuloBranco, grupo);
     aviso.appendChild(svg);
     return aviso;
 }
