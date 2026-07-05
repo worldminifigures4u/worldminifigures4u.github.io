@@ -1,8 +1,3 @@
-function mostrarNavegacaoAdminValidada() {
-    const navegacao = document.querySelector('.navegacao-admin-cabecalho');
-    if (navegacao) navegacao.hidden = false;
-}
-
 const ESTATISTICAS_SUPABASE_URL = "https://gksndzxadndrsynvzgzb.supabase.co";
 const ESTATISTICAS_SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imdrc25kenhhZG5kcnN5bnZ6Z3piIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkwODc5NzMsImV4cCI6MjA5NDY2Mzk3M30.EHZgacYr27dqoc4CJHsOwkNnJFGlLIteSHBi4B1HfVE";
 const ESTATISTICAS_ADMIN_EMAILS = ["worldminifigures4u@gmail.com"];

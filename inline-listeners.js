@@ -87,6 +87,26 @@
 
     window.sincronizarEspacamentoCabecalho = sincronizarEspacamentoCabecalho;
 
+    function atualizarCabecalhoAdmin() {
+        document.body.classList.add('cabecalho-com-admin');
+        const nomeEl = document.getElementById('nome-login-cabecalho');
+        if (!nomeEl) return;
+        nomeEl.textContent = 'Admin';
+        nomeEl.classList.remove('oculto');
+    }
+
+    function mostrarNavegacaoAdminValidada() {
+        const navegacao = document.querySelector('.navegacao-admin-cabecalho');
+        if (navegacao) navegacao.hidden = false;
+        atualizarCabecalhoAdmin();
+        if (typeof window.sincronizarEspacamentoCabecalho === 'function') {
+            window.requestAnimationFrame(window.sincronizarEspacamentoCabecalho);
+        }
+    }
+
+    window.atualizarCabecalhoAdmin = atualizarCabecalhoAdmin;
+    window.mostrarNavegacaoAdminValidada = mostrarNavegacaoAdminValidada;
+
     function ligarPesquisaCabecalho() {
         const campo = document.getElementById('campo-pesquisa');
         if (!campo) return;
