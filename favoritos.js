@@ -83,7 +83,7 @@ function criarCardFavoritoCliente(produto) {
     preco.textContent = formatarEuro(produto.preco || 0) + ' €';
 
     const estado = document.createElement('small');
-    estado.className = produto.ativo === false ? 'favorito-indisponivel' : 'favorito-disponivel';
+    estado.className = produto.ativo === false ? 'favorito-indisponivel' : 'stock-disponivel';
     estado.textContent = produto.ativo === false ? 'Sem stock / indisponível' : 'Disponível';
 
     info.append(nome, detalhe);

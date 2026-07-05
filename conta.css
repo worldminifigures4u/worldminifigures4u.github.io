@@ -246,11 +246,6 @@ body[data-page="conta"]:not(.pagina-gestao) #conteudo-cliente-autenticado:not(.o
             font-weight:800;
         }
 
-        .favorito-disponivel{
-            color:#8bdc8b;
-            font-weight:800;
-        }
-
         .favorito-indisponivel{
             color:#ff8a8a;
             font-weight:800;

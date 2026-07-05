@@ -96,18 +96,14 @@
     white-space:nowrap;
 }
 
-.favorito-disponivel,
+.stock-disponivel,
 .favorito-indisponivel{
-    font-size:12px;
-    font-weight:900;
     white-space:nowrap;
 }
 
-.favorito-disponivel{
-    color:#8bdc8b;
-}
-
 .favorito-indisponivel{
+    font-size:12px;
+    font-weight:900;
     color:#ff8a8a;
 }
 

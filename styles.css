@@ -701,6 +701,12 @@ body.pagina-estatisticas-admin > main.estatisticas-admin{
     color:#bbb !important;
 }
 
+.stock-disponivel {
+    color: #8BFF7A;
+    font-weight: 800;
+    font-size: 13px;
+}
+
 .produto-card.oculto{
     display:none !important;
 }
