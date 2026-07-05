@@ -28,7 +28,7 @@ body{
             padding:6px 36px 8px 42px;
             box-sizing:border-box;
             display:grid;
-            grid-template-columns:minmax(360px, 470px) minmax(360px, 760px) 258px;
+            grid-template-columns:minmax(360px, 470px) minmax(360px, 1fr) 258px;
             grid-template-rows:auto;
             gap:6px 22px;
             align-items:center;
@@ -59,9 +59,9 @@ body{
             grid-column:2;
             grid-row:1;
             width:100%;
-            max-width:none;
+            max-width:640px;
             min-width:0;
-            justify-self:stretch;
+            justify-self:start;
         }
 
         .cabecalho-pesquisa .input-pesquisa{
