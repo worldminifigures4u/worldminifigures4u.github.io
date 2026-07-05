@@ -27,6 +27,34 @@
         }
     }
 
+    function sincronizarEspacamentoCabecalho() {
+        const header = document.querySelector('header');
+        if (!header) return;
+        const altura = Math.ceil(header.getBoundingClientRect().height);
+        const margem = 8;
+        document.documentElement.style.setProperty('--cabecalho-offset', `${altura + margem}px`);
+    }
+
+    function iniciarSincronizacaoCabecalho() {
+        const header = document.querySelector('header');
+        if (!header) return;
+
+        const agendar = function () {
+            window.requestAnimationFrame(sincronizarEspacamentoCabecalho);
+        };
+
+        agendar();
+        window.addEventListener('resize', agendar);
+        window.addEventListener('load', agendar);
+        document.fonts?.ready.then(agendar);
+
+        if (typeof ResizeObserver !== 'undefined') {
+            new ResizeObserver(agendar).observe(header);
+        }
+    }
+
+    window.sincronizarEspacamentoCabecalho = sincronizarEspacamentoCabecalho;
+
     function ligarPesquisaCabecalho() {
         const campo = document.getElementById('campo-pesquisa');
         if (!campo) return;
@@ -206,6 +234,7 @@
     }
 
     quandoPronto(function () {
+        iniciarSincronizacaoCabecalho();
         atualizarContadorCarrinhoTopo();
         window.addEventListener('storage', atualizarContadorCarrinhoTopo);
         ligarPesquisaCabecalho();
