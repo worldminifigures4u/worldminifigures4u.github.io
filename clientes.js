@@ -87,6 +87,21 @@ function criarCheckboxCliente(rotulo, nome, marcado = false) {
     return campo;
 }
 
+function criarTextareaCliente(rotulo, nome, valor, linhas = 6) {
+    const campo = document.createElement("label");
+    campo.className = "admin-cliente-formulario-campo admin-cliente-formulario-notas";
+    campo.classList.add(`admin-cliente-campo-${nome}`);
+    campo.appendChild(criarElementoCliente("span", "", rotulo));
+    const textarea = document.createElement("textarea");
+    textarea.className = "admin-cliente-notas";
+    textarea.name = nome;
+    textarea.rows = linhas;
+    textarea.value = valor || "";
+    textarea.placeholder = "Notas internas visiveis apenas ao administrador.";
+    campo.appendChild(textarea);
+    return campo;
+}
+
 async function guardarAvisoClienteAdmin(clienteId, temAviso) {
     if (!clienteId) return { data: null, error: null };
     return clientesClient.rpc("guardar_aviso_cliente_admin", {
@@ -194,6 +209,8 @@ function renderizarFormularioCliente(dados, modo = "editar") {
         ));
     }
 
+    formulario.appendChild(criarTextareaCliente("Notas internas", "notas", cliente.notas));
+
     const acoes = criarElementoCliente("div", "admin-cliente-formulario-acoes");
     const cancelar = criarElementoCliente("button", "wallapop-botao", "Cancelar");
     cancelar.type = "button";
@@ -247,10 +264,23 @@ function renderizarFormularioCliente(dados, modo = "editar") {
             p_cliente_id: clienteId,
             p_perfis: obterPerfisFormularioCliente(formulario)
         });
+        const notas = await clientesClient.rpc("guardar_notas_cliente_admin", {
+            p_cliente_id: clienteId,
+            p_notas: String(campos.get("notas") || "")
+        });
         guardar.disabled = false;
         cancelar.disabled = false;
         if (perfis.error || perfis.data?.sucesso === false) {
             definirStatusClientes("Dados guardados, mas erro nos links: " + (perfis.error?.message || perfis.data?.erro || "sem detalhe"), true);
+            return;
+        }
+        const notasErro = notas.error || notas.data?.sucesso === false
+            ? (notas.error?.message || notas.data?.erro || "sem detalhe")
+            : "";
+        if (notasErro) {
+            definirStatusClientes("Ficha guardada, mas as notas nao foram atualizadas: " + notasErro, true);
+            await pesquisarClientes();
+            await abrirCliente(clienteId);
             return;
         }
         definirStatusClientes(avisoErro
