@@ -69,9 +69,28 @@
     color:#ffc107;
 }
 
+.clientes-lista-linha-nome{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    min-width:0;
+}
+
 .clientes-lista-aviso{
-    color:#ff6b72;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    flex:0 0 auto;
+    width:24px;
+    height:24px;
+    border-radius:50%;
+    border:2px solid #ff4d4d;
+    background:#ff4d4d;
+    color:#fff;
+    font-size:15px;
     font-weight:900;
+    line-height:1;
+    box-shadow:0 0 0 2px rgba(255,77,77,0.28);
 }
 
 .clientes-lista-item span,
