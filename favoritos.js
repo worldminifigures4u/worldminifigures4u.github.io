@@ -19,9 +19,8 @@ function definirFavoritosVazio(mensagem) {
 function atualizarResumoFavoritos(total) {
     const resumo = document.getElementById('favoritos-resumo');
     if(!resumo) return;
-    resumo.textContent = total === 1
-        ? '1 minifigura guardada nos favoritos.'
-        : `${Number(total || 0).toLocaleString('pt-PT')} minifiguras guardadas nos favoritos.`;
+    const n = Number(total || 0);
+    resumo.textContent = n === 1 ? '1 favorito' : `${n.toLocaleString('pt-PT')} favoritos`;
 }
 
 async function aguardarClienteProdutosFavoritos(tentativas = 0) {
