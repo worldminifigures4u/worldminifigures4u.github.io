@@ -612,6 +612,9 @@ function atualizarVisibilidadeAdmin(user) {
     const navegacaoAdmin = document.querySelector('.navegacao-admin-cabecalho');
     if (navegacaoAdmin) navegacaoAdmin.hidden = !adminAtivo;
     document.body.classList.toggle('cabecalho-com-admin', adminAtivo);
+    if (typeof window.sincronizarEspacamentoCabecalho === 'function') {
+        requestAnimationFrame(() => window.sincronizarEspacamentoCabecalho());
+    }
     const bloqueioGestao = document.getElementById('gestao-bloqueio');
     if (bloqueioGestao) {
         bloqueioGestao.hidden = adminAtivo;
