@@ -290,9 +290,6 @@
             font-weight:bold;
         }
 
-        .btn-tema{ background:#222; color:#fff; }
-        .btn-subtema{ background:#181818; color:#ccc; }
-
         .btn-tema:hover, .btn-subtema:hover, .btn-tema.ativo, .btn-subtema.ativo{
             background:#ffc400;
             color:#000;

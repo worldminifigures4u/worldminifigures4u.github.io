@@ -12,6 +12,8 @@ body{
             --largura-conteudo-site:min(1180px, calc(100% - 32px));
             --cor-ativo-fundo:#ffc400;
             --cor-ativo-texto:#000000;
+            --cor-menu-fundo:#222222;
+            --cor-menu-texto:#ffffff;
         }
 
         body{
@@ -722,4 +724,14 @@ body.pagina-estatisticas-admin > main.estatisticas-admin{
     background:var(--cor-ativo-fundo, #ffc400);
     color:var(--cor-ativo-texto, #000000);
     font-weight:700;
+}
+
+.menu-item,
+.btn-tema,
+.btn-subtema,
+.tab-btn,
+.conta-menu-item,
+.gestao-tab{
+    background:var(--cor-menu-fundo, #222222);
+    color:var(--cor-menu-texto, #ffffff);
 }

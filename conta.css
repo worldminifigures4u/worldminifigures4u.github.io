@@ -48,8 +48,6 @@ body[data-page="conta"]:not(.pagina-gestao) #conteudo-cliente-autenticado:not(.o
 
         .tab-btn {
             flex: 1;
-            background: #222;
-            color: #aaa;
             border: none;
             padding: 8px;
             cursor: pointer;
@@ -424,8 +422,6 @@ body[data-page="conta"]:not(.pagina-gestao) #conteudo-cliente-autenticado:not(.o
     padding:6px 10px;
     border:1px solid #333;
     border-radius:999px;
-    background:#222;
-    color:#fff;
     font:inherit;
     font-weight:800;
     font-size:15px;
