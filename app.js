@@ -326,7 +326,9 @@ function mostrarVista(vista, navegar = true) {
         secao.classList.toggle('ativa', secao.id === 'vista-' + destino);
     });
     document.querySelectorAll('[data-vista-nav]').forEach(botao => {
-        botao.classList.toggle('ativa', botao.dataset.vistaNav === destino);
+        const destinoContaEmGestao = document.body.classList.contains('pagina-gestao')
+            && botao.dataset.vistaNav === 'conta';
+        botao.classList.toggle('ativa', !destinoContaEmGestao && botao.dataset.vistaNav === destino);
     });
     window.scrollTo({ top: 0, behavior: 'smooth' });
 }
