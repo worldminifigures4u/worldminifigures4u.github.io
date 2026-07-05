@@ -46,7 +46,7 @@ body.pagina-encomendas-admin{
 
         .admin-encomendas{
             width:100%;
-            margin:0 auto 50px;
+            margin:0 auto var(--espaco-acima-rodape);
         }
 
         .admin-encomendas-resumo{

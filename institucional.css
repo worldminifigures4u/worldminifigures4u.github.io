@@ -1,7 +1,7 @@
 /* Estilos das páginas institucionais: Sobre, Contactos e Políticas. */
 .pagina-institucional{
             width:min(920px, calc(100% - 32px));
-            margin:24px auto 48px;
+            margin:0 auto;
             color:#f5f5f5;
         }
 

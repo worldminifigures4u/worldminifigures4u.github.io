@@ -70,7 +70,7 @@ body.pagina-wallapop{
 
         .wallapop-layout{
             width:100%;
-            margin:0 auto 50px;
+            margin:0 auto var(--espaco-acima-rodape);
             display:grid;
             grid-template-columns:minmax(0, 3fr) minmax(0, 2fr);
             gap:24px;

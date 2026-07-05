@@ -1,7 +1,7 @@
 /* Estilos específicos da página Clientes. */
 .clientes-admin{
     width:100%;
-    margin:0 auto 50px;
+    margin:0 auto var(--espaco-acima-rodape);
     padding:0;
 }
 

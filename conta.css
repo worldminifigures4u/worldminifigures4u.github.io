@@ -20,12 +20,12 @@
 body[data-page="conta"]:not(.pagina-gestao) .vista-conta.ativa{
             max-width:760px;
             width:100%;
-            margin:0 auto 44px;
+            margin:0 auto;
         }
 
 body[data-page="conta"]:not(.pagina-gestao) .container{
-            padding-top:8px;
-            padding-bottom:26px;
+            padding-top:0;
+            padding-bottom:0;
         }
 
         .area-cliente h2{
