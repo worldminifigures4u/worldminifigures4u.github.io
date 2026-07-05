@@ -87,6 +87,52 @@ function criarCheckboxCliente(rotulo, nome, marcado = false) {
     return campo;
 }
 
+function criarIconeAvisoCliente(classe = "clientes-lista-aviso") {
+    const aviso = document.createElement("span");
+    aviso.className = classe;
+    aviso.title = "Cliente com aviso a ler.";
+    aviso.setAttribute("aria-label", "Cliente com aviso a ler");
+
+    const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    svg.setAttribute("viewBox", "0 0 24 24");
+    svg.setAttribute("aria-hidden", "true");
+    svg.setAttribute("focusable", "false");
+
+    const circuloBranco = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+    circuloBranco.setAttribute("cx", "12");
+    circuloBranco.setAttribute("cy", "12");
+    circuloBranco.setAttribute("r", "11.5");
+    circuloBranco.setAttribute("fill", "#fff");
+
+    const triangulo = document.createElementNS("http://www.w3.org/2000/svg", "path");
+    triangulo.setAttribute(
+        "d",
+        "M12 6.1c.34 0 .66.18.84.46l6.35 10.98c.34.58-.09 1.31-.84 1.31H5.65c-.75 0-1.18-.73-.84-1.31l6.35-10.98c.18-.28.5-.46.84-.46z"
+    );
+    triangulo.setAttribute("fill", "#ffcc00");
+    triangulo.setAttribute("stroke", "#111");
+    triangulo.setAttribute("stroke-width", "1.35");
+    triangulo.setAttribute("stroke-linejoin", "round");
+
+    const barra = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+    barra.setAttribute("x", "11.2");
+    barra.setAttribute("y", "10.1");
+    barra.setAttribute("width", "1.6");
+    barra.setAttribute("height", "4.9");
+    barra.setAttribute("rx", "0.8");
+    barra.setAttribute("fill", "#111");
+
+    const ponto = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+    ponto.setAttribute("cx", "12");
+    ponto.setAttribute("cy", "16.55");
+    ponto.setAttribute("r", "0.95");
+    ponto.setAttribute("fill", "#111");
+
+    svg.append(circuloBranco, triangulo, barra, ponto);
+    aviso.appendChild(svg);
+    return aviso;
+}
+
 function criarTextareaCliente(rotulo, nome, valor, linhas = 6) {
     const campo = document.createElement("label");
     campo.className = "admin-cliente-formulario-campo admin-cliente-formulario-notas";
@@ -135,10 +181,7 @@ function renderizarClientesLista() {
 
         const linhaNome = criarElementoCliente("div", "clientes-lista-linha-nome");
         if (cliente.tem_aviso) {
-            const aviso = criarElementoCliente("span", "clientes-lista-aviso", "\u26a0");
-            aviso.title = "Cliente com aviso a ler.";
-            aviso.setAttribute("aria-label", "Cliente com aviso a ler");
-            linhaNome.appendChild(aviso);
+            linhaNome.appendChild(criarIconeAvisoCliente());
         }
         linhaNome.appendChild(criarElementoCliente("strong", "", cliente.nome || "Cliente sem nome"));
         const detalhes = criarElementoCliente("span", "", [
@@ -348,8 +391,8 @@ function renderizarFichaCliente(dados) {
     const topo = criarElementoCliente("div", "clientes-ficha-topo");
     const titulo = criarElementoCliente("h2", "", cliente.nome || "Cliente sem nome");
     if (cliente.tem_aviso) {
-        const aviso = criarElementoCliente("span", "clientes-aviso-badge", "\u26a0 Aviso a ler");
-        aviso.title = "Este cliente tem um aviso interno a ler.";
+        const aviso = criarIconeAvisoCliente("clientes-aviso-badge");
+        aviso.append(document.createTextNode("Aviso a ler"));
         titulo.appendChild(aviso);
     }
     topo.append(titulo);

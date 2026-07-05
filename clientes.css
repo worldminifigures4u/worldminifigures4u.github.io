@@ -81,16 +81,17 @@
     align-items:center;
     justify-content:center;
     flex:0 0 auto;
-    width:24px;
-    height:24px;
+    width:26px;
+    height:26px;
     border-radius:50%;
-    border:2px solid #ff4d4d;
-    background:#ff4d4d;
-    color:#fff;
-    font-size:15px;
-    font-weight:900;
-    line-height:1;
-    box-shadow:0 0 0 2px rgba(255,77,77,0.28);
+    overflow:hidden;
+    box-shadow:0 1px 3px rgba(0,0,0,0.22);
+}
+
+.clientes-lista-aviso svg{
+    display:block;
+    width:26px;
+    height:26px;
 }
 
 .clientes-lista-item span,
