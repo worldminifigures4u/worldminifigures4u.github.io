@@ -127,6 +127,7 @@ body.pagina-encomendas-admin{
             display:flex;
             flex-direction:column;
             gap:9px;
+            margin-top:2px;
         }
 
         .admin-encomenda-card{
@@ -213,6 +214,9 @@ body.pagina-encomendas-admin{
         }
 
         .admin-encomenda-linha .admin-encomenda-cliente-link{
+            justify-self:start;
+            width:max-content;
+            max-width:100%;
             min-width:0;
             padding:0;
             border:0;
