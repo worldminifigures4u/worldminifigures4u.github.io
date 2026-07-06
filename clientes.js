@@ -273,7 +273,8 @@ function renderizarFormularioCliente(dados, modo = "editar") {
     const guardar = criarElementoCliente("button", "wallapop-botao wallapop-botao-destaque", novoCliente ? "Gravar" : "Guardar ficha");
     guardar.type = "submit";
     acoes.append(cancelar, guardar);
-    formulario.appendChild(acoes);
+    rodapeFormulario.appendChild(acoes);
+    formulario.appendChild(rodapeFormulario);
 
     formulario.addEventListener("submit", async evento => {
         evento.preventDefault();
