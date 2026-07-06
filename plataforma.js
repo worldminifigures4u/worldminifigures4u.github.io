@@ -1126,6 +1126,7 @@ function definirCssDinamicoWallapop(cssTexto) {
 const WALLAPOP_ITENS_POR_FOLHA = 10;
 const WALLAPOP_LARGURA_FOLHA = 794;
 const WALLAPOP_ALTURA_FOLHA = 1123;
+const WALLAPOP_ALTURA_FOLHA_MINIMA = Math.ceil(WALLAPOP_ALTURA_FOLHA / 2);
 const WALLAPOP_MARGEM_FOLHA = 42;
 const WALLAPOP_ALTURA_LINHA = 96;
 const WALLAPOP_MARGEM_FINAL = 24;
@@ -1140,9 +1141,10 @@ function dividirItensWallapop(itens, tamanho = WALLAPOP_ITENS_POR_FOLHA) {
 
 function calcularAlturaFolhaWallapop(totalItens) {
     const itens = Math.max(1, Math.min(WALLAPOP_ITENS_POR_FOLHA, Number(totalItens) || 0));
+    const alturaConteudo = WALLAPOP_MARGEM_FOLHA + (itens * WALLAPOP_ALTURA_LINHA) + WALLAPOP_MARGEM_FINAL;
     return Math.min(
         WALLAPOP_ALTURA_FOLHA,
-        WALLAPOP_MARGEM_FOLHA + (itens * WALLAPOP_ALTURA_LINHA) + WALLAPOP_MARGEM_FINAL
+        Math.max(WALLAPOP_ALTURA_FOLHA_MINIMA, alturaConteudo)
     );
 }
 
