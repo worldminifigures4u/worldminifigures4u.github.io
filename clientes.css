@@ -38,66 +38,75 @@
 }
 
 .clientes-lista{
-    display:grid;
-    gap:0;
+    display:flex;
+    flex-direction:column;
+    gap:6px;
+    padding:6px;
     overflow:hidden;
 }
 
 .clientes-lista-item{
-    display:grid;
-    gap:4px;
     width:100%;
-    padding:12px;
-    border:0;
-    border-bottom:1px solid #2b2b2b;
-    background:#151515;
+    min-height:38px;
+    padding:8px 10px 8px 12px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:12px;
+    border:1px solid #2f2f2f;
+    border-radius:8px;
+    background:#1f1f1f;
     color:#fff;
     text-align:left;
     cursor:pointer;
-}
-
-.clientes-lista-item:last-child{
-    border-bottom:0;
+    transition:
+        background-color 0.18s ease,
+        border-color 0.18s ease,
+        transform 0.18s ease;
 }
 
 .clientes-lista-item:hover,
 .clientes-lista-item.ativo{
-    background:#222;
+    background:#262626;
+    border-color:#3a3a3a;
 }
 
-.clientes-lista-item strong{
-    color:#ffc107;
-}
-
-.clientes-lista-linha-nome{
-    display:flex;
-    align-items:center;
-    gap:8px;
+.clientes-lista-nome{
+    color:#f4c542;
+    font-size:14px;
+    font-weight:600;
+    line-height:1.2;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
     min-width:0;
 }
 
-.clientes-lista-aviso{
+.clientes-ficha-alerta{
+    width:28px;
+    height:24px;
+    flex:0 0 auto;
     display:inline-flex;
     align-items:center;
     justify-content:center;
-    flex:0 0 auto;
-    width:26px;
-    height:26px;
-    border-radius:50%;
-    overflow:hidden;
-    box-shadow:0 1px 3px rgba(0,0,0,0.22);
+    background:rgba(245, 166, 35, 0.12);
+    border:1px solid rgba(245, 166, 35, 0.35);
+    border-radius:999px;
 }
 
-.clientes-lista-aviso svg{
-    display:block;
-    width:26px;
-    height:26px;
+.clientes-ficha-alerta:hover{
+    background:rgba(245, 166, 35, 0.2);
+    border-color:rgba(245, 166, 35, 0.55);
 }
 
-.clientes-lista-item span,
-.clientes-lista-item small{
-    color:#aaa;
-    overflow-wrap:anywhere;
+.clientes-ficha-icone{
+    width:15px;
+    height:15px;
+    fill:none;
+    stroke:#f5a623;
+    stroke-width:2;
+    stroke-linecap:round;
+    stroke-linejoin:round;
 }
 
 .clientes-ficha{
