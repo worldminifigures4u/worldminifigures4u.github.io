@@ -1073,7 +1073,6 @@ function renderizarEncomendasAdmin() {
     const lista = document.getElementById('lista-encomendas-admin');
     const filtradas = encomendasFiltradasAdmin();
     lista.replaceChildren();
-    document.getElementById('contagem-encomendas-admin').textContent = `${filtradas.length} encomenda(s) apresentada(s)`;
     if (!filtradas.length) {
         lista.appendChild(criarElementoEncomenda('p', 'admin-encomendas-vazio', 'Nenhuma encomenda encontrada.'));
         return;
