@@ -1154,15 +1154,19 @@ function obterEscalaPrevisualizacaoWallapop() {
     return alturaPagina / WALLAPOP_ALTURA_FOLHA;
 }
 
-function atualizarAlturaPrevisualizacaoWallapop(paginas) {
+function atualizarAlturaPrevisualizacaoWallapop() {
     const escala = document.getElementById('wallapop-folha-escala');
-    if (!escala) return;
-    const estilos = getComputedStyle(escala);
-    const fatorEscala = obterEscalaPrevisualizacaoWallapop() || 0.6;
-    const intervalo = parseFloat(estilos.getPropertyValue('--wallapop-preview-gap')) || 14;
-    const alturas = paginas.length ? paginas.map(pagina => calcularAlturaFolhaWallapop(pagina.length) * fatorEscala) : [120];
-    const alturaTotal = Math.max(0, alturas.reduce((total, altura) => total + altura, 0) + ((alturas.length - 1) * intervalo));
-    definirCssDinamicoWallapop(`#wallapop-folha-escala { height: ${alturaTotal}px; }`);
+    const folha = document.getElementById('wallapop-folha');
+    if (!escala || !folha) return;
+
+    const aplicarAltura = () => {
+        const fatorEscala = obterEscalaPrevisualizacaoWallapop() || 0.6;
+        const alturaTotal = Math.max(120, Math.ceil(folha.offsetHeight * fatorEscala));
+        definirCssDinamicoWallapop(`#wallapop-folha-escala { height: ${alturaTotal}px; }`);
+    };
+
+    if (typeof requestAnimationFrame === 'function') requestAnimationFrame(aplicarAltura);
+    else aplicarAltura();
 }
 
 function criarLinhaFolhaWallapop(item) {
@@ -1183,7 +1187,7 @@ function criarLinhaFolhaWallapop(item) {
 
     const preco = document.createElement('div');
     preco.className = 'wallapop-linha-preco';
-    preco.textContent = `${formatarEuroWallapop(item.preco)} €`;
+    preco.textContent = `${formatarEuroWallapop(item.preco)} € / un.`;
 
     linha.append(foto, quantidade, nome, preco);
     return linha;
@@ -1288,7 +1292,6 @@ function renderizarFolhaWallapop(itens = wallapopItens) {
     const folha = document.getElementById('wallapop-folha');
     folha.replaceChildren();
     const paginas = dividirItensWallapop(itens);
-    atualizarAlturaPrevisualizacaoWallapop(paginas);
 
     if (!itens.length) {
         const pagina = document.createElement('section');
@@ -1298,6 +1301,7 @@ function renderizarFolhaWallapop(itens = wallapopItens) {
         vazio.textContent = 'Adicione produtos para criar a imagem.';
         pagina.appendChild(vazio);
         folha.appendChild(pagina);
+        atualizarAlturaPrevisualizacaoWallapop();
         return;
     }
 
@@ -1305,13 +1309,14 @@ function renderizarFolhaWallapop(itens = wallapopItens) {
         const pagina = document.createElement('section');
         pagina.className = 'wallapop-pagina';
         pagina.setAttribute('aria-label', `Folha A4 ${indice + 1}`);
-        pagina.style.height = `${calcularAlturaFolhaWallapop(itensPagina.length)}px`;
         const lista = document.createElement('div');
         lista.className = 'wallapop-lista';
         itensPagina.forEach(item => lista.appendChild(criarLinhaFolhaWallapop(item)));
         pagina.appendChild(lista);
         folha.appendChild(pagina);
     });
+
+    atualizarAlturaPrevisualizacaoWallapop();
 }
 
 async function esperarImagensWallapop() {

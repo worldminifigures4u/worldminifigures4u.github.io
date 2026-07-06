@@ -431,9 +431,11 @@ body.pagina-wallapop{
             --wallapop-preview-page-height:674px;
             --wallapop-preview-gap:14px;
             width:476px;
+            min-height:120px;
             height:674px;
             flex:0 0 auto;
-            overflow:hidden;
+            overflow-x:hidden;
+            overflow-y:auto;
         }
 
         .wallapop-folha{
@@ -454,29 +456,24 @@ body.pagina-wallapop{
         .wallapop-pagina{
             width:794px;
             min-height:0;
-            height:1123px;
-            padding:42px;
+            height:auto;
+            padding:42px 42px 24px;
             box-sizing:border-box;
             background:#fff;
             color:#111;
             box-shadow:0 8px 28px rgba(0,0,0,.45);
-            display:flex;
-            flex-direction:column;
         }
 
 
         .wallapop-lista{
-            height:100%;
-            display:flex;
-            flex-direction:column;
-            gap:8px;
+            display:block;
         }
 
         .wallapop-linha{
-            min-height:96px;
+            height:96px;
             display:grid;
-            grid-template-columns:96px 44px minmax(0, 1fr) 112px;
-            column-gap:14px;
+            grid-template-columns:90px 58px minmax(0, 1fr) minmax(112px, auto);
+            column-gap:20px;
             align-items:center;
             break-inside:avoid;
         }
@@ -509,24 +506,32 @@ body.pagina-wallapop{
             margin:0;
             color:#111;
             font-family:Arial, Helvetica, sans-serif;
-            font-size:15px;
-            line-height:1.25;
             font-weight:700;
             letter-spacing:0;
             word-spacing:normal;
         }
 
         .wallapop-linha-quantidade{
+            font-size:17px;
+            line-height:1;
             white-space:nowrap;
         }
 
         .wallapop-linha-nome{
+            font-size:16px;
+            line-height:19px;
+            overflow:hidden;
+            display:-webkit-box;
+            -webkit-box-orient:vertical;
+            -webkit-line-clamp:2;
             overflow-wrap:normal;
             word-break:normal;
             hyphens:none;
         }
 
         .wallapop-linha-preco{
+            font-size:16px;
+            line-height:19px;
             text-align:right;
             white-space:nowrap;
         }
