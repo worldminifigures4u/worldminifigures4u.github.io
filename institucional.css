@@ -17,6 +17,20 @@
             font-size:21px;
         }
 
+        .pagina-institucional h3{
+            margin:20px 0 8px;
+            color:#f4c542;
+            font-size:17px;
+        }
+
+        .bloco-institucional h2:first-child{
+            margin-top:0;
+        }
+
+        .bloco-institucional h3:first-child{
+            margin-top:0;
+        }
+
         .pagina-institucional p,
         .pagina-institucional li{
             color:#ddd;
