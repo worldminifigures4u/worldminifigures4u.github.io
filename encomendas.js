@@ -941,6 +941,8 @@ function criarCardEncomenda(encomenda) {
         prioridade.addEventListener('click', evento => evento.stopPropagation());
         prioridade.append(checkbox, criarElementoEncomenda('span', '', 'Priorit\u00e1ria'));
         linha.appendChild(prioridade);
+    } else {
+        linha.appendChild(criarElementoEncomenda('span', 'admin-encomenda-prioridade-vazia', ''));
     }
 
     cabecalho.append(linha, criarElementoEncomenda('span', 'admin-encomenda-seta', '▾'));

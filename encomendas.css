@@ -143,7 +143,7 @@ body.pagina-encomendas-admin{
 
         .admin-encomenda-cabecalho{
             width:100%;
-            padding:10px 14px;
+            padding:8px 12px;
             border:0;
             background:#171717;
             color:#fff;
@@ -161,34 +161,34 @@ body.pagina-encomendas-admin{
         .admin-encomenda-linha{
             flex:1;
             min-width:0;
-            display:flex;
+            display:grid;
+            grid-template-columns:68px 130px 84px minmax(120px, 1fr) 76px 148px 88px;
+            column-gap:16px;
             align-items:center;
-            gap:12px;
-            overflow-x:auto;
-            white-space:nowrap;
-            scrollbar-width:thin;
         }
 
         .admin-encomenda-codigo{
-            flex:0 0 auto;
             color:#ffc107;
-            font-size:15px;
+            font-size:14px;
+            font-weight:800;
+            font-variant-numeric:tabular-nums;
         }
 
         .admin-encomenda-data{
-            flex:0 0 auto;
             color:#aaa;
             font-size:13px;
+            font-variant-numeric:tabular-nums;
         }
 
         .admin-encomenda-linha .admin-encomenda-origem{
-            flex:0 0 auto;
+            justify-self:start;
             border:1px solid #ffc400;
-            border-radius:4px;
+            border-radius:3px;
             color:#ffc400;
-            font-size:11px;
+            font-size:10px;
             font-weight:700;
-            padding:2px 6px;
+            padding:1px 5px;
+            white-space:nowrap;
         }
 
         .admin-encomenda-linha .admin-encomenda-origem.plataforma-olx{
@@ -210,14 +210,13 @@ body.pagina-encomendas-admin{
         }
 
         .admin-encomenda-linha .admin-encomenda-cliente-link{
-            flex:0 1 auto;
             min-width:0;
-            max-width:220px;
             padding:0;
             border:0;
             background:transparent;
             color:#fff;
             font:inherit;
+            font-size:14px;
             font-weight:800;
             text-align:left;
             text-decoration:underline;
@@ -235,17 +234,21 @@ body.pagina-encomendas-admin{
         }
 
         .admin-encomenda-valor-linha{
-            flex:0 0 auto;
+            justify-self:end;
             color:#29b6f6;
-            font-size:15px;
+            font-size:14px;
+            font-variant-numeric:tabular-nums;
+            white-space:nowrap;
         }
 
         .admin-encomenda-linha .estado-encomenda{
-            flex:0 0 auto;
+            justify-self:start;
+            white-space:nowrap;
         }
 
-        .admin-encomenda-linha .admin-encomenda-prioridade{
-            flex:0 0 auto;
+        .admin-encomenda-linha .admin-encomenda-prioridade,
+        .admin-encomenda-prioridade-vazia{
+            justify-self:start;
         }
 
         .admin-encomenda-prioridade{
@@ -267,20 +270,54 @@ body.pagina-encomendas-admin{
         }
 
         .estado-encomenda{
+            display:inline-block;
             max-width:100%;
-            padding:4px 8px;
-            border-radius:4px;
-            background:#292929;
-            color:#ddd;
-            font-size:11px;
-            text-align:center;
+            padding:1px 5px;
+            border-radius:3px;
+            background:transparent;
+            color:#b0b0b0;
+            font-size:10px;
+            font-weight:600;
+            line-height:1.35;
+            text-align:left;
+            border:1px solid #3a3a3a;
         }
 
-        .estado-pago,
-        .estado-concluido{ background:#173d22; color:#8fe3a5; }
-        .estado-em-preparacao{ background:#453a12; color:#ffe184; }
-        .estado-enviado{ background:#14384a; color:#8bd8ff; }
-        .estado-cancelado{ background:#481d21; color:#ff9da5; }
+        .estado-a-aguardar-pagamento{
+            background:rgba(255, 193, 7, 0.06);
+            border-color:rgba(255, 193, 7, 0.22);
+            color:#b8a56a;
+        }
+
+        .estado-pago{
+            background:rgba(40, 167, 69, 0.12);
+            border-color:rgba(143, 227, 165, 0.35);
+            color:#8fe3a5;
+        }
+
+        .estado-concluido{
+            background:rgba(40, 167, 69, 0.1);
+            border-color:rgba(143, 227, 165, 0.28);
+            color:#7fd899;
+        }
+
+        .estado-em-preparacao{
+            background:rgba(255, 225, 132, 0.08);
+            border-color:rgba(255, 225, 132, 0.28);
+            color:#d9c878;
+        }
+
+        .estado-enviado{
+            background:rgba(139, 216, 255, 0.08);
+            border-color:rgba(139, 216, 255, 0.28);
+            color:#8bd8ff;
+        }
+
+        .estado-cancelado{
+            background:rgba(255, 157, 165, 0.08);
+            border-color:rgba(255, 157, 165, 0.28);
+            color:#ff9da5;
+        }
 
         .admin-encomenda-seta{
             flex:0 0 auto;
@@ -552,10 +589,9 @@ body.pagina-encomendas-admin{
                 padding:8px 10px;
             }
             .admin-encomenda-linha{
-                gap:10px;
-            }
-            .admin-encomenda-linha .admin-encomenda-cliente-link{
-                max-width:120px;
+                grid-template-columns:60px 118px 76px minmax(80px, 1fr) 68px 120px 72px;
+                column-gap:10px;
+                overflow-x:auto;
             }
             .admin-encomenda-dados{
                 grid-template-columns:1fr;
