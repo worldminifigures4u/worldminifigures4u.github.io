@@ -88,8 +88,9 @@ body.pagina-encomendas-admin{
             background:transparent;
             display:grid;
             grid-template-columns:minmax(260px, 1fr) minmax(210px, 280px) auto;
-            gap:10px;
+            gap:12px;
             align-items:center;
+            margin:0 0 14px;
         }
 
         .admin-encomendas-filtros label,
