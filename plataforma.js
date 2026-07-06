@@ -295,6 +295,33 @@ function formatarOrdinalEncomendaPlataforma(numero) {
     return `${valor}.\u00aa encomenda`;
 }
 
+function criarIconeFichaClientePlataforma() {
+    const aviso = document.createElement('span');
+    aviso.className = 'plataforma-cliente-ficha-alerta';
+    aviso.title = 'Ler ficha do cliente antes de preparar a proxima encomenda';
+    aviso.setAttribute('aria-label', 'Ler ficha do cliente antes de preparar a proxima encomenda');
+
+    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    svg.classList.add('plataforma-cliente-ficha-icone');
+    svg.setAttribute('viewBox', '0 0 24 24');
+    svg.setAttribute('aria-hidden', 'true');
+    svg.setAttribute('focusable', 'false');
+
+    [
+        'M9 3h6a2 2 0 0 1 2 2h1a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h1a2 2 0 0 1 2-2Z',
+        'M9 5h6v2H9V5Z',
+        'M8 11h8',
+        'M8 15h8'
+    ].forEach(d => {
+        const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+        path.setAttribute('d', d);
+        svg.appendChild(path);
+    });
+
+    aviso.appendChild(svg);
+    return aviso;
+}
+
 function renderizarFichaClientePlataforma(dados) {
     const caixa = document.getElementById('plataforma-cliente-ficha');
     if (!caixa) return;
@@ -307,38 +334,19 @@ function renderizarFichaClientePlataforma(dados) {
     fichaClientePlataformaAtual = dados;
 
     const cliente = dados.cliente || {};
-    const resumo = dados.resumo || {};
-    const historico = Array.isArray(dados.historico) ? dados.historico : [];
-    const totalEncomendas = Number(resumo.encomendas || dados.numero_encomenda_cliente || historico.length || 0);
+    const linha = document.createElement('div');
+    linha.className = 'plataforma-cliente-ficha-linha';
 
-    const titulo = document.createElement('strong');
+    const nome = document.createElement('span');
+    nome.className = 'plataforma-cliente-ficha-nome';
+    nome.textContent = cliente.nome || dados.utilizador || 'Cliente externo';
+    linha.appendChild(nome);
+
     if (cliente.tem_aviso) {
-        const aviso = document.createElement('span');
-        aviso.className = 'plataforma-cliente-aviso';
-        aviso.textContent = '\u26a0';
-        aviso.title = 'Este cliente tem um aviso interno a ler.';
-        titulo.appendChild(aviso);
-        titulo.appendChild(document.createTextNode(' '));
-    }
-    titulo.appendChild(document.createTextNode(cliente.nome || dados.utilizador || 'Cliente externo'));
-    const contador = document.createElement('span');
-    contador.textContent = totalEncomendas > 1
-        ? `${formatarOrdinalEncomendaPlataforma(totalEncomendas)} deste cliente`
-        : '1.\u00aa encomenda deste cliente';
-    caixa.append(titulo, contador);
-
-    const morada = [cliente.morada, cliente.cp, cliente.cidade, cliente.pais].filter(Boolean).join(', ');
-    if (morada) {
-        const linhaMorada = document.createElement('span');
-        linhaMorada.textContent = morada;
-        caixa.appendChild(linhaMorada);
-    }
-    if (cliente.telefone) {
-        const linhaTelefone = document.createElement('span');
-        linhaTelefone.textContent = cliente.telefone;
-        caixa.appendChild(linhaTelefone);
+        linha.appendChild(criarIconeFichaClientePlataforma());
     }
 
+    caixa.appendChild(linha);
     caixa.hidden = false;
 }
 

@@ -839,48 +839,57 @@ body.pagina-wallapop{
 
 .plataforma-cliente-ficha{
     margin-top:12px;
-    padding:12px;
-    border:1px solid #3a3a3a;
-    border-radius:6px;
-    background:#171717;
-    color:#ddd;
+    padding:8px 10px 8px 12px;
+    border:1px solid #2f2f2f;
+    border-radius:8px;
+    background:#1f1f1f;
+    color:#fff;
 }
 
-.plataforma-cliente-ficha strong{
-    display:block;
-    margin-bottom:6px;
-    color:#ffc400;
-}
-
-.plataforma-cliente-ficha .plataforma-cliente-aviso{
-    display:inline;
-    margin:0;
-    color:#ff6b72;
-    font-size:15px;
-}
-
-.plataforma-cliente-ficha span{
-    display:block;
-    margin-top:4px;
-    color:#aaa;
-    font-size:13px;
-}
-
-.plataforma-cliente-ficha ul{
-    margin:8px 0 0;
-    padding:0;
-    list-style:none;
-    display:grid;
-    gap:5px;
-}
-
-.plataforma-cliente-ficha li{
+.plataforma-cliente-ficha-linha{
     display:flex;
+    align-items:center;
     justify-content:space-between;
-    gap:10px;
-    padding-top:5px;
-    border-top:1px solid #292929;
-    font-size:13px;
+    gap:12px;
+    min-height:22px;
+}
+
+.plataforma-cliente-ficha-nome{
+    color:#f4c542;
+    font-size:14px;
+    font-weight:600;
+    line-height:1.2;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+    min-width:0;
+}
+
+.plataforma-cliente-ficha-alerta{
+    width:28px;
+    height:24px;
+    flex:0 0 auto;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    background:rgba(245, 166, 35, 0.12);
+    border:1px solid rgba(245, 166, 35, 0.35);
+    border-radius:999px;
+}
+
+.plataforma-cliente-ficha-alerta:hover{
+    background:rgba(245, 166, 35, 0.2);
+    border-color:rgba(245, 166, 35, 0.55);
+}
+
+.plataforma-cliente-ficha-icone{
+    width:15px;
+    height:15px;
+    fill:none;
+    stroke:#f5a623;
+    stroke-width:2;
+    stroke-linecap:round;
+    stroke-linejoin:round;
 }
 
 @media (max-width: 700px){
