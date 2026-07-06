@@ -82,10 +82,10 @@ body.pagina-encomendas-admin{
         }
 
         .admin-encomendas-filtros{
-            padding:14px;
-            border:1px solid #333;
-            border-radius:6px;
-            background:#111;
+            padding:0;
+            border:0;
+            border-radius:0;
+            background:transparent;
             display:grid;
             grid-template-columns:minmax(260px, 1fr) minmax(210px, 280px) auto;
             gap:10px;
