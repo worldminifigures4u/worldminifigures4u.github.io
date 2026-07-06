@@ -70,7 +70,7 @@ function criarInputCliente(rotulo, nome, valor, tipo = "text", obrigatorio = fal
     return campo;
 }
 
-function criarTextareaCliente(rotulo, nome, valor, linhas = 6) {
+function criarIconeFichaCliente() {
     const aviso = document.createElement("span");
     aviso.className = "clientes-ficha-alerta";
     aviso.title = "Ler ficha do cliente antes de preparar a proxima encomenda";
@@ -153,7 +153,13 @@ async function pesquisarClientes() {
         return;
     }
     clientesLista = Array.isArray(data) ? data : [];
-    renderizarClientesLista();
+    try {
+        renderizarClientesLista();
+    } catch (error) {
+        console.error(error);
+        definirStatusClientes("Erro ao mostrar clientes: " + (error.message || "sem detalhe"), true);
+        return;
+    }
     definirStatusClientes(`${clientesLista.length} cliente(s) encontrado(s).`);
 }
 
