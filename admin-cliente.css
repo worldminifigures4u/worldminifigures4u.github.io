@@ -82,7 +82,7 @@
             font-weight:700;
         }
 
-        .admin-cliente-formulario-campo input{
+        .admin-cliente-formulario-campo input:not([type="checkbox"]){
             width:100%;
             min-width:0;
             box-sizing:border-box;
