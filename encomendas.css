@@ -93,6 +93,7 @@ body.pagina-encomendas-admin{
         }
 
         .admin-encomendas-filtros label,
+        .admin-encomendas-filtro-campo,
         .admin-encomenda-estado-edicao{
             display:flex;
             flex-direction:column;
