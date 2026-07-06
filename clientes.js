@@ -55,6 +55,74 @@ function criarCampoCliente(rotulo, valor) {
     return campo;
 }
 
+function obterRotuloPerfilCliente(perfil, indice) {
+    if (perfil?.plataforma && perfil?.utilizador) {
+        return `${perfil.plataforma}: ${perfil.utilizador}`;
+    }
+    const url = String(perfil?.url || "").trim();
+    if (!url) return "";
+    if (url.includes("wallapop.com")) {
+        const match = url.match(/\/user\/([^/?#]+)/i);
+        if (match) return `Wallapop: ${match[1]}`;
+    }
+    try {
+        return new URL(url).hostname.replace(/^www\./, "");
+    } catch (_) {
+        return `Link externo ${indice + 1}`;
+    }
+}
+
+function montarVistaConsultaCliente(dados) {
+    const cliente = dados.cliente || {};
+    const perfis = Array.isArray(dados.perfis) ? dados.perfis : [];
+    const contentor = criarElementoCliente("div", "clientes-ficha-consulta");
+
+    const dadosSecao = criarElementoCliente("section", "admin-cliente-secao");
+    const grelha = criarElementoCliente("div", "admin-cliente-grelha");
+    grelha.append(
+        criarCampoCliente("Nome", cliente.nome),
+        criarCampoCliente("Morada", cliente.morada),
+        criarCampoCliente("C\u00f3digo postal", cliente.cp),
+        criarCampoCliente("Cidade", cliente.cidade),
+        criarCampoCliente("Pa\u00eds", cliente.pais),
+        criarCampoCliente("E-mail", cliente.email),
+        criarCampoCliente("Telem\u00f3vel", cliente.telefone)
+    );
+    dadosSecao.appendChild(grelha);
+    contentor.appendChild(dadosSecao);
+
+    const linksSecao = criarElementoCliente("section", "admin-cliente-secao");
+    linksSecao.appendChild(criarElementoCliente("h3", "", "Links externos"));
+    const listaLinks = criarElementoCliente("div", "admin-cliente-perfis");
+    const linksValidos = perfis
+        .map((perfil, indice) => ({ perfil, indice, url: obterUrlExternoSeguroCliente(perfil?.url) }))
+        .filter(item => item.url);
+    if (!linksValidos.length) {
+        listaLinks.appendChild(criarElementoCliente("p", "admin-cliente-vazio", "Nenhum link externo associado."));
+    } else {
+        linksValidos.forEach(({ perfil, indice, url }) => {
+            const link = document.createElement("a");
+            link.className = "admin-cliente-perfil";
+            link.href = url;
+            link.target = "_blank";
+            link.rel = "noopener noreferrer";
+            link.textContent = obterRotuloPerfilCliente(perfil, indice);
+            listaLinks.appendChild(link);
+        });
+    }
+    linksSecao.appendChild(listaLinks);
+    contentor.appendChild(linksSecao);
+
+    const notasSecao = criarElementoCliente("section", "admin-cliente-secao");
+    notasSecao.appendChild(criarElementoCliente("h3", "", "Notas internas"));
+    const notas = criarElementoCliente("div", "admin-cliente-notas admin-cliente-notas-consulta");
+    notas.textContent = String(cliente.notas || "").trim() || "Sem notas internas.";
+    notasSecao.appendChild(notas);
+    contentor.appendChild(notasSecao);
+
+    return contentor;
+}
+
 function criarInputCliente(rotulo, nome, valor, tipo = "text", obrigatorio = false) {
     const campo = document.createElement("label");
     campo.className = "admin-cliente-formulario-campo";
@@ -328,9 +396,9 @@ function montarFormularioCliente(dados, opcoes = {}) {
     return formulario;
 }
 
-function renderizarFormularioCliente(dados, modo = "editar") {
-    if (modo === "editar") {
-        renderizarFichaCliente(dados);
+function renderizarFormularioCliente(dados, modo = "novo") {
+    if (modo !== "novo") {
+        renderizarEdicaoCliente(dados);
         return;
     }
 
@@ -338,6 +406,25 @@ function renderizarFormularioCliente(dados, modo = "editar") {
     clienteAbertoId = "";
     renderizarClientesLista();
     ficha.replaceChildren(montarFormularioCliente(dados, { novoCliente: true, mostrarCancelar: true }));
+}
+
+function renderizarEdicaoCliente(dados) {
+    const ficha = document.getElementById("clientes-ficha");
+    const cliente = dados.cliente || {};
+    clienteAbertoId = String(cliente.id || "");
+    renderizarClientesLista();
+    ficha.replaceChildren();
+
+    const topo = criarElementoCliente("div", "clientes-ficha-topo");
+    topo.appendChild(criarElementoCliente("h2", "", cliente.nome || "Cliente sem nome"));
+    const acoesTopo = criarElementoCliente("div", "clientes-ficha-acoes");
+    const cancelar = criarElementoCliente("button", "wallapop-botao", "Cancelar");
+    cancelar.type = "button";
+    cancelar.addEventListener("click", () => renderizarFichaCliente(dados));
+    acoesTopo.appendChild(cancelar);
+    topo.appendChild(acoesTopo);
+
+    ficha.append(topo, montarFormularioCliente(dados, { mostrarCancelar: false }));
 }
 
 function criarClienteNovo() {
@@ -398,16 +485,19 @@ function renderizarFichaCliente(dados) {
         titulo.appendChild(aviso);
     }
     topo.append(titulo);
+    const editar = criarElementoCliente("button", "wallapop-botao wallapop-botao-destaque", "Editar ficha");
+    editar.type = "button";
+    editar.addEventListener("click", () => renderizarEdicaoCliente(dados));
     const apagar = criarElementoCliente("button", "wallapop-botao clientes-botao-apagar", "Apagar ficha");
     apagar.type = "button";
     apagar.addEventListener("click", () => apagarFichaCliente(dados, apagar));
     const acoesTopo = criarElementoCliente("div", "clientes-ficha-acoes");
-    acoesTopo.appendChild(apagar);
+    acoesTopo.append(editar, apagar);
     topo.appendChild(acoesTopo);
 
     ficha.append(
         topo,
-        montarFormularioCliente(dados),
+        montarVistaConsultaCliente(dados),
         criarSecaoResumoCliente(resumo),
         criarSecaoHistoricoCliente(historico)
     );

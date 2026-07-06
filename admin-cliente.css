@@ -235,6 +235,13 @@
             resize:vertical;
         }
 
+        .admin-cliente-notas-consulta{
+            min-height:88px;
+            white-space:pre-wrap;
+            overflow-wrap:anywhere;
+            resize:none;
+        }
+
         .admin-cliente-vazio,
         .admin-cliente-carregar{ color:#aaa; }
         body.admin-cliente-modal-aberto{ overflow:hidden; }
