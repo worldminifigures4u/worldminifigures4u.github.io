@@ -869,6 +869,24 @@ body.pagina-wallapop{
     text-overflow:ellipsis;
     white-space:nowrap;
     min-width:0;
+    flex:1 1 auto;
+}
+
+.plataforma-cliente-ficha-direita{
+    display:flex;
+    align-items:center;
+    justify-content:flex-end;
+    gap:10px;
+    flex:0 0 auto;
+    margin-left:12px;
+}
+
+.plataforma-cliente-ficha-encomendas{
+    color:#aaa;
+    font-size:12px;
+    font-weight:500;
+    line-height:1.2;
+    white-space:nowrap;
 }
 
 .plataforma-cliente-ficha-alerta{

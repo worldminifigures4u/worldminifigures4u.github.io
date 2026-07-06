@@ -327,6 +327,28 @@ function atualizarBotaoRegistoPlataforma() {
     botao.disabled = wallapopRegistoConcluido;
 }
 
+function formatarEncomendasAnterioresPlataforma(numero) {
+    const valor = Math.max(0, Number(numero) || 0);
+    if (valor === 0) return 'Primeira encomenda';
+    if (valor === 1) return '1 encomenda anterior';
+    return `${valor} encomendas anteriores`;
+}
+
+function obterEncomendasAnterioresClientePlataforma(dados) {
+    const historico = Array.isArray(dados?.historico) ? dados.historico : [];
+    const total = Number(
+        dados?.resumo?.encomendas
+        ?? dados?.numero_encomenda_cliente
+        ?? historico.length
+        ?? 0
+    );
+    if (encomendaPlataformaEmEdicao?.id) {
+        const incluiAtual = historico.some(item => String(item.id) === String(encomendaPlataformaEmEdicao.id));
+        return Math.max(0, incluiAtual ? total - 1 : total);
+    }
+    return Math.max(0, total);
+}
+
 function formatarOrdinalEncomendaPlataforma(numero) {
     const valor = Math.max(0, Number(numero) || 0);
     if (valor <= 0) return '';
@@ -381,9 +403,21 @@ function renderizarFichaClientePlataforma(dados) {
     nome.textContent = cliente.nome || dados.utilizador || 'Cliente externo';
     linha.appendChild(nome);
 
+    const direita = document.createElement('div');
+    direita.className = 'plataforma-cliente-ficha-direita';
+
+    const encomendas = document.createElement('span');
+    encomendas.className = 'plataforma-cliente-ficha-encomendas';
+    encomendas.textContent = formatarEncomendasAnterioresPlataforma(
+        obterEncomendasAnterioresClientePlataforma(dados)
+    );
+    direita.appendChild(encomendas);
+
     if (cliente.tem_aviso) {
-        linha.appendChild(criarIconeFichaClientePlataforma());
+        direita.appendChild(criarIconeFichaClientePlataforma());
     }
+
+    linha.appendChild(direita);
 
     caixa.appendChild(linha);
     caixa.hidden = false;
