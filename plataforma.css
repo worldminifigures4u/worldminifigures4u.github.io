@@ -387,7 +387,7 @@ body.pagina-wallapop{
         }
 
         .wallapop-preview-wrap{
-            overflow:hidden;
+            overflow:visible;
             padding:0 0 20px;
             display:flex;
             flex-direction:column;
@@ -434,8 +434,7 @@ body.pagina-wallapop{
             min-height:120px;
             height:674px;
             flex:0 0 auto;
-            overflow-x:hidden;
-            overflow-y:auto;
+            overflow:hidden;
         }
 
         .wallapop-folha{
@@ -753,7 +752,7 @@ body.pagina-wallapop{
             }
             .wallapop-preview-wrap{
                 margin-inline:-16px;
-                overflow:auto;
+                overflow:visible;
             }
             .wallapop-preview-acoes{
                 width:calc(100% - 32px);
