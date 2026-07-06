@@ -143,48 +143,76 @@ body.pagina-encomendas-admin{
 
         .admin-encomenda-cabecalho{
             width:100%;
-            padding:14px;
+            padding:10px 14px;
             border:0;
             background:#171717;
             color:#fff;
             text-align:left;
             cursor:pointer;
-            display:grid;
-            grid-template-columns:190px minmax(220px, 1fr) 180px 22px;
-            gap:16px;
+            display:flex;
             align-items:center;
+            gap:12px;
         }
 
         .admin-encomenda-cabecalho:hover{
             background:#202020;
         }
 
-        .admin-encomenda-identificacao,
-        .admin-encomenda-cliente,
-        .admin-encomenda-valor{
+        .admin-encomenda-linha{
+            flex:1;
             min-width:0;
             display:flex;
-            flex-direction:column;
-            gap:4px;
-        }
-
-        .admin-encomenda-identificacao strong{
-            color:#ffc107;
-            font-size:17px;
-        }
-
-        .admin-encomenda-identificacao span,
-        .admin-encomenda-cliente span{
-            overflow:hidden;
-            color:#aaa;
-            font-size:12px;
-            text-overflow:ellipsis;
+            align-items:center;
+            gap:12px;
+            overflow-x:auto;
             white-space:nowrap;
+            scrollbar-width:thin;
         }
 
-        .admin-encomenda-cliente-link{
-            width:max-content;
-            max-width:100%;
+        .admin-encomenda-codigo{
+            flex:0 0 auto;
+            color:#ffc107;
+            font-size:15px;
+        }
+
+        .admin-encomenda-data{
+            flex:0 0 auto;
+            color:#aaa;
+            font-size:13px;
+        }
+
+        .admin-encomenda-linha .admin-encomenda-origem{
+            flex:0 0 auto;
+            border:1px solid #ffc400;
+            border-radius:4px;
+            color:#ffc400;
+            font-size:11px;
+            font-weight:700;
+            padding:2px 6px;
+        }
+
+        .admin-encomenda-linha .admin-encomenda-origem.plataforma-olx{
+            border-color:#ffffff;
+            color:#ffffff;
+            background:rgba(255, 255, 255, .08);
+        }
+
+        .admin-encomenda-linha .admin-encomenda-origem.plataforma-wallapop{
+            border-color:#13c9b7;
+            color:#13c9b7;
+            background:rgba(19, 201, 183, .08);
+        }
+
+        .admin-encomenda-linha .admin-encomenda-origem.plataforma-todocoleccion{
+            border-color:#b55cff;
+            color:#b55cff;
+            background:rgba(181, 92, 255, .1);
+        }
+
+        .admin-encomenda-linha .admin-encomenda-cliente-link{
+            flex:0 1 auto;
+            min-width:0;
+            max-width:220px;
             padding:0;
             border:0;
             background:transparent;
@@ -201,61 +229,23 @@ body.pagina-encomendas-admin{
             white-space:nowrap;
         }
 
-        .admin-encomenda-cliente-link:hover,
-        .admin-encomenda-cliente-link:focus-visible{ color:#ffc107; }
-
-        .admin-encomenda-cliente-email{
-            max-width:100%;
-            padding:0;
-            border:0;
-            background:transparent;
-            color:#aaa;
-            font-size:12px;
-            text-align:left;
-            cursor:pointer;
-            overflow:hidden;
-            text-overflow:ellipsis;
-            white-space:nowrap;
+        .admin-encomenda-linha .admin-encomenda-cliente-link:hover,
+        .admin-encomenda-linha .admin-encomenda-cliente-link:focus-visible{
+            color:#ffc107;
         }
 
-        .admin-encomenda-cliente-email:hover,
-        .admin-encomenda-cliente-email:focus-visible{ color:#ffc107; }
-
-        .admin-encomenda-identificacao .admin-encomenda-origem{
-            align-self:flex-start;
-            border:1px solid #ffc400;
-            border-radius:4px;
-            color:#ffc400;
-            font-size:11px;
-            font-weight:700;
-            padding:2px 6px;
-        }
-
-        .admin-encomenda-identificacao .admin-encomenda-origem.plataforma-olx{
-            border-color:#ffffff;
-            color:#ffffff;
-            background:rgba(255, 255, 255, .08);
-        }
-
-        .admin-encomenda-identificacao .admin-encomenda-origem.plataforma-wallapop{
-            border-color:#13c9b7;
-            color:#13c9b7;
-            background:rgba(19, 201, 183, .08);
-        }
-
-        .admin-encomenda-identificacao .admin-encomenda-origem.plataforma-todocoleccion{
-            border-color:#b55cff;
-            color:#b55cff;
-            background:rgba(181, 92, 255, .1);
-        }
-
-        .admin-encomenda-valor{
-            align-items:flex-end;
-        }
-
-        .admin-encomenda-valor strong{
+        .admin-encomenda-valor-linha{
+            flex:0 0 auto;
             color:#29b6f6;
-            font-size:18px;
+            font-size:15px;
+        }
+
+        .admin-encomenda-linha .estado-encomenda{
+            flex:0 0 auto;
+        }
+
+        .admin-encomenda-linha .admin-encomenda-prioridade{
+            flex:0 0 auto;
         }
 
         .admin-encomenda-prioridade{
@@ -293,6 +283,7 @@ body.pagina-encomendas-admin{
         .estado-cancelado{ background:#481d21; color:#ff9da5; }
 
         .admin-encomenda-seta{
+            flex:0 0 auto;
             color:#ffc107;
             font-size:20px;
             transition:transform .15s ease;
@@ -557,17 +548,14 @@ body.pagina-encomendas-admin{
                 grid-template-columns:1fr;
             }
             .admin-encomenda-cabecalho{
-                grid-template-columns:1fr auto;
-                gap:9px;
+                gap:8px;
+                padding:8px 10px;
             }
-            .admin-encomenda-cliente,
-            .admin-encomenda-valor{
-                grid-column:1;
-                align-items:flex-start;
+            .admin-encomenda-linha{
+                gap:10px;
             }
-            .admin-encomenda-seta{
-                grid-column:2;
-                grid-row:1 / span 3;
+            .admin-encomenda-linha .admin-encomenda-cliente-link{
+                max-width:120px;
             }
             .admin-encomenda-dados{
                 grid-template-columns:1fr;

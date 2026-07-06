@@ -62,7 +62,7 @@ function formatarDataEncomenda(valor) {
     return new Intl.DateTimeFormat('pt-PT', {
         day: '2-digit', month: '2-digit', year: 'numeric',
         hour: '2-digit', minute: '2-digit'
-    }).format(data);
+    }).format(data).replace(',', '');
 }
 
 function estadoNormalizadoEncomenda(estado) {
@@ -906,13 +906,13 @@ function criarCardEncomenda(encomenda) {
     cabecalho.tabIndex = 0;
     cabecalho.setAttribute('role', 'button');
 
-    const identificacao = criarElementoEncomenda('div', 'admin-encomenda-identificacao');
-    identificacao.append(
-        criarElementoEncomenda('strong', '', encomenda.codigo_encomenda || `#${encomenda.id}`),
-        criarElementoEncomenda('span', '', formatarDataEncomenda(encomenda.created_at)),
+    const linha = criarElementoEncomenda('div', 'admin-encomenda-linha');
+    linha.append(
+        criarElementoEncomenda('strong', 'admin-encomenda-codigo', encomenda.codigo_encomenda || `#${encomenda.id}`),
+        criarElementoEncomenda('span', 'admin-encomenda-data', formatarDataEncomenda(encomenda.created_at)),
         criarElementoEncomenda('span', `admin-encomenda-origem${obterClassePlataformaEncomenda(encomenda.origem)}`, encomenda.origem || 'Site')
     );
-    const cliente = criarElementoEncomenda('div', 'admin-encomenda-cliente');
+
     const abrirCliente = criarElementoEncomenda('button', 'admin-encomenda-cliente-link', encomenda.nome_cliente || 'Cliente sem nome');
     abrirCliente.type = 'button';
     abrirCliente.title = 'Abrir ficha do cliente';
@@ -921,25 +921,14 @@ function criarCardEncomenda(encomenda) {
         abrirFichaClienteAdmin(encomenda);
     });
     abrirCliente.addEventListener('keydown', evento => evento.stopPropagation());
-    cliente.appendChild(abrirCliente);
-    if (encomenda.email_cliente) {
-        const abrirClienteEmail = criarElementoEncomenda('button', 'admin-encomenda-cliente-email', encomenda.email_cliente);
-        abrirClienteEmail.type = 'button';
-        abrirClienteEmail.title = 'Abrir ficha do cliente';
-        abrirClienteEmail.addEventListener('click', evento => {
-            evento.stopPropagation();
-            abrirFichaClienteAdmin(encomenda);
-        });
-        abrirClienteEmail.addEventListener('keydown', evento => evento.stopPropagation());
-        cliente.appendChild(abrirClienteEmail);
-    }
-    const resumo = criarElementoEncomenda('div', 'admin-encomenda-valor');
-    resumo.append(
-        criarElementoEncomenda('strong', '', formatarEuroEncomenda(encomenda.total)),
+    linha.appendChild(abrirCliente);
+
+    linha.append(
+        criarElementoEncomenda('strong', 'admin-encomenda-valor-linha', formatarEuroEncomenda(encomenda.total)),
         criarElementoEncomenda('span', `estado-encomenda estado-${normalizarEncomenda(estadoNormalizadoEncomenda(encomenda.estado)).replace(/\s+/g, '-')}`, estadoNormalizadoEncomenda(encomenda.estado))
     );
-    const filtroEstado = document.getElementById('filtro-estado-encomendas-admin').value;
-    if (filtroEstado === 'Pago' && estadoNormalizadoEncomenda(encomenda.estado) === 'Pago') {
+
+    if (estadoNormalizadoEncomenda(encomenda.estado) === 'Pago') {
         const prioridade = criarElementoEncomenda('label', 'admin-encomenda-prioridade');
         const checkbox = document.createElement('input');
         checkbox.type = 'checkbox';
@@ -951,9 +940,10 @@ function criarCardEncomenda(encomenda) {
         });
         prioridade.addEventListener('click', evento => evento.stopPropagation());
         prioridade.append(checkbox, criarElementoEncomenda('span', '', 'Priorit\u00e1ria'));
-        resumo.appendChild(prioridade);
+        linha.appendChild(prioridade);
     }
-    cabecalho.append(identificacao, cliente, resumo, criarElementoEncomenda('span', 'admin-encomenda-seta', '▾'));
+
+    cabecalho.append(linha, criarElementoEncomenda('span', 'admin-encomenda-seta', '▾'));
 
     const detalhes = criarElementoEncomenda('div', 'admin-encomenda-detalhes');
     detalhes.hidden = true;
