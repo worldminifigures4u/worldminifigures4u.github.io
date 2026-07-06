@@ -26,6 +26,8 @@ body{
             left:0;
             right:0;
             z-index:1000;
+            display:flex;
+            align-items:center;
             background:#111;
             color:#ffc107;
             border-bottom:1px solid #333;
@@ -35,29 +37,29 @@ body{
         .cabecalho-loja{
             width:100%;
             margin:0;
-            padding:6px 36px 8px 42px;
+            padding:0 36px 0 42px;
             box-sizing:border-box;
-            display:grid;
-            grid-template-columns:minmax(360px, 470px) minmax(360px, 1fr) 258px;
-            grid-template-rows:auto;
-            gap:6px 22px;
+            display:flex;
+            flex-wrap:wrap;
             align-items:center;
+            min-height:74px;
+            gap:8px 22px;
         }
 
         .logo-loja{
             text-decoration:none;
             display:flex;
             align-items:center;
-            grid-column:1;
-            grid-row:1;
+            flex:0 0 auto;
             width:max-content;
             max-width:100%;
         }
 
         .logo-loja img{
             display:block;
-            width:383px;
-            max-height:100px;
+            width:auto;
+            max-width:383px;
+            max-height:58px;
             height:auto;
             object-fit:contain;
             object-position:center;
@@ -66,15 +68,19 @@ body{
 
         .cabecalho-pesquisa{
             position:relative;
-            grid-column:2;
-            grid-row:1;
+            display:flex;
+            align-items:center;
+            align-self:center;
+            flex:1 1 280px;
             width:100%;
             max-width:640px;
             min-width:0;
-            justify-self:start;
+            height:40px;
+            transform:translateY(2px);
         }
 
         .cabecalho-pesquisa .input-pesquisa{
+            width:100%;
             height:40px;
             padding:0 44px 0 18px;
             background:#fff;
@@ -83,6 +89,7 @@ body{
             border-radius:18px;
             box-shadow:none;
             font-size:15px;
+            box-sizing:border-box;
         }
 
         .cabecalho-pesquisa .input-pesquisa::placeholder{
@@ -122,13 +129,11 @@ body{
             display:flex;
             justify-content:flex-end;
             align-items:center;
-            grid-column:3;
-            grid-row:1;
+            flex:0 0 auto;
+            margin-left:auto;
             gap:8px;
             min-width:0;
             width:258px;
-            flex:0 0 258px;
-            justify-self:end;
         }
 
         .acao-cabecalho{
@@ -402,29 +407,27 @@ body{
 
         @media(max-width:1100px){
             .cabecalho-loja{
-                grid-template-columns:1fr auto;
-                gap:6px 14px;
-                padding:4px 16px;
+                gap:8px 14px;
+                padding:0 16px;
+                min-height:68px;
             }
             .cabecalho-pesquisa{
-                grid-column:1 / -1;
-                grid-row:2;
+                flex:1 1 100%;
+                order:3;
                 max-width:none;
+                transform:none;
             }
             .logo-loja{
-                grid-column:1;
-                grid-row:1;
+                order:1;
             }
             .logo-loja img{
-                width:315px;
-                height:auto;
-                max-height:none;
+                max-width:315px;
+                max-height:52px;
             }
             .acoes-cabecalho{
-                grid-column:2;
-                grid-row:1;
+                order:2;
                 width:auto;
-                flex-basis:auto;
+                margin-left:auto;
             }
             .texto-acao span{ max-width:120px; }
             .texto-acao strong{ max-width:120px; }
@@ -433,36 +436,34 @@ body{
 
         @media(max-width:560px){
             .cabecalho-loja{
-                grid-template-columns:minmax(0, 1fr);
-                grid-template-rows:auto auto auto auto;
                 gap:5px;
-                padding:4px 10px;
+                padding:0 10px;
+                min-height:0;
             }
             .logo-loja{
-                grid-column:1;
-                grid-row:1;
+                order:1;
                 justify-self:center;
+                margin:0 auto;
             }
             .logo-loja img{
-                width:238px;
-                height:auto;
+                max-width:238px;
+                max-height:46px;
             }
             .acoes-cabecalho{
-                grid-column:1;
-                grid-row:2;
+                order:2;
                 display:grid;
                 grid-template-columns:repeat(3, minmax(0, 1fr));
                 gap:5px;
                 width:100%;
-                flex-basis:auto;
+                margin-left:0;
             }
             .acoes-cabecalho.com-atalhos-admin{
                 grid-template-columns:repeat(3, minmax(0, 1fr));
             }
             .cabecalho-pesquisa{
-                grid-column:1;
-                grid-row:3;
+                order:3;
                 max-width:none;
+                transform:none;
             }
             .cabecalho-pesquisa .input-pesquisa{
                 height:38px;
@@ -545,8 +546,9 @@ body{
 
 /* Cabecalho com uma segunda linha exclusiva para administracao. */
 .navegacao-admin-cabecalho{
-    grid-column:2 / -1;
-    grid-row:2;
+    flex:1 1 100%;
+    width:100%;
+    order:10;
     display:flex;
     justify-content:center;
     align-items:center;
@@ -608,15 +610,13 @@ body.pagina-estatisticas-admin > main.estatisticas-admin{
 
 @media(max-width:1100px){
     .navegacao-admin-cabecalho{
-        grid-column:1 / -1;
-        grid-row:3;
+        order:4;
     }
 }
 
 @media(max-width:560px){
     .navegacao-admin-cabecalho{
-        grid-column:1;
-        grid-row:4;
+        order:5;
         justify-content:flex-start;
         overflow-x:auto;
         padding:6px 0 1px;
@@ -638,15 +638,15 @@ body.pagina-estatisticas-admin > main.estatisticas-admin{
     }
 
     body:not([data-page="loja"]) .cabecalho-loja {
-        grid-template-rows: auto auto auto;
+        min-height: 0;
     }
 
     body:not([data-page="loja"]) .acoes-cabecalho {
-        grid-row: 2;
+        order: 2;
     }
 
     body:not([data-page="loja"]) .navegacao-admin-cabecalho {
-        grid-row: 3;
+        order: 4;
     }
 }
 
