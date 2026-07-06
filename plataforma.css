@@ -361,19 +361,21 @@ body.pagina-wallapop{
             font-size:12px;
         }
 
-        .plataforma-perfil-detetado{
-            margin:7px 0 0 !important;
-            padding:8px 10px;
-            border-left:3px solid #43c76f;
-            background:#13251a;
-            color:#9be9b3 !important;
-            font-weight:700;
+        .loaded-client-bar{
+            margin-top:8px;
+            padding:10px 12px;
+            border-radius:6px;
+            background:rgba(34, 197, 94, 0.12);
+            border:1px solid rgba(34, 197, 94, 0.25);
+            color:#9ff0b5;
+            font-size:13px;
+            font-weight:600;
         }
 
-        .plataforma-perfil-detetado.erro{
-            border-left-color:#ff4d4d;
-            background:#2a1517;
-            color:#ff9da5 !important;
+        .loaded-client-bar.erro{
+            background:rgba(239, 68, 68, 0.12);
+            border-color:rgba(239, 68, 68, 0.28);
+            color:#ffb4b4;
         }
 
         .wallapop-status{

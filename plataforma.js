@@ -141,16 +141,54 @@ function analisarLinkPerfilPlataforma(valor) {
     };
 }
 
+function atualizarBarraPerfilPlataforma(opcoes = {}) {
+    const aviso = document.getElementById('plataforma-perfil-detetado');
+    if (!aviso) return;
+
+    const erro = Boolean(opcoes.erro);
+    const fichaCarregada = Boolean(opcoes.fichaCarregada);
+    const textoPersonalizado = String(opcoes.texto || '').trim();
+    const perfil = perfilExternoDetetado;
+
+    if (!textoPersonalizado && !perfil) {
+        aviso.hidden = true;
+        aviso.textContent = '';
+        aviso.classList.remove('erro');
+        return;
+    }
+
+    aviso.hidden = false;
+    aviso.classList.toggle('erro', erro);
+
+    if (textoPersonalizado) {
+        aviso.textContent = textoPersonalizado;
+        return;
+    }
+
+    if (!perfil) {
+        aviso.hidden = true;
+        aviso.textContent = '';
+        return;
+    }
+
+    aviso.textContent = fichaCarregada
+        ? `\u2713 Ficha carregada \u00b7 ${perfil.plataforma}: ${perfil.utilizador}`
+        : `${perfil.plataforma}: ${perfil.utilizador}`;
+}
+
 function atualizarPerfilExternoPlataforma() {
     const input = document.getElementById('plataforma-link-perfil');
-    const aviso = document.getElementById('plataforma-perfil-detetado');
     const resultado = analisarLinkPerfilPlataforma(input?.value);
     perfilExternoDetetado = resultado && !resultado.erro ? resultado : null;
-    aviso.hidden = !resultado;
-    aviso.classList.toggle('erro', Boolean(resultado?.erro));
-    aviso.textContent = resultado?.erro || (resultado
-        ? `${resultado.plataforma}: ${resultado.utilizador}`
-        : '');
+
+    if (resultado?.erro) {
+        atualizarBarraPerfilPlataforma({ erro: true, texto: resultado.erro });
+    } else if (resultado) {
+        atualizarBarraPerfilPlataforma({ fichaCarregada: false });
+    } else {
+        atualizarBarraPerfilPlataforma({});
+    }
+
     if (!perfilExternoDetetado) return;
     fichaClientePlataformaAtual = null;
 
@@ -329,6 +367,7 @@ function renderizarFichaClientePlataforma(dados) {
     if (!dados?.sucesso) {
         fichaClientePlataformaAtual = null;
         caixa.hidden = true;
+        atualizarBarraPerfilPlataforma({ fichaCarregada: false });
         return;
     }
     fichaClientePlataformaAtual = dados;
@@ -348,6 +387,7 @@ function renderizarFichaClientePlataforma(dados) {
 
     caixa.appendChild(linha);
     caixa.hidden = false;
+    atualizarBarraPerfilPlataforma({ fichaCarregada: true });
 }
 
 async function carregarFichaClientePlataforma(encomendaId) {
@@ -368,7 +408,7 @@ async function carregarFichaClientePorPerfilPlataforma() {
         limparDadosClientePlataforma();
         return null;
     }
-    definirStatusWallapop('A procurar ficha do cliente...');
+    definirStatusWallapop('');
     const { data, error } = await wallapopClient.rpc('obter_ficha_cliente_por_perfil_admin', {
         p_url_perfil: linkPerfil
     });
@@ -376,14 +416,15 @@ async function carregarFichaClientePorPerfilPlataforma() {
         fichaClientePlataformaAtual = null;
         renderizarFichaClientePlataforma(null);
         limparDadosClientePlataforma();
-        definirStatusWallapop(
-            `Perfil reconhecido (${perfilExternoDetetado.plataforma}: ${perfilExternoDetetado.utilizador}), mas sem ficha de cliente. Crie/edite a ficha na página Clientes.`,
-            true
-        );
+        atualizarBarraPerfilPlataforma({
+            erro: true,
+            texto: `Perfil reconhecido (${perfilExternoDetetado.plataforma}: ${perfilExternoDetetado.utilizador}), mas sem ficha de cliente. Crie/edite a ficha na p\u00e1gina Clientes.`
+        });
+        definirStatusWallapop('');
         return null;
     }
     preencherClientePlataformaComFicha(data);
-    definirStatusWallapop('Ficha do cliente carregada.');
+    definirStatusWallapop('');
     return data;
 }
 
