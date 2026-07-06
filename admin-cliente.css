@@ -168,30 +168,24 @@
 
         .admin-cliente-campo strong{ color:#aaa; font-size:12px; }
         .admin-cliente-campo span{ overflow-wrap:anywhere; }
-        .clientes-aviso-badge{
+        .clientes-ficha-aviso-topo{
             display:inline-flex;
             align-items:center;
-            gap:6px;
+            gap:8px;
             margin-left:10px;
-            padding:0;
-            border:0;
-            border-radius:0;
-            background:transparent;
-            color:#ffc107;
-            font-size:12px;
-            font-weight:800;
             vertical-align:middle;
-            box-shadow:none;
         }
 
-        .clientes-aviso-badge svg{
-            display:block;
-            width:22px;
-            height:22px;
-            flex:0 0 auto;
-            border-radius:50%;
-            overflow:hidden;
-            box-shadow:0 1px 3px rgba(0,0,0,0.22);
+        .clientes-ficha-aviso-texto{
+            color:#f4c542;
+            font-size:12px;
+            font-weight:700;
+            line-height:1.2;
+        }
+
+        .clientes-ficha-topo h2 .clientes-ficha-alerta{
+            width:28px;
+            height:24px;
         }
         .admin-cliente-perfis{ display:flex; flex-wrap:wrap; gap:8px; }
 
