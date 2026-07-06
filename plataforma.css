@@ -111,15 +111,19 @@ body.pagina-wallapop{
 
         .wallapop-resultados{
             max-height:250px;
-            margin:10px 0 18px;
+            margin:8px 0 0;
             overflow:auto;
             display:flex;
             flex-direction:column;
             gap:6px;
         }
 
+        .wallapop-resultados:empty{
+            margin:0;
+        }
+
         .plataforma-importar-lista{
-            margin:0 0 22px;
+            margin:8px 0 22px;
             padding:12px;
             border:1px solid #3a3a3a;
             border-radius:6px;

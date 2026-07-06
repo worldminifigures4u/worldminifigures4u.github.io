@@ -1039,10 +1039,6 @@ function renderizarResultadosWallapop() {
     contentor.replaceChildren();
 
     if (!termo) {
-        const ajuda = document.createElement('p');
-        ajuda.className = 'wallapop-status';
-        ajuda.textContent = 'Pesquise para adicionar produtos.';
-        contentor.appendChild(ajuda);
         return;
     }
 
