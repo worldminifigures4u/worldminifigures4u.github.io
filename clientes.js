@@ -248,14 +248,16 @@ async function abrirCliente(clienteId) {
 }
 
 function criarSecaoResumoCliente(resumo = {}) {
-    const secao = criarElementoCliente("section", "admin-cliente-secao");
+    const secao = criarElementoCliente("section", "admin-cliente-secao clientes-resumo-secao");
     secao.appendChild(criarElementoCliente("h3", "", "Resumo"));
-    const grelha = criarElementoCliente("div", "admin-cliente-grelha");
-    grelha.append(
-        criarCampoCliente("Encomendas", String(resumo.encomendas || 0)),
-        criarCampoCliente("Total comprado", formatarEuroCliente(resumo.total)),
-        criarCampoCliente("Última compra", formatarDataCliente(resumo.ultima_compra))
-    );
+    const grelha = criarElementoCliente("div", "clientes-resumo-grelha");
+    const encomendas = criarCampoCliente("Encomendas", String(resumo.encomendas || 0));
+    encomendas.classList.add("clientes-resumo-encomendas");
+    const total = criarCampoCliente("Total comprado", formatarEuroCliente(resumo.total));
+    total.classList.add("clientes-resumo-total");
+    const ultima = criarCampoCliente("\u00daltima compra", formatarDataCliente(resumo.ultima_compra));
+    ultima.classList.add("clientes-resumo-ultima");
+    grelha.append(encomendas, total, ultima);
     secao.appendChild(grelha);
     return secao;
 }
@@ -497,8 +499,8 @@ function renderizarFichaCliente(dados) {
 
     ficha.append(
         topo,
-        montarVistaConsultaCliente(dados),
         criarSecaoResumoCliente(resumo),
+        montarVistaConsultaCliente(dados),
         criarSecaoHistoricoCliente(historico)
     );
 }
