@@ -87,6 +87,33 @@ function criarCheckboxCliente(rotulo, nome, marcado = false) {
     return campo;
 }
 
+function criarIconeFichaCliente() {
+    const aviso = document.createElement("span");
+    aviso.className = "clientes-ficha-alerta";
+    aviso.title = "Ler ficha do cliente antes de preparar a proxima encomenda";
+    aviso.setAttribute("aria-label", "Ler ficha do cliente antes de preparar a proxima encomenda");
+
+    const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    svg.classList.add("clientes-ficha-icone");
+    svg.setAttribute("viewBox", "0 0 24 24");
+    svg.setAttribute("aria-hidden", "true");
+    svg.setAttribute("focusable", "false");
+
+    [
+        "M9 3h6a2 2 0 0 1 2 2h1a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h1a2 2 0 0 1 2-2Z",
+        "M9 5h6v2H9V5Z",
+        "M8 11h8",
+        "M8 15h8"
+    ].forEach(d => {
+        const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+        path.setAttribute("d", d);
+        svg.appendChild(path);
+    });
+
+    aviso.appendChild(svg);
+    return aviso;
+}
+
 function criarIconeAvisoCliente(classe = "clientes-lista-aviso") {
     const aviso = document.createElement("span");
     aviso.className = classe;
@@ -176,25 +203,16 @@ function renderizarClientesLista() {
 
     clientesLista.forEach(item => {
         const cliente = item.cliente || {};
-        const resumo = item.resumo || {};
-        const perfis = Array.isArray(item.perfis) ? item.perfis : [];
         const botao = criarElementoCliente("button", "clientes-lista-item", "");
         botao.type = "button";
+        botao.title = "Abrir ficha do cliente";
         botao.classList.toggle("ativo", String(cliente.id) === String(clienteAbertoId));
         botao.addEventListener("click", () => abrirCliente(cliente.id));
 
-        const linhaNome = criarElementoCliente("div", "clientes-lista-linha-nome");
+        botao.appendChild(criarElementoCliente("span", "clientes-lista-nome", cliente.nome || "Cliente sem nome"));
         if (cliente.tem_aviso) {
-            linhaNome.appendChild(criarIconeAvisoCliente());
+            botao.appendChild(criarIconeFichaCliente());
         }
-        linhaNome.appendChild(criarElementoCliente("strong", "", cliente.nome || "Cliente sem nome"));
-        const detalhes = criarElementoCliente("span", "", [
-            cliente.telefone,
-            cliente.cidade,
-            `${Number(resumo.encomendas || 0)} encomenda(s)`
-        ].filter(Boolean).join(" | "));
-        const links = criarElementoCliente("small", "", perfis.map(perfil => `${perfil.plataforma}: ${perfil.utilizador}`).join(" | "));
-        botao.append(linhaNome, detalhes, links);
         caixa.appendChild(botao);
     });
 }
