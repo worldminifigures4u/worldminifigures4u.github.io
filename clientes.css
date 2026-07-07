@@ -131,7 +131,36 @@
     display:flex;
     gap:10px;
     justify-content:flex-end;
+    align-items:center;
     flex-wrap:wrap;
+}
+
+.clientes-ficha-acoes .admin-cliente-campo-tem_aviso{
+    display:flex;
+    flex-direction:row;
+    align-items:center;
+    gap:9px;
+    margin-right:4px;
+    color:#ffc107;
+}
+
+.clientes-ficha-acoes .admin-cliente-formulario-checkbox input[type="checkbox"]{
+    width:18px;
+    min-width:18px;
+    height:18px;
+    flex:0 0 18px;
+    margin:0;
+    padding:0;
+    accent-color:#ffc107;
+    cursor:pointer;
+}
+
+.clientes-ficha-acoes .admin-cliente-formulario-checkbox span{
+    color:#ffc107;
+    font-size:13px;
+    font-weight:700;
+    line-height:1.2;
+    white-space:nowrap;
 }
 
 .clientes-resumo-secao{

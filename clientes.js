@@ -317,11 +317,12 @@ function criarCodigoHistoricoCliente(item, indice, historico) {
 }
 
 function montarFormularioCliente(dados, opcoes = {}) {
-    const { novoCliente = false, mostrarCancelar = false } = opcoes;
+    const { novoCliente = false, mostrarCancelar = false, acoesNoTopo = false } = opcoes;
     const cliente = dados.cliente || {};
     const perfis = Array.isArray(dados.perfis) ? dados.perfis : [];
     const formulario = document.createElement("form");
     formulario.className = "admin-cliente-formulario clientes-formulario";
+    formulario.id = `clientes-formulario-${cliente.id || "novo"}`;
 
     formulario.append(
         criarInputCliente("Nome", "nome", cliente.nome, "text", true),
@@ -345,22 +346,40 @@ function montarFormularioCliente(dados, opcoes = {}) {
 
     formulario.appendChild(criarTextareaCliente("Notas internas", "notas", cliente.notas));
 
-    const rodapeFormulario = criarElementoCliente("div", "clientes-formulario-rodape");
+    let checkboxAviso = null;
     if (!novoCliente) {
-        rodapeFormulario.appendChild(criarCheckboxCliente("Cliente com aviso a ler", "tem_aviso", cliente.tem_aviso));
+        checkboxAviso = criarCheckboxCliente("Cliente com aviso a ler", "tem_aviso", cliente.tem_aviso);
     }
-    const acoes = criarElementoCliente("div", "admin-cliente-formulario-acoes");
+
     let cancelar = null;
     if (mostrarCancelar) {
         cancelar = criarElementoCliente("button", "wallapop-botao", "Cancelar");
         cancelar.type = "button";
-        acoes.appendChild(cancelar);
     }
+
     const guardar = criarElementoCliente("button", "wallapop-botao wallapop-botao-destaque", novoCliente ? "Gravar" : "Guardar ficha");
     guardar.type = "submit";
-    acoes.appendChild(guardar);
-    rodapeFormulario.appendChild(acoes);
-    formulario.appendChild(rodapeFormulario);
+
+    if (acoesNoTopo) {
+        if (checkboxAviso) {
+            checkboxAviso.querySelector("input")?.setAttribute("form", formulario.id);
+        }
+        guardar.setAttribute("form", formulario.id);
+    }
+
+    if (!acoesNoTopo) {
+        const rodapeFormulario = criarElementoCliente("div", "clientes-formulario-rodape");
+        if (checkboxAviso) {
+            rodapeFormulario.appendChild(checkboxAviso);
+        }
+        const acoes = criarElementoCliente("div", "admin-cliente-formulario-acoes");
+        if (cancelar) {
+            acoes.appendChild(cancelar);
+        }
+        acoes.appendChild(guardar);
+        rodapeFormulario.appendChild(acoes);
+        formulario.appendChild(rodapeFormulario);
+    }
 
     if (cancelar) {
         cancelar.addEventListener("click", () => {
@@ -440,7 +459,7 @@ function montarFormularioCliente(dados, opcoes = {}) {
         await abrirCliente(clienteId);
     });
 
-    return formulario;
+    return { formulario, checkboxAviso, cancelar, guardar };
 }
 
 function renderizarFormularioCliente(dados, modo = "novo") {
@@ -452,7 +471,7 @@ function renderizarFormularioCliente(dados, modo = "novo") {
     const ficha = document.getElementById("clientes-ficha");
     clienteAbertoId = "";
     renderizarClientesLista();
-    ficha.replaceChildren(montarFormularioCliente(dados, { novoCliente: true, mostrarCancelar: true }));
+    ficha.replaceChildren(montarFormularioCliente(dados, { novoCliente: true, mostrarCancelar: true }).formulario);
 }
 
 function renderizarEdicaoCliente(dados) {
@@ -468,10 +487,14 @@ function renderizarEdicaoCliente(dados) {
     const cancelar = criarElementoCliente("button", "wallapop-botao", "Cancelar");
     cancelar.type = "button";
     cancelar.addEventListener("click", () => renderizarFichaCliente(dados));
-    acoesTopo.appendChild(cancelar);
+    const { formulario, checkboxAviso, guardar } = montarFormularioCliente(dados, { acoesNoTopo: true });
+    if (checkboxAviso) {
+        acoesTopo.appendChild(checkboxAviso);
+    }
+    acoesTopo.append(cancelar, guardar);
     topo.appendChild(acoesTopo);
 
-    ficha.append(topo, montarFormularioCliente(dados, { mostrarCancelar: false }));
+    ficha.append(topo, formulario);
 }
 
 function criarClienteNovo() {
