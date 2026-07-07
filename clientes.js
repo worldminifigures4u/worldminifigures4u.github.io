@@ -286,10 +286,10 @@ function criarSecaoHistoricoCliente(historico = []) {
     const historicoSecao = criarElementoCliente("section", "admin-cliente-secao");
     historicoSecao.appendChild(criarElementoCliente("h3", "", "Histórico de encomendas"));
     const listaHistorico = criarElementoCliente("div", "admin-cliente-historico");
-    historico.forEach(item => {
+    historico.forEach((item, indice) => {
         const linha = criarElementoCliente("div", "admin-cliente-historico-linha");
         linha.append(
-            criarCodigoHistoricoCliente(item),
+            criarCodigoHistoricoCliente(item, indice, historico),
             criarElementoCliente("span", "", item.origem || "Site"),
             criarElementoCliente("span", "", item.estado || ""),
             criarElementoCliente("span", "", formatarDataCliente(item.data)),
@@ -304,22 +304,16 @@ function criarSecaoHistoricoCliente(historico = []) {
     return historicoSecao;
 }
 
-function obterUrlEncomendaCliente(item) {
-    const codigo = String(item.codigo || item.codigo_encomenda || "").trim();
-    if (!codigo) return "";
-    return `encomendas.html?encomenda=${encodeURIComponent(codigo)}`;
-}
-
-function criarCodigoHistoricoCliente(item) {
+function criarCodigoHistoricoCliente(item, indice, historico) {
     const codigo = item.codigo || item.codigo_encomenda || `#${item.id}`;
-    const url = obterUrlEncomendaCliente(item);
-    if (!url) return criarElementoCliente("strong", "", codigo);
-    const link = document.createElement("a");
-    link.className = "clientes-historico-codigo";
-    link.href = url;
-    link.textContent = codigo;
-    link.title = "Abrir encomenda para consulta e edição";
-    return link;
+    if (!item.id) return criarElementoCliente("strong", "", codigo);
+    const botao = document.createElement("button");
+    botao.type = "button";
+    botao.className = "clientes-historico-codigo";
+    botao.textContent = codigo;
+    botao.title = "Consultar encomenda (janela rápida)";
+    botao.addEventListener("click", () => abrirModalEncomendaCliente(historico, indice));
+    return botao;
 }
 
 function montarFormularioCliente(dados, opcoes = {}) {
@@ -570,6 +564,7 @@ async function iniciarClientesAdmin() {
         mostrarNavegacaoAdminValidada();
         bloqueio.hidden = true;
         document.getElementById("clientes-aplicacao").hidden = false;
+        configurarModalEncomendaCliente();
         await pesquisarClientes();
     } catch (error) {
         console.error(error);

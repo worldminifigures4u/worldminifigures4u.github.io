@@ -22,17 +22,13 @@ const ESTADOS_ENCOMENDA = [
 
 let encomendasClient = null;
 let encomendasAdmin = [];
-let imagensProdutosEncomendas = new Map();
-let imagensProdutosEncomendasPorSku = new Map();
-let referenciasProdutosEncomendas = new Map();
-let referenciasProdutosEncomendasPorSku = new Map();
 
 const ENCOMENDAS_SEM_IMAGEM = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(
     '<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120"><rect width="100%" height="100%" fill="#222"/><text x="50%" y="50%" text-anchor="middle" dominant-baseline="middle" fill="#888" font-family="Arial" font-size="13">Sem foto</text></svg>'
 );
 
 function normalizarEncomenda(valor) {
-    return String(valor || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+    return AdminEncomendaVista.normalizar(valor);
 }
 
 function obterClassePlataformaEncomenda(origem) {
@@ -52,23 +48,15 @@ function obterUrlExternoSeguroEncomenda(valor) {
 }
 
 function formatarEuroEncomenda(valor) {
-    return Number(valor || 0).toFixed(2).replace('.', ',') + ' €';
+    return AdminEncomendaVista.formatarEuro(valor);
 }
 
 function formatarDataEncomenda(valor) {
-    if (!valor) return 'Data indisponível';
-    const data = new Date(valor);
-    if (Number.isNaN(data.getTime())) return String(valor);
-    return new Intl.DateTimeFormat('pt-PT', {
-        day: '2-digit', month: '2-digit', year: 'numeric',
-        hour: '2-digit', minute: '2-digit'
-    }).format(data).replace(',', '');
+    return AdminEncomendaVista.formatarData(valor);
 }
 
 function estadoNormalizadoEncomenda(estado) {
-    return String(estado || '').toLowerCase() === 'pendente'
-        ? 'A aguardar pagamento'
-        : (estado || 'A aguardar pagamento');
+    return AdminEncomendaVista.estadoNormalizado(estado);
 }
 
 function definirStatusEncomendas(texto, erro = false) {
@@ -78,73 +66,6 @@ function definirStatusEncomendas(texto, erro = false) {
     status.classList.toggle('msg-sucesso', Boolean(texto) && !erro);
 }
 
-function detalheErroEncomendas(error) {
-    if (!error) return 'sem detalhe';
-    const partes = [
-        error.message,
-        error.details,
-        error.hint,
-        error.code ? `código ${error.code}` : '',
-        error.status ? `estado HTTP ${error.status}` : ''
-    ].filter(Boolean);
-    return partes.join(' | ') || String(error);
-}
-
-async function atualizarEstadoDiretoEncomendaAdmin(encomenda, estado, dataPagamentoIso = null) {
-    const atualizacao = { estado };
-    if (dataPagamentoIso) atualizacao.created_at = dataPagamentoIso;
-
-    const { data, error } = await encomendasClient
-        .from('encomendas')
-        .update(atualizacao)
-        .eq('id', String(encomenda.id))
-        .select('id, estado, created_at')
-        .single();
-    if (error) throw error;
-    return data;
-}
-
-function deveAtualizarDataPagamentoEncomenda(estadoAnterior, estadoNovo) {
-    return estadoNormalizadoEncomenda(estadoNovo) === 'Pago'
-        && estadoNormalizadoEncomenda(estadoAnterior) !== 'Pago';
-}
-
-async function atualizarDataPagamentoEncomendaAdmin(encomenda, dataPagamentoIso) {
-    const { data, error } = await encomendasClient
-        .from('encomendas')
-        .update({ created_at: dataPagamentoIso })
-        .eq('id', String(encomenda.id))
-        .select('id, created_at')
-        .single();
-    if (error) throw error;
-    return data;
-}
-
-async function atualizarPrioridadeEncomendaAdmin(encomenda, prioritaria, checkbox) {
-    checkbox.disabled = true;
-    definirStatusEncomendas('A guardar prioridade...');
-    try {
-        const { data, error } = await encomendasClient.rpc('atualizar_prioridade_encomenda_admin', {
-            p_encomenda_id: String(encomenda.id),
-            p_prioritaria: prioritaria
-        });
-        if (error || data?.sucesso === false) {
-            throw error || new Error(data?.erro || 'N\u00e3o foi poss\u00edvel guardar a prioridade.');
-        }
-        encomenda.prioritaria = prioritaria;
-        renderizarEncomendasAdmin();
-        definirStatusEncomendas(prioritaria ? 'Encomenda marcada como priorit\u00e1ria.' : 'Prioridade removida.');
-    } catch (error) {
-        checkbox.checked = !prioritaria;
-        checkbox.disabled = false;
-        definirStatusEncomendas(
-            'Erro ao guardar prioridade: ' + detalheErroEncomendas(error)
-            + '. Execute o SQL atualizado do painel de encomendas no Supabase.',
-            true
-        );
-    }
-}
-
 function criarElementoEncomenda(tag, classe, texto) {
     const elemento = document.createElement(tag);
     if (classe) elemento.className = classe;
@@ -152,501 +73,27 @@ function criarElementoEncomenda(tag, classe, texto) {
     return elemento;
 }
 
-function obterProdutosEncomenda(encomenda) {
-    let produtos = encomenda.produtos;
-    if (typeof produtos === 'string') {
-        try { produtos = JSON.parse(produtos); } catch (_) { produtos = []; }
-    }
-    return Array.isArray(produtos) ? produtos : [];
-}
-
-function obterPrimeiraImagemEncomenda(imagens) {
-    let lista = imagens;
-    if (typeof lista === 'string') {
-        try { lista = JSON.parse(lista); }
-        catch (_) { lista = lista.split(',').map(item => item.trim()).filter(Boolean); }
-    }
-    return Array.isArray(lista) ? String(lista.find(Boolean) || '') : '';
-}
-
-function otimizarMiniaturaEncomenda(url) {
-    const original = String(url || '');
-    if (!original.includes('res.cloudinary.com/') || !original.includes('/image/upload/')) return original;
-    return original.replace('/image/upload/', '/image/upload/f_auto,q_auto,w_120,h_120,c_fit/');
-}
-
-function obterImagemProdutoEncomenda(item) {
-    return imagensProdutosEncomendas.get(String(item.id_produto || item.id || ''))
-        || imagensProdutosEncomendasPorSku.get(String(item.sku || '').toUpperCase())
-        || '';
-}
-
-function obterReferenciaProdutoEncomenda(item) {
-    return item.referencia
-        || referenciasProdutosEncomendas.get(String(item.id_produto || item.id || ''))
-        || referenciasProdutosEncomendasPorSku.get(String(item.sku || '').toUpperCase())
-        || '';
-}
-
 function abrirImagemProdutoEncomenda(url, nome) {
-    if (!url) return;
-    const modal = document.getElementById('admin-imagem-modal');
-    const foto = document.getElementById('admin-imagem-modal-foto');
-    foto.src = url;
-    foto.alt = nome || 'Fotografia do produto';
-    modal.hidden = false;
-    document.body.classList.add('admin-imagem-modal-aberto');
-    document.getElementById('admin-imagem-modal-fechar').focus();
+    AdminEncomendaVista.abrirImagemProduto(url, nome);
 }
 
 function fecharImagemProdutoEncomenda() {
-    const modal = document.getElementById('admin-imagem-modal');
-    const foto = document.getElementById('admin-imagem-modal-foto');
-    modal.hidden = true;
-    foto.removeAttribute('src');
-    document.body.classList.remove('admin-imagem-modal-aberto');
+    AdminEncomendaVista.fecharImagemProduto();
 }
 
-function criarMiniaturaProdutoEncomenda(item) {
-    const url = obterImagemProdutoEncomenda(item);
-    const botao = criarElementoEncomenda('button', 'admin-encomenda-produto-foto');
-    botao.type = 'button';
-    botao.title = url ? 'Ampliar fotografia' : 'Produto sem fotografia';
-    botao.disabled = !url;
-    const imagem = document.createElement('img');
-    imagem.src = url ? otimizarMiniaturaEncomenda(url) : ENCOMENDAS_SEM_IMAGEM;
-    imagem.alt = item.nome || 'Produto';
-    imagem.loading = 'lazy';
-    imagem.onerror = () => {
-        imagem.onerror = null;
-        imagem.src = ENCOMENDAS_SEM_IMAGEM;
-        botao.disabled = true;
-    };
-    if (url) botao.addEventListener('click', () => abrirImagemProdutoEncomenda(url, item.nome));
-    botao.appendChild(imagem);
-    return botao;
-}
-
-function pastaAnexosEncomenda(encomenda) {
-    return String(encomenda.id);
-}
-
-function limparNomeAnexoEncomenda(nome) {
-    const partes = String(nome || 'anexo').split('.');
-    const extensao = partes.length > 1 ? `.${partes.pop().toLowerCase()}` : '';
-    const base = partes.join('.')
-        .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
-        .replace(/[^a-zA-Z0-9_-]+/g, '-')
-        .replace(/^-+|-+$/g, '') || 'anexo';
-    return `${base.slice(0, 100)}${extensao}`;
-}
-
-function nomeVisivelAnexoEncomenda(nome) {
-    return String(nome || '').replace(/^\d{13}-[a-z0-9]{6}-/i, '');
-}
-
-async function listarAnexosEncomenda(encomenda) {
-    const { data, error } = await encomendasClient.storage
-        .from(ENCOMENDAS_ANEXOS_BUCKET)
-        .list(pastaAnexosEncomenda(encomenda), {
-            limit: 1000,
-            sortBy: { column: 'created_at', order: 'desc' }
-        });
-    if (error) throw error;
-    return (data || []).filter(item => item.name && item.name !== '.emptyFolderPlaceholder');
-}
-
-async function abrirAnexoEncomenda(encomenda, anexo) {
-    const caminho = `${pastaAnexosEncomenda(encomenda)}/${anexo.name}`;
-    const { data, error } = await encomendasClient.storage
-        .from(ENCOMENDAS_ANEXOS_BUCKET)
-        .createSignedUrl(caminho, 300);
-    if (error) throw error;
-    window.open(data.signedUrl, '_blank', 'noopener,noreferrer');
-}
-
-async function apagarAnexosEncomenda(encomenda) {
-    const anexos = await listarAnexosEncomenda(encomenda);
-    if (!anexos.length) return 0;
-    const caminhos = anexos.map(item => `${pastaAnexosEncomenda(encomenda)}/${item.name}`);
-    const { error } = await encomendasClient.storage
-        .from(ENCOMENDAS_ANEXOS_BUCKET)
-        .remove(caminhos);
-    if (error) throw error;
-    return caminhos.length;
-}
-
-async function carregarAnexosEncomenda(encomenda, lista, status) {
-    status.textContent = 'A carregar anexos...';
-    try {
-        const anexos = await listarAnexosEncomenda(encomenda);
-        lista.replaceChildren();
-        if (!anexos.length) {
-            lista.appendChild(criarElementoEncomenda('p', 'admin-encomenda-anexos-vazio', 'Sem anexos.'));
-        } else {
-            anexos.forEach(anexo => {
-                const linha = criarElementoEncomenda('div', 'admin-encomenda-anexo');
-                const nome = criarElementoEncomenda('span', '', nomeVisivelAnexoEncomenda(anexo.name));
-                nome.title = nome.textContent;
-                const abrir = criarElementoEncomenda('button', 'wallapop-botao', 'Abrir');
-                abrir.type = 'button';
-                abrir.addEventListener('click', async () => {
-                    abrir.disabled = true;
-                    status.textContent = 'A abrir anexo...';
-                    try {
-                        await abrirAnexoEncomenda(encomenda, anexo);
-                        status.textContent = '';
-                    } catch (error) {
-                        status.textContent = 'Erro ao abrir: ' + (error.message || 'sem detalhe');
-                    } finally {
-                        abrir.disabled = false;
-                    }
-                });
-                const apagar = criarElementoEncomenda('button', 'wallapop-botao admin-encomenda-anexo-apagar', 'Eliminar');
-                apagar.type = 'button';
-                apagar.addEventListener('click', async () => {
-                    if (!window.confirm(`Eliminar o anexo "${nome.textContent}"?`)) return;
-                    apagar.disabled = true;
-                    const caminho = `${pastaAnexosEncomenda(encomenda)}/${anexo.name}`;
-                    const { error } = await encomendasClient.storage.from(ENCOMENDAS_ANEXOS_BUCKET).remove([caminho]);
-                    if (error) {
-                        status.textContent = 'Erro ao eliminar: ' + error.message;
-                        apagar.disabled = false;
-                        return;
-                    }
-                    await carregarAnexosEncomenda(encomenda, lista, status);
-                });
-                linha.append(nome, abrir, apagar);
-                lista.appendChild(linha);
-            });
+function configurarVistaEncomendasAdmin() {
+    AdminEncomendaVista.configurar({
+        client: encomendasClient,
+        hooks: {
+            definirStatus: definirStatusEncomendas,
+            renderizarLista: renderizarEncomendasAdmin,
+            renderizarModal: () => {},
+            atualizarResumo: atualizarResumoEncomendas,
+            obterLista: () => encomendasAdmin,
+            definirLista: lista => { encomendasAdmin = lista; },
+            onEncomendaApagada: () => {}
         }
-        status.textContent = '';
-    } catch (error) {
-        lista.replaceChildren();
-        status.textContent = 'Anexos indispon\u00edveis. Execute primeiro o ficheiro SQL de configura\u00e7\u00e3o.';
-        console.warn('Erro ao carregar anexos da encomenda.', error);
-    }
-}
-
-function criarGestaoEncomenda(encomenda) {
-    const painel = criarElementoEncomenda('div', 'admin-encomenda-gestao');
-
-    const notasSecao = criarElementoEncomenda('section', 'admin-encomenda-notas');
-    notasSecao.appendChild(criarElementoEncomenda('h3', '', 'Notas internas da encomenda'));
-    const notas = document.createElement('textarea');
-    notas.rows = 4;
-    notas.maxLength = 10000;
-    notas.value = encomenda.notas_internas || '';
-    notas.placeholder = 'Pormenores de prepara\u00e7\u00e3o vis\u00edveis apenas ao administrador.';
-    const guardarNotas = criarElementoEncomenda('button', 'wallapop-botao wallapop-botao-destaque', 'Guardar notas');
-    guardarNotas.type = 'button';
-    const statusNotas = criarElementoEncomenda('p', 'admin-encomenda-gestao-status');
-    guardarNotas.addEventListener('click', async () => {
-        guardarNotas.disabled = true;
-        statusNotas.textContent = 'A guardar...';
-        const { data, error } = await encomendasClient.rpc('guardar_notas_encomenda_admin', {
-            p_encomenda_id: String(encomenda.id),
-            p_notas: notas.value
-        });
-        guardarNotas.disabled = false;
-        if (error || data?.sucesso === false) {
-            statusNotas.textContent = 'Erro ao guardar: ' + (error?.message || data?.erro || 'sem detalhe');
-            return;
-        }
-        encomenda.notas_internas = notas.value;
-        statusNotas.textContent = 'Notas guardadas.';
     });
-    notasSecao.append(notas, guardarNotas, statusNotas);
-
-    const anexosSecao = criarElementoEncomenda('section', 'admin-encomenda-anexos');
-    anexosSecao.appendChild(criarElementoEncomenda('h3', '', 'Anexos'));
-    const lista = criarElementoEncomenda('div', 'admin-encomenda-anexos-lista');
-    const statusAnexos = criarElementoEncomenda('p', 'admin-encomenda-gestao-status');
-    const concluida = estadoNormalizadoEncomenda(encomenda.estado) === 'Conclu\u00eddo';
-    let avisoConcluida = null;
-    if (concluida) {
-        avisoConcluida = criarElementoEncomenda(
-            'p',
-            'admin-encomenda-anexos-aviso',
-            'Os anexos foram eliminados quando a encomenda foi conclu\u00edda.'
-        );
-        anexosSecao.appendChild(avisoConcluida);
-    } else {
-        const upload = criarElementoEncomenda('div', 'admin-encomenda-anexos-upload');
-        const input = document.createElement('input');
-        input.type = 'file';
-        input.accept = '.pdf,image/jpeg,image/png,image/webp';
-        input.multiple = true;
-        const enviar = criarElementoEncomenda('button', 'wallapop-botao wallapop-botao-destaque', 'Adicionar anexos');
-        enviar.type = 'button';
-        enviar.addEventListener('click', async () => {
-            const ficheiros = [...input.files];
-            if (!ficheiros.length) {
-                statusAnexos.textContent = 'Seleciona pelo menos um ficheiro.';
-                return;
-            }
-            const tiposInvalidos = ficheiros.filter(item => !ENCOMENDAS_ANEXO_TIPOS_PERMITIDOS.has(item.type));
-            if (tiposInvalidos.length) {
-                statusAnexos.textContent = 'Só são permitidos anexos PDF, JPEG, PNG ou WebP.';
-                return;
-            }
-            const demasiadoGrandes = ficheiros.filter(item => item.size > ENCOMENDAS_ANEXO_MAX_BYTES);
-            if (demasiadoGrandes.length) {
-                statusAnexos.textContent = 'Cada anexo pode ter no m\u00e1ximo 10 MB.';
-                return;
-            }
-            enviar.disabled = true;
-            input.disabled = true;
-            statusAnexos.textContent = 'A enviar anexos...';
-            try {
-                for (const ficheiro of ficheiros) {
-                    const aleatorio = Math.random().toString(36).slice(2, 8);
-                    const nome = `${Date.now()}-${aleatorio}-${limparNomeAnexoEncomenda(ficheiro.name)}`;
-                    const caminho = `${pastaAnexosEncomenda(encomenda)}/${nome}`;
-                    const { error } = await encomendasClient.storage
-                        .from(ENCOMENDAS_ANEXOS_BUCKET)
-                        .upload(caminho, ficheiro, { cacheControl: '3600', upsert: false });
-                    if (error) throw error;
-                }
-                input.value = '';
-                await carregarAnexosEncomenda(encomenda, lista, statusAnexos);
-                statusAnexos.textContent = `${ficheiros.length} anexo(s) guardado(s).`;
-            } catch (error) {
-                statusAnexos.textContent = 'Erro no envio: ' + (error.message || 'sem detalhe');
-            } finally {
-                enviar.disabled = false;
-                input.disabled = false;
-            }
-        });
-        upload.append(input, enviar);
-        anexosSecao.appendChild(upload);
-    }
-    anexosSecao.append(lista, statusAnexos);
-    painel.carregarAnexos = async () => {
-        if (painel.dataset.anexosCarregados === 'true') return;
-        painel.dataset.anexosCarregados = 'true';
-        if (concluida) {
-            statusAnexos.textContent = 'A verificar anexos residuais...';
-            try {
-                const eliminados = await apagarAnexosEncomenda(encomenda);
-                avisoConcluida.textContent = eliminados
-                    ? `${eliminados} anexo(s) residual(is) eliminado(s). As notas internas foram mantidas.`
-                    : 'N\u00e3o existem anexos nesta encomenda conclu\u00edda. As notas internas foram mantidas.';
-                statusAnexos.textContent = '';
-            } catch (error) {
-                painel.dataset.anexosCarregados = 'false';
-                statusAnexos.textContent = 'N\u00e3o foi poss\u00edvel verificar a elimina\u00e7\u00e3o dos anexos: ' + (error.message || 'sem detalhe');
-            }
-            return;
-        }
-        await carregarAnexosEncomenda(encomenda, lista, statusAnexos);
-    };
-    painel.append(notasSecao, anexosSecao);
-    return painel;
-}
-
-function textoProdutosEncomenda(encomenda) {
-    return obterProdutosEncomenda(encomenda).map(item => {
-        const quantidade = Number(item.quantidade || item.qtd || 1);
-        const nome = item.nome || 'Produto';
-        const referencia = obterReferenciaProdutoEncomenda(item);
-        const identificadores = [referencia ? `Ref. ${referencia}` : '', item.sku ? `SKU ${item.sku}` : ''].filter(Boolean).join(' | ');
-        const sufixo = identificadores ? ` (${identificadores})` : '';
-        const preco = Number(item.preco_unitario ?? item.preco ?? 0);
-        return `${quantidade}x ${nome}${sufixo} - ${formatarEuroEncomenda(preco)}`;
-    }).join('\n');
-}
-
-function textoCompletoEncomenda(encomenda) {
-    const morada = [encomenda.morada_cliente, encomenda.cp_cliente, encomenda.cidade_cliente, encomenda.pais_cliente]
-        .filter(Boolean).join(', ');
-    return [
-        `Encomenda: ${encomenda.codigo_encomenda || encomenda.id}`,
-        `Data: ${formatarDataEncomenda(encomenda.created_at)}`,
-        `Estado: ${estadoNormalizadoEncomenda(encomenda.estado)}`,
-        `Origem: ${encomenda.origem || 'Site'}`,
-        encomenda.referencia_externa ? `Referência: ${encomenda.referencia_externa}` : '',
-        '',
-        `Cliente: ${encomenda.nome_cliente || ''}`,
-        `E-mail: ${encomenda.email_cliente || ''}`,
-        `Telemóvel: ${encomenda.telefone_cliente || ''}`,
-        `Morada: ${morada}`,
-        '',
-        `Envio: ${encomenda.metodo_envio_nome || encomenda.metodo_envio || ''}`,
-        `Portes: ${formatarEuroEncomenda(encomenda.portes)}`,
-        `Pagamento: ${encomenda.metodo_pagamento || ''}`,
-        '',
-        'Produtos:',
-        textoProdutosEncomenda(encomenda),
-        '',
-        `Total: ${formatarEuroEncomenda(encomenda.total)}`
-    ].join('\n');
-}
-
-async function copiarEncomendaAdmin(encomenda) {
-    try {
-        await navigator.clipboard.writeText(textoCompletoEncomenda(encomenda));
-        definirStatusEncomendas(`Encomenda ${encomenda.codigo_encomenda || ''} copiada.`);
-    } catch (_) {
-        definirStatusEncomendas('Não foi possível copiar os dados.', true);
-    }
-}
-
-async function atualizarEstadoEncomendaAdmin(encomenda, estado, select) {
-    const estadoAnterior = estadoNormalizadoEncomenda(encomenda.estado);
-    const atualizarDataPagamento = deveAtualizarDataPagamentoEncomenda(estadoAnterior, estado);
-    const dataPagamentoIso = atualizarDataPagamento ? new Date().toISOString() : null;
-    let reporStock = false;
-
-    if (estado === 'Conclu\u00eddo' && estadoAnterior !== 'Conclu\u00eddo') {
-        const confirmado = window.confirm(
-            'Ao concluir a encomenda, todos os anexos ser\u00e3o eliminados definitivamente. As notas internas ser\u00e3o mantidas. Continuar?'
-        );
-        if (!confirmado) {
-            select.value = estadoAnterior;
-            return;
-        }
-    }
-
-    if (estadoAnterior === 'Cancelado' && encomenda.stock_reposto && estado !== 'Cancelado') {
-        select.value = estadoAnterior;
-        definirStatusEncomendas('Esta encomenda foi cancelada com reposição de stock e não pode ser reaberta.', true);
-        return;
-    }
-
-    if (estado === 'Cancelado') {
-        const mensagemCancelamento = encomenda.stock_reposto
-            ? `Cancelar esta encomenda ${encomenda.codigo_encomenda || ''}? O stock já foi reposto anteriormente.`
-            : `Cancelar esta encomenda ${encomenda.codigo_encomenda || ''} e repor automaticamente o stock dos produtos?`;
-        if (!window.confirm(mensagemCancelamento)) {
-            select.value = estadoAnterior;
-            return;
-        }
-        reporStock = !encomenda.stock_reposto;
-    }
-
-    select.disabled = true;
-    definirStatusEncomendas('A atualizar o estado...');
-    try {
-        let data = null;
-        let error = null;
-
-        if (estado === 'Cancelado') {
-            ({ data, error } = await encomendasClient.rpc('cancelar_encomenda_plataforma_admin', {
-                p_encomenda_id: String(encomenda.id),
-                p_repor_stock: reporStock
-            }));
-        } else {
-            let respostaRpc;
-            try {
-                respostaRpc = await encomendasClient.rpc('atualizar_estado_encomenda_admin', {
-                    p_encomenda_id: String(encomenda.id),
-                    p_estado: estado
-                });
-            } catch (erroRede) {
-                respostaRpc = { data: null, error: erroRede };
-            }
-            data = respostaRpc.data;
-            error = respostaRpc.error;
-
-            if (error) {
-                try {
-                    const dataAtualizada = await atualizarEstadoDiretoEncomendaAdmin(encomenda, estado, dataPagamentoIso);
-                    data = { sucesso: true, estado, created_at: dataAtualizada?.created_at || dataPagamentoIso };
-                    error = null;
-                    console.warn('Estado atualizado por fallback direto depois de falha na RPC.', respostaRpc.error);
-                } catch (erroFallback) {
-                    throw new Error(
-                        `RPC: ${detalheErroEncomendas(respostaRpc.error)}. Atualização direta: ${detalheErroEncomendas(erroFallback)}`
-                    );
-                }
-            } else if (dataPagamentoIso) {
-                const dataAtualizada = await atualizarDataPagamentoEncomendaAdmin(encomenda, dataPagamentoIso);
-                data = { ...(data || {}), created_at: dataAtualizada?.created_at || dataPagamentoIso };
-            }
-        }
-        if (error) throw error;
-        if (data?.sucesso === false) throw new Error(data.erro || 'Não foi possível atualizar.');
-        encomenda.estado = estado;
-        if (data?.created_at) encomenda.created_at = data.created_at;
-        else if (dataPagamentoIso) encomenda.created_at = dataPagamentoIso;
-        if (data?.stock_reposto) encomenda.stock_reposto = true;
-        let anexosEliminados = 0;
-        let erroAnexos = null;
-        if (estado === 'Conclu\u00eddo') {
-            try {
-                anexosEliminados = await apagarAnexosEncomenda(encomenda);
-            } catch (erroLimpezaAnexos) {
-                erroAnexos = erroLimpezaAnexos;
-                console.error('Erro ao eliminar anexos da encomenda concluida.', erroLimpezaAnexos);
-            }
-        }
-        select.dataset.estadoAtual = estado;
-        atualizarResumoEncomendas();
-        renderizarEncomendasAdmin();
-        if (erroAnexos) {
-            definirStatusEncomendas(
-                `Estado atualizado, mas n\u00e3o foi poss\u00edvel eliminar os anexos: ${erroAnexos.message || 'erro desconhecido'}`,
-                true
-            );
-        } else {
-            const limpeza = estado === 'Conclu\u00eddo'
-                ? ` ${anexosEliminados} anexo(s) eliminado(s).`
-                : '';
-            const reposicao = estado === 'Cancelado' && data?.stock_reposto
-                ? ' Stock reposto.'
-                : '';
-            definirStatusEncomendas(`Estado da encomenda ${encomenda.codigo_encomenda || ''} atualizado.${limpeza}${reposicao}`);
-        }
-    } catch (error) {
-        select.value = estadoAnterior;
-        definirStatusEncomendas('Erro ao atualizar estado: ' + detalheErroEncomendas(error), true);
-    } finally {
-        select.disabled = false;
-    }
-}
-
-async function apagarEncomendaAdmin(encomenda, botao) {
-    const codigo = encomenda.codigo_encomenda || `#${encomenda.id}`;
-    const avisoStock = estadoNormalizadoEncomenda(encomenda.estado) !== 'Cancelado'
-        ? '\n\nAtenção: isto não repõe stock. Para repor stock, cancele primeiro a encomenda.'
-        : '';
-    if (!window.confirm(`Apagar definitivamente a encomenda ${codigo}?${avisoStock}`)) return;
-    if (!window.confirm('Confirmar eliminação definitiva? Esta ação não pode ser desfeita.')) return;
-
-    botao.disabled = true;
-    definirStatusEncomendas('A apagar encomenda...');
-    try {
-        try {
-            await apagarAnexosEncomenda(encomenda);
-        } catch (erroAnexos) {
-            console.warn('Nao foi possivel eliminar anexos antes de apagar a encomenda.', erroAnexos);
-        }
-
-        const { data, error } = await encomendasClient.rpc('apagar_encomenda_admin', {
-            p_encomenda_id: String(encomenda.id)
-        });
-        if (error || data?.sucesso === false) {
-            throw error || new Error(data?.erro || 'Erro ao apagar encomenda');
-        }
-
-        encomendasAdmin = encomendasAdmin.filter(item => String(item.id) !== String(encomenda.id));
-        atualizarResumoEncomendas();
-        renderizarEncomendasAdmin();
-        definirStatusEncomendas(`Encomenda ${codigo} apagada.`);
-    } catch (error) {
-        botao.disabled = false;
-        definirStatusEncomendas('Erro ao apagar encomenda: ' + detalheErroEncomendas(error), true);
-    }
-}
-
-function criarLinhaDetalhe(rotulo, valor) {
-    const linha = criarElementoEncomenda('div', 'admin-encomenda-detalhe-linha');
-    linha.append(
-        criarElementoEncomenda('strong', '', rotulo),
-        criarElementoEncomenda('span', '', valor || '—')
-    );
-    return linha;
 }
 
 function definirStatusFichaCliente(texto, erro = false) {
@@ -898,145 +345,9 @@ async function abrirFichaClienteAdmin(encomenda) {
 }
 
 function criarCardEncomenda(encomenda) {
-    const card = criarElementoEncomenda(
-        'article',
-        `admin-encomenda-card${encomenda.prioritaria ? ' prioritaria' : ''}`
-    );
-    const cabecalho = criarElementoEncomenda('div', 'admin-encomenda-cabecalho');
-    cabecalho.tabIndex = 0;
-    cabecalho.setAttribute('role', 'button');
-
-    const linha = criarElementoEncomenda('div', 'admin-encomenda-linha');
-    linha.append(
-        criarElementoEncomenda('strong', 'admin-encomenda-codigo', encomenda.codigo_encomenda || `#${encomenda.id}`),
-        criarElementoEncomenda('span', 'admin-encomenda-data', formatarDataEncomenda(encomenda.created_at)),
-        criarElementoEncomenda('span', `admin-encomenda-origem${obterClassePlataformaEncomenda(encomenda.origem)}`, encomenda.origem || 'Site')
-    );
-
-    const abrirCliente = criarElementoEncomenda('button', 'admin-encomenda-cliente-link', encomenda.nome_cliente || 'Cliente sem nome');
-    abrirCliente.type = 'button';
-    abrirCliente.title = 'Abrir ficha do cliente';
-    abrirCliente.addEventListener('click', evento => {
-        evento.stopPropagation();
-        abrirFichaClienteAdmin(encomenda);
+    return AdminEncomendaVista.criarCardEncomenda(encomenda, {
+        abrirCliente: abrirFichaClienteAdmin
     });
-    abrirCliente.addEventListener('keydown', evento => evento.stopPropagation());
-    linha.appendChild(abrirCliente);
-
-    linha.append(
-        criarElementoEncomenda('strong', 'admin-encomenda-valor-linha', formatarEuroEncomenda(encomenda.total)),
-        criarElementoEncomenda('span', `estado-encomenda estado-${normalizarEncomenda(estadoNormalizadoEncomenda(encomenda.estado)).replace(/\s+/g, '-')}`, estadoNormalizadoEncomenda(encomenda.estado))
-    );
-
-    if (estadoNormalizadoEncomenda(encomenda.estado) === 'Pago') {
-        const prioridade = criarElementoEncomenda('label', 'admin-encomenda-prioridade');
-        const checkbox = document.createElement('input');
-        checkbox.type = 'checkbox';
-        checkbox.checked = Boolean(encomenda.prioritaria);
-        checkbox.addEventListener('click', evento => evento.stopPropagation());
-        checkbox.addEventListener('keydown', evento => evento.stopPropagation());
-        checkbox.addEventListener('change', () => {
-            atualizarPrioridadeEncomendaAdmin(encomenda, checkbox.checked, checkbox);
-        });
-        prioridade.addEventListener('click', evento => evento.stopPropagation());
-        prioridade.append(checkbox, criarElementoEncomenda('span', '', 'Priorit\u00e1ria'));
-        linha.appendChild(prioridade);
-    } else {
-        linha.appendChild(criarElementoEncomenda('span', 'admin-encomenda-prioridade-vazia', ''));
-    }
-
-    cabecalho.append(linha, criarElementoEncomenda('span', 'admin-encomenda-seta', '▾'));
-
-    const detalhes = criarElementoEncomenda('div', 'admin-encomenda-detalhes');
-    detalhes.hidden = true;
-    let gestaoEncomenda = null;
-    const alternarDetalhes = () => {
-        detalhes.hidden = !detalhes.hidden;
-        card.classList.toggle('aberta', !detalhes.hidden);
-        if (!detalhes.hidden) gestaoEncomenda?.carregarAnexos?.();
-    };
-    cabecalho.addEventListener('click', alternarDetalhes);
-    cabecalho.addEventListener('keydown', evento => {
-        if (evento.key !== 'Enter' && evento.key !== ' ') return;
-        evento.preventDefault();
-        alternarDetalhes();
-    });
-
-    const dados = criarElementoEncomenda('div', 'admin-encomenda-dados');
-    const morada = [encomenda.morada_cliente, encomenda.cp_cliente, encomenda.cidade_cliente, encomenda.pais_cliente]
-        .filter(Boolean).join(', ');
-    dados.append(
-        criarLinhaDetalhe('Nome', encomenda.nome_cliente),
-        criarLinhaDetalhe('E-mail', encomenda.email_cliente),
-        criarLinhaDetalhe('Telemóvel', encomenda.telefone_cliente),
-        criarLinhaDetalhe('Morada', morada),
-        criarLinhaDetalhe('Envio', encomenda.metodo_envio_nome || encomenda.metodo_envio),
-        criarLinhaDetalhe('Portes', formatarEuroEncomenda(encomenda.portes)),
-        criarLinhaDetalhe('Pagamento', encomenda.metodo_pagamento)
-    );
-    if (encomenda.referencia_externa) {
-        dados.appendChild(criarLinhaDetalhe('Referência externa', encomenda.referencia_externa));
-    }
-    if (encomenda.stock_reposto) {
-        dados.appendChild(criarLinhaDetalhe('Stock', 'Reposto após cancelamento'));
-    }
-
-    const produtos = criarElementoEncomenda('div', 'admin-encomenda-produtos');
-    produtos.appendChild(criarElementoEncomenda('h3', '', 'Produtos'));
-    const lista = criarElementoEncomenda('div', 'admin-encomenda-produtos-lista');
-    obterProdutosEncomenda(encomenda).forEach(item => {
-        const linha = criarElementoEncomenda('div', 'admin-encomenda-produto');
-        const quantidade = Number(item.quantidade || item.qtd || 1);
-        const preco = Number(item.preco_unitario ?? item.preco ?? 0);
-        linha.append(
-            criarElementoEncomenda('span', 'admin-encomenda-produto-quantidade', `${quantidade}x`),
-            criarElementoEncomenda('strong', 'admin-encomenda-produto-nome', item.nome || 'Produto'),
-            criarMiniaturaProdutoEncomenda(item),
-            criarElementoEncomenda('span', 'admin-encomenda-produto-referencia', `Ref. ${obterReferenciaProdutoEncomenda(item) || '—'}`),
-            criarElementoEncomenda('span', 'admin-encomenda-produto-sku', `SKU ${item.sku || '—'}`),
-            criarElementoEncomenda('span', 'admin-encomenda-produto-preco', formatarEuroEncomenda(preco))
-        );
-        lista.appendChild(linha);
-    });
-    produtos.append(lista, criarElementoEncomenda('p', 'admin-encomenda-total', `Total: ${formatarEuroEncomenda(encomenda.total)}`));
-
-    const acoes = criarElementoEncomenda('div', 'admin-encomenda-acoes');
-    const grupoEstado = criarElementoEncomenda('label', 'admin-encomenda-estado-edicao');
-    grupoEstado.appendChild(criarElementoEncomenda('span', '', 'Estado'));
-    const select = document.createElement('select');
-    const estadoAtual = estadoNormalizadoEncomenda(encomenda.estado);
-    ESTADOS_ENCOMENDA.forEach(estado => {
-        const option = new Option(estado, estado, false, estado === estadoAtual);
-        select.add(option);
-    });
-    select.dataset.estadoAtual = estadoAtual;
-    select.addEventListener('change', () => atualizarEstadoEncomendaAdmin(encomenda, select.value, select));
-    grupoEstado.appendChild(select);
-    const copiar = criarElementoEncomenda('button', 'wallapop-botao', 'Copiar dados');
-    copiar.type = 'button';
-    copiar.addEventListener('click', () => copiarEncomendaAdmin(encomenda));
-    const botoes = criarElementoEncomenda('div', 'admin-encomenda-botoes');
-    const origem = normalizarEncomenda(encomenda.origem);
-    const plataformaExterna = ['wallapop', 'olx', 'todocoleccion'].includes(origem);
-    const podeEditar = plataformaExterna
-        && estadoNormalizadoEncomenda(encomenda.estado) !== 'Cancelado'
-        && encomenda.codigo_encomenda;
-    if (podeEditar) {
-        const editar = criarElementoEncomenda('a', 'wallapop-botao admin-encomenda-editar', 'Editar encomenda');
-        editar.href = `plataforma.html?editar=${encodeURIComponent(encomenda.codigo_encomenda)}`;
-        botoes.appendChild(editar);
-    }
-    const apagar = criarElementoEncomenda('button', 'wallapop-botao admin-encomenda-apagar', 'Apagar encomenda');
-    apagar.type = 'button';
-    apagar.addEventListener('click', () => apagarEncomendaAdmin(encomenda, apagar));
-    botoes.appendChild(copiar);
-    botoes.appendChild(apagar);
-    acoes.append(grupoEstado, botoes);
-
-    gestaoEncomenda = criarGestaoEncomenda(encomenda);
-    detalhes.append(dados, produtos, gestaoEncomenda, acoes);
-    card.append(cabecalho, detalhes);
-    return card;
 }
 
 function encomendasFiltradasAdmin() {
@@ -1135,49 +446,8 @@ async function carregarEncomendasAdmin() {
 }
 
 async function carregarImagensProdutosEncomendas() {
-    imagensProdutosEncomendas = new Map();
-    imagensProdutosEncomendasPorSku = new Map();
-    referenciasProdutosEncomendas = new Map();
-    referenciasProdutosEncomendasPorSku = new Map();
-    const ids = [...new Set(encomendasAdmin.flatMap(obterProdutosEncomenda)
-        .map(item => String(item.id_produto || item.id || ''))
-        .filter(Boolean))];
-    if (!ids.length) return;
-
-    for (let inicio = 0; inicio < ids.length; inicio += 200) {
-        const loteIds = ids.slice(inicio, inicio + 200);
-        let produtos = [];
-        const respostaAdmin = await encomendasClient.rpc('obter_imagens_produtos_encomendas_admin', {
-            p_ids: loteIds
-        });
-
-        if (!respostaAdmin.error) {
-            produtos = Array.isArray(respostaAdmin.data) ? respostaAdmin.data : [];
-        } else {
-            // Mantem o painel funcional antes de a RPC administrativa ser instalada.
-            const respostaPublica = await encomendasClient
-                .from('produtos_loja')
-                .select('id, sku, imagens')
-                .in('id', loteIds);
-            if (respostaPublica.error) {
-                console.warn('Nao foi possivel carregar fotografias das encomendas.', respostaPublica.error);
-                continue;
-            }
-            produtos = respostaPublica.data || [];
-        }
-
-        produtos.forEach(produto => {
-            const referencia = String(produto.referencia || '').trim();
-            if (referencia) {
-                referenciasProdutosEncomendas.set(String(produto.id), referencia);
-                if (produto.sku) referenciasProdutosEncomendasPorSku.set(String(produto.sku).toUpperCase(), referencia);
-            }
-            const imagem = obterPrimeiraImagemEncomenda(produto.imagens);
-            if (!imagem) return;
-            imagensProdutosEncomendas.set(String(produto.id), imagem);
-            if (produto.sku) imagensProdutosEncomendasPorSku.set(String(produto.sku).toUpperCase(), imagem);
-        });
-    }
+    AdminEncomendaVista.limparCacheImagens();
+    await AdminEncomendaVista.carregarImagensParaEncomendas(encomendasAdmin);
 }
 
 async function iniciarPainelEncomendas() {
@@ -1185,6 +455,7 @@ async function iniciarPainelEncomendas() {
     try {
         if (typeof supabase === 'undefined') throw new Error('A biblioteca Supabase não carregou.');
         encomendasClient = supabase.createClient(ENCOMENDAS_SUPABASE_URL, ENCOMENDAS_SUPABASE_KEY);
+        configurarVistaEncomendasAdmin();
         const { data: { user }, error } = await encomendasClient.auth.getUser();
         if (error || !user || !ENCOMENDAS_ADMIN_EMAILS.includes(String(user.email || '').toLowerCase())) {
             bloqueio.textContent = 'Acesso reservado ao administrador. A regressar à conta...';

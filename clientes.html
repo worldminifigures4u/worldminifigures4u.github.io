@@ -14,7 +14,9 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.108.2"></script>
     <link rel="stylesheet" href="styles.css?v=20260705-stock-disponivel">
     <link rel="stylesheet" href="admin-cliente.css?v=20260706-consulta">
-    <link rel="stylesheet" href="clientes.css?v=20260707-historico-encomenda">
+    <link rel="stylesheet" href="admin-imagem.css?v=20260628-css-split-admin-imagem">
+    <link rel="stylesheet" href="encomendas.css?v=20260707-modal-cliente">
+    <link rel="stylesheet" href="clientes.css?v=20260707-modal-encomenda">
 </head>
 <body class="pagina-clientes-admin cabecalho-com-admin pagina-com-cabecalho-site">
     <header class="cabecalho-site-admin">
@@ -74,6 +76,28 @@
         </section>
         <p class="wallapop-status" id="clientes-status" aria-live="polite"></p>
     </main>
+
+    <div class="admin-imagem-modal" id="admin-imagem-modal" hidden role="dialog" aria-modal="true" aria-label="Fotografia do produto">
+        <button type="button" class="admin-imagem-modal-fechar" id="admin-imagem-modal-fechar" aria-label="Fechar fotografia">&times;</button>
+        <img id="admin-imagem-modal-foto" alt="">
+    </div>
+
+    <div class="clientes-encomenda-modal" id="clientes-encomenda-modal" hidden role="dialog" aria-modal="true" aria-labelledby="clientes-encomenda-titulo">
+        <div class="clientes-encomenda-dialogo">
+            <div class="clientes-encomenda-topo">
+                <h2 id="clientes-encomenda-titulo">Consulta de encomenda</h2>
+                <div class="clientes-encomenda-navegacao">
+                    <button type="button" class="wallapop-botao" id="clientes-encomenda-anterior" aria-label="Encomenda anterior">&larr; Anterior</button>
+                    <span id="clientes-encomenda-contador" class="clientes-encomenda-contador"></span>
+                    <button type="button" class="wallapop-botao" id="clientes-encomenda-seguinte" aria-label="Encomenda seguinte">Seguinte &rarr;</button>
+                </div>
+                <button type="button" class="clientes-encomenda-fechar" id="clientes-encomenda-fechar" aria-label="Fechar consulta">&times;</button>
+            </div>
+            <div id="clientes-encomenda-conteudo" class="clientes-encomenda-conteudo"></div>
+            <p class="wallapop-status" id="clientes-encomenda-status" aria-live="polite"></p>
+        </div>
+    </div>
+
     <footer class="rodape-site">
         <div class="rodape-conteudo">
             <div class="rodape-frase">Figures Planet &copy; 2026 &middot; Minifiguras, colecion&aacute;veis e pe&ccedil;as especiais</div>
@@ -85,7 +109,9 @@
             </nav>
         </div>
     </footer>
-    <script src="clientes.js?v=20260707-encomendas-link"></script>
+    <script src="admin-encomenda-vista.js?v=20260707-modal"></script>
+    <script src="clientes-encomenda-modal.js?v=20260707-modal"></script>
+    <script src="clientes.js?v=20260707-modal-encomenda"></script>
 <script src="inline-listeners.js?v=20260705-pesquisa-cabecalho"></script>
 </body>
 </html>
