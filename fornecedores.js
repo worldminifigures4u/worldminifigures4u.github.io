@@ -905,6 +905,78 @@ function normalizarReferenciaListaFornecedor(valor) {
         .replace(/\s+/g, "");
 }
 
+function obterCandidatosReferenciaListaFornecedor(referencia) {
+    const texto = String(referencia || "").trim();
+    if (!texto) return [];
+    const candidatos = [texto];
+    texto.split("/").forEach(parte => {
+        const limpa = parte.trim();
+        if (limpa) candidatos.push(limpa);
+    });
+    return [...new Set(candidatos.map(normalizarReferenciaListaFornecedor).filter(Boolean))];
+}
+
+function correspondeReferenciaListaFornecedor(referenciaA, referenciaB) {
+    const candidatosA = obterCandidatosReferenciaListaFornecedor(referenciaA);
+    const candidatosB = obterCandidatosReferenciaListaFornecedor(referenciaB);
+    if (!candidatosA.length || !candidatosB.length) return false;
+    return candidatosA.some(valor => candidatosB.includes(valor));
+}
+
+function encontrarProdutoListaFinalFornecedor(referencia) {
+    for (const alvo of obterCandidatosReferenciaListaFornecedor(referencia)) {
+        const produto = fornecedorProdutos.find(item => {
+            const refProduto = normalizarReferenciaListaFornecedor(item.referencia);
+            const skuProduto = normalizarReferenciaListaFornecedor(item.sku);
+            return refProduto === alvo || skuProduto === alvo;
+        });
+        if (produto) return produto;
+    }
+    return null;
+}
+
+function criarItemFornecedorAPartirListaFinal(analisada, produto = null) {
+    const quantidade = Math.max(1, Math.floor(Number(analisada.quantidade) || 1));
+    const precoCusto = Math.max(0, Number(analisada.preco_custo) || 0);
+    if (produto) {
+        return criarItemFornecedorAPartirSelecao({
+            ...produto,
+            quantidade,
+            preco_custo: precoCusto
+        }, "lista-final");
+    }
+    return normalizarItemPedidoFornecedor({
+        id: "",
+        nome: `Ref. ${analisada.referencia}`,
+        referencia: analisada.referencia,
+        sku: "",
+        tema: "",
+        subtema: "",
+        quantidade,
+        quantidade_original: quantidade,
+        falta_os: 0,
+        estado_fornecedor: "",
+        origem_ajuste: "lista-final",
+        recebido: 0,
+        preco_custo: precoCusto,
+        preco: precoCusto,
+        sem_catalogo: true
+    });
+}
+
+function chaveProdutoListaFinalFornecedor(produto, referenciaLista) {
+    if (produto?.id) return `id:${String(produto.id)}`;
+    return `ref:${normalizarReferenciaListaFornecedor(referenciaLista)}`;
+}
+
+function localizarEntradaListaImportadaFornecedor(referenciaLinha, porReferencia) {
+    for (const [chave, entrada] of porReferencia.entries()) {
+        if (chave === normalizarReferenciaListaFornecedor(referenciaLinha)) return entrada;
+        if (correspondeReferenciaListaFornecedor(entrada.referencia, referenciaLinha)) return entrada;
+    }
+    return null;
+}
+
 function converterNumeroListaFornecedor(valor) {
     const texto = String(valor || "")
         .replace(/[€\s]/g, "")
@@ -941,33 +1013,11 @@ function analisarLinhaListaFinalFornecedor(linha, numeroLinha) {
     return { referencia, quantidade, preco_custo: precoCusto, original: linha };
 }
 
-function encontrarProdutoListaFinalFornecedor(referencia) {
-    const alvo = normalizarReferenciaListaFornecedor(referencia);
-    if (!alvo) return null;
-    return fornecedorProdutos.find(produto => {
-        const refProduto = normalizarReferenciaListaFornecedor(produto.referencia);
-        const skuProduto = normalizarReferenciaListaFornecedor(produto.sku);
-        return refProduto === alvo || skuProduto === alvo;
-    }) || null;
-}
-
-function aplicarListaFinalFornecedor() {
-    const area = document.getElementById("fornecedor-lista-final");
-    if (!area) return;
-    const textoLista = String(area.value || "");
-    if (textoLista.length > FORNECEDOR_LISTA_MAX_CARACTERES) {
-        definirStatusFornecedor(`A lista é demasiado grande. Limite: ${FORNECEDOR_LISTA_MAX_CARACTERES.toLocaleString('pt-PT')} caracteres.`, true);
-        return;
-    }
-    const linhas = textoLista.split(/\r?\n/);
-    if (linhas.filter(linha => linha.trim()).length > FORNECEDOR_LISTA_MAX_LINHAS) {
-        definirStatusFornecedor(`A lista tem demasiadas linhas. Limite: ${FORNECEDOR_LISTA_MAX_LINHAS} referências por colagem.`, true);
-        return;
-    }
-    const importados = [];
+function processarLinhasListaFinalFornecedor(texto) {
+    const linhas = String(texto || "").split(/\r?\n/);
+    const itens = [];
     const erros = [];
-    const naoEncontrados = [];
-    const porProduto = new Map();
+    const foraCatalogo = [];
 
     linhas.forEach((linha, indice) => {
         const analisada = analisarLinhaListaFinalFornecedor(linha, indice + 1);
@@ -978,31 +1028,39 @@ function aplicarListaFinalFornecedor() {
         }
 
         const produto = encontrarProdutoListaFinalFornecedor(analisada.referencia);
-        if (!produto) {
-            naoEncontrados.push(analisada.referencia);
-            return;
+        if (!produto) foraCatalogo.push(analisada.referencia);
+        const item = criarItemFornecedorAPartirListaFinal(analisada, produto);
+        if (produto) {
+            item.referencia = analisada.referencia;
+            item.nome = produto.nome || item.nome;
+            item.sku = produto.sku || item.sku || "";
+            item.tema = produto.tema || item.tema || "";
+            item.subtema = produto.subtema || item.subtema || "";
+            item.imagens = produto.imagens || item.imagens || [];
         }
-
-        const chave = String(produto.id);
-        const existente = porProduto.get(chave);
-        const quantidade = Math.max(1, Number(analisada.quantidade) || 1);
-        const precoCusto = Math.max(0, Number(analisada.preco_custo) || 0);
-        if (existente) {
-            existente.quantidade += quantidade;
-            if (precoCusto > 0) existente.preco_custo = precoCusto;
-        } else {
-            porProduto.set(chave, {
-                ...produto,
-                quantidade,
-                preco_custo: precoCusto,
-                preco: precoCusto
-            });
-        }
+        itens.push(item);
     });
 
-    porProduto.forEach(item => importados.push(item));
+    const unidades = itens.reduce((total, item) => total + Math.max(0, Number(item.quantidade || 0)), 0);
+    return { itens, erros, foraCatalogo, unidades };
+}
+
+function aplicarListaFinalFornecedor() {
+    const area = document.getElementById("fornecedor-lista-final");
+    if (!area) return;
+    const textoLista = String(area.value || "");
+    if (textoLista.length > FORNECEDOR_LISTA_MAX_CARACTERES) {
+        definirStatusFornecedor(`A lista é demasiado grande. Limite: ${FORNECEDOR_LISTA_MAX_CARACTERES.toLocaleString('pt-PT')} caracteres.`, true);
+        return;
+    }
+    if (textoLista.split(/\r?\n/).filter(linha => linha.trim()).length > FORNECEDOR_LISTA_MAX_LINHAS) {
+        definirStatusFornecedor(`A lista tem demasiadas linhas. Limite: ${FORNECEDOR_LISTA_MAX_LINHAS} referências por colagem.`, true);
+        return;
+    }
+
+    const { itens: importados, erros, foraCatalogo, unidades } = processarLinhasListaFinalFornecedor(textoLista);
     if (!importados.length) {
-        const detalhe = naoEncontrados.length ? ` Referências não encontradas: ${naoEncontrados.join(", ")}.` : "";
+        const detalhe = erros.length ? ` ${erros.join("; ")}` : "";
         definirStatusFornecedor(`Não foi possível importar produtos da lista.${detalhe}`, true);
         return;
     }
@@ -1017,9 +1075,9 @@ function aplicarListaFinalFornecedor() {
     renderizarSelecionadosFornecedor();
 
     const avisos = [];
-    if (naoEncontrados.length) avisos.push(`Não encontradas: ${naoEncontrados.join(", ")}`);
+    if (foraCatalogo.length) avisos.push(`${foraCatalogo.length} referência(s) fora do catálogo incluída(s): ${foraCatalogo.join(", ")}`);
     if (erros.length) avisos.push(erros.join("; "));
-    definirStatusFornecedor(`${importados.length} produto(s) aplicado(s) à encomenda final.${avisos.length ? " " + avisos.join(" | ") : ""}`, Boolean(avisos.length));
+    definirStatusFornecedor(`${importados.length} linha(s), ${unidades} unidade(s) aplicadas à encomenda.${avisos.length ? " " + avisos.join(" | ") : ""}`, Boolean(avisos.length));
 }
 
 function limparTextoListaFinalFornecedor() {
@@ -1141,10 +1199,9 @@ function montarLinhaEdicaoProdutoFornecedor(pedido, item, indice) {
 }
 
 function linhaEdicaoContemReferenciaFornecedor(linha, referencia) {
-    const alvo = normalizarReferenciaListaFornecedor(referencia);
-    if (!alvo) return false;
-    return normalizarReferenciaListaFornecedor(linha.dataset.referencia) === alvo
-        || normalizarReferenciaListaFornecedor(linha.dataset.sku) === alvo;
+    if (!referencia) return false;
+    return correspondeReferenciaListaFornecedor(linha.dataset.referencia, referencia)
+        || correspondeReferenciaListaFornecedor(linha.dataset.sku, referencia);
 }
 
 function aplicarListaFinalNaEdicaoFornecedor() {
@@ -1161,39 +1218,9 @@ function aplicarListaFinalNaEdicaoFornecedor() {
         }
         return;
     }
-    const linhas = texto.split(/\r?\n/);
-    if (linhas.filter(linha => linha.trim()).length > FORNECEDOR_LISTA_MAX_LINHAS) {
+    if (texto.split(/\r?\n/).filter(linha => linha.trim()).length > FORNECEDOR_LISTA_MAX_LINHAS) {
         if (status) {
             status.textContent = `A lista tem demasiadas linhas. Limite: ${FORNECEDOR_LISTA_MAX_LINHAS} referências por colagem.`;
-            status.classList.remove('status-aviso', 'status-sucesso', 'status-neutro');
-            status.classList.add('status-erro');
-        }
-        return;
-    }
-    const porReferencia = new Map();
-    const erros = [];
-
-    linhas.forEach((linha, indice) => {
-        const analisada = analisarLinhaListaFinalFornecedor(linha, indice + 1);
-        if (!analisada) return;
-        if (analisada.erro) {
-            erros.push(analisada.erro);
-            return;
-        }
-        const chave = normalizarReferenciaListaFornecedor(analisada.referencia);
-        if (!chave) return;
-        const existente = porReferencia.get(chave);
-        if (existente) {
-            existente.quantidade += analisada.quantidade;
-            if (Number(analisada.preco_custo || 0) > 0) existente.preco_custo = analisada.preco_custo;
-        } else {
-            porReferencia.set(chave, { ...analisada });
-        }
-    });
-
-    if (!porReferencia.size) {
-        if (status) {
-            status.textContent = "Cole a lista final do fornecedor antes de aplicar.";
             status.classList.remove('status-aviso', 'status-sucesso', 'status-neutro');
             status.classList.add('status-erro');
         }
@@ -1203,78 +1230,30 @@ function aplicarListaFinalNaEdicaoFornecedor() {
     const pedido = obterPedidoEdicaoFornecedor(modal);
     if (!pedido) return;
 
-    const usados = new Set();
-    let atualizados = 0;
-    let adicionados = 0;
-    let colocadosEmFalta = 0;
-    const linhasProdutos = Array.from(modal.querySelectorAll(".fornecedor-edicao-produto"));
-    linhasProdutos.forEach(linha => {
-        const referencia = normalizarReferenciaListaFornecedor(linha.dataset.referencia);
-        const sku = normalizarReferenciaListaFornecedor(linha.dataset.sku);
-        const encontrada = porReferencia.get(referencia) || porReferencia.get(sku);
-        const quantidadeInput = linha.querySelector('[data-campo="quantidade"]');
-        const faltaInput = linha.querySelector('[data-campo="falta_os"]');
-        const precoInput = linha.querySelector('[data-campo="preco_custo"]');
-        const removerInput = linha.querySelector('[data-campo="remover"]');
-        const quantidadeOriginal = Math.max(0, Math.floor(Number(linha.dataset.quantidadeOriginal || quantidadeInput?.value || 0)));
-
-        if (encontrada) {
-            const quantidade = Math.max(0, Math.floor(Number(encontrada.quantidade) || 0));
-            const falta = Math.max(0, quantidadeOriginal - quantidade);
-            if (quantidadeInput) quantidadeInput.value = String(quantidade);
-            if (faltaInput) faltaInput.value = String(falta);
-            if (precoInput) precoInput.value = Number(encontrada.preco_custo || 0).toFixed(2);
-            if (removerInput) removerInput.checked = false;
-            usados.add(normalizarReferenciaListaFornecedor(encontrada.referencia));
-            atualizados += 1;
-        } else {
-            if (quantidadeInput) quantidadeInput.value = "0";
-            if (faltaInput) faltaInput.value = String(quantidadeOriginal);
-            colocadosEmFalta += 1;
+    const { itens, erros, foraCatalogo, unidades } = processarLinhasListaFinalFornecedor(texto);
+    if (!itens.length) {
+        if (status) {
+            status.textContent = erros.length ? erros.join("; ") : "Cole a lista final do fornecedor antes de aplicar.";
+            status.classList.remove('status-aviso', 'status-sucesso', 'status-neutro');
+            status.classList.add('status-erro');
         }
-    });
+        return;
+    }
 
-    const naoEncontradosCatalogo = [];
+    pedido.itens = itens;
     const lista = modal.querySelector("#fornecedor-edicao-produtos");
-    porReferencia.forEach(analisada => {
-        const chave = normalizarReferenciaListaFornecedor(analisada.referencia);
-        if (usados.has(chave)) return;
-        if (linhasProdutos.some(linha => linhaEdicaoContemReferenciaFornecedor(linha, analisada.referencia))) {
-            usados.add(chave);
-            return;
-        }
-
-        const produto = encontrarProdutoListaFinalFornecedor(analisada.referencia);
-        if (!produto) {
-            naoEncontradosCatalogo.push(analisada.referencia);
-            return;
-        }
-
-        const quantidade = Math.max(1, Math.floor(Number(analisada.quantidade) || 1));
-        const novoItem = criarItemFornecedorAPartirSelecao({
-            ...produto,
-            quantidade,
-            preco_custo: analisada.preco_custo
-        }, "lista-final");
-        const indice = pedido.itens.length;
-        pedido.itens.push(novoItem);
-        lista.appendChild(montarLinhaEdicaoProdutoFornecedor(pedido, novoItem, indice));
-        usados.add(chave);
-        adicionados += 1;
-    });
-
-    const naoUsados = Array.from(porReferencia.entries())
-        .filter(([chave]) => !usados.has(chave))
-        .map(([, item]) => item.referencia);
+    if (lista) {
+        lista.replaceChildren();
+        itens.forEach((item, indice) => {
+            lista.appendChild(montarLinhaEdicaoProdutoFornecedor(pedido, item, indice));
+        });
+    }
 
     if (status) {
         const avisos = [];
-        if (adicionados) avisos.push(`${adicionados} produto(s) adicionado(s) à encomenda`);
-        if (colocadosEmFalta) avisos.push(`${colocadosEmFalta} produto(s) ficaram em falta/OS`);
-        if (naoUsados.length) avisos.push(`não estavam nesta encomenda: ${naoUsados.join(", ")}`);
-        if (naoEncontradosCatalogo.length) avisos.push(`referências não encontradas no catálogo: ${naoEncontradosCatalogo.join(", ")}`);
+        if (foraCatalogo.length) avisos.push(`${foraCatalogo.length} referência(s) fora do catálogo incluída(s): ${foraCatalogo.join(", ")}`);
         if (erros.length) avisos.push(erros.join("; "));
-        status.textContent = `Lista aplicada: ${atualizados} produto(s) corrigido(s).${avisos.length ? " " + avisos.join(" | ") : ""}`;
+        status.textContent = `Lista aplicada: ${itens.length} linha(s), ${unidades} unidade(s).${avisos.length ? " " + avisos.join(" | ") : ""}`;
         status.classList.remove("status-erro", "status-sucesso", "status-aviso", "status-neutro");
         status.classList.add(avisos.length ? "status-aviso" : "status-sucesso");
     }
