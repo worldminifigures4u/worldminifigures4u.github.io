@@ -307,10 +307,6 @@ function criarSecaoHistoricoCliente(historico = []) {
 function obterUrlEncomendaCliente(item) {
     const codigo = String(item.codigo || item.codigo_encomenda || "").trim();
     if (!codigo) return "";
-    const origem = String(item.origem || "Site").trim().toLowerCase();
-    if (["wallapop", "olx", "todocoleccion"].includes(origem)) {
-        return `plataforma.html?editar=${encodeURIComponent(codigo)}`;
-    }
     return `encomendas.html?encomenda=${encodeURIComponent(codigo)}`;
 }
 
