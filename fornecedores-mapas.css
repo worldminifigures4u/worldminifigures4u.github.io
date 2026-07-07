@@ -175,13 +175,24 @@ body.pagina-fornecedores-admin{ margin:0; padding-left:0; padding-right:0; paddi
         .fornecedor-pedido-cabecalho{ display:flex; align-items:center; gap:12px; padding:8px 12px; border:0; background:#171717; cursor:pointer; }
         .fornecedor-pedido-cabecalho:hover,.fornecedor-pedido-cabecalho:focus-visible{ background:#202020; outline:none; }
         .fornecedor-pedido-linha-cabecalho{
-            grid-template-columns:68px 130px minmax(120px,1fr) minmax(180px,1.2fr) 128px;
+            grid-template-columns:minmax(104px,0.75fr) 158px minmax(140px,1.05fr) minmax(240px,1.55fr) minmax(136px,auto);
+            column-gap:18px;
+        }
+        .fornecedor-pedido-linha-cabecalho .admin-encomenda-codigo{
+            font-size:16px;
+            min-width:0;
+            overflow:hidden;
+            text-overflow:ellipsis;
+            white-space:nowrap;
+        }
+        .fornecedor-pedido-linha-cabecalho .admin-encomenda-data{
+            font-size:14px;
         }
         .fornecedor-pedido-fornecedor-nome{
             justify-self:start;
             min-width:0;
             color:#fff;
-            font-size:14px;
+            font-size:15px;
             font-weight:800;
             overflow:hidden;
             text-overflow:ellipsis;
@@ -190,11 +201,15 @@ body.pagina-fornecedores-admin{ margin:0; padding-left:0; padding-right:0; paddi
         .fornecedor-pedido-resumo{
             justify-self:start;
             min-width:0;
-            color:#aaa;
-            font-size:13px;
+            color:#cfcfcf;
+            font-size:14px;
             overflow:hidden;
             text-overflow:ellipsis;
             white-space:nowrap;
+        }
+        .fornecedor-pedido-linha-cabecalho .estado-encomenda{
+            font-size:12px;
+            padding:2px 7px;
         }
         .estado-fornecedor-a-preparar{
             background:rgba(255,225,132,.08);
@@ -251,7 +266,8 @@ body.pagina-fornecedores-admin{ margin:0; padding-left:0; padding-right:0; paddi
         .fornecedor-ficha-dialog .fornecedor-ficha-form{ padding:16px; }
         @media (max-width:980px){
             .fornecedor-pedido-linha-cabecalho{
-                grid-template-columns:68px 120px minmax(100px,1fr) 128px;
+                grid-template-columns:minmax(96px,0.7fr) 132px minmax(110px,1fr) minmax(136px,auto);
+                column-gap:12px;
             }
             .fornecedor-pedido-resumo{ display:none; }
         }
