@@ -1,6 +1,6 @@
 /* Estilos especificos das paginas Fornecedores e Mapas. */
 
-body.pagina-fornecedores-admin{ margin:0; padding-left:0; padding-right:0; padding-bottom:0; min-height:100vh; background:#000; color:#fff; font-family:Arial, Helvetica, sans-serif; }
+body.pagina-fornecedores-admin{ margin:0; padding-left:0; padding-right:0; padding-bottom:0; min-height:100vh; background:#000; color:#fff; font-family:Arial, Helvetica, sans-serif; overflow-x:clip; }
         .fornecedores-topo h1{ color:#ffc400; }
         .fornecedores-admin{ width:100%; margin:0 auto var(--espaco-acima-rodape); padding:0; }
         .fornecedores-grid{ display:grid; grid-template-columns:minmax(420px,0.95fr) minmax(520px,1.05fr); gap:22px; align-items:start; }
@@ -102,8 +102,13 @@ body.pagina-fornecedores-admin{ margin:0; padding-left:0; padding-right:0; paddi
         }
         .fornecedores-cabecalho-acoes{ display:flex; gap:8px; align-items:center; justify-content:flex-end; flex-wrap:wrap; }
         .fornecedores-link-mapas{ display:inline-flex; align-items:center; justify-content:center; min-height:40px; box-sizing:border-box; text-decoration:none; padding:10px 14px; }
-        .fornecedores-grid-unificada{ grid-template-columns:minmax(0,1fr); }
-        .pagina-fornecedores-unificada .fornecedores-admin{ max-width:1680px; }
+        .fornecedores-grid-unificada{ grid-template-columns:minmax(0,1fr); min-width:0; }
+        .pagina-fornecedores-unificada .fornecedores-admin{ max-width:1680px; min-width:0; }
+        .pagina-fornecedores-unificada .fornecedores-painel,
+        .pagina-fornecedores-unificada .fornecedor-pedidos.admin-encomendas-lista,
+        .pagina-fornecedores-unificada .fornecedor-resultados{
+            box-sizing:border-box;
+        }
         .pagina-fornecedores-unificada .fornecedor-lista-controles.mapas-lista-controles.fornecedor-controles-unificados{
             display:flex;
             flex-wrap:nowrap;
@@ -190,6 +195,8 @@ body.pagina-fornecedores-admin{ margin:0; padding-left:0; padding-right:0; paddi
             border:0;
             background:#222;
             cursor:pointer;
+            min-width:0;
+            overflow:hidden;
         }
         .fornecedor-pedido-cabecalho:hover,.fornecedor-pedido-cabecalho:focus-visible{
             background:#2b2b2b;
@@ -203,7 +210,7 @@ body.pagina-fornecedores-admin{ margin:0; padding-left:0; padding-right:0; paddi
             min-width:0;
             max-width:100%;
         }
-        .fornecedor-pedido-linha-cabecalho{
+        .fornecedor-pedido-cabecalho .admin-encomenda-linha.fornecedor-pedido-linha-cabecalho{
             grid-template-columns:minmax(0,0.72fr) minmax(0,0.95fr) minmax(0,1fr) minmax(0,1.45fr) auto;
             column-gap:14px;
         }
@@ -243,6 +250,8 @@ body.pagina-fornecedores-admin{ margin:0; padding-left:0; padding-right:0; paddi
         .fornecedor-pedido-linha-cabecalho .estado-encomenda{
             font-size:12px;
             padding:2px 7px;
+            justify-self:end;
+            white-space:nowrap;
         }
         .estado-fornecedor-a-preparar{
             background:rgba(255,225,132,.08);
@@ -313,9 +322,9 @@ body.pagina-fornecedores-admin{ margin:0; padding-left:0; padding-right:0; paddi
         .fornecedor-ficha-dialog{ width:min(720px,100%); }
         .fornecedor-ficha-dialog .fornecedor-ficha-form{ padding:16px; }
         @media (max-width:980px){
-            .fornecedor-pedido-linha-cabecalho{
-                grid-template-columns:minmax(96px,0.7fr) 132px minmax(110px,1fr) minmax(136px,auto);
-                column-gap:12px;
+            .fornecedor-pedido-cabecalho .admin-encomenda-linha.fornecedor-pedido-linha-cabecalho{
+                grid-template-columns:minmax(0,0.7fr) minmax(0,0.9fr) minmax(0,1fr) auto;
+                column-gap:10px;
             }
             .fornecedor-pedido-resumo{ display:none; }
         }
@@ -329,7 +338,7 @@ body.pagina-fornecedores-admin{ margin:0; padding-left:0; padding-right:0; paddi
 
         .fornecedores-grid-lista{ grid-template-columns:minmax(0,1fr); }
         .fornecedores-grid-mapas{ grid-template-columns:minmax(420px,760px); justify-content:center; }
-        .fornecedores-painel-lista{ width:100%; }
+        .fornecedores-painel-lista{ min-width:0; }
         @media (max-width: 760px){
             .fornecedores-grid-mapas{ grid-template-columns:1fr; }
         }
