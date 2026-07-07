@@ -56,7 +56,10 @@ body.pagina-fornecedores-admin{ margin:0; padding-left:0; padding-right:0; paddi
         .fornecedor-lista-final-acoes .wallapop-botao-destaque{ border-color:#ffc400; background:#ffc400; color:#000; }
         .fornecedor-referencia-final{ display:grid; gap:6px; margin-top:12px; color:#ddd; font-weight:800; }
         .fornecedores-acoes{ margin-top:16px; }
-        .fornecedores-acoes .wallapop-botao{ flex:1; }
+        .fornecedores-acoes .wallapop-botao{ flex:1; min-height:42px; }
+        .fornecedor-acoes-encomenda{ gap:10px; }
+        .fornecedor-acoes-encomenda .wallapop-botao{ border:1px solid #444; }
+        .fornecedor-acoes-encomenda .wallapop-botao-destaque{ border:1px solid #ffc400; }
         .fornecedores-cabecalho-lista{ display:flex; gap:12px; align-items:center; justify-content:space-between; margin-bottom:12px; }
         .fornecedores-cabecalho-lista h2{ margin:0; }
         .fornecedores-cabecalho-acoes{ display:flex; gap:8px; align-items:center; justify-content:flex-end; flex-wrap:wrap; }
