@@ -12,7 +12,7 @@
     <link rel="stylesheet" href="styles.css?v=20260705-stock-disponivel">
     <link rel="stylesheet" href="admin-imagem.css?v=20260628-css-split-admin-imagem">
     <link rel="stylesheet" href="encomendas.css?v=20260707-fornecedor-estilo">
-    <link rel="stylesheet" href="fornecedores-mapas.css?v=20260707-largura-painel">
+    <link rel="stylesheet" href="fornecedores-mapas.css?v=20260707-filtro-estado">
 </head>
 <body class="pagina-fornecedores-admin pagina-fornecedores-unificada cabecalho-com-admin pagina-com-cabecalho-site">
     <header class="cabecalho-site-admin">
@@ -62,10 +62,9 @@
         <section class="fornecedores-grid fornecedores-grid-unificada">
             <section class="fornecedores-painel fornecedores-painel-lista" aria-label="Encomendas a fornecedores">
                 <div class="fornecedores-cabecalho-lista">
-                    <h2 id="fornecedores-encomendas">Encomendas a fornecedores</h2>
-                    <label class="fornecedor-filtro-estado-cabecalho" for="fornecedor-filtro-estado">
-                        Estado
-                        <select id="fornecedor-filtro-estado">
+                    <div class="fornecedores-cabecalho-titulo-filtro">
+                        <h2 id="fornecedores-encomendas">Encomendas a fornecedores</h2>
+                        <select id="fornecedor-filtro-estado" class="fornecedor-filtro-estado-select" aria-label="Filtrar encomendas por estado">
                             <option value="todos">Todos</option>
                             <option value="a_preparar">A preparar</option>
                             <option value="encomendada">Encomendada</option>
@@ -73,7 +72,7 @@
                             <option value="recebida">Recebida</option>
                             <option value="cancelada">Cancelada</option>
                         </select>
-                    </label>
+                    </div>
                 </div>
                 <div id="fornecedor-pedidos" class="fornecedor-pedidos admin-encomendas-lista"></div>
             </section>
