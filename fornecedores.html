@@ -11,7 +11,7 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.108.2"></script>
     <link rel="stylesheet" href="styles.css?v=20260705-stock-disponivel">
     <link rel="stylesheet" href="admin-imagem.css?v=20260628-css-split-admin-imagem">
-    <link rel="stylesheet" href="fornecedores-mapas.css?v=20260705-espaco-conteudo">
+    <link rel="stylesheet" href="fornecedores-mapas.css?v=20260707-ficha-modal">
 </head>
 <body class="pagina-fornecedores-admin pagina-fornecedores-unificada cabecalho-com-admin pagina-com-cabecalho-site">
     <header class="cabecalho-site-admin">
@@ -79,9 +79,12 @@
 
             <section class="fornecedores-painel fornecedores-painel-mapa" id="fornecedores-escolher" aria-label="Produtos para fornecedor">
                 <div class="fornecedor-lista-controles mapas-lista-controles">
-                    <label for="fornecedor-nome">
+                    <label class="fornecedor-seletor-label" for="fornecedor-nome">
                         Fornecedor
-                        <select id="fornecedor-nome"></select>
+                        <span class="fornecedor-seletor-linha">
+                            <select id="fornecedor-nome"></select>
+                            <button type="button" id="btn-editar-fornecedor-selecionado" class="fornecedor-btn-editar-ficha wallapop-botao">Editar</button>
+                        </span>
                     </label>
                     <label for="fornecedor-filtro-marcacao">
                         Filtro do fornecedor
@@ -126,43 +129,46 @@
                 </div>
             </section>
 
-            <section class="fornecedores-painel fornecedores-painel-ficha" aria-label="Ficha do fornecedor">
-                <details class="fornecedor-ficha-box">
-                    <summary>Ficha do fornecedor</summary>
-                    <form class="fornecedor-ficha-form" id="fornecedor-ficha-form">
-                        <input type="hidden" id="fornecedor-ficha-id">
-                        <label for="fornecedor-ficha-lista">
-                            Fornecedor guardado
-                            <select id="fornecedor-ficha-lista"></select>
-                        </label>
-                        <label for="fornecedor-ficha-nome">
-                            Nome
-                            <input id="fornecedor-ficha-nome" type="text" required placeholder="Ex.: Lote 50">
-                        </label>
-                        <label for="fornecedor-ficha-contacto">
-                            Contacto / link
-                            <input id="fornecedor-ficha-contacto" type="text" placeholder="Email, WhatsApp, AliExpress, site...">
-                        </label>
-                        <label for="fornecedor-ficha-notas" class="fornecedor-ficha-largo">
-                            Notas
-                            <textarea id="fornecedor-ficha-notas" rows="3" placeholder="Notas internas, prazos, moedas, regras, observacoes..."></textarea>
-                        </label>
-                        <label class="fornecedor-ficha-ativo">
-                            <input id="fornecedor-ficha-ativo" type="checkbox" checked>
-                            Ativo
-                        </label>
-                        <div class="fornecedores-acoes fornecedor-ficha-acoes">
-                            <button type="button" id="fornecedor-ficha-apagar" class="fornecedor-ficha-apagar">Apagar fornecedor</button>
-                            <button type="button" id="fornecedor-ficha-novo">Novo</button>
-                            <button type="submit">Guardar fornecedor</button>
-                        </div>
-                    </form>
-                </details>
-            </section>
-
         </section>
         <p class="fornecedores-status" id="fornecedores-status" role="status"></p>
     </main>
+
+    <div id="fornecedor-ficha-modal" class="fornecedor-edicao-modal" hidden role="dialog" aria-modal="true" aria-labelledby="fornecedor-ficha-modal-titulo">
+        <div class="fornecedor-edicao-dialog fornecedor-ficha-dialog">
+            <div class="fornecedor-edicao-topo">
+                <h3 id="fornecedor-ficha-modal-titulo">Ficha do fornecedor</h3>
+                <button type="button" id="fornecedor-ficha-modal-fechar" class="fornecedor-edicao-fechar" aria-label="Fechar ficha do fornecedor">x</button>
+            </div>
+            <form class="fornecedor-ficha-form" id="fornecedor-ficha-form">
+                <input type="hidden" id="fornecedor-ficha-id">
+                <label for="fornecedor-ficha-lista">
+                    Fornecedor guardado
+                    <select id="fornecedor-ficha-lista"></select>
+                </label>
+                <label for="fornecedor-ficha-nome">
+                    Nome
+                    <input id="fornecedor-ficha-nome" type="text" required placeholder="Ex.: Lote 50">
+                </label>
+                <label for="fornecedor-ficha-contacto">
+                    Contacto / link
+                    <input id="fornecedor-ficha-contacto" type="text" placeholder="Email, WhatsApp, AliExpress, site...">
+                </label>
+                <label for="fornecedor-ficha-notas" class="fornecedor-ficha-largo">
+                    Notas
+                    <textarea id="fornecedor-ficha-notas" rows="3" placeholder="Notas internas, prazos, moedas, regras, observacoes..."></textarea>
+                </label>
+                <label class="fornecedor-ficha-ativo">
+                    <input id="fornecedor-ficha-ativo" type="checkbox" checked>
+                    Ativo
+                </label>
+                <div class="fornecedores-acoes fornecedor-ficha-acoes">
+                    <button type="button" id="fornecedor-ficha-apagar" class="fornecedor-ficha-apagar">Apagar fornecedor</button>
+                    <button type="button" id="fornecedor-ficha-novo">Novo</button>
+                    <button type="submit">Guardar fornecedor</button>
+                </div>
+            </form>
+        </div>
+    </div>
 
     <div id="admin-imagem-modal" class="admin-imagem-modal" hidden>
         <button type="button" id="admin-imagem-modal-fechar" class="admin-imagem-modal-fechar" aria-label="Fechar imagem">x</button>
@@ -179,7 +185,7 @@
             </nav>
         </div>
     </footer>
-    <script src="fornecedores.js?v=20260707-ref-composta"></script>
+    <script src="fornecedores.js?v=20260707-ficha-modal"></script>
 <script src="inline-listeners.js?v=20260705-pesquisa-cabecalho"></script>
 </body>
 </html>

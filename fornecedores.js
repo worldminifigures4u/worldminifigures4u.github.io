@@ -232,6 +232,35 @@ function novaFichaFornecedor() {
     document.getElementById("fornecedor-ficha-nome")?.focus();
 }
 
+function abrirModalFichaFornecedor() {
+    const modal = document.getElementById("fornecedor-ficha-modal");
+    if (!modal) return;
+    modal.hidden = false;
+    document.body.classList.add("fornecedor-ficha-modal-aberto");
+    document.getElementById("fornecedor-ficha-nome")?.focus();
+}
+
+function fecharModalFichaFornecedor() {
+    const modal = document.getElementById("fornecedor-ficha-modal");
+    if (!modal) return;
+    modal.hidden = true;
+    document.body.classList.remove("fornecedor-ficha-modal-aberto");
+}
+
+function editarFornecedorSelecionado() {
+    const nome = document.getElementById("fornecedor-nome")?.value || "";
+    const ficha = obterFichaFornecedorPorNome(nome);
+    if (ficha) {
+        preencherFormularioFichaFornecedor(ficha);
+        const selectFicha = document.getElementById("fornecedor-ficha-lista");
+        if (selectFicha) selectFicha.value = ficha.id;
+    } else {
+        preencherFormularioFichaFornecedor({ id: "", nome, contacto: "", notas: "", ativo: true });
+        document.getElementById("fornecedor-ficha-lista").value = "";
+    }
+    abrirModalFichaFornecedor();
+}
+
 async function apagarFichaFornecedor() {
     const idAtual = document.getElementById("fornecedor-ficha-id")?.value || "";
     const ficha = obterFichaFornecedorPorId(idAtual);
@@ -262,6 +291,7 @@ async function apagarFichaFornecedor() {
     guardarFichasFornecedoresLocal();
     renderizarFornecedoresGuardados();
     preencherFormularioFichaFornecedor();
+    fecharModalFichaFornecedor();
     renderizarResultadosFornecedor();
 }
 
@@ -318,6 +348,7 @@ async function guardarFichaFornecedor(evento) {
     if (!document.getElementById("fornecedores-status")?.textContent) {
         definirStatusFornecedor("Fornecedor guardado.");
     }
+    fecharModalFichaFornecedor();
 }
 
 function normalizarPedidoFornecedor(pedido) {
@@ -2643,6 +2674,13 @@ ligarEventoFornecedor('fornecedor-filtro-descontinuado', 'change', agendarRender
 ligarEventoFornecedor('btn-limpar-fornecedor', 'click', limparSelecaoFornecedor);
 ligarEventoFornecedor('btn-criar-fornecedor', 'click', criarPedidoFornecedor);
 ligarEventoFornecedor('fornecedor-filtro-estado', 'change', renderizarPedidosFornecedores);
+ligarEventoFornecedor('btn-editar-fornecedor-selecionado', 'click', editarFornecedorSelecionado);
+ligarEventoFornecedor('fornecedor-ficha-modal-fechar', 'click', fecharModalFichaFornecedor);
+document.getElementById('fornecedor-ficha-modal')?.addEventListener('click', (evento) => {
+    if (evento.target?.id === 'fornecedor-ficha-modal') {
+        fecharModalFichaFornecedor();
+    }
+});
 ligarEventoFornecedor('fornecedor-ficha-lista', 'change', () => {
     preencherFormularioFichaFornecedor(obterFichaFornecedorPorId(document.getElementById('fornecedor-ficha-lista')?.value));
 });
@@ -2669,6 +2707,10 @@ document.addEventListener('keydown', (evento) => {
     const modalFornecedor = document.getElementById('fornecedor-edicao-modal');
     if (evento.key === 'Escape' && modalFornecedor && !modalFornecedor.hidden) {
         fecharEdicaoPedidoFornecedor();
+    }
+    const modalFicha = document.getElementById('fornecedor-ficha-modal');
+    if (evento.key === 'Escape' && modalFicha && !modalFicha.hidden) {
+        fecharModalFichaFornecedor();
     }
 });
 
