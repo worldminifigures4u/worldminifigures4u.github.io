@@ -138,6 +138,18 @@ function criarInputCliente(rotulo, nome, valor, tipo = "text", obrigatorio = fal
     return campo;
 }
 
+function criarCheckboxCliente(rotulo, nome, marcado = false) {
+    const campo = document.createElement("label");
+    campo.className = "admin-cliente-formulario-campo admin-cliente-formulario-checkbox";
+    campo.classList.add(`admin-cliente-campo-${nome}`);
+    const input = document.createElement("input");
+    input.type = "checkbox";
+    input.name = nome;
+    input.checked = Boolean(marcado);
+    campo.append(input, criarElementoCliente("span", "", rotulo));
+    return campo;
+}
+
 function criarIconeFichaCliente() {
     const aviso = document.createElement("span");
     aviso.className = "clientes-ficha-alerta";
@@ -184,6 +196,14 @@ function obterPerfisFormularioCliente(formulario) {
     return Array.from(formulario.querySelectorAll('[name^="perfil_url_"]'))
         .map(input => ({ url: obterUrlExternoSeguroCliente(input.value) }))
         .filter(perfil => perfil.url);
+}
+
+async function guardarAvisoClienteAdmin(clienteId, temAviso) {
+    if (!clienteId) return { data: null, error: null };
+    return clientesClient.rpc("guardar_aviso_cliente_admin", {
+        p_cliente_id: clienteId,
+        p_tem_aviso: Boolean(temAviso)
+    });
 }
 
 function renderizarClientesLista() {
@@ -314,6 +334,9 @@ function montarFormularioCliente(dados, opcoes = {}) {
     formulario.appendChild(criarTextareaCliente("Notas internas", "notas", cliente.notas));
 
     const rodapeFormulario = criarElementoCliente("div", "clientes-formulario-rodape");
+    if (!novoCliente) {
+        rodapeFormulario.appendChild(criarCheckboxCliente("Cliente com aviso a ler", "tem_aviso", cliente.tem_aviso));
+    }
     const acoes = criarElementoCliente("div", "admin-cliente-formulario-acoes");
     let cancelar = null;
     if (mostrarCancelar) {
@@ -367,6 +390,12 @@ function montarFormularioCliente(dados, opcoes = {}) {
             return;
         }
         const clienteId = data?.cliente?.id || cliente.id;
+        const aviso = novoCliente
+            ? { data: null, error: null }
+            : await guardarAvisoClienteAdmin(clienteId, campos.get("tem_aviso") === "on");
+        const avisoErro = aviso.error || aviso.data?.sucesso === false
+            ? (aviso.error?.message || aviso.data?.erro || "sem detalhe")
+            : "";
         const perfisResposta = await clientesClient.rpc("guardar_perfis_cliente_admin", {
             p_cliente_id: clienteId,
             p_perfis: obterPerfisFormularioCliente(formulario)
@@ -390,7 +419,11 @@ function montarFormularioCliente(dados, opcoes = {}) {
             await abrirCliente(clienteId);
             return;
         }
-        definirStatusClientes(novoCliente ? "Cliente criado." : "Ficha guardada.");
+        definirStatusClientes(avisoErro
+            ? "Ficha guardada, mas o aviso nao foi atualizado: " + avisoErro
+            : (novoCliente ? "Cliente criado." : "Ficha guardada."),
+            Boolean(avisoErro)
+        );
         await pesquisarClientes();
         await abrirCliente(clienteId);
     });
