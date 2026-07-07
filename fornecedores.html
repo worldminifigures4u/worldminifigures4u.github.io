@@ -11,7 +11,7 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.108.2"></script>
     <link rel="stylesheet" href="styles.css?v=20260705-stock-disponivel">
     <link rel="stylesheet" href="admin-imagem.css?v=20260628-css-split-admin-imagem">
-    <link rel="stylesheet" href="fornecedores-mapas.css?v=20260707-botoes">
+    <link rel="stylesheet" href="fornecedores-mapas.css?v=20260707-controles-linha">
 </head>
 <body class="pagina-fornecedores-admin pagina-fornecedores-unificada cabecalho-com-admin pagina-com-cabecalho-site">
     <header class="cabecalho-site-admin">
@@ -78,7 +78,11 @@
             </section>
 
             <section class="fornecedores-painel fornecedores-painel-mapa" id="fornecedores-escolher" aria-label="Produtos para fornecedor">
-                <div class="fornecedor-lista-controles mapas-lista-controles">
+                <div class="fornecedor-lista-controles mapas-lista-controles fornecedor-controles-unificados">
+                    <label class="fornecedor-controle-pesquisa" for="fornecedor-pesquisa">
+                        Pesquisa
+                        <input id="fornecedor-pesquisa" class="fornecedor-pesquisa-compacta" type="search" placeholder="Nome, Ref., SKU ou tema" autocomplete="off">
+                    </label>
                     <label class="fornecedor-seletor-label" for="fornecedor-nome">
                         Fornecedor
                         <span class="fornecedor-seletor-linha">
@@ -111,9 +115,6 @@
                             <option value="nao">Não</option>
                         </select>
                     </label>
-                </div>
-                <div id="fornecedor-contador-barra" class="mapas-contador-filtros">
-                    <input id="fornecedor-pesquisa" class="fornecedor-pesquisa-compacta" type="search" placeholder="Nome, Ref., SKU ou tema">
                 </div>
                 <div id="fornecedor-resultados" class="fornecedor-resultados"></div>
 
