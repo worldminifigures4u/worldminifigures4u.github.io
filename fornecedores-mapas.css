@@ -195,9 +195,17 @@ body.pagina-fornecedores-admin{ margin:0; padding-left:0; padding-right:0; paddi
             background:#2b2b2b;
             outline:none;
         }
+        .fornecedores-painel-lista,
+        .fornecedor-pedidos.admin-encomendas-lista,
+        .fornecedor-pedido-card,
+        .fornecedor-pedido-cabecalho,
         .fornecedor-pedido-linha-cabecalho{
-            grid-template-columns:minmax(104px,0.75fr) 158px minmax(140px,1.05fr) minmax(240px,1.55fr) minmax(136px,auto);
-            column-gap:18px;
+            min-width:0;
+            max-width:100%;
+        }
+        .fornecedor-pedido-linha-cabecalho{
+            grid-template-columns:minmax(0,0.72fr) minmax(0,0.95fr) minmax(0,1fr) minmax(0,1.45fr) auto;
+            column-gap:14px;
         }
         .fornecedor-pedido-linha-cabecalho .admin-encomenda-codigo{
             font-size:16px;
@@ -208,6 +216,10 @@ body.pagina-fornecedores-admin{ margin:0; padding-left:0; padding-right:0; paddi
         }
         .fornecedor-pedido-linha-cabecalho .admin-encomenda-data{
             font-size:14px;
+            min-width:0;
+            overflow:hidden;
+            text-overflow:ellipsis;
+            white-space:nowrap;
         }
         .fornecedor-pedido-fornecedor-nome{
             justify-self:start;
@@ -262,7 +274,16 @@ body.pagina-fornecedores-admin{ margin:0; padding-left:0; padding-right:0; paddi
         .fornecedor-pedido-produtos{ display:grid; gap:8px; }
         .fornecedor-pedido-acoes{ flex-wrap:wrap; margin-bottom:4px; }
         .fornecedor-pedido-produtos.admin-encomenda-produtos{ margin-top:0; padding-top:0; border-top:0; }
-        .fornecedor-pedidos.admin-encomendas-lista{ display:flex; flex-direction:column; gap:9px; margin-top:2px; }
+        .fornecedor-pedidos.admin-encomendas-lista{
+            display:flex;
+            flex-direction:column;
+            gap:12px;
+            margin-top:4px;
+            padding:10px;
+            border-radius:8px;
+            background:#0a0a0a;
+            border:1px solid #2e2e2e;
+        }
         .fornecedor-vazio{ margin:0; padding:14px; text-align:center; color:#bbb; background:#1d1d1d; border-radius:6px; }
         .fornecedor-edicao-modal[hidden]{ display:none; }
         .fornecedor-edicao-modal{ position:fixed; inset:0; z-index:10000; display:grid; place-items:center; padding:18px; background:rgba(0,0,0,.74); }
