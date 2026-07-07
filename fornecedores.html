@@ -11,7 +11,7 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.108.2"></script>
     <link rel="stylesheet" href="styles.css?v=20260705-stock-disponivel">
     <link rel="stylesheet" href="admin-imagem.css?v=20260628-css-split-admin-imagem">
-    <link rel="stylesheet" href="fornecedores-mapas.css?v=20260707-controles-linha">
+    <link rel="stylesheet" href="fornecedores-mapas.css?v=20260707-filtros-compactos">
 </head>
 <body class="pagina-fornecedores-admin pagina-fornecedores-unificada cabecalho-com-admin pagina-com-cabecalho-site">
     <header class="cabecalho-site-admin">
@@ -90,8 +90,8 @@
                             <button type="button" id="btn-editar-fornecedor-selecionado" class="fornecedor-btn-editar-ficha wallapop-botao">Editar</button>
                         </span>
                     </label>
-                    <label for="fornecedor-filtro-marcacao">
-                        Filtro do fornecedor
+                    <label class="fornecedor-controle-filtro-compacto" for="fornecedor-filtro-marcacao" title="Filtro do fornecedor">
+                        Marcação
                         <select id="fornecedor-filtro-marcacao">
                             <option value="todos">Todos</option>
                             <option value="os">OS</option>
@@ -99,16 +99,16 @@
                             <option value="disponivel">Disponivel</option>
                         </select>
                     </label>
-                    <label for="fornecedor-filtro-top">
-                        Filtro Top
+                    <label class="fornecedor-controle-filtro-compacto" for="fornecedor-filtro-top" title="Filtro Top">
+                        Top
                         <select id="fornecedor-filtro-top">
                             <option value="todos">Todos</option>
                             <option value="sim">Sim</option>
                             <option value="nao">Não</option>
                         </select>
                     </label>
-                    <label for="fornecedor-filtro-descontinuado">
-                        Descontinuado
+                    <label class="fornecedor-controle-filtro-compacto" for="fornecedor-filtro-descontinuado" title="Descontinuado">
+                        Descont.
                         <select id="fornecedor-filtro-descontinuado">
                             <option value="todos">Todos</option>
                             <option value="sim">Sim</option>

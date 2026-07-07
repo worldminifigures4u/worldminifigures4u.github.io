@@ -68,8 +68,23 @@ body.pagina-fornecedores-admin{ margin:0; padding-left:0; padding-right:0; paddi
         .pagina-fornecedores-unificada .fornecedores-admin{ max-width:1680px; }
         .pagina-fornecedores-unificada .fornecedor-lista-controles.mapas-lista-controles{ grid-template-columns:repeat(4,minmax(0,1fr)); }
         .pagina-fornecedores-unificada .fornecedor-controles-unificados{
-            grid-template-columns:minmax(0,1.15fr) minmax(0,1.35fr) repeat(3,minmax(0,1fr));
+            grid-template-columns:minmax(0,1.35fr) minmax(0,1.45fr) minmax(68px,0.58fr) minmax(68px,0.52fr) minmax(76px,0.58fr);
+            gap:8px;
             align-items:end;
+        }
+        .pagina-fornecedores-unificada .fornecedor-controle-filtro-compacto{
+            min-width:0;
+        }
+        .pagina-fornecedores-unificada .fornecedor-controle-filtro-compacto{
+            font-size:13px;
+        }
+        .pagina-fornecedores-unificada .fornecedor-controle-filtro-compacto select{
+            padding:10px 8px;
+            font-size:13px;
+        }
+        .pagina-fornecedores-unificada .fornecedor-controles-unificados .fornecedor-btn-editar-ficha{
+            min-height:42px;
+            padding:10px 10px;
         }
         .pagina-fornecedores-unificada .fornecedor-controles-unificados .fornecedor-pesquisa-compacta{
             width:100%;
@@ -159,7 +174,8 @@ body.pagina-fornecedores-admin{ margin:0; padding-left:0; padding-right:0; paddi
 }
 
 .pagina-fornecedores-unificada .fornecedor-controles-unificados {
-    grid-template-columns: minmax(0, 1.15fr) minmax(0, 1.35fr) repeat(3, minmax(0, 1fr));
+    grid-template-columns: minmax(0, 1.35fr) minmax(0, 1.45fr) minmax(68px, 0.58fr) minmax(68px, 0.52fr) minmax(76px, 0.58fr);
+    gap: 8px;
     align-items: end;
 }
 
