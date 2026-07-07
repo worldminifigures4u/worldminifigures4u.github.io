@@ -170,18 +170,62 @@ body.pagina-fornecedores-admin{ margin:0; padding-left:0; padding-right:0; paddi
         .fornecedor-ficha-ativo input{ width:auto; }
         .fornecedor-ficha-apagar{ margin-right:auto; border-color:#5a2525 !important; background:#2a1111 !important; color:#ffb3b3 !important; }
         .fornecedor-ficha-apagar:hover,.fornecedor-ficha-apagar:focus-visible{ background:#4a1717 !important; color:#fff !important; }
-        .fornecedor-pedido-card{ border:1px solid #333; border-radius:8px; background:#111; padding:0; overflow:hidden; }
-        .fornecedor-pedido-card.aberta{ border-color:#555; }
-        .fornecedor-pedido-cabecalho{ display:grid; grid-template-columns:minmax(0,1fr) auto; gap:12px; align-items:start; padding:14px; cursor:pointer; }
-        .fornecedor-pedido-cabecalho:hover,.fornecedor-pedido-cabecalho:focus-visible{ background:#181818; outline:none; }
-        .fornecedor-pedido-cabecalho strong{ display:block; color:#ffc400; font-size:20px; }
-        .fornecedor-pedido-cabecalho span,.fornecedor-pedido-cabecalho small{ display:block; color:#ddd; }
-        .fornecedor-pedido-controlos{ display:flex; align-items:center; gap:12px; }
-        .fornecedor-pedido-seta{ color:#ffc400 !important; font-size:20px; line-height:1; transition:transform .15s ease; }
-        .fornecedor-pedido-card.aberta .fornecedor-pedido-seta{ transform:rotate(180deg); }
-        .fornecedor-pedido-detalhes{ display:grid; gap:12px; padding:0 14px 14px; border-top:1px solid #333; }
+        .fornecedor-pedido-card{ border:1px solid #333; border-radius:6px; background:#111; padding:0; overflow:hidden; }
+        .fornecedor-pedido-card.aberta{ border-color:#7a6200; }
+        .fornecedor-pedido-cabecalho{ display:flex; align-items:center; gap:12px; padding:8px 12px; border:0; background:#171717; cursor:pointer; }
+        .fornecedor-pedido-cabecalho:hover,.fornecedor-pedido-cabecalho:focus-visible{ background:#202020; outline:none; }
+        .fornecedor-pedido-linha-cabecalho{
+            grid-template-columns:68px 130px minmax(120px,1fr) minmax(180px,1.2fr) 128px;
+        }
+        .fornecedor-pedido-fornecedor-nome{
+            justify-self:start;
+            min-width:0;
+            color:#fff;
+            font-size:14px;
+            font-weight:800;
+            overflow:hidden;
+            text-overflow:ellipsis;
+            white-space:nowrap;
+        }
+        .fornecedor-pedido-resumo{
+            justify-self:start;
+            min-width:0;
+            color:#aaa;
+            font-size:13px;
+            overflow:hidden;
+            text-overflow:ellipsis;
+            white-space:nowrap;
+        }
+        .estado-fornecedor-a-preparar{
+            background:rgba(255,225,132,.08);
+            border-color:rgba(255,225,132,.28);
+            color:#d9c878;
+        }
+        .estado-fornecedor-encomendada{
+            background:rgba(139,216,255,.08);
+            border-color:rgba(139,216,255,.28);
+            color:#8bd8ff;
+        }
+        .estado-fornecedor-recebida-parcialmente{
+            background:rgba(255,193,7,.06);
+            border-color:rgba(255,193,7,.22);
+            color:#b8a56a;
+        }
+        .estado-fornecedor-recebida{
+            background:rgba(40,167,69,.1);
+            border-color:rgba(143,227,165,.28);
+            color:#7fd899;
+        }
+        .estado-fornecedor-cancelada{
+            background:rgba(255,157,165,.08);
+            border-color:rgba(255,157,165,.28);
+            color:#ff9da5;
+        }
+        .fornecedor-pedido-detalhes{ padding:16px; }
         .fornecedor-pedido-detalhes[hidden]{ display:none; }
         .fornecedor-pedido-produtos{ display:grid; gap:8px; }
+        .fornecedor-pedido-acoes{ flex-wrap:wrap; }
+        .fornecedor-pedidos.admin-encomendas-lista{ display:flex; flex-direction:column; gap:9px; margin-top:2px; }
         .fornecedor-vazio{ margin:0; padding:14px; text-align:center; color:#bbb; background:#1d1d1d; border-radius:6px; }
         .fornecedor-edicao-modal[hidden]{ display:none; }
         .fornecedor-edicao-modal{ position:fixed; inset:0; z-index:10000; display:grid; place-items:center; padding:18px; background:rgba(0,0,0,.74); }
@@ -206,10 +250,16 @@ body.pagina-fornecedores-admin{ margin:0; padding-left:0; padding-right:0; paddi
         .fornecedor-ficha-dialog{ width:min(720px,100%); }
         .fornecedor-ficha-dialog .fornecedor-ficha-form{ padding:16px; }
         @media (max-width:980px){
+            .fornecedor-pedido-linha-cabecalho{
+                grid-template-columns:68px 120px minmax(100px,1fr) 128px;
+            }
+            .fornecedor-pedido-resumo{ display:none; }
+        }
+        @media (max-width:980px){
             .fornecedores-grid{ grid-template-columns:1fr; }
             .fornecedor-lista-controles:not(.fornecedor-controles-unificados){ grid-template-columns:1fr; }
             .pagina-fornecedores-unificada .fornecedor-lista-controles.fornecedor-controles-unificados{ flex-wrap:wrap; }
-            .fornecedor-produto,.fornecedor-item,.fornecedor-pedido-linha,.fornecedor-pedido-cabecalho,.fornecedor-edicao-grid,.fornecedor-edicao-produto,.fornecedor-edicao-produto-campos,.fornecedor-ficha-form{ grid-template-columns:1fr; }
+            .fornecedor-produto,.fornecedor-item,.fornecedor-pedido-linha,.fornecedor-edicao-grid,.fornecedor-edicao-produto,.fornecedor-edicao-produto-campos,.fornecedor-ficha-form{ grid-template-columns:1fr; }
             .fornecedor-miniatura,.fornecedor-miniatura.pequena{ width:86px; height:86px; }
         }
 

@@ -2468,6 +2468,46 @@ async function guardarEdicaoPedidoFornecedor(evento) {
     }
 }
 
+function formatarDataPedidoFornecedor(valor) {
+    if (!valor) return "Data indisponivel";
+    const data = new Date(valor);
+    if (Number.isNaN(data.getTime())) return String(valor);
+    return new Intl.DateTimeFormat("pt-PT", {
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit"
+    }).format(data).replace(",", "");
+}
+
+function obterClasseBadgeEstadoPedidoFornecedor(estado) {
+    const mapa = {
+        a_preparar: "estado-fornecedor-a-preparar",
+        encomendada: "estado-fornecedor-encomendada",
+        recebida_parcialmente: "estado-fornecedor-recebida-parcialmente",
+        recebida: "estado-fornecedor-recebida",
+        cancelada: "estado-fornecedor-cancelada"
+    };
+    return mapa[normalizarEstadoPedidoFornecedor(estado)] || "estado-fornecedor-a-preparar";
+}
+
+function criarElementoPedidoFornecedor(tag, classe, texto) {
+    const elemento = document.createElement(tag);
+    if (classe) elemento.className = classe;
+    if (texto !== undefined) elemento.textContent = texto;
+    return elemento;
+}
+
+function criarLinhaDetalhePedidoFornecedor(rotulo, valor) {
+    const linha = criarElementoPedidoFornecedor("div", "admin-encomenda-detalhe-linha");
+    linha.append(
+        criarElementoPedidoFornecedor("strong", "", rotulo),
+        criarElementoPedidoFornecedor("span", "", valor || "—")
+    );
+    return linha;
+}
+
 function renderizarPedidosFornecedores() {
     const caixa = document.getElementById('fornecedor-pedidos');
     if (!caixa) return;
@@ -2483,11 +2523,7 @@ function renderizarPedidosFornecedores() {
     }
 
     pedidos.forEach(pedido => {
-        const card = document.createElement('article');
-        card.className = 'fornecedor-pedido-card';
         const aberto = fornecedorPedidosAbertos.has(String(pedido.id));
-        if (aberto) card.classList.add('aberta');
-
         const totaisPedido = (pedido.itens || []).reduce((totais, item) => {
             const quantidade = Math.max(0, Number(item.quantidade || 0));
             const recebido = Math.max(0, Number(item.recebido || 0));
@@ -2499,11 +2535,12 @@ function renderizarPedidosFornecedores() {
             return totais;
         }, { itens: 0, quantidade: 0, os: 0, pendente: 0 });
 
-        const topo = document.createElement('div');
-        topo.className = 'fornecedor-pedido-cabecalho';
-        topo.setAttribute('role', 'button');
-        topo.tabIndex = 0;
-        topo.setAttribute('aria-expanded', aberto ? 'true' : 'false');
+        const card = criarElementoPedidoFornecedor("article", `admin-encomenda-card fornecedor-pedido-card${aberto ? " aberta" : ""}`);
+        const cabecalho = criarElementoPedidoFornecedor("div", "admin-encomenda-cabecalho fornecedor-pedido-cabecalho");
+        cabecalho.tabIndex = 0;
+        cabecalho.setAttribute("role", "button");
+        cabecalho.setAttribute("aria-expanded", aberto ? "true" : "false");
+
         const alternarPedido = () => {
             const idPedido = String(pedido.id);
             if (fornecedorPedidosAbertos.has(idPedido)) {
@@ -2513,98 +2550,102 @@ function renderizarPedidosFornecedores() {
             }
             renderizarPedidosFornecedores();
         };
-        topo.addEventListener('click', alternarPedido);
-        topo.addEventListener('keydown', (evento) => {
-            if (evento.key === 'Enter' || evento.key === ' ') {
+        cabecalho.addEventListener("click", alternarPedido);
+        cabecalho.addEventListener("keydown", (evento) => {
+            if (evento.key === "Enter" || evento.key === " ") {
                 evento.preventDefault();
                 alternarPedido();
             }
         });
-        const titulo = document.createElement('div');
-        titulo.innerHTML = `<strong>${escaparHtmlFornecedor(pedido.codigo)}</strong><span>${escaparHtmlFornecedor(pedido.fornecedor)}${pedido.referencia ? ' - ' + escaparHtmlFornecedor(pedido.referencia) : ''}</span><small>${new Date(pedido.criado_em).toLocaleString('pt-PT')}</small><small>${totaisPedido.itens} artigo(s) | ${totaisPedido.quantidade} unidade(s) | ${totaisPedido.pendente} por receber${totaisPedido.os > 0 ? ` | ${totaisPedido.os} OS` : ''}</small>`;
-        const controlos = document.createElement('div');
-        controlos.className = 'fornecedor-pedido-controlos';
-        const estado = document.createElement('select');
-        estado.className = 'fornecedor-status-select';
-        obterEstadosPedidoFornecedor().forEach(opcao => {
-            const opt = document.createElement('option');
-            opt.value = opcao;
-            opt.textContent = opcao;
-            opt.selected = pedido.estado === opcao;
-            estado.appendChild(opt);
-        });
-        estado.addEventListener('click', evento => evento.stopPropagation());
-        estado.addEventListener('keydown', evento => evento.stopPropagation());
-        estado.addEventListener('change', () => alterarEstadoPedidoFornecedor(pedido.id, estado.value));
-        const seta = document.createElement('span');
-        seta.className = 'fornecedor-pedido-seta';
-        seta.textContent = '▾';
-        seta.setAttribute('aria-hidden', 'true');
-        controlos.append(estado, seta);
-        topo.append(titulo, controlos);
-        card.appendChild(topo);
 
-        const detalhes = document.createElement('div');
-        detalhes.className = 'fornecedor-pedido-detalhes';
+        const linha = criarElementoPedidoFornecedor("div", "admin-encomenda-linha fornecedor-pedido-linha-cabecalho");
+        const resumo = `${totaisPedido.itens} artigo(s) | ${totaisPedido.quantidade} unidade(s) | ${totaisPedido.pendente} por receber${totaisPedido.os > 0 ? ` | ${totaisPedido.os} OS` : ""}`;
+        linha.append(
+            criarElementoPedidoFornecedor("strong", "admin-encomenda-codigo", pedido.codigo || `#${pedido.id}`),
+            criarElementoPedidoFornecedor("span", "admin-encomenda-data", formatarDataPedidoFornecedor(pedido.criado_em)),
+            criarElementoPedidoFornecedor("span", "fornecedor-pedido-fornecedor-nome", pedido.fornecedor || "Fornecedor"),
+            criarElementoPedidoFornecedor("span", "fornecedor-pedido-resumo", resumo),
+            criarElementoPedidoFornecedor("span", `estado-encomenda ${obterClasseBadgeEstadoPedidoFornecedor(pedido.estado)}`, pedido.estado || "A preparar")
+        );
+        cabecalho.append(linha, criarElementoPedidoFornecedor("span", "admin-encomenda-seta", "▾"));
+
+        const detalhes = criarElementoPedidoFornecedor("div", "admin-encomenda-detalhes fornecedor-pedido-detalhes");
         detalhes.hidden = !aberto;
 
-        const lista = document.createElement('div');
-        lista.className = 'fornecedor-pedido-produtos';
+        const dados = criarElementoPedidoFornecedor("div", "admin-encomenda-dados");
+        dados.append(
+            criarLinhaDetalhePedidoFornecedor("Fornecedor", pedido.fornecedor),
+            criarLinhaDetalhePedidoFornecedor("Referência", pedido.referencia),
+            criarLinhaDetalhePedidoFornecedor("Código", pedido.codigo),
+            criarLinhaDetalhePedidoFornecedor("Criada", formatarDataPedidoFornecedor(pedido.criado_em)),
+            criarLinhaDetalhePedidoFornecedor("Artigos", String(totaisPedido.itens)),
+            criarLinhaDetalhePedidoFornecedor("Unidades", String(totaisPedido.quantidade)),
+            criarLinhaDetalhePedidoFornecedor("Por receber", String(totaisPedido.pendente)),
+            criarLinhaDetalhePedidoFornecedor("OS/Falta", totaisPedido.os > 0 ? String(totaisPedido.os) : "0")
+        );
+
+        const produtos = criarElementoPedidoFornecedor("div", "admin-encomenda-produtos fornecedor-pedido-produtos");
+        produtos.appendChild(criarElementoPedidoFornecedor("h3", "", "Produtos"));
+        const lista = criarElementoPedidoFornecedor("div", "fornecedor-pedido-produtos");
         pedido.itens.forEach(item => {
             const produtoAtual = obterProdutoParaPedidoFornecedor(item) || item;
             const recebido = Number(item.recebido || 0);
             const restante = Math.max(0, Number(item.quantidade || 0) - recebido);
             const faltaOs = Math.max(0, Number(item.falta_os || 0));
-            const linha = document.createElement('div');
-            linha.className = 'fornecedor-pedido-linha';
-            if (faltaOs > 0) linha.classList.add('tem-os');
-            linha.appendChild(criarImagemFornecedor(produtoAtual, 'fornecedor-miniatura pequena'));
-            const info = document.createElement('div');
-            info.className = 'fornecedor-info';
-            info.innerHTML = `<strong>${escaparHtmlFornecedor(item.nome)}</strong><span class="fornecedor-identificadores">Ref. ${escaparHtmlFornecedor(item.referencia || '-')} | SKU ${escaparHtmlFornecedor(item.sku || '-')}</span><span>Pedido: ${Number(item.quantidade || 0)} | Recebido: ${recebido} | Stock atual: ${Number(produtoAtual.stock || 0)}</span>${faltaOs > 0 ? `<span class="fornecedor-ajuste-os ativo">OS/Falta: ${faltaOs}${item.quantidade_original ? ` de ${Number(item.quantidade_original || 0)}` : ''}</span>` : ''}${item.origem_ajuste ? `<span class="fornecedor-ajuste-os">${item.origem_ajuste === 'substituicao' ? 'Substituto para completar encomenda' : 'Reforco adicionado'}</span>` : ''}`;
-            const input = document.createElement('input');
-            input.type = 'number';
-            input.min = '0';
-            input.step = '1';
+            const linhaProduto = criarElementoPedidoFornecedor("div", "fornecedor-pedido-linha");
+            if (faltaOs > 0) linhaProduto.classList.add("tem-os");
+            linhaProduto.appendChild(criarImagemFornecedor(produtoAtual, "fornecedor-miniatura pequena"));
+            const info = criarElementoPedidoFornecedor("div", "fornecedor-info");
+            info.innerHTML = `<strong>${escaparHtmlFornecedor(item.nome)}</strong><span class="fornecedor-identificadores">Ref. ${escaparHtmlFornecedor(item.referencia || "-")} | SKU ${escaparHtmlFornecedor(item.sku || "-")}</span><span>Pedido: ${Number(item.quantidade || 0)} | Recebido: ${recebido} | Stock atual: ${Number(produtoAtual.stock || 0)}</span>${faltaOs > 0 ? `<span class="fornecedor-ajuste-os ativo">OS/Falta: ${faltaOs}${item.quantidade_original ? ` de ${Number(item.quantidade_original || 0)}` : ""}</span>` : ""}${item.origem_ajuste ? `<span class="fornecedor-ajuste-os">${item.origem_ajuste === "substituicao" ? "Substituto para completar encomenda" : "Reforco adicionado"}</span>` : ""}`;
+            const input = document.createElement("input");
+            input.type = "number";
+            input.min = "0";
+            input.step = "1";
             input.value = restante > 0 ? restante : 0;
-            input.className = 'fornecedor-recebido-input';
+            input.className = "fornecedor-recebido-input";
             input.dataset.pedido = pedido.id;
             input.dataset.produto = item.id;
-            linha.append(info, input);
-            lista.appendChild(linha);
+            linhaProduto.append(info, input);
+            lista.appendChild(linhaProduto);
         });
-        detalhes.appendChild(lista);
+        produtos.appendChild(lista);
 
-        const acoes = document.createElement('div');
-        acoes.className = 'fornecedores-acoes pedido';
-        const editar = document.createElement('button');
-        editar.type = 'button';
-        editar.className = 'wallapop-botao';
-        editar.textContent = 'Editar encomenda';
-        editar.addEventListener('click', () => abrirEdicaoPedidoFornecedor(pedido.id));
-        const completar = document.createElement('button');
-        completar.type = 'button';
-        completar.className = 'wallapop-botao';
-        completar.textContent = 'Juntar selecao';
-        completar.addEventListener('click', () => adicionarSelecaoAoPedidoFornecedor(pedido.id));
-        const imprimir = document.createElement('button');
-        imprimir.type = 'button';
-        imprimir.className = 'wallapop-botao';
-        imprimir.textContent = 'Imprimir';
-        imprimir.addEventListener('click', () => imprimirPedidoFornecedor(pedido.id));
-        const receber = document.createElement('button');
-        receber.type = 'button';
-        receber.className = 'wallapop-botao wallapop-botao-destaque';
-        receber.textContent = 'Receber stock';
-        receber.addEventListener('click', () => receberPedidoFornecedor(pedido.id));
-        const apagar = document.createElement('button');
-        apagar.type = 'button';
-        apagar.className = 'wallapop-botao';
-        apagar.textContent = 'Apagar pedido';
-        apagar.addEventListener('click', () => apagarPedidoFornecedor(pedido.id));
-        acoes.append(editar, completar, imprimir, receber, apagar);
-        detalhes.appendChild(acoes);
-        card.appendChild(detalhes);
+        const acoes = criarElementoPedidoFornecedor("div", "admin-encomenda-acoes fornecedor-pedido-acoes");
+        const grupoEstado = criarElementoPedidoFornecedor("label", "admin-encomenda-estado-edicao");
+        grupoEstado.appendChild(criarElementoPedidoFornecedor("span", "", "Estado"));
+        const estado = document.createElement("select");
+        estado.className = "fornecedor-status-select";
+        obterEstadosPedidoFornecedor().forEach(opcao => {
+            const opt = document.createElement("option");
+            opt.value = opcao;
+            opt.textContent = opcao;
+            opt.selected = pedido.estado === opcao;
+            estado.appendChild(opt);
+        });
+        estado.addEventListener("change", () => alterarEstadoPedidoFornecedor(pedido.id, estado.value));
+        grupoEstado.appendChild(estado);
+
+        const botoes = criarElementoPedidoFornecedor("div", "admin-encomenda-botoes");
+        const editar = criarElementoPedidoFornecedor("button", "wallapop-botao", "Editar encomenda");
+        editar.type = "button";
+        editar.addEventListener("click", () => abrirEdicaoPedidoFornecedor(pedido.id));
+        const completar = criarElementoPedidoFornecedor("button", "wallapop-botao", "Juntar selecao");
+        completar.type = "button";
+        completar.addEventListener("click", () => adicionarSelecaoAoPedidoFornecedor(pedido.id));
+        const imprimir = criarElementoPedidoFornecedor("button", "wallapop-botao", "Imprimir");
+        imprimir.type = "button";
+        imprimir.addEventListener("click", () => imprimirPedidoFornecedor(pedido.id));
+        const receber = criarElementoPedidoFornecedor("button", "wallapop-botao wallapop-botao-destaque", "Receber stock");
+        receber.type = "button";
+        receber.addEventListener("click", () => receberPedidoFornecedor(pedido.id));
+        const apagar = criarElementoPedidoFornecedor("button", "wallapop-botao admin-encomenda-apagar", "Apagar pedido");
+        apagar.type = "button";
+        apagar.addEventListener("click", () => apagarPedidoFornecedor(pedido.id));
+        botoes.append(editar, completar, imprimir, receber, apagar);
+        acoes.append(grupoEstado, botoes);
+
+        detalhes.append(dados, produtos, acoes);
+        card.append(cabecalho, detalhes);
         caixa.appendChild(card);
     });
 }
