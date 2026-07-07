@@ -72,42 +72,55 @@ body.pagina-fornecedores-admin{ margin:0; padding-left:0; padding-right:0; paddi
             align-items:flex-end;
             gap:8px;
         }
+        .pagina-fornecedores-unificada .fornecedor-controles-unificados label{
+            font-size:inherit;
+        }
         .pagina-fornecedores-unificada .fornecedor-controle-pesquisa{
-            flex:1 1 160px;
-            min-width:120px;
+            flex:1 1 120px;
+            min-width:96px;
+            max-width:240px;
         }
         .pagina-fornecedores-unificada .fornecedor-seletor-label{
-            flex:1 1 180px;
-            min-width:150px;
+            flex:1 1 140px;
+            min-width:120px;
+            max-width:280px;
         }
         .pagina-fornecedores-unificada .fornecedor-controle-filtro-compacto{
             flex:0 0 auto;
             width:max-content;
             max-width:100%;
             min-width:0;
-            font-size:13px;
+            font-size:inherit;
         }
         .pagina-fornecedores-unificada .fornecedor-controle-filtro-compacto select{
             width:auto;
             max-width:100%;
             box-sizing:border-box;
-            padding:10px 24px 10px 8px;
-            font-size:13px;
+            padding:10px 28px 10px 12px;
+            font:inherit;
             field-sizing:content;
         }
         .pagina-fornecedores-unificada .fornecedor-controles-unificados .fornecedor-btn-editar-ficha{
             min-height:42px;
-            padding:10px 10px;
+            padding:10px 12px;
+            font:inherit;
         }
         .pagina-fornecedores-unificada .fornecedor-controles-unificados .fornecedor-pesquisa-compacta{
             width:100%;
             min-height:42px;
             padding:10px 12px;
             border:1px solid #444;
+            font:inherit;
+        }
+        .pagina-fornecedores-unificada .fornecedor-controles-unificados .fornecedor-seletor-linha select{
+            width:100%;
+            padding:10px 12px;
+            font:inherit;
         }
         .pagina-fornecedores-unificada .fornecedor-controles-unificados input,
         .pagina-fornecedores-unificada .fornecedor-controles-unificados select{
             min-height:42px;
+            font:inherit;
         }
         .pagina-fornecedores-unificada .fornecedor-resultados{ display:block; max-height:52vh; overflow:auto; padding-right:0; border:1px solid #333; border-radius:8px; background:#101010; }
         .pagina-fornecedores-unificada .fornecedor-pedidos{ max-height:none; }
