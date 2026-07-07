@@ -2645,7 +2645,7 @@ async function receberPedidoFornecedor(id) {
 let resizeSelectsFornecedorTimer;
 
 function ajustarLarguraSelectsCompactosFornecedor() {
-    document.querySelectorAll(".fornecedor-controle-filtro-compacto select").forEach((select) => {
+    document.querySelectorAll(".fornecedor-controle-filtro-compacto select, #fornecedor-filtro-estado").forEach((select) => {
         const estilo = window.getComputedStyle(select);
         const medidor = document.createElement("span");
         medidor.style.cssText = "position:absolute;left:-9999px;visibility:hidden;white-space:nowrap;";
