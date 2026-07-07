@@ -1028,6 +1028,125 @@ function limparTextoListaFinalFornecedor() {
     definirStatusFornecedor("Texto da lista final limpo.");
 }
 
+function obterPedidoEdicaoFornecedor(modal) {
+    const id = modal?.querySelector("#fornecedor-edicao-id")?.value;
+    return fornecedorPedidos.find(item => item.id === id) || null;
+}
+
+function montarLinhaEdicaoProdutoFornecedor(pedido, item, indice) {
+    const produtoAtual = obterProdutoParaPedidoFornecedor(item) || item;
+    const quantidadeOriginal = Math.max(0, Number(item.quantidade_original ?? item.quantidade ?? 0));
+    const quantidadeAtual = Math.max(0, Number(item.quantidade || 0));
+    const faltaAtual = Math.max(0, Number(item.falta_os || Math.max(0, quantidadeOriginal - quantidadeAtual)));
+    const precoCustoAtual = Number(item.preco_custo ?? item.custo ?? item.preco ?? 0) || 0;
+    const linha = document.createElement("div");
+    linha.className = "fornecedor-edicao-produto";
+    if (faltaAtual > 0) linha.classList.add("tem-os");
+    linha.dataset.indice = String(indice);
+    linha.dataset.referencia = item.referencia || produtoAtual.referencia || "";
+    linha.dataset.sku = item.sku || produtoAtual.sku || "";
+    linha.dataset.quantidadeOriginal = String(quantidadeOriginal);
+    linha.appendChild(criarImagemFornecedor(produtoAtual, "fornecedor-miniatura pequena"));
+
+    const info = document.createElement("div");
+    info.className = "fornecedor-info";
+    const nome = document.createElement("strong");
+    nome.textContent = item.nome || produtoAtual.nome || "Produto";
+    const ids = document.createElement("span");
+    ids.className = "fornecedor-identificadores";
+    ids.textContent = `Ref. ${item.referencia || produtoAtual.referencia || "-"} | SKU ${item.sku || produtoAtual.sku || "-"}`;
+    const ajuste = document.createElement("span");
+    ajuste.className = faltaAtual > 0 ? "fornecedor-ajuste-os ativo" : "fornecedor-ajuste-os";
+    ajuste.textContent = faltaAtual > 0
+        ? `Inicial: ${quantidadeOriginal} | OS: ${faltaAtual}`
+        : `Inicial: ${quantidadeOriginal}`;
+    if (item.origem_ajuste) {
+        ajuste.textContent += item.origem_ajuste === "substituicao" ? " | Substituto" : " | Reforco";
+    }
+    info.append(nome, ids, ajuste);
+
+    const campos = document.createElement("div");
+    campos.className = "fornecedor-edicao-produto-campos";
+    const quantidade = document.createElement("label");
+    quantidade.textContent = "A receber";
+    const quantidadeInput = document.createElement("input");
+    quantidadeInput.type = "number";
+    quantidadeInput.min = "0";
+    quantidadeInput.step = "1";
+    quantidadeInput.value = quantidadeAtual;
+    quantidadeInput.dataset.campo = "quantidade";
+    quantidade.appendChild(quantidadeInput);
+
+    const falta = document.createElement("label");
+    falta.textContent = "OS/Falta";
+    const faltaInput = document.createElement("input");
+    faltaInput.type = "number";
+    faltaInput.min = "0";
+    faltaInput.step = "1";
+    faltaInput.value = faltaAtual;
+    faltaInput.dataset.campo = "falta_os";
+    falta.appendChild(faltaInput);
+
+    const precoCusto = document.createElement("label");
+    precoCusto.textContent = "preço compra";
+    const precoCustoInput = document.createElement("input");
+    precoCustoInput.type = "number";
+    precoCustoInput.min = "0";
+    precoCustoInput.step = "0.01";
+    precoCustoInput.value = precoCustoAtual.toFixed(2);
+    precoCustoInput.dataset.campo = "preco_custo";
+    precoCusto.appendChild(precoCustoInput);
+
+    const recebido = document.createElement("div");
+    recebido.className = "fornecedor-edicao-recebido-info";
+    const recebidoAtual = ["A preparar", "Encomendada"].includes(pedido.estado)
+        ? 0
+        : Math.max(0, Number(item.recebido || 0));
+    recebido.dataset.campo = "recebido";
+    recebido.dataset.valor = String(recebidoAtual);
+    const recebidoTitulo = document.createElement("strong");
+    recebidoTitulo.textContent = "Recebido";
+    const recebidoValor = document.createElement("span");
+    recebidoValor.textContent = String(recebidoAtual);
+    recebido.append(recebidoTitulo, recebidoValor);
+
+    const remover = document.createElement("label");
+    remover.className = "fornecedor-edicao-remover";
+    const removerInput = document.createElement("input");
+    removerInput.type = "checkbox";
+    removerInput.dataset.campo = "remover";
+    remover.append(removerInput, document.createTextNode(" Remover"));
+
+    const sincronizarFalta = () => {
+        const pedidoValor = Math.max(0, Math.floor(Number(quantidadeInput.value) || 0));
+        const faltaValor = Math.max(0, quantidadeOriginal - pedidoValor);
+        if (faltaValor > 0 && Number(faltaInput.value || 0) === 0) {
+            faltaInput.value = String(faltaValor);
+        }
+    };
+    const sincronizarQuantidade = () => {
+        const faltaValor = Math.max(0, Math.floor(Number(faltaInput.value) || 0));
+        if (faltaValor > 0) {
+            quantidadeInput.value = String(Math.max(0, quantidadeOriginal - faltaValor));
+        }
+    };
+    quantidadeInput.addEventListener("change", sincronizarFalta);
+    quantidadeInput.addEventListener("blur", sincronizarFalta);
+    faltaInput.addEventListener("change", sincronizarQuantidade);
+    faltaInput.addEventListener("blur", sincronizarQuantidade);
+
+    campos.append(quantidade, falta, precoCusto, recebido, remover);
+    linha.append(info, campos);
+    return linha;
+}
+
+function linhaEdicaoContemReferenciaFornecedor(linha, referencia) {
+    const alvo = normalizarReferenciaListaFornecedor(referencia);
+    if (!alvo) return false;
+    return normalizarReferenciaListaFornecedor(linha.dataset.referencia) === alvo
+        || normalizarReferenciaListaFornecedor(linha.dataset.sku) === alvo;
+}
+
 function aplicarListaFinalNaEdicaoFornecedor() {
     const modal = document.getElementById("fornecedor-edicao-modal");
     if (!modal || modal.hidden) return;
@@ -1081,8 +1200,12 @@ function aplicarListaFinalNaEdicaoFornecedor() {
         return;
     }
 
+    const pedido = obterPedidoEdicaoFornecedor(modal);
+    if (!pedido) return;
+
     const usados = new Set();
     let atualizados = 0;
+    let adicionados = 0;
     let colocadosEmFalta = 0;
     const linhasProdutos = Array.from(modal.querySelectorAll(".fornecedor-edicao-produto"));
     linhasProdutos.forEach(linha => {
@@ -1092,6 +1215,7 @@ function aplicarListaFinalNaEdicaoFornecedor() {
         const quantidadeInput = linha.querySelector('[data-campo="quantidade"]');
         const faltaInput = linha.querySelector('[data-campo="falta_os"]');
         const precoInput = linha.querySelector('[data-campo="preco_custo"]');
+        const removerInput = linha.querySelector('[data-campo="remover"]');
         const quantidadeOriginal = Math.max(0, Math.floor(Number(linha.dataset.quantidadeOriginal || quantidadeInput?.value || 0)));
 
         if (encontrada) {
@@ -1100,6 +1224,7 @@ function aplicarListaFinalNaEdicaoFornecedor() {
             if (quantidadeInput) quantidadeInput.value = String(quantidade);
             if (faltaInput) faltaInput.value = String(falta);
             if (precoInput) precoInput.value = Number(encontrada.preco_custo || 0).toFixed(2);
+            if (removerInput) removerInput.checked = false;
             usados.add(normalizarReferenciaListaFornecedor(encontrada.referencia));
             atualizados += 1;
         } else {
@@ -1109,18 +1234,49 @@ function aplicarListaFinalNaEdicaoFornecedor() {
         }
     });
 
+    const naoEncontradosCatalogo = [];
+    const lista = modal.querySelector("#fornecedor-edicao-produtos");
+    porReferencia.forEach(analisada => {
+        const chave = normalizarReferenciaListaFornecedor(analisada.referencia);
+        if (usados.has(chave)) return;
+        if (linhasProdutos.some(linha => linhaEdicaoContemReferenciaFornecedor(linha, analisada.referencia))) {
+            usados.add(chave);
+            return;
+        }
+
+        const produto = encontrarProdutoListaFinalFornecedor(analisada.referencia);
+        if (!produto) {
+            naoEncontradosCatalogo.push(analisada.referencia);
+            return;
+        }
+
+        const quantidade = Math.max(1, Math.floor(Number(analisada.quantidade) || 1));
+        const novoItem = criarItemFornecedorAPartirSelecao({
+            ...produto,
+            quantidade,
+            preco_custo: analisada.preco_custo
+        }, "lista-final");
+        const indice = pedido.itens.length;
+        pedido.itens.push(novoItem);
+        lista.appendChild(montarLinhaEdicaoProdutoFornecedor(pedido, novoItem, indice));
+        usados.add(chave);
+        adicionados += 1;
+    });
+
     const naoUsados = Array.from(porReferencia.entries())
         .filter(([chave]) => !usados.has(chave))
         .map(([, item]) => item.referencia);
 
     if (status) {
         const avisos = [];
+        if (adicionados) avisos.push(`${adicionados} produto(s) adicionado(s) à encomenda`);
         if (colocadosEmFalta) avisos.push(`${colocadosEmFalta} produto(s) ficaram em falta/OS`);
         if (naoUsados.length) avisos.push(`não estavam nesta encomenda: ${naoUsados.join(", ")}`);
+        if (naoEncontradosCatalogo.length) avisos.push(`referências não encontradas no catálogo: ${naoEncontradosCatalogo.join(", ")}`);
         if (erros.length) avisos.push(erros.join("; "));
         status.textContent = `Lista aplicada: ${atualizados} produto(s) corrigido(s).${avisos.length ? " " + avisos.join(" | ") : ""}`;
-        status.classList.remove('status-erro', 'status-sucesso', 'status-aviso', 'status-neutro');
-        status.classList.add(avisos.length ? 'status-aviso' : 'status-sucesso');
+        status.classList.remove("status-erro", "status-sucesso", "status-aviso", "status-neutro");
+        status.classList.add(avisos.length ? "status-aviso" : "status-sucesso");
     }
 }
 
@@ -2187,110 +2343,7 @@ function abrirEdicaoPedidoFornecedor(id) {
     const lista = modal.querySelector('#fornecedor-edicao-produtos');
     lista.replaceChildren();
     pedido.itens.forEach((item, indice) => {
-        const produtoAtual = obterProdutoParaPedidoFornecedor(item) || item;
-        const quantidadeOriginal = Math.max(0, Number(item.quantidade_original ?? item.quantidade ?? 0));
-        const quantidadeAtual = Math.max(0, Number(item.quantidade || 0));
-        const faltaAtual = Math.max(0, Number(item.falta_os || Math.max(0, quantidadeOriginal - quantidadeAtual)));
-        const precoCustoAtual = Number(item.preco_custo ?? item.custo ?? item.preco ?? 0) || 0;
-        const linha = document.createElement('div');
-        linha.className = 'fornecedor-edicao-produto';
-        if (faltaAtual > 0) linha.classList.add('tem-os');
-        linha.dataset.indice = String(indice);
-        linha.dataset.referencia = item.referencia || produtoAtual.referencia || '';
-        linha.dataset.sku = item.sku || produtoAtual.sku || '';
-        linha.dataset.quantidadeOriginal = String(quantidadeOriginal);
-        linha.appendChild(criarImagemFornecedor(produtoAtual, 'fornecedor-miniatura pequena'));
-
-        const info = document.createElement('div');
-        info.className = 'fornecedor-info';
-        const nome = document.createElement('strong');
-        nome.textContent = item.nome || produtoAtual.nome || 'Produto';
-        const ids = document.createElement('span');
-        ids.className = 'fornecedor-identificadores';
-        ids.textContent = `Ref. ${item.referencia || produtoAtual.referencia || '-'} | SKU ${item.sku || produtoAtual.sku || '-'}`;
-        const ajuste = document.createElement('span');
-        ajuste.className = faltaAtual > 0 ? 'fornecedor-ajuste-os ativo' : 'fornecedor-ajuste-os';
-        ajuste.textContent = faltaAtual > 0
-            ? `Inicial: ${quantidadeOriginal} | OS: ${faltaAtual}`
-            : `Inicial: ${quantidadeOriginal}`;
-        if (item.origem_ajuste) {
-            ajuste.textContent += item.origem_ajuste === 'substituicao' ? ' | Substituto' : ' | Reforco';
-        }
-        info.append(nome, ids, ajuste);
-
-        const campos = document.createElement('div');
-        campos.className = 'fornecedor-edicao-produto-campos';
-        const quantidade = document.createElement('label');
-        quantidade.textContent = 'A receber';
-        const quantidadeInput = document.createElement('input');
-        quantidadeInput.type = 'number';
-        quantidadeInput.min = '0';
-        quantidadeInput.step = '1';
-        quantidadeInput.value = quantidadeAtual;
-        quantidadeInput.dataset.campo = 'quantidade';
-        quantidade.appendChild(quantidadeInput);
-
-        const falta = document.createElement('label');
-        falta.textContent = 'OS/Falta';
-        const faltaInput = document.createElement('input');
-        faltaInput.type = 'number';
-        faltaInput.min = '0';
-        faltaInput.step = '1';
-        faltaInput.value = faltaAtual;
-        faltaInput.dataset.campo = 'falta_os';
-        falta.appendChild(faltaInput);
-
-        const precoCusto = document.createElement('label');
-        precoCusto.textContent = 'preço compra';
-        const precoCustoInput = document.createElement('input');
-        precoCustoInput.type = 'number';
-        precoCustoInput.min = '0';
-        precoCustoInput.step = '0.01';
-        precoCustoInput.value = precoCustoAtual.toFixed(2);
-        precoCustoInput.dataset.campo = 'preco_custo';
-        precoCusto.appendChild(precoCustoInput);
-
-        const recebido = document.createElement('div');
-        recebido.className = 'fornecedor-edicao-recebido-info';
-        const recebidoAtual = ['A preparar', 'Encomendada'].includes(pedido.estado)
-            ? 0
-            : Math.max(0, Number(item.recebido || 0));
-        recebido.dataset.campo = 'recebido';
-        recebido.dataset.valor = String(recebidoAtual);
-        const recebidoTitulo = document.createElement('strong');
-        recebidoTitulo.textContent = 'Recebido';
-        const recebidoValor = document.createElement('span');
-        recebidoValor.textContent = String(recebidoAtual);
-        recebido.append(recebidoTitulo, recebidoValor);
-
-        const remover = document.createElement('label');
-        remover.className = 'fornecedor-edicao-remover';
-        const removerInput = document.createElement('input');
-        removerInput.type = 'checkbox';
-        removerInput.dataset.campo = 'remover';
-        remover.append(removerInput, document.createTextNode(' Remover'));
-
-        const sincronizarFalta = () => {
-            const pedidoValor = Math.max(0, Math.floor(Number(quantidadeInput.value) || 0));
-            const faltaValor = Math.max(0, quantidadeOriginal - pedidoValor);
-            if (faltaValor > 0 && Number(faltaInput.value || 0) === 0) {
-                faltaInput.value = String(faltaValor);
-            }
-        };
-        const sincronizarQuantidade = () => {
-            const faltaValor = Math.max(0, Math.floor(Number(faltaInput.value) || 0));
-            if (faltaValor > 0) {
-                quantidadeInput.value = String(Math.max(0, quantidadeOriginal - faltaValor));
-            }
-        };
-        quantidadeInput.addEventListener('change', sincronizarFalta);
-        quantidadeInput.addEventListener('blur', sincronizarFalta);
-        faltaInput.addEventListener('change', sincronizarQuantidade);
-        faltaInput.addEventListener('blur', sincronizarQuantidade);
-
-        campos.append(quantidade, falta, precoCusto, recebido, remover);
-        linha.append(info, campos);
-        lista.appendChild(linha);
+        lista.appendChild(montarLinhaEdicaoProdutoFornecedor(pedido, item, indice));
     });
 
     modal.hidden = false;
@@ -2360,7 +2413,7 @@ async function guardarEdicaoPedidoFornecedor(evento) {
         return;
     }
     if (!itens.length) {
-        status.textContent = 'A ficha precisa de pelo menos um produto.';
+        status.textContent = 'A encomenda precisa de pelo menos um produto. Cole a lista final e clique em "Aplicar à encomenda", ou desmarque "Remover" nos produtos que quer manter.';
         status.classList.remove('status-aviso', 'status-sucesso', 'status-neutro');
         status.classList.add('status-erro');
         return;
