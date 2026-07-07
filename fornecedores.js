@@ -1124,7 +1124,7 @@ function limparTextoListaFinalFornecedor() {
 
 function obterPedidoEdicaoFornecedor(modal) {
     const id = modal?.querySelector("#fornecedor-edicao-id")?.value;
-    return fornecedorPedidos.find(item => item.id === id) || null;
+    return fornecedorPedidos.find(item => String(item.id) === String(id)) || null;
 }
 
 function montarLinhaEdicaoProdutoFornecedor(pedido, item, indice) {
@@ -2113,15 +2113,16 @@ async function apagarPedidoFornecedor(id) {
 }
 
 async function atualizarPedidoFornecedor(id, alteracoes) {
+    const idPedido = String(id);
     const { data, error } = await fornecedoresClient
         .from('encomendas_fornecedores')
         .update(alteracoes)
-        .eq('id', id)
+        .eq('id', idPedido)
         .select()
         .single();
     if (error) throw error;
     const atualizado = normalizarPedidoFornecedor(data);
-    fornecedorPedidos = fornecedorPedidos.map(item => item.id === id ? atualizado : item);
+    fornecedorPedidos = fornecedorPedidos.map(item => String(item.id) === idPedido ? atualizado : item);
     guardarPedidosFornecedores();
     renderizarResultadosFornecedor();
     renderizarSelecionadosFornecedor();
@@ -2274,9 +2275,7 @@ async function adicionarSelecaoAoPedidoFornecedor(id) {
 
 function garantirModalEdicaoFornecedor() {
     let modal = document.getElementById('fornecedor-edicao-modal');
-    if (modal) {
-        modal.remove();
-    }
+    if (modal) return modal;
 
     modal = document.createElement('div');
     modal.id = 'fornecedor-edicao-modal';
@@ -2293,7 +2292,7 @@ function garantirModalEdicaoFornecedor() {
                 <div class="fornecedor-edicao-corpo">
                     <div class="fornecedor-edicao-grid">
                         <label>
-                            Nome da encomenda
+                            Código da encomenda
                             <input type="text" id="fornecedor-edicao-codigo" required>
                         </label>
                         <label>
@@ -2410,12 +2409,20 @@ function lerItensEditadosPedidoFornecedor(pedido, modal) {
 
 async function guardarEdicaoPedidoFornecedor(evento) {
     evento.preventDefault();
-    const modal = garantirModalEdicaoFornecedor();
+    const modal = document.getElementById('fornecedor-edicao-modal');
+    if (!modal || modal.hidden) return;
     const status = modal.querySelector('#fornecedor-edicao-status');
     const botao = modal.querySelector('#fornecedor-edicao-guardar');
-    const id = modal.querySelector('#fornecedor-edicao-id').value;
-    const pedido = fornecedorPedidos.find(item => item.id === id);
-    if (!pedido) return;
+    const id = modal.querySelector('#fornecedor-edicao-id')?.value || '';
+    const pedido = fornecedorPedidos.find(item => String(item.id) === String(id));
+    if (!pedido) {
+        if (status) {
+            status.textContent = 'Encomenda nao encontrada para guardar.';
+            status.classList.remove('status-aviso', 'status-sucesso', 'status-neutro');
+            status.classList.add('status-erro');
+        }
+        return;
+    }
 
     const codigo = modal.querySelector('#fornecedor-edicao-codigo').value.trim();
     const fornecedor = modal.querySelector('#fornecedor-edicao-nome').value.trim();
@@ -2424,7 +2431,7 @@ async function guardarEdicaoPedidoFornecedor(evento) {
     const itens = lerItensEditadosPedidoFornecedor(pedido, modal);
 
     if (!codigo) {
-        status.textContent = 'Indique o nome da encomenda.';
+        status.textContent = 'Indique o codigo da encomenda.';
         status.classList.remove('status-aviso', 'status-sucesso', 'status-neutro');
         status.classList.add('status-erro');
         return;
