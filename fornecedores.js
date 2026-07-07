@@ -847,14 +847,14 @@ function obterProdutoParaPedidoFornecedor(item, listaProdutos = fornecedorProdut
     const porId = listaProdutos.find(produto => String(produto.id) === String(item.id));
     if (porId) return porId;
 
-    const skuItem = String(item.sku || '').trim().toUpperCase();
-    const referenciaItem = String(item.referencia || '').trim().toUpperCase();
     const nomeItem = normalizarFornecedor(item.nome);
     return listaProdutos.find(produto => {
-        const mesmoSku = skuItem && String(produto.sku || '').trim().toUpperCase() === skuItem;
-        const mesmaReferencia = referenciaItem && String(produto.referencia || '').trim().toUpperCase() === referenciaItem;
         const mesmoNome = nomeItem && normalizarFornecedor(produto.nome) === nomeItem;
-        return mesmoSku || mesmaReferencia || mesmoNome;
+        const mesmaReferencia = correspondeReferenciaListaFornecedor(item.referencia, produto.referencia)
+            || correspondeReferenciaListaFornecedor(item.referencia, produto.sku)
+            || correspondeReferenciaListaFornecedor(item.sku, produto.referencia)
+            || correspondeReferenciaListaFornecedor(item.sku, produto.sku);
+        return mesmaReferencia || mesmoNome;
     }) || null;
 }
 
@@ -924,15 +924,11 @@ function correspondeReferenciaListaFornecedor(referenciaA, referenciaB) {
 }
 
 function encontrarProdutoListaFinalFornecedor(referencia) {
-    for (const alvo of obterCandidatosReferenciaListaFornecedor(referencia)) {
-        const produto = fornecedorProdutos.find(item => {
-            const refProduto = normalizarReferenciaListaFornecedor(item.referencia);
-            const skuProduto = normalizarReferenciaListaFornecedor(item.sku);
-            return refProduto === alvo || skuProduto === alvo;
-        });
-        if (produto) return produto;
-    }
-    return null;
+    if (!String(referencia || "").trim()) return null;
+    return fornecedorProdutos.find(item =>
+        correspondeReferenciaListaFornecedor(referencia, item.referencia)
+        || correspondeReferenciaListaFornecedor(referencia, item.sku)
+    ) || null;
 }
 
 function criarItemFornecedorAPartirListaFinal(analisada, produto = null) {
