@@ -11,7 +11,7 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.108.2"></script>
     <link rel="stylesheet" href="styles.css?v=20260705-stock-disponivel">
     <link rel="stylesheet" href="admin-imagem.css?v=20260628-css-split-admin-imagem">
-    <link rel="stylesheet" href="fornecedores-mapas.css?v=20260707-estado-alinhado">
+    <link rel="stylesheet" href="fornecedores-mapas.css?v=20260707-estado-cabecalho">
 </head>
 <body class="pagina-fornecedores-admin pagina-fornecedores-unificada cabecalho-com-admin pagina-com-cabecalho-site">
     <header class="cabecalho-site-admin">
@@ -64,17 +64,14 @@
                     <h2 id="fornecedores-encomendas">Encomendas a fornecedores</h2>
                     <label class="fornecedor-filtro-estado-cabecalho" for="fornecedor-filtro-estado">
                         Estado
-                        <span class="fornecedor-estado-linha">
-                            <select id="fornecedor-filtro-estado" class="fornecedor-select-estado">
-                                <option value="todos">Todos</option>
-                                <option value="a_preparar">A preparar</option>
-                                <option value="encomendada">Encomendada</option>
-                                <option value="recebida_parcialmente">Recebida parcialmente</option>
-                                <option value="recebida">Recebida</option>
-                                <option value="cancelada">Cancelada</option>
-                            </select>
-                            <span class="fornecedor-estado-linha-espaco" aria-hidden="true"></span>
-                        </span>
+                        <select id="fornecedor-filtro-estado">
+                            <option value="todos">Todos</option>
+                            <option value="a_preparar">A preparar</option>
+                            <option value="encomendada">Encomendada</option>
+                            <option value="recebida_parcialmente">Recebida parcialmente</option>
+                            <option value="recebida">Recebida</option>
+                            <option value="cancelada">Cancelada</option>
+                        </select>
                     </label>
                 </div>
                 <div id="fornecedor-pedidos" class="fornecedor-pedidos"></div>
@@ -197,7 +194,7 @@
             </nav>
         </div>
     </footer>
-    <script src="fornecedores.js?v=20260707-estado-alinhado"></script>
+    <script src="fornecedores.js?v=20260707-estado-cabecalho"></script>
 <script src="inline-listeners.js?v=20260705-pesquisa-cabecalho"></script>
 </body>
 </html>
