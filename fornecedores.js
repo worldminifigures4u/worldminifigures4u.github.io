@@ -2274,7 +2274,9 @@ async function adicionarSelecaoAoPedidoFornecedor(id) {
 
 function garantirModalEdicaoFornecedor() {
     let modal = document.getElementById('fornecedor-edicao-modal');
-    if (modal) return modal;
+    if (modal) {
+        modal.remove();
+    }
 
     modal = document.createElement('div');
     modal.id = 'fornecedor-edicao-modal';
@@ -2288,38 +2290,41 @@ function garantirModalEdicaoFornecedor() {
             </div>
             <form id="fornecedor-edicao-form" class="fornecedor-edicao-form">
                 <input type="hidden" id="fornecedor-edicao-id">
-                <div class="fornecedor-edicao-grid">
-                    <label>
-                        Nome da encomenda
-                        <input type="text" id="fornecedor-edicao-codigo" required>
-                    </label>
-                    <label>
-                        Fornecedor
-                        <input type="text" id="fornecedor-edicao-nome" required>
-                    </label>
-                    <label>
-                        Referencia interna
-                        <input type="text" id="fornecedor-edicao-referencia">
-                    </label>
-                    <label>
-                        Estado
-                        <select id="fornecedor-edicao-estado"></select>
-                    </label>
-                </div>
-                <section class="fornecedor-lista-final-box fornecedor-lista-final-edicao" aria-label="Lista final enviada pelo fornecedor">
-                    <h4>Colar lista final do fornecedor</h4>
-                    <p>Depois de o fornecedor responder, cola aqui referência, quantidade e preço compra. A encomenda abaixo é corrigida automaticamente.</p>
-                    <textarea id="fornecedor-edicao-lista-final" rows="5" placeholder="Ex.:&#10;AF301	2	1,25&#10;PG634	1	0,85"></textarea>
-                    <div class="fornecedor-lista-final-acoes">
-                        <button type="button" id="fornecedor-edicao-limpar-lista-final">Limpar texto</button>
-                        <button type="button" id="fornecedor-edicao-aplicar-lista-final" class="wallapop-botao-destaque">Aplicar à encomenda</button>
+                <div class="fornecedor-edicao-corpo">
+                    <div class="fornecedor-edicao-grid">
+                        <label>
+                            Nome da encomenda
+                            <input type="text" id="fornecedor-edicao-codigo" required>
+                        </label>
+                        <label>
+                            Fornecedor
+                            <input type="text" id="fornecedor-edicao-nome" required>
+                        </label>
+                        <label>
+                            Referencia interna
+                            <input type="text" id="fornecedor-edicao-referencia">
+                        </label>
+                        <label>
+                            Estado
+                            <select id="fornecedor-edicao-estado"></select>
+                        </label>
                     </div>
-                </section>
-                <div class="fornecedor-edicao-produtos" id="fornecedor-edicao-produtos"></div>
-                <p class="fornecedores-status fornecedor-edicao-status" id="fornecedor-edicao-status" role="status"></p>
+                    <p class="fornecedor-edicao-aviso-guardar">As alterações aos campos acima só ficam guardadas ao clicar <strong>Guardar encomenda</strong>.</p>
+                    <section class="fornecedor-lista-final-box fornecedor-lista-final-edicao" aria-label="Lista final enviada pelo fornecedor">
+                        <h4>Colar lista final do fornecedor</h4>
+                        <p>Depois de o fornecedor responder, cola aqui referência, quantidade e preço compra. A encomenda abaixo é corrigida automaticamente.</p>
+                        <textarea id="fornecedor-edicao-lista-final" rows="5" placeholder="Ex.:&#10;AF301	2	1,25&#10;PG634	1	0,85"></textarea>
+                        <div class="fornecedor-lista-final-acoes">
+                            <button type="button" id="fornecedor-edicao-limpar-lista-final">Limpar texto</button>
+                            <button type="button" id="fornecedor-edicao-aplicar-lista-final" class="wallapop-botao-destaque">Aplicar à encomenda</button>
+                        </div>
+                    </section>
+                    <div class="fornecedor-edicao-produtos" id="fornecedor-edicao-produtos"></div>
+                    <p class="fornecedores-status fornecedor-edicao-status" id="fornecedor-edicao-status" role="status"></p>
+                </div>
                 <div class="fornecedores-acoes fornecedor-edicao-acoes">
-                    <button type="button" id="fornecedor-edicao-cancelar">Cancelar</button>
-                    <button type="submit" id="fornecedor-edicao-guardar">Guardar encomenda</button>
+                    <button type="button" id="fornecedor-edicao-cancelar" class="wallapop-botao">Cancelar</button>
+                    <button type="submit" id="fornecedor-edicao-guardar" class="wallapop-botao wallapop-botao-destaque">Guardar encomenda</button>
                 </div>
             </form>
         </div>

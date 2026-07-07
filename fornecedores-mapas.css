@@ -244,11 +244,16 @@ body.pagina-fornecedores-admin{ margin:0; padding-left:0; padding-right:0; paddi
         .fornecedor-vazio{ margin:0; padding:14px; text-align:center; color:#bbb; background:#1d1d1d; border-radius:6px; }
         .fornecedor-edicao-modal[hidden]{ display:none; }
         .fornecedor-edicao-modal{ position:fixed; inset:0; z-index:10000; display:grid; place-items:center; padding:18px; background:rgba(0,0,0,.74); }
-        .fornecedor-edicao-dialog{ width:min(980px,100%); max-height:92vh; overflow:auto; border:1px solid #444; border-radius:8px; background:#141414; color:#fff; box-shadow:0 20px 60px rgba(0,0,0,.5); }
+        .fornecedor-edicao-dialog{ width:min(980px,100%); max-height:92vh; display:flex; flex-direction:column; overflow:hidden; border:1px solid #444; border-radius:8px; background:#141414; color:#fff; box-shadow:0 20px 60px rgba(0,0,0,.5); }
         .fornecedor-edicao-topo{ position:sticky; top:0; z-index:2; display:flex; align-items:center; justify-content:space-between; gap:12px; padding:14px 16px; border-bottom:1px solid #333; background:#101010; }
         .fornecedor-edicao-topo h3{ margin:0; color:#ffc400; }
         .fornecedor-edicao-fechar{ min-width:34px; height:34px; border:0; border-radius:6px; background:#333; color:#fff; font-weight:900; cursor:pointer; }
-        .fornecedor-edicao-form{ display:grid; gap:14px; padding:16px; }
+        .fornecedor-edicao-form{ display:flex; flex-direction:column; min-height:0; flex:1; gap:0; padding:0; }
+        .fornecedor-edicao-corpo{ overflow:auto; padding:16px; display:grid; gap:14px; }
+        .fornecedor-edicao-aviso-guardar{ margin:0; color:#bdbdbd; font-size:13px; line-height:1.45; }
+        .fornecedor-edicao-aviso-guardar strong{ color:#ffc400; }
+        .fornecedor-edicao-acoes{ position:sticky; bottom:0; z-index:2; margin:0; padding:14px 16px; border-top:1px solid #333; background:#101010; }
+        .fornecedor-edicao-acoes .wallapop-botao-destaque{ margin-left:auto; }
         .fornecedor-edicao-grid{ display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:12px; }
         .fornecedor-edicao-grid label,.fornecedor-edicao-produto-campos label{ display:grid; gap:6px; color:#ddd; font-weight:700; }
         .fornecedor-edicao-grid input,.fornecedor-edicao-grid select,.fornecedor-edicao-produto-campos input{ width:100%; box-sizing:border-box; border:1px solid #444; border-radius:6px; background:#242424; color:#fff; padding:10px 11px; font:inherit; }
