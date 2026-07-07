@@ -2649,7 +2649,7 @@ function renderizarPedidosFornecedores() {
         botoes.append(editar, completar, imprimir, receber, apagar);
         acoes.append(grupoEstado, botoes);
 
-        detalhes.append(dados, produtos, acoes);
+        detalhes.append(dados, acoes, produtos);
         card.append(cabecalho, detalhes);
         caixa.appendChild(card);
     });

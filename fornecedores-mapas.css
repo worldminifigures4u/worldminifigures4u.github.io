@@ -239,7 +239,8 @@ body.pagina-fornecedores-admin{ margin:0; padding-left:0; padding-right:0; paddi
         .fornecedor-pedido-detalhes{ padding:16px; }
         .fornecedor-pedido-detalhes[hidden]{ display:none; }
         .fornecedor-pedido-produtos{ display:grid; gap:8px; }
-        .fornecedor-pedido-acoes{ flex-wrap:wrap; }
+        .fornecedor-pedido-acoes{ flex-wrap:wrap; margin-bottom:4px; }
+        .fornecedor-pedido-produtos.admin-encomenda-produtos{ margin-top:0; padding-top:0; border-top:0; }
         .fornecedor-pedidos.admin-encomendas-lista{ display:flex; flex-direction:column; gap:9px; margin-top:2px; }
         .fornecedor-vazio{ margin:0; padding:14px; text-align:center; color:#bbb; background:#1d1d1d; border-radius:6px; }
         .fornecedor-edicao-modal[hidden]{ display:none; }
