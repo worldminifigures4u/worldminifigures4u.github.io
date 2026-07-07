@@ -81,9 +81,9 @@ body.pagina-fornecedores-admin{ margin:0; padding-left:0; padding-right:0; paddi
             max-width:200px;
         }
         .pagina-fornecedores-unificada .fornecedor-seletor-label{
-            flex:1 1 140px;
-            min-width:120px;
-            max-width:240px;
+            flex:1 1 280px;
+            min-width:240px;
+            max-width:480px;
         }
         .pagina-fornecedores-unificada .fornecedor-controle-filtro-compacto{
             flex:0 0 auto;
