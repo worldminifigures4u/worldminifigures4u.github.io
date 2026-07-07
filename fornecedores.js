@@ -781,6 +781,7 @@ function obterControlosResultadosFornecedor() {
         fornecedor: document.getElementById("fornecedor-nome")?.value || "",
         filtroFornecedor: document.getElementById("fornecedor-filtro-marcacao")?.value || "todos",
         filtroTop: document.getElementById("fornecedor-filtro-top")?.value || "todos",
+        filtroArquivado: document.getElementById("fornecedor-filtro-arquivado")?.value || "todos",
         filtroDescontinuado: document.getElementById("fornecedor-filtro-descontinuado")?.value || "todos",
         ordenacao: document.getElementById("fornecedor-ordenacao-stock")?.value || "nome",
     };
@@ -902,6 +903,14 @@ function produtoPassaFiltroDescontinuadoFornecedor(produto, filtroDescontinuado)
     const descontinuado = obterBooleanoProdutoFornecedor(produto?.descontinuado);
     if (filtroDescontinuado === "sim" || filtroDescontinuado === "descontinuado") return descontinuado;
     if (filtroDescontinuado === "nao" || filtroDescontinuado === "sem-descontinuado") return !descontinuado;
+    return true;
+}
+
+function produtoPassaFiltroArquivadoFornecedor(produto, filtroArquivado) {
+    if (!filtroArquivado || filtroArquivado === "todos") return true;
+    const arquivado = obterBooleanoProdutoFornecedor(produto?.arquivado);
+    if (filtroArquivado === "sim" || filtroArquivado === "arquivado") return arquivado;
+    if (filtroArquivado === "nao" || filtroArquivado === "sem-arquivado") return !arquivado;
     return true;
 }
 
@@ -1524,6 +1533,7 @@ function abrirEdicaoProdutoMapa(produtoId) {
         { valor: "não", texto: "não" }
     ]);
     criarCheckboxEdicaoMapa(secaoIdentificacao, "mapas-editar-top", "Top", Boolean(String(obterTopProdutoFornecedor(produto) || "").trim()));
+    criarCheckboxEdicaoMapa(secaoIdentificacao, "mapas-editar-arquivado", "Arquivado", obterBooleanoProdutoFornecedor(produto.arquivado));
     criarCheckboxEdicaoMapa(secaoIdentificacao, "mapas-editar-descontinuado", "Descontinuado", obterBooleanoProdutoFornecedor(produto.descontinuado));
     criarCheckboxEdicaoMapa(secaoIdentificacao, "mapas-editar-novidade", "Novidade", obterBooleanoProdutoFornecedor(produto.novidade));
     campos.appendChild(secaoIdentificacao);
@@ -1574,6 +1584,7 @@ function lerProdutoEditadoMapa() {
         sku: normalizarSkuFornecedor(document.getElementById("mapas-editar-sku").value),
         lego: document.getElementById("mapas-editar-lego").value,
         top: document.getElementById("mapas-editar-top").checked ? "sim" : "",
+        arquivado: document.getElementById("mapas-editar-arquivado").checked,
         descontinuado: document.getElementById("mapas-editar-descontinuado").checked,
         novidade: document.getElementById("mapas-editar-novidade").checked,
         preco: Number(document.getElementById("mapas-editar-preco").value),
@@ -1780,7 +1791,7 @@ function renderizarResultadosFornecedor() {
     const caixa = document.getElementById("fornecedor-resultados");
     if (!caixa) return;
 
-    const { termo, fornecedor, filtroFornecedor, filtroTop, filtroDescontinuado, ordenacao } = obterControlosResultadosFornecedor();
+    const { termo, fornecedor, filtroFornecedor, filtroTop, filtroArquivado, filtroDescontinuado, ordenacao } = obterControlosResultadosFornecedor();
     caixa.replaceChildren();
 
     const resultados = fornecedorProdutos
@@ -1792,6 +1803,7 @@ function renderizarResultadosFornecedor() {
             (!termo || item.score < 99)
             && produtoPassaFiltroFornecedor(item.produto, fornecedor, filtroFornecedor)
             && produtoPassaFiltroTopFornecedor(item.produto, filtroTop)
+            && produtoPassaFiltroArquivadoFornecedor(item.produto, filtroArquivado)
             && produtoPassaFiltroDescontinuadoFornecedor(item.produto, filtroDescontinuado)
         ))
         .sort((a, b) => compararProdutosFornecedor(a, b, ordenacao));
@@ -2702,6 +2714,10 @@ ligarEventoFornecedor('fornecedor-nome', 'change', agendarRenderizacaoResultados
 ligarEventoFornecedor('fornecedor-ordenacao-stock', 'change', agendarRenderizacaoResultadosFornecedor);
 ligarEventoFornecedor('fornecedor-filtro-marcacao', 'change', agendarRenderizacaoResultadosFornecedor);
 ligarEventoFornecedor('fornecedor-filtro-top', 'change', agendarRenderizacaoResultadosFornecedor);
+ligarEventoFornecedor('fornecedor-filtro-arquivado', 'change', () => {
+    agendarRenderizacaoResultadosFornecedor();
+    agendarAjusteLarguraSelectsCompactosFornecedor();
+});
 ligarEventoFornecedor('fornecedor-filtro-descontinuado', 'change', agendarRenderizacaoResultadosFornecedor);
 ligarEventoFornecedor('btn-limpar-fornecedor', 'click', limparSelecaoFornecedor);
 ligarEventoFornecedor('btn-criar-fornecedor', 'click', criarPedidoFornecedor);
