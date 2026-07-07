@@ -892,16 +892,16 @@ function obterProdutoParaPedidoFornecedor(item, listaProdutos = fornecedorProdut
 function produtoPassaFiltroTopFornecedor(produto, filtroTop) {
     if (!filtroTop || filtroTop === "todos") return true;
     const valorTop = String(obterTopProdutoFornecedor(produto) || "").trim();
-    if (filtroTop === "top") return Boolean(valorTop);
-    if (filtroTop === "sem-top") return !valorTop;
+    if (filtroTop === "sim" || filtroTop === "top") return Boolean(valorTop);
+    if (filtroTop === "nao" || filtroTop === "sem-top") return !valorTop;
     return true;
 }
 
 function produtoPassaFiltroDescontinuadoFornecedor(produto, filtroDescontinuado) {
     if (!filtroDescontinuado || filtroDescontinuado === "todos") return true;
     const descontinuado = obterBooleanoProdutoFornecedor(produto?.descontinuado);
-    if (filtroDescontinuado === "descontinuado") return descontinuado;
-    if (filtroDescontinuado === "sem-descontinuado") return !descontinuado;
+    if (filtroDescontinuado === "sim" || filtroDescontinuado === "descontinuado") return descontinuado;
+    if (filtroDescontinuado === "nao" || filtroDescontinuado === "sem-descontinuado") return !descontinuado;
     return true;
 }
 
