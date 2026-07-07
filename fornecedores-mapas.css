@@ -170,10 +170,31 @@ body.pagina-fornecedores-admin{ margin:0; padding-left:0; padding-right:0; paddi
         .fornecedor-ficha-ativo input{ width:auto; }
         .fornecedor-ficha-apagar{ margin-right:auto; border-color:#5a2525 !important; background:#2a1111 !important; color:#ffb3b3 !important; }
         .fornecedor-ficha-apagar:hover,.fornecedor-ficha-apagar:focus-visible{ background:#4a1717 !important; color:#fff !important; }
-        .fornecedor-pedido-card{ border:1px solid #333; border-radius:6px; background:#111; padding:0; overflow:hidden; }
-        .fornecedor-pedido-card.aberta{ border-color:#7a6200; }
-        .fornecedor-pedido-cabecalho{ display:flex; align-items:center; gap:12px; padding:8px 12px; border:0; background:#171717; cursor:pointer; }
-        .fornecedor-pedido-cabecalho:hover,.fornecedor-pedido-cabecalho:focus-visible{ background:#202020; outline:none; }
+        .fornecedor-pedido-card{
+            border:1px solid #4a4a4a;
+            border-radius:6px;
+            background:#181818;
+            padding:0;
+            overflow:hidden;
+            box-shadow:0 2px 8px rgba(0,0,0,.32);
+        }
+        .fornecedor-pedido-card.aberta{
+            border-color:#7a6200;
+            box-shadow:0 0 0 1px rgba(122,98,0,.28), 0 2px 10px rgba(0,0,0,.36);
+        }
+        .fornecedor-pedido-cabecalho{
+            display:flex;
+            align-items:center;
+            gap:12px;
+            padding:10px 14px;
+            border:0;
+            background:#222;
+            cursor:pointer;
+        }
+        .fornecedor-pedido-cabecalho:hover,.fornecedor-pedido-cabecalho:focus-visible{
+            background:#2b2b2b;
+            outline:none;
+        }
         .fornecedor-pedido-linha-cabecalho{
             grid-template-columns:minmax(104px,0.75fr) 158px minmax(140px,1.05fr) minmax(240px,1.55fr) minmax(136px,auto);
             column-gap:18px;
