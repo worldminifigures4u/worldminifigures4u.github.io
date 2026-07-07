@@ -2479,6 +2479,7 @@ function renderizarPedidosFornecedores() {
         vazio.className = 'fornecedor-vazio';
         vazio.textContent = 'Ainda nao existem encomendas neste estado.';
         caixa.appendChild(vazio);
+        agendarAjusteLarguraSelectsCompactosFornecedor();
         return;
     }
 
@@ -2525,7 +2526,7 @@ function renderizarPedidosFornecedores() {
         const controlos = document.createElement('div');
         controlos.className = 'fornecedor-pedido-controlos';
         const estado = document.createElement('select');
-        estado.className = 'fornecedor-status-select';
+        estado.className = 'fornecedor-status-select fornecedor-select-estado';
         obterEstadosPedidoFornecedor().forEach(opcao => {
             const opt = document.createElement('option');
             opt.value = opcao;
@@ -2607,6 +2608,7 @@ function renderizarPedidosFornecedores() {
         card.appendChild(detalhes);
         caixa.appendChild(card);
     });
+    agendarAjusteLarguraSelectsCompactosFornecedor();
 }
 
 async function receberPedidoFornecedor(id) {
@@ -2643,29 +2645,52 @@ async function receberPedidoFornecedor(id) {
     }
 }
 let resizeSelectsFornecedorTimer;
+const TEXTOS_LARGURA_ESTADO_FORNECEDOR = [
+    'Todos',
+    'A preparar',
+    'Encomendada',
+    'Recebida parcialmente',
+    'Recebida',
+    'Cancelada'
+];
+
+function medirLarguraSelectFornecedor(select, textos) {
+    const estilo = window.getComputedStyle(select);
+    const medidor = document.createElement("span");
+    medidor.style.cssText = "position:absolute;left:-9999px;visibility:hidden;white-space:nowrap;";
+    medidor.style.font = estilo.font;
+    document.body.appendChild(medidor);
+
+    let larguraMax = 0;
+    textos.forEach((texto) => {
+        medidor.textContent = texto;
+        larguraMax = Math.max(larguraMax, medidor.offsetWidth);
+    });
+    document.body.removeChild(medidor);
+
+    const extra = 28
+        + (parseFloat(estilo.paddingLeft) || 0)
+        + (parseFloat(estilo.paddingRight) || 0)
+        + (parseFloat(estilo.borderLeftWidth) || 0)
+        + (parseFloat(estilo.borderRightWidth) || 0);
+    return `${Math.ceil(larguraMax + extra)}px`;
+}
+
+function ajustarLarguraSelectsEstadoFornecedor() {
+    const selects = document.querySelectorAll(".fornecedor-select-estado");
+    if (!selects.length) return;
+    const largura = medirLarguraSelectFornecedor(selects[0], TEXTOS_LARGURA_ESTADO_FORNECEDOR);
+    selects.forEach((select) => {
+        select.style.width = largura;
+    });
+}
 
 function ajustarLarguraSelectsCompactosFornecedor() {
-    document.querySelectorAll(".fornecedor-controle-filtro-compacto select, #fornecedor-filtro-estado").forEach((select) => {
-        const estilo = window.getComputedStyle(select);
-        const medidor = document.createElement("span");
-        medidor.style.cssText = "position:absolute;left:-9999px;visibility:hidden;white-space:nowrap;";
-        medidor.style.font = estilo.font;
-        document.body.appendChild(medidor);
-
-        let larguraMax = 0;
-        Array.from(select.options).forEach((option) => {
-            medidor.textContent = option.textContent || "";
-            larguraMax = Math.max(larguraMax, medidor.offsetWidth);
-        });
-        document.body.removeChild(medidor);
-
-        const extra = 28
-            + (parseFloat(estilo.paddingLeft) || 0)
-            + (parseFloat(estilo.paddingRight) || 0)
-            + (parseFloat(estilo.borderLeftWidth) || 0)
-            + (parseFloat(estilo.borderRightWidth) || 0);
-        select.style.width = `${Math.ceil(larguraMax + extra)}px`;
+    document.querySelectorAll(".fornecedor-controle-filtro-compacto select").forEach((select) => {
+        const textos = Array.from(select.options).map((option) => option.textContent || "");
+        select.style.width = medirLarguraSelectFornecedor(select, textos);
     });
+    ajustarLarguraSelectsEstadoFornecedor();
 }
 
 function agendarAjusteLarguraSelectsCompactosFornecedor() {

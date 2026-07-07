@@ -87,9 +87,19 @@ body.pagina-fornecedores-admin{ margin:0; padding-left:0; padding-right:0; paddi
             color:#ddd;
             font-weight:700;
             flex:0 0 auto;
+            margin-left:auto;
         }
-        .fornecedor-filtro-estado-cabecalho select{
-            width:auto;
+        .fornecedor-estado-linha{
+            display:flex;
+            align-items:center;
+            gap:12px;
+        }
+        .fornecedor-estado-linha-espaco{
+            flex:0 0 1.25em;
+            width:1.25em;
+        }
+        .fornecedor-select-estado{
+            width:auto !important;
             min-height:42px;
             box-sizing:border-box;
             border:1px solid #444;
@@ -172,12 +182,12 @@ body.pagina-fornecedores-admin{ margin:0; padding-left:0; padding-right:0; paddi
         .fornecedor-ficha-apagar:hover,.fornecedor-ficha-apagar:focus-visible{ background:#4a1717 !important; color:#fff !important; }
         .fornecedor-pedido-card{ border:1px solid #333; border-radius:8px; background:#111; padding:0; overflow:hidden; }
         .fornecedor-pedido-card.aberta{ border-color:#555; }
-        .fornecedor-pedido-cabecalho{ display:grid; grid-template-columns:minmax(0,1fr) auto; gap:12px; align-items:start; padding:14px; cursor:pointer; }
+        .fornecedor-pedido-cabecalho{ display:grid; grid-template-columns:minmax(0,1fr) auto; gap:12px; align-items:flex-end; padding:14px; cursor:pointer; }
         .fornecedor-pedido-cabecalho:hover,.fornecedor-pedido-cabecalho:focus-visible{ background:#181818; outline:none; }
         .fornecedor-pedido-cabecalho strong{ display:block; color:#ffc400; font-size:20px; }
         .fornecedor-pedido-cabecalho span,.fornecedor-pedido-cabecalho small{ display:block; color:#ddd; }
-        .fornecedor-pedido-controlos{ display:flex; align-items:center; gap:12px; }
-        .fornecedor-pedido-seta{ color:#ffc400 !important; font-size:20px; line-height:1; transition:transform .15s ease; }
+        .fornecedor-pedido-controlos{ display:flex; align-items:center; gap:12px; width:max-content; }
+        .fornecedor-pedido-seta{ color:#ffc400 !important; font-size:20px; line-height:1; transition:transform .15s ease; flex:0 0 1.25em; width:1.25em; text-align:center; }
         .fornecedor-pedido-card.aberta .fornecedor-pedido-seta{ transform:rotate(180deg); }
         .fornecedor-pedido-detalhes{ display:grid; gap:12px; padding:0 14px 14px; border-top:1px solid #333; }
         .fornecedor-pedido-detalhes[hidden]{ display:none; }
