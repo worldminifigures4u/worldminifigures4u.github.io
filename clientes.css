@@ -148,6 +148,19 @@
 .clientes-resumo-total{ grid-column:2; grid-row:1; }
 .clientes-resumo-ultima{ grid-column:1; grid-row:2; }
 
+.clientes-historico-codigo{
+    color:#ffc107;
+    font-weight:700;
+    text-decoration:none;
+}
+
+.clientes-historico-codigo:hover,
+.clientes-historico-codigo:focus-visible{
+    color:#ffe082;
+    text-decoration:underline;
+    outline:none;
+}
+
 .clientes-botao-apagar{
     background:#7a1f1f;
     color:#fff;

@@ -1080,6 +1080,36 @@ function renderizarEncomendasAdmin() {
     filtradas.forEach(encomenda => lista.appendChild(criarCardEncomenda(encomenda)));
 }
 
+function obterCodigoEncomendaUrlAdmin() {
+    return String(new URLSearchParams(window.location.search).get('encomenda') || '').trim();
+}
+
+function abrirEncomendaAdminPorCodigo(codigo) {
+    const alvo = String(codigo || '').trim();
+    if (!alvo) return false;
+
+    const pesquisa = document.getElementById('pesquisa-encomendas-admin');
+    const filtro = document.getElementById('filtro-estado-encomendas-admin');
+    if (pesquisa) pesquisa.value = alvo;
+    if (filtro) filtro.value = 'todos';
+    renderizarEncomendasAdmin();
+
+    const card = [...document.querySelectorAll('.admin-encomenda-codigo')]
+        .find(elemento => String(elemento.textContent || '').trim().toUpperCase() === alvo.toUpperCase())
+        ?.closest('.admin-encomenda-card');
+    if (!card) return false;
+
+    const detalhes = card.querySelector('.admin-encomenda-detalhes');
+    if (detalhes?.hidden) {
+        card.querySelector('.admin-encomenda-cabecalho')?.click();
+    } else {
+        card.classList.add('aberta');
+    }
+
+    card.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    return true;
+}
+
 function atualizarResumoEncomendas() {
     const contar = estado => encomendasAdmin.filter(item => estadoNormalizadoEncomenda(item.estado) === estado).length;
     document.getElementById('encomendas-total').textContent = encomendasAdmin.length;
@@ -1167,6 +1197,8 @@ async function iniciarPainelEncomendas() {
         const filtroEstado = document.getElementById('filtro-estado-encomendas-admin');
         if (filtroEstado) filtroEstado.value = ENCOMENDAS_ESTADO_INICIAL;
         await carregarEncomendasAdmin();
+        const codigoUrl = obterCodigoEncomendaUrlAdmin();
+        if (codigoUrl) abrirEncomendaAdminPorCodigo(codigoUrl);
     } catch (error) {
         console.error(error);
         bloqueio.hidden = false;

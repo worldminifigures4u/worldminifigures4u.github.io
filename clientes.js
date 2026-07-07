@@ -289,7 +289,7 @@ function criarSecaoHistoricoCliente(historico = []) {
     historico.forEach(item => {
         const linha = criarElementoCliente("div", "admin-cliente-historico-linha");
         linha.append(
-            criarElementoCliente("strong", "", item.codigo || `#${item.id}`),
+            criarCodigoHistoricoCliente(item),
             criarElementoCliente("span", "", item.origem || "Site"),
             criarElementoCliente("span", "", item.estado || ""),
             criarElementoCliente("span", "", formatarDataCliente(item.data)),
@@ -302,6 +302,28 @@ function criarSecaoHistoricoCliente(historico = []) {
     }
     historicoSecao.appendChild(listaHistorico);
     return historicoSecao;
+}
+
+function obterUrlEncomendaCliente(item) {
+    const codigo = String(item.codigo || item.codigo_encomenda || "").trim();
+    if (!codigo) return "";
+    const origem = String(item.origem || "Site").trim().toLowerCase();
+    if (["wallapop", "olx", "todocoleccion"].includes(origem)) {
+        return `plataforma.html?editar=${encodeURIComponent(codigo)}`;
+    }
+    return `encomendas.html?encomenda=${encodeURIComponent(codigo)}`;
+}
+
+function criarCodigoHistoricoCliente(item) {
+    const codigo = item.codigo || item.codigo_encomenda || `#${item.id}`;
+    const url = obterUrlEncomendaCliente(item);
+    if (!url) return criarElementoCliente("strong", "", codigo);
+    const link = document.createElement("a");
+    link.className = "clientes-historico-codigo";
+    link.href = url;
+    link.textContent = codigo;
+    link.title = "Abrir encomenda para consulta e edição";
+    return link;
 }
 
 function montarFormularioCliente(dados, opcoes = {}) {
