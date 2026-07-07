@@ -2630,6 +2630,37 @@ async function receberPedidoFornecedor(id) {
         definirStatusFornecedor('Erro ao receber stock: ' + (error.message || 'erro desconhecido'), true);
     }
 }
+let resizeSelectsFornecedorTimer;
+
+function ajustarLarguraSelectsCompactosFornecedor() {
+    document.querySelectorAll(".fornecedor-controle-filtro-compacto select").forEach((select) => {
+        const estilo = window.getComputedStyle(select);
+        const medidor = document.createElement("span");
+        medidor.style.cssText = "position:absolute;left:-9999px;visibility:hidden;white-space:nowrap;";
+        medidor.style.font = estilo.font;
+        document.body.appendChild(medidor);
+
+        let larguraMax = 0;
+        Array.from(select.options).forEach((option) => {
+            medidor.textContent = option.textContent || "";
+            larguraMax = Math.max(larguraMax, medidor.offsetWidth);
+        });
+        document.body.removeChild(medidor);
+
+        const extra = 28
+            + (parseFloat(estilo.paddingLeft) || 0)
+            + (parseFloat(estilo.paddingRight) || 0)
+            + (parseFloat(estilo.borderLeftWidth) || 0)
+            + (parseFloat(estilo.borderRightWidth) || 0);
+        select.style.width = `${Math.ceil(larguraMax + extra)}px`;
+    });
+}
+
+function agendarAjusteLarguraSelectsCompactosFornecedor() {
+    clearTimeout(resizeSelectsFornecedorTimer);
+    resizeSelectsFornecedorTimer = setTimeout(ajustarLarguraSelectsCompactosFornecedor, 50);
+}
+
 async function iniciarFornecedoresAdmin() {
     const bloqueio = document.getElementById('fornecedores-bloqueio');
     try {
@@ -2652,6 +2683,7 @@ async function iniciarFornecedoresAdmin() {
         renderizarResultadosFornecedor();
         renderizarSelecionadosFornecedor();
         renderizarPedidosFornecedores();
+        agendarAjusteLarguraSelectsCompactosFornecedor();
     } catch (error) {
         console.error(error);
         bloqueio.textContent = 'Erro ao abrir fornecedores: ' + (error.message || 'sem detalhe disponivel');
@@ -2727,4 +2759,5 @@ ligarEventoFornecedor('btn-atualizar-catalogo-fornecedor', 'click', async () => 
         definirStatusFornecedor('Erro ao atualizar catalogo: ' + (error.message || 'erro desconhecido'), true);
     }
 });
+window.addEventListener('resize', agendarAjusteLarguraSelectsCompactosFornecedor);
 window.addEventListener('load', iniciarFornecedoresAdmin);
