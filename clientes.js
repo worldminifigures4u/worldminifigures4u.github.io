@@ -317,12 +317,30 @@ function criarCodigoHistoricoCliente(item, indice, historico) {
 }
 
 function montarFormularioCliente(dados, opcoes = {}) {
-    const { novoCliente = false, mostrarCancelar = false, acoesNoTopo = false } = opcoes;
+    const { novoCliente = false, mostrarCancelar = false, acoesNoTopo = false, acoesAntesCampos = false } = opcoes;
     const cliente = dados.cliente || {};
     const perfis = Array.isArray(dados.perfis) ? dados.perfis : [];
     const formulario = document.createElement("form");
     formulario.className = "admin-cliente-formulario clientes-formulario";
     formulario.id = `clientes-formulario-${cliente.id || "novo"}`;
+
+    let cancelar = null;
+    if (mostrarCancelar) {
+        cancelar = criarElementoCliente("button", "wallapop-botao", "Cancelar");
+        cancelar.type = "button";
+    }
+
+    const guardar = criarElementoCliente("button", "wallapop-botao wallapop-botao-destaque", novoCliente ? "Gravar" : "Guardar ficha");
+    guardar.type = "submit";
+
+    if (acoesAntesCampos) {
+        const acoesTopo = criarElementoCliente("div", "clientes-formulario-acoes-topo admin-cliente-formulario-acoes");
+        if (cancelar) {
+            acoesTopo.appendChild(cancelar);
+        }
+        acoesTopo.appendChild(guardar);
+        formulario.appendChild(acoesTopo);
+    }
 
     formulario.append(
         criarInputCliente("Nome", "nome", cliente.nome, "text", true),
@@ -351,15 +369,6 @@ function montarFormularioCliente(dados, opcoes = {}) {
         checkboxAviso = criarCheckboxCliente("Cliente com aviso a ler", "tem_aviso", cliente.tem_aviso);
     }
 
-    let cancelar = null;
-    if (mostrarCancelar) {
-        cancelar = criarElementoCliente("button", "wallapop-botao", "Cancelar");
-        cancelar.type = "button";
-    }
-
-    const guardar = criarElementoCliente("button", "wallapop-botao wallapop-botao-destaque", novoCliente ? "Gravar" : "Guardar ficha");
-    guardar.type = "submit";
-
     if (acoesNoTopo) {
         if (checkboxAviso) {
             checkboxAviso.querySelector("input")?.setAttribute("form", formulario.id);
@@ -367,7 +376,7 @@ function montarFormularioCliente(dados, opcoes = {}) {
         guardar.setAttribute("form", formulario.id);
     }
 
-    if (!acoesNoTopo) {
+    if (!acoesNoTopo && !acoesAntesCampos) {
         const rodapeFormulario = criarElementoCliente("div", "clientes-formulario-rodape");
         if (checkboxAviso) {
             rodapeFormulario.appendChild(checkboxAviso);
@@ -471,7 +480,11 @@ function renderizarFormularioCliente(dados, modo = "novo") {
     const ficha = document.getElementById("clientes-ficha");
     clienteAbertoId = "";
     renderizarClientesLista();
-    ficha.replaceChildren(montarFormularioCliente(dados, { novoCliente: true, mostrarCancelar: true }).formulario);
+    ficha.replaceChildren(montarFormularioCliente(dados, {
+        novoCliente: true,
+        mostrarCancelar: true,
+        acoesAntesCampos: true
+    }).formulario);
 }
 
 function renderizarEdicaoCliente(dados) {

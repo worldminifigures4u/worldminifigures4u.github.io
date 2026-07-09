@@ -309,6 +309,14 @@ body.clientes-encomenda-modal-aberto{
     margin-top:8px;
 }
 
+.clientes-formulario-acoes-topo{
+    grid-column:1 / -1;
+    display:flex;
+    justify-content:flex-end;
+    gap:10px;
+    margin-bottom:2px;
+}
+
 .clientes-formulario-rodape{
     grid-column:1 / -1;
     display:flex;
