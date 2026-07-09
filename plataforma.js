@@ -1210,8 +1210,11 @@ const WALLAPOP_ALTURA_FOLHA = 1123;
 const WALLAPOP_ALTURA_FOLHA_MINIMA = Math.ceil(WALLAPOP_ALTURA_FOLHA / 2);
 const WALLAPOP_MARGEM_FOLHA = 42;
 const WALLAPOP_ALTURA_LINHA = 96;
+const WALLAPOP_ALTURA_CABECALHO = 38;
 const WALLAPOP_ALTURA_RODAPE = 34;
+const WALLAPOP_ESPACO_RODAPE = 14;
 const WALLAPOP_MARGEM_FINAL = 24;
+const WALLAPOP_TITULO_LOTE = 'Lista de figuras do lote';
 
 function calcularTotalFigurasLoteWallapop(itens) {
     return (itens || []).reduce((total, item) => (
@@ -1221,7 +1224,33 @@ function calcularTotalFigurasLoteWallapop(itens) {
 
 function formatarRodapeFolhaWallapop(numeroPagina, totalPaginas, totalFiguras) {
     const rotuloFiguras = totalFiguras === 1 ? 'figura' : 'figuras';
-    return `P\u00e1gina ${numeroPagina} de ${totalPaginas} \u2022 Total do lote: ${totalFiguras} ${rotuloFiguras}`;
+    return `Total do lote: ${totalFiguras} ${rotuloFiguras} \u2022 P\u00e1gina ${numeroPagina} de ${totalPaginas}`;
+}
+
+function obterLayoutFolhaWallapop(totalItens) {
+    const itens = Math.max(1, Math.min(WALLAPOP_ITENS_POR_FOLHA, Number(totalItens) || 0));
+    const yItens = WALLAPOP_MARGEM_FOLHA + WALLAPOP_ALTURA_CABECALHO;
+    const alturaLista = itens * WALLAPOP_ALTURA_LINHA;
+    const yRodape = yItens + alturaLista + WALLAPOP_ESPACO_RODAPE;
+    const altura = yRodape + WALLAPOP_ALTURA_RODAPE + WALLAPOP_MARGEM_FINAL;
+
+    return {
+        itens,
+        altura: Math.min(
+            WALLAPOP_ALTURA_FOLHA,
+            Math.max(WALLAPOP_ALTURA_FOLHA_MINIMA, altura)
+        ),
+        yCabecalho: WALLAPOP_MARGEM_FOLHA + 18,
+        yItens,
+        yRodape: yRodape + (WALLAPOP_ALTURA_RODAPE / 2)
+    };
+}
+
+function criarCabecalhoFolhaWallapop() {
+    const cabecalho = document.createElement('header');
+    cabecalho.className = 'wallapop-pagina-cabecalho';
+    cabecalho.textContent = WALLAPOP_TITULO_LOTE;
+    return cabecalho;
 }
 
 function criarRodapeFolhaWallapop(numeroPagina, totalPaginas, totalFiguras) {
@@ -1231,12 +1260,20 @@ function criarRodapeFolhaWallapop(numeroPagina, totalPaginas, totalFiguras) {
     return rodape;
 }
 
-function desenharRodapeFolhaWallapop(ctx, largura, altura, texto) {
-    ctx.font = '600 14px Arial, Helvetica, sans-serif';
-    ctx.fillStyle = '#555555';
+function desenharCabecalhoFolhaWallapop(ctx, largura, yCabecalho) {
+    ctx.font = '700 18px Arial, Helvetica, sans-serif';
+    ctx.fillStyle = '#111111';
     ctx.textAlign = 'center';
-    ctx.textBaseline = 'bottom';
-    ctx.fillText(texto, largura / 2, altura - 14);
+    ctx.textBaseline = 'middle';
+    ctx.fillText(WALLAPOP_TITULO_LOTE, largura / 2, yCabecalho);
+}
+
+function desenharRodapeFolhaWallapop(ctx, largura, yCentro, texto) {
+    ctx.font = '700 14px Arial, Helvetica, sans-serif';
+    ctx.fillStyle = '#333333';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(texto, largura / 2, yCentro);
     ctx.fillStyle = '#111111';
 }
 
@@ -1249,12 +1286,7 @@ function dividirItensWallapop(itens, tamanho = WALLAPOP_ITENS_POR_FOLHA) {
 }
 
 function calcularAlturaFolhaWallapop(totalItens) {
-    const itens = Math.max(1, Math.min(WALLAPOP_ITENS_POR_FOLHA, Number(totalItens) || 0));
-    const alturaConteudo = WALLAPOP_MARGEM_FOLHA + (itens * WALLAPOP_ALTURA_LINHA) + WALLAPOP_MARGEM_FINAL;
-    return Math.min(
-        WALLAPOP_ALTURA_FOLHA,
-        Math.max(WALLAPOP_ALTURA_FOLHA_MINIMA, alturaConteudo)
-    );
+    return obterLayoutFolhaWallapop(totalItens).altura;
 }
 
 function obterEscalaPrevisualizacaoWallapop() {
@@ -1365,9 +1397,10 @@ function quebrarTextoCanvasWallapop(ctx, texto, larguraMaxima, maximoLinhas = 2)
     return linhas;
 }
 
-async function gerarCanvasFolhaWallapop(itensPagina) {
+async function gerarCanvasFolhaWallapop(itensPagina, numeroPagina, totalPaginas, totalFiguras) {
     const largura = WALLAPOP_LARGURA_FOLHA;
-    const altura = calcularAlturaFolhaWallapop(itensPagina.length);
+    const layout = obterLayoutFolhaWallapop(itensPagina.length);
+    const altura = layout.altura;
     const escala = 2;
     const margem = WALLAPOP_MARGEM_FOLHA;
     const alturaLinha = WALLAPOP_ALTURA_LINHA;
@@ -1381,9 +1414,11 @@ async function gerarCanvasFolhaWallapop(itensPagina) {
     ctx.textBaseline = 'middle';
     ctx.fillStyle = '#111111';
 
+    desenharCabecalhoFolhaWallapop(ctx, largura, layout.yCabecalho);
+
     for (let indice = 0; indice < itensPagina.length; indice += 1) {
         const item = itensPagina[indice];
-        const y = margem + (indice * alturaLinha);
+        const y = layout.yItens + (indice * alturaLinha);
         const centroY = y + (alturaLinha / 2);
         const imagem = await carregarImagemCanvasWallapop(obterImagemWallapop(item));
         desenharImagemContidaWallapop(ctx, imagem, margem, y + 3, 90, 90);
@@ -1403,12 +1438,21 @@ async function gerarCanvasFolhaWallapop(itensPagina) {
         });
     }
 
+    desenharRodapeFolhaWallapop(
+        ctx,
+        largura,
+        layout.yRodape,
+        formatarRodapeFolhaWallapop(numeroPagina, totalPaginas, totalFiguras)
+    );
+
     return canvas;
 }
 function renderizarFolhaWallapop(itens = wallapopItens) {
     const folha = document.getElementById('wallapop-folha');
     folha.replaceChildren();
     const paginas = dividirItensWallapop(itens);
+    const totalPaginas = paginas.length;
+    const totalFiguras = calcularTotalFigurasLoteWallapop(itens);
 
     if (!itens.length) {
         const pagina = document.createElement('section');
@@ -1430,6 +1474,7 @@ function renderizarFolhaWallapop(itens = wallapopItens) {
         lista.className = 'wallapop-lista';
         itensPagina.forEach(item => lista.appendChild(criarLinhaFolhaWallapop(item)));
         pagina.appendChild(lista);
+        pagina.appendChild(criarRodapeFolhaWallapop(indice + 1, totalPaginas, totalFiguras));
         folha.appendChild(pagina);
     });
 
@@ -1608,12 +1653,19 @@ async function descarregarImagemWallapop() {
         const pastaBase = await obterPastaBaseWallapop();
         const paginasItens = dividirItensWallapop(itensFicheiros);
         if (!paginasItens.length) throw new Error('Nao existem folhas para exportar.');
+        const totalPaginas = paginasItens.length;
+        const totalFiguras = calcularTotalFigurasLoteWallapop(itensFicheiros);
 
         const pastaEncomenda = await pastaBase.getDirectoryHandle(nomeEncomenda, { create: true });
         await escreverFicheiroWallapop(pastaEncomenda, `${nomeEncomenda}.txt`, criarTextoEncomendaWallapop());
 
         for (let indice = 0; indice < paginasItens.length; indice += 1) {
-            const canvas = await gerarCanvasFolhaWallapop(paginasItens[indice]);
+            const canvas = await gerarCanvasFolhaWallapop(
+                paginasItens[indice],
+                indice + 1,
+                totalPaginas,
+                totalFiguras
+            );
             const imagem = await canvasParaBlobWallapop(canvas);
             const nomeImagem = paginasItens.length === 1 ? 'foto anuncio.png' : `foto anuncio ${indice + 1}.png`;
             await escreverFicheiroWallapop(pastaEncomenda, nomeImagem, imagem);
