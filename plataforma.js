@@ -1516,9 +1516,15 @@ function criarTextoClienteOlx() {
     return '\ufeff' + linhas.join('\r\n');
 }
 
+function obterNomeClienteParaCabecalhoTxt() {
+    return encomendaPlataformaParaFicheiros?.nome_cliente || obterNomeClientePlataforma();
+}
+
 function criarCabecalhoCodigoEncomenda() {
     const codigo = obterCodigoEncomendaAtual();
-    return codigo ? [`Pedido ${codigo}`, ''] : [];
+    if (!codigo) return [];
+    const nomeCliente = obterNomeClienteParaCabecalhoTxt();
+    return [`Lote personalizado - Pedido ${codigo} - Reservado para ${nomeCliente}`, ''];
 }
 
 function validarEncomendaRegistadaParaFicheiros() {
