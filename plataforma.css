@@ -494,6 +494,10 @@ body.pagina-wallapop{
             line-height:1.2;
         }
 
+        .wallapop-pagina-total + .wallapop-pagina-rodape{
+            margin-top:9px;
+        }
+
         .wallapop-pagina-total{
             margin-top:14px;
             margin-bottom:0;
