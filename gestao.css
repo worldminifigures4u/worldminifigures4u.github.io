@@ -198,61 +198,25 @@
             color:#f0f0f0;
         }
 
-        .btn-admin-secundario,
-        .wallapop-botao{
-            min-height:40px;
+        .btn-admin-secundario{
+            background:#222;
+            border:1px solid #444;
+            border-radius:6px;
+            color:#fff;
+            cursor:pointer;
+            font-weight:bold;
+            padding:8px 10px;
+        }
+
+        .btn-admin-secundario:hover{
+            border-color:#ffc107;
+            color:#ffc107;
         }
 
         .acoes-form-admin{
-            display:flex;
-            justify-content:flex-end;
-            align-items:center;
-            flex-wrap:wrap;
-            gap:10px;
-        }
-
-        .acoes-form-admin-topo,
-        .acao-form-admin-topo{
-            align-self:flex-end;
-            width:max-content;
-            max-width:100%;
-            margin-left:auto;
-        }
-
-        .acoes-form-admin-topo{
-            margin-bottom:2px;
-        }
-
-        .acao-form-admin-topo{
-            margin-bottom:8px;
-        }
-
-        .linha-admin-pesquisa .wallapop-botao{
-            min-height:42px;
-            white-space:nowrap;
-        }
-
-        .item-admin-produto .wallapop-botao{
-            min-height:36px;
-            padding:8px 12px;
-            white-space:nowrap;
-        }
-
-        .form-admin .wallapop-botao-destaque:disabled,
-        .form-admin .wallapop-botao-perigo:disabled{
-            opacity:.55;
-            cursor:not-allowed;
-        }
-
-        .wallapop-botao-perigo{
-            background:#ff4d4d;
-            color:#fff;
-        }
-
-        .wallapop-botao-perigo:hover,
-        .wallapop-botao-perigo:focus-visible{
-            background:#e04444;
-            outline:none;
+            display:grid;
+            grid-template-columns:1fr 1fr;
+            gap:8px;
         }
 
         .upload-admin-fotos{
@@ -514,4 +478,8 @@
     white-space:nowrap;
     overflow:hidden;
     text-overflow:ellipsis;
+}
+
+.item-admin-produto .btn-admin-secundario{
+    padding:6px 10px;
 }

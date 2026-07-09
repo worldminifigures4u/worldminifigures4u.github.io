@@ -288,7 +288,7 @@ function renderizarListaProdutosAdmin() {
 
         const botao = document.createElement('button');
         botao.type = 'button';
-        botao.className = 'wallapop-botao';
+        botao.className = 'btn-admin-secundario';
         botao.textContent = 'Editar';
         botao.onclick = () => preencherEdicaoProdutoAdmin(obterProdutoId(produto));
         item.appendChild(botao);
