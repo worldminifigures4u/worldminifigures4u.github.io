@@ -422,9 +422,14 @@
 
 .gestao-tab:hover,
 .gestao-tab:focus-visible{
-    border-color:#ffc107;
-    color:#ffc107;
+    border-color:#ffc400;
     outline:none;
+}
+
+.gestao-tab.ativa:hover,
+.gestao-tab.ativa:focus-visible{
+    color:var(--cor-ativo-texto, #000000);
+    background:var(--cor-ativo-fundo, #ffc400);
 }
 
 .gestao-tab.ativa{
