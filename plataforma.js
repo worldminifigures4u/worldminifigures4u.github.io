@@ -1252,6 +1252,14 @@ function atualizarAlturaPrevisualizacaoWallapop() {
     else aplicarAltura();
 }
 
+function formatarPrecoLinhaAnuncioPlataforma(item) {
+    return `${formatarEuroWallapop(item.preco)} \u20ac`;
+}
+
+const WALLAPOP_COLUNA_QUANTIDADE_X = 152;
+const WALLAPOP_COLUNA_PRECO_X = 198;
+const WALLAPOP_COLUNA_NOME_X = 276;
+
 function criarLinhaFolhaWallapop(item) {
     const linha = document.createElement('article');
     linha.className = 'wallapop-linha';
@@ -1264,15 +1272,15 @@ function criarLinhaFolhaWallapop(item) {
     quantidade.className = 'wallapop-linha-quantidade';
     quantidade.textContent = `${item.quantidade || 1}x`;
 
+    const preco = document.createElement('div');
+    preco.className = 'wallapop-linha-preco';
+    preco.textContent = formatarPrecoLinhaAnuncioPlataforma(item);
+
     const nome = document.createElement('h3');
     nome.className = 'wallapop-linha-nome';
     nome.textContent = item.nome;
 
-    const preco = document.createElement('div');
-    preco.className = 'wallapop-linha-preco';
-    preco.textContent = `${formatarEuroWallapop(item.preco)} € / un.`;
-
-    linha.append(foto, quantidade, nome, preco);
+    linha.append(foto, quantidade, preco, nome);
     return linha;
 }
 function carregarImagemCanvasWallapop(src) {
@@ -1354,19 +1362,17 @@ async function gerarCanvasFolhaWallapop(itensPagina) {
 
         ctx.font = '700 17px Arial, Helvetica, sans-serif';
         ctx.textAlign = 'left';
-        ctx.fillText(`${item.quantidade || 1}x`, 152, centroY);
+        ctx.fillText(`${item.quantidade || 1}x`, WALLAPOP_COLUNA_QUANTIDADE_X, centroY);
 
         ctx.font = '700 16px Arial, Helvetica, sans-serif';
-        const linhasNome = quebrarTextoCanvasWallapop(ctx, item.nome, 365, 2);
+        ctx.fillText(formatarPrecoLinhaAnuncioPlataforma(item), WALLAPOP_COLUNA_PRECO_X, centroY);
+
+        const linhasNome = quebrarTextoCanvasWallapop(ctx, item.nome, largura - margem - WALLAPOP_COLUNA_NOME_X, 2);
         const linhaAltura = 19;
         const inicioNomeY = centroY - ((linhasNome.length - 1) * linhaAltura / 2);
         linhasNome.forEach((linha, linhaIndice) => {
-            ctx.fillText(linha, 210, inicioNomeY + (linhaIndice * linhaAltura));
+            ctx.fillText(linha, WALLAPOP_COLUNA_NOME_X, inicioNomeY + (linhaIndice * linhaAltura));
         });
-
-        ctx.font = '700 16px Arial, Helvetica, sans-serif';
-        ctx.textAlign = 'right';
-        ctx.fillText(`${formatarEuroWallapop(item.preco)} € / un.`, largura - margem, centroY);
     }
 
     return canvas;

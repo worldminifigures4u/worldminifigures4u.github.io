@@ -477,8 +477,8 @@ body.pagina-wallapop{
         .wallapop-linha{
             height:96px;
             display:grid;
-            grid-template-columns:90px 58px minmax(0, 1fr) minmax(112px, auto);
-            column-gap:20px;
+            grid-template-columns:90px 40px 78px minmax(0, 1fr);
+            column-gap:16px;
             align-items:center;
             break-inside:avoid;
         }
@@ -537,7 +537,7 @@ body.pagina-wallapop{
         .wallapop-linha-preco{
             font-size:16px;
             line-height:19px;
-            text-align:right;
+            text-align:left;
             white-space:nowrap;
         }
 
