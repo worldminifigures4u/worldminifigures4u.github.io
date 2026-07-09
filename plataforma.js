@@ -1210,13 +1210,25 @@ const WALLAPOP_ALTURA_FOLHA = 1123;
 const WALLAPOP_ALTURA_FOLHA_MINIMA = Math.ceil(WALLAPOP_ALTURA_FOLHA / 2);
 const WALLAPOP_MARGEM_FOLHA = 42;
 const WALLAPOP_ALTURA_LINHA = 96;
-const WALLAPOP_ALTURA_CABECALHO = 38;
+const WALLAPOP_COLUNA_FOTO_LARGURA = 90;
+const WALLAPOP_COLUNA_QUANTIDADE_LARGURA = 40;
+const WALLAPOP_COLUNA_PRECO_LARGURA = 78;
+const WALLAPOP_COLUNA_ESPACO = 16;
+const WALLAPOP_ALTURA_TITULO = 24;
+const WALLAPOP_ESPACO_TITULO_LINHA = 8;
+const WALLAPOP_ALTURA_LINHA_SEPARADOR = 1;
+const WALLAPOP_ESPACO_LINHA_ITENS = 9;
+const WALLAPOP_ALTURA_CABECALHO = WALLAPOP_ALTURA_TITULO + WALLAPOP_ESPACO_TITULO_LINHA + WALLAPOP_ALTURA_LINHA_SEPARADOR + WALLAPOP_ESPACO_LINHA_ITENS;
 const WALLAPOP_ALTURA_RODAPE = 34;
-const WALLAPOP_ALTURA_TOTAL_LOTE = 36;
+const WALLAPOP_ESPACO_ANTES_LINHA_TOTAL = 8;
+const WALLAPOP_ESPACO_LINHA_TOTAL = 10;
+const WALLAPOP_ALTURA_TOTAL_TEXTO = 30;
+const WALLAPOP_ALTURA_BLOCO_TOTAL = WALLAPOP_ESPACO_ANTES_LINHA_TOTAL + WALLAPOP_ALTURA_LINHA_SEPARADOR + WALLAPOP_ESPACO_LINHA_TOTAL + WALLAPOP_ALTURA_TOTAL_TEXTO;
 const WALLAPOP_ESPACO_RODAPE = 14;
 const WALLAPOP_ESPACO_TOTAL_LOTE = 12;
 const WALLAPOP_MARGEM_FINAL = 24;
 const WALLAPOP_TITULO_LOTE = 'Lista de figuras';
+const WALLAPOP_COR_LINHA_SEPARADOR = '#d0d0d0';
 
 function calcularTotalFigurasLoteWallapop(itens) {
     return (itens || []).reduce((total, item) => (
@@ -1239,19 +1251,44 @@ function formatarTotalLoteWallapop(total) {
     return `Total: ${formatarEuroWallapop(total)} \u20ac`;
 }
 
+function obterColunasFolhaWallapop() {
+    const xConteudo = WALLAPOP_MARGEM_FOLHA;
+    const xQuantidade = xConteudo + WALLAPOP_COLUNA_FOTO_LARGURA + WALLAPOP_COLUNA_ESPACO;
+    const xPreco = xQuantidade + WALLAPOP_COLUNA_QUANTIDADE_LARGURA + WALLAPOP_COLUNA_ESPACO;
+    const xNome = xPreco + WALLAPOP_COLUNA_PRECO_LARGURA + WALLAPOP_COLUNA_ESPACO;
+    const larguraConteudo = WALLAPOP_LARGURA_FOLHA - (WALLAPOP_MARGEM_FOLHA * 2);
+
+    return {
+        xConteudo,
+        xQuantidade,
+        xPreco,
+        xNome,
+        xLinhaFim: WALLAPOP_LARGURA_FOLHA - WALLAPOP_MARGEM_FOLHA,
+        larguraNome: larguraConteudo - (xNome - xConteudo)
+    };
+}
+
 function obterLayoutFolhaWallapop(totalItens, incluirTotalLote = false) {
+    const colunas = obterColunasFolhaWallapop();
     const itens = Math.max(1, Math.min(WALLAPOP_ITENS_POR_FOLHA, Number(totalItens) || 0));
     const yItens = WALLAPOP_MARGEM_FOLHA + WALLAPOP_ALTURA_CABECALHO;
     const alturaLista = itens * WALLAPOP_ALTURA_LINHA;
     const yAposLista = yItens + alturaLista + WALLAPOP_ESPACO_RODAPE;
+    let yLinhaTotal = null;
     let yTotalLote = null;
     let yRodapeBase = yAposLista;
 
     if (incluirTotalLote) {
-        yTotalLote = yAposLista + (WALLAPOP_ALTURA_TOTAL_LOTE / 2);
-        yRodapeBase = yAposLista + WALLAPOP_ALTURA_TOTAL_LOTE + WALLAPOP_ESPACO_TOTAL_LOTE;
+        yLinhaTotal = yAposLista + WALLAPOP_ESPACO_ANTES_LINHA_TOTAL;
+        yTotalLote = yLinhaTotal
+            + WALLAPOP_ALTURA_LINHA_SEPARADOR
+            + WALLAPOP_ESPACO_LINHA_TOTAL
+            + (WALLAPOP_ALTURA_TOTAL_TEXTO / 2);
+        yRodapeBase = yAposLista + WALLAPOP_ALTURA_BLOCO_TOTAL + WALLAPOP_ESPACO_TOTAL_LOTE;
     }
 
+    const yCabecalho = WALLAPOP_MARGEM_FOLHA + (WALLAPOP_ALTURA_TITULO / 2);
+    const yLinhaTitulo = WALLAPOP_MARGEM_FOLHA + WALLAPOP_ALTURA_TITULO + WALLAPOP_ESPACO_TITULO_LINHA;
     const yRodape = yRodapeBase + (WALLAPOP_ALTURA_RODAPE / 2);
     const altura = yRodapeBase + WALLAPOP_ALTURA_RODAPE + WALLAPOP_MARGEM_FINAL;
 
@@ -1261,8 +1298,11 @@ function obterLayoutFolhaWallapop(totalItens, incluirTotalLote = false) {
             WALLAPOP_ALTURA_FOLHA,
             Math.max(WALLAPOP_ALTURA_FOLHA_MINIMA, altura)
         ),
-        yCabecalho: WALLAPOP_MARGEM_FOLHA + 18,
+        colunas,
+        yCabecalho,
+        yLinhaTitulo,
         yItens,
+        yLinhaTotal,
         yTotalLote,
         yRodape
     };
@@ -1289,12 +1329,26 @@ function criarTotalLoteFolhaWallapop(total) {
     return totalLote;
 }
 
-function desenharCabecalhoFolhaWallapop(ctx, largura, yCabecalho) {
+function desenharLinhaHorizontalWallapop(ctx, xInicio, xFim, y, cor = WALLAPOP_COR_LINHA_SEPARADOR) {
+    ctx.save();
+    ctx.strokeStyle = cor;
+    ctx.lineWidth = WALLAPOP_ALTURA_LINHA_SEPARADOR;
+    ctx.beginPath();
+    ctx.moveTo(xInicio, y + 0.5);
+    ctx.lineTo(xFim, y + 0.5);
+    ctx.stroke();
+    ctx.restore();
+}
+
+function desenharCabecalhoFolhaWallapop(ctx, layout) {
+    const { colunas, yCabecalho, yLinhaTitulo } = layout;
+
     ctx.font = '700 18px Arial, Helvetica, sans-serif';
     ctx.fillStyle = '#111111';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
-    ctx.fillText(WALLAPOP_TITULO_LOTE, largura / 2, yCabecalho);
+    ctx.fillText(WALLAPOP_TITULO_LOTE, WALLAPOP_LARGURA_FOLHA / 2, yCabecalho);
+    desenharLinhaHorizontalWallapop(ctx, colunas.xConteudo, colunas.xLinhaFim, yLinhaTitulo);
 }
 
 function desenharRodapeFolhaWallapop(ctx, largura, yCentro, texto) {
@@ -1306,12 +1360,18 @@ function desenharRodapeFolhaWallapop(ctx, largura, yCentro, texto) {
     ctx.fillStyle = '#111111';
 }
 
-function desenharTotalLoteFolhaWallapop(ctx, largura, yCentro, total) {
+function desenharTotalLoteFolhaWallapop(ctx, layout, total) {
+    const { colunas, yLinhaTotal, yTotalLote } = layout;
+
+    if (yLinhaTotal != null) {
+        desenharLinhaHorizontalWallapop(ctx, colunas.xConteudo, colunas.xLinhaFim, yLinhaTotal);
+    }
+
     ctx.font = '700 22px Arial, Helvetica, sans-serif';
     ctx.fillStyle = '#111111';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
-    ctx.fillText(formatarTotalLoteWallapop(total), largura / 2, yCentro);
+    ctx.fillText(formatarTotalLoteWallapop(total), WALLAPOP_LARGURA_FOLHA / 2, yTotalLote);
 }
 
 function dividirItensWallapop(itens, tamanho = WALLAPOP_ITENS_POR_FOLHA) {
@@ -1352,10 +1412,6 @@ function atualizarAlturaPrevisualizacaoWallapop() {
 function formatarPrecoLinhaAnuncioPlataforma(item) {
     return `${formatarEuroWallapop(item.preco)} \u20ac`;
 }
-
-const WALLAPOP_COLUNA_QUANTIDADE_X = 152;
-const WALLAPOP_COLUNA_PRECO_X = 198;
-const WALLAPOP_COLUNA_NOME_X = 276;
 
 function criarLinhaFolhaWallapop(item) {
     const linha = document.createElement('article');
@@ -1440,8 +1496,8 @@ async function gerarCanvasFolhaWallapop(itensPagina, numeroPagina, totalPaginas,
     const layout = obterLayoutFolhaWallapop(itensPagina.length, incluirTotalLote);
     const altura = layout.altura;
     const escala = 2;
-    const margem = WALLAPOP_MARGEM_FOLHA;
     const alturaLinha = WALLAPOP_ALTURA_LINHA;
+    const { colunas } = layout;
     const canvas = document.createElement('canvas');
     canvas.width = largura * escala;
     canvas.height = altura * escala;
@@ -1452,32 +1508,32 @@ async function gerarCanvasFolhaWallapop(itensPagina, numeroPagina, totalPaginas,
     ctx.textBaseline = 'middle';
     ctx.fillStyle = '#111111';
 
-    desenharCabecalhoFolhaWallapop(ctx, largura, layout.yCabecalho);
+    desenharCabecalhoFolhaWallapop(ctx, layout);
 
     for (let indice = 0; indice < itensPagina.length; indice += 1) {
         const item = itensPagina[indice];
         const y = layout.yItens + (indice * alturaLinha);
         const centroY = y + (alturaLinha / 2);
         const imagem = await carregarImagemCanvasWallapop(obterImagemWallapop(item));
-        desenharImagemContidaWallapop(ctx, imagem, margem, y + 3, 90, 90);
+        desenharImagemContidaWallapop(ctx, imagem, colunas.xConteudo, y + 3, WALLAPOP_COLUNA_FOTO_LARGURA, WALLAPOP_COLUNA_FOTO_LARGURA);
 
         ctx.font = '700 17px Arial, Helvetica, sans-serif';
         ctx.textAlign = 'left';
-        ctx.fillText(`${item.quantidade || 1}x`, WALLAPOP_COLUNA_QUANTIDADE_X, centroY);
+        ctx.fillText(`${item.quantidade || 1}x`, colunas.xQuantidade, centroY);
 
         ctx.font = '700 16px Arial, Helvetica, sans-serif';
-        ctx.fillText(formatarPrecoLinhaAnuncioPlataforma(item), WALLAPOP_COLUNA_PRECO_X, centroY);
+        ctx.fillText(formatarPrecoLinhaAnuncioPlataforma(item), colunas.xPreco, centroY);
 
-        const linhasNome = quebrarTextoCanvasWallapop(ctx, item.nome, largura - margem - WALLAPOP_COLUNA_NOME_X, 2);
+        const linhasNome = quebrarTextoCanvasWallapop(ctx, item.nome, colunas.larguraNome, 2);
         const linhaAltura = 19;
         const inicioNomeY = centroY - ((linhasNome.length - 1) * linhaAltura / 2);
         linhasNome.forEach((linha, linhaIndice) => {
-            ctx.fillText(linha, WALLAPOP_COLUNA_NOME_X, inicioNomeY + (linhaIndice * linhaAltura));
+            ctx.fillText(linha, colunas.xNome, inicioNomeY + (linhaIndice * linhaAltura));
         });
     }
 
     if (incluirTotalLote) {
-        desenharTotalLoteFolhaWallapop(ctx, largura, layout.yTotalLote, totalPrecoLote);
+        desenharTotalLoteFolhaWallapop(ctx, layout, totalPrecoLote);
     }
 
     desenharRodapeFolhaWallapop(

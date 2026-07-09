@@ -472,7 +472,9 @@ body.pagina-wallapop{
         }
 
         .wallapop-pagina-cabecalho{
-            margin:0 0 10px;
+            margin:0 0 9px;
+            padding-bottom:8px;
+            border-bottom:1px solid #d0d0d0;
             color:#111;
             font-family:Arial, Helvetica, sans-serif;
             font-size:18px;
@@ -495,6 +497,8 @@ body.pagina-wallapop{
         .wallapop-pagina-total{
             margin-top:14px;
             margin-bottom:0;
+            padding-top:10px;
+            border-top:1px solid #d0d0d0;
             color:#111;
             font-family:Arial, Helvetica, sans-serif;
             font-size:22px;
@@ -551,6 +555,9 @@ body.pagina-wallapop{
         }
 
         .wallapop-linha-quantidade{
+            width:40px;
+            min-width:40px;
+            max-width:40px;
             font-size:17px;
             line-height:1;
             white-space:nowrap;
@@ -569,10 +576,14 @@ body.pagina-wallapop{
         }
 
         .wallapop-linha-preco{
+            width:78px;
+            min-width:78px;
+            max-width:78px;
             font-size:16px;
             line-height:19px;
             text-align:left;
             white-space:nowrap;
+            font-variant-numeric:tabular-nums;
         }
 
         .wallapop-vazio{
