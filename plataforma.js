@@ -1212,9 +1212,11 @@ const WALLAPOP_MARGEM_FOLHA = 42;
 const WALLAPOP_ALTURA_LINHA = 96;
 const WALLAPOP_ALTURA_CABECALHO = 38;
 const WALLAPOP_ALTURA_RODAPE = 34;
+const WALLAPOP_ALTURA_TOTAL_LOTE = 28;
 const WALLAPOP_ESPACO_RODAPE = 14;
+const WALLAPOP_ESPACO_TOTAL_LOTE = 10;
 const WALLAPOP_MARGEM_FINAL = 24;
-const WALLAPOP_TITULO_LOTE = 'Lista de figuras do lote';
+const WALLAPOP_TITULO_LOTE = 'Lista de figuras';
 
 function calcularTotalFigurasLoteWallapop(itens) {
     return (itens || []).reduce((total, item) => (
@@ -1222,17 +1224,31 @@ function calcularTotalFigurasLoteWallapop(itens) {
     ), 0);
 }
 
-function formatarRodapeFolhaWallapop(numeroPagina, totalPaginas, totalFiguras) {
-    const rotuloFiguras = totalFiguras === 1 ? 'figura' : 'figuras';
-    return `Total do lote: ${totalFiguras} ${rotuloFiguras} \u2022 P\u00e1gina ${numeroPagina} de ${totalPaginas}`;
+function calcularTotalPrecoLoteWallapop(itens) {
+    return (itens || []).reduce((total, item) => (
+        total + Math.max(1, Number(item.quantidade) || 1) * Number(item.preco || 0)
+    ), 0);
 }
 
-function obterLayoutFolhaWallapop(totalItens) {
+function formatarRodapeFolhaWallapop(numeroPagina, totalPaginas, totalFiguras) {
+    const rotuloFiguras = totalFiguras === 1 ? 'figura' : 'figuras';
+    return `Lote: ${totalFiguras} ${rotuloFiguras} \u2022 P\u00e1gina ${numeroPagina} de ${totalPaginas}`;
+}
+
+function formatarTotalLoteWallapop(total) {
+    return `Total: ${formatarEuroWallapop(total)} \u20ac`;
+}
+
+function obterLayoutFolhaWallapop(totalItens, incluirTotalLote = false) {
     const itens = Math.max(1, Math.min(WALLAPOP_ITENS_POR_FOLHA, Number(totalItens) || 0));
     const yItens = WALLAPOP_MARGEM_FOLHA + WALLAPOP_ALTURA_CABECALHO;
     const alturaLista = itens * WALLAPOP_ALTURA_LINHA;
     const yRodape = yItens + alturaLista + WALLAPOP_ESPACO_RODAPE;
-    const altura = yRodape + WALLAPOP_ALTURA_RODAPE + WALLAPOP_MARGEM_FINAL;
+    let altura = yRodape + WALLAPOP_ALTURA_RODAPE + WALLAPOP_MARGEM_FINAL;
+
+    if (incluirTotalLote) {
+        altura += WALLAPOP_ESPACO_TOTAL_LOTE + WALLAPOP_ALTURA_TOTAL_LOTE;
+    }
 
     return {
         itens,
@@ -1242,7 +1258,10 @@ function obterLayoutFolhaWallapop(totalItens) {
         ),
         yCabecalho: WALLAPOP_MARGEM_FOLHA + 18,
         yItens,
-        yRodape: yRodape + (WALLAPOP_ALTURA_RODAPE / 2)
+        yRodape: yRodape + (WALLAPOP_ALTURA_RODAPE / 2),
+        yTotalLote: incluirTotalLote
+            ? yRodape + WALLAPOP_ALTURA_RODAPE + WALLAPOP_ESPACO_TOTAL_LOTE + (WALLAPOP_ALTURA_TOTAL_LOTE / 2)
+            : null
     };
 }
 
@@ -1258,6 +1277,13 @@ function criarRodapeFolhaWallapop(numeroPagina, totalPaginas, totalFiguras) {
     rodape.className = 'wallapop-pagina-rodape';
     rodape.textContent = formatarRodapeFolhaWallapop(numeroPagina, totalPaginas, totalFiguras);
     return rodape;
+}
+
+function criarTotalLoteFolhaWallapop(total) {
+    const totalLote = document.createElement('p');
+    totalLote.className = 'wallapop-pagina-total';
+    totalLote.textContent = formatarTotalLoteWallapop(total);
+    return totalLote;
 }
 
 function desenharCabecalhoFolhaWallapop(ctx, largura, yCabecalho) {
@@ -1277,6 +1303,14 @@ function desenharRodapeFolhaWallapop(ctx, largura, yCentro, texto) {
     ctx.fillStyle = '#111111';
 }
 
+function desenharTotalLoteFolhaWallapop(ctx, largura, yCentro, total) {
+    ctx.font = '700 16px Arial, Helvetica, sans-serif';
+    ctx.fillStyle = '#111111';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(formatarTotalLoteWallapop(total), largura / 2, yCentro);
+}
+
 function dividirItensWallapop(itens, tamanho = WALLAPOP_ITENS_POR_FOLHA) {
     const paginas = [];
     for (let indice = 0; indice < itens.length; indice += tamanho) {
@@ -1285,8 +1319,8 @@ function dividirItensWallapop(itens, tamanho = WALLAPOP_ITENS_POR_FOLHA) {
     return paginas;
 }
 
-function calcularAlturaFolhaWallapop(totalItens) {
-    return obterLayoutFolhaWallapop(totalItens).altura;
+function calcularAlturaFolhaWallapop(totalItens, incluirTotalLote = false) {
+    return obterLayoutFolhaWallapop(totalItens, incluirTotalLote).altura;
 }
 
 function obterEscalaPrevisualizacaoWallapop() {
@@ -1397,9 +1431,10 @@ function quebrarTextoCanvasWallapop(ctx, texto, larguraMaxima, maximoLinhas = 2)
     return linhas;
 }
 
-async function gerarCanvasFolhaWallapop(itensPagina, numeroPagina, totalPaginas, totalFiguras) {
+async function gerarCanvasFolhaWallapop(itensPagina, numeroPagina, totalPaginas, totalFiguras, totalPrecoLote = null) {
     const largura = WALLAPOP_LARGURA_FOLHA;
-    const layout = obterLayoutFolhaWallapop(itensPagina.length);
+    const incluirTotalLote = numeroPagina === totalPaginas && totalPrecoLote != null;
+    const layout = obterLayoutFolhaWallapop(itensPagina.length, incluirTotalLote);
     const altura = layout.altura;
     const escala = 2;
     const margem = WALLAPOP_MARGEM_FOLHA;
@@ -1445,6 +1480,10 @@ async function gerarCanvasFolhaWallapop(itensPagina, numeroPagina, totalPaginas,
         formatarRodapeFolhaWallapop(numeroPagina, totalPaginas, totalFiguras)
     );
 
+    if (incluirTotalLote) {
+        desenharTotalLoteFolhaWallapop(ctx, largura, layout.yTotalLote, totalPrecoLote);
+    }
+
     return canvas;
 }
 function renderizarFolhaWallapop(itens = wallapopItens) {
@@ -1453,6 +1492,7 @@ function renderizarFolhaWallapop(itens = wallapopItens) {
     const paginas = dividirItensWallapop(itens);
     const totalPaginas = paginas.length;
     const totalFiguras = calcularTotalFigurasLoteWallapop(itens);
+    const totalPrecoLote = calcularTotalPrecoLoteWallapop(itens);
 
     if (!itens.length) {
         const pagina = document.createElement('section');
@@ -1473,8 +1513,12 @@ function renderizarFolhaWallapop(itens = wallapopItens) {
         const lista = document.createElement('div');
         lista.className = 'wallapop-lista';
         itensPagina.forEach(item => lista.appendChild(criarLinhaFolhaWallapop(item)));
+        pagina.appendChild(criarCabecalhoFolhaWallapop());
         pagina.appendChild(lista);
         pagina.appendChild(criarRodapeFolhaWallapop(indice + 1, totalPaginas, totalFiguras));
+        if (indice === totalPaginas - 1) {
+            pagina.appendChild(criarTotalLoteFolhaWallapop(totalPrecoLote));
+        }
         folha.appendChild(pagina);
     });
 
@@ -1655,6 +1699,7 @@ async function descarregarImagemWallapop() {
         if (!paginasItens.length) throw new Error('Nao existem folhas para exportar.');
         const totalPaginas = paginasItens.length;
         const totalFiguras = calcularTotalFigurasLoteWallapop(itensFicheiros);
+        const totalPrecoLote = calcularTotalPrecoLoteWallapop(itensFicheiros);
 
         const pastaEncomenda = await pastaBase.getDirectoryHandle(nomeEncomenda, { create: true });
         await escreverFicheiroWallapop(pastaEncomenda, `${nomeEncomenda}.txt`, criarTextoEncomendaWallapop());
@@ -1664,7 +1709,8 @@ async function descarregarImagemWallapop() {
                 paginasItens[indice],
                 indice + 1,
                 totalPaginas,
-                totalFiguras
+                totalFiguras,
+                totalPrecoLote
             );
             const imagem = await canvasParaBlobWallapop(canvas);
             const nomeImagem = paginasItens.length === 1 ? 'foto anuncio.png' : `foto anuncio ${indice + 1}.png`;
