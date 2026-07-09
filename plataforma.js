@@ -1210,7 +1210,35 @@ const WALLAPOP_ALTURA_FOLHA = 1123;
 const WALLAPOP_ALTURA_FOLHA_MINIMA = Math.ceil(WALLAPOP_ALTURA_FOLHA / 2);
 const WALLAPOP_MARGEM_FOLHA = 42;
 const WALLAPOP_ALTURA_LINHA = 96;
+const WALLAPOP_ALTURA_RODAPE = 34;
 const WALLAPOP_MARGEM_FINAL = 24;
+
+function calcularTotalFigurasLoteWallapop(itens) {
+    return (itens || []).reduce((total, item) => (
+        total + Math.max(1, Number(item.quantidade) || 1)
+    ), 0);
+}
+
+function formatarRodapeFolhaWallapop(numeroPagina, totalPaginas, totalFiguras) {
+    const rotuloFiguras = totalFiguras === 1 ? 'figura' : 'figuras';
+    return `P\u00e1gina ${numeroPagina} de ${totalPaginas} \u2022 Total do lote: ${totalFiguras} ${rotuloFiguras}`;
+}
+
+function criarRodapeFolhaWallapop(numeroPagina, totalPaginas, totalFiguras) {
+    const rodape = document.createElement('footer');
+    rodape.className = 'wallapop-pagina-rodape';
+    rodape.textContent = formatarRodapeFolhaWallapop(numeroPagina, totalPaginas, totalFiguras);
+    return rodape;
+}
+
+function desenharRodapeFolhaWallapop(ctx, largura, altura, texto) {
+    ctx.font = '600 14px Arial, Helvetica, sans-serif';
+    ctx.fillStyle = '#555555';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'bottom';
+    ctx.fillText(texto, largura / 2, altura - 14);
+    ctx.fillStyle = '#111111';
+}
 
 function dividirItensWallapop(itens, tamanho = WALLAPOP_ITENS_POR_FOLHA) {
     const paginas = [];
