@@ -1285,13 +1285,22 @@ function obterLayoutFolhaWallapop(totalItens, incluirTotalLote = false) {
             + WALLAPOP_ALTURA_LINHA_SEPARADOR
             + WALLAPOP_ESPACO_LINHA_TOTAL
             + (WALLAPOP_ALTURA_TOTAL_TEXTO / 2);
-        yRodapeBase = yAposLista + WALLAPOP_ALTURA_BLOCO_TOTAL + WALLAPOP_ESPACO_TOTAL_LOTE;
     }
 
     const yCabecalho = WALLAPOP_MARGEM_FOLHA + (WALLAPOP_ALTURA_TITULO / 2);
     const yLinhaTitulo = WALLAPOP_MARGEM_FOLHA + WALLAPOP_ALTURA_TITULO + WALLAPOP_ESPACO_TITULO_LINHA;
-    const yRodape = yRodapeBase + (WALLAPOP_ALTURA_RODAPE / 2);
-    const altura = yRodapeBase + WALLAPOP_ALTURA_RODAPE + WALLAPOP_MARGEM_FINAL;
+    let yRodape;
+    let altura;
+
+    if (incluirTotalLote) {
+        const yFimTotal = yAposLista + WALLAPOP_ALTURA_BLOCO_TOTAL;
+        yRodape = yFimTotal + WALLAPOP_ESPACO_TOTAL_RODAPE + (WALLAPOP_ALTURA_TEXTO_RODAPE / 2);
+        altura = yRodape + (WALLAPOP_ALTURA_TEXTO_RODAPE / 2) + WALLAPOP_MARGEM_FINAL;
+    } else {
+        yRodapeBase = yAposLista;
+        yRodape = yRodapeBase + (WALLAPOP_ALTURA_RODAPE / 2);
+        altura = yRodapeBase + WALLAPOP_ALTURA_RODAPE + WALLAPOP_MARGEM_FINAL;
+    }
 
     return {
         itens,
