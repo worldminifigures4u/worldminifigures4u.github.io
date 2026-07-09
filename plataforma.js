@@ -1524,7 +1524,7 @@ function criarCabecalhoCodigoEncomenda() {
     const codigo = obterCodigoEncomendaAtual();
     if (!codigo) return [];
     const nomeCliente = obterNomeClienteParaCabecalhoTxt();
-    return [`Lote personalizado - Pedido ${codigo} - Reservado para ${nomeCliente}`, ''];
+    return [`Lote personalizado \u2013 Reservado ${nomeCliente}`, ''];
 }
 
 function validarEncomendaRegistadaParaFicheiros() {
