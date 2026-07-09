@@ -241,7 +241,7 @@ function obterProdutoId(produto) {
 }
 
 function produtoCorrespondePesquisaAdmin(produto, termoNormalizado) {
-    if(!termoNormalizado) return true;
+    if(!termoNormalizado) return false;
     const textoProduto = [
         produto.nome,
         produto.referencia,
@@ -265,7 +265,9 @@ function renderizarListaProdutosAdmin() {
     if(produtos.length === 0) {
         const vazio = document.createElement('p');
         vazio.className = 'ajuda-admin';
-        vazio.textContent = todosOsProdutos.length === 0 ? 'Ainda não há produtos carregados.' : 'Nenhum produto encontrado.';
+        vazio.textContent = !termo
+            ? 'Pesquise um produto para ver resultados.'
+            : (todosOsProdutos.length === 0 ? 'Ainda não há produtos carregados.' : 'Nenhum produto encontrado.');
         lista.appendChild(vazio);
         return;
     }
