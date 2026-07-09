@@ -213,9 +213,7 @@
 
         .btn-admin-secundario:hover,
         .btn-admin-secundario:focus-visible{
-            background:#2f2818;
             border-color:#ffc400;
-            color:#ffe066;
             outline:none;
         }
 
@@ -254,9 +252,7 @@
         }
 
         .input-upload-admin::file-selector-button:hover{
-            background:#2f2818;
             border-color:#ffc400;
-            color:#ffe066;
         }
 
         .resumo-importacao-stock{
