@@ -1232,7 +1232,7 @@ function calcularTotalPrecoLoteWallapop(itens) {
 
 function formatarRodapeFolhaWallapop(numeroPagina, totalPaginas, totalFiguras) {
     const rotuloFiguras = totalFiguras === 1 ? 'figura' : 'figuras';
-    return `Lote: ${totalFiguras} ${rotuloFiguras} \u2022 P\u00e1gina ${numeroPagina} de ${totalPaginas}`;
+    return `${totalFiguras} ${rotuloFiguras} \u2022 P\u00e1gina ${numeroPagina} de ${totalPaginas}`;
 }
 
 function formatarTotalLoteWallapop(total) {
