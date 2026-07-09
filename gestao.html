@@ -15,7 +15,7 @@
 
     <link rel="stylesheet" href="styles.css?v=20260705-stock-disponivel">
     <link rel="stylesheet" href="conta.css?v=20260705-menu-item">
-    <link rel="stylesheet" href="gestao.css?v=20260705-menu-item">
+    <link rel="stylesheet" href="gestao.css?v=20260709-botoes-padrao">
 </head>
 <body data-page="conta" class="pagina-gestao">
 
@@ -170,13 +170,17 @@
                                     <label for="admin-pesquisa-produtos">Pesquisar produto:</label>
                                     <input type="text" id="admin-pesquisa-produtos" placeholder="Nome, Ref., SKU ou tema">
                                 </div>
-                                <button type="button" class="btn-admin-secundario" data-acao-admin="pesquisar-produtos">Pesquisar</button>
+                                <button type="button" class="wallapop-botao wallapop-botao-destaque" data-acao-admin="pesquisar-produtos">Pesquisar</button>
                             </div>
                             <div id="lista-admin-produtos" class="lista-admin-produtos"></div>
                         </div>
                             <form class="form-admin admin-seccao oculto" id="form-admin-editar-produto">
                             <input type="hidden" id="admin-editar-id">
                             <input type="hidden" id="admin-editar-sku-original">
+                            <div class="acoes-form-admin acoes-form-admin-topo">
+                                <button type="button" class="wallapop-botao" data-acao-admin="cancelar-edicao-produto">Cancelar</button>
+                                <button type="submit" class="wallapop-botao wallapop-botao-destaque">Guardar alterações</button>
+                            </div>
                             <h3>Editar produto</h3>
                             <div>
                                 <label for="admin-editar-nome">Nome do produto:</label>
@@ -234,10 +238,6 @@
                                 <input type="checkbox" id="admin-editar-novidade">
                                 Novidade
                             </label>
-                            <div class="acoes-form-admin">
-                                <button type="submit" class="btn-acao-cliente">Guardar alterações</button>
-                                <button type="button" class="btn-admin-secundario" data-acao-admin="cancelar-edicao-produto">Cancelar</button>
-                            </div>
                             <div id="status-admin-editar-produto" class="msg-status"></div>
                         </form>
                         </div>
@@ -245,6 +245,7 @@
                     <section class="gestao-tab-painel" data-painel-gestao="novo" role="tabpanel" hidden>
                         <div class="admin-seccao admin-seccao-tab">
                             <form class="form-admin" id="form-admin-produto">
+                        <button type="submit" class="wallapop-botao wallapop-botao-destaque acao-form-admin-topo">Criar Produto</button>
                         <div>
                             <label for="admin-produto-nome">Nome do produto:</label>
                             <input type="text" id="admin-produto-nome" required placeholder="Ex: Darth Vader v1">
@@ -301,7 +302,6 @@
                             <input type="checkbox" id="admin-produto-novidade" checked>
                             Novidade
                         </label>
-                        <button type="submit" class="btn-acao-cliente">Criar Produto</button>
                         <div id="status-admin-produto" class="msg-status"></div>
                     </form>
                         </div>
@@ -315,7 +315,7 @@
                                 <p class="ajuda-admin">Apenas as colunas SKU e stock são utilizadas. As encomendas aos fornecedores não alteram o stock atual.</p>
                                 <div id="resumo-importacao-stock" class="resumo-importacao-stock oculto"></div>
                                 <div id="detalhes-importacao-stock" class="lista-importacao-stock oculto"></div>
-                                <button type="button" id="btn-confirmar-importacao-stock" class="btn-acao-cliente" disabled>Atualizar stock no Supabase</button>
+                                <button type="button" id="btn-confirmar-importacao-stock" class="wallapop-botao wallapop-botao-destaque" disabled>Atualizar stock no Supabase</button>
                                 <div id="status-importacao-stock" class="msg-status"></div>
                             </div>
                         </div>
@@ -331,7 +331,7 @@
                                     <label for="confirmacao-substituir-catalogo">Para confirmar, escreva SUBSTITUIR:</label>
                                     <input type="text" id="confirmacao-substituir-catalogo" autocomplete="off">
                                 </div>
-                                <button type="button" id="btn-confirmar-importacao-catalogo" class="btn-logout" disabled>Substituir catálogo completo</button>
+                                <button type="button" id="btn-confirmar-importacao-catalogo" class="wallapop-botao wallapop-botao-perigo" disabled>Substituir catálogo completo</button>
                                 <div id="status-importacao-catalogo" class="msg-status"></div>
                             </div>
                         </div>
@@ -436,7 +436,7 @@
 <script src="carrinho-loja.js?v=20260701-menos-nao-remove"></script>
 <script src="loja-produtos.js?v=20260629-dynamic-style-classes"></script>
 <script src="conta-cliente.js?v=20260629-sem-inline-style"></script>
-<script src="gestao-admin.js?v=20260703-gestao-mais-larga"></script>
+<script src="gestao-admin.js?v=20260709-botoes-padrao"></script>
 <script src="gestao-importacao.js?v=20260703-arquivado-mapas"></script>
 <script src="inline-listeners.js?v=20260705-pesquisa-cabecalho"></script>
 </body>
