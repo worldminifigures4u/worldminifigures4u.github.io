@@ -362,10 +362,46 @@ function criarCardEncomenda(encomenda) {
     });
 }
 
-function encomendasFiltradasAdmin() {
+function obterProdutosEncomenda(encomenda) {
+    let produtos = encomenda?.produtos || encomenda?.artigos || [];
+    if (typeof produtos === 'string') {
+        try { produtos = JSON.parse(produtos); }
+        catch (_) { produtos = []; }
+    }
+    return Array.isArray(produtos) ? produtos : [];
+}
+
+function obterQuantidadeItemEncomenda(item) {
+    return Math.max(1, Number(item?.quantidade ?? item?.qtd ?? 1) || 1);
+}
+
+function obterPrecoItemEncomenda(item) {
+    return Number(item?.preco_unitario ?? item?.preco ?? item?.valor_unitario ?? 0) || 0;
+}
+
+function obterNomeItemEncomenda(item) {
+    return String(item?.nome || item?.titulo || item?.sku || item?.referencia || 'Produto').trim();
+}
+
+function itemCorrespondePesquisaFigura(item, termoNormalizado) {
+    if (!termoNormalizado) return false;
+    const texto = normalizarEncomenda([
+        item?.nome,
+        item?.titulo,
+        item?.sku,
+        item?.referencia
+    ].join(' '));
+    return texto.includes(termoNormalizado);
+}
+
+function obterTermoPesquisaFiguraAdmin() {
+    return String(document.getElementById('pesquisa-figura-encomendas-admin')?.value || '').trim();
+}
+
+function obterEncomendasFiltradasBaseAdmin() {
     const pesquisa = normalizarEncomenda(document.getElementById('pesquisa-encomendas-admin').value);
     const estado = document.getElementById('filtro-estado-encomendas-admin').value;
-    const filtradas = encomendasAdmin.filter(encomenda => {
+    return encomendasAdmin.filter(encomenda => {
         const correspondeEstado = estado === 'todos' || estadoNormalizadoEncomenda(encomenda.estado) === estado;
         const texto = normalizarEncomenda([
             encomenda.codigo_encomenda,
@@ -376,6 +412,150 @@ function encomendasFiltradasAdmin() {
         ].join(' '));
         return correspondeEstado && (!pesquisa || texto.includes(pesquisa));
     });
+}
+
+function obterVendasFiguraAdmin() {
+    const termoNormalizado = normalizarEncomenda(obterTermoPesquisaFiguraAdmin());
+    if (!termoNormalizado) return [];
+
+    const vendas = [];
+    obterEncomendasFiltradasBaseAdmin().forEach(encomenda => {
+        const itens = obterProdutosEncomenda(encomenda)
+            .filter(item => itemCorrespondePesquisaFigura(item, termoNormalizado));
+        if (!itens.length) return;
+
+        const quantidade = itens.reduce((total, item) => total + obterQuantidadeItemEncomenda(item), 0);
+        const subtotal = itens.reduce((total, item) => (
+            total + (obterQuantidadeItemEncomenda(item) * obterPrecoItemEncomenda(item))
+        ), 0);
+        const nomes = [...new Set(itens.map(obterNomeItemEncomenda).filter(Boolean))];
+
+        vendas.push({
+            encomenda,
+            itens,
+            quantidade,
+            subtotal,
+            nomes
+        });
+    });
+
+    vendas.sort((a, b) => {
+        const dataA = new Date(a.encomenda.created_at).getTime();
+        const dataB = new Date(b.encomenda.created_at).getTime();
+        return (Number.isNaN(dataB) ? 0 : dataB) - (Number.isNaN(dataA) ? 0 : dataA);
+    });
+
+    return vendas;
+}
+
+function criarHistoricoModalVendasFigura(vendas) {
+    return vendas.map(venda => ({
+        id: venda.encomenda.id,
+        codigo: venda.encomenda.codigo_encomenda,
+        data: venda.encomenda.created_at,
+        origem: venda.encomenda.origem,
+        estado: venda.encomenda.estado,
+        total: venda.encomenda.total
+    }));
+}
+
+function abrirEncomendaVendaFigura(indice, vendas) {
+    if (typeof abrirModalEncomendaCliente !== 'function' || !Array.isArray(vendas) || !vendas[indice]) return;
+    abrirModalEncomendaCliente(criarHistoricoModalVendasFigura(vendas), indice);
+}
+
+function renderizarVendasFiguraAdmin() {
+    const painel = document.getElementById('lista-vendas-figura-admin');
+    const resumo = document.getElementById('resumo-vendas-figura-admin');
+    const lista = document.getElementById('lista-encomendas-admin');
+    const termo = obterTermoPesquisaFiguraAdmin();
+    const vendas = obterVendasFiguraAdmin();
+
+    if (!painel || !lista) return;
+
+    if (!termo) {
+        painel.hidden = true;
+        painel.replaceChildren();
+        if (resumo) resumo.hidden = true;
+        lista.hidden = false;
+        return;
+    }
+
+    lista.hidden = true;
+    painel.hidden = false;
+    painel.replaceChildren();
+
+    if (resumo) {
+        resumo.hidden = false;
+        const totalUnidades = vendas.reduce((total, venda) => total + venda.quantidade, 0);
+        resumo.textContent = vendas.length
+            ? `${vendas.length} encomenda(s) com "${termo}" · ${totalUnidades} unidade(s) vendida(s)`
+            : `Nenhuma venda encontrada para "${termo}".`;
+    }
+
+    if (!vendas.length) {
+        painel.appendChild(criarElementoEncomenda('p', 'admin-encomendas-vendas-figura-vazio', `Nenhuma encomenda contém a figura "${termo}".`));
+        return;
+    }
+
+    const cabecalho = criarElementoEncomenda('div', 'admin-encomendas-vendas-figura-cabecalho');
+    cabecalho.append(
+        criarElementoEncomenda('span', '', 'Data'),
+        criarElementoEncomenda('span', '', 'Código'),
+        criarElementoEncomenda('span', '', 'Cliente'),
+        criarElementoEncomenda('span', '', 'Plataforma'),
+        criarElementoEncomenda('span', '', 'Estado'),
+        criarElementoEncomenda('span', '', 'Qtd'),
+        criarElementoEncomenda('span', '', 'Preço'),
+        criarElementoEncomenda('span', '', 'Total')
+    );
+    painel.appendChild(cabecalho);
+
+    vendas.forEach((venda, indice) => {
+        const { encomenda, quantidade, subtotal, nomes } = venda;
+        const precoMedio = quantidade > 0 ? subtotal / quantidade : 0;
+        const linha = criarElementoEncomenda('div', 'admin-encomendas-vendas-figura-linha');
+        linha.tabIndex = 0;
+        linha.setAttribute('role', 'button');
+        linha.setAttribute('aria-label', `Abrir encomenda ${encomenda.codigo_encomenda || encomenda.id}`);
+
+        const codigo = document.createElement('button');
+        codigo.type = 'button';
+        codigo.className = 'admin-encomendas-vendas-figura-codigo';
+        codigo.textContent = encomenda.codigo_encomenda || `#${encomenda.id}`;
+        codigo.title = 'Abrir encomenda';
+
+        const abrir = evento => {
+            evento.stopPropagation();
+            abrirEncomendaVendaFigura(indice, vendas);
+        };
+        codigo.addEventListener('click', abrir);
+        linha.addEventListener('click', () => abrirEncomendaVendaFigura(indice, vendas));
+        linha.addEventListener('keydown', evento => {
+            if (evento.key === 'Enter' || evento.key === ' ') {
+                evento.preventDefault();
+                abrirEncomendaVendaFigura(indice, vendas);
+            }
+        });
+
+        linha.append(
+            criarElementoEncomenda('span', '', formatarDataEncomenda(encomenda.created_at)),
+            codigo,
+            criarElementoEncomenda('span', 'admin-encomendas-vendas-figura-nome', encomenda.nome_cliente || '\u2014'),
+            criarElementoEncomenda('span', '', encomenda.origem || 'Site'),
+            criarElementoEncomenda('span', '', estadoNormalizadoEncomenda(encomenda.estado)),
+            criarElementoEncomenda('span', '', String(quantidade)),
+            criarElementoEncomenda('span', '', formatarEuroEncomenda(precoMedio)),
+            criarElementoEncomenda('span', 'admin-encomendas-vendas-figura-total', formatarEuroEncomenda(subtotal))
+        );
+        linha.title = nomes.join(' · ');
+        painel.appendChild(linha);
+    });
+}
+
+function encomendasFiltradasAdmin() {
+    const filtradas = obterEncomendasFiltradasBaseAdmin();
+    const estado = document.getElementById('filtro-estado-encomendas-admin').value;
 
     if (estado === 'Pago') {
         filtradas.sort((a, b) => {
@@ -393,6 +573,12 @@ function encomendasFiltradasAdmin() {
 }
 
 function renderizarEncomendasAdmin() {
+    if (obterTermoPesquisaFiguraAdmin()) {
+        renderizarVendasFiguraAdmin();
+        return;
+    }
+
+    renderizarVendasFiguraAdmin();
     const lista = document.getElementById('lista-encomendas-admin');
     const filtradas = encomendasFiltradasAdmin();
     lista.replaceChildren();
@@ -491,6 +677,7 @@ async function iniciarPainelEncomendas() {
 }
 
 document.getElementById('pesquisa-encomendas-admin').addEventListener('input', renderizarEncomendasAdmin);
+document.getElementById('pesquisa-figura-encomendas-admin').addEventListener('input', renderizarEncomendasAdmin);
 document.getElementById('filtro-estado-encomendas-admin').addEventListener('change', renderizarEncomendasAdmin);
 document.getElementById('btn-atualizar-encomendas').addEventListener('click', async () => {
     try { await carregarEncomendasAdmin(); }

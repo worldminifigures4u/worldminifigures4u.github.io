@@ -12,7 +12,7 @@
     <link rel="stylesheet" href="styles.css?v=20260710-hierarquia-global">
     <link rel="stylesheet" href="admin-cliente.css?v=20260710-modal-encomenda">
     <link rel="stylesheet" href="admin-imagem.css?v=20260628-css-split-admin-imagem">
-    <link rel="stylesheet" href="encomendas.css?v=20260710-hierarquia-global">
+    <link rel="stylesheet" href="encomendas.css?v=20260710-pesquisa-figura">
 </head>
 <body class="pagina-encomendas-admin cabecalho-com-admin pagina-com-cabecalho-site">
     <header class="cabecalho-site-admin">
@@ -73,6 +73,9 @@
                 <input type="search" id="pesquisa-encomendas-admin" placeholder="Código, nome ou e-mail" autocomplete="off" aria-label="Pesquisar encomendas">
             </div>
             <div class="admin-encomendas-filtro-campo">
+                <input type="search" id="pesquisa-figura-encomendas-admin" placeholder="Nome, SKU ou Ref. da figura" autocomplete="off" aria-label="Pesquisar vendas por figura">
+            </div>
+            <div class="admin-encomendas-filtro-campo">
                 <select id="filtro-estado-encomendas-admin" aria-label="Filtrar por estado">
                     <option value="todos">Todos os estados</option>
                     <option value="A aguardar pagamento" selected>A aguardar pagamento</option>
@@ -85,6 +88,9 @@
             </div>
             <button type="button" class="wallapop-botao" id="btn-atualizar-encomendas">Atualizar</button>
         </section>
+
+        <p class="admin-encomendas-contagem" id="resumo-vendas-figura-admin" hidden></p>
+        <section class="admin-encomendas-vendas-figura" id="lista-vendas-figura-admin" hidden aria-label="Vendas da figura pesquisada"></section>
 
         <section class="admin-encomendas-lista" id="lista-encomendas-admin"></section>
         <p class="wallapop-status" id="status-encomendas-admin" aria-live="polite"></p>
@@ -130,9 +136,9 @@
             </nav>
         </div>
     </footer>
-    <script src="admin-encomenda-vista.js?v=20260710-modal-encomenda"></script>
-    <script src="clientes-encomenda-modal.js?v=20260710-modal-encomenda"></script>
-    <script src="encomendas.js?v=20260710-modal-encomenda"></script>
+    <script src="admin-encomenda-vista.js?v=20260710-pesquisa-figura"></script>
+    <script src="clientes-encomenda-modal.js?v=20260710-pesquisa-figura"></script>
+    <script src="encomendas.js?v=20260710-pesquisa-figura"></script>
 <script src="inline-listeners.js?v=20260705-pesquisa-cabecalho"></script>
 </body>
 </html>
