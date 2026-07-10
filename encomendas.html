@@ -12,7 +12,7 @@
     <link rel="stylesheet" href="styles.css?v=20260710-hierarquia-global">
     <link rel="stylesheet" href="admin-cliente.css?v=20260710-modal-encomenda">
     <link rel="stylesheet" href="admin-imagem.css?v=20260628-css-split-admin-imagem">
-    <link rel="stylesheet" href="encomendas.css?v=20260710-labels-pesquisa">
+    <link rel="stylesheet" href="encomendas.css?v=20260710-sem-titulos-pesquisa">
 </head>
 <body class="pagina-encomendas-admin cabecalho-com-admin pagina-com-cabecalho-site">
     <header class="cabecalho-site-admin">
@@ -69,16 +69,13 @@
         </section>
 
         <section class="admin-encomendas-filtros" aria-label="Pesquisa e filtros">
-            <label class="admin-encomendas-filtro-campo">
-                <span>Encomenda / cliente</span>
+            <div class="admin-encomendas-filtro-campo">
                 <input type="search" id="pesquisa-encomendas-admin" placeholder="Código da encomenda, nome do cliente ou e-mail" autocomplete="off" aria-label="Pesquisar encomendas por código, cliente ou e-mail">
-            </label>
-            <label class="admin-encomendas-filtro-campo">
-                <span>Figura vendida</span>
+            </div>
+            <div class="admin-encomendas-filtro-campo">
                 <input type="search" id="pesquisa-figura-encomendas-admin" placeholder="Nome da figura, SKU ou Ref." autocomplete="off" aria-label="Pesquisar encomendas que contenham esta figura">
-            </label>
-            <label class="admin-encomendas-filtro-campo">
-                <span>Estado</span>
+            </div>
+            <div class="admin-encomendas-filtro-campo">
                 <select id="filtro-estado-encomendas-admin" aria-label="Filtrar por estado">
                     <option value="todos">Todos os estados</option>
                     <option value="A aguardar pagamento" selected>A aguardar pagamento</option>
@@ -88,7 +85,7 @@
                     <option value="Concluído">Concluído</option>
                     <option value="Cancelado">Cancelado</option>
                 </select>
-            </label>
+            </div>
             <button type="button" class="wallapop-botao" id="btn-atualizar-encomendas">Atualizar</button>
         </section>
 
