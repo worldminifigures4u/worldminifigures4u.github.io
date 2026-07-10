@@ -32,7 +32,7 @@
 
 .estatisticas-filtros {
     display: grid;
-    grid-template-columns: repeat(4, minmax(120px, 1fr)) auto;
+    grid-template-columns: repeat(5, minmax(110px, 1fr)) auto;
     gap: 10px;
     align-items: end;
 }
@@ -103,7 +103,7 @@
 }
 
 .estatisticas-grid-principal {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
+    grid-template-columns: repeat(5, minmax(0, 1fr));
 }
 
 .estatisticas-painel {

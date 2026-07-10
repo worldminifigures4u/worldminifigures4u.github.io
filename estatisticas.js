@@ -47,15 +47,29 @@ function formatarMesEstatisticas(chave) {
     return new Intl.DateTimeFormat('pt-PT', { month: 'short', year: 'numeric' }).format(data);
 }
 
+function formatarDiaEstatisticas(chave) {
+    const partes = String(chave || '').split('-');
+    if (partes.length !== 3) return chave || 'Sem data';
+    const data = new Date(Number(partes[0]), Number(partes[1]) - 1, Number(partes[2]));
+    if (Number.isNaN(data.getTime())) return chave;
+    return new Intl.DateTimeFormat('pt-PT', { day: '2-digit', month: 'short', year: 'numeric' }).format(data);
+}
+
 function obterDataEncomenda(encomenda) {
     const data = new Date(encomenda.created_at || encomenda.data || encomenda.inserted_at || '');
     return Number.isNaN(data.getTime()) ? null : data;
 }
 
-function obterChaveMes(encomenda) {
+function obterChaveDia(encomenda) {
     const data = obterDataEncomenda(encomenda);
     if (!data) return 'Sem data';
-    return `${data.getFullYear()}-${String(data.getMonth() + 1).padStart(2, '0')}`;
+    return `${data.getFullYear()}-${String(data.getMonth() + 1).padStart(2, '0')}-${String(data.getDate()).padStart(2, '0')}`;
+}
+
+function obterChaveMes(encomenda) {
+    const chaveDia = obterChaveDia(encomenda);
+    if (chaveDia === 'Sem data') return 'Sem data';
+    return chaveDia.slice(0, 7);
 }
 
 function obterAnoEncomenda(encomenda) {
@@ -118,6 +132,7 @@ function obterNomeFigura(item) {
 
 function obterFiltroData() {
     return {
+        periodo: document.getElementById('estatisticas-filtro-periodo').value || 'mes',
         inicio: document.getElementById('estatisticas-data-inicio').value,
         fim: document.getElementById('estatisticas-data-fim').value,
         plataforma: document.getElementById('estatisticas-filtro-plataforma').value,
@@ -126,7 +141,7 @@ function obterFiltroData() {
 }
 
 function encomendaDentroDoPeriodo(encomenda, filtro) {
-    const chave = obterChaveMes(encomenda);
+    const chave = filtro.periodo === 'dia' ? obterChaveDia(encomenda) : obterChaveMes(encomenda);
     if (chave === 'Sem data') return true;
     if (filtro.inicio && chave < filtro.inicio) return false;
     if (filtro.fim && chave > filtro.fim) return false;
@@ -231,6 +246,7 @@ function renderizarTabela(id, itens, opcoes = {}) {
 }
 
 function calcularEstatisticas(encomendas) {
+    const dias = new Map();
     const meses = new Map();
     const anos = new Map();
     const plataformas = new Map();
@@ -251,6 +267,7 @@ function calcularEstatisticas(encomendas) {
         totalVendido += total;
         unidadesVendidas += quantidadeEncomenda;
 
+        adicionarGrupo(dias, obterChaveDia(encomenda), total, quantidadeEncomenda, 1);
         adicionarGrupo(meses, obterChaveMes(encomenda), total, quantidadeEncomenda, 1);
         adicionarGrupo(anos, obterAnoEncomenda(encomenda), total, quantidadeEncomenda, 1);
         adicionarGrupo(plataformas, plataforma, total, quantidadeEncomenda, 1);
@@ -271,6 +288,7 @@ function calcularEstatisticas(encomendas) {
         unidadesVendidas,
         numeroEncomendas: encomendas.length,
         precoMedioFigura: unidadesVendidas ? somaPrecoFiguras / unidadesVendidas : 0,
+        dias: ordenarPorReceita([...dias.values()]).sort((a, b) => String(a.chave).localeCompare(String(b.chave))),
         meses: ordenarPorReceita([...meses.values()]).sort((a, b) => String(a.chave).localeCompare(String(b.chave))),
         anos: ordenarPorReceita([...anos.values()]).sort((a, b) => String(a.chave).localeCompare(String(b.chave))),
         plataformas: ordenarPorReceita([...plataformas.values()]),
@@ -283,10 +301,19 @@ function calcularEstatisticas(encomendas) {
     };
 }
 
+function formatarPeriodoResumo(valor, periodo) {
+    if (!valor) return '';
+    return periodo === 'dia' ? formatarDiaEstatisticas(valor) : formatarMesEstatisticas(valor);
+}
+
 function atualizarResumoPeriodo(encomendas) {
     const filtro = obterFiltroData();
     const partes = [];
-    if (filtro.inicio || filtro.fim) partes.push(`${filtro.inicio || 'início'} a ${filtro.fim || 'fim'}`);
+    if (filtro.inicio || filtro.fim) {
+        const inicio = formatarPeriodoResumo(filtro.inicio, filtro.periodo) || 'início';
+        const fim = formatarPeriodoResumo(filtro.fim, filtro.periodo) || 'fim';
+        partes.push(`${inicio} a ${fim}`);
+    }
     if (filtro.plataforma !== 'todas') partes.push(filtro.plataforma);
     if (filtro.canceladas === 'excluir') partes.push('canceladas excluídas dos totais');
     if (filtro.canceladas === 'apenas') partes.push('apenas canceladas');
@@ -303,6 +330,7 @@ function renderizarEstatisticas() {
     document.getElementById('estatisticas-unidades').textContent = formatarNumeroEstatisticas(dados.unidadesVendidas);
     document.getElementById('estatisticas-preco-medio-figura').textContent = formatarEuroEstatisticas(dados.precoMedioFigura);
 
+    renderizarBarras('estatisticas-dias', dados.dias, { formatarLabel: formatarDiaEstatisticas, mostrarEncomendas: true, limite: 31 });
     renderizarBarras('estatisticas-meses', dados.meses, { formatarLabel: formatarMesEstatisticas, mostrarEncomendas: true, limite: 18 });
     renderizarBarras('estatisticas-anos', dados.anos, { mostrarEncomendas: true, limite: 10 });
     renderizarBarras('estatisticas-plataformas', dados.plataformas, { mostrarEncomendas: true, limite: 10 });
@@ -332,7 +360,27 @@ function atualizarOpcoesPlataforma() {
     select.value = plataformas.includes(valorAtual) ? valorAtual : 'todas';
 }
 
+function definirTipoInputPeriodo(periodo) {
+    const tipo = periodo === 'dia' ? 'date' : 'month';
+    document.getElementById('estatisticas-data-inicio').type = tipo;
+    document.getElementById('estatisticas-data-fim').type = tipo;
+}
+
 function definirPeriodoInicial() {
+    const periodo = document.getElementById('estatisticas-filtro-periodo')?.value || 'mes';
+    definirTipoInputPeriodo(periodo);
+
+    if (periodo === 'dia') {
+        const dias = estatisticasEncomendas
+            .map(obterChaveDia)
+            .filter(chave => /^\d{4}-\d{2}-\d{2}$/.test(chave))
+            .sort();
+        if (!dias.length) return;
+        document.getElementById('estatisticas-data-inicio').value = dias[0];
+        document.getElementById('estatisticas-data-fim').value = dias[dias.length - 1];
+        return;
+    }
+
     const meses = estatisticasEncomendas
         .map(obterChaveMes)
         .filter(chave => /^\d{4}-\d{2}$/.test(chave))
@@ -393,6 +441,10 @@ async function iniciarEstatisticasAdmin() {
     }
 }
 
+document.getElementById('estatisticas-filtro-periodo').addEventListener('change', () => {
+    definirPeriodoInicial();
+    renderizarEstatisticas();
+});
 document.getElementById('estatisticas-data-inicio').addEventListener('change', renderizarEstatisticas);
 document.getElementById('estatisticas-data-fim').addEventListener('change', renderizarEstatisticas);
 document.getElementById('estatisticas-filtro-plataforma').addEventListener('change', renderizarEstatisticas);
