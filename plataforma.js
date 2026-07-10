@@ -1301,10 +1301,7 @@ function obterLayoutFolhaWallapop(totalItens, incluirTotalLote = false) {
 
     return {
         itens,
-        altura: Math.min(
-            WALLAPOP_ALTURA_FOLHA,
-            Math.max(WALLAPOP_ALTURA_FOLHA_MINIMA, altura)
-        ),
+        altura: Math.max(WALLAPOP_ALTURA_FOLHA_MINIMA, altura),
         colunas,
         yCabecalho,
         yLinhaTitulo,
