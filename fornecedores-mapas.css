@@ -20,19 +20,19 @@ body.pagina-fornecedores-admin{ margin:0; padding-left:0; padding-right:0; paddi
             min-height:42px;
             padding:10px 12px;
             white-space:nowrap;
-            border:1px solid #6a5520;
+            border:1px solid var(--cor-botao-secundario-borda, #ffc107);
             border-radius:6px;
-            background:#242424;
-            color:#ffc400;
+            background:transparent;
+            color:var(--cor-botao-secundario-texto, #fff);
             font:inherit;
             font-weight:700;
             cursor:pointer;
         }
         .fornecedor-btn-editar-ficha:hover,
         .fornecedor-btn-editar-ficha:focus-visible{
-            background:#2f2818;
-            border-color:#ffc400;
-            color:#ffe066;
+            background:transparent;
+            border-color:var(--cor-acao-principal, #ffc107);
+            color:var(--cor-acao-principal, #ffc107);
             outline:none;
         }
         .fornecedor-contagem-lista{ margin:0 0 6px; color:#cfcfcf; font-size:13px; }

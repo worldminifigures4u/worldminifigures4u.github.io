@@ -10,10 +10,16 @@ body{
             --espaco-abaixo-cabecalho:24px;
             --espaco-acima-rodape:50px;
             --largura-conteudo-site:min(1180px, calc(100% - 32px));
-            --cor-ativo-fundo:#ffc400;
+            --cor-acao-principal:#ffc107;
+            --cor-acao-principal-hover:#e0a800;
+            --cor-ativo-fundo:#ffc107;
             --cor-ativo-texto:#000000;
             --cor-menu-fundo:#222222;
             --cor-menu-texto:#ffffff;
+            --cor-texto-principal:#ffffff;
+            --cor-texto-secundario:#b8b8b8;
+            --cor-botao-secundario-borda:#ffc107;
+            --cor-botao-secundario-texto:#ffffff;
         }
 
         body{
@@ -358,13 +364,41 @@ body{
         }
 
         .wallapop-botao-destaque{
-            background:#ffc107;
+            background:var(--cor-acao-principal, #ffc107);
             color:#000;
         }
 
         .wallapop-botao-destaque:hover,
         .wallapop-botao-destaque:focus-visible{
-            background:#e0a800;
+            background:var(--cor-acao-principal-hover, #e0a800);
+        }
+
+        .btn-admin-secundario{
+            min-height:40px;
+            padding:8px 12px;
+            white-space:nowrap;
+            border:1px solid var(--cor-botao-secundario-borda, #ffc107);
+            border-radius:6px;
+            background:transparent;
+            color:var(--cor-botao-secundario-texto, #fff);
+            cursor:pointer;
+            font:inherit;
+            font-weight:700;
+        }
+
+        .btn-admin-secundario:hover,
+        .btn-admin-secundario:focus-visible{
+            border-color:var(--cor-acao-principal, #ffc107);
+            color:var(--cor-acao-principal, #ffc107);
+            outline:none;
+        }
+
+        .texto-principal{
+            color:var(--cor-texto-principal, #fff);
+        }
+
+        .texto-secundario{
+            color:var(--cor-texto-secundario, #b8b8b8);
         }
 
         .painel-admin{

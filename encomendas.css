@@ -528,9 +528,16 @@ body.pagina-encomendas-admin{
         }
 
         .admin-encomenda-editar{
-            background:#ffc107;
-            border-color:#ffc107;
-            color:#000;
+            background:transparent;
+            border:1px solid var(--cor-botao-secundario-borda, #ffc107);
+            color:var(--cor-botao-secundario-texto, #fff);
+        }
+
+        .admin-encomenda-editar:hover,
+        .admin-encomenda-editar:focus-visible{
+            background:transparent;
+            border-color:var(--cor-acao-principal, #ffc107);
+            color:var(--cor-acao-principal, #ffc107);
         }
 
         .admin-encomenda-apagar{

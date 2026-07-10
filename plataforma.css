@@ -59,13 +59,13 @@ body.pagina-wallapop{
         }
 
         .wallapop-botao-destaque{
-            background:#ffc107;
+            background:var(--cor-acao-principal, #ffc107);
             color:#000;
         }
 
         .wallapop-botao-destaque:hover,
         .wallapop-botao-destaque:focus-visible{
-            background:#e0a800;
+            background:var(--cor-acao-principal-hover, #e0a800);
         }
 
         .wallapop-layout{
@@ -867,7 +867,7 @@ body.pagina-wallapop{
 }
 
 .plataforma-produto-stock {
-    color: #fff !important;
+    color: var(--cor-texto-secundario, #b8b8b8) !important;
     font-size: 13px;
     font-weight: 700;
     margin-top: 2px;
@@ -881,7 +881,7 @@ body.pagina-wallapop{
 }
 
 .plataforma-produto-identificadores{
-    color:#fff !important;
+    color:var(--cor-texto-secundario, #b8b8b8) !important;
     font-size:13px;
     font-weight:700;
     margin-top:2px;
@@ -911,7 +911,7 @@ body.pagina-wallapop{
 }
 
 .plataforma-cliente-ficha-nome{
-    color:#f4c542;
+    color:var(--cor-texto-principal, #fff);
     font-size:14px;
     font-weight:600;
     line-height:1.2;

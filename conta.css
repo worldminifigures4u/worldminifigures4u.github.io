@@ -87,7 +87,7 @@ body[data-page="conta"]:not(.pagina-gestao) #conteudo-cliente-autenticado:not(.o
         }
 
         .btn-acao-cliente {
-            background: #ffc107;
+            background: var(--cor-acao-principal, #ffc107);
             border: none;
             border-radius: 6px;
             padding: 10px;
@@ -100,7 +100,7 @@ body[data-page="conta"]:not(.pagina-gestao) #conteudo-cliente-autenticado:not(.o
         }
 
         .btn-acao-cliente:hover {
-            background: #e0a800;
+            background: var(--cor-acao-principal-hover, #e0a800);
         }
 
         .btn-logout {

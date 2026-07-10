@@ -72,7 +72,7 @@
 }
 
 .clientes-lista-nome{
-    color:#f4c542;
+    color:var(--cor-texto-principal, #fff);
     font-size:14px;
     font-weight:600;
     line-height:1.2;
