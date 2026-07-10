@@ -1219,14 +1219,15 @@ const WALLAPOP_ESPACO_TITULO_LINHA = 8;
 const WALLAPOP_ALTURA_LINHA_SEPARADOR = 1;
 const WALLAPOP_ESPACO_LINHA_ITENS = 9;
 const WALLAPOP_ALTURA_CABECALHO = WALLAPOP_ALTURA_TITULO + WALLAPOP_ESPACO_TITULO_LINHA + WALLAPOP_ALTURA_LINHA_SEPARADOR + WALLAPOP_ESPACO_LINHA_ITENS;
-const WALLAPOP_ALTURA_RODAPE = 34;
 const WALLAPOP_ESPACO_ANTES_LINHA_TOTAL = 8;
 const WALLAPOP_ESPACO_LINHA_TOTAL = 10;
 const WALLAPOP_ALTURA_TOTAL_TEXTO = 30;
 const WALLAPOP_ALTURA_BLOCO_TOTAL = WALLAPOP_ESPACO_ANTES_LINHA_TOTAL + WALLAPOP_ALTURA_LINHA_SEPARADOR + WALLAPOP_ESPACO_LINHA_TOTAL + WALLAPOP_ALTURA_TOTAL_TEXTO;
 const WALLAPOP_ESPACO_RODAPE = 14;
 const WALLAPOP_ESPACO_TOTAL_RODAPE = 9;
+const WALLAPOP_ESPACO_LINHA_RODAPE = 10;
 const WALLAPOP_ALTURA_TEXTO_RODAPE = 14;
+const WALLAPOP_ALTURA_BLOCO_RODAPE = WALLAPOP_ALTURA_LINHA_SEPARADOR + WALLAPOP_ESPACO_LINHA_RODAPE + WALLAPOP_ALTURA_TEXTO_RODAPE;
 const WALLAPOP_MARGEM_FINAL = 24;
 const WALLAPOP_TITULO_LOTE = 'Lista de figuras';
 const WALLAPOP_COR_LINHA_SEPARADOR = '#d0d0d0';
@@ -1277,7 +1278,6 @@ function obterLayoutFolhaWallapop(totalItens, incluirTotalLote = false) {
     const yAposLista = yItens + alturaLista + WALLAPOP_ESPACO_RODAPE;
     let yLinhaTotal = null;
     let yTotalLote = null;
-    let yRodapeBase = yAposLista;
 
     if (incluirTotalLote) {
         yLinhaTotal = yAposLista + WALLAPOP_ESPACO_ANTES_LINHA_TOTAL;
@@ -1289,18 +1289,15 @@ function obterLayoutFolhaWallapop(totalItens, incluirTotalLote = false) {
 
     const yCabecalho = WALLAPOP_MARGEM_FOLHA + (WALLAPOP_ALTURA_TITULO / 2);
     const yLinhaTitulo = WALLAPOP_MARGEM_FOLHA + WALLAPOP_ALTURA_TITULO + WALLAPOP_ESPACO_TITULO_LINHA;
-    let yRodape;
-    let altura;
-
-    if (incluirTotalLote) {
-        const yFimTotal = yAposLista + WALLAPOP_ALTURA_BLOCO_TOTAL;
-        yRodape = yFimTotal + WALLAPOP_ESPACO_TOTAL_RODAPE + (WALLAPOP_ALTURA_TEXTO_RODAPE / 2);
-        altura = yRodape + (WALLAPOP_ALTURA_TEXTO_RODAPE / 2) + WALLAPOP_MARGEM_FINAL;
-    } else {
-        yRodapeBase = yAposLista;
-        yRodape = yRodapeBase + (WALLAPOP_ALTURA_RODAPE / 2);
-        altura = yRodapeBase + WALLAPOP_ALTURA_RODAPE + WALLAPOP_MARGEM_FINAL;
-    }
+    const yInicioRodape = incluirTotalLote
+        ? yAposLista + WALLAPOP_ALTURA_BLOCO_TOTAL + WALLAPOP_ESPACO_TOTAL_RODAPE
+        : yAposLista;
+    const yLinhaRodape = yInicioRodape;
+    const yRodape = yLinhaRodape
+        + WALLAPOP_ALTURA_LINHA_SEPARADOR
+        + WALLAPOP_ESPACO_LINHA_RODAPE
+        + (WALLAPOP_ALTURA_TEXTO_RODAPE / 2);
+    const altura = yRodape + (WALLAPOP_ALTURA_TEXTO_RODAPE / 2) + WALLAPOP_MARGEM_FINAL;
 
     return {
         itens,
@@ -1314,6 +1311,7 @@ function obterLayoutFolhaWallapop(totalItens, incluirTotalLote = false) {
         yItens,
         yLinhaTotal,
         yTotalLote,
+        yLinhaRodape,
         yRodape
     };
 }
@@ -1361,12 +1359,15 @@ function desenharCabecalhoFolhaWallapop(ctx, layout) {
     desenharLinhaHorizontalWallapop(ctx, colunas.xConteudo, colunas.xLinhaFim, yLinhaTitulo);
 }
 
-function desenharRodapeFolhaWallapop(ctx, largura, yCentro, texto) {
+function desenharRodapeFolhaWallapop(ctx, layout, texto) {
+    const { colunas, yLinhaRodape, yRodape } = layout;
+
+    desenharLinhaHorizontalWallapop(ctx, colunas.xConteudo, colunas.xLinhaFim, yLinhaRodape);
     ctx.font = '700 14px Arial, Helvetica, sans-serif';
     ctx.fillStyle = '#333333';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
-    ctx.fillText(texto, largura / 2, yCentro);
+    ctx.fillText(texto, WALLAPOP_LARGURA_FOLHA / 2, yRodape);
     ctx.fillStyle = '#111111';
 }
 
@@ -1548,8 +1549,7 @@ async function gerarCanvasFolhaWallapop(itensPagina, numeroPagina, totalPaginas,
 
     desenharRodapeFolhaWallapop(
         ctx,
-        largura,
-        layout.yRodape,
+        layout,
         formatarRodapeFolhaWallapop(numeroPagina, totalPaginas, totalFiguras)
     );
 

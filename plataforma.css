@@ -485,7 +485,8 @@ body.pagina-wallapop{
 
         .wallapop-pagina-rodape{
             margin-top:14px;
-            padding-top:0;
+            padding-top:10px;
+            border-top:1px solid #d0d0d0;
             color:#333;
             font-family:Arial, Helvetica, sans-serif;
             font-size:14px;
