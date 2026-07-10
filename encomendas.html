@@ -10,7 +10,7 @@
     <link rel="icon" type="image/png" href="favicon.png?v=20260710-fp-novo">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.108.2"></script>
     <link rel="stylesheet" href="styles.css?v=20260710-hierarquia-global">
-    <link rel="stylesheet" href="admin-cliente.css?v=20260628-css-split-admin-cliente">
+    <link rel="stylesheet" href="admin-cliente.css?v=20260710-modal-encomenda">
     <link rel="stylesheet" href="admin-imagem.css?v=20260628-css-split-admin-imagem">
     <link rel="stylesheet" href="encomendas.css?v=20260710-hierarquia-global">
 </head>
@@ -103,6 +103,22 @@
             <p class="wallapop-status" id="admin-cliente-status" aria-live="polite"></p>
         </div>
     </div>
+
+    <div class="clientes-encomenda-modal" id="clientes-encomenda-modal" hidden role="dialog" aria-modal="true" aria-labelledby="clientes-encomenda-titulo">
+        <div class="clientes-encomenda-dialogo">
+            <div class="clientes-encomenda-topo">
+                <h2 id="clientes-encomenda-titulo">Consulta de encomenda</h2>
+                <div class="clientes-encomenda-navegacao">
+                    <button type="button" class="wallapop-botao" id="clientes-encomenda-anterior" aria-label="Encomenda anterior">&larr; Anterior</button>
+                    <span id="clientes-encomenda-contador" class="clientes-encomenda-contador"></span>
+                    <button type="button" class="wallapop-botao" id="clientes-encomenda-seguinte" aria-label="Encomenda seguinte">Seguinte &rarr;</button>
+                </div>
+                <button type="button" class="clientes-encomenda-fechar" id="clientes-encomenda-fechar" aria-label="Fechar consulta">&times;</button>
+            </div>
+            <div id="clientes-encomenda-conteudo" class="clientes-encomenda-conteudo"></div>
+            <p class="wallapop-status" id="clientes-encomenda-status" aria-live="polite"></p>
+        </div>
+    </div>
     <footer class="rodape-site">
         <div class="rodape-conteudo">
             <div class="rodape-frase">Figures Planet &copy; 2026 &middot; Minifiguras, colecion&aacute;veis e pe&ccedil;as especiais</div>
@@ -114,8 +130,9 @@
             </nav>
         </div>
     </footer>
-    <script src="admin-encomenda-vista.js?v=20260707-modal"></script>
-    <script src="encomendas.js?v=20260707-vista-partilhada"></script>
+    <script src="admin-encomenda-vista.js?v=20260710-modal-encomenda"></script>
+    <script src="clientes-encomenda-modal.js?v=20260710-modal-encomenda"></script>
+    <script src="encomendas.js?v=20260710-modal-encomenda"></script>
 <script src="inline-listeners.js?v=20260705-pesquisa-cabecalho"></script>
 </body>
 </html>

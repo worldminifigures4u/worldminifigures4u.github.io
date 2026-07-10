@@ -2,6 +2,33 @@ let clientesHistoricoConsulta = [];
 let clientesIndiceConsulta = 0;
 let clientesEncomendaModalAtual = null;
 
+function obterSupabaseModalEncomendaCliente() {
+    if (typeof clientesClient !== "undefined" && clientesClient) return clientesClient;
+    if (typeof encomendasClient !== "undefined" && encomendasClient) return encomendasClient;
+    return null;
+}
+
+function criarElementoModalEncomendaCliente(tag, classe, texto) {
+    if (typeof criarElementoCliente === "function") return criarElementoCliente(tag, classe, texto);
+    if (typeof criarElementoEncomenda === "function") return criarElementoEncomenda(tag, classe, texto);
+    const elemento = document.createElement(tag);
+    if (classe) elemento.className = classe;
+    if (texto !== undefined) elemento.textContent = texto;
+    return elemento;
+}
+
+function formatarDataModalEncomendaCliente(valor) {
+    if (typeof formatarDataCliente === "function") return formatarDataCliente(valor);
+    if (typeof formatarDataEncomenda === "function") return formatarDataEncomenda(valor);
+    return String(valor || "");
+}
+
+function formatarEuroModalEncomendaCliente(valor) {
+    if (typeof formatarEuroCliente === "function") return formatarEuroCliente(valor);
+    if (typeof formatarEuroEncomenda === "function") return formatarEuroEncomenda(valor);
+    return String(valor ?? "");
+}
+
 function definirStatusModalEncomendaCliente(texto, erro = false) {
     const status = document.getElementById("clientes-encomenda-status");
     if (!status) return;
@@ -46,9 +73,9 @@ function sincronizarHistoricoClienteModal(itemResumo) {
     const spans = linha.querySelectorAll("span");
     if (spans[1]) spans[1].textContent = itemResumo.origem || item.origem || "Site";
     if (spans[2]) spans[2].textContent = AdminEncomendaVista.estadoNormalizado(itemResumo.estado || item.estado);
-    if (spans[3]) spans[3].textContent = formatarDataCliente(itemResumo.created_at || item.data);
+    if (spans[3]) spans[3].textContent = formatarDataModalEncomendaCliente(itemResumo.created_at || item.data);
     const total = linha.querySelector("strong:last-child");
-    if (total) total.textContent = formatarEuroCliente(itemResumo.total ?? item.total);
+    if (total) total.textContent = formatarEuroModalEncomendaCliente(itemResumo.total ?? item.total);
 }
 
 async function renderizarModalEncomendaCliente() {
@@ -56,17 +83,24 @@ async function renderizarModalEncomendaCliente() {
     const conteudo = document.getElementById("clientes-encomenda-conteudo");
     if (!item?.id || !conteudo) return;
 
-    conteudo.replaceChildren(criarElementoCliente("p", "admin-cliente-carregar", "A carregar encomenda..."));
+    conteudo.replaceChildren(criarElementoModalEncomendaCliente("p", "admin-cliente-carregar", "A carregar encomenda..."));
     atualizarNavegacaoModalEncomendaCliente();
 
-    const { data, error } = await clientesClient
+    const supabaseAdmin = obterSupabaseModalEncomendaCliente();
+    if (!supabaseAdmin) {
+        conteudo.replaceChildren(criarElementoModalEncomendaCliente("p", "admin-cliente-vazio", "Erro ao carregar encomenda."));
+        definirStatusModalEncomendaCliente("Cliente Supabase indisponivel.", true);
+        return;
+    }
+
+    const { data, error } = await supabaseAdmin
         .from("encomendas")
         .select("*")
         .eq("id", String(item.id))
         .single();
 
     if (error || !data) {
-        conteudo.replaceChildren(criarElementoCliente("p", "admin-cliente-vazio", "Erro ao carregar encomenda."));
+        conteudo.replaceChildren(criarElementoModalEncomendaCliente("p", "admin-cliente-vazio", "Erro ao carregar encomenda."));
         definirStatusModalEncomendaCliente(error?.message || "Encomenda nao encontrada.", true);
         return;
     }
@@ -125,7 +159,7 @@ function abrirModalEncomendaCliente(historico, indiceInicial = 0) {
 
 function configurarModalEncomendaCliente() {
     AdminEncomendaVista.configurar({
-        client: clientesClient,
+        client: obterSupabaseModalEncomendaCliente(),
         hooks: {
             definirStatus: definirStatusModalEncomendaCliente,
             renderizarLista: () => {},

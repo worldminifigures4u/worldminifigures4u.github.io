@@ -223,6 +223,18 @@ function renderizarFormularioClienteExterno(dados, secao) {
     formulario.querySelector('input[name="nome"]').focus();
 }
 
+function criarCodigoHistoricoEncomenda(item, indice, historico) {
+    const codigo = item.codigo || item.codigo_encomenda || `#${item.id}`;
+    if (!item.id) return criarElementoEncomenda('strong', '', codigo);
+    const botao = document.createElement('button');
+    botao.type = 'button';
+    botao.className = 'clientes-historico-codigo';
+    botao.textContent = codigo;
+    botao.title = 'Consultar encomenda (janela r\u00e1pida)';
+    botao.addEventListener('click', () => abrirModalEncomendaCliente(historico, indice));
+    return botao;
+}
+
 function renderizarFichaClienteAdmin(dados) {
     const conteudo = document.getElementById('admin-cliente-conteudo');
     const cliente = dados.cliente || {};
@@ -283,10 +295,10 @@ function renderizarFichaClienteAdmin(dados) {
     const historicoSecao = criarElementoEncomenda('section', 'admin-cliente-secao');
     historicoSecao.appendChild(criarElementoEncomenda('h3', '', 'Hist\u00f3rico de encomendas'));
     const listaHistorico = criarElementoEncomenda('div', 'admin-cliente-historico');
-    historico.forEach(item => {
+    historico.forEach((item, indice) => {
         const linha = criarElementoEncomenda('div', 'admin-cliente-historico-linha');
         linha.append(
-            criarElementoEncomenda('strong', '', item.codigo || `#${item.id}`),
+            criarCodigoHistoricoEncomenda(item, indice, historico),
             criarElementoEncomenda('span', '', item.origem || 'Site'),
             criarElementoEncomenda('span', '', item.estado || ''),
             criarElementoEncomenda('span', '', formatarDataEncomenda(item.data)),
@@ -456,6 +468,7 @@ async function iniciarPainelEncomendas() {
         if (typeof supabase === 'undefined') throw new Error('A biblioteca Supabase não carregou.');
         encomendasClient = supabase.createClient(ENCOMENDAS_SUPABASE_URL, ENCOMENDAS_SUPABASE_KEY);
         configurarVistaEncomendasAdmin();
+        if (typeof configurarModalEncomendaCliente === 'function') configurarModalEncomendaCliente();
         const { data: { user }, error } = await encomendasClient.auth.getUser();
         if (error || !user || !ENCOMENDAS_ADMIN_EMAILS.includes(String(user.email || '').toLowerCase())) {
             bloqueio.textContent = 'Acesso reservado ao administrador. A regressar à conta...';
