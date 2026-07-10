@@ -33,7 +33,7 @@ body{
             right:0;
             z-index:1000;
             background:#111;
-            color:#ffc107;
+            color:var(--cor-texto-principal, #fff);
             border-bottom:1px solid #333;
             box-shadow:0 8px 22px rgba(0,0,0,0.32);
         }
@@ -158,12 +158,17 @@ body{
 
         .acao-cabecalho:hover,
         .acao-cabecalho:focus-visible{
-            background:#ffc107;
-            color:#000;
+            background:#2a2a2a;
+            color:#fff;
+            box-shadow:inset 0 0 0 1px var(--cor-botao-secundario-borda, #ffc107);
             outline:none;
         }
 
-        .acao-cabecalho.ativa{
+        .acao-cabecalho.ativa,
+        .acao-cabecalho.ativa:hover,
+        .acao-cabecalho.ativa:focus-visible{
+            background:var(--cor-ativo-fundo, #ffc107);
+            color:var(--cor-ativo-texto, #000);
             box-shadow:none;
         }
 
@@ -346,11 +351,11 @@ body{
         .msg-erro { color: #ff4d4d; }
 
         .wallapop-botao{
-            border:0;
+            border:1px solid var(--cor-botao-secundario-borda, #ffc107);
             border-radius:6px;
             padding:10px 14px;
-            background:#222;
-            color:#fff;
+            background:transparent;
+            color:var(--cor-botao-secundario-texto, #fff);
             font:inherit;
             font-weight:800;
             text-decoration:none;
@@ -359,11 +364,14 @@ body{
 
         .wallapop-botao:hover,
         .wallapop-botao:focus-visible{
-            background:#333;
+            background:transparent;
+            border-color:var(--cor-acao-principal, #ffc107);
+            color:var(--cor-acao-principal, #ffc107);
             outline:none;
         }
 
         .wallapop-botao-destaque{
+            border:0;
             background:var(--cor-acao-principal, #ffc107);
             color:#000;
         }
@@ -371,6 +379,7 @@ body{
         .wallapop-botao-destaque:hover,
         .wallapop-botao-destaque:focus-visible{
             background:var(--cor-acao-principal-hover, #e0a800);
+            color:#000;
         }
 
         .btn-admin-secundario{
@@ -700,7 +709,7 @@ body.pagina-estatisticas-admin > main.estatisticas-admin{
 }
 
 .sessao-conta-nome{
-    color:#ffc107;
+    color:var(--cor-texto-principal, #fff);
     font-size:18px;
     font-weight:900;
     line-height:1.2;
@@ -762,7 +771,7 @@ body.pagina-estatisticas-admin > main.estatisticas-admin{
 .gestao-tab.ativa,
 .btn-tema.ativo,
 .btn-subtema.ativo{
-    background:var(--cor-ativo-fundo, #ffc400);
+    background:var(--cor-ativo-fundo, #ffc107);
     color:var(--cor-ativo-texto, #000000);
     font-weight:700;
 }
@@ -775,4 +784,141 @@ body.pagina-estatisticas-admin > main.estatisticas-admin{
 .gestao-tab{
     background:var(--cor-menu-fundo, #222222);
     color:var(--cor-menu-texto, #ffffff);
+}
+
+/* Hierarquia de cores: títulos, nomes, metadados e botões em todo o site */
+.estatisticas-topo h1,
+.favoritos-topo h1,
+.fornecedores-topo h1,
+.admin-encomendas-topo h1,
+.admin-cliente-dialogo > h2,
+.admin-cliente-secao h3,
+.clientes-ficha-topo h2,
+.plataforma-admin h1,
+.plataforma-admin h2,
+.plataforma-bloco h2,
+.wallapop-editor h2,
+.carrinho h2,
+.menu-temas h2,
+.fornecedores-painel h2,
+.fornecedores-painel h3,
+.fornecedor-lista-final-box h4,
+.fornecedor-edicao-topo h3,
+.estatisticas-painel h2,
+.area-cliente h2,
+.painel-admin h3,
+.institucional-main h1,
+.institucional-main h2,
+.pagina-contactos h1,
+.pagina-sobre h1,
+.pagina-politicas h1,
+.admin-produto-encomendas-fornecedor h4{
+    color:var(--cor-texto-principal, #fff) !important;
+}
+
+.linha-carrinho strong,
+.admin-encomenda-linha .admin-encomenda-cliente-nome,
+.admin-cliente-historico-linha strong:first-child,
+.fornecedor-resultado-item strong,
+.mapas-produto-nome-botao,
+.clientes-lista-nome,
+.wallapop-resultado-info strong,
+.wallapop-selecionado-info strong,
+.plataforma-cliente-ficha-nome,
+.produto-card h3,
+.favorito-info strong,
+.item-admin-produto strong{
+    color:var(--cor-texto-principal, #fff) !important;
+}
+
+.categoria,
+.subcategoria,
+.favorito-info span,
+.admin-encomendas-resumo span,
+.contador-produtos,
+.form-admin label,
+.form-cliente label,
+.admin-cliente-campo strong,
+.admin-cliente-formulario-campo,
+.admin-produto-detalhes-linha,
+.plataforma-produto-stock,
+.plataforma-produto-identificadores,
+.fornecedor-contagem-lista,
+.fornecedor-resultado-item span,
+.clientes-lista-meta,
+.sessao-conta-titulo,
+.sessao-conta-email,
+.ajuda-admin{
+    color:var(--cor-texto-secundario, #b8b8b8) !important;
+}
+
+.admin-encomendas-resumo strong,
+.estatisticas-metricas strong,
+.contador-produtos strong{
+    color:var(--cor-texto-principal, #fff) !important;
+}
+
+.btn-acao-cliente,
+.btn-continuar-comprar,
+.btn-adicionar,
+.btn-favorito-adicionar,
+.favoritos-continuar{
+    border:0 !important;
+    background:var(--cor-acao-principal, #ffc107) !important;
+    color:#000 !important;
+}
+
+.btn-acao-cliente:hover,
+.btn-continuar-comprar:hover,
+.btn-adicionar:hover,
+.btn-favorito-adicionar:hover,
+.favoritos-continuar:hover{
+    background:var(--cor-acao-principal-hover, #e0a800) !important;
+    color:#000 !important;
+}
+
+.admin-encomenda-apagar,
+.admin-encomenda-anexo-apagar,
+.clientes-botao-apagar,
+.admin-cliente-fechar,
+.btn-logout,
+.wallapop-remover{
+    background:#7a1f1f !important;
+    border:0 !important;
+    color:#fff !important;
+}
+
+.admin-encomenda-apagar:hover,
+.admin-encomenda-anexo-apagar:hover,
+.clientes-botao-apagar:hover,
+.btn-logout:hover,
+.wallapop-remover:hover{
+    background:#a52828 !important;
+    color:#fff !important;
+}
+
+.wallapop-botao-registar,
+.wallapop-botao-registar:hover{
+    background:#29ad4b !important;
+    border:0 !important;
+    color:#fff !important;
+}
+
+.admin-encomenda-editar,
+.admin-cliente-editar,
+.fornecedor-btn-editar-ficha,
+.btn-admin-secundario{
+    background:transparent !important;
+    border:1px solid var(--cor-botao-secundario-borda, #ffc107) !important;
+    color:var(--cor-botao-secundario-texto, #fff) !important;
+}
+
+.admin-encomenda-editar:hover,
+.admin-cliente-editar:hover,
+.fornecedor-btn-editar-ficha:hover,
+.btn-admin-secundario:hover,
+.btn-admin-secundario:focus-visible{
+    background:transparent !important;
+    border-color:var(--cor-acao-principal, #ffc107) !important;
+    color:var(--cor-acao-principal, #ffc107) !important;
 }

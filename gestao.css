@@ -232,17 +232,18 @@
             margin-right:10px;
             min-height:36px;
             padding:8px 12px;
-            border:1px solid #6a5520;
+            border:1px solid var(--cor-botao-secundario-borda, #ffc107);
             border-radius:6px;
-            background:#242424;
-            color:#ffc400;
+            background:transparent;
+            color:var(--cor-botao-secundario-texto, #fff);
             font:inherit;
             font-weight:700;
             cursor:pointer;
         }
 
         .input-upload-admin::file-selector-button:hover{
-            border-color:#ffc400;
+            border-color:var(--cor-acao-principal, #ffc107);
+            color:var(--cor-acao-principal, #ffc107);
         }
 
         .resumo-importacao-stock{
@@ -261,7 +262,7 @@
 
         .resumo-importacao-stock strong{
             display:block;
-            color:#ffc107;
+            color:var(--cor-texto-principal, #fff);
             font-size:18px;
         }
 

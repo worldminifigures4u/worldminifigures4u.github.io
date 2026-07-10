@@ -19,7 +19,7 @@
 
 .favoritos-topo h1{
     margin:0;
-    color:#ffc107;
+    color:var(--cor-texto-principal, #fff);
     font-size:30px;
     line-height:1.1;
 }
@@ -135,8 +135,9 @@
 
 .btn-favorito-adicionar,
 .favoritos-continuar{
-    background:#ffc107;
+    background:var(--cor-acao-principal, #ffc107);
     color:#000;
+    border:0;
 }
 
 .btn-favorito-adicionar{

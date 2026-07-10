@@ -568,7 +568,7 @@ function renderizarFichaCliente(dados) {
         titulo.appendChild(aviso);
     }
     topo.append(titulo);
-    const editar = criarElementoCliente("button", "wallapop-botao wallapop-botao-destaque", "Editar ficha");
+    const editar = criarElementoCliente("button", "wallapop-botao", "Editar ficha");
     editar.type = "button";
     editar.addEventListener("click", () => renderizarEdicaoCliente(dados));
     const apagar = criarElementoCliente("button", "wallapop-botao clientes-botao-apagar", "Apagar ficha");

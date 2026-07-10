@@ -21,7 +21,7 @@
     margin: 0 0 6px;
     font-size: 32px;
     line-height: 1.1;
-    color: #ffc107;
+    color: var(--cor-texto-principal, #fff);
 }
 
 .estatisticas-topo p {
@@ -118,7 +118,7 @@
 
 .estatisticas-painel h2 {
     margin: 0 0 14px;
-    color: #ffc107;
+    color: var(--cor-texto-principal, #fff);
     font-size: 18px;
     line-height: 1.2;
 }

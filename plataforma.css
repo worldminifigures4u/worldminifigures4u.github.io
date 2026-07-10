@@ -40,34 +40,6 @@ body.pagina-wallapop{
             display:none !important;
         }
 
-        .wallapop-botao{
-            border:0;
-            border-radius:6px;
-            padding:10px 14px;
-            background:#222;
-            color:#fff;
-            font:inherit;
-            font-weight:800;
-            text-decoration:none;
-            cursor:pointer;
-        }
-
-        .wallapop-botao:hover,
-        .wallapop-botao:focus-visible{
-            background:#333;
-            outline:none;
-        }
-
-        .wallapop-botao-destaque{
-            background:var(--cor-acao-principal, #ffc107);
-            color:#000;
-        }
-
-        .wallapop-botao-destaque:hover,
-        .wallapop-botao-destaque:focus-visible{
-            background:var(--cor-acao-principal-hover, #e0a800);
-        }
-
         .wallapop-layout{
             width:100%;
             margin:0 auto var(--espaco-acima-rodape);

@@ -7,19 +7,19 @@
 
         .pagina-institucional h1{
             margin:0 0 18px;
-            color:#ffc107;
+            color:var(--cor-texto-principal, #fff);
             font-size:clamp(28px, 4vw, 42px);
         }
 
         .pagina-institucional h2{
             margin:28px 0 10px;
-            color:#ffc107;
+            color:var(--cor-texto-principal, #fff);
             font-size:21px;
         }
 
         .pagina-institucional h3{
             margin:20px 0 8px;
-            color:#f4c542;
+            color:var(--cor-texto-principal, #fff);
             font-size:17px;
         }
 

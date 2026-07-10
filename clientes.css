@@ -124,7 +124,7 @@
 
 .clientes-ficha-topo h2{
     margin:0;
-    color:#ffc107;
+            color:var(--cor-texto-secundario, #b8b8b8);
 }
 
 .clientes-ficha-acoes{
@@ -141,7 +141,7 @@
     align-items:center;
     gap:9px;
     margin-right:4px;
-    color:#ffc107;
+            color:var(--cor-texto-secundario, #b8b8b8);
 }
 
 .clientes-ficha-acoes .admin-cliente-formulario-checkbox input[type="checkbox"]{
@@ -156,7 +156,7 @@
 }
 
 .clientes-ficha-acoes .admin-cliente-formulario-checkbox span{
-    color:#ffc107;
+            color:var(--cor-texto-secundario, #b8b8b8);
     font-size:13px;
     font-weight:700;
     line-height:1.2;
@@ -181,7 +181,7 @@
     padding:0;
     border:0;
     background:transparent;
-    color:#ffc107;
+            color:var(--cor-texto-secundario, #b8b8b8);
     font:inherit;
     font-weight:700;
     cursor:pointer;
@@ -232,7 +232,7 @@
 
 .clientes-encomenda-topo h2{
     margin:0;
-    color:#ffc107;
+            color:var(--cor-texto-secundario, #b8b8b8);
     font-size:18px;
 }
 
@@ -336,7 +336,7 @@ body.clientes-encomenda-modal-aberto{
     flex-direction:row;
     align-items:center;
     gap:9px;
-    color:#ffc107;
+            color:var(--cor-texto-secundario, #b8b8b8);
 }
 
 .clientes-formulario-rodape .admin-cliente-formulario-checkbox input[type="checkbox"]{
@@ -351,7 +351,7 @@ body.clientes-encomenda-modal-aberto{
 }
 
 .clientes-formulario-rodape .admin-cliente-formulario-checkbox span{
-    color:#ffc107;
+            color:var(--cor-texto-secundario, #b8b8b8);
     font-size:13px;
     font-weight:700;
     line-height:1.2;
