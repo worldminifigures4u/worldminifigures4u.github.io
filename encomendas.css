@@ -103,6 +103,13 @@ body.pagina-encomendas-admin{
             font-size:13px;
         }
 
+        .admin-encomendas-filtros label span,
+        .admin-encomendas-filtro-campo > span{
+            color:#b8b8b8;
+            font-size:12px;
+            font-weight:700;
+        }
+
         .admin-encomendas-filtros input,
         .admin-encomendas-filtros select,
         .admin-encomenda-estado-edicao select{

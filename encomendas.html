@@ -12,7 +12,7 @@
     <link rel="stylesheet" href="styles.css?v=20260710-hierarquia-global">
     <link rel="stylesheet" href="admin-cliente.css?v=20260710-modal-encomenda">
     <link rel="stylesheet" href="admin-imagem.css?v=20260628-css-split-admin-imagem">
-    <link rel="stylesheet" href="encomendas.css?v=20260710-ocultar-encomendas-figura">
+    <link rel="stylesheet" href="encomendas.css?v=20260710-labels-pesquisa">
 </head>
 <body class="pagina-encomendas-admin cabecalho-com-admin pagina-com-cabecalho-site">
     <header class="cabecalho-site-admin">
@@ -69,13 +69,16 @@
         </section>
 
         <section class="admin-encomendas-filtros" aria-label="Pesquisa e filtros">
-            <div class="admin-encomendas-filtro-campo">
-                <input type="search" id="pesquisa-encomendas-admin" placeholder="Código, nome ou e-mail" autocomplete="off" aria-label="Pesquisar encomendas">
-            </div>
-            <div class="admin-encomendas-filtro-campo">
-                <input type="search" id="pesquisa-figura-encomendas-admin" placeholder="Nome, SKU ou Ref. da figura" autocomplete="off" aria-label="Pesquisar vendas por figura">
-            </div>
-            <div class="admin-encomendas-filtro-campo">
+            <label class="admin-encomendas-filtro-campo">
+                <span>Encomenda / cliente</span>
+                <input type="search" id="pesquisa-encomendas-admin" placeholder="Código da encomenda, nome do cliente ou e-mail" autocomplete="off" aria-label="Pesquisar encomendas por código, cliente ou e-mail">
+            </label>
+            <label class="admin-encomendas-filtro-campo">
+                <span>Figura vendida</span>
+                <input type="search" id="pesquisa-figura-encomendas-admin" placeholder="Nome da figura, SKU ou Ref." autocomplete="off" aria-label="Pesquisar encomendas que contenham esta figura">
+            </label>
+            <label class="admin-encomendas-filtro-campo">
+                <span>Estado</span>
                 <select id="filtro-estado-encomendas-admin" aria-label="Filtrar por estado">
                     <option value="todos">Todos os estados</option>
                     <option value="A aguardar pagamento" selected>A aguardar pagamento</option>
@@ -85,7 +88,7 @@
                     <option value="Concluído">Concluído</option>
                     <option value="Cancelado">Cancelado</option>
                 </select>
-            </div>
+            </label>
             <button type="button" class="wallapop-botao" id="btn-atualizar-encomendas">Atualizar</button>
         </section>
 
