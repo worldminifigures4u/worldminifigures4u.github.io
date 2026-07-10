@@ -203,6 +203,14 @@ body.pagina-encomendas-admin{
             font-size:13px;
         }
 
+        .admin-encomendas-lista[hidden]{
+            display:none !important;
+        }
+
+        .pagina-encomendas-admin.pesquisa-figura-ativa .admin-encomendas-lista{
+            display:none !important;
+        }
+
         .admin-encomendas-lista{
             display:flex;
             flex-direction:column;

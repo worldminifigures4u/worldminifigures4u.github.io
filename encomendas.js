@@ -464,6 +464,10 @@ function abrirEncomendaVendaFigura(indice, vendas) {
     abrirModalEncomendaCliente(criarHistoricoModalVendasFigura(vendas), indice);
 }
 
+function atualizarModoPesquisaFiguraAdmin(ativo) {
+    document.getElementById('encomendas-aplicacao')?.classList.toggle('pesquisa-figura-ativa', ativo);
+}
+
 function renderizarVendasFiguraAdmin() {
     const painel = document.getElementById('lista-vendas-figura-admin');
     const resumo = document.getElementById('resumo-vendas-figura-admin');
@@ -474,6 +478,7 @@ function renderizarVendasFiguraAdmin() {
     if (!painel || !lista) return;
 
     if (!termo) {
+        atualizarModoPesquisaFiguraAdmin(false);
         painel.hidden = true;
         painel.replaceChildren();
         if (resumo) resumo.hidden = true;
@@ -481,7 +486,9 @@ function renderizarVendasFiguraAdmin() {
         return;
     }
 
+    atualizarModoPesquisaFiguraAdmin(true);
     lista.hidden = true;
+    lista.replaceChildren();
     painel.hidden = false;
     painel.replaceChildren();
 
@@ -573,13 +580,20 @@ function encomendasFiltradasAdmin() {
 }
 
 function renderizarEncomendasAdmin() {
-    if (obterTermoPesquisaFiguraAdmin()) {
+    const lista = document.getElementById('lista-encomendas-admin');
+    const pesquisaFigura = Boolean(obterTermoPesquisaFiguraAdmin());
+
+    if (pesquisaFigura) {
+        if (lista) {
+            lista.hidden = true;
+            lista.replaceChildren();
+        }
         renderizarVendasFiguraAdmin();
         return;
     }
 
     renderizarVendasFiguraAdmin();
-    const lista = document.getElementById('lista-encomendas-admin');
+    if (lista) lista.hidden = false;
     const filtradas = encomendasFiltradasAdmin();
     lista.replaceChildren();
     if (!filtradas.length) {
