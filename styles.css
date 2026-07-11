@@ -597,6 +597,8 @@ body{
     min-width:0;
     padding-top:4px;
     border-top:1px solid #292929;
+    overflow-x:auto;
+    scrollbar-width:thin;
 }
 
 .navegacao-admin-cabecalho[hidden]{
@@ -605,12 +607,20 @@ body{
 
 .navegacao-admin-cabecalho .acao-cabecalho{
     height:32px;
-    min-width:104px;
+    min-width:max-content;
+    flex-shrink:0;
     padding:0 14px;
     border-radius:18px;
     justify-content:center;
     white-space:nowrap;
     font-size:14px;
+}
+
+.navegacao-admin-cabecalho .texto-acao,
+.navegacao-admin-cabecalho .texto-acao strong{
+    max-width:none;
+    overflow:visible;
+    text-overflow:clip;
 }
 
 body.cabecalho-com-admin,
