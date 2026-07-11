@@ -185,26 +185,47 @@
         });
     }
 
+    function executarComModulosEnvio(callback) {
+        const correr = () => {
+            if (typeof callback === 'function') callback();
+        };
+        if (typeof window.garantirModulosEnvioCarrinho === 'function') {
+            window.garantirModulosEnvioCarrinho().then(correr).catch(console.error);
+            return;
+        }
+        correr();
+    }
+
     function garantirScriptCheckout() {
         if (typeof criarNovaEncomenda === 'function') return Promise.resolve();
         if (promessaCheckoutCarrinho) return promessaCheckoutCarrinho;
 
-        promessaCheckoutCarrinho = new Promise((resolve, reject) => {
+        const carregarCheckout = () => new Promise((resolve, reject) => {
             const script = document.createElement('script');
-            script.src = 'checkout.js?v=20260711-leve-r9';
+            script.src = 'checkout.js?v=20260711-leve-r10';
             script.defer = true;
             script.onload = () => resolve();
             script.onerror = () => reject(new Error('Falha ao carregar checkout.'));
             document.body.appendChild(script);
         });
 
+        const base = typeof window.garantirModulosEnvioCarrinho === 'function'
+            ? window.garantirModulosEnvioCarrinho()
+            : Promise.resolve();
+
+        promessaCheckoutCarrinho = base.then(carregarCheckout);
         return promessaCheckoutCarrinho;
     }
 
     function ligarCarrinhoPagina() {
-        ligar('pais-envio', 'change', function () {
-            if (typeof atualizarOpcoesEnvio === 'function') atualizarOpcoesEnvio();
-        });
+        const selectPais = document.getElementById('pais-envio');
+        if (selectPais) {
+            const atualizarEnvio = () => executarComModulosEnvio(() => {
+                if (typeof atualizarOpcoesEnvio === 'function') atualizarOpcoesEnvio();
+            });
+            selectPais.addEventListener('change', atualizarEnvio);
+            selectPais.addEventListener('focus', atualizarEnvio, { once: true });
+        }
 
         const metodosEnvio = document.getElementById('metodos-envio');
         if (metodosEnvio) {
@@ -213,7 +234,9 @@
                 if (!radio || radio.name !== 'metodo-envio-radio') return;
                 const inputMetodo = document.getElementById('metodo-envio');
                 if (inputMetodo) inputMetodo.value = radio.value;
-                if (typeof recalcularTotais === 'function') recalcularTotais();
+                executarComModulosEnvio(() => {
+                    if (typeof recalcularTotais === 'function') recalcularTotais();
+                });
             });
         }
 

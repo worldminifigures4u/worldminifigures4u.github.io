@@ -533,6 +533,6 @@ function obterImagemPrincipalProduto(prod = {}) {
 
 if ('serviceWorker' in navigator && window.location.protocol !== 'file:') {
     window.addEventListener('load', () => {
-        navigator.serviceWorker.register('sw.js?v=20260711-leve-r9').catch(() => {});
+        navigator.serviceWorker.register('sw.js?v=20260711-leve-r10').catch(() => {});
     });
 }
