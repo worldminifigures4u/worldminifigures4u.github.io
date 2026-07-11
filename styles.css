@@ -350,77 +350,12 @@ body{
         .msg-sucesso { color: #28a745; }
         .msg-erro { color: #ff4d4d; }
 
-        .wallapop-botao{
-            border:1px solid var(--cor-botao-secundario-borda, #ffc107);
-            border-radius:6px;
-            padding:10px 14px;
-            background:transparent;
-            color:var(--cor-botao-secundario-texto, #fff);
-            font:inherit;
-            font-weight:800;
-            text-decoration:none;
-            cursor:pointer;
-        }
-
-        .wallapop-botao:hover,
-        .wallapop-botao:focus-visible{
-            background:transparent;
-            border-color:var(--cor-acao-principal, #ffc107);
-            color:var(--cor-acao-principal, #ffc107);
-            outline:none;
-        }
-
-        .wallapop-botao-destaque{
-            border:0;
-            background:var(--cor-acao-principal, #ffc107);
-            color:#000;
-        }
-
-        .wallapop-botao-destaque:hover,
-        .wallapop-botao-destaque:focus-visible{
-            background:var(--cor-acao-principal-hover, #e0a800);
-            color:#000;
-        }
-
-        .btn-admin-secundario{
-            min-height:40px;
-            padding:8px 12px;
-            white-space:nowrap;
-            border:1px solid var(--cor-botao-secundario-borda, #ffc107);
-            border-radius:6px;
-            background:transparent;
-            color:var(--cor-botao-secundario-texto, #fff);
-            cursor:pointer;
-            font:inherit;
-            font-weight:700;
-        }
-
-        .btn-admin-secundario:hover,
-        .btn-admin-secundario:focus-visible{
-            border-color:var(--cor-acao-principal, #ffc107);
-            color:var(--cor-acao-principal, #ffc107);
-            outline:none;
-        }
-
         .texto-principal{
             color:var(--cor-texto-principal, #fff);
         }
 
         .texto-secundario{
             color:var(--cor-texto-secundario, #b8b8b8);
-        }
-
-        .painel-admin{
-            display:none;
-            margin-top:18px;
-            padding-top:15px;
-            border-top:1px solid #333;
-        }
-
-        .painel-admin h3{
-            margin:0 0 10px 0;
-            font-size:15px;
-            color:#ffc107;
         }
 
         .input-pesquisa {
@@ -586,72 +521,6 @@ body{
             .rodape-links{ justify-content:center; }
         }
 
-/* Cabecalho com uma segunda linha exclusiva para administracao. */
-.navegacao-admin-cabecalho{
-    grid-column:2 / -1;
-    grid-row:2;
-    display:flex;
-    justify-content:center;
-    align-items:center;
-    gap:5px;
-    min-width:0;
-    padding-top:4px;
-    border-top:1px solid #292929;
-    overflow-x:auto;
-    scrollbar-width:thin;
-}
-
-.navegacao-admin-cabecalho[hidden]{
-    display:none !important;
-}
-
-.navegacao-admin-cabecalho .acao-cabecalho{
-    height:32px;
-    min-width:max-content;
-    flex-shrink:0;
-    padding:0 14px;
-    border-radius:18px;
-    justify-content:center;
-    white-space:nowrap;
-    font-size:14px;
-}
-
-.navegacao-admin-cabecalho .texto-acao,
-.navegacao-admin-cabecalho .texto-acao strong{
-    max-width:none;
-    overflow:visible;
-    text-overflow:clip;
-}
-
-body.cabecalho-com-admin,
-body.pagina-com-cabecalho-site{
-    padding-top: var(--cabecalho-offset, 128px);
-}
-
-@media(max-width:1100px){
-    .navegacao-admin-cabecalho{
-        grid-column:1 / -1;
-        grid-row:3;
-    }
-}
-
-@media(max-width:560px){
-    .navegacao-admin-cabecalho{
-        grid-column:1;
-        grid-row:4;
-        justify-content:flex-start;
-        overflow-x:auto;
-        padding:6px 0 1px;
-        scrollbar-width:thin;
-    }
-
-    .navegacao-admin-cabecalho .acao-cabecalho{
-        width:auto;
-        min-width:max-content;
-        padding:0 12px;
-    }
-}
-
 
 /* No telemóvel, a pesquisa pertence apenas à página Produtos. */
 @media (max-width: 560px) {
@@ -666,13 +535,7 @@ body.pagina-com-cabecalho-site{
     body:not([data-page="loja"]) .acoes-cabecalho {
         grid-row: 2;
     }
-
-    body:not([data-page="loja"]) .navegacao-admin-cabecalho {
-        grid-row: 3;
-    }
 }
-
-
 
 .sessao-conta-resumo{
     display:flex;
@@ -747,7 +610,6 @@ body.pagina-com-cabecalho-site{
 .acao-cabecalho.ativa,
 .tab-btn.ativa,
 .conta-menu-item.ativa,
-.gestao-tab.ativa,
 .btn-tema.ativo,
 .btn-subtema.ativo{
     background:var(--cor-ativo-fundo, #ffc107);
@@ -759,80 +621,40 @@ body.pagina-com-cabecalho-site{
 .btn-tema,
 .btn-subtema,
 .tab-btn,
-.conta-menu-item,
-.gestao-tab{
+.conta-menu-item{
     background:var(--cor-menu-fundo, #222222);
     color:var(--cor-menu-texto, #ffffff);
 }
 
 /* Hierarquia de cores: títulos, nomes, metadados e botões em todo o site */
-.estatisticas-topo h1,
 .favoritos-topo h1,
-.fornecedores-topo h1,
-.admin-encomendas-topo h1,
-.admin-cliente-dialogo > h2,
-.admin-cliente-secao h3,
-.clientes-ficha-topo h2,
-.plataforma-admin h1,
-.plataforma-admin h2,
-.plataforma-bloco h2,
-.wallapop-editor h2,
 .carrinho h2,
 .menu-temas h2,
-.fornecedores-painel h2,
-.fornecedores-painel h3,
-.fornecedor-lista-final-box h4,
-.fornecedor-edicao-topo h3,
-.estatisticas-painel h2,
 .area-cliente h2,
-.painel-admin h3,
 .institucional-main h1,
 .institucional-main h2,
 .pagina-contactos h1,
 .pagina-sobre h1,
-.pagina-politicas h1,
-.admin-produto-encomendas-fornecedor h4{
+.pagina-politicas h1{
     color:var(--cor-texto-principal, #fff) !important;
 }
 
 .linha-carrinho strong,
-.admin-encomenda-linha .admin-encomenda-cliente-nome,
-.admin-cliente-historico-linha strong:first-child,
-.fornecedor-resultado-item strong,
-.mapas-produto-nome-botao,
-.clientes-lista-nome,
-.wallapop-resultado-info strong,
-.wallapop-selecionado-info strong,
-.plataforma-cliente-ficha-nome,
 .produto-card h3,
-.favorito-info strong,
-.item-admin-produto strong{
+.favorito-info strong{
     color:var(--cor-texto-principal, #fff) !important;
 }
 
 .categoria,
 .subcategoria,
 .favorito-info span,
-.admin-encomendas-resumo span,
 .contador-produtos,
-.form-admin label,
 .form-cliente label,
-.admin-cliente-campo strong,
-.admin-cliente-formulario-campo,
-.admin-produto-detalhes-linha,
-.plataforma-produto-stock,
-.plataforma-produto-identificadores,
-.fornecedor-contagem-lista,
-.fornecedor-resultado-item span,
-.clientes-lista-meta,
 .sessao-conta-titulo,
-.sessao-conta-email,
-.ajuda-admin{
+.sessao-conta-email{
     color:var(--cor-texto-secundario, #b8b8b8) !important;
 }
 
-.admin-encomendas-resumo strong,
-.estatisticas-metricas strong,
 .contador-produtos strong{
     color:var(--cor-texto-principal, #fff) !important;
 }
@@ -856,48 +678,13 @@ body.pagina-com-cabecalho-site{
     color:#000 !important;
 }
 
-.admin-encomenda-apagar,
-.admin-encomenda-anexo-apagar,
-.clientes-botao-apagar,
-.admin-cliente-fechar,
-.btn-logout,
-.wallapop-remover{
+.btn-logout{
     background:#7a1f1f !important;
     border:0 !important;
     color:#fff !important;
 }
 
-.admin-encomenda-apagar:hover,
-.admin-encomenda-anexo-apagar:hover,
-.clientes-botao-apagar:hover,
-.btn-logout:hover,
-.wallapop-remover:hover{
+.btn-logout:hover{
     background:#a52828 !important;
     color:#fff !important;
-}
-
-.wallapop-botao-registar,
-.wallapop-botao-registar:hover{
-    background:#29ad4b !important;
-    border:0 !important;
-    color:#fff !important;
-}
-
-.admin-encomenda-editar,
-.admin-cliente-editar,
-.fornecedor-btn-editar-ficha,
-.btn-admin-secundario{
-    background:transparent !important;
-    border:1px solid var(--cor-botao-secundario-borda, #ffc107) !important;
-    color:var(--cor-botao-secundario-texto, #fff) !important;
-}
-
-.admin-encomenda-editar:hover,
-.admin-cliente-editar:hover,
-.fornecedor-btn-editar-ficha:hover,
-.btn-admin-secundario:hover,
-.btn-admin-secundario:focus-visible{
-    background:transparent !important;
-    border-color:var(--cor-acao-principal, #ffc107) !important;
-    color:var(--cor-acao-principal, #ffc107) !important;
 }

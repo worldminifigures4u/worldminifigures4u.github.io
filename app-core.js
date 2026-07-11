@@ -330,6 +330,14 @@ function utilizadorAdmin(user) {
     return ADMIN_EMAILS.includes(email);
 }
 
+function garantirEstilosAdmin() {
+    if (document.querySelector('link[href*="styles-admin.css"]')) return;
+    const folha = document.createElement('link');
+    folha.rel = 'stylesheet';
+    folha.href = 'styles-admin.css?v=20260711-leve-r7';
+    document.head.appendChild(folha);
+}
+
 function atualizarVisibilidadeAdmin(user) {
     const painel = document.getElementById('painel-admin');
     const adminAtivo = utilizadorAdmin(user);
@@ -339,6 +347,7 @@ function atualizarVisibilidadeAdmin(user) {
     if (navegacaoAdmin) navegacaoAdmin.hidden = !adminAtivo;
     document.body.classList.toggle('cabecalho-com-admin', adminAtivo);
     if (adminAtivo) {
+        garantirEstilosAdmin();
         if (typeof window.atualizarCabecalhoAdmin === 'function') {
             window.atualizarCabecalhoAdmin();
         } else {
@@ -578,4 +587,10 @@ async function garantirProdutosCarrinhoNoCatalogo() {
 
     const existentes = new Set((todosOsProdutos || []).map(produto => String(produto.id)));
     todosOsProdutos.push(...data.filter(produto => !existentes.has(String(produto.id))));
+}
+
+if ('serviceWorker' in navigator && window.location.protocol !== 'file:') {
+    window.addEventListener('load', () => {
+        navigator.serviceWorker.register('sw.js?v=20260711-leve-r7').catch(() => {});
+    });
 }

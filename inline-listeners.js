@@ -88,6 +88,7 @@
     window.sincronizarEspacamentoCabecalho = sincronizarEspacamentoCabecalho;
 
     function atualizarCabecalhoAdmin() {
+        if (typeof garantirEstilosAdmin === 'function') garantirEstilosAdmin();
         document.body.classList.add('cabecalho-com-admin');
         const nomeEl = document.getElementById('nome-login-cabecalho');
         if (!nomeEl) return;
