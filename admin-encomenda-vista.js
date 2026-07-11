@@ -489,9 +489,12 @@ window.AdminEncomendaVista = (function () {
         }
     }
 
+    const ORIGENS_SEM_FATURA_MOLONI = new Set(["olx"]);
+
     function deveEmitirFaturaMoloni(encomenda) {
         if (encomenda?.moloni_document_id) return false;
-        return normalizar(encomenda?.origem || "site") === "site";
+        const origem = normalizar(encomenda?.origem || "site");
+        return !ORIGENS_SEM_FATURA_MOLONI.has(origem);
     }
 
     async function emitirFaturaMoloni(encomenda) {

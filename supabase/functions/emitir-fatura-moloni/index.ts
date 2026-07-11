@@ -14,6 +14,7 @@ const DEFAULT_ALLOWED_ORIGINS = [
 const IVA_FATOR = 1.23;
 const LOTE_DESCRICAO = "Lote diverso de figuras";
 const PORTES_DESCRICAO = "Portes de envio";
+const ORIGENS_SEM_FATURA_MOLONI = new Set(["olx"]);
 
 type MoloniError = { field?: string; msg?: string };
 type MoloniInvoiceResult = {
@@ -84,6 +85,10 @@ function normalizarTexto(valor: unknown): string {
     .replace(/[\u0300-\u036f]/g, "")
     .trim()
     .toLowerCase();
+}
+
+function deveEmitirFaturaMoloni(origem: string | null | undefined): boolean {
+  return !ORIGENS_SEM_FATURA_MOLONI.has(normalizarTexto(origem || "site"));
 }
 
 function numero(valor: unknown): number {
@@ -313,8 +318,8 @@ Deno.serve(async (request) => {
 
   const encomendaRow = encomenda as EncomendaRow;
 
-  if (normalizarTexto(encomendaRow.origem || "site") !== "site") {
-    return jsonResponse(request, { ignorada: true, motivo: "origem_nao_site" });
+  if (!deveEmitirFaturaMoloni(encomendaRow.origem)) {
+    return jsonResponse(request, { ignorada: true, motivo: "origem_olx" });
   }
 
   if (normalizarTexto(encomendaRow.estado) !== "pago") {
