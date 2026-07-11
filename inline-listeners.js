@@ -329,13 +329,21 @@
 
     quandoPronto(function () {
         iniciarSincronizacaoCabecalho();
-        inserirRodapeSite();
+        if (!document.querySelector('.rodape-site')) inserirRodapeSite();
         atualizarContadorCarrinhoTopo();
         window.addEventListener('storage', atualizarContadorCarrinhoTopo);
         ligarPesquisaCabecalho();
-        ligarContaCliente();
-        ligarCarrinho();
-        ligarLoja();
-        ligarGestaoAdmin();
+        if (document.getElementById('form-login') || document.querySelector('[data-aba-cliente]') || document.getElementById('form-editar-dados-cliente')) {
+            ligarContaCliente();
+        }
+        if (document.getElementById('pais-envio') || document.querySelector('[data-acao-carrinho="confirmar-encomenda"]')) {
+            ligarCarrinho();
+        }
+        if (document.querySelector('[data-tema-filtro]') || document.getElementById('menu-lateral-temas')) {
+            ligarLoja();
+        }
+        if (document.getElementById('form-admin-produto') || document.querySelector('[data-tab-gestao]')) {
+            ligarGestaoAdmin();
+        }
     });
 })();

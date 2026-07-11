@@ -52,7 +52,8 @@ jobs:
             --exclude='supabase/' \
             --exclude='*.sql' \
             --exclude='CLOUDINARY_SIGNED_UPLOAD.md' \
-            --exclude='figures-planet-logo-transparent.original.png' \
+            --exclude='figures-planet-logo-transparent.png' \
+            --exclude='favicon.png' \
             --exclude='logo antigo.png' \
             --exclude='fundo escuro.png' \
             ./ _site/
