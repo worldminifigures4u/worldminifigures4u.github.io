@@ -181,6 +181,9 @@ async function enviarFicheiroCloudinaryAssinadoAdmin(ficheiro) {
     if(assinatura.folder) {
         formData.append('folder', assinatura.folder);
     }
+    if(assinatura.eager) {
+        formData.append('eager', assinatura.eager);
+    }
 
     const resposta = await fetch(`https://api.cloudinary.com/v1_1/${assinatura.cloudName}/image/upload`, {
         method: 'POST',
@@ -195,7 +198,7 @@ async function enviarFicheiroCloudinaryAssinadoAdmin(ficheiro) {
         throw new Error('O Cloudinary não devolveu URL seguro da imagem.');
     }
 
-    return resultado.secure_url;
+    return resultado.eager?.[0]?.secure_url || resultado.secure_url;
 }
 
 async function enviarFotosCloudinaryAdmin(input, textareaId, atualizarPreview, statusId) {

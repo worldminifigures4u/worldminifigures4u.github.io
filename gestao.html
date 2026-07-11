@@ -205,7 +205,7 @@
                                 <label for="admin-editar-imagens">URLs das imagens:</label>
                                 <div class="upload-admin-fotos">
                                     <input class="input-upload-admin" type="file" id="admin-editar-upload-imagens" accept="image/jpeg,image/png,image/webp" multiple>
-                                    <p class="ajuda-admin">Selecione fotos do PC para enviar para o Cloudinary. Os URLs serão adicionados automaticamente.</p>
+                                    <p class="ajuda-admin">As fotos são normalizadas automaticamente ao enviar (margens vazias removidas, tamanho máximo 1200 px). Use imagens com a figura bem visível.</p>
                                     <div id="status-upload-admin-editar" class="msg-status"></div>
                                 </div>
                                 <textarea id="admin-editar-imagens" placeholder="Um URL por linha"></textarea>
@@ -272,7 +272,7 @@
                             <label for="admin-produto-imagens">URLs das imagens:</label>
                             <div class="upload-admin-fotos">
                                 <input class="input-upload-admin" type="file" id="admin-produto-upload-imagens" accept="image/jpeg,image/png,image/webp" multiple>
-                                <p class="ajuda-admin">Selecione fotos do PC para enviar para o Cloudinary. Os URLs serão adicionados automaticamente.</p>
+                                <p class="ajuda-admin">As fotos são normalizadas automaticamente ao enviar (margens vazias removidas, tamanho máximo 1200 px). Use imagens com a figura bem visível.</p>
                                 <div id="status-upload-admin-produto" class="msg-status"></div>
                             </div>
                             <textarea id="admin-produto-imagens" placeholder="Um URL por linha"></textarea>
@@ -425,7 +425,7 @@
 <script src="app-core.js?v=20260711-modular" defer></script>
 <script src="app-sku.js?v=20260711-modular" defer></script>
 <script src="conta-cliente.js?v=20260711-ligar-conta" defer></script>
-<script src="gestao-admin.js?v=20260711-lazy-import" defer></script>
+<script src="gestao-admin.js?v=20260711-upload-normalizado" defer></script>
 <script src="inline-listeners-base.js?v=20260711-leve-r9" defer></script>
 <script src="inline-listeners-admin.js?v=20260711-leve-r9" defer></script>
 </body>

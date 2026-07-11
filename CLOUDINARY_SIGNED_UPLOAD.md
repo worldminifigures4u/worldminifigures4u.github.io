@@ -26,6 +26,16 @@ Depois do deploy e teste, o site pode deixar de usar `CLOUDINARY_UPLOAD_PRESET` 
 
 `https://gksndzxadndrsynvzgzb.supabase.co/functions/v1/cloudinary-sign-upload`
 
+## Normalização automática
+
+Cada upload de produto passa a ser normalizado no Cloudinary com:
+
+`e_trim:20/c_limit,w_1200,h_1200`
+
+Isto remove margens vazias e limita o tamanho máximo sem cortar a figura. O URL guardado no produto é já a versão normalizada.
+
+Produtos com fotos antigas (enviadas antes desta alteração) devem voltar a ter as fotos enviadas em Gestão para ficarem normalizadas.
+
 ## Cloudinary
 
 Quando o upload assinado estiver confirmado no site:

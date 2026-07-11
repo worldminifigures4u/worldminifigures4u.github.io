@@ -477,19 +477,6 @@ function otimizarImagemCloudinary(url, largura = 700) {
     );
 }
 
-function otimizarImagemCloudinaryVitrine(url, largura = 520) {
-    const urlOriginal = String(url || '').trim();
-    if(!urlOriginal || !urlOriginal.includes('res.cloudinary.com/') || !urlOriginal.includes('/image/upload/')) {
-        return urlOriginal;
-    }
-
-    const larguraSegura = Math.max(80, Math.min(1600, Math.round(Number(largura) || 520)));
-    return urlOriginal.replace(
-        '/image/upload/',
-        `/image/upload/e_trim:20/f_auto,q_auto,w_${larguraSegura},c_limit/`
-    );
-}
-
 function otimizarImagemCloudinarySrcset(url, larguras = [260, 520, 780]) {
     const urlOriginal = String(url || '').trim();
     const fallback = otimizarImagemCloudinary(urlOriginal, larguras[1] || 520);
@@ -504,25 +491,7 @@ function otimizarImagemCloudinarySrcset(url, larguras = [260, 520, 780]) {
     return {
         src: otimizarImagemCloudinary(urlOriginal, lista[Math.min(1, lista.length - 1)]),
         srcset: lista.map(largura => `${otimizarImagemCloudinary(urlOriginal, largura)} ${largura}w`).join(', '),
-        sizes: '(max-width: 560px) calc(100vw - 48px), (max-width: 1100px) 520px, 780px'
-    };
-}
-
-function otimizarImagemCloudinaryVitrineSrcset(url, larguras = [360, 520, 780]) {
-    const urlOriginal = String(url || '').trim();
-    const fallback = otimizarImagemCloudinaryVitrine(urlOriginal, larguras[1] || 520);
-    if(!urlOriginal || !urlOriginal.includes('res.cloudinary.com/') || !urlOriginal.includes('/image/upload/')) {
-        return { src: fallback, srcset: '', sizes: '' };
-    }
-
-    const lista = (Array.isArray(larguras) ? larguras : [260, 520, 780])
-        .map(largura => Math.max(80, Math.min(1600, Math.round(Number(largura) || 520))))
-        .filter((largura, indice, arr) => arr.indexOf(largura) === indice);
-
-    return {
-        src: otimizarImagemCloudinaryVitrine(urlOriginal, lista[Math.min(1, lista.length - 1)]),
-        srcset: lista.map(largura => `${otimizarImagemCloudinaryVitrine(urlOriginal, largura)} ${largura}w`).join(', '),
-        sizes: '(max-width: 560px) calc(100vw - 48px), (max-width: 1100px) 520px, 780px'
+        sizes: '(max-width: 560px) calc(100vw - 64px), (max-width: 1100px) 280px, 320px'
     };
 }
 

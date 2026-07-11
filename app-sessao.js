@@ -209,7 +209,7 @@ function otimizarImagemCloudinarySrcset(url, larguras = [260, 520, 780]) {
     return {
         src: otimizarImagemCloudinary(urlOriginal, lista[Math.min(1, lista.length - 1)]),
         srcset: lista.map(largura => `${otimizarImagemCloudinary(urlOriginal, largura)} ${largura}w`).join(', '),
-        sizes: '(max-width: 560px) 260px, (max-width: 1100px) 520px, 780px'
+        sizes: '(max-width: 560px) calc(100vw - 64px), (max-width: 1100px) 280px, 320px'
     };
 }
 

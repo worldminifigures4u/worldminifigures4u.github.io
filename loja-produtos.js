@@ -337,23 +337,6 @@ function criarIconeCoracaoFavorito() {
     return svg;
 }
 
-function usarImagemVitrineTelemovel() {
-    return window.matchMedia('(max-width: 560px)').matches;
-}
-
-function otimizarImagemCardLoja(url, largura = 520) {
-    return usarImagemVitrineTelemovel()
-        ? otimizarImagemCloudinaryVitrine(url, largura)
-        : otimizarImagemCloudinary(url, largura);
-}
-
-function otimizarImagemCardLojaSrcset(url, larguras = [260, 520, 780]) {
-    const largurasTelemovel = [360, 520, 780];
-    return usarImagemVitrineTelemovel()
-        ? otimizarImagemCloudinaryVitrineSrcset(url, largurasTelemovel)
-        : otimizarImagemCloudinarySrcset(url, larguras);
-}
-
 function criarCardProduto(prod) {
     const card = document.createElement('div');
     card.className = 'produto-card';
@@ -384,9 +367,9 @@ function criarCardProduto(prod) {
 
     listaImagens = listaImagens.filter(url => url && typeof url === 'string' && url.trim() !== '');
     const imagemFallback = 'img/sem-imagem.png';
-    const imagensOtimizadas = listaImagens.map(url => otimizarImagemCardLoja(url, 520));
+    const imagensOtimizadas = listaImagens.map(url => otimizarImagemCloudinary(url, 520));
     const urlPrincipal = listaImagens[0] || imagemFallback;
-    const imagemResponsiva = otimizarImagemCardLojaSrcset(urlPrincipal);
+    const imagemResponsiva = otimizarImagemCloudinarySrcset(urlPrincipal);
     const imagemInicial = imagemResponsiva.src || imagensOtimizadas[0] || imagemFallback;
 
     const botaoFavorito = document.createElement('button');
@@ -443,7 +426,7 @@ function criarCardProduto(prod) {
             imagemAtual = (proximoIndice + totalImagens) % totalImagens;
             const proximaUrl = listaImagens[imagemAtual];
             const proximaImagem = imagensOtimizadas[imagemAtual];
-            const responsivoNovo = otimizarImagemCardLojaSrcset(proximaUrl);
+            const responsivoNovo = otimizarImagemCloudinarySrcset(proximaUrl);
             imagemPrincipal.dataset.srcOriginal = proximaImagem;
             if (responsivoNovo.srcset) {
                 imagemPrincipal.srcset = responsivoNovo.srcset;

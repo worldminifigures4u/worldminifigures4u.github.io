@@ -103,12 +103,14 @@ Deno.serve(async (request) => {
   }
 
   const timestamp = Math.floor(Date.now() / 1000);
-  const params = { folder, timestamp };
+  const eager = "e_trim:20/c_limit,w_1200,h_1200";
+  const params = { eager, folder, timestamp };
   const signature = await assinarCloudinary(params, apiSecret);
 
   return jsonResponse(request, {
     cloudName,
     apiKey,
+    eager,
     folder,
     timestamp,
     signature,
