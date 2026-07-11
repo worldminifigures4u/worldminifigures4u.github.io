@@ -278,6 +278,22 @@ function atualizarContadorCarrinhoCabecalho() {
     contador.textContent = totalItens;
 }
 
+function atualizarCarrinhoSeDisponivel() {
+    if (typeof atualizarCarrinho === 'function') {
+        atualizarCarrinho();
+        return;
+    }
+    atualizarContadorCarrinhoCabecalho();
+}
+
+function restaurarCarrinhoSeDisponivel() {
+    if (typeof restaurarCarrinhoGuardado === 'function') {
+        restaurarCarrinhoGuardado();
+        return;
+    }
+    atualizarContadorCarrinhoCabecalho();
+}
+
 function existeAreaClientePagina() {
     return !!document.getElementById('painel-cliente');
 }
@@ -443,7 +459,7 @@ window.addEventListener('load', async () => {
     observarTamanhoMenuTemas();
     agendarAtualizacaoStickyTemas();
     document.fonts?.ready.then(agendarAtualizacaoStickyTemas);
-    atualizarCarrinho();
+    atualizarCarrinhoSeDisponivel();
     if(typeof supabase !== 'undefined'){
         dbClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
         produtosClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {
@@ -482,7 +498,9 @@ window.addEventListener('load', async () => {
             }, 0);
         });
         if (paginaPrecisaProdutosLoja()) {
-            await carregarProdutosDaNuvem();
+            if (typeof carregarProdutosDaNuvem === 'function') {
+                await carregarProdutosDaNuvem();
+            }
             aplicarPesquisaUrl();
         }
         if(urlTemRecuperacaoPassword()) {
@@ -508,7 +526,7 @@ async function obterDadosPerfilDaTabela(userId, user = null) {
             atualizarCabecalhoCliente(data?.nome || user?.user_metadata?.nome || '');
             atualizarVisibilidadeAdmin(user);
             carregarFavoritosUtilizador(userId);
-            restaurarCarrinhoGuardado();
+            restaurarCarrinhoSeDisponivel();
             return;
         }
 
@@ -520,7 +538,7 @@ async function obterDadosPerfilDaTabela(userId, user = null) {
             if(typeof preencherFormularioDadosCliente === 'function') preencherFormularioDadosCliente({}, user);
             atualizarVisibilidadeAdmin(user);
             carregarFavoritosUtilizador(userId);
-            restaurarCarrinhoGuardado();
+            restaurarCarrinhoSeDisponivel();
             if(typeof carregarHistoricoEncomendas === 'function') carregarHistoricoEncomendas(userId);
             return;
         }
@@ -533,7 +551,7 @@ async function obterDadosPerfilDaTabela(userId, user = null) {
             if(typeof preencherFormularioDadosCliente === 'function') preencherFormularioDadosCliente(data, user);
             atualizarVisibilidadeAdmin(user);
             carregarFavoritosUtilizador(userId);
-            restaurarCarrinhoGuardado();
+            restaurarCarrinhoSeDisponivel();
             if(typeof carregarHistoricoEncomendas === 'function') carregarHistoricoEncomendas(userId);
         }
     } catch (e) {
@@ -813,5 +831,7 @@ async function carregarProdutosConformeUtilizador(){
         await carregarProdutosAdminDaNuvem();
         return;
     }
-    await carregarProdutosDaNuvem();
+    if (typeof carregarProdutosDaNuvem === 'function') {
+        await carregarProdutosDaNuvem();
+    }
 }

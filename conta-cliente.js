@@ -436,7 +436,7 @@ async function guardarDadosCliente(event) {
 
 async function fazerLogout() {
     await dbClient.auth.signOut();
-    restaurarCarrinhoGuardado();
+    restaurarCarrinhoSeDisponivel();
     carregarFavoritosUtilizador();
     atualizarVisibilidadeAdmin(null);
     mostrarContaAnonimaSeExistir();
