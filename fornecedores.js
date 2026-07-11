@@ -2523,7 +2523,7 @@ function criarLinhaDetalhePedidoFornecedor(rotulo, valor) {
 function renderizarPedidosFornecedores() {
     const caixa = document.getElementById('fornecedor-pedidos');
     if (!caixa) return;
-    const filtro = document.getElementById('fornecedor-filtro-estado')?.value || 'todos';
+    const filtro = document.getElementById('fornecedor-filtro-estado')?.value || 'a_preparar';
     caixa.replaceChildren();
     const pedidos = fornecedorPedidos.filter(pedido => pedidoFornecedorPassaFiltroEstado(pedido, filtro));
     if (!pedidos.length) {
