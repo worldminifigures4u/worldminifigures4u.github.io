@@ -4,7 +4,7 @@
 const PRODUTOS_POR_LOTE = 48;
 const PRODUTOS_POR_PAGINA_SERVIDOR = 48;
 const TAMANHO_PAGINA_METADADOS = 1000;
-const CACHE_TEMAS_LOJA_CHAVE = 'figures-planet-loja-temas-v1';
+const CACHE_TEMAS_LOJA_CHAVE = 'figures-planet-loja-temas-v2';
 const CACHE_TEMAS_LOJA_TTL_MS = 30 * 60 * 1000;
 const CAMPOS_PRODUTO_LOJA = 'id, sku, nome, preco, peso, tema, subtema, imagens, ativo, descontinuado';
 
@@ -87,38 +87,40 @@ function aplicarFiltrosQueryProdutos(query, filtros) {
 }
 
 async function carregarMetadadosTemasLoja() {
-    const emCache = lerCacheTemasLoja();
-    if (emCache?.length) return emCache;
+    let metadados = lerCacheTemasLoja();
 
-    const cliente = obterClienteProdutosLoja();
-    const metadados = [];
-    let inicio = 0;
+    if (!metadados?.length) {
+        const cliente = obterClienteProdutosLoja();
+        metadados = [];
+        let inicio = 0;
 
-    while (true) {
-        const { data: pagina, error } = await executarComTimeout(
-            cliente
-                .from('produtos_loja')
-                .select('tema, subtema')
-                .eq('ativo', true)
-                .eq('arquivado', false)
-                .order('tema', { ascending: true })
-                .order('subtema', { ascending: true })
-                .range(inicio, inicio + TAMANHO_PAGINA_METADADOS - 1),
-            20000,
-            'Consulta de temas demasiado lenta.'
-        );
+        while (true) {
+            const { data: pagina, error } = await executarComTimeout(
+                cliente
+                    .from('produtos_loja')
+                    .select('tema, subtema')
+                    .eq('ativo', true)
+                    .eq('arquivado', false)
+                    .order('tema', { ascending: true })
+                    .order('subtema', { ascending: true })
+                    .range(inicio, inicio + TAMANHO_PAGINA_METADADOS - 1),
+                20000,
+                'Consulta de temas demasiado lenta.'
+            );
 
-        if (error) throw error;
-        if (!pagina?.length) break;
+            if (error) throw error;
+            if (!pagina?.length) break;
 
-        metadados.push(...pagina);
-        if (pagina.length < TAMANHO_PAGINA_METADADOS) break;
-        inicio += TAMANHO_PAGINA_METADADOS;
+            metadados.push(...pagina);
+            if (pagina.length < TAMANHO_PAGINA_METADADOS) break;
+            inicio += TAMANHO_PAGINA_METADADOS;
+        }
+
+        guardarCacheTemasLoja(metadados);
     }
 
-    const mapa = construirMapaTemasLoja(metadados);
-    guardarCacheTemasLoja(mapa);
-    return mapa;
+    construirMapaTemasLoja(metadados);
+    return metadados;
 }
 
 function lerCacheTemasLoja() {
