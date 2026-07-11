@@ -30,8 +30,8 @@ function atualizarResumoFavoritos(total) {
 
 async function aguardarClienteProdutosFavoritos(tentativas = 0) {
     if (produtosClient || dbClient) return produtosClient || dbClient;
-    if (tentativas >= 80) return null;
-    await new Promise(resolve => setTimeout(resolve, 50));
+    if (tentativas >= 24) return null;
+    await new Promise(resolve => setTimeout(resolve, 25));
     return aguardarClienteProdutosFavoritos(tentativas + 1);
 }
 
@@ -42,10 +42,14 @@ async function carregarProdutosFavoritosCliente(ids) {
     const locais = idsNormalizados
         .map(id => obterProdutoPorIdLocal(id))
         .filter(Boolean);
-    if (locais.length === idsNormalizados.length) return locais;
+    if (locais.length === idsNormalizados.length) {
+        guardarProdutosFavoritosCache(locais);
+        return locais;
+    }
 
+    const emCache = obterProdutosFavoritosCache(idsNormalizados);
     const clienteProdutos = await aguardarClienteProdutosFavoritos();
-    if (!clienteProdutos) return locais;
+    if (!clienteProdutos) return emCache.length ? emCache : locais;
 
     const { data, error } = await clienteProdutos
         .from('produtos_loja')
@@ -54,9 +58,13 @@ async function carregarProdutosFavoritosCliente(ids) {
 
     if (error) throw error;
     const produtos = data || [];
-    return idsNormalizados
-        .map(id => produtos.find(produto => String(produto.id) === String(id)) || locais.find(produto => String(produto.id) === String(id)))
+    const ordenados = idsNormalizados
+        .map(id => produtos.find(produto => String(produto.id) === String(id))
+            || locais.find(produto => String(produto.id) === String(id))
+            || emCache.find(produto => String(produto.id) === String(id)))
         .filter(Boolean);
+    guardarProdutosFavoritosCache(ordenados);
+    return ordenados;
 }
 
 function criarCardFavoritoCliente(produto) {
@@ -73,7 +81,8 @@ function criarCardFavoritoCliente(produto) {
         imagem.sizes = responsivo.sizes;
     }
     imagem.alt = produto.nome || 'Produto favorito';
-    imagem.loading = 'lazy';
+    imagem.loading = 'eager';
+    imagem.decoding = 'async';
     imagem.onerror = () => { imagem.src = 'img/sem-imagem.png'; };
 
     const info = document.createElement('div');
@@ -145,6 +154,67 @@ function removerCardFavoritoCliente(id) {
     atualizarResumoFavoritos(restantes);
 }
 
+function limparEstadoCarregamentoFavoritos(lista) {
+    const mensagem = lista.querySelector('.favoritos-a-carregar, .favoritos-vazio');
+    if (mensagem) mensagem.remove();
+}
+
+function pintarListaFavoritos(lista, produtos, ids = produtos.map(produto => produto.id)) {
+    limparEstadoCarregamentoFavoritos(lista);
+    const fragmento = document.createDocumentFragment();
+    const ordem = (ids || []).map(id => normalizarIdFavorito(id)).filter(Boolean);
+    const mapa = new Map(produtos.map(produto => [normalizarIdFavorito(produto.id), produto]));
+
+    ordem.forEach(id => {
+        const produto = mapa.get(id);
+        if (produto) fragmento.appendChild(criarCardFavoritoCliente(produto));
+    });
+
+    lista.replaceChildren(fragmento);
+}
+
+function sincronizarListaFavoritos(lista, produtos, ids) {
+    limparEstadoCarregamentoFavoritos(lista);
+    const ordem = ids.map(id => normalizarIdFavorito(id)).filter(Boolean);
+    const mapa = new Map(produtos.map(produto => [normalizarIdFavorito(produto.id), produto]));
+    const cardsExistentes = new Map(
+        [...lista.querySelectorAll('.favorito-card')].map(card => [card.dataset.favoritoProdutoId, card])
+    );
+
+    const fragmento = document.createDocumentFragment();
+    ordem.forEach(id => {
+        const produto = mapa.get(id);
+        if (!produto) return;
+        const card = cardsExistentes.get(id) || criarCardFavoritoCliente(produto);
+        fragmento.appendChild(card);
+    });
+
+    lista.replaceChildren(fragmento);
+}
+
+function mostrarCarregamentoFavoritos(lista) {
+    if (lista.querySelector('.favorito-card') || lista.querySelector('.favoritos-a-carregar')) return;
+    lista.replaceChildren();
+    const carregamento = document.createElement('p');
+    carregamento.className = 'favoritos-a-carregar';
+    carregamento.textContent = 'A carregar favoritos...';
+    lista.appendChild(carregamento);
+}
+
+function adicionarCardFavoritoCliente(produto) {
+    const lista = document.getElementById('lista-favoritos-cliente');
+    if (!lista || !produto) return;
+
+    const id = normalizarIdFavorito(produto.id);
+    limparEstadoCarregamentoFavoritos(lista);
+    if (lista.querySelector('.favoritos-vazio-acoes')) lista.replaceChildren();
+    if (lista.querySelector(`[data-favorito-produto-id="${CSS.escape(id)}"]`)) return;
+
+    lista.appendChild(criarCardFavoritoCliente(produto));
+    favoritosRenderizadosChave = obterChaveRenderFavoritos();
+    atualizarResumoFavoritos(obterFavoritosIds().length);
+}
+
 async function renderizarFavoritosCliente(opcoes = {}) {
     const lista = document.getElementById('lista-favoritos-cliente');
     if (!lista) return;
@@ -173,16 +243,21 @@ async function renderizarFavoritosCliente(opcoes = {}) {
     }
 
     const temCards = !!lista.querySelector('.favorito-card');
-    const jaMostraCarregamento = !!lista.querySelector('.favoritos-vazio')
-        && lista.textContent.trim() === 'A carregar favoritos...';
-    if (!temCards && !jaMostraCarregamento) {
-        lista.replaceChildren();
-        const carregamento = document.createElement('p');
-        carregamento.className = 'favoritos-vazio';
-        carregamento.textContent = 'A carregar favoritos...';
-        lista.appendChild(carregamento);
+    const produtosEmCache = obterProdutosFavoritosCache(ids);
+
+    if (!temCards && produtosEmCache.length) {
+        pintarListaFavoritos(lista, produtosEmCache, ids);
+        if (produtosEmCache.length === ids.length) {
+            favoritosRenderizadosChave = chave;
+        }
+        atualizarResumoFavoritos(produtosEmCache.length);
+    } else if (!temCards) {
+        mostrarCarregamentoFavoritos(lista);
     }
-    atualizarResumoFavoritos(ids.length);
+
+    if (!temCards || produtosEmCache.length !== ids.length) {
+        atualizarResumoFavoritos(ids.length);
+    }
 
     favoritosRenderizacaoEmCurso = (async () => {
         try {
@@ -191,13 +266,24 @@ async function renderizarFavoritosCliente(opcoes = {}) {
                 definirFavoritosVazio('Os favoritos guardados já não estão disponíveis na loja.');
                 return;
             }
-            lista.replaceChildren();
-            produtos.forEach(produto => lista.appendChild(criarCardFavoritoCliente(produto)));
-            favoritosRenderizadosChave = chave;
+
+            const chaveProdutos = obterChaveRenderFavoritos(produtos.map(produto => produto.id));
+            const totalCards = lista.querySelectorAll('.favorito-card').length;
+            const precisaAtualizar = chaveProdutos !== favoritosRenderizadosChave
+                || totalCards !== produtos.length;
+
+            if (precisaAtualizar) {
+                if (!totalCards) pintarListaFavoritos(lista, produtos, ids);
+                else sincronizarListaFavoritos(lista, produtos, ids);
+            }
+
+            favoritosRenderizadosChave = chaveProdutos;
             atualizarResumoFavoritos(produtos.length);
         } catch (error) {
             console.error('Erro ao carregar favoritos:', error);
-            definirFavoritosVazio('Não foi possível carregar os favoritos.');
+            if (!lista.querySelector('.favorito-card')) {
+                definirFavoritosVazio('Não foi possível carregar os favoritos.');
+            }
         }
     })();
 

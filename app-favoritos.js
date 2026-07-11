@@ -26,6 +26,84 @@ function guardarFavoritosLocal() {
     localStorage.setItem(favoritosChaveAtual, JSON.stringify([...favoritosProdutos]));
 }
 
+function obterChaveCacheFavoritos(chave = favoritosChaveAtual) {
+    return String(chave || obterChaveFavoritos()).replace(
+        'figures-planet-favoritos',
+        'figures-planet-favoritos-cache'
+    );
+}
+
+function extrairSnapshotFavoritoProduto(produto) {
+    return {
+        id: produto.id,
+        sku: produto.sku || '',
+        nome: produto.nome || 'Produto',
+        preco: Number(produto.preco || 0),
+        peso: Number(produto.peso || 0),
+        tema: produto.tema || '',
+        subtema: produto.subtema || '',
+        imagens: produto.imagens ?? null,
+        ativo: produto.ativo !== false
+    };
+}
+
+function carregarCacheFavoritos(chave = favoritosChaveAtual) {
+    try {
+        const guardado = JSON.parse(localStorage.getItem(obterChaveCacheFavoritos(chave)));
+        return guardado && typeof guardado === 'object' ? guardado : {};
+    } catch (_) {
+        localStorage.removeItem(obterChaveCacheFavoritos(chave));
+        return {};
+    }
+}
+
+function guardarCacheFavoritos(cache, chave = favoritosChaveAtual) {
+    localStorage.setItem(obterChaveCacheFavoritos(chave), JSON.stringify(cache));
+}
+
+function atualizarCacheFavoritoProduto(produto) {
+    const id = normalizarIdFavorito(produto?.id);
+    if (!id) return;
+    const cache = carregarCacheFavoritos();
+    cache[id] = extrairSnapshotFavoritoProduto(produto);
+    guardarCacheFavoritos(cache);
+}
+
+function removerCacheFavoritoProduto(id) {
+    const chave = normalizarIdFavorito(id);
+    if (!chave) return;
+    const cache = carregarCacheFavoritos();
+    delete cache[chave];
+    guardarCacheFavoritos(cache);
+}
+
+function guardarProdutosFavoritosCache(produtos = []) {
+    if (!Array.isArray(produtos) || !produtos.length) return;
+    const cache = carregarCacheFavoritos();
+    produtos.forEach(produto => {
+        const id = normalizarIdFavorito(produto?.id);
+        if (id) cache[id] = extrairSnapshotFavoritoProduto(produto);
+    });
+    guardarCacheFavoritos(cache);
+}
+
+function obterProdutosFavoritosCache(ids = obterFavoritosIds()) {
+    const cache = carregarCacheFavoritos();
+    return ids
+        .map(id => cache[normalizarIdFavorito(id)])
+        .filter(Boolean);
+}
+
+function mesclarCacheFavoritosAnonimos(userId = '') {
+    if (!userId) return;
+    const chaveConta = obterChaveFavoritos(userId);
+    const chaveAnonima = obterChaveFavoritos();
+    const cacheConta = carregarCacheFavoritos(chaveConta);
+    const cacheAnonimo = carregarCacheFavoritos(chaveAnonima);
+    guardarCacheFavoritos({ ...cacheAnonimo, ...cacheConta }, chaveConta);
+    localStorage.removeItem(obterChaveCacheFavoritos(chaveAnonima));
+}
+
 function obterChaveRenderFavoritos(ids = obterFavoritosIds()) {
     return ids.map(String).filter(Boolean).sort().join('|');
 }
@@ -37,7 +115,10 @@ function carregarFavoritosUtilizador(userId = '') {
     const favoritosConta = carregarFavoritosLocal(favoritosChaveAtual);
     const favoritosAnonimos = userId ? carregarFavoritosLocal(obterChaveFavoritos()) : [];
     favoritosProdutos = new Set([...favoritosConta, ...favoritosAnonimos]);
-    if (userId && favoritosAnonimos.length) guardarFavoritosLocal();
+    if (userId && favoritosAnonimos.length) {
+        guardarFavoritosLocal();
+        mesclarCacheFavoritosAnonimos(userId);
+    }
     atualizarBotoesFavoritos();
 
     const idsNovos = obterChaveRenderFavoritos(obterFavoritosIds());
@@ -75,12 +156,18 @@ function alternarFavoritoProduto(produto) {
     const id = normalizarIdFavorito(produto?.id);
     if (!id) return false;
     const ativo = favoritosProdutos.has(id);
-    if (ativo) favoritosProdutos.delete(id);
-    else favoritosProdutos.add(id);
+    if (ativo) {
+        favoritosProdutos.delete(id);
+        removerCacheFavoritoProduto(id);
+    } else {
+        favoritosProdutos.add(id);
+        atualizarCacheFavoritoProduto(produto);
+    }
     guardarFavoritosLocal();
     atualizarBotoesFavoritos();
     if (typeof renderizarFavoritosCliente === 'function' && document.getElementById('lista-favoritos-cliente')) {
         if (ativo && typeof removerCardFavoritoCliente === 'function') removerCardFavoritoCliente(id);
+        else if (typeof adicionarCardFavoritoCliente === 'function') adicionarCardFavoritoCliente(produto);
         else renderizarFavoritosCliente({ forcar: true });
     } else if (typeof renderizarFavoritosCliente === 'function') {
         renderizarFavoritosCliente();
@@ -93,6 +180,7 @@ function removerFavoritoProduto(id) {
     if (!chave || !favoritosProdutos.has(chave)) return;
     favoritosProdutos.delete(chave);
     guardarFavoritosLocal();
+    removerCacheFavoritoProduto(chave);
     atualizarBotoesFavoritos();
     if (typeof removerCardFavoritoCliente === 'function' && document.getElementById('lista-favoritos-cliente')) {
         removerCardFavoritoCliente(chave);
