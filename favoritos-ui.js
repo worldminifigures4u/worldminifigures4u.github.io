@@ -5,6 +5,7 @@ let favoritosRenderizacaoEmCurso = null;
 function definirFavoritosVazio(mensagem) {
     const lista = document.getElementById('lista-favoritos-cliente');
     if (!lista) return;
+    lista.classList.remove('favoritos-lista--preparar');
     lista.replaceChildren();
     const vazio = document.createElement('p');
     vazio.className = 'favoritos-vazio';
@@ -28,6 +29,11 @@ function atualizarResumoFavoritos(total) {
     resumo.textContent = n === 1 ? '1 favorito' : `${n.toLocaleString('pt-PT')} favoritos`;
 }
 
+function definirListaFavoritosPreparacao(lista, ativa) {
+    if (!lista) return;
+    lista.classList.toggle('favoritos-lista--preparar', ativa);
+}
+
 async function aguardarClienteProdutosFavoritos(tentativas = 0) {
     if (produtosClient || dbClient) return produtosClient || dbClient;
     if (tentativas >= 24) return null;
@@ -39,6 +45,9 @@ async function carregarProdutosFavoritosCliente(ids) {
     const idsNormalizados = ids.map(String).filter(Boolean);
     if (!idsNormalizados.length) return [];
 
+    const emCache = obterProdutosFavoritosCache(idsNormalizados);
+    if (emCache.length === idsNormalizados.length) return emCache;
+
     const locais = idsNormalizados
         .map(id => obterProdutoPorIdLocal(id))
         .filter(Boolean);
@@ -47,7 +56,6 @@ async function carregarProdutosFavoritosCliente(ids) {
         return locais;
     }
 
-    const emCache = obterProdutosFavoritosCache(idsNormalizados);
     const clienteProdutos = await aguardarClienteProdutosFavoritos();
     if (!clienteProdutos) return emCache.length ? emCache : locais;
 
@@ -67,6 +75,15 @@ async function carregarProdutosFavoritosCliente(ids) {
     return ordenados;
 }
 
+async function resolverProdutosFavoritos(ids, forcarRede = false) {
+    const idsNormalizados = ids.map(String).filter(Boolean);
+    if (!forcarRede) {
+        const emCache = obterProdutosFavoritosCache(idsNormalizados);
+        if (emCache.length === idsNormalizados.length) return emCache;
+    }
+    return carregarProdutosFavoritosCliente(idsNormalizados);
+}
+
 function criarCardFavoritoCliente(produto) {
     const card = document.createElement('article');
     card.className = 'favorito-card';
@@ -82,7 +99,7 @@ function criarCardFavoritoCliente(produto) {
     }
     imagem.alt = produto.nome || 'Produto favorito';
     imagem.loading = 'eager';
-    imagem.decoding = 'async';
+    imagem.decoding = 'sync';
     imagem.onerror = () => { imagem.src = 'img/sem-imagem.png'; };
 
     const info = document.createElement('div');
@@ -137,6 +154,23 @@ function criarCardFavoritoCliente(produto) {
     return card;
 }
 
+function montarFragmentoFavoritos(produtos, ids) {
+    const fragmento = document.createDocumentFragment();
+    const ordem = (ids || []).map(id => normalizarIdFavorito(id)).filter(Boolean);
+    const mapa = new Map(produtos.map(produto => [normalizarIdFavorito(produto.id), produto]));
+
+    ordem.forEach(id => {
+        const produto = mapa.get(id);
+        if (produto) fragmento.appendChild(criarCardFavoritoCliente(produto));
+    });
+
+    return fragmento;
+}
+
+function pintarListaFavoritos(lista, produtos, ids = produtos.map(produto => produto.id)) {
+    lista.replaceChildren(montarFragmentoFavoritos(produtos, ids));
+}
+
 function removerCardFavoritoCliente(id) {
     const lista = document.getElementById('lista-favoritos-cliente');
     if (!lista) return;
@@ -154,44 +188,6 @@ function removerCardFavoritoCliente(id) {
     atualizarResumoFavoritos(restantes);
 }
 
-function limparEstadoCarregamentoFavoritos(lista) {
-    const mensagem = lista.querySelector('.favoritos-a-carregar, .favoritos-vazio');
-    if (mensagem) mensagem.remove();
-}
-
-function pintarListaFavoritos(lista, produtos, ids = produtos.map(produto => produto.id)) {
-    limparEstadoCarregamentoFavoritos(lista);
-    const fragmento = document.createDocumentFragment();
-    const ordem = (ids || []).map(id => normalizarIdFavorito(id)).filter(Boolean);
-    const mapa = new Map(produtos.map(produto => [normalizarIdFavorito(produto.id), produto]));
-
-    ordem.forEach(id => {
-        const produto = mapa.get(id);
-        if (produto) fragmento.appendChild(criarCardFavoritoCliente(produto));
-    });
-
-    lista.replaceChildren(fragmento);
-}
-
-function sincronizarListaFavoritos(lista, produtos, ids) {
-    limparEstadoCarregamentoFavoritos(lista);
-    const ordem = ids.map(id => normalizarIdFavorito(id)).filter(Boolean);
-    const mapa = new Map(produtos.map(produto => [normalizarIdFavorito(produto.id), produto]));
-    const cardsExistentes = new Map(
-        [...lista.querySelectorAll('.favorito-card')].map(card => [card.dataset.favoritoProdutoId, card])
-    );
-
-    const fragmento = document.createDocumentFragment();
-    ordem.forEach(id => {
-        const produto = mapa.get(id);
-        if (!produto) return;
-        const card = cardsExistentes.get(id) || criarCardFavoritoCliente(produto);
-        fragmento.appendChild(card);
-    });
-
-    lista.replaceChildren(fragmento);
-}
-
 function mostrarCarregamentoFavoritos(lista) {
     if (lista.querySelector('.favorito-card') || lista.querySelector('.favoritos-a-carregar')) return;
     lista.replaceChildren();
@@ -206,10 +202,10 @@ function adicionarCardFavoritoCliente(produto) {
     if (!lista || !produto) return;
 
     const id = normalizarIdFavorito(produto.id);
-    limparEstadoCarregamentoFavoritos(lista);
     if (lista.querySelector('.favoritos-vazio-acoes')) lista.replaceChildren();
     if (lista.querySelector(`[data-favorito-produto-id="${CSS.escape(id)}"]`)) return;
 
+    lista.classList.remove('favoritos-lista--preparar');
     lista.appendChild(criarCardFavoritoCliente(produto));
     favoritosRenderizadosChave = obterChaveRenderFavoritos();
     atualizarResumoFavoritos(obterFavoritosIds().length);
@@ -242,48 +238,28 @@ async function renderizarFavoritosCliente(opcoes = {}) {
         }
     }
 
-    const temCards = !!lista.querySelector('.favorito-card');
-    const produtosEmCache = obterProdutosFavoritosCache(ids);
-
-    if (!temCards && produtosEmCache.length) {
-        pintarListaFavoritos(lista, produtosEmCache, ids);
-        if (produtosEmCache.length === ids.length) {
-            favoritosRenderizadosChave = chave;
-        }
-        atualizarResumoFavoritos(produtosEmCache.length);
-    } else if (!temCards) {
-        mostrarCarregamentoFavoritos(lista);
-    }
-
-    if (!temCards || produtosEmCache.length !== ids.length) {
-        atualizarResumoFavoritos(ids.length);
-    }
+    const precisaMensagemCarregamento = !lista.querySelector('.favorito-card');
+    definirListaFavoritosPreparacao(lista, true);
+    if (precisaMensagemCarregamento) mostrarCarregamentoFavoritos(lista);
 
     favoritosRenderizacaoEmCurso = (async () => {
         try {
-            const produtos = await carregarProdutosFavoritosCliente(ids);
+            const produtos = await resolverProdutosFavoritos(ids, opcoes.forcar);
             if (!produtos.length) {
                 definirFavoritosVazio('Os favoritos guardados já não estão disponíveis na loja.');
                 return;
             }
 
-            const chaveProdutos = obterChaveRenderFavoritos(produtos.map(produto => produto.id));
-            const totalCards = lista.querySelectorAll('.favorito-card').length;
-            const precisaAtualizar = chaveProdutos !== favoritosRenderizadosChave
-                || totalCards !== produtos.length;
-
-            if (precisaAtualizar) {
-                if (!totalCards) pintarListaFavoritos(lista, produtos, ids);
-                else sincronizarListaFavoritos(lista, produtos, ids);
-            }
-
-            favoritosRenderizadosChave = chaveProdutos;
+            pintarListaFavoritos(lista, produtos, ids);
+            favoritosRenderizadosChave = obterChaveRenderFavoritos(produtos.map(produto => produto.id));
             atualizarResumoFavoritos(produtos.length);
         } catch (error) {
             console.error('Erro ao carregar favoritos:', error);
             if (!lista.querySelector('.favorito-card')) {
                 definirFavoritosVazio('Não foi possível carregar os favoritos.');
             }
+        } finally {
+            definirListaFavoritosPreparacao(lista, false);
         }
     })();
 

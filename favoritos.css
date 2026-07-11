@@ -37,6 +37,10 @@
     gap:8px;
 }
 
+.favoritos-lista--preparar{
+    opacity:0;
+}
+
 .favorito-card{
     background:#111;
     border:1px solid #333;
