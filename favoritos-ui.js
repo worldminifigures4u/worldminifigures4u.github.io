@@ -1,4 +1,7 @@
 // UI partilhada da pagina de favoritos.
+let favoritosRenderizadosChave = '';
+let favoritosRenderizacaoEmCurso = null;
+
 function definirFavoritosVazio(mensagem) {
     const lista = document.getElementById('lista-favoritos-cliente');
     if (!lista) return;
@@ -14,6 +17,7 @@ function definirFavoritosVazio(mensagem) {
     continuar.textContent = 'Ver produtos';
     acoes.appendChild(continuar);
     lista.append(vazio, acoes);
+    favoritosRenderizadosChave = '';
     atualizarResumoFavoritos(0);
 }
 
@@ -133,6 +137,7 @@ function removerCardFavoritoCliente(id) {
     if (card) card.remove();
 
     const restantes = obterFavoritosIds().length;
+    favoritosRenderizadosChave = obterChaveRenderFavoritos();
     if (!restantes) {
         definirFavoritosVazio('Ainda não tens favoritos guardados.');
         return;
@@ -140,34 +145,65 @@ function removerCardFavoritoCliente(id) {
     atualizarResumoFavoritos(restantes);
 }
 
-async function renderizarFavoritosCliente() {
+async function renderizarFavoritosCliente(opcoes = {}) {
     const lista = document.getElementById('lista-favoritos-cliente');
     if (!lista) return;
 
     const ids = obterFavoritosIds();
+    const chave = obterChaveRenderFavoritos(ids);
     if (!ids.length) {
         definirFavoritosVazio('Ainda não tens favoritos guardados.');
         return;
     }
 
-    lista.replaceChildren();
-    const carregamento = document.createElement('p');
-    carregamento.className = 'favoritos-vazio';
-    carregamento.textContent = 'A carregar favoritos...';
-    lista.appendChild(carregamento);
-    atualizarResumoFavoritos(ids.length);
+    const jaRenderizado = !opcoes.forcar
+        && chave === favoritosRenderizadosChave
+        && lista.querySelector('.favorito-card');
+    if (jaRenderizado) {
+        atualizarResumoFavoritos(ids.length);
+        return;
+    }
 
-    try {
-        const produtos = await carregarProdutosFavoritosCliente(ids);
-        lista.replaceChildren();
-        if (!produtos.length) {
-            definirFavoritosVazio('Os favoritos guardados já não estão disponíveis na loja.');
+    if (favoritosRenderizacaoEmCurso) {
+        await favoritosRenderizacaoEmCurso;
+        if (!opcoes.forcar && chave === favoritosRenderizadosChave && lista.querySelector('.favorito-card')) {
+            atualizarResumoFavoritos(ids.length);
             return;
         }
-        produtos.forEach(produto => lista.appendChild(criarCardFavoritoCliente(produto)));
-        atualizarResumoFavoritos(produtos.length);
-    } catch (error) {
-        console.error('Erro ao carregar favoritos:', error);
-        definirFavoritosVazio('Não foi possível carregar os favoritos.');
+    }
+
+    const temCards = !!lista.querySelector('.favorito-card');
+    const jaMostraCarregamento = !!lista.querySelector('.favoritos-vazio')
+        && lista.textContent.trim() === 'A carregar favoritos...';
+    if (!temCards && !jaMostraCarregamento) {
+        lista.replaceChildren();
+        const carregamento = document.createElement('p');
+        carregamento.className = 'favoritos-vazio';
+        carregamento.textContent = 'A carregar favoritos...';
+        lista.appendChild(carregamento);
+    }
+    atualizarResumoFavoritos(ids.length);
+
+    favoritosRenderizacaoEmCurso = (async () => {
+        try {
+            const produtos = await carregarProdutosFavoritosCliente(ids);
+            if (!produtos.length) {
+                definirFavoritosVazio('Os favoritos guardados já não estão disponíveis na loja.');
+                return;
+            }
+            lista.replaceChildren();
+            produtos.forEach(produto => lista.appendChild(criarCardFavoritoCliente(produto)));
+            favoritosRenderizadosChave = chave;
+            atualizarResumoFavoritos(produtos.length);
+        } catch (error) {
+            console.error('Erro ao carregar favoritos:', error);
+            definirFavoritosVazio('Não foi possível carregar os favoritos.');
+        }
+    })();
+
+    try {
+        await favoritosRenderizacaoEmCurso;
+    } finally {
+        favoritosRenderizacaoEmCurso = null;
     }
 }

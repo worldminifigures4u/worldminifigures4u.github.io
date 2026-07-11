@@ -26,14 +26,27 @@ function guardarFavoritosLocal() {
     localStorage.setItem(favoritosChaveAtual, JSON.stringify([...favoritosProdutos]));
 }
 
+function obterChaveRenderFavoritos(ids = obterFavoritosIds()) {
+    return ids.map(String).filter(Boolean).sort().join('|');
+}
+
 function carregarFavoritosUtilizador(userId = '') {
+    const chaveAnterior = favoritosChaveAtual;
+    const idsAnteriores = obterChaveRenderFavoritos(obterFavoritosIds());
     favoritosChaveAtual = obterChaveFavoritos(userId);
     const favoritosConta = carregarFavoritosLocal(favoritosChaveAtual);
     const favoritosAnonimos = userId ? carregarFavoritosLocal(obterChaveFavoritos()) : [];
     favoritosProdutos = new Set([...favoritosConta, ...favoritosAnonimos]);
     if (userId && favoritosAnonimos.length) guardarFavoritosLocal();
     atualizarBotoesFavoritos();
-    if (typeof renderizarFavoritosCliente === 'function') renderizarFavoritosCliente();
+
+    const idsNovos = obterChaveRenderFavoritos(obterFavoritosIds());
+    const favoritosMudaram = chaveAnterior !== favoritosChaveAtual || idsAnteriores !== idsNovos;
+    if (!favoritosMudaram || typeof renderizarFavoritosCliente !== 'function') return;
+
+    if (document.getElementById('lista-favoritos-cliente')) {
+        renderizarFavoritosCliente();
+    }
 }
 
 function obterFavoritosIds() {
@@ -68,7 +81,7 @@ function alternarFavoritoProduto(produto) {
     atualizarBotoesFavoritos();
     if (typeof renderizarFavoritosCliente === 'function' && document.getElementById('lista-favoritos-cliente')) {
         if (ativo && typeof removerCardFavoritoCliente === 'function') removerCardFavoritoCliente(id);
-        else renderizarFavoritosCliente();
+        else renderizarFavoritosCliente({ forcar: true });
     } else if (typeof renderizarFavoritosCliente === 'function') {
         renderizarFavoritosCliente();
     }
