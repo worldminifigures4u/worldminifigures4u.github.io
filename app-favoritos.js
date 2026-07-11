@@ -66,7 +66,12 @@ function alternarFavoritoProduto(produto) {
     else favoritosProdutos.add(id);
     guardarFavoritosLocal();
     atualizarBotoesFavoritos();
-    if (typeof renderizarFavoritosCliente === 'function') renderizarFavoritosCliente();
+    if (typeof renderizarFavoritosCliente === 'function' && document.getElementById('lista-favoritos-cliente')) {
+        if (ativo && typeof removerCardFavoritoCliente === 'function') removerCardFavoritoCliente(id);
+        else renderizarFavoritosCliente();
+    } else if (typeof renderizarFavoritosCliente === 'function') {
+        renderizarFavoritosCliente();
+    }
     return !ativo;
 }
 
@@ -76,6 +81,10 @@ function removerFavoritoProduto(id) {
     favoritosProdutos.delete(chave);
     guardarFavoritosLocal();
     atualizarBotoesFavoritos();
-    if (typeof renderizarFavoritosCliente === 'function') renderizarFavoritosCliente();
+    if (typeof removerCardFavoritoCliente === 'function' && document.getElementById('lista-favoritos-cliente')) {
+        removerCardFavoritoCliente(chave);
+    } else if (typeof renderizarFavoritosCliente === 'function') {
+        renderizarFavoritosCliente();
+    }
 }
 

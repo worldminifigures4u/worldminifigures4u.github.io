@@ -58,6 +58,7 @@ async function carregarProdutosFavoritosCliente(ids) {
 function criarCardFavoritoCliente(produto) {
     const card = document.createElement('article');
     card.className = 'favorito-card';
+    card.dataset.favoritoProdutoId = normalizarIdFavorito(produto.id);
 
     const imagem = document.createElement('img');
     imagem.className = 'favorito-imagem';
@@ -121,6 +122,22 @@ function criarCardFavoritoCliente(produto) {
     acoes.append(adicionar, remover);
     card.append(imagem, info, meta, acoes);
     return card;
+}
+
+function removerCardFavoritoCliente(id) {
+    const lista = document.getElementById('lista-favoritos-cliente');
+    if (!lista) return;
+
+    const chave = normalizarIdFavorito(id);
+    const card = lista.querySelector(`[data-favorito-produto-id="${CSS.escape(chave)}"]`);
+    if (card) card.remove();
+
+    const restantes = obterFavoritosIds().length;
+    if (!restantes) {
+        definirFavoritosVazio('Ainda não tens favoritos guardados.');
+        return;
+    }
+    atualizarResumoFavoritos(restantes);
 }
 
 async function renderizarFavoritosCliente() {
