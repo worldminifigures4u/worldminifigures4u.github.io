@@ -582,6 +582,21 @@ window.AdminEncomendaVista = (function () {
             reporStock = !encomenda.stock_reposto;
         }
 
+        if (estado === "Pago" && estadoAnterior !== "Pago") {
+            const codigo = encomenda.codigo_encomenda || "";
+            const origem = encomenda.origem || "Site";
+            let avisoFatura = "";
+            if (podeEmitirFaturaMoloni(encomenda)) {
+                avisoFatura = encomendaOrigemOlx(encomenda)
+                    ? "\n\nDepois pode escolher se emite fatura-recibo no Moloni."
+                    : "\n\nSerá emitida automaticamente uma fatura-recibo no Moloni.";
+            }
+            if (!window.confirm(`Marcar a encomenda ${codigo} (${origem}) como Pago?${avisoFatura}`)) {
+                select.value = estadoAnterior;
+                return;
+            }
+        }
+
         select.disabled = true;
         hooks.definirStatus("A atualizar o estado...");
         try {
