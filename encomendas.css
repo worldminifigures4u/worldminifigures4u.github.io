@@ -6,6 +6,9 @@ body.pagina-encomendas-admin{
             padding-bottom:0;
             background:#080808;
             color:#fff;
+        }
+
+        .pagina-encomendas-admin > main.admin-encomendas{
             zoom:1.1;
         }
 
