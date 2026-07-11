@@ -658,7 +658,9 @@ body.pagina-encomendas-admin{
         }
 
         .admin-encomendas > .wallapop-status{
-            margin:10px 0 0;
+            margin:0 0 14px;
+            min-height:1.2em;
+            font-weight:600;
         }
 
         .admin-encomendas > .wallapop-status:empty{

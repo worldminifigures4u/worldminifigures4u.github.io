@@ -619,11 +619,14 @@ window.AdminEncomendaVista = (function () {
             hooks.renderizarModal();
             let mensagemFatura = "";
             if (estado === "Pago" && estadoAnterior !== "Pago" && deveEmitirFaturaMoloni(encomenda)) {
+                hooks.definirStatus(`Estado atualizado. A emitir fatura-recibo Moloni para ${encomenda.codigo_encomenda || ""}...`);
                 try {
                     const fatura = await emitirFaturaMoloni(encomenda);
-                    if (fatura?.document_id) {
-                        const numeroFatura = fatura.numero ? ` n. ${fatura.numero}` : "";
-                        mensagemFatura = ` Fatura-recibo Moloni${numeroFatura} emitida.`;
+                    if (fatura?.sucesso) {
+                        const numeroFatura = fatura.numero && String(fatura.numero) !== "0"
+                            ? ` n. ${fatura.numero}`
+                            : " (rascunho)";
+                        mensagemFatura = ` Fatura-recibo Moloni${numeroFatura} criada.`;
                     }
                 } catch (erroFatura) {
                     mensagemFatura = ` Fatura-recibo Moloni nao emitida: ${erroFatura.message || "erro desconhecido"}.`;

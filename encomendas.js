@@ -64,6 +64,9 @@ function definirStatusEncomendas(texto, erro = false) {
     status.textContent = texto || '';
     status.classList.toggle('msg-erro', erro);
     status.classList.toggle('msg-sucesso', Boolean(texto) && !erro);
+    if (texto) {
+        status.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
 }
 
 function criarElementoEncomenda(tag, classe, texto) {
