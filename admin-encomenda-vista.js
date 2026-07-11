@@ -623,10 +623,10 @@ window.AdminEncomendaVista = (function () {
                     const fatura = await emitirFaturaMoloni(encomenda);
                     if (fatura?.document_id) {
                         const numeroFatura = fatura.numero ? ` n. ${fatura.numero}` : "";
-                        mensagemFatura = ` Fatura Moloni${numeroFatura} emitida.`;
+                        mensagemFatura = ` Fatura-recibo Moloni${numeroFatura} emitida.`;
                     }
                 } catch (erroFatura) {
-                    mensagemFatura = ` Fatura Moloni nao emitida: ${erroFatura.message || "erro desconhecido"}.`;
+                    mensagemFatura = ` Fatura-recibo Moloni nao emitida: ${erroFatura.message || "erro desconhecido"}.`;
                 }
             }
             if (erroAnexos) {

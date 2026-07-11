@@ -1,5 +1,5 @@
 -- Executar no SQL Editor do Supabase.
--- Regista faturas Moloni emitidas automaticamente para encomendas do site.
+-- Regista faturas-recibo Moloni emitidas automaticamente para encomendas pagas.
 
 alter table public.encomendas
   add column if not exists moloni_document_id bigint,

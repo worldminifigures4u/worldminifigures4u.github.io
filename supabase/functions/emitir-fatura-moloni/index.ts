@@ -31,6 +31,7 @@ type EncomendaRow = {
   origem: string | null;
   total: number | string | null;
   portes: number | string | null;
+  metodo_pagamento: string | null;
   moloni_document_id: number | null;
   moloni_fatura_numero: string | null;
 };
@@ -196,13 +197,14 @@ function construirLinhasFatura(
   return linhas;
 }
 
-async function criarFaturaMoloni(
+async function criarFaturaReciboMoloni(
   encomenda: EncomendaRow,
   companyId: number,
   documentSetId: number,
   customerId: number,
   productIdLote: number,
   productIdPortes: number,
+  paymentMethodId: number,
   invoiceStatus: number,
 ) {
   const agora = new Date();
@@ -211,10 +213,11 @@ async function criarFaturaMoloni(
   const portesBruto = numero(encomenda.portes);
   const linhas = construirLinhasFatura(totalBruto, portesBruto, productIdLote, productIdPortes);
   const referencia = String(encomenda.codigo_encomenda || encomenda.id).trim();
+  const notasPagamento = String(encomenda.metodo_pagamento || "").trim();
 
   const query = `
-    mutation EmitirFaturaMoloni($companyId: Int!, $data: InvoiceInsert!) {
-      invoiceCreate(companyId: $companyId, data: $data) {
+    mutation EmitirFaturaReciboMoloni($companyId: Int!, $data: InvoiceReceiptInsert!) {
+      invoiceReceiptCreate(companyId: $companyId, data: $data) {
         errors { field msg }
         data {
           documentId
@@ -227,7 +230,7 @@ async function criarFaturaMoloni(
   `;
 
   const payload = await moloniRequest<{
-    data?: { invoiceCreate?: { errors?: MoloniError[]; data?: MoloniInvoiceResult } };
+    data?: { invoiceReceiptCreate?: { errors?: MoloniError[]; data?: MoloniInvoiceResult } };
   }>(query, {
     companyId,
     data: {
@@ -237,11 +240,20 @@ async function criarFaturaMoloni(
       expirationDate: formatarDataVencimento(vencimento),
       status: invoiceStatus,
       yourReference: referencia,
+      notes: notasPagamento || undefined,
       products: linhas,
+      payments: [
+        {
+          paymentMethodId,
+          value: totalBruto,
+          date: formatarDataIso(agora),
+          notes: notasPagamento || undefined,
+        },
+      ],
     },
   });
 
-  const resultado = payload.data?.invoiceCreate;
+  const resultado = payload.data?.invoiceReceiptCreate;
   if (resultado?.errors?.length) {
     throw new Error(mensagemErrosMoloni(resultado.errors));
   }
@@ -269,12 +281,13 @@ Deno.serve(async (request) => {
   const customerId = Number(Deno.env.get("MOLONI_CUSTOMER_ID") || "0");
   const productIdLote = Number(Deno.env.get("MOLONI_PRODUCT_ID_LOTE") || "0");
   const productIdPortes = Number(Deno.env.get("MOLONI_PRODUCT_ID_PORTES") || productIdLote || "0");
+  const paymentMethodId = Number(Deno.env.get("MOLONI_PAYMENT_METHOD_ID") || "0");
   const invoiceStatus = Number(Deno.env.get("MOLONI_INVOICE_STATUS") || "0");
 
   if (!supabaseUrl || !supabaseAnonKey || !serviceRoleKey) {
     return jsonResponse(request, { error: "Configuracao Supabase incompleta." }, 500);
   }
-  if (!companyId || !documentSetId || !customerId || !productIdLote) {
+  if (!companyId || !documentSetId || !customerId || !productIdLote || !paymentMethodId) {
     return jsonResponse(request, { error: "Configuracao Moloni incompleta." }, 500);
   }
 
@@ -308,7 +321,7 @@ Deno.serve(async (request) => {
   const supabaseAdmin = createClient(supabaseUrl, serviceRoleKey);
   const { data: encomenda, error: encomendaError } = await supabaseAdmin
     .from("encomendas")
-    .select("id, codigo_encomenda, estado, origem, total, portes, moloni_document_id, moloni_fatura_numero")
+    .select("id, codigo_encomenda, estado, origem, total, portes, metodo_pagamento, moloni_document_id, moloni_fatura_numero")
     .eq("id", encomendaId)
     .maybeSingle();
 
@@ -336,13 +349,14 @@ Deno.serve(async (request) => {
   }
 
   try {
-    const fatura = await criarFaturaMoloni(
+    const fatura = await criarFaturaReciboMoloni(
       encomendaRow,
       companyId,
       documentSetId,
       customerId,
       productIdLote,
       productIdPortes,
+      paymentMethodId,
       invoiceStatus,
     );
 
@@ -360,7 +374,7 @@ Deno.serve(async (request) => {
     if (updateError) {
       return jsonResponse(request, {
         sucesso: true,
-        aviso: "Fatura criada no Moloni, mas nao foi possivel guardar na encomenda.",
+        aviso: "Fatura-recibo criada no Moloni, mas nao foi possivel guardar na encomenda.",
         document_id: fatura.documentId,
         numero: numeroFatura,
         total: fatura.totalValue,
@@ -369,6 +383,7 @@ Deno.serve(async (request) => {
 
     return jsonResponse(request, {
       sucesso: true,
+      tipo: "fatura_recibo",
       document_id: fatura.documentId,
       numero: numeroFatura,
       total: fatura.totalValue,
