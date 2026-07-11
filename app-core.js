@@ -334,7 +334,7 @@ function garantirEstilosAdmin() {
     if (document.querySelector('link[href*="styles-admin.css"]')) return;
     const folha = document.createElement('link');
     folha.rel = 'stylesheet';
-    folha.href = 'styles-admin.css?v=20260711-leve-r8';
+    folha.href = 'styles-admin.css?v=20260711-menu-admin';
     document.head.appendChild(folha);
 }
 
