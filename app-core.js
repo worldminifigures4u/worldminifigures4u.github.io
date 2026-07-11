@@ -3,107 +3,11 @@ const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZ
 const URL_PUBLICO_FALLBACK = "https://figuresplanet.com/";
 const ADMIN_EMAILS = ["worldminifigures4u@gmail.com"];
 const PESO_PADRAO_PRODUTO_GRAMAS = 10;
-const TABELA_PORTES_POR_PESO = {
-    portugal: [
-        { ate: 100, opcoes: [
-            { id: 'entrega_tomar', nome: 'Entrega em m\u00e3o em Tomar', valor: 0 },
-            { id: 'ctt_normal', nome: 'CTT Normal', valor: 1.75 },
-            { id: 'ctt_azul', nome: 'CTT Azul', valor: 2.20 },
-            { id: 'ctt_registado', nome: 'CTT Registado', valor: 4.50 },
-            { id: 'inpost_registado', nome: 'InPost Registado (com seguro de 25\u20ac)', valor: 4.95 }
-        ]},
-        { ate: 500, opcoes: [
-            { id: 'entrega_tomar', nome: 'Entrega em m\u00e3o em Tomar', valor: 0 },
-            { id: 'ctt_normal', nome: 'CTT Normal', valor: 2.50 },
-            { id: 'ctt_azul', nome: 'CTT Azul', valor: 3.95 },
-            { id: 'ctt_registado', nome: 'CTT Registado', valor: 5.30 },
-            { id: 'inpost_registado', nome: 'InPost Registado (com seguro de 25\u20ac)', valor: 4.95 }
-        ]},
-        { ate: Infinity, opcoes: [
-            { id: 'entrega_tomar', nome: 'Entrega em m\u00e3o em Tomar', valor: 0 },
-            { id: 'ctt_normal', nome: 'CTT Normal', valor: 5.75 },
-            { id: 'ctt_azul', nome: 'CTT Azul', valor: 7.95 },
-            { id: 'ctt_registado', nome: 'CTT Registado', valor: 8.95 },
-            { id: 'inpost_registado', nome: 'InPost Registado (com seguro de 25\u20ac)', valor: 5.65 }
-        ]}
-    ],
-    espanha: [
-        { ate: 100, opcoes: [
-            { id: 'ctt_registado', nome: 'CTT Registado', valor: 5.80 },
-            { id: 'inpost_registado', nome: 'InPost Registado', valor: 5.12 }
-        ]},
-        { ate: 250, opcoes: [
-            { id: 'ctt_registado', nome: 'CTT Registado', valor: 7.55 },
-            { id: 'inpost_registado', nome: 'InPost Registado', valor: 5.12 }
-        ]},
-        { ate: 500, opcoes: [
-            { id: 'ctt_registado', nome: 'CTT Registado', valor: 9.80 },
-            { id: 'inpost_registado', nome: 'InPost Registado', valor: 5.12 }
-        ]},
-        { ate: 1000, opcoes: [
-            { id: 'ctt_registado', nome: 'CTT Registado', valor: 13.20 },
-            { id: 'inpost_registado', nome: 'InPost Registado', valor: 5.81 }
-        ]},
-        { ate: Infinity, opcoes: [
-            { id: 'ctt_registado', nome: 'CTT Registado', valor: 21.20 },
-            { id: 'inpost_registado', nome: 'InPost Registado', valor: 6.64 }
-        ]}
-    ],
-    europa: [
-        { ate: 100, opcoes: [{ id: 'ctt_registado', nome: 'CTT Registado', valor: 5.80 }] },
-        { ate: 250, opcoes: [{ id: 'ctt_registado', nome: 'CTT Registado', valor: 7.55 }] },
-        { ate: 500, opcoes: [{ id: 'ctt_registado', nome: 'CTT Registado', valor: 9.80 }] },
-        { ate: 1000, opcoes: [{ id: 'ctt_registado', nome: 'CTT Registado', valor: 13.20 }] },
-        { ate: Infinity, opcoes: [{ id: 'ctt_registado', nome: 'CTT Registado', valor: 21.20 }] }
-    ]
-};
-
-const ZONA_PORTES_POR_PAIS = {
-    portugal: 'portugal',
-    espanha: 'espanha',
-    alemanha: 'europa',
-    austria: 'europa',
-    belgica: 'europa',
-    bulgaria: 'europa',
-    chequia: 'europa',
-    chipre: 'europa',
-    croacia: 'europa',
-    dinamarca: 'europa',
-    eslovaquia: 'europa',
-    eslovenia: 'europa',
-    estonia: 'europa',
-    finlandia: 'europa',
-    franca: 'europa',
-    grecia: 'europa',
-    hungria: 'europa',
-    irlanda: 'europa',
-    italia: 'europa',
-    letonia: 'europa',
-    lituania: 'europa',
-    luxemburgo: 'europa',
-    malta: 'europa',
-    paises_baixos: 'europa',
-    polonia: 'europa',
-    romenia: 'europa',
-    suecia: 'europa'
-};
-
-function obterZonaPortesPorPais(paisEnvio) {
-    return ZONA_PORTES_POR_PAIS[paisEnvio] || 'europa';
-}
-
-const LIMITE_SUBTOTAL_ENVIO_SEM_RASTREAMENTO = 15;
-const METODOS_ENVIO_SEM_RASTREAMENTO = new Set(['ctt_normal', 'ctt_azul']);
-const METODOS_ENVIO_REGISTADOS = new Set(['ctt_registado', 'inpost_registado']);
-
 let dbClient = null;
 let produtosClient = null;
 let todosOsProdutos = [];
 let catalogoAdminCarregado = false;
 let carrinho = carregarCarrinhoLocal();
-let favoritosProdutos = new Set(carregarFavoritosLocal());
-let favoritosChaveAtual = 'figures-planet-favoritos';
-let filtroTemaAtual = 'todos';
 let emRecuperacaoPassword = false;
 function obterUrlPublicoAtual() {
     if (window.location.protocol === 'file:') {
@@ -169,83 +73,6 @@ function carregarCarrinhoLocal() {
         localStorage.removeItem('carrinho');
         return [];
     }
-}
-
-function obterChaveFavoritos(userId = '') {
-    const id = String(userId || '').trim();
-    return id ? `figures-planet-favoritos-${id}` : 'figures-planet-favoritos';
-}
-
-function normalizarIdFavorito(id) {
-    return String(id || '').trim();
-}
-
-function carregarFavoritosLocal(chave = obterChaveFavoritos()) {
-    try {
-        const guardados = JSON.parse(localStorage.getItem(chave)) || [];
-        if (!Array.isArray(guardados)) return [];
-        return [...new Set(guardados.map(normalizarIdFavorito).filter(Boolean))];
-    } catch (_) {
-        localStorage.removeItem(chave);
-        return [];
-    }
-}
-
-function guardarFavoritosLocal() {
-    localStorage.setItem(favoritosChaveAtual, JSON.stringify([...favoritosProdutos]));
-}
-
-function carregarFavoritosUtilizador(userId = '') {
-    favoritosChaveAtual = obterChaveFavoritos(userId);
-    const favoritosConta = carregarFavoritosLocal(favoritosChaveAtual);
-    const favoritosAnonimos = userId ? carregarFavoritosLocal(obterChaveFavoritos()) : [];
-    favoritosProdutos = new Set([...favoritosConta, ...favoritosAnonimos]);
-    if (userId && favoritosAnonimos.length) guardarFavoritosLocal();
-    atualizarBotoesFavoritos();
-    if (typeof renderizarFavoritosCliente === 'function') renderizarFavoritosCliente();
-}
-
-function obterFavoritosIds() {
-    return [...favoritosProdutos];
-}
-
-function produtoEstaNosFavoritos(id) {
-    return favoritosProdutos.has(normalizarIdFavorito(id));
-}
-
-function atualizarBotaoFavorito(botao, ativo) {
-    if (!botao) return;
-    botao.classList.toggle('is-favorite', ativo);
-    botao.setAttribute('aria-pressed', ativo ? 'true' : 'false');
-    botao.title = ativo ? 'Remover dos favoritos' : 'Adicionar aos favoritos';
-    botao.setAttribute('aria-label', ativo ? 'Remover dos favoritos' : 'Adicionar aos favoritos');
-}
-
-function atualizarBotoesFavoritos() {
-    document.querySelectorAll('[data-favorito-produto-id]').forEach(botao => {
-        atualizarBotaoFavorito(botao, produtoEstaNosFavoritos(botao.dataset.favoritoProdutoId));
-    });
-}
-
-function alternarFavoritoProduto(produto) {
-    const id = normalizarIdFavorito(produto?.id);
-    if (!id) return false;
-    const ativo = favoritosProdutos.has(id);
-    if (ativo) favoritosProdutos.delete(id);
-    else favoritosProdutos.add(id);
-    guardarFavoritosLocal();
-    atualizarBotoesFavoritos();
-    if (typeof renderizarFavoritosCliente === 'function') renderizarFavoritosCliente();
-    return !ativo;
-}
-
-function removerFavoritoProduto(id) {
-    const chave = normalizarIdFavorito(id);
-    if (!chave || !favoritosProdutos.has(chave)) return;
-    favoritosProdutos.delete(chave);
-    guardarFavoritosLocal();
-    atualizarBotoesFavoritos();
-    if (typeof renderizarFavoritosCliente === 'function') renderizarFavoritosCliente();
 }
 
 function obterProdutoPorIdLocal(id) {
@@ -361,94 +188,7 @@ function irParaCarrinho() {
     mostrarVista('carrinho');
 }
 
-function pesquisarNoCabecalho() {
-    if (obterVistaPagina() !== 'loja') {
-        return;
-    }
-    if(typeof executarFiltrosCombinados === 'function') executarFiltrosCombinados();
-}
 
-function aplicarPesquisaUrl() {
-    if (obterVistaPagina() !== 'loja') return;
-    const pesquisa = new URLSearchParams(window.location.search).get('q') || '';
-    const campo = document.getElementById('campo-pesquisa');
-    if (campo && pesquisa) {
-        campo.value = pesquisa;
-        if(typeof executarFiltrosCombinados === 'function') executarFiltrosCombinados();
-    }
-}
-
-let frameAtualizacaoStickyTemas = null;
-let observadorTamanhoMenuTemas = null;
-let folhaDinamicaTemas = null;
-
-function definirCssDinamicoTemas(cssTexto) {
-    try {
-        if (!('adoptedStyleSheets' in document) || typeof CSSStyleSheet === 'undefined') return;
-        if (!folhaDinamicaTemas) {
-            folhaDinamicaTemas = new CSSStyleSheet();
-            document.adoptedStyleSheets = Array.from(document.adoptedStyleSheets || []).concat(folhaDinamicaTemas);
-        }
-        if (typeof folhaDinamicaTemas.replaceSync === 'function') {
-            folhaDinamicaTemas.replaceSync(cssTexto || '');
-        }
-    } catch (error) {
-        console.warn('CSS dinâmico ignorado:', error);
-    }
-}
-
-function atualizarStickyTemas() {
-    const coluna = document.querySelector('.coluna-esquerda');
-    const menu = document.getElementById('menu-lateral-temas');
-    const header = document.querySelector('header');
-    if (!coluna || !menu) return;
-
-    if (window.matchMedia && window.matchMedia('(max-width: 1100px)').matches) {
-        definirCssDinamicoTemas('');
-        return;
-    }
-
-    const margem = 20;
-    const headerBottom = header ? header.getBoundingClientRect().bottom : 76;
-    const topoNormal = Math.ceil(headerBottom + margem);
-    const alturaMenu = Math.ceil(menu.offsetHeight);
-    const topoComFundoVisivel = Math.floor(window.innerHeight - alturaMenu - margem);
-    const stickyTop = Math.min(topoNormal, topoComFundoVisivel);
-
-    definirCssDinamicoTemas(`.coluna-esquerda { --temas-sticky-top: ${stickyTop}px; }`);
-}
-
-function agendarAtualizacaoStickyTemas() {
-    if(frameAtualizacaoStickyTemas !== null) {
-        cancelAnimationFrame(frameAtualizacaoStickyTemas);
-    }
-
-    frameAtualizacaoStickyTemas = requestAnimationFrame(() => {
-        frameAtualizacaoStickyTemas = null;
-        atualizarStickyTemas();
-    });
-}
-
-function observarTamanhoMenuTemas() {
-    const menu = document.getElementById('menu-lateral-temas');
-    if(!menu || typeof ResizeObserver === 'undefined') return;
-
-    if(observadorTamanhoMenuTemas) {
-        observadorTamanhoMenuTemas.disconnect();
-    }
-
-    observadorTamanhoMenuTemas = new ResizeObserver(() => {
-        agendarAtualizacaoStickyTemas();
-    });
-    observadorTamanhoMenuTemas.observe(menu);
-}
-
-window.addEventListener('hashchange', () => {
-    const vistaHash = obterVistaHash();
-    if (vistaHash) mostrarVista(vistaHash);
-});
-window.addEventListener('resize', agendarAtualizacaoStickyTemas);
-window.visualViewport?.addEventListener('resize', agendarAtualizacaoStickyTemas);
 window.addEventListener('load', async () => {
     const vistaHash = obterVistaHash();
     if (vistaHash && vistaHash !== obterVistaPagina() && !urlTemRecuperacaoPassword()) {
@@ -456,9 +196,7 @@ window.addEventListener('load', async () => {
         return;
     }
     mostrarVista(obterVistaPagina(), false);
-    observarTamanhoMenuTemas();
-    agendarAtualizacaoStickyTemas();
-    document.fonts?.ready.then(agendarAtualizacaoStickyTemas);
+    if (typeof inicializarPaginaLoja === 'function') inicializarPaginaLoja();
     atualizarCarrinhoSeDisponivel();
     try {
         await window.carregarScriptSupabase();
@@ -502,7 +240,7 @@ window.addEventListener('load', async () => {
                     atualizarVisibilidadeAdmin(null);
                     mostrarContaAnonimaSeExistir();
                     atualizarCabecalhoCliente();
-                    carregarFavoritosUtilizador();
+                    if (typeof carregarFavoritosUtilizador === 'function') carregarFavoritosUtilizador();
                 }
             }, 0);
         });
@@ -532,7 +270,7 @@ async function obterDadosPerfilDaTabela(userId, user = null) {
         if (!existeAreaClientePagina()) {
             atualizarCabecalhoCliente(data?.nome || user?.user_metadata?.nome || '');
             atualizarVisibilidadeAdmin(user);
-            carregarFavoritosUtilizador(userId);
+            if (typeof carregarFavoritosUtilizador === 'function') carregarFavoritosUtilizador(userId);
             restaurarCarrinhoSeDisponivel();
             return;
         }
@@ -544,7 +282,7 @@ async function obterDadosPerfilDaTabela(userId, user = null) {
             if (autenticado) autenticado.classList.remove('oculto');
             if(typeof preencherFormularioDadosCliente === 'function') preencherFormularioDadosCliente({}, user);
             atualizarVisibilidadeAdmin(user);
-            carregarFavoritosUtilizador(userId);
+            if (typeof carregarFavoritosUtilizador === 'function') carregarFavoritosUtilizador(userId);
             restaurarCarrinhoSeDisponivel();
             if(typeof carregarHistoricoEncomendas === 'function') carregarHistoricoEncomendas(userId);
             return;
@@ -557,7 +295,7 @@ async function obterDadosPerfilDaTabela(userId, user = null) {
             if (autenticado) autenticado.classList.remove('oculto');
             if(typeof preencherFormularioDadosCliente === 'function') preencherFormularioDadosCliente(data, user);
             atualizarVisibilidadeAdmin(user);
-            carregarFavoritosUtilizador(userId);
+            if (typeof carregarFavoritosUtilizador === 'function') carregarFavoritosUtilizador(userId);
             restaurarCarrinhoSeDisponivel();
             if(typeof carregarHistoricoEncomendas === 'function') carregarHistoricoEncomendas(userId);
         }
@@ -579,51 +317,6 @@ async function verificarSessaoSupabase() {
 
 function formatarEuro(valor){ return Number(valor || 0).toFixed(2).replace('.', ','); }
 
-function normalizarTextoSku(texto) {
-    return String(texto || '')
-        .normalize('NFD')
-        .replace(/[\u0300-\u036f]/g, '')
-        .toUpperCase();
-}
-
-function obterPalavrasSku(nomeProduto) {
-    const palavrasIgnoradas = new Set(['A', 'O', 'OS', 'AS', 'E', 'DE', 'DA', 'DO', 'DAS', 'DOS', 'THE', 'OF', 'AND']);
-    return normalizarTextoSku(nomeProduto)
-        .replace(/[^A-Z0-9\s-]/g, ' ')
-        .split(/[\s-]+/)
-        .map(palavra => palavra.trim())
-        .filter(palavra =>
-            palavra.length > 0 &&
-            !palavrasIgnoradas.has(palavra) &&
-            !/^V\d+$/i.test(palavra) &&
-            /[A-Z]/.test(palavra)
-        );
-}
-
-function gerarPrefixoSku(nomeProduto) {
-    const palavras = obterPalavrasSku(nomeProduto);
-    if (palavras.length >= 2) {
-        return (palavras[0][0] + palavras[1][0]).toUpperCase();
-    }
-    if (palavras.length === 1) {
-        return palavras[0].slice(0, 2).padEnd(2, 'X').toUpperCase();
-    }
-    return 'PR';
-}
-
-function gerarSkuProduto(nomeProduto, produtosExistentes = todosOsProdutos) {
-    const prefixo = gerarPrefixoSku(nomeProduto);
-    const numerosUsados = (produtosExistentes || [])
-        .map(produto => String(produto.sku || '').toUpperCase())
-        .filter(sku => sku.startsWith(prefixo))
-        .map(sku => Number(sku.slice(prefixo.length)))
-        .filter(numero => Number.isInteger(numero) && numero > 0);
-
-    const proximoNumero = numerosUsados.length > 0 ? Math.max(...numerosUsados) + 1 : 1;
-    return prefixo + String(proximoNumero).padStart(2, '0');
-}
-
-window.gerarSkuProduto = gerarSkuProduto;
 
 const FORNECEDORES_STORAGE_KEY = "figures-planet-fornecedores-pedidos";
 const FORNECEDORES_FICHAS_KEY = "figures-planet-fornecedores-fichas";
