@@ -1,0 +1,12 @@
+{
+  "name": "figures-planet-site",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "minify": "node scripts/minify-assets.mjs"
+  },
+  "devDependencies": {
+    "clean-css": "^5.3.3",
+    "terser": "^5.39.0"
+  }
+}

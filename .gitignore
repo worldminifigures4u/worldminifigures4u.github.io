@@ -1,4 +1,6 @@
 backups/
+node_modules/
+_site-test/
 supabase/*
 !supabase/functions/
 supabase/functions/*

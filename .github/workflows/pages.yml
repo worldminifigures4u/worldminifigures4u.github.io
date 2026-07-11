@@ -25,6 +25,15 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install build tools
+        run: npm ci
+
       - name: Setup Pages
         uses: actions/configure-pages@v5
 
@@ -36,6 +45,10 @@ jobs:
             --exclude='.github' \
             --exclude='backups' \
             --exclude='_site' \
+            --exclude='node_modules' \
+            --exclude='package.json' \
+            --exclude='package-lock.json' \
+            --exclude='scripts' \
             --exclude='supabase/' \
             --exclude='*.sql' \
             --exclude='CLOUDINARY_SIGNED_UPLOAD.md' \
@@ -43,6 +56,9 @@ jobs:
             --exclude='logo antigo.png' \
             --exclude='fundo escuro.png' \
             ./ _site/
+
+      - name: Minify CSS and JS
+        run: npm run minify -- _site
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
