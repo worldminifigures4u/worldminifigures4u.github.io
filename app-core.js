@@ -256,7 +256,7 @@ window.addEventListener('load', async () => {
         }
         mostrarVista(obterVistaPagina(), false);
         await verificarSessaoSupabase();
-        if (obterVistaPagina() === 'carrinho') {
+        if (obterVistaPagina() === 'carrinho' && typeof garantirProdutosCarrinhoNoCatalogo === 'function') {
             await garantirProdutosCarrinhoNoCatalogo();
             atualizarCarrinhoSeDisponivel();
         }
@@ -448,17 +448,7 @@ function definirHtmlSeguro(elemento, partes) {
     });
 }
 
-function obterMetodoPagamentoSelecionado() {
-    const radioSelecionado = document.querySelector('input[name="metodo-pagamento"]:checked');
-    return radioSelecionado ? radioSelecionado.value : 'Não especificado';
-}
-
-function mensagemSucessoEncomenda(metodoPagamento, codigoEncomenda = '') {
-    const referencia = codigoEncomenda ? `\nReferência da encomenda: ${codigoEncomenda}` : '';
-    return `Encomenda registada com sucesso!${referencia}\nEnviámos um e-mail com os dados para pagamento.`;
-}
-
-function definirEstadoVitrine(mensagem, tipo = ''){
+function definirEstadoVitrine(mensagem, tipo = '') {
     const vitrine = document.getElementById('vitrine-produtos');
     if (!vitrine) return;
     vitrine.replaceChildren();
@@ -468,7 +458,7 @@ function definirEstadoVitrine(mensagem, tipo = ''){
     vitrine.appendChild(estado);
 }
 
-function executarComTimeout(promessa, ms, mensagemErro){
+function executarComTimeout(promessa, ms, mensagemErro) {
     let timeout;
     const timeoutPromise = new Promise((_, reject) => { timeout = setTimeout(() => { reject(new Error(mensagemErro)); }, ms); });
     return Promise.race([promessa, timeoutPromise]).finally(() => clearTimeout(timeout));
@@ -541,56 +531,8 @@ function obterImagemPrincipalProduto(prod = {}) {
     return listaImagens.length > 0 ? listaImagens[0] : 'img/sem-imagem.png';
 }
 
-function obterImagemAtualCarrinho(item, produtoCompleto) {
-    const imagemAtual = produtoCompleto
-        ? obterImagemPrincipalProduto(produtoCompleto)
-        : '';
-
-    if(imagemAtual && imagemAtual !== 'img/sem-imagem.png') {
-        return imagemAtual;
-    }
-
-    return item?.imagem || 'img/sem-imagem.png';
-}
-
-async function carregarProdutosConformeUtilizador(){
-    if (paginaPrecisaCatalogoAdmin()) {
-        const { data:{ user } } = await dbClient.auth.getUser();
-        if(utilizadorAdmin(user) && typeof carregarProdutosAdminDaNuvem === 'function') {
-            await carregarProdutosAdminDaNuvem();
-        }
-        return;
-    }
-    if (paginaPrecisaProdutosLoja()) {
-        return;
-    }
-    if (obterVistaPagina() === 'carrinho' || document.getElementById('lista-carrinho')) {
-        await garantirProdutosCarrinhoNoCatalogo();
-    }
-}
-
-async function garantirProdutosCarrinhoNoCatalogo() {
-    const cliente = produtosClient || dbClient;
-    if (!cliente) return;
-
-    const ids = [...new Set(carrinho.map(item => String(item.id)).filter(Boolean))];
-    const emFalta = ids.filter(id => !obterProdutoPorIdLocal(id));
-    if (!emFalta.length) return;
-
-    const { data, error } = await cliente
-        .from('produtos_loja')
-        .select('id, sku, nome, preco, peso, tema, subtema, imagens, ativo, descontinuado')
-        .in('id', emFalta);
-
-    if (error) throw error;
-    if (!data?.length) return;
-
-    const existentes = new Set((todosOsProdutos || []).map(produto => String(produto.id)));
-    todosOsProdutos.push(...data.filter(produto => !existentes.has(String(produto.id))));
-}
-
 if ('serviceWorker' in navigator && window.location.protocol !== 'file:') {
     window.addEventListener('load', () => {
-        navigator.serviceWorker.register('sw.js?v=20260711-leve-r8').catch(() => {});
+        navigator.serviceWorker.register('sw.js?v=20260711-leve-r9').catch(() => {});
     });
 }
