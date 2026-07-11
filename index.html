@@ -11,7 +11,6 @@
     <title>Figures Planet</title>
     <link rel="icon" type="image/png" href="favicon.png?v=20260710-fp-v2">
 
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.108.2"></script>
     <link rel="stylesheet" href="styles.css?v=20260711-nav-texto">
     <link rel="stylesheet" href="loja.css?v=20260705-favorite-btn">
 </head>
@@ -20,7 +19,7 @@
 <header>
     <div class="cabecalho-loja">
         <a class="logo-loja" href="index.html" aria-label="Figures Planet - Produtos">
-                <img src="figures-planet-logo-transparent.png?v=20260710-anel-figures" alt="Figures Planet">
+                <picture><source srcset="figures-planet-logo-transparent.webp?v=20260711-leve" type="image/webp"><img src="figures-planet-logo-transparent.png?v=20260710-anel-figures" alt="Figures Planet" width="383" height="100" decoding="async" fetchpriority="high"></picture>
         </a>
         <div class="cabecalho-pesquisa">
             <input type="text" id="campo-pesquisa" class="input-pesquisa" placeholder="O que est&aacute;s &agrave; procura?">
@@ -102,6 +101,7 @@
         </nav>
     </div>
 </footer>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.108.2"></script>
 <script src="app.js?v=20260705-cabecalho-admin"></script>
 <script src="carrinho-loja.js?v=20260701-menos-nao-remove"></script>
 <script src="loja-produtos.js?v=20260705-favorite-btn"></script>

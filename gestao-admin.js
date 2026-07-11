@@ -713,10 +713,7 @@ async function carregarProdutosAdminDaNuvem(){
 
     todosOsProdutos = listaProdutos;
     catalogoAdminCarregado = true;
-    const produtosVisiveis = listaProdutos.filter(produto => produto.ativo !== false);
-    gerarMenus(produtosVisiveis);
-    gerarProdutos(produtosVisiveis);
-    atualizarCarrinho();
+    atualizarContadorCarrinhoCabecalho();
     renderizarListaProdutosAdmin();
 }
 

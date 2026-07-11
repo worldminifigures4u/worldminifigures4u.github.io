@@ -11,7 +11,6 @@
     <meta name="robots" content="noindex, nofollow, noarchive, nosnippet">
     <title>Clientes | Figures Planet</title>
     <link rel="icon" type="image/png" href="favicon.png?v=20260710-fp-v2">
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.108.2"></script>
     <link rel="stylesheet" href="styles.css?v=20260711-nav-texto">
     <link rel="stylesheet" href="admin-cliente.css?v=20260710-modal-encomenda">
     <link rel="stylesheet" href="admin-imagem.css?v=20260628-css-split-admin-imagem">
@@ -22,7 +21,7 @@
     <header class="cabecalho-site-admin">
         <div class="cabecalho-loja">
             <a class="logo-loja" href="index.html" aria-label="Figures Planet - Produtos">
-                <img src="figures-planet-logo-transparent.png?v=20260710-anel-figures" alt="Figures Planet">
+                <picture><source srcset="figures-planet-logo-transparent.webp?v=20260711-leve" type="image/webp"><img src="figures-planet-logo-transparent.png?v=20260710-anel-figures" alt="Figures Planet" width="383" height="100" decoding="async" fetchpriority="high"></picture>
             </a>
             <form class="cabecalho-pesquisa" action="index.html" method="get">
                 <input type="search" name="q" class="input-pesquisa" placeholder="O que estás à procura?">
@@ -109,6 +108,7 @@
             </nav>
         </div>
     </footer>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.108.2"></script>
     <script src="admin-encomenda-vista.js?v=20260707-modal"></script>
     <script src="clientes-encomenda-modal.js?v=20260710-modal-encomenda"></script>
     <script src="clientes.js?v=20260710-modal-encomenda"></script>

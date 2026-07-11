@@ -8,7 +8,6 @@
     <meta name="robots" content="noindex, nofollow, noarchive, nosnippet">
     <title>Estatísticas | Figures Planet</title>
     <link rel="icon" type="image/png" href="favicon.png?v=20260710-fp-v2">
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.108.2"></script>
     <link rel="stylesheet" href="styles.css?v=20260711-nav-texto">
     <link rel="stylesheet" href="estatisticas.css?v=20260710-filtro-dias">
 </head>
@@ -16,7 +15,7 @@
     <header class="cabecalho-site-admin">
         <div class="cabecalho-loja">
             <a class="logo-loja" href="index.html" aria-label="Figures Planet - Produtos">
-                <img src="figures-planet-logo-transparent.png?v=20260710-anel-figures" alt="Figures Planet">
+                <picture><source srcset="figures-planet-logo-transparent.webp?v=20260711-leve" type="image/webp"><img src="figures-planet-logo-transparent.png?v=20260710-anel-figures" alt="Figures Planet" width="383" height="100" decoding="async" fetchpriority="high"></picture>
             </a>
             <form class="cabecalho-pesquisa" action="index.html" method="get">
                 <input type="search" name="q" class="input-pesquisa" placeholder="O que estás à procura?">
@@ -170,6 +169,7 @@
     </footer>
 
     <script src="estatisticas.js?v=20260710-filtro-dias"></script>
-    <script src="inline-listeners.js?v=20260705-pesquisa-cabecalho"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.108.2"></script>
+<script src="inline-listeners.js?v=20260705-pesquisa-cabecalho"></script>
 </body>
 </html>

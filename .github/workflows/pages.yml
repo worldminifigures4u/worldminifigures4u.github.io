@@ -36,6 +36,12 @@ jobs:
             --exclude='.github' \
             --exclude='backups' \
             --exclude='_site' \
+            --exclude='supabase/' \
+            --exclude='*.sql' \
+            --exclude='CLOUDINARY_SIGNED_UPLOAD.md' \
+            --exclude='figures-planet-logo-transparent.original.png' \
+            --exclude='logo antigo.png' \
+            --exclude='fundo escuro.png' \
             ./ _site/
 
       - name: Upload artifact
