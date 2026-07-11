@@ -10,24 +10,7 @@
 }
 
 .estatisticas-topo {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 14px;
-    align-items: stretch;
     margin-bottom: 18px;
-}
-
-.estatisticas-topo h1 {
-    margin: 0 0 6px;
-    font-size: 32px;
-    line-height: 1.1;
-    color: var(--cor-texto-principal, #fff);
-}
-
-.estatisticas-topo p {
-    margin: 0;
-    color: #bbb;
-    font-size: 14px;
 }
 
 .estatisticas-filtros {
@@ -256,7 +239,6 @@
         width: min(100% - 20px, 720px);
     }
 
-    .estatisticas-topo,
     .estatisticas-grid,
     .estatisticas-grid-principal,
     .estatisticas-metricas {
