@@ -301,25 +301,6 @@ function calcularEstatisticas(encomendas) {
     };
 }
 
-function formatarPeriodoResumo(valor, periodo) {
-    if (!valor) return '';
-    return periodo === 'dia' ? formatarDiaEstatisticas(valor) : formatarMesEstatisticas(valor);
-}
-
-function atualizarResumoPeriodo(encomendas) {
-    const filtro = obterFiltroData();
-    const partes = [];
-    if (filtro.inicio || filtro.fim) {
-        const inicio = formatarPeriodoResumo(filtro.inicio, filtro.periodo) || 'início';
-        const fim = formatarPeriodoResumo(filtro.fim, filtro.periodo) || 'fim';
-        partes.push(`${inicio} a ${fim}`);
-    }
-    if (filtro.plataforma !== 'todas') partes.push(filtro.plataforma);
-    if (filtro.canceladas === 'excluir') partes.push('canceladas excluídas dos totais');
-    if (filtro.canceladas === 'apenas') partes.push('apenas canceladas');
-    document.getElementById('estatisticas-periodo').textContent = `${formatarNumeroEstatisticas(encomendas.length)} encomenda(s) analisada(s)` + (partes.length ? ` · ${partes.join(' · ')}` : '');
-}
-
 function renderizarEstatisticas() {
     const encomendas = filtrarEncomendasEstatisticas();
     const dados = calcularEstatisticas(encomendas);
@@ -348,7 +329,6 @@ function renderizarEstatisticas() {
         receita: item.receita / Math.max(1, item.encomendas),
         quantidade: item.encomendas
     })), { limite: 10, rotuloQuantidade: 'enc.' });
-    atualizarResumoPeriodo(encomendas);
 }
 
 function atualizarOpcoesPlataforma() {
