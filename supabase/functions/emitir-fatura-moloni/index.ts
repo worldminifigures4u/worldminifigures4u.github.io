@@ -92,6 +92,75 @@ function deveEmitirFaturaMoloni(origem: string | null | undefined): boolean {
   return !ORIGENS_SEM_FATURA_MOLONI.has(normalizarTexto(origem || "site"));
 }
 
+function lerIdPagamentoMoloni(...nomesEnv: string[]): number {
+  for (const nome of nomesEnv) {
+    const valor = Number(Deno.env.get(nome) || "0");
+    if (valor > 0) return valor;
+  }
+  return 0;
+}
+
+type PagamentosMoloniConfig = {
+  mbWay: number;
+  transferencia: number;
+  paypal: number;
+  dinheiro: number;
+  cartao: number;
+  default: number;
+};
+
+function carregarPagamentosMoloni(): PagamentosMoloniConfig {
+  const transferencia = lerIdPagamentoMoloni(
+    "MOLONI_PAYMENT_TRANSFERENCIA",
+    "MOLONI_PAYMENT_METHOD_ID",
+  );
+  const defaultId = lerIdPagamentoMoloni(
+    "MOLONI_PAYMENT_DEFAULT",
+    "MOLONI_PAYMENT_TRANSFERENCIA",
+    "MOLONI_PAYMENT_METHOD_ID",
+  );
+
+  return {
+    mbWay: lerIdPagamentoMoloni("MOLONI_PAYMENT_MB_WAY", "MOLONI_PAYMENT_TRANSFERENCIA", "MOLONI_PAYMENT_METHOD_ID") || transferencia || defaultId,
+    transferencia: transferencia || defaultId,
+    paypal: lerIdPagamentoMoloni("MOLONI_PAYMENT_PAYPAL"),
+    dinheiro: lerIdPagamentoMoloni("MOLONI_PAYMENT_DINHEIRO"),
+    cartao: lerIdPagamentoMoloni("MOLONI_PAYMENT_CARTAO"),
+    default: defaultId,
+  };
+}
+
+function resolverPaymentMethodId(
+  metodoPagamento: string | null | undefined,
+  pagamentos: PagamentosMoloniConfig,
+): number {
+  const metodo = normalizarTexto(metodoPagamento);
+
+  if (metodo.includes("paypal")) {
+    return pagamentos.paypal || pagamentos.default;
+  }
+  if (metodo.includes("mb way") || metodo === "mbway") {
+    return pagamentos.mbWay || pagamentos.transferencia || pagamentos.default;
+  }
+  if (metodo.includes("transferencia")) {
+    return pagamentos.transferencia || pagamentos.default;
+  }
+  if (metodo.includes("dinheiro") || metodo.includes("numerario")) {
+    return pagamentos.dinheiro || pagamentos.default;
+  }
+  if (metodo.includes("cartao")) {
+    return pagamentos.cartao || pagamentos.default;
+  }
+
+  return pagamentos.default;
+}
+
+function validarPagamentosMoloni(pagamentos: PagamentosMoloniConfig): string | null {
+  if (pagamentos.default > 0) return null;
+  if (pagamentos.transferencia > 0) return null;
+  return "Configuracao Moloni incompleta: falta MOLONI_PAYMENT_TRANSFERENCIA ou MOLONI_PAYMENT_DEFAULT.";
+}
+
 function numero(valor: unknown): number {
   const convertido = Number(valor ?? 0);
   return Number.isFinite(convertido) ? convertido : 0;
@@ -281,14 +350,15 @@ Deno.serve(async (request) => {
   const customerId = Number(Deno.env.get("MOLONI_CUSTOMER_ID") || "0");
   const productIdLote = Number(Deno.env.get("MOLONI_PRODUCT_ID_LOTE") || "0");
   const productIdPortes = Number(Deno.env.get("MOLONI_PRODUCT_ID_PORTES") || productIdLote || "0");
-  const paymentMethodId = Number(Deno.env.get("MOLONI_PAYMENT_METHOD_ID") || "0");
+  const pagamentosMoloni = carregarPagamentosMoloni();
   const invoiceStatus = Number(Deno.env.get("MOLONI_INVOICE_STATUS") || "0");
 
   if (!supabaseUrl || !supabaseAnonKey || !serviceRoleKey) {
     return jsonResponse(request, { error: "Configuracao Supabase incompleta." }, 500);
   }
-  if (!companyId || !documentSetId || !customerId || !productIdLote || !paymentMethodId) {
-    return jsonResponse(request, { error: "Configuracao Moloni incompleta." }, 500);
+  const erroPagamentos = validarPagamentosMoloni(pagamentosMoloni);
+  if (!companyId || !documentSetId || !customerId || !productIdLote || erroPagamentos) {
+    return jsonResponse(request, { error: erroPagamentos || "Configuracao Moloni incompleta." }, 500);
   }
 
   const authorization = request.headers.get("authorization") || "";
@@ -349,6 +419,11 @@ Deno.serve(async (request) => {
   }
 
   try {
+    const paymentMethodId = resolverPaymentMethodId(encomendaRow.metodo_pagamento, pagamentosMoloni);
+    if (!paymentMethodId) {
+      throw new Error("Nao foi possivel determinar o metodo de pagamento Moloni para esta encomenda.");
+    }
+
     const fatura = await criarFaturaReciboMoloni(
       encomendaRow,
       companyId,
