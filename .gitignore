@@ -4,6 +4,8 @@ supabase/*
 supabase/functions/*
 !supabase/functions/cloudinary-sign-upload/
 !supabase/functions/cloudinary-sign-upload/index.ts
+!supabase/functions/emitir-fatura-moloni/
+!supabase/functions/emitir-fatura-moloni/index.ts
 mapas csv/
 API key site envio mails/
 fotos de outros sites/

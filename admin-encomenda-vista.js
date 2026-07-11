@@ -18,6 +18,7 @@ window.AdminEncomendaVista = (function () {
     const SEM_IMAGEM = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(
         '<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120"><rect width="100%" height="100%" fill="#222"/><text x="50%" y="50%" text-anchor="middle" dominant-baseline="middle" fill="#888" font-family="Arial" font-size="13">Sem foto</text></svg>'
     );
+    const SUPABASE_FUNCTIONS_URL = "https://gksndzxadndrsynvzgzb.supabase.co";
 
     let client = null;
     let hooks = {
@@ -488,6 +489,39 @@ window.AdminEncomendaVista = (function () {
         }
     }
 
+    function deveEmitirFaturaMoloni(encomenda) {
+        if (encomenda?.moloni_document_id) return false;
+        return normalizar(encomenda?.origem || "site") === "site";
+    }
+
+    async function emitirFaturaMoloni(encomenda) {
+        if (!deveEmitirFaturaMoloni(encomenda)) return null;
+
+        const { data: { session } } = await obterClient().auth.getSession();
+        if (!session?.access_token) {
+            throw new Error("Sessao invalida para emitir fatura.");
+        }
+
+        const resposta = await fetch(`${SUPABASE_FUNCTIONS_URL}/functions/v1/emitir-fatura-moloni`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${session.access_token}`
+            },
+            body: JSON.stringify({ encomenda_id: String(encomenda.id) })
+        });
+        const resultado = await resposta.json().catch(() => ({}));
+
+        if (resultado?.ignorada) return null;
+        if (!resposta.ok || !resultado?.sucesso) {
+            throw new Error(resultado?.error || "Nao foi possivel emitir a fatura no Moloni.");
+        }
+
+        encomenda.moloni_document_id = resultado.document_id;
+        encomenda.moloni_fatura_numero = resultado.numero ?? encomenda.moloni_fatura_numero;
+        return resultado;
+    }
+
     async function atualizarEstado(encomenda, estado, select) {
         const estadoAnterior = estadoNormalizado(encomenda.estado);
         const atualizarDataPagamentoFlag = deveAtualizarDataPagamento(estadoAnterior, estado);
@@ -580,15 +614,31 @@ window.AdminEncomendaVista = (function () {
             hooks.atualizarResumo();
             hooks.renderizarLista();
             hooks.renderizarModal();
+            let mensagemFatura = "";
+            if (estado === "Pago" && estadoAnterior !== "Pago" && deveEmitirFaturaMoloni(encomenda)) {
+                try {
+                    const fatura = await emitirFaturaMoloni(encomenda);
+                    if (fatura?.document_id) {
+                        const numeroFatura = fatura.numero ? ` n. ${fatura.numero}` : "";
+                        mensagemFatura = ` Fatura Moloni${numeroFatura} emitida.`;
+                    }
+                } catch (erroFatura) {
+                    mensagemFatura = ` Fatura Moloni nao emitida: ${erroFatura.message || "erro desconhecido"}.`;
+                }
+            }
             if (erroAnexos) {
                 hooks.definirStatus(
-                    `Estado atualizado, mas não foi possível eliminar os anexos: ${erroAnexos.message || "erro desconhecido"}`,
+                    `Estado atualizado, mas não foi possível eliminar os anexos: ${erroAnexos.message || "erro desconhecido"}${mensagemFatura}`,
                     true
                 );
             } else {
                 const limpeza = estado === "Concluído" ? ` ${anexosEliminados} anexo(s) eliminado(s).` : "";
                 const reposicao = estado === "Cancelado" && data?.stock_reposto ? " Stock reposto." : "";
-                hooks.definirStatus(`Estado da encomenda ${encomenda.codigo_encomenda || ""} atualizado.${limpeza}${reposicao}`);
+                const faturaComErro = mensagemFatura.includes("nao emitida");
+                hooks.definirStatus(
+                    `Estado da encomenda ${encomenda.codigo_encomenda || ""} atualizado.${limpeza}${reposicao}${mensagemFatura}`,
+                    faturaComErro
+                );
             }
         } catch (error) {
             select.value = estadoAnterior;
