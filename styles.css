@@ -421,6 +421,7 @@ body{
                 grid-row:1;
                 justify-self:center;
                 width:100%;
+                justify-content:center;
             }
             .logo-loja img{
                 width:min(238px, 100%);
