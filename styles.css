@@ -420,27 +420,29 @@ body{
                 grid-column:1;
                 grid-row:1;
                 justify-self:center;
+                width:100%;
             }
             .logo-loja img{
-                width:238px;
+                width:min(238px, 100%);
                 height:auto;
             }
             .acoes-cabecalho{
                 grid-column:1;
                 grid-row:2;
-                display:grid;
-                grid-template-columns:repeat(3, minmax(0, 1fr));
+                display:flex;
                 gap:5px;
                 width:100%;
                 flex-basis:auto;
+                justify-content:stretch;
             }
             .acoes-cabecalho.com-atalhos-admin{
-                grid-template-columns:repeat(3, minmax(0, 1fr));
+                display:flex;
             }
             .cabecalho-pesquisa{
                 grid-column:1;
                 grid-row:3;
                 max-width:none;
+                width:100%;
             }
             .cabecalho-pesquisa .input-pesquisa{
                 height:38px;
@@ -448,21 +450,43 @@ body{
                 padding-left:16px;
             }
             .acao-cabecalho{
-                height:36px;
-                width:100%;
+                height:40px;
+                flex:1 1 0;
+                width:auto;
+                min-width:0;
+                max-width:none;
                 justify-content:center;
-                padding:0 6px;
-                border-radius:6px;
+                padding:0;
+                border-radius:8px;
             }
-            .acao-carrinho{ padding-right:26px; }
+            [data-vista-nav="conta"]{
+                width:auto;
+                min-width:0;
+                max-width:none;
+                padding:0;
+            }
+            [data-vista-nav="conta"] .texto-acao,
+            [data-vista-nav="conta"] .detalhe-conta-cabecalho{
+                display:none;
+            }
+            .acao-favoritos-topo{
+                width:auto;
+                min-width:0;
+                max-width:none;
+            }
+            .acao-carrinho{
+                min-width:0;
+                padding:0;
+            }
+            .acao-carrinho{ padding-right:0; }
             .texto-acao span,
-            .texto-acao strong{ max-width:88px; }
+            .texto-acao strong{ max-width:none; }
             .texto-acao strong,
             .acao-carrinho .icone-acao{ width:18px; height:18px; }
             .texto-acao span{ font-size:13px; }
             .badge-carrinho{
                 top:2px;
-                right:3px;
+                right:6px;
             }
         }
 

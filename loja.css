@@ -66,7 +66,7 @@
 
         .produtos{
             display:grid;
-            grid-template-columns:repeat(auto-fill,minmax(230px,1fr));
+            grid-template-columns:repeat(auto-fit, minmax(230px, 1fr));
             gap:20px;
         }
 
@@ -396,9 +396,30 @@
 
 @media(max-width:1100px){
     .vista-loja.ativa{ flex-direction:column; }
-    .coluna-esquerda{ width:100%; box-sizing:border-box; }
     .coluna-esquerda{
+        width:100%;
+        min-width:0;
+        box-sizing:border-box;
         position:static;
+    }
+    .conteudo-central{
+        width:100%;
+        min-width:0;
+    }
+}
+
+@media(max-width:560px){
+    .produtos{
+        grid-template-columns:1fr;
+        gap:14px;
+    }
+
+    .coluna-esquerda,
+    .conteudo-central,
+    .menu-temas{
+        width:100%;
+        min-width:0;
+        box-sizing:border-box;
     }
 }
 
