@@ -334,7 +334,7 @@ function garantirEstilosAdmin() {
     if (document.querySelector('link[href*="styles-admin.css"]')) return;
     const folha = document.createElement('link');
     folha.rel = 'stylesheet';
-    folha.href = 'styles-admin.css?v=20260711-leve-r7';
+    folha.href = 'styles-admin.css?v=20260711-leve-r8';
     document.head.appendChild(folha);
 }
 
@@ -591,6 +591,6 @@ async function garantirProdutosCarrinhoNoCatalogo() {
 
 if ('serviceWorker' in navigator && window.location.protocol !== 'file:') {
     window.addEventListener('load', () => {
-        navigator.serviceWorker.register('sw.js?v=20260711-leve-r7').catch(() => {});
+        navigator.serviceWorker.register('sw.js?v=20260711-leve-r8').catch(() => {});
     });
 }

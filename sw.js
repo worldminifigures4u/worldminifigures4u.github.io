@@ -1,9 +1,13 @@
-const CACHE_ESTATICO = 'figures-planet-estatico-v1';
+const CACHE_ESTATICO = 'figures-planet-estatico-v2';
 
 const RECURSOS_PRECARGA = [
     'styles.css',
     'app-core.js',
+    'app-sessao.js',
     'supabase-cdn.js',
+    'cart-mini.js',
+    'inline-listeners-loja.js',
+    'inline-listeners-conta.js',
     'figures-planet-logo-transparent.webp',
     'favicon-32.webp'
 ];
