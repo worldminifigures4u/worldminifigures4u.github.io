@@ -4,6 +4,8 @@
 const PRODUTOS_POR_LOTE = 48;
 const PRODUTOS_POR_PAGINA_SERVIDOR = 48;
 const TAMANHO_PAGINA_METADADOS = 1000;
+const CACHE_TEMAS_LOJA_CHAVE = 'figures-planet-loja-temas-v1';
+const CACHE_TEMAS_LOJA_TTL_MS = 30 * 60 * 1000;
 const CAMPOS_PRODUTO_LOJA = 'id, sku, nome, preco, peso, tema, subtema, imagens, ativo, descontinuado';
 
 let produtosVitrineAtual = [];
@@ -85,6 +87,9 @@ function aplicarFiltrosQueryProdutos(query, filtros) {
 }
 
 async function carregarMetadadosTemasLoja() {
+    const emCache = lerCacheTemasLoja();
+    if (emCache?.length) return emCache;
+
     const cliente = obterClienteProdutosLoja();
     const metadados = [];
     let inicio = 0;
@@ -111,7 +116,33 @@ async function carregarMetadadosTemasLoja() {
         inicio += TAMANHO_PAGINA_METADADOS;
     }
 
-    return construirMapaTemasLoja(metadados);
+    const mapa = construirMapaTemasLoja(metadados);
+    guardarCacheTemasLoja(mapa);
+    return mapa;
+}
+
+function lerCacheTemasLoja() {
+    try {
+        const bruto = sessionStorage.getItem(CACHE_TEMAS_LOJA_CHAVE);
+        if (!bruto) return null;
+        const dados = JSON.parse(bruto);
+        if (!dados?.guardadoEm || !Array.isArray(dados.metadados)) return null;
+        if (Date.now() - dados.guardadoEm > CACHE_TEMAS_LOJA_TTL_MS) return null;
+        return dados.metadados;
+    } catch (erro) {
+        return null;
+    }
+}
+
+function guardarCacheTemasLoja(metadados) {
+    try {
+        sessionStorage.setItem(CACHE_TEMAS_LOJA_CHAVE, JSON.stringify({
+            guardadoEm: Date.now(),
+            metadados
+        }));
+    } catch (erro) {
+        // Ignorar quota ou modo privado.
+    }
 }
 
 async function carregarPaginaProdutosLoja({ reiniciar = false } = {}) {
@@ -337,7 +368,9 @@ function criarCardProduto(prod) {
     listaImagens = listaImagens.filter(url => url && typeof url === 'string' && url.trim() !== '');
     const imagemFallback = 'img/sem-imagem.png';
     const imagensOtimizadas = listaImagens.map(url => otimizarImagemCloudinary(url, 520));
-    const imagemInicial = imagensOtimizadas[0] || imagemFallback;
+    const urlPrincipal = listaImagens[0] || imagemFallback;
+    const imagemResponsiva = otimizarImagemCloudinarySrcset(urlPrincipal, [260, 520, 780]);
+    const imagemInicial = imagemResponsiva.src || imagensOtimizadas[0] || imagemFallback;
 
     const botaoFavorito = document.createElement('button');
     botaoFavorito.className = 'favorite-btn';
@@ -357,6 +390,10 @@ function criarCardProduto(prod) {
     imagemPrincipal.loading = 'lazy';
     imagemPrincipal.decoding = 'async';
     imagemPrincipal.dataset.srcOriginal = imagemInicial;
+    if (imagemResponsiva.srcset) {
+        imagemPrincipal.srcset = imagemResponsiva.srcset;
+        imagemPrincipal.sizes = imagemResponsiva.sizes;
+    }
     imagemPrincipal.addEventListener('load', () => {
         const iniciarPrecarregamento = () => {
             imagensOtimizadas.slice(1).forEach(precarregarImagemProduto);

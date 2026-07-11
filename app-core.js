@@ -478,6 +478,24 @@ function otimizarImagemCloudinary(url, largura = 700) {
     );
 }
 
+function otimizarImagemCloudinarySrcset(url, larguras = [260, 520, 780]) {
+    const urlOriginal = String(url || '').trim();
+    const fallback = otimizarImagemCloudinary(urlOriginal, larguras[1] || 520);
+    if(!urlOriginal || !urlOriginal.includes('res.cloudinary.com/') || !urlOriginal.includes('/image/upload/')) {
+        return { src: fallback, srcset: '', sizes: '' };
+    }
+
+    const lista = (Array.isArray(larguras) ? larguras : [260, 520, 780])
+        .map(largura => Math.max(80, Math.min(1600, Math.round(Number(largura) || 520))))
+        .filter((largura, indice, arr) => arr.indexOf(largura) === indice);
+
+    return {
+        src: otimizarImagemCloudinary(urlOriginal, lista[Math.min(1, lista.length - 1)]),
+        srcset: lista.map(largura => `${otimizarImagemCloudinary(urlOriginal, largura)} ${largura}w`).join(', '),
+        sizes: '(max-width: 560px) 260px, (max-width: 1100px) 520px, 780px'
+    };
+}
+
 const imagensProdutoPrecarregadas = new Set();
 
 function precarregarImagemProduto(url) {

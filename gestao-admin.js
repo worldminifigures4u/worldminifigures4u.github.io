@@ -717,3 +717,142 @@ async function carregarProdutosAdminDaNuvem(){
     renderizarListaProdutosAdmin();
 }
 
+let scriptImportacaoGestaoCarregado = false;
+let promessaScriptImportacaoGestao = null;
+
+function garantirScriptImportacaoGestao() {
+    if (typeof analisarFicheiroCatalogoAdmin === 'function') {
+        scriptImportacaoGestaoCarregado = true;
+        return Promise.resolve();
+    }
+    if (promessaScriptImportacaoGestao) return promessaScriptImportacaoGestao;
+
+    promessaScriptImportacaoGestao = new Promise((resolve, reject) => {
+        const script = document.createElement('script');
+        script.src = 'gestao-importacao.js?v=20260711-leve';
+        script.defer = true;
+        script.onload = () => {
+            scriptImportacaoGestaoCarregado = true;
+            resolve();
+        };
+        script.onerror = () => reject(new Error('Falha ao carregar importação administrativa.'));
+        document.body.appendChild(script);
+    });
+
+    return promessaScriptImportacaoGestao;
+}
+
+function ligarElementoGestao(id, evento, handler) {
+    const elemento = document.getElementById(id);
+    if (elemento) elemento.addEventListener(evento, handler);
+}
+
+function ligarGestaoAdmin() {
+    ligarElementoGestao('form-admin-produto', 'submit', function (evento) {
+        if (typeof criarProdutoAdmin === 'function') criarProdutoAdmin(evento);
+    });
+    ligarElementoGestao('admin-produto-nome', 'input', function () {
+        if (typeof sugerirSkuAdmin === 'function') sugerirSkuAdmin();
+    });
+    ligarElementoGestao('admin-produto-imagens', 'input', function () {
+        if (typeof atualizarPreviewImagensAdmin === 'function') atualizarPreviewImagensAdmin();
+    });
+    ligarElementoGestao('admin-pesquisa-produtos', 'input', function () {
+        if (typeof renderizarListaProdutosAdmin === 'function') renderizarListaProdutosAdmin();
+    });
+    ligarElementoGestao('admin-ficheiro-stock', 'change', function () {
+        garantirScriptImportacaoGestao().then(() => {
+            if (typeof analisarFicheiroStockAdmin === 'function') analisarFicheiroStockAdmin(this);
+        }).catch(console.error);
+    });
+    ligarElementoGestao('btn-confirmar-importacao-stock', 'click', function () {
+        garantirScriptImportacaoGestao().then(() => {
+            if (typeof confirmarImportacaoStockAdmin === 'function') confirmarImportacaoStockAdmin();
+        }).catch(console.error);
+    });
+    ligarElementoGestao('admin-ficheiro-catalogo', 'change', function () {
+        garantirScriptImportacaoGestao().then(() => {
+            if (typeof analisarFicheiroCatalogoAdmin === 'function') analisarFicheiroCatalogoAdmin(this);
+        }).catch(console.error);
+    });
+    ligarElementoGestao('confirmacao-substituir-catalogo', 'input', function () {
+        garantirScriptImportacaoGestao().then(() => {
+            if (typeof atualizarConfirmacaoCatalogoAdmin === 'function') atualizarConfirmacaoCatalogoAdmin();
+        }).catch(console.error);
+    });
+    ligarElementoGestao('btn-confirmar-importacao-catalogo', 'click', function () {
+        garantirScriptImportacaoGestao().then(() => {
+            if (typeof confirmarImportacaoCatalogoAdmin === 'function') confirmarImportacaoCatalogoAdmin();
+        }).catch(console.error);
+    });
+    ligarElementoGestao('form-admin-editar-produto', 'submit', function (evento) {
+        if (typeof guardarEdicaoProdutoAdmin === 'function') guardarEdicaoProdutoAdmin(evento);
+    });
+    ligarElementoGestao('admin-editar-imagens', 'input', function () {
+        if (typeof atualizarPreviewEditarImagensAdmin === 'function') atualizarPreviewEditarImagensAdmin();
+    });
+
+    document.querySelectorAll('[data-acao-admin="pesquisar-produtos"]').forEach(function (botao) {
+        botao.addEventListener('click', function () {
+            if (typeof renderizarListaProdutosAdmin === 'function') renderizarListaProdutosAdmin();
+        });
+    });
+    document.querySelectorAll('[data-acao-admin="cancelar-edicao-produto"]').forEach(function (botao) {
+        botao.addEventListener('click', function () {
+            if (typeof cancelarEdicaoProdutoAdmin === 'function') cancelarEdicaoProdutoAdmin();
+        });
+    });
+
+    document.querySelectorAll('[data-tab-gestao]').forEach(function (botao) {
+        botao.addEventListener('click', function () {
+            const destino = botao.dataset.tabGestao;
+            document.querySelectorAll('[data-tab-gestao]').forEach(function (item) {
+                const ativo = item === botao;
+                item.classList.toggle('ativa', ativo);
+                item.setAttribute('aria-selected', ativo ? 'true' : 'false');
+            });
+            document.querySelectorAll('[data-painel-gestao]').forEach(function (painel) {
+                const ativo = painel.dataset.painelGestao === destino;
+                painel.classList.toggle('ativa', ativo);
+                painel.hidden = !ativo;
+            });
+            if (destino === 'importar') {
+                garantirScriptImportacaoGestao().catch(console.error);
+            }
+        });
+    });
+
+    const uploadNovo = document.getElementById('admin-produto-upload-imagens');
+    if (uploadNovo) {
+        uploadNovo.addEventListener('change', function () {
+            if (typeof enviarFotosCloudinaryAdmin === 'function') {
+                enviarFotosCloudinaryAdmin(this, 'admin-produto-imagens', atualizarPreviewImagensAdmin, 'status-upload-admin-produto');
+            }
+        });
+    }
+
+    const uploadEditar = document.getElementById('admin-editar-upload-imagens');
+    if (uploadEditar) {
+        uploadEditar.addEventListener('change', function () {
+            if (typeof enviarFotosCloudinaryAdmin === 'function') {
+                enviarFotosCloudinaryAdmin(this, 'admin-editar-imagens', atualizarPreviewEditarImagensAdmin, 'status-upload-admin-editar');
+            }
+        });
+    }
+}
+
+(function iniciarGestaoAdmin() {
+    function quandoPronto(callback) {
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', callback);
+        } else {
+            callback();
+        }
+    }
+
+    quandoPronto(function () {
+        if (document.getElementById('form-admin-produto') || document.querySelector('[data-tab-gestao]')) {
+            ligarGestaoAdmin();
+        }
+    });
+})();
