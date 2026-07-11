@@ -589,6 +589,7 @@ function renderizarFichaCliente(dados) {
 async function iniciarClientesAdmin() {
     const bloqueio = document.getElementById("clientes-bloqueio");
     try {
+        await window.carregarScriptSupabase();
         if (typeof supabase === "undefined") throw new Error("A biblioteca Supabase nao carregou.");
         clientesClient = supabase.createClient(CLIENTES_SUPABASE_URL, CLIENTES_SUPABASE_KEY);
         const { data: { user }, error } = await clientesClient.auth.getUser();

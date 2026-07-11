@@ -2244,6 +2244,7 @@ function limparListaWallapop() {
 async function iniciarWallapopAdmin() {
     const bloqueio = document.getElementById('wallapop-bloqueio');
     try {
+        await window.carregarScriptSupabase();
         if (typeof supabase === 'undefined') throw new Error('A biblioteca Supabase não carregou.');
         wallapopClient = supabase.createClient(WALLAPOP_SUPABASE_URL, WALLAPOP_SUPABASE_KEY);
         const { data: { user }, error } = await wallapopClient.auth.getUser();

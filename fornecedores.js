@@ -2729,6 +2729,7 @@ function agendarAjusteLarguraSelectsCompactosFornecedor() {
 async function iniciarFornecedoresAdmin() {
     const bloqueio = document.getElementById('fornecedores-bloqueio');
     try {
+        await window.carregarScriptSupabase();
         if (typeof supabase === 'undefined') throw new Error('A biblioteca Supabase nao carregou.');
         fornecedoresClient = supabase.createClient(FORNECEDORES_SUPABASE_URL, FORNECEDORES_SUPABASE_KEY);
         const { data: { user }, error } = await fornecedoresClient.auth.getUser();

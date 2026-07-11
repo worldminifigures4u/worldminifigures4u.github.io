@@ -593,6 +593,8 @@ async function carregarProdutosMapa() {
 
 async function iniciarMapas() {
     try {
+        await window.carregarScriptSupabase();
+        if (typeof supabase === "undefined") throw new Error("A biblioteca Supabase nao carregou.");
         mapasClient = supabase.createClient(MAPAS_SUPABASE_URL, MAPAS_SUPABASE_KEY);
         const { data: { user }, error } = await mapasClient.auth.getUser();
         if (error || !user || !MAPAS_ADMIN_EMAILS.includes(String(user.email || "").toLowerCase())) {

@@ -1,6 +1,13 @@
 // Codigo da montra de produtos e filtros da loja.
 // Separado de app.js para carregar apenas nas paginas que mostram catalogo.
 
+const PRODUTOS_POR_LOTE = 48;
+let produtosVitrineAtual = [];
+let produtosFiltradosAtual = [];
+let indiceRenderizado = 0;
+let sentinelaCarregarMais = null;
+let observadorCarregarMais = null;
+
 async function carregarProdutosDaNuvem(){
     definirEstadoVitrine('A carregar minifiguras extraordinárias...');
     try{
@@ -162,181 +169,262 @@ function gerarMenus(listaProdutos){
     agendarAtualizacaoStickyTemas();
 }
 
-function gerarProdutos(listaProdutos){
-    const vitrine = document.getElementById('vitrine-produtos');
-    if (!vitrine) return;
-    vitrine.replaceChildren();
+function criarIconeCoracaoFavorito() {
+    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    svg.setAttribute('viewBox', '0 0 24 24');
+    svg.setAttribute('aria-hidden', 'true');
+    svg.setAttribute('focusable', 'false');
 
-    function criarIconeCoracaoFavorito() {
-        const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-        svg.setAttribute('viewBox', '0 0 24 24');
-        svg.setAttribute('aria-hidden', 'true');
-        svg.setAttribute('focusable', 'false');
+    const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    path.setAttribute('d', 'M12 21s-7.5-4.6-10-9.2C-0.3 7.5 2.2 3 6.7 3c2.1 0 4 1.2 5.3 3 1.3-1.8 3.2-3 5.3-3 4.5 0 7 4.5 4.7 8.8C19.5 16.4 12 21 12 21z');
+    svg.appendChild(path);
+    return svg;
+}
 
-        const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-        path.setAttribute('d', 'M12 21s-7.5-4.6-10-9.2C-0.3 7.5 2.2 3 6.7 3c2.1 0 4 1.2 5.3 3 1.3-1.8 3.2-3 5.3-3 4.5 0 7 4.5 4.7 8.8C19.5 16.4 12 21 12 21z');
+function criarCardProduto(prod) {
+    const card = document.createElement('div');
+    card.className = 'produto-card';
+    card.dataset.id = prod.id;
 
-        svg.appendChild(path);
-        return svg;
+    const nomeLimpo = (prod.nome || '').trim().toLowerCase();
+    card.dataset.nome = nomeLimpo;
+    card.dataset.tema = (prod.tema || '').toLowerCase().replace(/\s+/g, '-');
+    card.dataset.subtema = (prod.subtema || '').toLowerCase().replace(/\s+/g, '-');
+
+    let listaImagens = [];
+    if (prod.imagens) {
+        if (Array.isArray(prod.imagens)) {
+            listaImagens = prod.imagens;
+        } else if (typeof prod.imagens === 'string') {
+            const textoLimpo = prod.imagens.trim();
+            if (textoLimpo.startsWith('[') && textoLimpo.endsWith(']')) {
+                try {
+                    listaImagens = JSON.parse(textoLimpo);
+                } catch (e) {
+                    listaImagens = textoLimpo.replace(/[\[\]"]/g, '').split(',').map(s => s.trim());
+                }
+            } else {
+                listaImagens = [textoLimpo];
+            }
+        }
     }
 
-    listaProdutos.forEach(prod => {
-        const card = document.createElement('div');
-        card.className = 'produto-card';
-        card.dataset.id = prod.id;
-        
-        const nomeLimpo = (prod.nome || '').trim().toLowerCase();
-        card.dataset.nome = nomeLimpo; 
-        
-        card.dataset.tema = (prod.tema || '').toLowerCase().replace(/\s+/g, '-');
-        card.dataset.subtema = (prod.subtema || '').toLowerCase().replace(/\s+/g, '-');
+    listaImagens = listaImagens.filter(url => url && typeof url === 'string' && url.trim() !== '');
+    const imagemFallback = 'img/sem-imagem.png';
+    const imagensOtimizadas = listaImagens.map(url => otimizarImagemCloudinary(url, 520));
+    const imagemInicial = imagensOtimizadas[0] || imagemFallback;
 
-        let listaImagens = [];
-        
-        if (prod.imagens) {
-            if (Array.isArray(prod.imagens)) {
-                listaImagens = prod.imagens;
-            } else if (typeof prod.imagens === 'string') {
-                const textoLimpo = prod.imagens.trim();
-                if (textoLimpo.startsWith('[') && textoLimpo.endsWith(']')) {
-                    try {
-                        listaImagens = JSON.parse(textoLimpo);
-                    } catch(e) {
-                        listaImagens = textoLimpo.replace(/[\[\]"]/g, '').split(',').map(s => s.trim());
-                    }
-                } else {
-                    listaImagens = [textoLimpo];
-                }
-            }
-        }
-
-        listaImagens = listaImagens.filter(url => url && typeof url === 'string' && url.trim() !== "");
-        const imagemFallback = 'img/sem-imagem.png';
-        const imagensOtimizadas = listaImagens.map(url => otimizarImagemCloudinary(url, 520));
-        const imagemInicial = imagensOtimizadas[0] || imagemFallback;
-
-        const botaoFavorito = document.createElement('button');
-        botaoFavorito.className = 'favorite-btn';
-        botaoFavorito.type = 'button';
-        botaoFavorito.dataset.favoritoProdutoId = String(prod.id);
-        botaoFavorito.appendChild(criarIconeCoracaoFavorito());
-        atualizarBotaoFavorito(botaoFavorito, produtoEstaNosFavoritos(prod.id));
-        botaoFavorito.addEventListener('click', evento => {
-            evento.preventDefault();
-            evento.stopPropagation();
-            alternarFavoritoProduto(prod);
-        });
-        card.appendChild(botaoFavorito);
-
-        const imagemPrincipal = document.createElement('img');
-        imagemPrincipal.className = 'produto-img';
-        imagemPrincipal.loading = 'lazy';
-        imagemPrincipal.decoding = 'async';
-        imagemPrincipal.dataset.srcOriginal = imagemInicial;
-        imagemPrincipal.addEventListener('load', () => {
-            const iniciarPrecarregamento = () => {
-                imagensOtimizadas.slice(1).forEach(precarregarImagemProduto);
-            };
-            if ('requestIdleCallback' in window) {
-                window.requestIdleCallback(iniciarPrecarregamento, { timeout: 1200 });
-            } else {
-                setTimeout(iniciarPrecarregamento, 100);
-            }
-        }, { once:true });
-        imagemPrincipal.src = imagemInicial;
-        imagemPrincipal.onerror = () => {
-            if (imagemPrincipal.src.indexOf(imagemFallback) === -1) {
-                imagemPrincipal.src = imagemFallback;
-            }
-        };
-        const galeria = document.createElement('div');
-        galeria.className = 'produto-galeria';
-        galeria.appendChild(imagemPrincipal);
-
-        if (imagensOtimizadas.length > 1) {
-            let imagemAtual = 0;
-            let toqueInicioX = 0;
-            const totalImagens = imagensOtimizadas.length;
-
-            const indicador = document.createElement('span');
-            indicador.className = 'produto-galeria-indicador';
-
-            const atualizarImagem = (proximoIndice) => {
-                imagemAtual = (proximoIndice + totalImagens) % totalImagens;
-                const proximaImagem = imagensOtimizadas[imagemAtual];
-                imagemPrincipal.dataset.srcOriginal = proximaImagem;
-                imagemPrincipal.src = proximaImagem;
-                indicador.textContent = (imagemAtual + 1) + ' / ' + totalImagens;
-
-                const seguinte = imagensOtimizadas[(imagemAtual + 1) % totalImagens];
-                const anterior = imagensOtimizadas[(imagemAtual - 1 + totalImagens) % totalImagens];
-                precarregarImagemProduto(seguinte);
-                precarregarImagemProduto(anterior);
-            };
-
-            const criarSeta = (classe, texto, direcao) => {
-                const botao = document.createElement('button');
-                botao.className = 'produto-galeria-seta ' + classe;
-                botao.type = 'button';
-                botao.textContent = texto;
-                botao.setAttribute('aria-label', direcao < 0 ? 'Imagem anterior' : 'Imagem seguinte');
-                botao.addEventListener('click', evento => {
-                    evento.preventDefault();
-                    evento.stopPropagation();
-                    atualizarImagem(imagemAtual + direcao);
-                });
-                return botao;
-            };
-
-            galeria.appendChild(criarSeta('produto-galeria-seta-anterior', '<', -1));
-            galeria.appendChild(criarSeta('produto-galeria-seta-seguinte', '>', 1));
-            galeria.appendChild(indicador);
-            indicador.textContent = '1 / ' + totalImagens;
-
-            galeria.addEventListener('pointerdown', evento => {
-                toqueInicioX = evento.clientX;
-            });
-            galeria.addEventListener('pointerup', evento => {
-                const deltaX = evento.clientX - toqueInicioX;
-                if (Math.abs(deltaX) < 40) return;
-                atualizarImagem(imagemAtual + (deltaX < 0 ? 1 : -1));
-            });
-        }
-
-        card.appendChild(galeria);
-
-        const category = document.createElement('div');
-        category.className = 'categoria';
-        category.innerText = prod.tema || 'Outros';
-        card.appendChild(category);
-
-        if(prod.subtema && prod.subtema !== 'semsubtema'){
-            const subcategoria = document.createElement('div');
-            subcategoria.className = 'subcategoria';
-            subcategoria.innerText = prod.subtema;
-            card.appendChild(subcategoria);
-        }
-
-        const titulo = document.createElement('h3');
-        titulo.innerText = prod.nome || '';
-        card.appendChild(titulo);
-
-        const preco = document.createElement('div');
-        preco.className = 'preco';
-        preco.innerText = formatarEuro(prod.preco) + ' €';
-        card.appendChild(preco);
-
-        const btn = document.createElement('button');
-        btn.className = 'btn-adicionar';
-        btn.innerText = 'Adicionar ao Carrinho';
-        btn.onclick = function(){ adicionarAoCarrinho(prod); };
-        card.appendChild(btn);
-
-        vitrine.appendChild(card);
+    const botaoFavorito = document.createElement('button');
+    botaoFavorito.className = 'favorite-btn';
+    botaoFavorito.type = 'button';
+    botaoFavorito.dataset.favoritoProdutoId = String(prod.id);
+    botaoFavorito.appendChild(criarIconeCoracaoFavorito());
+    atualizarBotaoFavorito(botaoFavorito, produtoEstaNosFavoritos(prod.id));
+    botaoFavorito.addEventListener('click', evento => {
+        evento.preventDefault();
+        evento.stopPropagation();
+        alternarFavoritoProduto(prod);
     });
+    card.appendChild(botaoFavorito);
 
-    executarFiltrosCombinados();
+    const imagemPrincipal = document.createElement('img');
+    imagemPrincipal.className = 'produto-img';
+    imagemPrincipal.loading = 'lazy';
+    imagemPrincipal.decoding = 'async';
+    imagemPrincipal.dataset.srcOriginal = imagemInicial;
+    imagemPrincipal.addEventListener('load', () => {
+        const iniciarPrecarregamento = () => {
+            imagensOtimizadas.slice(1).forEach(precarregarImagemProduto);
+        };
+        if ('requestIdleCallback' in window) {
+            window.requestIdleCallback(iniciarPrecarregamento, { timeout: 1200 });
+        } else {
+            setTimeout(iniciarPrecarregamento, 100);
+        }
+    }, { once: true });
+    imagemPrincipal.src = imagemInicial;
+    imagemPrincipal.onerror = () => {
+        if (imagemPrincipal.src.indexOf(imagemFallback) === -1) {
+            imagemPrincipal.src = imagemFallback;
+        }
+    };
+
+    const galeria = document.createElement('div');
+    galeria.className = 'produto-galeria';
+    galeria.appendChild(imagemPrincipal);
+
+    if (imagensOtimizadas.length > 1) {
+        let imagemAtual = 0;
+        let toqueInicioX = 0;
+        const totalImagens = imagensOtimizadas.length;
+        const indicador = document.createElement('span');
+        indicador.className = 'produto-galeria-indicador';
+
+        const atualizarImagem = (proximoIndice) => {
+            imagemAtual = (proximoIndice + totalImagens) % totalImagens;
+            const proximaImagem = imagensOtimizadas[imagemAtual];
+            imagemPrincipal.dataset.srcOriginal = proximaImagem;
+            imagemPrincipal.src = proximaImagem;
+            indicador.textContent = (imagemAtual + 1) + ' / ' + totalImagens;
+            precarregarImagemProduto(imagensOtimizadas[(imagemAtual + 1) % totalImagens]);
+            precarregarImagemProduto(imagensOtimizadas[(imagemAtual - 1 + totalImagens) % totalImagens]);
+        };
+
+        const criarSeta = (classe, texto, direcao) => {
+            const botao = document.createElement('button');
+            botao.className = 'produto-galeria-seta ' + classe;
+            botao.type = 'button';
+            botao.textContent = texto;
+            botao.setAttribute('aria-label', direcao < 0 ? 'Imagem anterior' : 'Imagem seguinte');
+            botao.addEventListener('click', evento => {
+                evento.preventDefault();
+                evento.stopPropagation();
+                atualizarImagem(imagemAtual + direcao);
+            });
+            return botao;
+        };
+
+        galeria.appendChild(criarSeta('produto-galeria-seta-anterior', '<', -1));
+        galeria.appendChild(criarSeta('produto-galeria-seta-seguinte', '>', 1));
+        galeria.appendChild(indicador);
+        indicador.textContent = '1 / ' + totalImagens;
+
+        galeria.addEventListener('pointerdown', evento => { toqueInicioX = evento.clientX; });
+        galeria.addEventListener('pointerup', evento => {
+            const deltaX = evento.clientX - toqueInicioX;
+            if (Math.abs(deltaX) < 40) return;
+            atualizarImagem(imagemAtual + (deltaX < 0 ? 1 : -1));
+        });
+    }
+
+    card.appendChild(galeria);
+
+    const category = document.createElement('div');
+    category.className = 'categoria';
+    category.innerText = prod.tema || 'Outros';
+    card.appendChild(category);
+
+    if (prod.subtema && prod.subtema !== 'semsubtema') {
+        const subcategoria = document.createElement('div');
+        subcategoria.className = 'subcategoria';
+        subcategoria.innerText = prod.subtema;
+        card.appendChild(subcategoria);
+    }
+
+    const titulo = document.createElement('h3');
+    titulo.innerText = prod.nome || '';
+    card.appendChild(titulo);
+
+    const preco = document.createElement('div');
+    preco.className = 'preco';
+    preco.innerText = formatarEuro(prod.preco) + ' €';
+    card.appendChild(preco);
+
+    const btn = document.createElement('button');
+    btn.className = 'btn-adicionar';
+    btn.innerText = 'Adicionar ao Carrinho';
+    btn.onclick = function () { adicionarAoCarrinho(prod); };
+    card.appendChild(btn);
+
+    return card;
+}
+
+function filtrarListaProdutos(listaProdutos, textoPesquisa) {
+    const pesquisaAtiva = textoPesquisa.length > 0;
+    const partesTema = filtroTemaAtual.split('|');
+    const temaAtivo = partesTema[0];
+    const subtemaAtivo = partesTema[1] || null;
+
+    return listaProdutos.filter(prod => {
+        const nomeCardNormalizado = (prod.nome || '').trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+        const correspondeAoNome = nomeCardNormalizado.includes(textoPesquisa);
+
+        let correspondeAoTema = false;
+        if (pesquisaAtiva || filtroTemaAtual === 'todos') {
+            correspondeAoTema = true;
+        } else {
+            const cardTema = (prod.tema || '').toLowerCase().replace(/\s+/g, '-');
+            const cardSubtema = (prod.subtema || '').toLowerCase().replace(/\s+/g, '-');
+            correspondeAoTema = subtemaAtivo
+                ? (cardTema === temaAtivo && cardSubtema === subtemaAtivo)
+                : (cardTema === temaAtivo);
+        }
+
+        return correspondeAoTema && correspondeAoNome;
+    });
+}
+
+function removerSentinelaCarregarMais() {
+    if (observadorCarregarMais) {
+        observadorCarregarMais.disconnect();
+        observadorCarregarMais = null;
+    }
+    if (sentinelaCarregarMais) {
+        sentinelaCarregarMais.remove();
+        sentinelaCarregarMais = null;
+    }
+}
+
+function renderizarMaisProdutosVitrine() {
+    const vitrine = document.getElementById('vitrine-produtos');
+    if (!vitrine) return;
+
+    removerSentinelaCarregarMais();
+
+    const fim = Math.min(indiceRenderizado + PRODUTOS_POR_LOTE, produtosFiltradosAtual.length);
+    for (let i = indiceRenderizado; i < fim; i++) {
+        vitrine.appendChild(criarCardProduto(produtosFiltradosAtual[i]));
+    }
+    indiceRenderizado = fim;
     atualizarBotoesFavoritos();
+
+    if (indiceRenderizado < produtosFiltradosAtual.length) {
+        sentinelaCarregarMais = document.createElement('div');
+        sentinelaCarregarMais.className = 'vitrine-sentinel';
+        sentinelaCarregarMais.setAttribute('aria-hidden', 'true');
+        vitrine.appendChild(sentinelaCarregarMais);
+        observadorCarregarMais = new IntersectionObserver(entries => {
+            if (entries.some(entry => entry.isIntersecting)) {
+                renderizarMaisProdutosVitrine();
+            }
+        }, { rootMargin: '500px' });
+        observadorCarregarMais.observe(sentinelaCarregarMais);
+    }
+}
+
+function reiniciarVitrinePaginada() {
+    const vitrine = document.getElementById('vitrine-produtos');
+    if (!vitrine) return;
+
+    removerSentinelaCarregarMais();
+    vitrine.replaceChildren();
+
+    const campoPesquisa = document.getElementById('campo-pesquisa');
+    const inputRaw = campoPesquisa?.value || '';
+    const textoPesquisa = inputRaw.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
+    const pesquisaAtiva = textoPesquisa.length > 0;
+
+    produtosFiltradosAtual = filtrarListaProdutos(produtosVitrineAtual, textoPesquisa);
+    indiceRenderizado = 0;
+
+    if (produtosFiltradosAtual.length === 0 && produtosVitrineAtual.length > 0) {
+        const erroDiv = document.createElement('div');
+        erroDiv.id = 'aviso-pesquisa-vazia';
+        erroDiv.className = 'estado-vitrine erro';
+        erroDiv.innerText = 'Nenhuma minifigura encontrada com esse nome.';
+        vitrine.appendChild(erroDiv);
+    } else {
+        renderizarMaisProdutosVitrine();
+    }
+
+    atualizarContadorProdutos(produtosFiltradosAtual.length, produtosVitrineAtual.length, pesquisaAtiva);
+}
+
+function gerarProdutos(listaProdutos) {
+    const vitrine = document.getElementById('vitrine-produtos');
+    if (!vitrine) return;
+    produtosVitrineAtual = listaProdutos;
+    reiniciarVitrinePaginada();
 }
 
 
@@ -408,63 +496,6 @@ function atualizarContadorProdutos(totalVisiveis, totalProdutos, pesquisaAtiva) 
 }
 
 function executarFiltrosCombinados() {
-    const campoPesquisa = document.getElementById('campo-pesquisa');
-    if (!campoPesquisa) return;
-    const inputRaw = campoPesquisa.value || '';
-    // Normaliza acentos e remove caracteres especiais
-    const textoPesquisa = inputRaw.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
-    const pesquisaAtiva = textoPesquisa.length > 0;
-    
-    const todosOsCards = document.querySelectorAll('.produto-card');
-    let totalVisiveis = 0;
-
-    const partesTema = filtroTemaAtual.split('|');
-    const temaAtivo = partesTema[0];
-    const subtemaAtivo = partesTema[1] || null;
-
-    todosOsCards.forEach(card => {
-        let correspondeAoTema = false;
-        if (pesquisaAtiva || filtroTemaAtual === 'todos') {
-            correspondeAoTema = true;
-        } else {
-            const cardTema = card.dataset.tema || '';
-            const cardSubtema = card.dataset.subtema || '';
-            correspondeAoTema = subtemaAtivo 
-                ? (cardTema === temaAtivo && cardSubtema === subtemaAtivo) 
-                : (cardTema === temaAtivo);
-        }
-
-        const nomeCardBruto = card.dataset.nome || '';
-        const nomeCardNormalizado = nomeCardBruto.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-        const correspondeAoNome = nomeCardNormalizado.includes(textoPesquisa);
-
-        const imagem = card.querySelector('.produto-img');
-
-        if (correspondeAoTema && correspondeAoNome) {
-            card.classList.remove('oculto');
-            if(imagem && imagem.dataset.srcOriginal && !imagem.src) {
-                imagem.src = imagem.dataset.srcOriginal;
-            }
-            totalVisiveis++;
-        } else {
-            card.classList.add('oculto');
-            if(imagem) {
-                imagem.removeAttribute('src');
-            }
-        }
-    });
-
-    const avisoExistente = document.getElementById('aviso-pesquisa-vazia');
-    if (avisoExistente) avisoExistente.remove();
-
-    atualizarContadorProdutos(totalVisiveis, todosOsCards.length, pesquisaAtiva);
-
-    if (totalVisiveis === 0 && todosOsCards.length > 0) {
-        const vitrine = document.getElementById('vitrine-produtos');
-        const erroDiv = document.createElement('div');
-        erroDiv.id = 'aviso-pesquisa-vazia';
-        erroDiv.className = 'estado-vitrine erro';
-        erroDiv.innerText = 'Nenhuma minifigura encontrada com esse nome.';
-        vitrine.appendChild(erroDiv);
-    }
+    if (!document.getElementById('campo-pesquisa')) return;
+    reiniciarVitrinePaginada();
 }

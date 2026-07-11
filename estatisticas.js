@@ -422,6 +422,7 @@ async function carregarEncomendasEstatisticas() {
 async function iniciarEstatisticasAdmin() {
     const bloqueio = document.getElementById('estatisticas-bloqueio');
     try {
+        await window.carregarScriptSupabase();
         if (typeof supabase === 'undefined') throw new Error('A biblioteca Supabase não carregou.');
         estatisticasClient = supabase.createClient(ESTATISTICAS_SUPABASE_URL, ESTATISTICAS_SUPABASE_KEY);
         const { data: { user }, error } = await estatisticasClient.auth.getUser();

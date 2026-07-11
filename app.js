@@ -460,6 +460,15 @@ window.addEventListener('load', async () => {
     agendarAtualizacaoStickyTemas();
     document.fonts?.ready.then(agendarAtualizacaoStickyTemas);
     atualizarCarrinhoSeDisponivel();
+    try {
+        await window.carregarScriptSupabase();
+    } catch (erro) {
+        console.error(erro);
+        if (document.getElementById('vitrine-produtos')) {
+            definirEstadoVitrine('Erro: biblioteca Supabase não carregou. Verifique a ligação à internet.', 'erro');
+        }
+        return;
+    }
     if(typeof supabase !== 'undefined'){
         dbClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
         produtosClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {
@@ -509,8 +518,6 @@ window.addEventListener('load', async () => {
         }
         mostrarVista(obterVistaPagina(), false);
         await verificarSessaoSupabase();
-    } else {
-        definirEstadoVitrine('Erro: biblioteca Supabase não carregou. Verifique a ligação à internet.', 'erro');
     }
 });
 

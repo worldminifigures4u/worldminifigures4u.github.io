@@ -1,7 +1,6 @@
 (function () {
     const SUPABASE_URL = "https://gksndzxadndrsynvzgzb.supabase.co";
     const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imdrc25kenhhZG5kcnN5bnZ6Z3piIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkwODc5NzMsImV4cCI6MjA5NDY2Mzk3M30.EHZgacYr27dqoc4CJHsOwkNnJFGlLIteSHBi4B1HfVE";
-    const SUPABASE_CDN = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.108.2';
     const NOME_CONTA_CABECALHO_KEY = 'figures-planet-conta-primeiro-nome';
 
     function carregarCarrinhoLocal() {
@@ -40,29 +39,29 @@
         if (primeiroNome) atualizarCabecalhoCliente(primeiroNome);
     }
 
-    function carregarScriptSupabase() {
-        if (typeof supabase !== 'undefined') return Promise.resolve();
-        const existente = document.querySelector('script[data-supabase-cdn]');
-        if (existente) {
-            return new Promise((resolve, reject) => {
-                existente.addEventListener('load', () => resolve(), { once: true });
-                existente.addEventListener('error', () => reject(new Error('Supabase CDN falhou')), { once: true });
-            });
+    function sincronizarEspacamentoCabecalho() {
+        const header = document.querySelector('header');
+        if (!header) return;
+        const altura = Math.ceil(header.getBoundingClientRect().height);
+        const valor = getComputedStyle(document.documentElement).getPropertyValue('--espaco-abaixo-cabecalho').trim();
+        const numero = parseFloat(valor);
+        const margem = Number.isFinite(numero) ? numero : 24;
+        document.documentElement.style.setProperty('--cabecalho-offset', `${altura + margem}px`);
+    }
+
+    function iniciarCabecalhoLeve() {
+        const agendar = () => window.requestAnimationFrame(sincronizarEspacamentoCabecalho);
+        agendar();
+        window.addEventListener('resize', agendar);
+        const header = document.querySelector('header');
+        if (header && typeof ResizeObserver !== 'undefined') {
+            new ResizeObserver(agendar).observe(header);
         }
-        return new Promise((resolve, reject) => {
-            const script = document.createElement('script');
-            script.src = SUPABASE_CDN;
-            script.async = true;
-            script.dataset.supabaseCdn = '1';
-            script.onload = () => resolve();
-            script.onerror = () => reject(new Error('Supabase CDN falhou'));
-            document.head.appendChild(script);
-        });
     }
 
     async function atualizarNomeContaCabecalho() {
         try {
-            await carregarScriptSupabase();
+            await window.carregarScriptSupabase();
             if (typeof supabase === 'undefined') return;
             const client = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
             const { data: { user } } = await client.auth.getUser();
@@ -95,8 +94,15 @@
     };
 
     document.addEventListener('DOMContentLoaded', () => {
+        iniciarCabecalhoLeve();
         atualizarContadorCarrinhoCabecalho();
         mostrarNomeContaEmCache();
+
+        const campoPesquisa = document.getElementById('campo-pesquisa');
+        if (campoPesquisa) {
+            campoPesquisa.addEventListener('keydown', window.verificarTeclaEnter);
+        }
+
         const atualizar = () => atualizarNomeContaCabecalho();
         if ('requestIdleCallback' in window) {
             requestIdleCallback(atualizar, { timeout: 2000 });

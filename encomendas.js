@@ -668,6 +668,7 @@ async function carregarImagensProdutosEncomendas() {
 async function iniciarPainelEncomendas() {
     const bloqueio = document.getElementById('encomendas-bloqueio');
     try {
+        await window.carregarScriptSupabase();
         if (typeof supabase === 'undefined') throw new Error('A biblioteca Supabase não carregou.');
         encomendasClient = supabase.createClient(ENCOMENDAS_SUPABASE_URL, ENCOMENDAS_SUPABASE_KEY);
         configurarVistaEncomendasAdmin();
