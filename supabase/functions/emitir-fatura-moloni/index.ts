@@ -14,7 +14,7 @@ const DEFAULT_ALLOWED_ORIGINS = [
 const IVA_FATOR = 1.23;
 const LOTE_DESCRICAO = "Lote diverso de figuras";
 const PORTES_DESCRICAO = "Portes de envio";
-const ORIGENS_SEM_FATURA_MOLONI = new Set(["olx"]);
+const ORIGENS_FATURA_MOLONI_OPCIONAL = new Set(["olx"]);
 
 type MoloniError = { field?: string; msg?: string };
 type MoloniInvoiceResult = {
@@ -88,8 +88,13 @@ function normalizarTexto(valor: unknown): string {
     .toLowerCase();
 }
 
-function deveEmitirFaturaMoloni(origem: string | null | undefined): boolean {
-  return !ORIGENS_SEM_FATURA_MOLONI.has(normalizarTexto(origem || "site"));
+function origemPermiteFaturaMoloni(
+  origem: string | null | undefined,
+  forcarOlx: boolean,
+): boolean {
+  const normalizada = normalizarTexto(origem || "site");
+  if (normalizada === "olx") return forcarOlx;
+  return !ORIGENS_FATURA_MOLONI_OPCIONAL.has(normalizada);
 }
 
 function lerIdPagamentoMoloni(...nomesEnv: string[]): number {
@@ -376,13 +381,14 @@ Deno.serve(async (request) => {
     return jsonResponse(request, { error: "Acesso reservado ao administrador." }, 403);
   }
 
-  let body: { encomenda_id?: string } = {};
+  let body: { encomenda_id?: string; forcar_olx?: boolean } = {};
   try {
     body = await request.json();
   } catch {
     return jsonResponse(request, { error: "JSON invalido." }, 400);
   }
 
+  const forcarOlx = body.forcar_olx === true;
   const encomendaId = String(body.encomenda_id || "").trim();
   if (!encomendaId) {
     return jsonResponse(request, { error: "encomenda_id obrigatorio." }, 400);
@@ -401,7 +407,7 @@ Deno.serve(async (request) => {
 
   const encomendaRow = encomenda as EncomendaRow;
 
-  if (!deveEmitirFaturaMoloni(encomendaRow.origem)) {
+  if (!origemPermiteFaturaMoloni(encomendaRow.origem, forcarOlx)) {
     return jsonResponse(request, { ignorada: true, motivo: "origem_olx" });
   }
 

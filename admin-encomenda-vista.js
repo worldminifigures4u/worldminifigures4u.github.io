@@ -489,16 +489,37 @@ window.AdminEncomendaVista = (function () {
         }
     }
 
-    const ORIGENS_SEM_FATURA_MOLONI = new Set(["olx"]);
+    const ORIGENS_FATURA_MOLONI_OPCIONAL = new Set(["olx"]);
 
-    function deveEmitirFaturaMoloni(encomenda) {
-        if (encomenda?.moloni_document_id) return false;
-        const origem = normalizar(encomenda?.origem || "site");
-        return !ORIGENS_SEM_FATURA_MOLONI.has(origem);
+    function origemEncomenda(encomenda) {
+        return normalizar(encomenda?.origem || "site");
     }
 
-    async function emitirFaturaMoloni(encomenda) {
-        if (!deveEmitirFaturaMoloni(encomenda)) return null;
+    function encomendaOrigemOlx(encomenda) {
+        return origemEncomenda(encomenda) === "olx";
+    }
+
+    function podeEmitirFaturaMoloni(encomenda) {
+        if (encomenda?.moloni_document_id) return false;
+        return true;
+    }
+
+    function deveEmitirFaturaMoloniAutomaticamente(encomenda) {
+        if (!podeEmitirFaturaMoloni(encomenda)) return false;
+        return !ORIGENS_FATURA_MOLONI_OPCIONAL.has(origemEncomenda(encomenda));
+    }
+
+    function pedirEmissaoFaturaMoloniOlx(encomenda) {
+        const codigo = encomenda.codigo_encomenda || "";
+        return window.confirm(
+            `Encomenda OLX ${codigo}: emitir fatura-recibo Moloni automaticamente?`
+        );
+    }
+
+    async function emitirFaturaMoloni(encomenda, opcoes = {}) {
+        const forcarOlx = Boolean(opcoes.forcarOlx);
+        if (!podeEmitirFaturaMoloni(encomenda)) return null;
+        if (encomendaOrigemOlx(encomenda) && !forcarOlx) return null;
 
         const { data: { session } } = await obterClient().auth.getSession();
         if (!session?.access_token) {
@@ -511,7 +532,10 @@ window.AdminEncomendaVista = (function () {
                 "Content-Type": "application/json",
                 "Authorization": `Bearer ${session.access_token}`
             },
-            body: JSON.stringify({ encomenda_id: String(encomenda.id) })
+            body: JSON.stringify({
+                encomenda_id: String(encomenda.id),
+                forcar_olx: forcarOlx
+            })
         });
         const resultado = await resposta.json().catch(() => ({}));
 
@@ -618,18 +642,26 @@ window.AdminEncomendaVista = (function () {
             hooks.renderizarLista();
             hooks.renderizarModal();
             let mensagemFatura = "";
-            if (estado === "Pago" && estadoAnterior !== "Pago" && deveEmitirFaturaMoloni(encomenda)) {
-                hooks.definirStatus(`Estado atualizado. A emitir fatura-recibo Moloni para ${encomenda.codigo_encomenda || ""}...`);
-                try {
-                    const fatura = await emitirFaturaMoloni(encomenda);
-                    if (fatura?.sucesso) {
-                        const numeroFatura = fatura.numero && String(fatura.numero) !== "0"
-                            ? ` n. ${fatura.numero}`
-                            : " (rascunho)";
-                        mensagemFatura = ` Fatura-recibo Moloni${numeroFatura} criada.`;
+            if (estado === "Pago" && estadoAnterior !== "Pago" && podeEmitirFaturaMoloni(encomenda)) {
+                let emitirFatura = deveEmitirFaturaMoloniAutomaticamente(encomenda);
+                if (encomendaOrigemOlx(encomenda)) {
+                    emitirFatura = pedirEmissaoFaturaMoloniOlx(encomenda);
+                }
+                if (emitirFatura) {
+                    hooks.definirStatus(`Estado atualizado. A emitir fatura-recibo Moloni para ${encomenda.codigo_encomenda || ""}...`);
+                    try {
+                        const fatura = await emitirFaturaMoloni(encomenda, {
+                            forcarOlx: encomendaOrigemOlx(encomenda)
+                        });
+                        if (fatura?.sucesso) {
+                            const numeroFatura = fatura.numero && String(fatura.numero) !== "0"
+                                ? ` n. ${fatura.numero}`
+                                : " (rascunho)";
+                            mensagemFatura = ` Fatura-recibo Moloni${numeroFatura} criada.`;
+                        }
+                    } catch (erroFatura) {
+                        mensagemFatura = ` Fatura-recibo Moloni nao emitida: ${erroFatura.message || "erro desconhecido"}.`;
                     }
-                } catch (erroFatura) {
-                    mensagemFatura = ` Fatura-recibo Moloni nao emitida: ${erroFatura.message || "erro desconhecido"}.`;
                 }
             }
             if (erroAnexos) {
