@@ -418,16 +418,25 @@ function criarCardProduto(prod) {
     if (imagensOtimizadas.length > 1) {
         let imagemAtual = 0;
         let toqueInicioX = 0;
-        let ultimoToqueSeta = 0;
         const totalImagens = imagensOtimizadas.length;
         const indicador = document.createElement('span');
         indicador.className = 'produto-galeria-indicador';
 
         const atualizarImagem = (proximoIndice) => {
             imagemAtual = (proximoIndice + totalImagens) % totalImagens;
+            const proximaUrl = listaImagens[imagemAtual];
             const proximaImagem = imagensOtimizadas[imagemAtual];
+            const responsivoNovo = otimizarImagemCloudinarySrcset(proximaUrl, [260, 520, 780]);
             imagemPrincipal.dataset.srcOriginal = proximaImagem;
-            imagemPrincipal.src = proximaImagem;
+            if (responsivoNovo.srcset) {
+                imagemPrincipal.srcset = responsivoNovo.srcset;
+                imagemPrincipal.sizes = responsivoNovo.sizes;
+                imagemPrincipal.src = responsivoNovo.src;
+            } else {
+                imagemPrincipal.removeAttribute('srcset');
+                imagemPrincipal.removeAttribute('sizes');
+                imagemPrincipal.src = proximaImagem;
+            }
             indicador.textContent = (imagemAtual + 1) + ' / ' + totalImagens;
             precarregarImagemProduto(imagensOtimizadas[(imagemAtual + 1) % totalImagens]);
             precarregarImagemProduto(imagensOtimizadas[(imagemAtual - 1 + totalImagens) % totalImagens]);
@@ -442,13 +451,9 @@ function criarCardProduto(prod) {
             const ativarSeta = (evento) => {
                 evento.preventDefault();
                 evento.stopPropagation();
-                const agora = Date.now();
-                if (agora - ultimoToqueSeta < 350) return;
-                ultimoToqueSeta = agora;
                 atualizarImagem(imagemAtual + direcao);
             };
             botao.addEventListener('pointerdown', evento => evento.stopPropagation());
-            botao.addEventListener('pointerup', ativarSeta);
             botao.addEventListener('click', ativarSeta);
             return botao;
         };
