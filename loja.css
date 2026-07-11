@@ -177,6 +177,7 @@
             justify-content:center;
             padding:10px;
             box-sizing:border-box;
+            z-index:1;
         }
 
         .produto-img{
@@ -186,12 +187,13 @@
             height:auto;
             object-fit:contain;
             display:block;
+            pointer-events:none;
         }
 
         .produto-galeria-seta{
             position:absolute;
             top:50%;
-            z-index:3;
+            z-index:4;
             width:32px;
             height:42px;
             transform:translateY(-50%);
@@ -207,6 +209,8 @@
             justify-content:center;
             opacity:0;
             transition:0.18s;
+            touch-action:manipulation;
+            -webkit-tap-highlight-color:transparent;
         }
 
         .produto-galeria-seta-anterior{ left:8px; }
@@ -241,7 +245,10 @@
 
         @media (hover:none){
             .produto-galeria-seta{
-                opacity:0.92;
+                opacity:1;
+                width:44px;
+                height:48px;
+                font-size:24px;
             }
         }
 

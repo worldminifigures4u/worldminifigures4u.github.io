@@ -418,6 +418,7 @@ function criarCardProduto(prod) {
     if (imagensOtimizadas.length > 1) {
         let imagemAtual = 0;
         let toqueInicioX = 0;
+        let ultimoToqueSeta = 0;
         const totalImagens = imagensOtimizadas.length;
         const indicador = document.createElement('span');
         indicador.className = 'produto-galeria-indicador';
@@ -438,11 +439,17 @@ function criarCardProduto(prod) {
             botao.type = 'button';
             botao.textContent = texto;
             botao.setAttribute('aria-label', direcao < 0 ? 'Imagem anterior' : 'Imagem seguinte');
-            botao.addEventListener('click', evento => {
+            const ativarSeta = (evento) => {
                 evento.preventDefault();
                 evento.stopPropagation();
+                const agora = Date.now();
+                if (agora - ultimoToqueSeta < 350) return;
+                ultimoToqueSeta = agora;
                 atualizarImagem(imagemAtual + direcao);
-            });
+            };
+            botao.addEventListener('pointerdown', evento => evento.stopPropagation());
+            botao.addEventListener('pointerup', ativarSeta);
+            botao.addEventListener('click', ativarSeta);
             return botao;
         };
 
@@ -451,8 +458,12 @@ function criarCardProduto(prod) {
         galeria.appendChild(indicador);
         indicador.textContent = '1 / ' + totalImagens;
 
-        galeria.addEventListener('pointerdown', evento => { toqueInicioX = evento.clientX; });
+        galeria.addEventListener('pointerdown', evento => {
+            if (evento.target.closest('.produto-galeria-seta')) return;
+            toqueInicioX = evento.clientX;
+        });
         galeria.addEventListener('pointerup', evento => {
+            if (evento.target.closest('.produto-galeria-seta')) return;
             const deltaX = evento.clientX - toqueInicioX;
             if (Math.abs(deltaX) < 40) return;
             atualizarImagem(imagemAtual + (deltaX < 0 ? 1 : -1));
