@@ -486,7 +486,7 @@ function otimizarImagemCloudinaryVitrine(url, largura = 520) {
     const larguraSegura = Math.max(80, Math.min(1600, Math.round(Number(largura) || 520)));
     return urlOriginal.replace(
         '/image/upload/',
-        `/image/upload/e_trim:20/f_auto,q_auto,w_${larguraSegura},h_${larguraSegura},c_fill,g_auto/`
+        `/image/upload/e_trim:20/f_auto,q_auto,w_${larguraSegura},c_limit/`
     );
 }
 
@@ -522,7 +522,7 @@ function otimizarImagemCloudinaryVitrineSrcset(url, larguras = [360, 520, 780]) 
     return {
         src: otimizarImagemCloudinaryVitrine(urlOriginal, lista[Math.min(1, lista.length - 1)]),
         srcset: lista.map(largura => `${otimizarImagemCloudinaryVitrine(urlOriginal, largura)} ${largura}w`).join(', '),
-        sizes: '(max-width: 560px) min(100vw - 48px, 420px), (max-width: 1100px) 520px, 780px'
+        sizes: '(max-width: 560px) calc(100vw - 48px), (max-width: 1100px) 520px, 780px'
     };
 }
 
