@@ -256,6 +256,10 @@ window.addEventListener('load', async () => {
         }
         mostrarVista(obterVistaPagina(), false);
         await verificarSessaoSupabase();
+        if (obterVistaPagina() === 'carrinho') {
+            await garantirProdutosCarrinhoNoCatalogo();
+            atualizarCarrinhoSeDisponivel();
+        }
     }
 });
 
@@ -523,15 +527,37 @@ function obterImagemAtualCarrinho(item, produtoCompleto) {
 }
 
 async function carregarProdutosConformeUtilizador(){
-    if (!paginaPrecisaProdutosLoja() && !paginaPrecisaCatalogoAdmin()) {
+    if (paginaPrecisaCatalogoAdmin()) {
+        const { data:{ user } } = await dbClient.auth.getUser();
+        if(utilizadorAdmin(user) && typeof carregarProdutosAdminDaNuvem === 'function') {
+            await carregarProdutosAdminDaNuvem();
+        }
         return;
     }
-    const { data:{ user } } = await dbClient.auth.getUser();
-    if(utilizadorAdmin(user) && paginaPrecisaCatalogoAdmin() && typeof carregarProdutosAdminDaNuvem === 'function') {
-        await carregarProdutosAdminDaNuvem();
+    if (paginaPrecisaProdutosLoja()) {
         return;
     }
-    if (typeof carregarProdutosDaNuvem === 'function') {
-        await carregarProdutosDaNuvem();
+    if (obterVistaPagina() === 'carrinho' || document.getElementById('lista-carrinho')) {
+        await garantirProdutosCarrinhoNoCatalogo();
     }
+}
+
+async function garantirProdutosCarrinhoNoCatalogo() {
+    const cliente = produtosClient || dbClient;
+    if (!cliente) return;
+
+    const ids = [...new Set(carrinho.map(item => String(item.id)).filter(Boolean))];
+    const emFalta = ids.filter(id => !obterProdutoPorIdLocal(id));
+    if (!emFalta.length) return;
+
+    const { data, error } = await cliente
+        .from('produtos_loja')
+        .select('id, sku, nome, preco, peso, tema, subtema, imagens, ativo, descontinuado')
+        .in('id', emFalta);
+
+    if (error) throw error;
+    if (!data?.length) return;
+
+    const existentes = new Set((todosOsProdutos || []).map(produto => String(produto.id)));
+    todosOsProdutos.push(...data.filter(produto => !existentes.has(String(produto.id))));
 }

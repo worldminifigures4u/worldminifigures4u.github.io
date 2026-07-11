@@ -2,59 +2,184 @@
 // Separado de app.js para carregar apenas nas paginas que mostram catalogo.
 
 const PRODUTOS_POR_LOTE = 48;
+const PRODUTOS_POR_PAGINA_SERVIDOR = 48;
+const TAMANHO_PAGINA_METADADOS = 1000;
+const CAMPOS_PRODUTO_LOJA = 'id, sku, nome, preco, peso, tema, subtema, imagens, ativo, descontinuado';
+
 let produtosVitrineAtual = [];
 let produtosFiltradosAtual = [];
 let indiceRenderizado = 0;
 let sentinelaCarregarMais = null;
 let observadorCarregarMais = null;
+let totalProdutosRemotos = 0;
+let offsetProdutosRemotos = 0;
+let haMaisProdutosRemotos = false;
+let carregandoProdutosRemotos = false;
+const mapaTemasLoja = new Map();
+
+function slugificarTemaLoja(texto) {
+    return String(texto || '').toLowerCase().replace(/\s+/g, '-');
+}
+
+function obterClienteProdutosLoja() {
+    const cliente = produtosClient || dbClient;
+    if (!cliente) {
+        throw new Error('Cliente Supabase indisponível.');
+    }
+    return cliente;
+}
+
+function mesclarProdutosNoCatalogoLocal(produtos = []) {
+    if (!produtos.length) return;
+    const existentes = new Set((todosOsProdutos || []).map(produto => String(produto.id)));
+    todosOsProdutos.push(...produtos.filter(produto => !existentes.has(String(produto.id))));
+}
+
+function construirMapaTemasLoja(metadados = []) {
+    mapaTemasLoja.clear();
+    const mapa = {};
+
+    metadados.forEach(item => {
+        const tema = (item.tema || 'Outros').trim();
+        const subtema = (item.subtema && item.subtema !== 'semsubtema') ? item.subtema.trim() : '';
+        if (!mapa[tema]) mapa[tema] = [];
+        if (subtema && !mapa[tema].includes(subtema)) mapa[tema].push(subtema);
+    });
+
+    Object.keys(mapa).forEach(tema => {
+        const temaId = slugificarTemaLoja(tema);
+        const subtemas = new Map();
+        mapa[tema].forEach(subtema => subtemas.set(slugificarTemaLoja(subtema), subtema));
+        mapaTemasLoja.set(temaId, { nome: tema, subtemas });
+    });
+
+    return Object.keys(mapa).map(tema => ({ tema, subtema: 'semsubtema' }));
+}
+
+function obterFiltrosVitrineAtuais() {
+    const campoPesquisa = document.getElementById('campo-pesquisa');
+    const pesquisa = String(campoPesquisa?.value || '').trim();
+    const partes = filtroTemaAtual.split('|');
+    const slugTema = partes[0];
+    const slugSubtema = partes[1] || '';
+    const filtros = { pesquisa, tema: null, subtema: null };
+
+    if (!pesquisa && filtroTemaAtual !== 'todos' && mapaTemasLoja.has(slugTema)) {
+        const info = mapaTemasLoja.get(slugTema);
+        filtros.tema = info.nome;
+        if (slugSubtema) filtros.subtema = info.subtemas.get(slugSubtema) || null;
+    }
+
+    return filtros;
+}
+
+function aplicarFiltrosQueryProdutos(query, filtros) {
+    let consulta = query.eq('ativo', true).eq('arquivado', false);
+
+    if (filtros.pesquisa) {
+        return consulta.ilike('nome', `%${filtros.pesquisa}%`);
+    }
+    if (filtros.tema) consulta = consulta.eq('tema', filtros.tema);
+    if (filtros.subtema) consulta = consulta.eq('subtema', filtros.subtema);
+    return consulta;
+}
+
+async function carregarMetadadosTemasLoja() {
+    const cliente = obterClienteProdutosLoja();
+    const metadados = [];
+    let inicio = 0;
+
+    while (true) {
+        const { data: pagina, error } = await executarComTimeout(
+            cliente
+                .from('produtos_loja')
+                .select('tema, subtema')
+                .eq('ativo', true)
+                .eq('arquivado', false)
+                .order('tema', { ascending: true })
+                .order('subtema', { ascending: true })
+                .range(inicio, inicio + TAMANHO_PAGINA_METADADOS - 1),
+            20000,
+            'Consulta de temas demasiado lenta.'
+        );
+
+        if (error) throw error;
+        if (!pagina?.length) break;
+
+        metadados.push(...pagina);
+        if (pagina.length < TAMANHO_PAGINA_METADADOS) break;
+        inicio += TAMANHO_PAGINA_METADADOS;
+    }
+
+    return construirMapaTemasLoja(metadados);
+}
+
+async function carregarPaginaProdutosLoja({ reiniciar = false } = {}) {
+    if (carregandoProdutosRemotos) return;
+    carregandoProdutosRemotos = true;
+
+    try {
+        const cliente = obterClienteProdutosLoja();
+        const filtros = obterFiltrosVitrineAtuais();
+        const offset = reiniciar ? 0 : offsetProdutosRemotos;
+        const limite = PRODUTOS_POR_PAGINA_SERVIDOR;
+        const consultaBase = aplicarFiltrosQueryProdutos(
+            cliente
+                .from('produtos_loja')
+                .select(CAMPOS_PRODUTO_LOJA, { count: 'exact' })
+                .order('tema', { ascending: true })
+                .order('subtema', { ascending: true })
+                .order('nome', { ascending: true })
+                .order('id', { ascending: true }),
+            filtros
+        );
+
+        const { data: pagina, error, count } = await executarComTimeout(
+            consultaBase.range(offset, offset + limite - 1),
+            20000,
+            'Consulta de produtos demasiado lenta.'
+        );
+
+        if (error) throw error;
+
+        const produtosPagina = pagina || [];
+        totalProdutosRemotos = Number(count || 0);
+        offsetProdutosRemotos = offset + produtosPagina.length;
+        haMaisProdutosRemotos = offsetProdutosRemotos < totalProdutosRemotos;
+
+        mesclarProdutosNoCatalogoLocal(produtosPagina);
+
+        if (reiniciar) {
+            produtosFiltradosAtual = produtosPagina;
+            produtosVitrineAtual = produtosPagina;
+            indiceRenderizado = 0;
+        } else {
+            produtosFiltradosAtual.push(...produtosPagina);
+            produtosVitrineAtual = produtosFiltradosAtual;
+        }
+    } finally {
+        carregandoProdutosRemotos = false;
+    }
+}
 
 async function carregarProdutosDaNuvem(){
     definirEstadoVitrine('A carregar minifiguras extraordinárias...');
     try{
-        const clienteProdutos = produtosClient || dbClient;
-        if(!clienteProdutos){
-            throw new Error('Cliente Supabase indisponível.');
-        }
+        todosOsProdutos = [];
+        catalogoAdminCarregado = false;
+        offsetProdutosRemotos = 0;
+        haMaisProdutosRemotos = false;
+        totalProdutosRemotos = 0;
 
-        const listaProdutos = [];
-        const tamanhoPagina = 500;
-        let inicio = 0;
-
-        while(true) {
-            const query = clienteProdutos
-                .from('produtos_loja')
-                .select('id, sku, nome, preco, peso, tema, subtema, imagens, ativo, descontinuado')
-                .order('tema', { ascending:true })
-                .order('subtema', { ascending:true })
-                .order('nome', { ascending:true })
-                .order('id', { ascending:true })
-                .range(inicio, inicio + tamanhoPagina - 1);
-
-            const { data: pagina, error } = await executarComTimeout(
-                query,
-                20000,
-                'Consulta de produtos demasiado lenta.'
-            );
-
-            if(error){ console.error(error); throw error; }
-            if(!pagina || pagina.length === 0) break;
-
-            listaProdutos.push(...pagina);
-            if(pagina.length < tamanhoPagina) break;
-            inicio += tamanhoPagina;
-        }
-
-        if(!listaProdutos || listaProdutos.length === 0){
+        const metadadosTemas = await carregarMetadadosTemasLoja();
+        if (!metadadosTemas.length) {
             definirEstadoVitrine('Nenhum produto encontrado.', 'erro');
             return;
         }
 
-        todosOsProdutos = listaProdutos;
-        catalogoAdminCarregado = false;
-        const produtosVisiveis = listaProdutos.filter(produto => produto.ativo !== false);
-        gerarMenus(produtosVisiveis);
-        gerarProdutos(produtosVisiveis);
-        atualizarCarrinho();
+        gerarMenus(metadadosTemas);
+        await reiniciarVitrinePaginada();
+        atualizarCarrinhoSeDisponivel();
     }catch(erro){
         console.error(erro);
         definirEstadoVitrine('Erro ao carregar produtos do Supabase: ' + (erro.message || 'sem detalhe disponível'), 'erro');
@@ -329,29 +454,20 @@ function criarCardProduto(prod) {
     return card;
 }
 
-function filtrarListaProdutos(listaProdutos, textoPesquisa) {
-    const pesquisaAtiva = textoPesquisa.length > 0;
-    const partesTema = filtroTemaAtual.split('|');
-    const temaAtivo = partesTema[0];
-    const subtemaAtivo = partesTema[1] || null;
-
-    return listaProdutos.filter(prod => {
-        const nomeCardNormalizado = (prod.nome || '').trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-        const correspondeAoNome = nomeCardNormalizado.includes(textoPesquisa);
-
-        let correspondeAoTema = false;
-        if (pesquisaAtiva || filtroTemaAtual === 'todos') {
-            correspondeAoTema = true;
-        } else {
-            const cardTema = (prod.tema || '').toLowerCase().replace(/\s+/g, '-');
-            const cardSubtema = (prod.subtema || '').toLowerCase().replace(/\s+/g, '-');
-            correspondeAoTema = subtemaAtivo
-                ? (cardTema === temaAtivo && cardSubtema === subtemaAtivo)
-                : (cardTema === temaAtivo);
-        }
-
-        return correspondeAoTema && correspondeAoNome;
-    });
+function gerarProdutos(listaProdutos) {
+    const vitrine = document.getElementById('vitrine-produtos');
+    if (!vitrine) return;
+    produtosVitrineAtual = listaProdutos;
+    produtosFiltradosAtual = listaProdutos;
+    indiceRenderizado = 0;
+    totalProdutosRemotos = listaProdutos.length;
+    offsetProdutosRemotos = listaProdutos.length;
+    haMaisProdutosRemotos = false;
+    mesclarProdutosNoCatalogoLocal(listaProdutos);
+    removerSentinelaCarregarMais();
+    vitrine.replaceChildren();
+    renderizarMaisProdutosVitrine();
+    atualizarContadorProdutos(listaProdutos.length, listaProdutos.length, false);
 }
 
 function removerSentinelaCarregarMais() {
@@ -369,30 +485,43 @@ function renderizarMaisProdutosVitrine() {
     const vitrine = document.getElementById('vitrine-produtos');
     if (!vitrine) return;
 
-    removerSentinelaCarregarMais();
+    const renderizar = async () => {
+        removerSentinelaCarregarMais();
 
-    const fim = Math.min(indiceRenderizado + PRODUTOS_POR_LOTE, produtosFiltradosAtual.length);
-    for (let i = indiceRenderizado; i < fim; i++) {
-        vitrine.appendChild(criarCardProduto(produtosFiltradosAtual[i]));
-    }
-    indiceRenderizado = fim;
-    atualizarBotoesFavoritos();
+        if (indiceRenderizado >= produtosFiltradosAtual.length && haMaisProdutosRemotos && !carregandoProdutosRemotos) {
+            await carregarPaginaProdutosLoja();
+        }
 
-    if (indiceRenderizado < produtosFiltradosAtual.length) {
-        sentinelaCarregarMais = document.createElement('div');
-        sentinelaCarregarMais.className = 'vitrine-sentinel';
-        sentinelaCarregarMais.setAttribute('aria-hidden', 'true');
-        vitrine.appendChild(sentinelaCarregarMais);
-        observadorCarregarMais = new IntersectionObserver(entries => {
-            if (entries.some(entry => entry.isIntersecting)) {
-                renderizarMaisProdutosVitrine();
+        const fim = Math.min(indiceRenderizado + PRODUTOS_POR_LOTE, produtosFiltradosAtual.length);
+        for (let i = indiceRenderizado; i < fim; i++) {
+            vitrine.appendChild(criarCardProduto(produtosFiltradosAtual[i]));
+        }
+        indiceRenderizado = fim;
+        atualizarBotoesFavoritos();
+
+        if (indiceRenderizado < produtosFiltradosAtual.length || haMaisProdutosRemotos) {
+            sentinelaCarregarMais = document.createElement('div');
+            sentinelaCarregarMais.className = 'vitrine-sentinel';
+            sentinelaCarregarMais.setAttribute('aria-hidden', 'true');
+            if (carregandoProdutosRemotos) {
+                sentinelaCarregarMais.classList.add('vitrine-sentinel-carregando');
             }
-        }, { rootMargin: '500px' });
-        observadorCarregarMais.observe(sentinelaCarregarMais);
-    }
+            vitrine.appendChild(sentinelaCarregarMais);
+            observadorCarregarMais = new IntersectionObserver(entries => {
+                if (entries.some(entry => entry.isIntersecting)) {
+                    renderizarMaisProdutosVitrine();
+                }
+            }, { rootMargin: '500px' });
+            observadorCarregarMais.observe(sentinelaCarregarMais);
+        }
+    };
+
+    renderizar().catch(erro => {
+        console.error('Erro ao renderizar produtos:', erro);
+    });
 }
 
-function reiniciarVitrinePaginada() {
+async function reiniciarVitrinePaginada() {
     const vitrine = document.getElementById('vitrine-produtos');
     if (!vitrine) return;
 
@@ -404,27 +533,25 @@ function reiniciarVitrinePaginada() {
     const textoPesquisa = inputRaw.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
     const pesquisaAtiva = textoPesquisa.length > 0;
 
-    produtosFiltradosAtual = filtrarListaProdutos(produtosVitrineAtual, textoPesquisa);
-    indiceRenderizado = 0;
+    await carregarPaginaProdutosLoja({ reiniciar: true });
 
-    if (produtosFiltradosAtual.length === 0 && produtosVitrineAtual.length > 0) {
+    if (produtosFiltradosAtual.length === 0) {
         const erroDiv = document.createElement('div');
         erroDiv.id = 'aviso-pesquisa-vazia';
         erroDiv.className = 'estado-vitrine erro';
-        erroDiv.innerText = 'Nenhuma minifigura encontrada com esse nome.';
+        erroDiv.innerText = pesquisaAtiva || filtroTemaAtual !== 'todos'
+            ? 'Nenhuma minifigura encontrada com esse filtro.'
+            : 'Nenhum produto encontrado.';
         vitrine.appendChild(erroDiv);
     } else {
         renderizarMaisProdutosVitrine();
     }
 
-    atualizarContadorProdutos(produtosFiltradosAtual.length, produtosVitrineAtual.length, pesquisaAtiva);
-}
-
-function gerarProdutos(listaProdutos) {
-    const vitrine = document.getElementById('vitrine-produtos');
-    if (!vitrine) return;
-    produtosVitrineAtual = listaProdutos;
-    reiniciarVitrinePaginada();
+    atualizarContadorProdutos(
+        totalProdutosRemotos,
+        totalProdutosRemotos,
+        pesquisaAtiva || filtroTemaAtual !== 'todos'
+    );
 }
 
 
@@ -497,5 +624,7 @@ function atualizarContadorProdutos(totalVisiveis, totalProdutos, pesquisaAtiva) 
 
 function executarFiltrosCombinados() {
     if (!document.getElementById('campo-pesquisa')) return;
-    reiniciarVitrinePaginada();
+    reiniciarVitrinePaginada().catch(erro => {
+        console.error('Erro ao aplicar filtros:', erro);
+    });
 }
