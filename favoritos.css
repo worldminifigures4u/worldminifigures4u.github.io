@@ -188,11 +188,11 @@
 
 @media(max-width:800px){
     .favorito-card{
-        grid-template-columns:72px minmax(0, 1fr);
+        grid-template-columns:72px minmax(0, 1fr) auto;
         grid-template-areas:
-            "imagem info"
-            "imagem meta"
-            "acoes acoes";
+            "imagem info preco"
+            "imagem info stock"
+            "acoes acoes acoes";
         align-items:start;
         width:100%;
         max-width:100%;
@@ -203,24 +203,55 @@
 
     .favorito-imagem{
         grid-area:imagem;
+        grid-row:1 / 3;
         width:72px;
         height:72px;
+        align-self:center;
     }
 
     .favorito-info{
         grid-area:info;
+        grid-row:1 / 3;
         align-self:center;
-        gap:3px;
+        gap:4px;
+        min-width:0;
+    }
+
+    .favorito-info strong{
+        font-size:16px;
+        line-height:1.2;
+        white-space:normal;
+        display:-webkit-box;
+        -webkit-line-clamp:2;
+        -webkit-box-orient:vertical;
+        overflow:hidden;
+    }
+
+    .favorito-info span{
+        font-size:13px;
+        line-height:1.25;
     }
 
     .favorito-meta{
-        grid-area:meta;
-        grid-column:auto;
-        flex-direction:row;
-        align-items:center;
-        justify-content:space-between;
-        gap:8px;
-        width:100%;
+        display:contents;
+    }
+
+    .favorito-preco{
+        grid-area:preco;
+        align-self:start;
+        justify-self:end;
+        text-align:right;
+        font-size:17px !important;
+        line-height:1.2;
+    }
+
+    .favorito-meta .stock-disponivel,
+    .favorito-meta .favorito-indisponivel{
+        grid-area:stock;
+        align-self:end;
+        justify-self:end;
+        text-align:right;
+        font-size:11px;
     }
 
     .favorito-acoes{
@@ -277,7 +308,7 @@
     }
 
     .favorito-card{
-        grid-template-columns:80px minmax(0, 1fr);
+        grid-template-columns:80px minmax(0, 1fr) auto;
         gap:4px 12px;
         padding:10px 12px;
     }
@@ -288,21 +319,20 @@
     }
 
     .favorito-info strong{
-        font-size:15px;
-        white-space:normal;
-        display:-webkit-box;
-        -webkit-line-clamp:2;
-        -webkit-box-orient:vertical;
-        overflow:hidden;
+        font-size:18px;
+    }
+
+    .favorito-info span{
+        font-size:14px;
     }
 
     .favorito-preco{
-        font-size:16px !important;
+        font-size:18px !important;
     }
 
     .stock-disponivel,
     .favorito-indisponivel{
-        font-size:11px;
+        font-size:12px;
     }
 
     .btn-favorito-adicionar,
