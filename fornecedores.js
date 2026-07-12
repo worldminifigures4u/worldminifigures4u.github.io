@@ -1,7 +1,4 @@
 
-const FORNECEDORES_SUPABASE_URL = "https://gksndzxadndrsynvzgzb.supabase.co";
-const FORNECEDORES_SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imdrc25kenhhZG5kcnN5bnZ6Z3piIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkwODc5NzMsImV4cCI6MjA5NDY2Mzk3M30.EHZgacYr27dqoc4CJHsOwkNnJFGlLIteSHBi4B1HfVE";
-const FORNECEDORES_ADMIN_EMAILS = ["worldminifigures4u@gmail.com"];
 const FORNECEDORES_STORAGE_KEY = "figures-planet-fornecedores-pedidos";
 const FORNECEDORES_SELECAO_KEY = "figures-planet-fornecedores-selecao";
 const FORNECEDORES_FICHAS_KEY = "figures-planet-fornecedores-fichas";
@@ -2731,9 +2728,9 @@ async function iniciarFornecedoresAdmin() {
     try {
         await window.carregarScriptSupabase();
         if (typeof supabase === 'undefined') throw new Error('A biblioteca Supabase nao carregou.');
-        fornecedoresClient = supabase.createClient(FORNECEDORES_SUPABASE_URL, FORNECEDORES_SUPABASE_KEY);
+        fornecedoresClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
         const { data: { user }, error } = await fornecedoresClient.auth.getUser();
-        if (error || !user || !FORNECEDORES_ADMIN_EMAILS.includes(String(user.email || '').toLowerCase())) {
+        if (error || !user || !ADMIN_EMAILS.includes(String(user.email || '').toLowerCase())) {
             bloqueio.textContent = 'Acesso reservado ao administrador. A regressar a conta...';
             setTimeout(() => window.location.replace('conta.html'), 1400);
             return;

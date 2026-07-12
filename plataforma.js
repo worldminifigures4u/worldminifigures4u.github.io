@@ -1,7 +1,4 @@
 
-const WALLAPOP_SUPABASE_URL = "https://gksndzxadndrsynvzgzb.supabase.co";
-const WALLAPOP_SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imdrc25kenhhZG5kcnN5bnZ6Z3piIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkwODc5NzMsImV4cCI6MjA5NDY2Mzk3M30.EHZgacYr27dqoc4CJHsOwkNnJFGlLIteSHBi4B1HfVE";
-const WALLAPOP_ADMIN_EMAILS = ["worldminifigures4u@gmail.com"];
 const WALLAPOP_STORAGE_KEY = "figures-planet-wallapop-itens";
 const PESO_PADRAO_PLATAFORMA = 10;
 const TABELA_PORTES_PLATAFORMA = {
@@ -2515,9 +2512,9 @@ async function iniciarWallapopAdmin() {
     try {
         await window.carregarScriptSupabase();
         if (typeof supabase === 'undefined') throw new Error('A biblioteca Supabase não carregou.');
-        wallapopClient = supabase.createClient(WALLAPOP_SUPABASE_URL, WALLAPOP_SUPABASE_KEY);
+        wallapopClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
         const { data: { user }, error } = await wallapopClient.auth.getUser();
-        if (error || !user || !WALLAPOP_ADMIN_EMAILS.includes(String(user.email || '').toLowerCase())) {
+        if (error || !user || !ADMIN_EMAILS.includes(String(user.email || '').toLowerCase())) {
             bloqueio.textContent = 'Acesso reservado ao administrador. A regressar à conta...';
             setTimeout(() => window.location.replace('conta.html'), 1400);
             return;

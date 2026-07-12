@@ -1,7 +1,4 @@
 
-const ENCOMENDAS_SUPABASE_URL = "https://gksndzxadndrsynvzgzb.supabase.co";
-const ENCOMENDAS_SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imdrc25kenhhZG5kcnN5bnZ6Z3piIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkwODc5NzMsImV4cCI6MjA5NDY2Mzk3M30.EHZgacYr27dqoc4CJHsOwkNnJFGlLIteSHBi4B1HfVE";
-const ENCOMENDAS_ADMIN_EMAILS = ["worldminifigures4u@gmail.com"];
 const ENCOMENDAS_ANEXOS_BUCKET = 'anexos-encomendas';
 const ENCOMENDAS_ANEXO_MAX_BYTES = 10 * 1024 * 1024;
 const ENCOMENDAS_ANEXO_TIPOS_PERMITIDOS = new Set([
@@ -670,11 +667,11 @@ async function iniciarPainelEncomendas() {
     try {
         await window.carregarScriptSupabase();
         if (typeof supabase === 'undefined') throw new Error('A biblioteca Supabase não carregou.');
-        encomendasClient = supabase.createClient(ENCOMENDAS_SUPABASE_URL, ENCOMENDAS_SUPABASE_KEY);
+        encomendasClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
         configurarVistaEncomendasAdmin();
         if (typeof configurarModalEncomendaCliente === 'function') configurarModalEncomendaCliente();
         const { data: { user }, error } = await encomendasClient.auth.getUser();
-        if (error || !user || !ENCOMENDAS_ADMIN_EMAILS.includes(String(user.email || '').toLowerCase())) {
+        if (error || !user || !ADMIN_EMAILS.includes(String(user.email || '').toLowerCase())) {
             bloqueio.textContent = 'Acesso reservado ao administrador. A regressar à conta...';
             setTimeout(() => window.location.replace('conta.html'), 1400);
             return;

@@ -1,6 +1,3 @@
-const ESTATISTICAS_SUPABASE_URL = "https://gksndzxadndrsynvzgzb.supabase.co";
-const ESTATISTICAS_SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imdrc25kenhhZG5kcnN5bnZ6Z3piIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkwODc5NzMsImV4cCI6MjA5NDY2Mzk3M30.EHZgacYr27dqoc4CJHsOwkNnJFGlLIteSHBi4B1HfVE";
-const ESTATISTICAS_ADMIN_EMAILS = ["worldminifigures4u@gmail.com"];
 const ESTATISTICAS_PRECO_FAIXAS = [
     { rotulo: "0-2,99 €", min: 0, max: 2.99 },
     { rotulo: "3-4,99 €", min: 3, max: 4.99 },
@@ -404,9 +401,9 @@ async function iniciarEstatisticasAdmin() {
     try {
         await window.carregarScriptSupabase();
         if (typeof supabase === 'undefined') throw new Error('A biblioteca Supabase não carregou.');
-        estatisticasClient = supabase.createClient(ESTATISTICAS_SUPABASE_URL, ESTATISTICAS_SUPABASE_KEY);
+        estatisticasClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
         const { data: { user }, error } = await estatisticasClient.auth.getUser();
-        if (error || !user || !ESTATISTICAS_ADMIN_EMAILS.includes(String(user.email || '').toLowerCase())) {
+        if (error || !user || !ADMIN_EMAILS.includes(String(user.email || '').toLowerCase())) {
             bloqueio.textContent = 'Acesso reservado ao administrador. A regressar à conta...';
             setTimeout(() => window.location.replace('conta.html'), 1400);
             return;

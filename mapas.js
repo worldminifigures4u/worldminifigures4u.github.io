@@ -1,8 +1,4 @@
 
-const MAPAS_SUPABASE_URL = "https://gksndzxadndrsynvzgzb.supabase.co";
-const MAPAS_SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imdrc25kenhhZG5kcnN5bnZ6Z3piIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkwODc5NzMsImV4cCI6MjA5NDY2Mzk3M30.EHZgacYr27dqoc4CJHsOwkNnJFGlLIteSHBi4B1HfVE";
-const MAPAS_ADMIN_EMAILS = ["worldminifigures4u@gmail.com"];
-
 const MAPAS_COLUNAS = [
     { chave: "nome", rotulo: "nome", classe: "mapas-col-nome" },
     { chave: "referencia", rotulo: "referência", classe: "mapas-col-ref" },
@@ -595,9 +591,9 @@ async function iniciarMapas() {
     try {
         await window.carregarScriptSupabase();
         if (typeof supabase === "undefined") throw new Error("A biblioteca Supabase nao carregou.");
-        mapasClient = supabase.createClient(MAPAS_SUPABASE_URL, MAPAS_SUPABASE_KEY);
+        mapasClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
         const { data: { user }, error } = await mapasClient.auth.getUser();
-        if (error || !user || !MAPAS_ADMIN_EMAILS.includes(String(user.email || "").toLowerCase())) {
+        if (error || !user || !ADMIN_EMAILS.includes(String(user.email || "").toLowerCase())) {
             document.getElementById("fornecedores-bloqueio").textContent = "Acesso reservado ao administrador.";
             return;
         }
