@@ -386,6 +386,6 @@ window.addEventListener('load', async () => {
 
 if ('serviceWorker' in navigator && window.location.protocol !== 'file:') {
     window.addEventListener('load', () => {
-        navigator.serviceWorker.register('sw.js?v=20260711-leve-r15').catch(() => {});
+        navigator.serviceWorker.register('sw.js?v=20260711-leve-r16').catch(() => {});
     });
 }

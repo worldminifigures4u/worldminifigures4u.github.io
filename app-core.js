@@ -182,6 +182,14 @@ function irParaCarrinho() {
 }
 
 
+async function aguardarModulosLoja() {
+    if (!paginaPrecisaProdutosLoja() && !document.getElementById('vitrine-produtos')) return;
+    if (typeof carregarProdutosDaNuvem === 'function' && typeof inicializarPaginaLoja === 'function') return;
+    if (typeof window.garantirModulosLoja === 'function') {
+        await window.garantirModulosLoja();
+    }
+}
+
 async function aguardarAppFavoritosSeNecessario() {
     const paginaLoja = document.body?.dataset?.page === 'loja' || !!document.getElementById('vitrine-produtos');
     const paginaFavoritos = document.body?.dataset?.page === 'favoritos';
@@ -199,6 +207,7 @@ window.addEventListener('load', async () => {
         return;
     }
     mostrarVista(obterVistaPagina(), false);
+    await aguardarModulosLoja();
     if (typeof inicializarPaginaLoja === 'function') inicializarPaginaLoja();
     atualizarCarrinhoSeDisponivel();
     try {
@@ -537,6 +546,6 @@ function obterImagemPrincipalProduto(prod = {}) {
 
 if ('serviceWorker' in navigator && window.location.protocol !== 'file:') {
     window.addEventListener('load', () => {
-        navigator.serviceWorker.register('sw.js?v=20260711-leve-r15').catch(() => {});
+        navigator.serviceWorker.register('sw.js?v=20260711-leve-r16').catch(() => {});
     });
 }

@@ -17,7 +17,7 @@
     function garantirAppPortes() {
         if (typeof obterZonaPortesPorPais === 'function') return Promise.resolve();
         if (!promessaPortes) {
-            promessaPortes = carregarScript('app-portes.js?v=20260711-leve-r15');
+            promessaPortes = carregarScript('app-portes.js?v=20260711-leve-r16');
         }
         return promessaPortes;
     }
@@ -26,7 +26,7 @@
         if (typeof atualizarOpcoesEnvio === 'function') return Promise.resolve();
         if (!promessaEnvio) {
             promessaEnvio = garantirAppPortes()
-                .then(() => carregarScript('carrinho-envio.js?v=20260711-leve-r15'));
+                .then(() => carregarScript('carrinho-envio.js?v=20260711-leve-r16'));
         }
         return promessaEnvio;
     }
