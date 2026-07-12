@@ -727,94 +727,44 @@ function resumirAnaliseListaPlataforma(linhas) {
     const exatas = linhas.filter(linha => linha.estado === 'exata').length;
     const sugeridas = linhas.filter(linha => linha.estado === 'sugerida').length;
     const rever = linhas.filter(linha => linha.estado === 'rever').length;
-    const repetidas = linhas.filter(linha => linha.repeticaoTexto || linha.repeticaoProduto).length;
-    const linhasOriginais = linhas.reduce((total, linha) => total + Math.max(1, Number(linha.repeticoes || 1)), 0);
-    return { figuras, exatas, sugeridas, rever, repetidas, linhasOriginais, produtos: linhas.length };
+    const repetidas = linhas.filter(linha => linha.estado === 'repetida').length;
+    return { figuras, exatas, sugeridas, rever, repetidas, produtos: linhas.length };
 }
 
-function consolidarLinhasTextoListaPlataforma(linhas) {
-    const mapa = new Map();
-    const ordem = [];
+function marcarRepeticoesTextoListaPlataforma(linhas) {
+    const vistos = new Map();
 
-    linhas.forEach(linha => {
+    return linhas.map(linha => {
         const chave = obterChaveTextoListaPlataforma(linha.original);
-        if (!chave) return;
-        const existente = mapa.get(chave);
-        if (existente) {
-            existente.quantidade += Math.max(1, Number(linha.quantidade) || 1);
-            existente.repeticoes += 1;
-            existente.ocorrencias.push(linha.indice);
-        } else {
-            mapa.set(chave, {
-                ...linha,
-                quantidade: Math.max(1, Number(linha.quantidade) || 1),
-                repeticoes: 1,
-                ocorrencias: [linha.indice],
-                repeticaoTexto: false
-            });
-            ordem.push(chave);
-        }
-    });
-
-    return ordem.map(chave => {
-        const entrada = mapa.get(chave);
-        entrada.repeticaoTexto = entrada.repeticoes > 1;
-        return entrada;
+        const repeticaoTexto = Boolean(chave && vistos.has(chave));
+        if (chave && !repeticaoTexto) vistos.set(chave, linha.indice);
+        return { ...linha, repeticaoTexto };
     });
 }
 
-function consolidarLinhasProdutoListaPlataforma(linhas) {
-    const resultado = [];
-    const mapa = new Map();
+function marcarRepeticoesProdutoListaPlataforma(linhas) {
+    const vistos = new Map();
 
-    linhas.forEach(linha => {
-        if (!linha.produtoId) {
-            resultado.push({
-                ...linha,
-                repeticaoProduto: false,
-                repeticoesProduto: 1,
-                textosOriginais: [linha.original]
-            });
-            return;
+    return linhas.map(linha => {
+        let repeticaoProduto = false;
+        if (linha.produtoId) {
+            repeticaoProduto = vistos.has(linha.produtoId);
+            if (!repeticaoProduto) vistos.set(linha.produtoId, linha.indice);
         }
 
-        const chave = linha.produtoId;
-        if (!mapa.has(chave)) {
-            const entrada = {
-                ...linha,
-                repeticoesProduto: 1,
-                repeticaoProduto: false,
-                textosOriginais: [linha.original]
-            };
-            mapa.set(chave, entrada);
-            resultado.push(entrada);
-            return;
-        }
-
-        const entrada = mapa.get(chave);
-        entrada.quantidade += Math.max(1, Number(linha.quantidade) || 1);
-        entrada.repeticoesProduto += Math.max(1, Number(linha.repeticoes) || 1);
-        entrada.repeticaoProduto = true;
-        entrada.repeticaoTexto = entrada.repeticaoTexto || linha.repeticaoTexto;
-        if (!entrada.textosOriginais.includes(linha.original)) {
-            entrada.textosOriginais.push(linha.original);
-        }
-        if (linha.estado === 'rever') entrada.estado = 'rever';
-        else if (linha.estado === 'sugerida' && entrada.estado === 'exata') entrada.estado = 'sugerida';
+        const repetida = linha.repeticaoTexto || repeticaoProduto;
+        return {
+            ...linha,
+            repeticaoProduto,
+            repetida,
+            estado: repetida ? 'repetida' : linha.estado
+        };
     });
-
-    return resultado;
 }
 
 function obterRotuloEstadoLinhaListaPlataforma(linha) {
-    if (linha.repeticaoTexto || linha.repeticaoProduto) {
-        const vezes = Math.max(
-            Number(linha.repeticoes) || 0,
-            Number(linha.repeticoesProduto) || 0,
-            Array.isArray(linha.textosOriginais) ? linha.textosOriginais.length : 0,
-            2
-        );
-        return `Repetida ${vezes}x na lista (quantidades somadas)`;
+    if (linha.estado === 'repetida' || linha.repetida) {
+        return 'Figura repetida - remove a linha extra ou usa 2x no in\u00edcio';
     }
     if (linha.estado === 'exata') return 'Correspond\u00eancia exata';
     if (linha.estado === 'sugerida') return 'Corre\u00e7\u00e3o sugerida';
@@ -827,11 +777,15 @@ function formatarPreviaListaPlataforma(resumo) {
         `${resumo.figuras} figuras`
     ];
     if (resumo.repetidas > 0) {
-        partes.push(`${resumo.repetidas} repetida(s) em linhas diferentes`);
+        partes.push(`${resumo.repetidas} repetida(s) - corrige a lista`);
     }
     partes.push(`${resumo.exatas + resumo.sugeridas} reconhecidos`);
     partes.push(`${resumo.rever} a rever`);
     return partes.join(' | ');
+}
+
+function listaTemRepeticoesPlataforma(linhas) {
+    return (linhas || []).some(linha => linha.estado === 'repetida' || linha.repetida);
 }
 
 function linhaProdutosTemQuantidadeExplicitaPlataforma(texto) {
@@ -885,7 +839,7 @@ function analisarListaProdutosPlataforma(texto) {
             .filter(Boolean)
     );
     const ignorarNumeracao = listaProdutosPareceNumeradaPlataforma(linhasOriginais);
-    const linhasInterpretadas = consolidarLinhasTextoListaPlataforma(
+    const linhasInterpretadas = marcarRepeticoesTextoListaPlataforma(
         linhasOriginais
             .map((linha, indice) => interpretarLinhaProdutosPlataforma(linha, indice, { ignorarNumeracao }))
             .filter(Boolean)
@@ -898,15 +852,18 @@ function analisarListaProdutosPlataforma(texto) {
         const exata = melhor?.pontuacao === 1;
         const segura = Boolean(melhor && melhor.pontuacao >= 0.78
             && (!segundo || melhor.pontuacao - segundo.pontuacao >= 0.045));
+        const estado = linha.repeticaoTexto
+            ? 'repetida'
+            : (exata ? 'exata' : (segura ? 'sugerida' : 'rever'));
         return {
             ...linha,
             candidatos,
             produtoId: exata || segura ? String(melhor.produto.id) : '',
-            estado: exata ? 'exata' : (segura ? 'sugerida' : 'rever')
+            estado
         };
     });
 
-    return consolidarLinhasProdutoListaPlataforma(linhasAnalisadas);
+    return marcarRepeticoesProdutoListaPlataforma(linhasAnalisadas);
 }
 
 function textoOpcaoProdutoPlataforma(produto) {
@@ -990,6 +947,11 @@ function aplicarSelecoesListaProdutosPlataforma(selecoes) {
 }
 
 function adicionarListaRevistaPlataforma(linhas, modal) {
+    if (listaTemRepeticoesPlataforma(linhas)) {
+        modal.querySelector('.plataforma-lista-aviso').textContent = 'A lista tem figuras repetidas. Remove a linha extra ou usa 2x no in\u00edcio se o cliente pediu mais unidades.';
+        return;
+    }
+
     const selecoes = [...modal.querySelectorAll('[data-linha-lista]')].map((linha, indice) => ({
         produtoId: linha.querySelector('select').value,
         quantidade: linhas[indice].quantidade
@@ -1054,7 +1016,7 @@ function abrirRevisaoListaProdutosPlataforma() {
     }
 
     const resumo = resumirAnaliseListaPlataforma(linhas);
-    if (!resumo.rever) {
+    if (!resumo.rever && !resumo.repetidas) {
         const adicionados = adicionarListaAnalisadaPlataforma(linhas);
         if (adicionados > 0) {
             definirStatusWallapop(`${resumo.figuras} figura(s) adicionada(s) (${resumo.produtos} produtos reconhecidos).`);
@@ -1081,7 +1043,9 @@ function abrirRevisaoListaProdutosPlataforma() {
     topo.append(titulo, fechar);
 
     const explicacao = document.createElement('p');
-    explicacao.textContent = 'Confirma as correspond\u00eancias. As corre\u00e7\u00f5es prov\u00e1veis j\u00e1 est\u00e3o selecionadas; os casos duvidosos ficam por escolher.';
+    explicacao.textContent = resumo.repetidas
+        ? 'H\u00e1 figuras repetidas na lista. Remove a linha extra ou usa 2x no in\u00edcio se o cliente pediu mais unidades.'
+        : 'Confirma as correspond\u00eancias. As corre\u00e7\u00f5es prov\u00e1veis j\u00e1 est\u00e3o selecionadas; os casos duvidosos ficam por escolher.';
     const resumoEl = document.createElement('p');
     resumoEl.className = 'plataforma-lista-resumo';
     resumoEl.textContent = formatarPreviaListaPlataforma(resumo);
@@ -1100,9 +1064,6 @@ function abrirRevisaoListaProdutosPlataforma() {
         nome.textContent = linha.original;
         const estado = document.createElement('small');
         estado.textContent = obterRotuloEstadoLinhaListaPlataforma(linha);
-        if (linha.repeticaoTexto || linha.repeticaoProduto) {
-            item.classList.add('estado-repetida');
-        }
         original.append(quantidade, nome, estado);
 
         const select = document.createElement('select');
@@ -1118,7 +1079,10 @@ function abrirRevisaoListaProdutosPlataforma() {
             select.appendChild(option);
         });
         select.value = linha.produtoId;
-        select.onchange = () => item.classList.toggle('estado-rever', !select.value);
+        select.onchange = () => {
+            if (linha.estado === 'repetida') return;
+            item.classList.toggle('estado-rever', !select.value);
+        };
 
         const seletorArea = document.createElement('div');
         seletorArea.className = 'plataforma-lista-seletor';
