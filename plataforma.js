@@ -731,40 +731,45 @@ function resumirAnaliseListaPlataforma(linhas) {
     return { figuras, exatas, sugeridas, rever, repetidas, produtos: linhas.length };
 }
 
-function marcarRepeticoesTextoListaPlataforma(linhas) {
-    const vistos = new Map();
+function deduplicarLinhasListaPlataforma(linhas) {
+    const mapa = new Map();
+    const ordem = [];
 
-    return linhas.map(linha => {
-        const chave = obterChaveTextoListaPlataforma(linha.original);
-        const repeticaoTexto = Boolean(chave && vistos.has(chave));
-        if (chave && !repeticaoTexto) vistos.set(chave, linha.indice);
-        return { ...linha, repeticaoTexto };
-    });
-}
-
-function marcarRepeticoesProdutoListaPlataforma(linhas) {
-    const vistos = new Map();
-
-    return linhas.map(linha => {
-        let repeticaoProduto = false;
-        if (linha.produtoId) {
-            repeticaoProduto = vistos.has(linha.produtoId);
-            if (!repeticaoProduto) vistos.set(linha.produtoId, linha.indice);
+    linhas.forEach(linha => {
+        const chave = linha.produtoId
+            ? `id:${linha.produtoId}`
+            : (obterChaveTextoListaPlataforma(linha.original)
+                ? `txt:${obterChaveTextoListaPlataforma(linha.original)}`
+                : `linha:${linha.indice}`);
+        const existente = mapa.get(chave);
+        if (existente) {
+            existente.vezesNaLista += 1;
+            existente.repetidaNaLista = true;
+        } else {
+            mapa.set(chave, {
+                ...linha,
+                vezesNaLista: 1,
+                repetidaNaLista: false,
+                repetida: false
+            });
+            ordem.push(chave);
         }
+    });
 
-        const repetida = linha.repeticaoTexto || repeticaoProduto;
-        return {
-            ...linha,
-            repeticaoProduto,
-            repetida,
-            estado: repetida ? 'repetida' : linha.estado
-        };
+    return ordem.map(chave => {
+        const entrada = mapa.get(chave);
+        if (entrada.repetidaNaLista) {
+            entrada.repetida = true;
+            entrada.estado = 'repetida';
+        }
+        return entrada;
     });
 }
 
 function obterRotuloEstadoLinhaListaPlataforma(linha) {
     if (linha.estado === 'repetida' || linha.repetida) {
-        return 'Figura repetida - remove a linha extra ou usa 2x no in\u00edcio';
+        const vezes = Number(linha.vezesNaLista) > 1 ? ` (apareceu ${linha.vezesNaLista}x na colagem)` : '';
+        return `Figura repetida na lista${vezes} - remove a duplicata ou usa 2x no in\u00edcio`;
     }
     if (linha.estado === 'exata') return 'Correspond\u00eancia exata';
     if (linha.estado === 'sugerida') return 'Corre\u00e7\u00e3o sugerida';
@@ -839,11 +844,9 @@ function analisarListaProdutosPlataforma(texto) {
             .filter(Boolean)
     );
     const ignorarNumeracao = listaProdutosPareceNumeradaPlataforma(linhasOriginais);
-    const linhasInterpretadas = marcarRepeticoesTextoListaPlataforma(
-        linhasOriginais
-            .map((linha, indice) => interpretarLinhaProdutosPlataforma(linha, indice, { ignorarNumeracao }))
-            .filter(Boolean)
-    );
+    const linhasInterpretadas = linhasOriginais
+        .map((linha, indice) => interpretarLinhaProdutosPlataforma(linha, indice, { ignorarNumeracao }))
+        .filter(Boolean);
 
     const linhasAnalisadas = linhasInterpretadas.map(linha => {
         const candidatos = obterCandidatosLinhaListaPlataforma(linha.original);
@@ -852,18 +855,15 @@ function analisarListaProdutosPlataforma(texto) {
         const exata = melhor?.pontuacao === 1;
         const segura = Boolean(melhor && melhor.pontuacao >= 0.78
             && (!segundo || melhor.pontuacao - segundo.pontuacao >= 0.045));
-        const estado = linha.repeticaoTexto
-            ? 'repetida'
-            : (exata ? 'exata' : (segura ? 'sugerida' : 'rever'));
         return {
             ...linha,
             candidatos,
             produtoId: exata || segura ? String(melhor.produto.id) : '',
-            estado
+            estado: exata ? 'exata' : (segura ? 'sugerida' : 'rever')
         };
     });
 
-    return marcarRepeticoesProdutoListaPlataforma(linhasAnalisadas);
+    return deduplicarLinhasListaPlataforma(linhasAnalisadas);
 }
 
 function textoOpcaoProdutoPlataforma(produto) {
