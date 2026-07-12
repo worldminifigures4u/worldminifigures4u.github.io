@@ -382,10 +382,21 @@ window.addEventListener('load', async () => {
     }
 
     await verificarSessaoSupabase();
+
+    if (document.body?.dataset?.page === 'carrinho' || document.getElementById('lista-carrinho')) {
+        if (typeof garantirProdutosCarrinhoNoCatalogo === 'function') {
+            await garantirProdutosCarrinhoNoCatalogo();
+        }
+        if (typeof atualizarCarrinho === 'function') {
+            atualizarCarrinho();
+        } else {
+            atualizarCarrinhoSeDisponivel();
+        }
+    }
 });
 
 if ('serviceWorker' in navigator && window.location.protocol !== 'file:') {
     window.addEventListener('load', () => {
-        navigator.serviceWorker.register('sw.js?v=20260711-leve-r16').catch(() => {});
+        navigator.serviceWorker.register('sw.js?v=20260711-leve-r17').catch(() => {});
     });
 }

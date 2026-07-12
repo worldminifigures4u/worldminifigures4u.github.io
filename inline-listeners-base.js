@@ -172,6 +172,33 @@
         });
     }
 
+    function ligarPrefetchCarrinho() {
+        let prefetchFeito = false;
+        const iniciarPrefetch = function () {
+            if (prefetchFeito) return;
+            prefetchFeito = true;
+            [
+                'carrinho.html',
+                'app-sessao.js',
+                'app-carrinho.js',
+                'carrinho-core.js'
+            ].forEach(function (href) {
+                if (document.querySelector('link[rel="prefetch"][href="' + href + '"]')) return;
+                const link = document.createElement('link');
+                link.rel = 'prefetch';
+                link.href = href;
+                link.as = href.endsWith('.html') ? 'document' : 'script';
+                document.head.appendChild(link);
+            });
+        };
+
+        document.querySelectorAll('.acao-carrinho, [data-vista-nav="carrinho"]').forEach(function (elemento) {
+            elemento.addEventListener('mouseenter', iniciarPrefetch, { once: true });
+            elemento.addEventListener('focus', iniciarPrefetch, { once: true });
+            elemento.addEventListener('touchstart', iniciarPrefetch, { once: true, passive: true });
+        });
+    }
+
     function ligarPrefetchFavoritos() {
         let prefetchFeito = false;
         const iniciarPrefetch = function () {
@@ -262,7 +289,7 @@
 
         const carregarCheckout = () => new Promise((resolve, reject) => {
             const script = document.createElement('script');
-            script.src = 'checkout.js?v=20260711-leve-r16';
+            script.src = 'checkout.js?v=20260711-leve-r17';
             script.defer = true;
             script.onload = () => resolve();
             script.onerror = () => reject(new Error('Falha ao carregar checkout.'));
@@ -317,6 +344,7 @@
             iniciarSincronizacaoCabecalho();
             ligarPrefetchLoja();
             ligarPrefetchFavoritos();
+            ligarPrefetchCarrinho();
             if (config.rodape) inserirRodapeSite();
             atualizarContadorCarrinhoTopo();
             window.addEventListener('storage', atualizarContadorCarrinhoTopo);

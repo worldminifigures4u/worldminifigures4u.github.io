@@ -16,7 +16,16 @@
     <link rel="icon" type="image/webp" href="favicon-32.webp?v=20260711-leve" sizes="32x32">
 
     <link rel="stylesheet" href="styles.css?v=20260711-logo-centro">
-    <link rel="stylesheet" href="loja.css?v=20260711-temas-mobile">
+    <style>
+        .vista-loja.ativa{display:flex;gap:20px;align-items:flex-start}
+        .coluna-esquerda{width:250px;align-self:flex-start}
+        .conteudo-central{flex:1;min-width:0}
+        .produtos{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:20px}
+        .estado-vitrine{background:#111;padding:30px;border-radius:12px;text-align:center;grid-column:1/-1}
+        @media(max-width:1100px){.vista-loja.ativa{flex-direction:column}.coluna-esquerda{width:100%}}
+    </style>
+    <link rel="preload" href="loja.css?v=20260711-temas-mobile" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <noscript><link rel="stylesheet" href="loja.css?v=20260711-temas-mobile"></noscript>
     <link rel="preload" href="app-loja.js?v=20260711-modular" as="script">
     <link rel="preload" href="loja-produtos.js?v=20260711-temas-filtro" as="script">
     <link rel="preload" href="cart-mini.js?v=20260711-leve" as="script">
@@ -95,11 +104,11 @@
     </div>
 </footer>
 <script src="supabase-cdn.js?v=20260711-leve" defer></script>
-<script src="app-config.js?v=20260711-leve-r16" defer></script>
-<script src="app-favoritos-loader.js?v=20260711-leve-r16" defer></script>
-<script src="loja-pagina.js?v=20260711-leve-r16" defer></script>
-<script src="app-core.js?v=20260711-leve-r16" defer></script>
-<script src="inline-listeners-base.js?v=20260711-leve-r16" defer></script>
-<script src="inline-listeners-loja.js?v=20260711-leve-r16" defer></script>
+<script src="app-config.js?v=20260711-leve-r17" defer></script>
+<script src="app-favoritos-loader.js?v=20260711-leve-r17" defer></script>
+<script src="loja-pagina.js?v=20260711-leve-r17" defer></script>
+<script src="app-core.js?v=20260711-leve-r17" defer></script>
+<script src="inline-listeners-base.js?v=20260711-leve-r17" defer></script>
+<script src="inline-listeners-loja.js?v=20260711-leve-r17" defer></script>
 </body>
 </html>

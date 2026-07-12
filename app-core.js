@@ -207,8 +207,10 @@ window.addEventListener('load', async () => {
         return;
     }
     mostrarVista(obterVistaPagina(), false);
-    await aguardarModulosLoja();
-    if (typeof inicializarPaginaLoja === 'function') inicializarPaginaLoja();
+    if (paginaPrecisaProdutosLoja()) {
+        await aguardarModulosLoja();
+        if (typeof inicializarPaginaLoja === 'function') inicializarPaginaLoja();
+    }
     atualizarCarrinhoSeDisponivel();
     try {
         await window.carregarScriptSupabase();
@@ -546,6 +548,6 @@ function obterImagemPrincipalProduto(prod = {}) {
 
 if ('serviceWorker' in navigator && window.location.protocol !== 'file:') {
     window.addEventListener('load', () => {
-        navigator.serviceWorker.register('sw.js?v=20260711-leve-r16').catch(() => {});
+        navigator.serviceWorker.register('sw.js?v=20260711-leve-r17').catch(() => {});
     });
 }
