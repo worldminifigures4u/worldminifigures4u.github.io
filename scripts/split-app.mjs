@@ -31,28 +31,4 @@ function inicializarPaginaLoja() {
 `
 );
 
-const coreLines = [
-    ...lines.slice(0, 5),
-    ...lines.slice(98, 103),
-    ...lines.slice(106, 173),
-    ...lines.slice(250, 363),
-    ...lines.slice(444, 581),
-    ...lines.slice(626)
-];
-
-let core = coreLines.join('\n');
-core = core.replace(
-    /    mostrarVista\(obterVistaPagina\(\), false\);\r?\n    observarTamanhoMenuTemas\(\);\r?\n    agendarAtualizacaoStickyTemas\(\);\r?\n    document\.fonts\?\.ready\.then\(agendarAtualizacaoStickyTemas\);\r?\n    atualizarCarrinhoSeDisponivel\(\);/,
-    `    mostrarVista(obterVistaPagina(), false);
-    if (typeof inicializarPaginaLoja === 'function') inicializarPaginaLoja();
-    atualizarCarrinhoSeDisponivel();`
-);
-
-core = core.replace(
-    /window\.addEventListener\('hashchange'[\s\S]*?window\.visualViewport\?\.addEventListener\('resize', agendarAtualizacaoStickyTemas\);\r?\n/,
-    ''
-);
-
-writeFileSync('app-core.js', core);
-
-console.log('Split concluido.');
+console.log('Split concluido (app-core.js removido do site; usar app-sessao.js).');

@@ -351,7 +351,7 @@ window.addEventListener('load', async () => {
 
 if ('serviceWorker' in navigator && window.location.protocol !== 'file:') {
     window.addEventListener('load', () => {
-        navigator.serviceWorker.register('sw.js?v=20260712-csp-fix2').then((registo) => {
+        navigator.serviceWorker.register('sw.js?v=20260712-r24').then((registo) => {
             registo.addEventListener('updatefound', () => {
                 const novoWorker = registo.installing;
                 if (!novoWorker) return;

@@ -417,12 +417,71 @@
             atualizarContadorCarrinhoTopo();
             window.addEventListener('storage', atualizarContadorCarrinhoTopo);
 
+            if (config.contaCabecalhoLeve) {
+                agendarNomeContaCabecalhoLeve();
+            }
+
             if (config.pesquisa === 'loja') ligarPesquisaLoja();
             else if (config.pesquisa === 'redirect') ligarPesquisaRedirecionar();
 
             if (config.loja) ligarLoja();
             if (config.carrinho) ligarCarrinhoPagina();
         });
+    }
+
+    function atualizarNomeContaCabecalho(texto) {
+        const nomeEl = document.getElementById('nome-login-cabecalho');
+        if (!nomeEl) return;
+
+        const primeiroNome = String(texto || '').trim().split(/\s+/)[0] || '';
+        if (primeiroNome) {
+            localStorage.setItem(NOME_CONTA_CABECALHO_KEY, primeiroNome);
+        } else {
+            localStorage.removeItem(NOME_CONTA_CABECALHO_KEY);
+        }
+        nomeEl.textContent = primeiroNome;
+        nomeEl.classList.toggle('oculto', !primeiroNome);
+    }
+
+    function mostrarNomeContaEmCache() {
+        const primeiroNome = localStorage.getItem(NOME_CONTA_CABECALHO_KEY) || '';
+        if (primeiroNome) atualizarNomeContaCabecalho(primeiroNome);
+    }
+
+    async function atualizarNomeContaCabecalhoRemoto() {
+        try {
+            await window.carregarScriptSupabase();
+            if (typeof supabase === 'undefined') return;
+
+            const client = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+            const { data: { user } } = await client.auth.getUser();
+            if (!user) {
+                atualizarNomeContaCabecalho('');
+                return;
+            }
+
+            const { data } = await client
+                .from('clientes')
+                .select('nome')
+                .eq('id', user.id)
+                .single();
+
+            atualizarNomeContaCabecalho(data?.nome || user?.user_metadata?.nome || '');
+        } catch (erro) {
+            console.warn('Nome da conta indisponivel:', erro);
+        }
+    }
+
+    function agendarNomeContaCabecalhoLeve() {
+        mostrarNomeContaEmCache();
+        const atualizar = function () {
+            atualizarNomeContaCabecalhoRemoto();
+        };
+        if ('requestIdleCallback' in window) {
+            window.requestIdleCallback(atualizar, { timeout: 2000 });
+        } else {
+            window.setTimeout(atualizar, 0);
+        }
     }
 
     window.FiguresPlanetListeners = {
@@ -439,7 +498,7 @@
     };
 
     if ('serviceWorker' in navigator && window.location.protocol !== 'file:') {
-        navigator.serviceWorker.register('sw.js?v=20260712-csp-fix2').then((registo) => {
+        navigator.serviceWorker.register('sw.js?v=20260712-r24').then((registo) => {
             registo.addEventListener('updatefound', () => {
                 const novoWorker = registo.installing;
                 if (!novoWorker) return;
