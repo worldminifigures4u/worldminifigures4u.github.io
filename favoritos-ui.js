@@ -26,7 +26,18 @@ function atualizarResumoFavoritos(total) {
     const resumo = document.getElementById('favoritos-resumo');
     if (!resumo) return;
     const n = Number(total || 0);
-    resumo.textContent = n === 1 ? '1 favorito' : `${n.toLocaleString('pt-PT')} favoritos`;
+    resumo.hidden = n === 0;
+    if (!n) {
+        resumo.replaceChildren();
+        return;
+    }
+    resumo.replaceChildren();
+    const destaque = document.createElement('strong');
+    destaque.textContent = n.toLocaleString('pt-PT');
+    resumo.append(
+        destaque,
+        document.createTextNode(` ${n === 1 ? 'favorito' : 'favoritos'}`)
+    );
 }
 
 function definirListaFavoritosPreparacao(lista, ativa) {
