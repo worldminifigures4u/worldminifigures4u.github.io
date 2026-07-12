@@ -434,8 +434,12 @@ body[data-page="conta"]:not(.pagina-gestao) #conteudo-cliente-autenticado:not(.o
     outline:none;
 }
 
-.conta-menu-item.ativa{
+.conta-menu-item.ativa,
+.conta-menu-item.ativa:hover,
+.conta-menu-item.ativa:focus-visible{
     border-color:#ffc400;
+    background:var(--cor-ativo-fundo, #ffc107);
+    color:var(--cor-ativo-texto, #000);
 }
 
 .conta-conteudo-dinamico{
