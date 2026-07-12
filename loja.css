@@ -467,6 +467,8 @@
 
     .menu-temas:has(.lista-temas.recolhida) .cabecalho-menu-temas{
         overflow:visible;
+        justify-content:flex-start;
+        gap:8px;
     }
 
     .menu-temas:has(.lista-temas.recolhida) .cabecalho-menu-temas h2{
