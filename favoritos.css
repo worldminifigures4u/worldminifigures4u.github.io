@@ -190,10 +190,10 @@
     .favorito-card{
         grid-template-columns:72px minmax(0, 1fr) auto;
         grid-template-areas:
-            "imagem info preco"
-            "imagem info stock"
+            "imagem nome preco"
+            "imagem tema stock"
             "acoes acoes acoes";
-        align-items:start;
+        align-items:center;
         width:100%;
         max-width:100%;
         box-sizing:border-box;
@@ -210,14 +210,12 @@
     }
 
     .favorito-info{
-        grid-area:info;
-        grid-row:1 / 3;
-        align-self:center;
-        gap:4px;
-        min-width:0;
+        display:contents;
     }
 
     .favorito-info strong{
+        grid-area:nome;
+        align-self:center;
         font-size:16px;
         line-height:1.2;
         white-space:normal;
@@ -225,11 +223,15 @@
         -webkit-line-clamp:2;
         -webkit-box-orient:vertical;
         overflow:hidden;
+        min-width:0;
     }
 
     .favorito-info span{
+        grid-area:tema;
+        align-self:center;
         font-size:13px;
         line-height:1.25;
+        min-width:0;
     }
 
     .favorito-meta{
@@ -238,20 +240,22 @@
 
     .favorito-preco{
         grid-area:preco;
-        align-self:start;
+        align-self:center;
         justify-self:end;
         text-align:right;
         font-size:17px !important;
         line-height:1.2;
+        white-space:nowrap;
     }
 
     .favorito-meta .stock-disponivel,
     .favorito-meta .favorito-indisponivel{
         grid-area:stock;
-        align-self:end;
+        align-self:center;
         justify-self:end;
         text-align:right;
         font-size:11px;
+        white-space:nowrap;
     }
 
     .favorito-acoes{
