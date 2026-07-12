@@ -1,5 +1,6 @@
 // Painel administrativo da pagina Gestao (carregamento lazy).
 let catalogoAdminCarregado = false;
+let catalogoAdminAgendado = false;
 
 function paginaPrecisaCatalogoAdmin() {
     return document.body?.classList?.contains('pagina-gestao') || obterVistaPagina() === 'gestao';
@@ -9,10 +10,13 @@ function paginaPrecisaProdutosLoja() {
     return obterVistaPagina() === 'loja';
 }
 
-function carregarCatalogoAdminQuandoDisponivel() {
+function carregarCatalogoAdminQuandoDisponivel(opcoes = {}) {
     if (!paginaPrecisaCatalogoAdmin()) return;
+    const imediato = opcoes.imediato === true;
+    if (catalogoAdminAgendado && !imediato) return;
 
-    const iniciar = async () => {
+    const executar = async () => {
+        catalogoAdminAgendado = true;
         if (typeof window.garantirGestaoAdmin === 'function') {
             await window.garantirGestaoAdmin();
         }
@@ -21,9 +25,26 @@ function carregarCatalogoAdminQuandoDisponivel() {
         }
     };
 
-    iniciar().catch((error) => {
-        console.error('Erro ao carregar catalogo administrativo:', error);
-    });
+    if (imediato) {
+        executar().catch((error) => {
+            console.error('Erro ao carregar catalogo administrativo:', error);
+        });
+        return;
+    }
+
+    catalogoAdminAgendado = true;
+    const agendar = () => {
+        executar().catch((error) => {
+            catalogoAdminAgendado = false;
+            console.error('Erro ao carregar catalogo administrativo:', error);
+        });
+    };
+
+    if ('requestIdleCallback' in window) {
+        window.requestIdleCallback(agendar, { timeout: 4500 });
+    } else {
+        window.setTimeout(agendar, 2000);
+    }
 }
 
 function aplicarPainelGestaoAdmin(user) {
@@ -77,6 +98,7 @@ function aplicarPainelGestaoAdmin(user) {
 }
 
 window.aplicarPainelGestaoAdmin = aplicarPainelGestaoAdmin;
+window.carregarCatalogoAdminQuandoDisponivel = carregarCatalogoAdminQuandoDisponivel;
 window.paginaPrecisaCatalogoAdmin = paginaPrecisaCatalogoAdmin;
 window.paginaPrecisaProdutosLoja = paginaPrecisaProdutosLoja;
 window.dispatchEvent(new Event('figures-planet-admin-gestao-pronta'));

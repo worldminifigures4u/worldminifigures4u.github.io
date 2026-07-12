@@ -125,21 +125,20 @@
         window.garantirContaCliente().catch(console.error);
     }
 
-    function agendarGestaoAdmin() {
-        if (!document.body.classList.contains('pagina-gestao')) return;
-        if (typeof window.garantirGestaoAdmin !== 'function') return;
-
-        const iniciar = () => window.garantirGestaoAdmin().catch(console.error);
-        if (!document.body.classList.contains('cabecalho-com-admin')) return;
-        if (pareceSessaoAtiva()) {
-            iniciar();
+    function pedirModuloGestaoAdmin(imediato = false) {
+        if (typeof window.carregarCatalogoAdminQuandoDisponivel === 'function') {
+            window.carregarCatalogoAdminQuandoDisponivel({ imediato });
             return;
         }
-        if ('requestIdleCallback' in window) {
-            window.requestIdleCallback(iniciar, { timeout: 2000 });
-        } else {
-            window.setTimeout(iniciar, 1200);
+        if (typeof window.garantirGestaoAdmin === 'function') {
+            window.garantirGestaoAdmin().catch(console.error);
         }
+    }
+
+    function agendarGestaoAdmin() {
+        if (!document.body.classList.contains('pagina-gestao')) return;
+        if (!document.body.classList.contains('cabecalho-com-admin')) return;
+        pedirModuloGestaoAdmin(false);
     }
 
     function agendarFallbackLoginGestao() {
@@ -154,16 +153,12 @@
 
     document.addEventListener('DOMContentLoaded', () => {
         if (document.body.classList.contains('pagina-gestao')) {
-            const pedirAdmin = () => {
-                if (typeof window.garantirGestaoAdmin === 'function') {
-                    window.garantirGestaoAdmin().catch(console.error);
-                }
-            };
+            const pedirAdmin = () => pedirModuloGestaoAdmin(true);
 
             document.getElementById('painel-admin')?.addEventListener('focusin', pedirAdmin, { once: true });
             document.querySelectorAll('[data-tab-gestao], #form-admin-produto, .gestao-tabs button, .admin-seccao button, .admin-seccao input, .admin-seccao textarea').forEach((elemento) => {
                 elemento.addEventListener('focus', pedirAdmin, { once: true });
-                elemento.addEventListener('click', pedirAdmin, { once: true });
+                elemento.addEventListener('click', pedirAdmin);
             });
             agendarGestaoAdmin();
             agendarFallbackLoginGestao();
@@ -193,9 +188,7 @@
         if (typeof window.garantirAdminGestao === 'function') {
             window.garantirAdminGestao().catch(console.error);
         }
-        if (typeof window.garantirGestaoAdmin === 'function') {
-            window.garantirGestaoAdmin().catch(console.error);
-        }
+        agendarGestaoAdmin();
     }
 
     window.addEventListener('figures-planet-sessao-pronta', reagirSessaoGestaoPronta);

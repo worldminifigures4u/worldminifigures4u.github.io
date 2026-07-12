@@ -16,7 +16,7 @@
     function garantirAdminGestao() {
         if (typeof window.aplicarPainelGestaoAdmin === 'function') return Promise.resolve();
         if (!promessaAdminGestao) {
-            promessaAdminGestao = carregarScript('app-admin-gestao.js?v=20260712-leve-r22');
+            promessaAdminGestao = carregarScript('app-admin-gestao.js?v=20260712-leve-r23');
         }
         return promessaAdminGestao;
     }
