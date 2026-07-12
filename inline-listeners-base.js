@@ -120,6 +120,23 @@
         });
     }
 
+    function executarPesquisaLoja() {
+        const correr = () => {
+            if (typeof window.pesquisarNoCabecalho === 'function') {
+                window.pesquisarNoCabecalho();
+            } else if (typeof executarFiltrosCombinados === 'function') {
+                executarFiltrosCombinados();
+            }
+        };
+
+        if (typeof window.garantirModulosLoja === 'function') {
+            window.garantirModulosLoja().then(correr).catch(console.error);
+            return;
+        }
+
+        correr();
+    }
+
     function ligarPesquisaLoja() {
         const campo = obterCampoPesquisaCabecalho();
         const formulario = campo?.closest('form.cabecalho-pesquisa');
@@ -127,30 +144,24 @@
         if (formulario) {
             formulario.addEventListener('submit', function (evento) {
                 evento.preventDefault();
-                if (typeof window.verificarTeclaEnter === 'function') {
-                    window.verificarTeclaEnter(evento);
-                } else if (typeof executarFiltrosCombinados === 'function') {
-                    executarFiltrosCombinados();
-                }
+                executarPesquisaLoja();
             });
         }
 
         if (!campo) return;
 
-        campo.addEventListener('input', function () {
-            if (typeof window.pesquisarNoCabecalho === 'function') {
-                window.pesquisarNoCabecalho();
+        campo.addEventListener('focus', function () {
+            if (typeof window.garantirModulosLoja === 'function') {
+                window.garantirModulosLoja().catch(console.error);
             }
-        });
+        }, { once: true });
+
+        campo.addEventListener('input', executarPesquisaLoja);
 
         campo.addEventListener('keydown', function (evento) {
             if (evento.key !== 'Enter') return;
-            if (typeof window.verificarTeclaEnter === 'function') {
-                window.verificarTeclaEnter(evento);
-            } else if (typeof executarFiltrosCombinados === 'function') {
-                evento.preventDefault();
-                executarFiltrosCombinados();
-            }
+            evento.preventDefault();
+            executarPesquisaLoja();
         });
     }
 

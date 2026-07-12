@@ -14,7 +14,7 @@
     <title>Minha Conta | Figures Planet</title>
     <link rel="icon" type="image/webp" href="favicon-32.webp?v=20260711-leve" sizes="32x32">
 
-    <link rel="stylesheet" href="styles.css?v=20260712-icones-cabecalho">
+    <link rel="stylesheet" href="styles.css?v=20260712-pesquisa-mobile">
     <link rel="stylesheet" href="styles-tema.css?v=20260712-r24" media="print" data-async-css>
     <noscript><link rel="stylesheet" href="styles-tema.css?v=20260712-r24"></noscript>
     <link rel="stylesheet" href="conta.css?v=20260712-conta-menu-mobile">
@@ -27,10 +27,10 @@
         <a class="logo-loja" href="index.html" aria-label="Figures Planet - Produtos">
                 <img src="figures-planet-logo-transparent.webp?v=20260711-leve" alt="Figures Planet" width="383" height="100" decoding="async" fetchpriority="high">
         </a>
-        <div class="cabecalho-pesquisa">
-            <input type="text" id="campo-pesquisa" class="input-pesquisa" placeholder="O que est&aacute;s &agrave; procura?">
+        <form class="cabecalho-pesquisa" action="index.html" method="get" role="search">
+            <input type="search" name="q" id="campo-pesquisa" class="input-pesquisa" placeholder="O que est&aacute;s &agrave; procura?" autocomplete="off" enterkeyhint="search">
             <span class="icone-pesquisa" aria-hidden="true"></span>
-        </div>
+        </form>
         <div class="acoes-cabecalho acoes-cabecalho-publicas">
             <a class="acao-cabecalho ativa" href="conta.html" aria-label="Abrir area de cliente" data-vista-nav="conta">
                 <span class="icone-acao" aria-hidden="true"></span>
@@ -253,7 +253,7 @@
 <script src="conta-pagina.js?v=20260712-r24" defer></script>
 <script src="app-sessao.js?v=20260712-r24" defer></script>
 <script src="cart-mini.js?v=20260711-leve" defer></script>
-<script src="inline-listeners-base.js?v=20260712-r24" defer></script>
+<script src="inline-listeners-base.js?v=20260712-pesquisa-mobile" defer></script>
 <script src="inline-listeners-conta.js?v=20260712-r24" defer></script>
 </body>
 </html>
