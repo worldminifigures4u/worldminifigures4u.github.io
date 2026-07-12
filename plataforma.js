@@ -727,8 +727,7 @@ function resumirAnaliseListaPlataforma(linhas) {
     const exatas = linhas.filter(linha => linha.estado === 'exata').length;
     const sugeridas = linhas.filter(linha => linha.estado === 'sugerida').length;
     const rever = linhas.filter(linha => linha.estado === 'rever').length;
-    const repetidas = linhas.filter(linha => linha.estado === 'repetida').length;
-    return { figuras, exatas, sugeridas, rever, repetidas, produtos: linhas.length };
+    return { figuras, exatas, sugeridas, rever, produtos: linhas.length };
 }
 
 function deduplicarLinhasListaPlataforma(linhas) {
@@ -736,61 +735,31 @@ function deduplicarLinhasListaPlataforma(linhas) {
     const ordem = [];
 
     linhas.forEach(linha => {
+        const chaveTexto = obterChaveTextoListaPlataforma(linha.original);
         const chave = linha.produtoId
             ? `id:${linha.produtoId}`
-            : (obterChaveTextoListaPlataforma(linha.original)
-                ? `txt:${obterChaveTextoListaPlataforma(linha.original)}`
-                : `linha:${linha.indice}`);
-        const existente = mapa.get(chave);
-        if (existente) {
-            existente.vezesNaLista += 1;
-            existente.repetidaNaLista = true;
-        } else {
-            mapa.set(chave, {
-                ...linha,
-                vezesNaLista: 1,
-                repetidaNaLista: false,
-                repetida: false
-            });
-            ordem.push(chave);
-        }
+            : (chaveTexto ? `txt:${chaveTexto}` : `linha:${linha.indice}`);
+        if (mapa.has(chave)) return;
+        mapa.set(chave, linha);
+        ordem.push(chave);
     });
 
-    return ordem.map(chave => {
-        const entrada = mapa.get(chave);
-        if (entrada.repetidaNaLista) {
-            entrada.repetida = true;
-            entrada.estado = 'repetida';
-        }
-        return entrada;
-    });
+    return ordem.map(chave => mapa.get(chave));
 }
 
 function obterRotuloEstadoLinhaListaPlataforma(linha) {
-    if (linha.estado === 'repetida' || linha.repetida) {
-        const vezes = Number(linha.vezesNaLista) > 1 ? ` (apareceu ${linha.vezesNaLista}x na colagem)` : '';
-        return `Figura repetida na lista${vezes} - remove a duplicata ou usa 2x no in\u00edcio`;
-    }
     if (linha.estado === 'exata') return 'Correspond\u00eancia exata';
     if (linha.estado === 'sugerida') return 'Corre\u00e7\u00e3o sugerida';
     return 'Escolha necess\u00e1ria';
 }
 
 function formatarPreviaListaPlataforma(resumo) {
-    const partes = [
+    return [
         `${resumo.produtos} produtos`,
-        `${resumo.figuras} figuras`
-    ];
-    if (resumo.repetidas > 0) {
-        partes.push(`${resumo.repetidas} repetida(s) - corrige a lista`);
-    }
-    partes.push(`${resumo.exatas + resumo.sugeridas} reconhecidos`);
-    partes.push(`${resumo.rever} a rever`);
-    return partes.join(' | ');
-}
-
-function listaTemRepeticoesPlataforma(linhas) {
-    return (linhas || []).some(linha => linha.estado === 'repetida' || linha.repetida);
+        `${resumo.figuras} figuras`,
+        `${resumo.exatas + resumo.sugeridas} reconhecidos`,
+        `${resumo.rever} a rever`
+    ].join(' | ');
 }
 
 function linhaProdutosTemQuantidadeExplicitaPlataforma(texto) {
@@ -947,11 +916,6 @@ function aplicarSelecoesListaProdutosPlataforma(selecoes) {
 }
 
 function adicionarListaRevistaPlataforma(linhas, modal) {
-    if (listaTemRepeticoesPlataforma(linhas)) {
-        modal.querySelector('.plataforma-lista-aviso').textContent = 'A lista tem figuras repetidas. Remove a linha extra ou usa 2x no in\u00edcio se o cliente pediu mais unidades.';
-        return;
-    }
-
     const selecoes = [...modal.querySelectorAll('[data-linha-lista]')].map((linha, indice) => ({
         produtoId: linha.querySelector('select').value,
         quantidade: linhas[indice].quantidade
@@ -1016,7 +980,7 @@ function abrirRevisaoListaProdutosPlataforma() {
     }
 
     const resumo = resumirAnaliseListaPlataforma(linhas);
-    if (!resumo.rever && !resumo.repetidas) {
+    if (!resumo.rever) {
         const adicionados = adicionarListaAnalisadaPlataforma(linhas);
         if (adicionados > 0) {
             definirStatusWallapop(`${resumo.figuras} figura(s) adicionada(s) (${resumo.produtos} produtos reconhecidos).`);
@@ -1043,9 +1007,7 @@ function abrirRevisaoListaProdutosPlataforma() {
     topo.append(titulo, fechar);
 
     const explicacao = document.createElement('p');
-    explicacao.textContent = resumo.repetidas
-        ? 'H\u00e1 figuras repetidas na lista. Remove a linha extra ou usa 2x no in\u00edcio se o cliente pediu mais unidades.'
-        : 'Confirma as correspond\u00eancias. As corre\u00e7\u00f5es prov\u00e1veis j\u00e1 est\u00e3o selecionadas; os casos duvidosos ficam por escolher.';
+    explicacao.textContent = 'Confirma as correspond\u00eancias. As corre\u00e7\u00f5es prov\u00e1veis j\u00e1 est\u00e3o selecionadas; os casos duvidosos ficam por escolher.';
     const resumoEl = document.createElement('p');
     resumoEl.className = 'plataforma-lista-resumo';
     resumoEl.textContent = formatarPreviaListaPlataforma(resumo);
@@ -1079,10 +1041,7 @@ function abrirRevisaoListaProdutosPlataforma() {
             select.appendChild(option);
         });
         select.value = linha.produtoId;
-        select.onchange = () => {
-            if (linha.estado === 'repetida') return;
-            item.classList.toggle('estado-rever', !select.value);
-        };
+        select.onchange = () => item.classList.toggle('estado-rever', !select.value);
 
         const seletorArea = document.createElement('div');
         seletorArea.className = 'plataforma-lista-seletor';
