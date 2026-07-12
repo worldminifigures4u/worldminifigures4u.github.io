@@ -109,10 +109,26 @@
         });
     }
 
+    function ligarPrefetchLojaHover() {
+        let prefetchFeito = false;
+        const iniciarPrefetch = () => {
+            if (prefetchFeito) return;
+            prefetchFeito = true;
+            prefetchRecursosLoja();
+        };
+
+        document.querySelectorAll('.logo-loja, .rodape-links a[href="index.html"]').forEach((elemento) => {
+            elemento.addEventListener('mouseenter', iniciarPrefetch, { once: true });
+            elemento.addEventListener('focus', iniciarPrefetch, { once: true });
+            elemento.addEventListener('touchstart', iniciarPrefetch, { once: true, passive: true });
+        });
+    }
+
     document.addEventListener('DOMContentLoaded', () => {
         iniciarCabecalhoLeve();
         atualizarContadorCarrinhoCabecalho();
         mostrarNomeContaEmCache();
+        ligarPrefetchLojaHover();
 
         const campoPesquisa = document.getElementById('campo-pesquisa');
         if (campoPesquisa) {

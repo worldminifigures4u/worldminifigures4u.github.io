@@ -1,8 +1,8 @@
-// Carregamento tardio de conta-cliente.js na pagina Gestao.
+// Carregamento tardio de conta-cliente.js na pagina Conta.
 (function () {
     let promessaContaCliente = null;
 
-    function garantirContaClienteGestao() {
+    function garantirContaCliente() {
         if (typeof fazerLogin === 'function') return Promise.resolve();
         if (promessaContaCliente) return promessaContaCliente;
 
@@ -18,7 +18,7 @@
         return promessaContaCliente;
     }
 
-    window.garantirContaClienteGestao = garantirContaClienteGestao;
+    window.garantirContaCliente = garantirContaCliente;
 
     function urlTemRecuperacaoConta() {
         const params = new URLSearchParams(window.location.search);
@@ -31,14 +31,24 @@
             || hashParams.has('access_token');
     }
 
+    function pareceSessaoAtiva() {
+        try {
+            return Object.keys(localStorage).some((chave) => (
+                chave.includes('auth-token') && localStorage.getItem(chave)
+            ));
+        } catch (erro) {
+            return false;
+        }
+    }
+
     function agendarCarregamentoConta() {
-        if (urlTemRecuperacaoConta()) {
-            garantirContaClienteGestao().catch(console.error);
+        if (urlTemRecuperacaoConta() || pareceSessaoAtiva()) {
+            garantirContaCliente().catch(console.error);
             return;
         }
-        const iniciar = () => garantirContaClienteGestao().catch(console.error);
+        const iniciar = () => garantirContaCliente().catch(console.error);
         if ('requestIdleCallback' in window) {
-            window.requestIdleCallback(iniciar, { timeout: 3500 });
+            window.requestIdleCallback(iniciar, { timeout: 3000 });
         } else {
             window.setTimeout(iniciar, 2000);
         }
@@ -46,11 +56,13 @@
 
     document.addEventListener('DOMContentLoaded', () => {
         const painel = document.getElementById('painel-cliente');
-        if (!painel) return;
+        const formLogin = document.getElementById('form-login');
+        if (!painel && !formLogin) return;
 
-        const pedirConta = () => garantirContaClienteGestao().catch(console.error);
-        painel.addEventListener('focusin', pedirConta, { once: true });
-        painel.querySelectorAll('form, button, input, select, textarea, a').forEach((elemento) => {
+        const pedirConta = () => garantirContaCliente().catch(console.error);
+        const raiz = painel || document.body;
+
+        raiz.querySelectorAll('form, button, input, select, textarea, a[data-aba-cliente], [data-acao-cliente], [data-seccao-conta]').forEach((elemento) => {
             elemento.addEventListener('focus', pedirConta, { once: true });
             elemento.addEventListener('click', pedirConta, { once: true });
         });

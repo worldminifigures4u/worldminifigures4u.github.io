@@ -153,6 +153,40 @@
         });
     }
 
+    function prefetchRecursosLoja() {
+        const recursos = [
+            'index.html',
+            'app-config.js',
+            'app-core.js',
+            'app-loja.js',
+            'loja-produtos.js',
+            'cart-mini.js'
+        ];
+        recursos.forEach(function (href) {
+            if (document.querySelector('link[rel="prefetch"][href="' + href + '"]')) return;
+            const link = document.createElement('link');
+            link.rel = 'prefetch';
+            link.href = href;
+            link.as = href.endsWith('.html') ? 'document' : 'script';
+            document.head.appendChild(link);
+        });
+    }
+
+    function ligarPrefetchLoja() {
+        let prefetchFeito = false;
+        const iniciarPrefetch = function () {
+            if (prefetchFeito) return;
+            prefetchFeito = true;
+            prefetchRecursosLoja();
+        };
+
+        document.querySelectorAll('.logo-loja, .rodape-links a[href="index.html"]').forEach(function (elemento) {
+            elemento.addEventListener('mouseenter', iniciarPrefetch, { once: true });
+            elemento.addEventListener('focus', iniciarPrefetch, { once: true });
+            elemento.addEventListener('touchstart', iniciarPrefetch, { once: true, passive: true });
+        });
+    }
+
     function inserirRodapeSite() {
         if (document.querySelector('.rodape-site')) return;
 
@@ -202,7 +236,7 @@
 
         const carregarCheckout = () => new Promise((resolve, reject) => {
             const script = document.createElement('script');
-            script.src = 'checkout.js?v=20260711-leve-r10';
+            script.src = 'checkout.js?v=20260711-leve-r13';
             script.defer = true;
             script.onload = () => resolve();
             script.onerror = () => reject(new Error('Falha ao carregar checkout.'));
@@ -255,6 +289,7 @@
         const config = opcoes || {};
         quandoPronto(function () {
             iniciarSincronizacaoCabecalho();
+            ligarPrefetchLoja();
             if (config.rodape) inserirRodapeSite();
             atualizarContadorCarrinhoTopo();
             window.addEventListener('storage', atualizarContadorCarrinhoTopo);
