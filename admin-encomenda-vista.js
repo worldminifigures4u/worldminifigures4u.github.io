@@ -503,6 +503,8 @@ window.AdminEncomendaVista = (function () {
         hooks.renderizarModal();
     }
 
+    const ORIGENS_FATURA_MOLONI_OPCIONAL = new Set(["olx"]);
+
     function origemEncomenda(encomenda) {
         return normalizar(encomenda?.origem || "site");
     }
