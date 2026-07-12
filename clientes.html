@@ -15,20 +15,24 @@
     <meta name="robots" content="noindex, nofollow, noarchive, nosnippet">
     <title>Clientes | Figures Planet</title>
     <link rel="icon" type="image/webp" href="favicon-32.webp?v=20260711-leve" sizes="32x32">
-    <link rel="stylesheet" href="styles.css?v=20260712-leve-r23">
-    <link rel="stylesheet" href="styles-admin.css?v=20260712-leve-r23">
-    <link rel="stylesheet" href="clientes.css?v=20260710-modal-encomenda">
-    <style>body.pagina-com-cabecalho-site>main{margin:0 auto 50px;padding:0;box-sizing:border-box;width:min(1500px,calc(100% - 32px))}</style>
-    <link rel="preload" href="styles-tema.css?v=20260712-leve-r23" as="style" onload="this.onload=null;this.rel='stylesheet'">
-    <noscript><link rel="stylesheet" href="styles-tema.css?v=20260712-leve-r23"></noscript>
+    <link rel="stylesheet" href="styles.css?v=20260712-layout-fix">
+    <link rel="stylesheet" href="styles-admin.css?v=20260712-layout-fix">
+    <link rel="stylesheet" href="styles-tema.css?v=20260712-layout-fix">
+    <link rel="stylesheet" href="clientes.css?v=20260712-layout-fix">
+    <style>
+        body.pagina-com-cabecalho-site>main{margin:0 auto 50px;padding:0;box-sizing:border-box;width:min(1500px,calc(100% - 32px))}
+        .clientes-pesquisa{display:grid!important;grid-template-columns:minmax(260px,1fr) auto auto!important;gap:10px;margin-bottom:14px;align-items:stretch}
+        .clientes-layout{display:grid!important;grid-template-columns:minmax(280px,390px) minmax(0,1fr)!important;gap:14px;align-items:start}
+        #clientes-lista.clientes-lista{display:flex!important;flex-direction:column!important;flex-wrap:nowrap!important;gap:6px;padding:6px;overflow:auto;max-height:calc(100vh - 280px);border:1px solid #333;border-radius:8px;background:#111}
+        button.clientes-lista-item{display:flex!important;align-items:center!important;justify-content:space-between!important;gap:12px;width:100%!important;min-height:38px;padding:8px 10px 8px 12px;border:1px solid #2f2f2f;border-radius:8px;background:#1f1f1f!important;color:#fff!important;text-align:left;cursor:pointer;box-sizing:border-box}
+        .clientes-lista-nome{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0;flex:1 1 auto}
+        .clientes-ficha-alerta{width:28px;height:24px;flex:0 0 auto;display:inline-flex;align-items:center;justify-content:center}
+        .clientes-ficha-icone{width:15px!important;height:15px!important;max-width:15px;max-height:15px;flex:0 0 15px}
+        .clientes-ficha{border:1px solid #333;border-radius:8px;background:#111;padding:16px;min-width:0}
+    </style>
     <link rel="preload" href="admin-cliente.css?v=20260710-modal-encomenda" as="style" onload="this.onload=null;this.rel='stylesheet'">
     <link rel="preload" href="admin-imagem.css?v=20260628-css-split-admin-imagem" as="style" onload="this.onload=null;this.rel='stylesheet'">
     <link rel="preload" href="encomendas.css?v=20260707-modal-cliente" as="style" onload="this.onload=null;this.rel='stylesheet'">
-    <noscript>
-        <link rel="stylesheet" href="admin-cliente.css?v=20260710-modal-encomenda">
-        <link rel="stylesheet" href="admin-imagem.css?v=20260628-css-split-admin-imagem">
-        <link rel="stylesheet" href="encomendas.css?v=20260707-modal-cliente">
-    </noscript>
 </head>
 <body class="pagina-clientes-admin cabecalho-com-admin pagina-com-cabecalho-site">
     <header class="cabecalho-site-admin">
@@ -123,8 +127,8 @@
 <script src="app-config.js?v=20260711-leve-r21" defer></script>
     <script src="admin-encomenda-vista.js?v=20260707-modal" defer></script>
     <script src="clientes-encomenda-modal.js?v=20260710-modal-encomenda" defer></script>
-    <script src="clientes.js?v=20260712-app-config" defer></script>
-<script src="inline-listeners-base.js?v=20260711-leve-r21" defer></script>
-<script src="inline-listeners-admin.js?v=20260711-leve-r21" defer></script>
+    <script src="clientes.js?v=20260712-layout-fix" defer></script>
+<script src="inline-listeners-base.js?v=20260712-layout-fix" defer></script>
+<script src="inline-listeners-admin.js?v=20260712-layout-fix" defer></script>
 </body>
 </html>
