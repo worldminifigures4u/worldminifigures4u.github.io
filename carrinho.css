@@ -101,10 +101,22 @@
             line-height:1.35;
         }
 
+        .carrinho-linha-principal{
+            display:flex;
+            flex-direction:column;
+            gap:4px;
+            min-width:0;
+        }
+
+        .carrinho-linha-principal strong{
+            overflow:hidden;
+            text-overflow:ellipsis;
+            white-space:nowrap;
+        }
+
         .preco-carrinho{
             color:#fff;
             font-weight:bold;
-            margin-top:4px;
         }
 
         .controlos-carrinho{
@@ -390,16 +402,102 @@
     }
 }
 
-@media(max-width:560px){
+@media(max-width:800px){
+    .linha-carrinho{
+        display:grid;
+        grid-template-columns:72px minmax(0, 1fr);
+        grid-template-areas:
+            "imagem detalhes"
+            "acoes acoes";
+        align-items:center;
+        column-gap:10px;
+        row-gap:8px;
+    }
+
     .imagem-carrinho{
-        width:58px;
-        height:58px;
-        flex-basis:58px;
+        grid-area:imagem;
+        width:72px;
+        height:72px;
+        flex-basis:72px;
+    }
+
+    .info-carrinho{
+        grid-area:detalhes;
+        min-height:72px;
+        display:flex;
+        flex-direction:column;
+        justify-content:center;
+    }
+
+    .carrinho-linha-principal{
+        flex-direction:row;
+        justify-content:space-between;
+        align-items:baseline;
+        gap:10px;
+    }
+
+    .carrinho-linha-principal strong{
+        font-size:16px;
+        line-height:1.15;
+        white-space:normal;
+        display:-webkit-box;
+        -webkit-line-clamp:2;
+        -webkit-box-orient:vertical;
+        overflow:hidden;
+        flex:1 1 auto;
+        min-width:0;
+    }
+
+    .preco-carrinho{
+        font-size:17px;
+        line-height:1.1;
+        white-space:nowrap;
+        flex:0 0 auto;
+    }
+
+    .controlos-carrinho{
+        grid-area:acoes;
+        width:100%;
+        justify-content:space-between;
+        gap:8px;
+    }
+
+    .btn-quantidade,
+    .btn-remover{
+        flex:1 1 0;
+        min-height:40px;
+    }
+
+    .quantidade-carrinho{
+        flex:0 0 auto;
+        min-width:28px;
+        font-size:16px;
     }
 }
 
-/* No telemóvel, o carrinho usa apenas o scroll geral da página. */
-@media (max-width: 560px) {
+@media(max-width:560px){
+    .linha-carrinho{
+        grid-template-columns:80px minmax(0, 1fr);
+    }
+
+    .imagem-carrinho{
+        width:80px;
+        height:80px;
+        flex-basis:80px;
+    }
+
+    .info-carrinho{
+        min-height:80px;
+    }
+
+    .carrinho-linha-principal strong{
+        font-size:18px;
+    }
+
+    .preco-carrinho{
+        font-size:18px;
+    }
+
     .vista-carrinho .carrinho {
         height: auto;
         max-height: none;

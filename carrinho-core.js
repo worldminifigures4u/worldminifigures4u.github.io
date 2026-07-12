@@ -160,6 +160,9 @@ function atualizarCarrinho(opcoes = {}) {
         const info = document.createElement('div');
         info.className = 'info-carrinho';
 
+        const linhaPrincipal = document.createElement('div');
+        linhaPrincipal.className = 'carrinho-linha-principal';
+
         const nome = document.createElement('strong');
         nome.textContent = item.nome;
 
@@ -167,9 +170,8 @@ function atualizarCarrinho(opcoes = {}) {
         preco.className = 'preco-carrinho';
         preco.textContent = formatarEuro(item.preco * item.quantidade) + ' €';
 
-        info.appendChild(nome);
-        info.appendChild(document.createElement('br'));
-        info.appendChild(preco);
+        linhaPrincipal.append(nome, preco);
+        info.appendChild(linhaPrincipal);
 
         const botoes = document.createElement('div');
         botoes.className = 'controlos-carrinho';
