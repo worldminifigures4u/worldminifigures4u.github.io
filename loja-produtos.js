@@ -246,6 +246,11 @@ function gerarMenus(listaProdutos){
 
     const listaTemas = document.createElement('div');
     listaTemas.className = 'lista-temas';
+    const iniciarRecolhido = window.matchMedia && window.matchMedia('(max-width: 1100px)').matches;
+    if (iniciarRecolhido) {
+        listaTemas.classList.add('recolhida');
+        toggleMenu.textContent = 'Mostrar';
+    }
     menu.appendChild(listaTemas);
 
     const todosBtn = document.createElement('button');
@@ -619,7 +624,7 @@ async function reiniciarVitrinePaginada() {
 
 
 function recolherMenuTemasNoTelemovel() {
-    if (!window.matchMedia || !window.matchMedia('(max-width: 560px)').matches) return;
+    if (!window.matchMedia || !window.matchMedia('(max-width: 1100px)').matches) return;
 
     const listaTemas = document.querySelector('#menu-lateral-temas .lista-temas');
     const botaoToggle = document.querySelector('#menu-lateral-temas .btn-toggle-menu');
@@ -668,6 +673,7 @@ function filtrarTema(filtro, botao){
         if(grupoAlvo && partes.length === 1){ grupoAlvo.classList.add('aberto'); }
     }
 
+    recolherMenuTemasNoTelemovel();
     executarFiltrosCombinados({ rolarParaProdutos: true });
 }
 
