@@ -42,14 +42,15 @@ function atualizarStickyTemas() {
     const header = document.querySelector('header');
     if (!coluna || !menu) return;
 
-    const margem = window.matchMedia && window.matchMedia('(max-width: 1100px)').matches ? 12 : 20;
-    const headerBottom = header ? header.getBoundingClientRect().bottom : 76;
-    const topoNormal = Math.ceil(headerBottom + margem);
-
     if (window.matchMedia && window.matchMedia('(max-width: 1100px)').matches) {
-        definirCssDinamicoTemas(`.coluna-esquerda { --temas-sticky-top: ${topoNormal}px; }`);
+        const headerHeight = header ? Math.ceil(header.getBoundingClientRect().height) : 76;
+        definirCssDinamicoTemas(`.coluna-esquerda { --temas-sticky-top: ${headerHeight}px; }`);
         return;
     }
+
+    const margem = 20;
+    const headerBottom = header ? header.getBoundingClientRect().bottom : 76;
+    const topoNormal = Math.ceil(headerBottom + margem);
     const alturaMenu = Math.ceil(menu.offsetHeight);
     const topoComFundoVisivel = Math.floor(window.innerHeight - alturaMenu - margem);
     const stickyTop = Math.min(topoNormal, topoComFundoVisivel);
@@ -92,4 +93,5 @@ function inicializarPaginaLoja() {
     document.fonts?.ready.then(agendarAtualizacaoStickyTemas);
     window.addEventListener('resize', agendarAtualizacaoStickyTemas);
     window.visualViewport?.addEventListener('resize', agendarAtualizacaoStickyTemas);
+    window.addEventListener('scroll', agendarAtualizacaoStickyTemas, { passive: true });
 }
