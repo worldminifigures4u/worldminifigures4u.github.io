@@ -86,13 +86,19 @@ async function fazerLogin(event) {
     const password = document.getElementById('login-password').value;
 
     if(!dbClient){
-        const cliente = window.dbClient;
-        if (cliente) {
-            dbClient = cliente;
+        if (typeof garantirDbClient === 'function') {
+            try {
+                await garantirDbClient();
+            } catch (erro) {
+                console.error(erro);
+            }
+        }
+        if (window.dbClient && typeof dbClient !== 'undefined') {
+            dbClient = window.dbClient;
         }
     }
 
-    if(!dbClient){
+    if(!dbClient && !window.dbClient){
         mostrarMensagem(statusDiv, "Erro: ligação ao Supabase indisponível. Verifique a internet e recarregue a página.", "msg-erro");
         return;
     }

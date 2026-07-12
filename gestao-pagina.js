@@ -42,11 +42,24 @@
     function aguardarDbClient(timeoutMs = 20000) {
         return new Promise((resolve, reject) => {
             const inicio = Date.now();
-            const verificar = () => {
-                const cliente = window.dbClient || (typeof dbClient !== 'undefined' ? dbClient : null);
-                if (cliente) {
-                    resolve(cliente);
+            const verificar = async () => {
+                if (window.dbClient) {
+                    resolve(window.dbClient);
                     return;
+                }
+                if (typeof garantirDbClient === 'function') {
+                    try {
+                        const cliente = await garantirDbClient();
+                        if (cliente) {
+                            resolve(cliente);
+                            return;
+                        }
+                    } catch (erro) {
+                        if (Date.now() - inicio >= timeoutMs) {
+                            reject(erro);
+                            return;
+                        }
+                    }
                 }
                 if (Date.now() - inicio >= timeoutMs) {
                     reject(new Error('Supabase indisponível.'));

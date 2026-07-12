@@ -125,52 +125,12 @@ function mostrarContaAnonimaSeExistir() {
     if (anonimo) anonimo.classList.remove('oculto');
 }
 
-const PAGINAS_VISTA = {
-    loja: 'index.html',
-    favoritos: 'favoritos.html',
-    conta: 'conta.html',
-    carrinho: 'carrinho.html',
-    sobre: 'sobre.html',
-    contactos: 'contactos.html',
-    politicas: 'politicas.html'
-};
-
-function obterVistaPagina() {
-    const pagina = String(document.body?.dataset?.page || 'loja').toLowerCase();
-    return Object.hasOwn(PAGINAS_VISTA, pagina) ? pagina : 'loja';
-}
-
-function obterVistaHash() {
-    const hash = (window.location.hash || '').replace(/^#/, '').toLowerCase();
-    return Object.hasOwn(PAGINAS_VISTA, hash) ? hash : '';
-}
-
 function paginaPrecisaProdutosLoja() {
     return obterVistaPagina() === 'loja';
 }
 
 function paginaPrecisaCatalogoAdmin() {
     return document.body?.classList?.contains('pagina-gestao') || obterVistaPagina() === 'gestao';
-}
-
-function mostrarVista(vista, navegar = true) {
-    const destino = Object.hasOwn(PAGINAS_VISTA, vista) ? vista : 'loja';
-    const paginaAtual = obterVistaPagina();
-
-    if (navegar && destino !== paginaAtual) {
-        window.location.href = PAGINAS_VISTA[destino];
-        return;
-    }
-
-    document.querySelectorAll('.vista').forEach(secao => {
-        secao.classList.toggle('ativa', secao.id === 'vista-' + destino);
-    });
-    document.querySelectorAll('[data-vista-nav]').forEach(botao => {
-        const destinoContaEmGestao = document.body.classList.contains('pagina-gestao')
-            && botao.dataset.vistaNav === 'conta';
-        botao.classList.toggle('ativa', !destinoContaEmGestao && botao.dataset.vistaNav === destino);
-    });
-    window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
 function irParaPainelCliente() {

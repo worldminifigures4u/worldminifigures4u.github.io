@@ -121,6 +121,27 @@ function mostrarVista(vista, navegar = true) {
     window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
+async function garantirDbClient() {
+    if (window.dbClient) return window.dbClient;
+
+    if (typeof window.carregarScriptSupabase === 'function') {
+        await window.carregarScriptSupabase();
+    }
+
+    if (typeof supabase === 'undefined') {
+        throw new Error('Biblioteca Supabase indisponível.');
+    }
+
+    if (typeof dbClient !== 'undefined' && dbClient) {
+        window.dbClient = dbClient;
+        return dbClient;
+    }
+
+    const cliente = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    window.dbClient = cliente;
+    return cliente;
+}
+
 function definirEstadoVitrine(mensagem, tipo = '') {
     const vitrine = document.getElementById('vitrine-produtos');
     if (!vitrine) return;
