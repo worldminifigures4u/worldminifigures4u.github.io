@@ -459,10 +459,12 @@
         border-bottom:1px solid #333;
         box-shadow:0 -3px 0 #111;
         overflow:visible;
+        padding-left:16px;
+        padding-right:16px;
     }
 
     .menu-temas:has(.lista-temas.recolhida){
-        padding:7px 10px 5px;
+        padding:7px 16px 5px;
     }
 
     .menu-temas:has(.lista-temas.recolhida) .cabecalho-menu-temas{
