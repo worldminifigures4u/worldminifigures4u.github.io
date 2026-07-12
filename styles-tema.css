@@ -122,7 +122,8 @@
 .btn-continuar-comprar,
 .btn-adicionar,
 .btn-favorito-adicionar,
-.favoritos-continuar{
+.favoritos-continuar,
+.conta-ver-produtos{
     border:0 !important;
     background:var(--cor-acao-principal, #ffc107) !important;
     color:#000 !important;
@@ -132,7 +133,8 @@
 .btn-continuar-comprar:hover,
 .btn-adicionar:hover,
 .btn-favorito-adicionar:hover,
-.favoritos-continuar:hover{
+.favoritos-continuar:hover,
+.conta-ver-produtos:hover{
     background:var(--cor-acao-principal-hover, #e0a800) !important;
     color:#000 !important;
 }
