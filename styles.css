@@ -336,7 +336,7 @@ body{
             display:none;
         }
 
-        .vista.ativa{
+        .vista.ativa:not(.vista-loja){
             display:block;
         }
 
