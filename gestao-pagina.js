@@ -21,17 +21,10 @@
         }
     }
 
-    async function aguardarClienteSupabase(timeoutMs = 15000) {
-        const inicio = Date.now();
-        while ((typeof dbClient === 'undefined' || !dbClient) && Date.now() - inicio < timeoutMs) {
-            await new Promise((resolve) => window.setTimeout(resolve, 100));
-        }
-        if (!dbClient) {
-            throw new Error('Cliente Supabase indisponível.');
-        }
-    }
+    function mostrarLoginGestaoSeNecessario() {
+        if (!document.body.classList.contains('pagina-gestao')) return;
+        if (document.body.classList.contains('cabecalho-com-admin')) return;
 
-    function mostrarLoginGestao() {
         const bloqueio = document.getElementById('gestao-bloqueio');
         if (bloqueio) bloqueio.hidden = true;
 
@@ -44,58 +37,6 @@
         const anonimo = document.getElementById('conteudo-cliente-anonimo');
         if (autenticado) autenticado.classList.add('oculto');
         if (anonimo) anonimo.classList.remove('oculto');
-    }
-
-    async function finalizarEstadoGestao() {
-        if (!document.body.classList.contains('pagina-gestao')) return;
-
-        const bloqueio = document.getElementById('gestao-bloqueio');
-        let temSessao = false;
-
-        try {
-            await aguardarClienteSupabase();
-
-            if (typeof verificarSessaoSupabase === 'function') {
-                await verificarSessaoSupabase();
-            } else if (dbClient?.auth) {
-                const { data: { session } } = await dbClient.auth.getSession();
-                if (session?.user && typeof obterDadosPerfilDaTabela === 'function') {
-                    await obterDadosPerfilDaTabela(session.user.id, session.user);
-                } else if (typeof atualizarVisibilidadeAdmin === 'function') {
-                    atualizarVisibilidadeAdmin(null);
-                }
-            }
-
-            if (dbClient?.auth) {
-                const { data: { session } } = await dbClient.auth.getSession();
-                temSessao = !!session?.user;
-            }
-        } catch (erro) {
-            console.error(erro);
-            if (bloqueio) {
-                bloqueio.hidden = false;
-                bloqueio.textContent = 'Erro ao verificar acesso. Recarregue a página.';
-            }
-            return;
-        }
-
-        if (document.body.classList.contains('cabecalho-com-admin')) {
-            if (bloqueio) bloqueio.hidden = true;
-            if (typeof window.garantirGestaoAdmin === 'function') {
-                await window.garantirGestaoAdmin();
-            }
-            return;
-        }
-
-        if (!temSessao) {
-            mostrarLoginGestao();
-            return;
-        }
-
-        if (bloqueio && bloqueio.textContent.trim() === 'A verificar acesso administrativo...') {
-            bloqueio.hidden = false;
-            bloqueio.textContent = 'Acesso reservado ao administrador.';
-        }
     }
 
     function agendarCarregamentoConta() {
@@ -123,6 +64,16 @@
         }
     }
 
+    function agendarFallbackLoginGestao() {
+        window.setTimeout(() => {
+            const bloqueio = document.getElementById('gestao-bloqueio');
+            if (!bloqueio || bloqueio.hidden) return;
+            if (document.body.classList.contains('cabecalho-com-admin')) return;
+            if (bloqueio.textContent.trim() !== 'A verificar acesso administrativo...') return;
+            mostrarLoginGestaoSeNecessario();
+        }, 4000);
+    }
+
     document.addEventListener('DOMContentLoaded', () => {
         if (document.body.classList.contains('pagina-gestao')) {
             const pedirAdmin = () => {
@@ -137,6 +88,7 @@
                 elemento.addEventListener('click', pedirAdmin, { once: true });
             });
             agendarGestaoAdmin();
+            agendarFallbackLoginGestao();
         }
 
         const painel = document.getElementById('painel-cliente');
@@ -156,8 +108,12 @@
         agendarCarregamentoConta();
     });
 
-    window.addEventListener('load', () => {
+    window.addEventListener('figures-planet-core-pronta', () => {
         if (!document.body.classList.contains('pagina-gestao')) return;
-        finalizarEstadoGestao().catch(console.error);
+        if (document.body.classList.contains('cabecalho-com-admin')) {
+            if (typeof window.garantirGestaoAdmin === 'function') {
+                window.garantirGestaoAdmin().catch(console.error);
+            }
+        }
     });
 })();

@@ -223,6 +223,7 @@ window.addEventListener('load', async () => {
     }
     if(typeof supabase !== 'undefined'){
         dbClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        window.dbClient = dbClient;
         produtosClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {
             auth: {
                 persistSession: false,
@@ -271,6 +272,7 @@ window.addEventListener('load', async () => {
         await aguardarAppFavoritosSeNecessario();
         mostrarVista(obterVistaPagina(), false);
         await verificarSessaoSupabase();
+        window.dispatchEvent(new Event('figures-planet-core-pronta'));
         if (obterVistaPagina() === 'carrinho' && typeof garantirProdutosCarrinhoNoCatalogo === 'function') {
             await garantirProdutosCarrinhoNoCatalogo();
             atualizarCarrinhoSeDisponivel();
@@ -363,8 +365,16 @@ function atualizarVisibilidadeAdmin(user) {
     }
     const bloqueioGestao = document.getElementById('gestao-bloqueio');
     if (bloqueioGestao) {
-        bloqueioGestao.hidden = adminAtivo;
-        bloqueioGestao.textContent = adminAtivo ? '' : 'Acesso reservado ao administrador.';
+        if (adminAtivo) {
+            bloqueioGestao.hidden = true;
+            bloqueioGestao.textContent = '';
+        } else if (!user) {
+            bloqueioGestao.hidden = true;
+            mostrarContaAnonimaSeExistir();
+        } else {
+            bloqueioGestao.hidden = false;
+            bloqueioGestao.textContent = 'Acesso reservado ao administrador.';
+        }
     }
     if(!painel) return;
     const zonaEliminacao = document.getElementById('zona-eliminacao-conta');
