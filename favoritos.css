@@ -269,13 +269,14 @@
 
     .btn-favorito-remover{
         grid-area:remover;
-        align-self:stretch;
+        align-self:center;
         display:flex;
         align-items:center;
         justify-content:center;
         width:40px;
+        height:40px;
         min-width:40px;
-        min-height:72px;
+        min-height:40px;
         padding:0;
         background:#ff4d4d;
         color:#fff;
@@ -345,9 +346,10 @@
     }
 
     .btn-favorito-remover{
-        min-height:80px;
         width:44px;
+        height:44px;
         min-width:44px;
+        min-height:44px;
     }
 
     .btn-favorito-remover-icone{
