@@ -187,14 +187,12 @@
 }
 
 @media(max-width:800px){
-    .favoritos-topo{
-        align-items:flex-start;
-        flex-direction:column;
-    }
-
     .favorito-card{
         grid-template-columns:64px minmax(0, 1fr);
         align-items:start;
+        width:100%;
+        max-width:100%;
+        box-sizing:border-box;
     }
 
     .favorito-imagem{
@@ -213,7 +211,41 @@
     }
 }
 
-@media(max-width:460px){
+@media(max-width:560px){
+    .favoritos-pagina{
+        width:100%;
+        margin:0;
+    }
+
+    .favoritos-topo{
+        align-items:center;
+        flex-direction:row;
+        flex-wrap:wrap;
+        justify-content:space-between;
+        gap:8px 12px;
+        margin-bottom:14px;
+    }
+
+    .favoritos-topo-texto{
+        flex:1 1 auto;
+        min-width:0;
+    }
+
+    .favoritos-topo h1{
+        font-size:22px;
+    }
+
+    .favoritos-continuar{
+        flex:0 0 auto;
+        padding:8px 14px;
+        font-size:13px;
+        white-space:nowrap;
+    }
+
+    .favoritos-lista{
+        width:100%;
+    }
+
     .favorito-card{
         grid-template-columns:56px minmax(0, 1fr);
         gap:8px;
