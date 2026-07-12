@@ -86,6 +86,13 @@ async function fazerLogin(event) {
     const password = document.getElementById('login-password').value;
 
     if(!dbClient){
+        const cliente = window.dbClient;
+        if (cliente) {
+            dbClient = cliente;
+        }
+    }
+
+    if(!dbClient){
         mostrarMensagem(statusDiv, "Erro: ligação ao Supabase indisponível. Verifique a internet e recarregue a página.", "msg-erro");
         return;
     }
@@ -121,6 +128,9 @@ async function fazerLogin(event) {
                 15000,
                 "Sessão iniciada, mas os dados do perfil demoraram demasiado a carregar."
             );
+            if (document.body.classList.contains('pagina-gestao') && typeof atualizarVisibilidadeAdmin === 'function') {
+                atualizarVisibilidadeAdmin(data.user);
+            }
             statusDiv.innerText = "";
         }
     } catch (erro) {

@@ -39,6 +39,70 @@
         if (anonimo) anonimo.classList.remove('oculto');
     }
 
+    function aguardarDbClient(timeoutMs = 20000) {
+        return new Promise((resolve, reject) => {
+            const inicio = Date.now();
+            const verificar = () => {
+                const cliente = window.dbClient || (typeof dbClient !== 'undefined' ? dbClient : null);
+                if (cliente) {
+                    resolve(cliente);
+                    return;
+                }
+                if (Date.now() - inicio >= timeoutMs) {
+                    reject(new Error('Supabase indisponível.'));
+                    return;
+                }
+                window.setTimeout(verificar, 100);
+            };
+            verificar();
+        });
+    }
+
+    function ligarFormulariosGestao() {
+        const painel = document.getElementById('painel-cliente');
+        if (!painel) return;
+
+        painel.addEventListener('submit', async (evento) => {
+            const formulario = evento.target;
+            if (!(formulario instanceof HTMLFormElement)) return;
+
+            if (formulario.id === 'form-login') {
+                evento.preventDefault();
+                try {
+                    if (typeof window.garantirContaCliente === 'function') {
+                        await window.garantirContaCliente();
+                    }
+                    await aguardarDbClient();
+                    if (typeof fazerLogin === 'function') {
+                        await fazerLogin(evento);
+                    }
+                } catch (erro) {
+                    console.error(erro);
+                    const statusDiv = document.getElementById('status-cliente');
+                    if (statusDiv) statusDiv.textContent = 'Erro: ligação ao servidor indisponível. Tente novamente.';
+                }
+            }
+        });
+
+        painel.addEventListener('click', async (evento) => {
+            const botao = evento.target.closest('[data-aba-cliente]');
+            if (!botao) return;
+            if (typeof window.garantirContaCliente === 'function') {
+                await window.garantirContaCliente();
+            }
+            if (typeof mudarAba === 'function') mudarAba(botao.dataset.abaCliente);
+        });
+
+        painel.addEventListener('click', async (evento) => {
+            const botao = evento.target.closest('[data-acao-cliente="recuperar-password"]');
+            if (!botao) return;
+            if (typeof window.garantirContaCliente === 'function') {
+                await window.garantirContaCliente();
+            }
+            if (typeof pedirRecuperacaoPassword === 'function') pedirRecuperacaoPassword();
+        });
+    }
+
     function agendarCarregamentoConta() {
         if (typeof window.garantirContaCliente !== 'function') return;
         if (urlTemRecuperacaoConta()) {
@@ -89,6 +153,7 @@
             });
             agendarGestaoAdmin();
             agendarFallbackLoginGestao();
+            ligarFormulariosGestao();
         }
 
         const painel = document.getElementById('painel-cliente');
