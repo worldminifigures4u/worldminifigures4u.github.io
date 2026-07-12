@@ -634,6 +634,32 @@ function removerPrecoFinalLinhaListaPlataforma(texto) {
         .trim();
 }
 
+function limparTextoProdutoListaPlataforma(texto) {
+    let limpo = String(texto || '').trim();
+    if (!limpo) return '';
+
+    limpo = limpo
+        .replace(/(?:€|eur(?:os?)?)\s*\d{1,4}(?:[,.]\d{1,2})?/gi, ' ')
+        .replace(/\d{1,4}(?:[,.]\d{1,2})?\s*(?:€|eur(?:os?)?)/gi, ' ')
+        .replace(/^(?:\([^)]+\)\s*)+/g, '')
+        .replace(/\s+/g, ' ')
+        .trim();
+
+    return limpo;
+}
+
+function obterChaveTextoListaPlataforma(texto) {
+    const limpo = limparTextoProdutoListaPlataforma(texto);
+    if (!limpo) return '';
+
+    const semParenteses = limpo
+        .replace(/\s*\([^)]*\)/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim();
+
+    return normalizarTextoWallapop(semParenteses || limpo);
+}
+
 function preprocessarLinhasListaProdutosPlataforma(linhas) {
     const resultado = [];
     let anteriorNormalizado = '';
@@ -711,7 +737,7 @@ function consolidarLinhasTextoListaPlataforma(linhas) {
     const ordem = [];
 
     linhas.forEach(linha => {
-        const chave = normalizarTextoWallapop(linha.original);
+        const chave = obterChaveTextoListaPlataforma(linha.original);
         if (!chave) return;
         const existente = mapa.get(chave);
         if (existente) {
@@ -782,7 +808,12 @@ function consolidarLinhasProdutoListaPlataforma(linhas) {
 
 function obterRotuloEstadoLinhaListaPlataforma(linha) {
     if (linha.repeticaoTexto || linha.repeticaoProduto) {
-        const vezes = Math.max(linha.repeticoes || 0, linha.repeticoesProduto || 0, 2);
+        const vezes = Math.max(
+            Number(linha.repeticoes) || 0,
+            Number(linha.repeticoesProduto) || 0,
+            Array.isArray(linha.textosOriginais) ? linha.textosOriginais.length : 0,
+            2
+        );
         return `Repetida ${vezes}x na lista (quantidades somadas)`;
     }
     if (linha.estado === 'exata') return 'Correspond\u00eancia exata';
@@ -841,6 +872,8 @@ function interpretarLinhaProdutosPlataforma(linha, indice, opcoes = {}) {
         texto = fim[1].trim();
         quantidade = Math.max(1, Number(fim[2]) || 1);
     }
+    texto = limparTextoProdutoListaPlataforma(texto);
+    if (!texto) return null;
     return { indice, original: texto, quantidade };
 }
 
@@ -1064,9 +1097,7 @@ function abrirRevisaoListaProdutosPlataforma() {
         const quantidade = document.createElement('strong');
         quantidade.textContent = `${linha.quantidade}x`;
         const nome = document.createElement('span');
-        nome.textContent = Array.isArray(linha.textosOriginais) && linha.textosOriginais.length > 1
-            ? linha.textosOriginais.join(' / ')
-            : linha.original;
+        nome.textContent = linha.original;
         const estado = document.createElement('small');
         estado.textContent = obterRotuloEstadoLinhaListaPlataforma(linha);
         if (linha.repeticaoTexto || linha.repeticaoProduto) {
