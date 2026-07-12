@@ -2,6 +2,7 @@
     const RECURSOS_PREFETCH_LOJA = [
         'index.html',
         'app-config.js',
+        'app-util.js',
         'app-core.js',
         'app-loja.js',
         'loja-produtos.js',

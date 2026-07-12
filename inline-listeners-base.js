@@ -156,8 +156,9 @@
     function prefetchRecursosLoja() {
         const recursos = [
             'index.html',
-            'app-config.js',
-            'app-core.js',
+        'app-config.js',
+        'app-util.js',
+        'app-core.js',
             'app-loja.js',
             'loja-produtos.js',
             'cart-mini.js'
@@ -169,6 +170,33 @@
             link.href = href;
             link.as = href.endsWith('.html') ? 'document' : 'script';
             document.head.appendChild(link);
+        });
+    }
+
+    function ligarPrefetchGestao() {
+        let prefetchFeito = false;
+        const iniciarPrefetch = function () {
+            if (prefetchFeito) return;
+            prefetchFeito = true;
+            [
+                'gestao.html',
+                'gestao-admin-loader.js',
+                'app-core.js',
+                'app-sku.js'
+            ].forEach(function (href) {
+                if (document.querySelector('link[rel="prefetch"][href="' + href + '"]')) return;
+                const link = document.createElement('link');
+                link.rel = 'prefetch';
+                link.href = href;
+                link.as = href.endsWith('.html') ? 'document' : 'script';
+                document.head.appendChild(link);
+            });
+        };
+
+        document.querySelectorAll('.acao-gestao-admin').forEach(function (elemento) {
+            elemento.addEventListener('mouseenter', iniciarPrefetch, { once: true });
+            elemento.addEventListener('focus', iniciarPrefetch, { once: true });
+            elemento.addEventListener('touchstart', iniciarPrefetch, { once: true, passive: true });
         });
     }
 
@@ -289,7 +317,7 @@
 
         const carregarCheckout = () => new Promise((resolve, reject) => {
             const script = document.createElement('script');
-            script.src = 'checkout.js?v=20260711-leve-r17';
+            script.src = 'checkout.js?v=20260711-leve-r18';
             script.defer = true;
             script.onload = () => resolve();
             script.onerror = () => reject(new Error('Falha ao carregar checkout.'));
@@ -345,6 +373,7 @@
             ligarPrefetchLoja();
             ligarPrefetchFavoritos();
             ligarPrefetchCarrinho();
+            ligarPrefetchGestao();
             if (config.rodape) inserirRodapeSite();
             atualizarContadorCarrinhoTopo();
             window.addEventListener('storage', atualizarContadorCarrinhoTopo);
