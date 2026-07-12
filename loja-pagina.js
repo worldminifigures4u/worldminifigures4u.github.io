@@ -4,6 +4,7 @@
     let promessaLojaProdutos = null;
     let promessaCartMini = null;
     let promessaModulosLoja = null;
+    let promessaVitrineLojaPronta = null;
 
     function carregarScript(src) {
         return new Promise((resolve, reject) => {
@@ -36,7 +37,7 @@
         if (typeof carregarProdutosDaNuvem === 'function') return Promise.resolve();
         if (!promessaLojaProdutos) {
             promessaLojaProdutos = garantirCartMiniLoja()
-                .then(() => carregarScript('loja-produtos.js?v=20260712-temas-recolhidos'));
+                .then(() => carregarScript('loja-produtos.js?v=20260712-pesquisa-live'));
         }
         return promessaLojaProdutos;
     }
@@ -126,11 +127,11 @@
     }
 
     function ligarInteracaoModulosLoja() {
-        const pedirModulos = () => garantirModulosLoja().catch(console.error);
+        const pedirVitrine = () => garantirVitrineLojaPronta().catch(console.error);
 
-        document.getElementById('campo-pesquisa')?.addEventListener('focus', pedirModulos, { once: true });
-        document.getElementById('menu-lateral-temas')?.addEventListener('click', pedirModulos, { once: true });
-        document.getElementById('vitrine-produtos')?.addEventListener('mouseenter', pedirModulos, { once: true });
+        document.getElementById('campo-pesquisa')?.addEventListener('focus', pedirVitrine, { once: true });
+        document.getElementById('menu-lateral-temas')?.addEventListener('click', pedirVitrine, { once: true });
+        document.getElementById('vitrine-produtos')?.addEventListener('mouseenter', pedirVitrine, { once: true });
     }
 
     async function iniciarVitrineLoja() {
@@ -165,6 +166,23 @@
         }
     }
 
+    function garantirVitrineLojaPronta() {
+        if (!document.getElementById('vitrine-produtos')) {
+            return Promise.resolve();
+        }
+
+        if (!promessaVitrineLojaPronta) {
+            promessaVitrineLojaPronta = iniciarVitrineLoja().catch((erro) => {
+                promessaVitrineLojaPronta = null;
+                throw erro;
+            });
+        }
+
+        return promessaVitrineLojaPronta;
+    }
+
+    window.garantirVitrineLojaPronta = garantirVitrineLojaPronta;
+
     document.addEventListener('DOMContentLoaded', () => {
         if (!document.getElementById('vitrine-produtos')) return;
 
@@ -175,6 +193,6 @@
 
     window.addEventListener('load', () => {
         if (document.body?.dataset?.page !== 'loja' && !document.getElementById('vitrine-produtos')) return;
-        iniciarVitrineLoja().catch(console.error);
+        garantirVitrineLojaPronta().catch(console.error);
     });
 })();

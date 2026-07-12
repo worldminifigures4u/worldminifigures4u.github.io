@@ -120,7 +120,7 @@
         });
     }
 
-    function executarPesquisaLoja() {
+    function executarPesquisaLoja(imediato) {
         const correr = () => {
             if (typeof window.pesquisarNoCabecalho === 'function') {
                 window.pesquisarNoCabecalho();
@@ -129,12 +129,24 @@
             }
         };
 
-        if (typeof window.garantirModulosLoja === 'function') {
-            window.garantirModulosLoja().then(correr).catch(console.error);
+        const agendar = () => {
+            const promessaVitrine = typeof window.garantirVitrineLojaPronta === 'function'
+                ? window.garantirVitrineLojaPronta()
+                : (typeof window.garantirModulosLoja === 'function'
+                    ? window.garantirModulosLoja()
+                    : Promise.resolve());
+
+            promessaVitrine.then(correr).catch(console.error);
+        };
+
+        if (imediato) {
+            window.clearTimeout(window.__pesquisaLojaTimer);
+            agendar();
             return;
         }
 
-        correr();
+        window.clearTimeout(window.__pesquisaLojaTimer);
+        window.__pesquisaLojaTimer = window.setTimeout(agendar, 250);
     }
 
     function ligarPesquisaLoja() {
@@ -144,24 +156,28 @@
         if (formulario) {
             formulario.addEventListener('submit', function (evento) {
                 evento.preventDefault();
-                executarPesquisaLoja();
+                executarPesquisaLoja(true);
             });
         }
 
         if (!campo) return;
 
         campo.addEventListener('focus', function () {
-            if (typeof window.garantirModulosLoja === 'function') {
+            if (typeof window.garantirVitrineLojaPronta === 'function') {
+                window.garantirVitrineLojaPronta().catch(console.error);
+            } else if (typeof window.garantirModulosLoja === 'function') {
                 window.garantirModulosLoja().catch(console.error);
             }
         }, { once: true });
 
-        campo.addEventListener('input', executarPesquisaLoja);
+        campo.addEventListener('input', function () {
+            executarPesquisaLoja(false);
+        });
 
         campo.addEventListener('keydown', function (evento) {
             if (evento.key !== 'Enter') return;
             evento.preventDefault();
-            executarPesquisaLoja();
+            executarPesquisaLoja(true);
         });
     }
 
