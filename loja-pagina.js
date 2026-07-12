@@ -58,6 +58,35 @@
     window.garantirAppLoja = garantirAppLoja;
     window.garantirLojaProdutos = garantirLojaProdutos;
 
+    function aguardarSessaoSupabase(timeoutMs = 12000) {
+        if (typeof dbClient !== 'undefined' && dbClient) {
+            return Promise.resolve();
+        }
+
+        return new Promise((resolve, reject) => {
+            const timer = window.setTimeout(() => {
+                window.removeEventListener('figures-planet-sessao-pronta', aoPronto);
+                window.removeEventListener('figures-planet-sessao-erro', aoErro);
+                reject(new Error('Sessão Supabase indisponível.'));
+            }, timeoutMs);
+
+            const aoPronto = () => {
+                window.clearTimeout(timer);
+                window.removeEventListener('figures-planet-sessao-erro', aoErro);
+                resolve();
+            };
+
+            const aoErro = () => {
+                window.clearTimeout(timer);
+                window.removeEventListener('figures-planet-sessao-pronta', aoPronto);
+                reject(new Error('Biblioteca Supabase não carregou.'));
+            };
+
+            window.addEventListener('figures-planet-sessao-pronta', aoPronto, { once: true });
+            window.addEventListener('figures-planet-sessao-erro', aoErro, { once: true });
+        });
+    }
+
     function pareceSessaoAtiva() {
         try {
             return Object.keys(localStorage).some((chave) => (
@@ -104,11 +133,48 @@
         document.getElementById('vitrine-produtos')?.addEventListener('mouseenter', pedirModulos, { once: true });
     }
 
+    async function iniciarVitrineLoja() {
+        const vistaHash = typeof obterVistaHash === 'function' ? obterVistaHash() : '';
+        const paginaAtual = typeof obterVistaPagina === 'function' ? obterVistaPagina() : 'loja';
+        if (vistaHash && vistaHash !== paginaAtual && typeof PAGINAS_VISTA !== 'undefined') {
+            window.location.replace(PAGINAS_VISTA[vistaHash]);
+            return;
+        }
+
+        await garantirModulosLoja();
+        if (typeof inicializarPaginaLoja === 'function') inicializarPaginaLoja();
+
+        try {
+            await aguardarSessaoSupabase();
+        } catch (erro) {
+            console.error(erro);
+            if (typeof definirEstadoVitrine === 'function') {
+                definirEstadoVitrine('Erro: biblioteca Supabase não carregou. Verifique a ligação à internet.', 'erro');
+            }
+            return;
+        }
+
+        if (typeof carregarProdutosDaNuvem === 'function') {
+            await carregarProdutosDaNuvem();
+        }
+        if (typeof aplicarPesquisaUrl === 'function') aplicarPesquisaUrl();
+
+        if (typeof window.garantirAppFavoritos === 'function') {
+            await window.garantirAppFavoritos();
+            atualizarCoracoesAposCarga();
+        }
+    }
+
     document.addEventListener('DOMContentLoaded', () => {
         if (!document.getElementById('vitrine-produtos')) return;
 
         garantirModulosLoja().catch(console.error);
         ligarInteracaoModulosLoja();
         agendarFavoritosLoja();
+    });
+
+    window.addEventListener('load', () => {
+        if (document.body?.dataset?.page !== 'loja' && !document.getElementById('vitrine-produtos')) return;
+        iniciarVitrineLoja().catch(console.error);
     });
 })();

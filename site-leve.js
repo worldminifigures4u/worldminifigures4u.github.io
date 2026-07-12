@@ -3,7 +3,7 @@
         'index.html',
         'app-config.js',
         'app-util.js',
-        'app-core.js',
+        'app-sessao.js',
         'app-loja.js',
         'loja-produtos.js',
         'loja.css',

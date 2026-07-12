@@ -283,18 +283,25 @@ window.addEventListener('load', async () => {
         await window.carregarScriptSupabase();
     } catch (erro) {
         console.error(erro);
+        window.dispatchEvent(new Event('figures-planet-sessao-erro'));
         return;
     }
 
     if (typeof supabase === 'undefined') return;
 
     iniciarClientesSupabase();
+    window.dispatchEvent(new Event('figures-planet-sessao-pronta'));
 
     await aguardarModulosContaCliente();
     await aguardarAppFavoritos();
     await aguardarModulosFavoritos();
 
     if (urlTemRecuperacaoPassword()) {
+        if (!existeAreaClientePagina()) {
+            const destino = 'conta.html' + window.location.search + window.location.hash;
+            window.location.replace(destino);
+            return;
+        }
         await prepararRecuperacaoPassword();
         return;
     }
@@ -315,6 +322,6 @@ window.addEventListener('load', async () => {
 
 if ('serviceWorker' in navigator && window.location.protocol !== 'file:') {
     window.addEventListener('load', () => {
-        navigator.serviceWorker.register('sw.js?v=20260711-leve-r20').catch(() => {});
+        navigator.serviceWorker.register('sw.js?v=20260711-leve-r21').catch(() => {});
     });
 }

@@ -158,7 +158,7 @@
             'index.html',
             'app-config.js',
             'app-util.js',
-            'app-core.js',
+            'app-sessao.js',
             'app-loja.js',
             'loja-produtos.js',
             'loja.css',
@@ -354,7 +354,7 @@
 
         const carregarCheckout = () => new Promise((resolve, reject) => {
             const script = document.createElement('script');
-            script.src = 'checkout.js?v=20260711-leve-r20';
+            script.src = 'checkout.js?v=20260711-leve-r21';
             script.defer = true;
             script.onload = () => resolve();
             script.onerror = () => reject(new Error('Falha ao carregar checkout.'));

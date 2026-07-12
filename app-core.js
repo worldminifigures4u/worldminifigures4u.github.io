@@ -424,49 +424,8 @@ function carregarCatalogoAdminQuandoDisponivel() {
     });
 }
 
-function definirHtmlSeguro(elemento, partes) {
-    elemento.replaceChildren();
-    partes.forEach(parte => {
-        if (typeof parte === 'string') {
-            elemento.appendChild(document.createTextNode(parte));
-            return;
-        }
-        if (parte.br) {
-            elemento.appendChild(document.createElement('br'));
-            return;
-        }
-        if (parte.strong) {
-            const strong = document.createElement('strong');
-            strong.textContent = parte.strong;
-            elemento.appendChild(strong);
-        }
-    });
-}
-
-function definirEstadoVitrine(mensagem, tipo = '') {
-    const vitrine = document.getElementById('vitrine-produtos');
-    if (!vitrine) return;
-    vitrine.replaceChildren();
-    const estado = document.createElement('div');
-    estado.className = `estado-vitrine ${tipo}`.trim();
-    estado.textContent = mensagem;
-    vitrine.appendChild(estado);
-}
-
-const imagensProdutoPrecarregadas = new Set();
-
-function precarregarImagemProduto(url) {
-    const src = String(url || '').trim();
-    if (!src || imagensProdutoPrecarregadas.has(src)) return;
-
-    imagensProdutoPrecarregadas.add(src);
-    const imagem = new Image();
-    imagem.decoding = 'async';
-    imagem.src = src;
-}
-
 if ('serviceWorker' in navigator && window.location.protocol !== 'file:') {
     window.addEventListener('load', () => {
-        navigator.serviceWorker.register('sw.js?v=20260711-leve-r20').catch(() => {});
+        navigator.serviceWorker.register('sw.js?v=20260711-leve-r21').catch(() => {});
     });
 }
