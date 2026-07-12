@@ -35,6 +35,11 @@
     }
 
     .coluna-esquerda {
+        order: 1;
         width: 100%;
+    }
+
+    .conteudo-central {
+        order: 2;
     }
 }

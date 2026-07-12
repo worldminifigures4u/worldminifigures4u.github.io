@@ -246,11 +246,6 @@ function gerarMenus(listaProdutos){
 
     const listaTemas = document.createElement('div');
     listaTemas.className = 'lista-temas';
-    const iniciarRecolhido = window.matchMedia && window.matchMedia('(max-width: 560px)').matches;
-    if (iniciarRecolhido) {
-        listaTemas.classList.add('recolhida');
-        toggleMenu.textContent = 'Mostrar';
-    }
     menu.appendChild(listaTemas);
 
     const todosBtn = document.createElement('button');
@@ -673,7 +668,6 @@ function filtrarTema(filtro, botao){
         if(grupoAlvo && partes.length === 1){ grupoAlvo.classList.add('aberto'); }
     }
 
-    recolherMenuTemasNoTelemovel();
     executarFiltrosCombinados({ rolarParaProdutos: true });
 }
 

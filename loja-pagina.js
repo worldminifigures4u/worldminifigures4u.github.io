@@ -27,7 +27,7 @@
     function garantirAppLoja() {
         if (typeof inicializarPaginaLoja === 'function') return Promise.resolve();
         if (!promessaAppLoja) {
-            promessaAppLoja = carregarScript('app-loja.js?v=20260711-modular');
+            promessaAppLoja = carregarScript('app-loja.js?v=20260712-mobile-temas');
         }
         return promessaAppLoja;
     }
@@ -36,7 +36,7 @@
         if (typeof carregarProdutosDaNuvem === 'function') return Promise.resolve();
         if (!promessaLojaProdutos) {
             promessaLojaProdutos = garantirCartMiniLoja()
-                .then(() => carregarScript('loja-produtos.js?v=20260712-tema-scroll'));
+                .then(() => carregarScript('loja-produtos.js?v=20260712-mobile-temas'));
         }
         return promessaLojaProdutos;
     }
