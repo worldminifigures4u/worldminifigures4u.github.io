@@ -99,13 +99,13 @@
 
 .linha-carrinho strong,
 .produto-card h3,
-.favorito-info strong{
+.favorito-detalhes strong{
     color:var(--cor-texto-principal, #fff) !important;
 }
 
 .categoria,
 .subcategoria,
-.favorito-info span,
+.favorito-detalhes .favorito-linha-secundaria span:not(.favorito-preco),
 .contador-produtos,
 .form-cliente label,
 .sessao-conta-titulo,

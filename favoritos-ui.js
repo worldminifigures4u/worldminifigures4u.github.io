@@ -102,9 +102,6 @@ function criarCardFavoritoCliente(produto) {
     imagem.decoding = 'sync';
     imagem.onerror = () => { imagem.src = 'img/sem-imagem.png'; };
 
-    const info = document.createElement('div');
-    info.className = 'favorito-info';
-
     const nome = document.createElement('strong');
     nome.textContent = produto.nome || 'Produto';
 
@@ -122,11 +119,18 @@ function criarCardFavoritoCliente(produto) {
     estado.className = produto.ativo === false ? 'favorito-indisponivel' : 'stock-disponivel';
     estado.textContent = produto.ativo === false ? 'Sem stock / indisponível' : 'Disponível';
 
-    info.append(nome, detalhe);
+    const detalhes = document.createElement('div');
+    detalhes.className = 'favorito-detalhes';
 
-    const meta = document.createElement('div');
-    meta.className = 'favorito-meta';
-    meta.append(preco, estado);
+    const linhaPrincipal = document.createElement('div');
+    linhaPrincipal.className = 'favorito-linha';
+
+    const linhaSecundaria = document.createElement('div');
+    linhaSecundaria.className = 'favorito-linha favorito-linha-secundaria';
+
+    linhaPrincipal.append(nome, preco);
+    linhaSecundaria.append(detalhe, estado);
+    detalhes.append(linhaPrincipal, linhaSecundaria);
 
     const acoes = document.createElement('div');
     acoes.className = 'favorito-acoes';
@@ -150,7 +154,7 @@ function criarCardFavoritoCliente(produto) {
     remover.addEventListener('click', () => removerFavoritoProduto(produto.id));
 
     acoes.append(adicionar, remover);
-    card.append(imagem, info, meta, acoes);
+    card.append(imagem, detalhes, acoes);
     return card;
 }
 
