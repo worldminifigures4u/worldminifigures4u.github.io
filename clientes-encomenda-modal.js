@@ -162,7 +162,6 @@ function configurarModalEncomendaCliente() {
         client: obterSupabaseModalEncomendaCliente(),
         hooks: {
             definirStatus: definirStatusModalEncomendaCliente,
-            renderizarLista: () => {},
             renderizarModal: () => {
                 if (clientesEncomendaModalAtual && !document.getElementById("clientes-encomenda-modal")?.hidden) {
                     renderizarModalEncomendaCliente();

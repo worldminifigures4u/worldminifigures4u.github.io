@@ -474,8 +474,8 @@ window.AdminEncomendaVista = (function () {
                 throw error || new Error(data?.erro || "Não foi possível guardar a prioridade.");
             }
             encomenda.prioritaria = prioritaria;
-            hooks.renderizarLista();
-            hooks.renderizarModal();
+            sincronizarEncomendaNaLista(encomenda, { prioritaria });
+            atualizarListaAposAlteracaoEncomenda();
             hooks.definirStatus(prioritaria ? "Encomenda marcada como prioritária." : "Prioridade removida.");
         } catch (error) {
             checkbox.checked = !prioritaria;
@@ -489,7 +489,19 @@ window.AdminEncomendaVista = (function () {
         }
     }
 
-    const ORIGENS_FATURA_MOLONI_OPCIONAL = new Set(["olx"]);
+    function sincronizarEncomendaNaLista(encomenda, alteracoes = {}) {
+        const lista = hooks.obterLista();
+        const indice = lista.findIndex(item => String(item.id) === String(encomenda.id));
+        if (indice < 0) return;
+        Object.assign(lista[indice], alteracoes);
+        Object.assign(encomenda, alteracoes);
+    }
+
+    function atualizarListaAposAlteracaoEncomenda() {
+        hooks.atualizarResumo();
+        hooks.renderizarLista();
+        hooks.renderizarModal();
+    }
 
     function origemEncomenda(encomenda) {
         return normalizar(encomenda?.origem || "site");
@@ -642,6 +654,11 @@ window.AdminEncomendaVista = (function () {
             if (data?.created_at) encomenda.created_at = data.created_at;
             else if (dataPagamentoIso) encomenda.created_at = dataPagamentoIso;
             if (data?.stock_reposto) encomenda.stock_reposto = true;
+            sincronizarEncomendaNaLista(encomenda, {
+                estado,
+                created_at: encomenda.created_at,
+                stock_reposto: encomenda.stock_reposto
+            });
             let anexosEliminados = 0;
             let erroAnexos = null;
             if (estado === "Concluído") {
@@ -653,9 +670,7 @@ window.AdminEncomendaVista = (function () {
                 }
             }
             select.dataset.estadoAtual = estado;
-            hooks.atualizarResumo();
-            hooks.renderizarLista();
-            hooks.renderizarModal();
+            atualizarListaAposAlteracaoEncomenda();
             let mensagemFatura = "";
             if (estado === "Pago" && estadoAnterior !== "Pago" && podeEmitirFaturaMoloni(encomenda)) {
                 let emitirFatura = deveEmitirFaturaMoloniAutomaticamente(encomenda);
@@ -727,8 +742,7 @@ window.AdminEncomendaVista = (function () {
 
             const lista = hooks.obterLista().filter(item => String(item.id) !== String(encomenda.id));
             hooks.definirLista(lista);
-            hooks.atualizarResumo();
-            hooks.renderizarLista();
+            atualizarListaAposAlteracaoEncomenda();
             hooks.onEncomendaApagada(encomenda);
             hooks.definirStatus(`Encomenda ${codigo} apagada.`);
         } catch (error) {

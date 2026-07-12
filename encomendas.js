@@ -668,8 +668,8 @@ async function iniciarPainelEncomendas() {
         await window.carregarScriptSupabase();
         if (typeof supabase === 'undefined') throw new Error('A biblioteca Supabase não carregou.');
         encomendasClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-        configurarVistaEncomendasAdmin();
         if (typeof configurarModalEncomendaCliente === 'function') configurarModalEncomendaCliente();
+        configurarVistaEncomendasAdmin();
         const { data: { user }, error } = await encomendasClient.auth.getUser();
         if (error || !user || !ADMIN_EMAILS.includes(String(user.email || '').toLowerCase())) {
             bloqueio.textContent = 'Acesso reservado ao administrador. A regressar à conta...';
