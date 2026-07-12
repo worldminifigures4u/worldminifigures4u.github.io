@@ -329,6 +329,13 @@ function iniciarClientesSupabase() {
     });
 }
 
+async function aguardarAppFavoritos() {
+    if (typeof carregarFavoritosUtilizador === 'function') return;
+    if (typeof window.garantirAppFavoritos === 'function') {
+        await window.garantirAppFavoritos();
+    }
+}
+
 async function aguardarModulosContaCliente() {
     if (!existeAreaClientePagina()) return;
     if (typeof preencherFormularioDadosCliente === 'function') return;
@@ -366,6 +373,7 @@ window.addEventListener('load', async () => {
     iniciarClientesSupabase();
 
     await aguardarModulosContaCliente();
+    await aguardarAppFavoritos();
     await aguardarModulosFavoritos();
 
     if (urlTemRecuperacaoPassword()) {
@@ -378,6 +386,6 @@ window.addEventListener('load', async () => {
 
 if ('serviceWorker' in navigator && window.location.protocol !== 'file:') {
     window.addEventListener('load', () => {
-        navigator.serviceWorker.register('sw.js?v=20260711-leve-r14').catch(() => {});
+        navigator.serviceWorker.register('sw.js?v=20260711-leve-r15').catch(() => {});
     });
 }

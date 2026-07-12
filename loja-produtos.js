@@ -379,11 +379,24 @@ function criarCardProduto(prod) {
     botaoFavorito.type = 'button';
     botaoFavorito.dataset.favoritoProdutoId = String(prod.id);
     botaoFavorito.appendChild(criarIconeCoracaoFavorito());
-    atualizarBotaoFavorito(botaoFavorito, produtoEstaNosFavoritos(prod.id));
-    botaoFavorito.addEventListener('click', evento => {
+    if (typeof produtoEstaNosFavoritos === 'function' && typeof atualizarBotaoFavorito === 'function') {
+        atualizarBotaoFavorito(botaoFavorito, produtoEstaNosFavoritos(prod.id));
+    }
+    botaoFavorito.addEventListener('click', (evento) => {
         evento.preventDefault();
         evento.stopPropagation();
-        alternarFavoritoProduto(prod);
+        const alternar = () => {
+            if (typeof alternarFavoritoProduto === 'function') {
+                alternarFavoritoProduto(prod);
+            }
+        };
+        if (typeof alternarFavoritoProduto === 'function') {
+            alternar();
+            return;
+        }
+        if (typeof window.garantirAppFavoritos === 'function') {
+            window.garantirAppFavoritos().then(alternar).catch(console.error);
+        }
     });
     card.appendChild(botaoFavorito);
 
