@@ -375,6 +375,16 @@
             display:none;
         }
 
+        .menu-temas:has(.lista-temas.recolhida){
+            padding:10px 12px;
+        }
+
+        .menu-temas:has(.lista-temas.recolhida) .cabecalho-menu-temas{
+            border-bottom:none;
+            padding-bottom:0;
+            margin-bottom:0;
+        }
+
         .linha-tema{
             margin-bottom:6px;
         }
