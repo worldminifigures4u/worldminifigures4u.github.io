@@ -543,7 +543,13 @@ body{
                 flex-direction:column;
                 text-align:center;
             }
-            .rodape-links{ justify-content:center; }
+            .rodape-links{
+                order:1;
+                justify-content:center;
+            }
+            .rodape-frase{
+                order:2;
+            }
         }
 
 
