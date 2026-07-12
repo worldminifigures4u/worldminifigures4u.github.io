@@ -130,6 +130,7 @@
         if (typeof window.garantirGestaoAdmin !== 'function') return;
 
         const iniciar = () => window.garantirGestaoAdmin().catch(console.error);
+        if (!document.body.classList.contains('cabecalho-com-admin')) return;
         if (pareceSessaoAtiva()) {
             iniciar();
             return;
@@ -186,12 +187,18 @@
         agendarCarregamentoConta();
     });
 
-    window.addEventListener('figures-planet-core-pronta', () => {
+    function reagirSessaoGestaoPronta() {
         if (!document.body.classList.contains('pagina-gestao')) return;
-        if (document.body.classList.contains('cabecalho-com-admin')) {
-            if (typeof window.garantirGestaoAdmin === 'function') {
-                window.garantirGestaoAdmin().catch(console.error);
-            }
+        if (!document.body.classList.contains('cabecalho-com-admin')) return;
+        if (typeof window.garantirAdminGestao === 'function') {
+            window.garantirAdminGestao().catch(console.error);
         }
-    });
+        if (typeof window.garantirGestaoAdmin === 'function') {
+            window.garantirGestaoAdmin().catch(console.error);
+        }
+    }
+
+    window.addEventListener('figures-planet-sessao-pronta', reagirSessaoGestaoPronta);
+    window.addEventListener('figures-planet-admin-gestao-pronta', reagirSessaoGestaoPronta);
+    window.addEventListener('figures-planet-core-pronta', reagirSessaoGestaoPronta);
 })();

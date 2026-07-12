@@ -145,6 +145,33 @@ function atualizarVisibilidadeAdmin(user) {
     if (typeof window.sincronizarEspacamentoCabecalho === 'function') {
         requestAnimationFrame(() => window.sincronizarEspacamentoCabecalho());
     }
+    const bloqueioGestao = document.getElementById('gestao-bloqueio');
+    if (bloqueioGestao) {
+        if (adminAtivo) {
+            bloqueioGestao.hidden = true;
+            bloqueioGestao.textContent = '';
+        } else if (!user) {
+            bloqueioGestao.hidden = true;
+            mostrarContaAnonimaSeExistir();
+        } else {
+            bloqueioGestao.hidden = false;
+            bloqueioGestao.textContent = 'Acesso reservado ao administrador.';
+        }
+    }
+    if (!document.body.classList.contains('pagina-gestao')) return;
+
+    const aplicarPainel = () => {
+        if (typeof window.aplicarPainelGestaoAdmin === 'function') {
+            window.aplicarPainelGestaoAdmin(user);
+        }
+    };
+
+    if (adminAtivo && typeof window.garantirAdminGestao === 'function') {
+        window.garantirAdminGestao().then(aplicarPainel).catch(console.error);
+        return;
+    }
+
+    aplicarPainel();
 }
 
 async function obterDadosPerfilDaTabela(userId, user = null) {
@@ -205,6 +232,7 @@ async function verificarSessaoSupabase() {
 
 function iniciarClientesSupabase() {
     dbClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    window.dbClient = dbClient;
     produtosClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {
         auth: {
             persistSession: false,
@@ -322,6 +350,6 @@ window.addEventListener('load', async () => {
 
 if ('serviceWorker' in navigator && window.location.protocol !== 'file:') {
     window.addEventListener('load', () => {
-        navigator.serviceWorker.register('sw.js?v=20260711-leve-r21').catch(() => {});
+        navigator.serviceWorker.register('sw.js?v=20260711-leve-r22').catch(() => {});
     });
 }

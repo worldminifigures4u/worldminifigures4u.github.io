@@ -211,10 +211,11 @@
             [
                 'gestao.html',
                 'gestao-admin-loader.js',
+                'app-admin-gestao-loader.js',
                 'gestao.css',
                 'conta.css',
                 'styles-admin.css',
-                'app-core.js',
+                'app-sessao.js',
                 'app-sku.js'
             ].forEach(function (href) {
                 if (document.querySelector('link[rel="prefetch"][href="' + href + '"]')) return;
@@ -354,7 +355,7 @@
 
         const carregarCheckout = () => new Promise((resolve, reject) => {
             const script = document.createElement('script');
-            script.src = 'checkout.js?v=20260711-leve-r21';
+            script.src = 'checkout.js?v=20260711-leve-r22';
             script.defer = true;
             script.onload = () => resolve();
             script.onerror = () => reject(new Error('Falha ao carregar checkout.'));

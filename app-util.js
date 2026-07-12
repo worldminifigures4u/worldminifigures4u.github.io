@@ -77,7 +77,7 @@ function garantirEstilosAdmin() {
     if (document.querySelector('link[href*="styles-admin.css"]')) return;
     const folha = document.createElement('link');
     folha.rel = 'stylesheet';
-    folha.href = 'styles-admin.css?v=20260712-leve-r20';
+    folha.href = 'styles-admin.css?v=20260712-leve-r22';
     document.head.appendChild(folha);
 }
 
