@@ -19,9 +19,8 @@
     <link rel="stylesheet" href="styles.css?v=20260712-rodape-mobile">
     <link rel="stylesheet" href="styles-tema.css?v=20260712-r24" media="print" data-async-css>
     <noscript><link rel="stylesheet" href="styles-tema.css?v=20260712-r24"></noscript>
-    <link rel="stylesheet" href="carrinho.css?v=20260705-confirm-order-btn" media="print" data-async-css>
-    <noscript><link rel="stylesheet" href="carrinho.css?v=20260705-confirm-order-btn"></noscript>
-    <script src="async-css.js?v=20260712-r24"></script>
+    <link rel="stylesheet" href="carrinho.css?v=20260712-carrinho-sem-piscar">
+    <script src="async-css.js?v=20260712-offset-loja"></script>
 </head>
 <body data-page="carrinho">
 
@@ -72,7 +71,7 @@
                 <h2>Carrinho</h2>
                 <a class="btn-continuar-comprar" href="index.html">Continuar a comprar</a>
             </div>
-        <div class="lista-carrinho" id="lista-carrinho">
+        <div class="lista-carrinho lista-carrinho--preparar" id="lista-carrinho">
             <p id="carrinho-vazio">Nenhum produto adicionado.</p>
         </div>
         <div id="info-envio" class="msg-status"></div>
@@ -172,11 +171,11 @@
 <script src="supabase-cdn.js?v=20260711-leve" defer></script>
 <script src="app-config.js?v=20260712-r24" defer></script>
 <script src="app-util.js?v=20260712-r24" defer></script>
-<script src="app-sessao.js?v=20260712-r24" defer></script>
+<script src="app-sessao.js?v=20260712-carrinho-sem-piscar" defer></script>
 <script src="app-carrinho.js?v=20260712-r24" defer></script>
-<script src="carrinho-core.js?v=20260712-r24" defer></script>
+<script src="carrinho-core.js?v=20260712-carrinho-sem-piscar" defer></script>
 <script src="carrinho-pagina.js?v=20260712-r24" defer></script>
-<script src="inline-listeners-base.js?v=20260712-r24" defer></script>
+<script src="inline-listeners-base.js?v=20260712-offset-loja" defer></script>
 <script src="inline-listeners-carrinho.js?v=20260712-r24" defer></script>
 </body>
 </html>

@@ -1,4 +1,23 @@
 // Lista e quantidades do carrinho (pagina Carrinho).
+let ultimaChaveRenderCarrinho = '';
+
+function obterChaveRenderCarrinho() {
+    return JSON.stringify(
+        carrinho.map(item => [
+            String(item.id),
+            Number(item.quantidade || 1),
+            String(item.imagem || '')
+        ])
+    );
+}
+
+function finalizarRenderCarrinho() {
+    const carrinhoDiv = document.getElementById('lista-carrinho');
+    if (carrinhoDiv) {
+        carrinhoDiv.classList.remove('lista-carrinho--preparar');
+    }
+}
+
 function guardarCarrinho() {
     localStorage.setItem('carrinho', JSON.stringify(carrinho));
 }
@@ -81,12 +100,21 @@ function solicitarAtualizacaoEnvio() {
     }
 }
 
-function atualizarCarrinho() {
+function atualizarCarrinho(opcoes = {}) {
     atualizarContadorCarrinhoCabecalho();
 
     const carrinhoDiv = document.getElementById('lista-carrinho');
     if (!carrinhoDiv) return;
 
+    const chaveAtual = obterChaveRenderCarrinho();
+    const temConteudoRenderizado = !!carrinhoDiv.querySelector('.linha-carrinho, #carrinho-vazio');
+    if (!opcoes.forcar && chaveAtual === ultimaChaveRenderCarrinho && temConteudoRenderizado) {
+        solicitarAtualizacaoEnvio();
+        finalizarRenderCarrinho();
+        return;
+    }
+
+    ultimaChaveRenderCarrinho = chaveAtual;
     carrinhoDiv.replaceChildren();
 
     if (carrinho.length === 0) {
@@ -95,6 +123,7 @@ function atualizarCarrinho() {
         vazio.textContent = 'Nenhum produto adicionado.';
         carrinhoDiv.appendChild(vazio);
         solicitarAtualizacaoEnvio();
+        finalizarRenderCarrinho();
         return;
     }
 
@@ -118,8 +147,8 @@ function atualizarCarrinho() {
 
         const imagem = document.createElement('img');
         imagem.className = 'imagem-carrinho';
-        imagem.loading = 'lazy';
-        imagem.decoding = 'async';
+        imagem.loading = 'eager';
+        imagem.decoding = 'sync';
         imagem.src = otimizarImagemCloudinary(imagemSrc, 180);
         imagem.alt = item.nome;
         imagem.onerror = () => {
@@ -178,6 +207,7 @@ function atualizarCarrinho() {
     }
 
     solicitarAtualizacaoEnvio();
+    finalizarRenderCarrinho();
 }
 
 function removerCarrinho(id) {

@@ -67,6 +67,10 @@
             gap:10px;
         }
 
+        .lista-carrinho--preparar{
+            opacity:0;
+        }
+
         .linha-carrinho{
             background:#181818;
             border:1px solid #303030;

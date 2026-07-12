@@ -102,6 +102,10 @@ function atualizarCarrinhoSeDisponivel() {
 }
 
 function restaurarCarrinhoSeDisponivel() {
+    if (document.body?.dataset?.page === 'carrinho') {
+        atualizarContadorCarrinhoCabecalho();
+        return;
+    }
     if (typeof restaurarCarrinhoGuardado === 'function') {
         restaurarCarrinhoGuardado();
         return;
@@ -304,7 +308,15 @@ async function aguardarModulosFavoritos() {
 }
 
 window.addEventListener('load', async () => {
-    atualizarCarrinhoSeDisponivel();
+    const paginaCarrinho = document.body?.dataset?.page === 'carrinho' || !!document.getElementById('lista-carrinho');
+
+    if (paginaCarrinho) {
+        atualizarContadorCarrinhoCabecalho();
+        document.getElementById('lista-carrinho')?.classList.add('lista-carrinho--preparar');
+    } else {
+        atualizarCarrinhoSeDisponivel();
+    }
+
     const nomeCache = localStorage.getItem(NOME_CONTA_CABECALHO_KEY);
     if (nomeCache) atualizarCabecalhoCliente(nomeCache);
 
@@ -337,14 +349,17 @@ window.addEventListener('load', async () => {
 
     await verificarSessaoSupabase();
 
-    if (document.body?.dataset?.page === 'carrinho' || document.getElementById('lista-carrinho')) {
+    if (paginaCarrinho) {
         if (typeof garantirProdutosCarrinhoNoCatalogo === 'function') {
             await garantirProdutosCarrinhoNoCatalogo();
         }
         if (typeof atualizarCarrinho === 'function') {
-            atualizarCarrinho();
+            atualizarCarrinho({ forcar: true });
         } else {
             atualizarCarrinhoSeDisponivel();
+            if (typeof finalizarRenderCarrinho === 'function') {
+                finalizarRenderCarrinho();
+            }
         }
     }
 });
