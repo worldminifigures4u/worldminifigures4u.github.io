@@ -682,6 +682,62 @@ function preprocessarLinhasListaProdutosPlataforma(linhas) {
     return resultado;
 }
 
+function listaPareceCompactaPlataforma(texto) {
+    const linhas = String(texto || '').split(/\r?\n/).map(linha => linha.trim()).filter(Boolean);
+    const unico = linhas.join(' ');
+    const precos = (unico.match(/\d{1,4}[,.]\d{1,2}\s*(?:€|eur)/gi) || []).length;
+    if (!precos) return linhas.length <= 1 && unico.length > 120;
+    if (linhas.length <= 1) return true;
+    if (precos >= 2 && linhas.length < precos) return true;
+    return (unico.length / Math.max(precos, 1)) > 45 && precos >= 2;
+}
+
+function dividirTextoPorPrecosListaPlataforma(texto) {
+    const normalizado = String(texto || '').replace(/\s+/g, ' ').trim();
+    if (!normalizado) return [];
+
+    const regex = /\d{1,4}[,.]\d{1,2}\s*(?:€|eur(?:os?)?)\s*/gi;
+    const blocos = [];
+    let ultimoIndice = 0;
+    let correspondencia = regex.exec(normalizado);
+
+    while (correspondencia) {
+        const bloco = normalizado.slice(ultimoIndice, correspondencia.index).trim();
+        if (bloco) blocos.push(bloco);
+        ultimoIndice = correspondencia.index + correspondencia[0].length;
+        correspondencia = regex.exec(normalizado);
+    }
+
+    const resto = normalizado.slice(ultimoIndice).trim();
+    if (resto) blocos.push(resto);
+    return blocos;
+}
+
+function extrairNomeBlocoListaPlataforma(bloco) {
+    let texto = String(bloco || '').replace(/\s+/g, ' ').trim();
+    if (!texto) return '';
+
+    const repetido = texto.match(/^(.*?)(?:\s+([A-Z]{1,6}\d{2,}))?\s+\1(?:\s+\2)?\s*$/i);
+    if (repetido) texto = repetido[1].trim();
+
+    texto = texto.replace(/\s+[A-Z]{1,6}\d{2,}\s*$/i, '').trim();
+    return limparTextoProdutoListaPlataforma(texto);
+}
+
+function expandirTextoParaLinhasListaPlataforma(texto) {
+    const bruto = String(texto || '').replace(/-+\s*$/g, '').trim();
+    if (!bruto) return [];
+
+    if (!listaPareceCompactaPlataforma(bruto)) {
+        return bruto.split(/\r?\n/).map(linha => linha.trim()).filter(Boolean);
+    }
+
+    const unico = bruto.split(/\r?\n/).map(linha => linha.trim()).filter(Boolean).join(' ');
+    return dividirTextoPorPrecosListaPlataforma(unico)
+        .map(extrairNomeBlocoListaPlataforma)
+        .filter(Boolean);
+}
+
 function obterTermosPesquisaLinhaPlataforma(texto) {
     const original = String(texto || '').trim();
     if (!original) return [];
@@ -807,10 +863,7 @@ function interpretarLinhaProdutosPlataforma(linha, indice, opcoes = {}) {
 
 function analisarListaProdutosPlataforma(texto) {
     const linhasOriginais = preprocessarLinhasListaProdutosPlataforma(
-        String(texto || '')
-            .split(/\r?\n/)
-            .map(linha => String(linha || '').trim())
-            .filter(Boolean)
+        expandirTextoParaLinhasListaPlataforma(texto)
     );
     const ignorarNumeracao = listaProdutosPareceNumeradaPlataforma(linhasOriginais);
     const linhasInterpretadas = linhasOriginais
