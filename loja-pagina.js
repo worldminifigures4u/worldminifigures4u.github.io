@@ -36,7 +36,7 @@
         if (typeof carregarProdutosDaNuvem === 'function') return Promise.resolve();
         if (!promessaLojaProdutos) {
             promessaLojaProdutos = garantirCartMiniLoja()
-                .then(() => carregarScript('loja-produtos.js?v=20260712-loja-layout'));
+                .then(() => carregarScript('loja-produtos.js?v=20260712-tema-scroll'));
         }
         return promessaLojaProdutos;
     }

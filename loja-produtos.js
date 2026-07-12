@@ -635,6 +635,22 @@ function recolherMenuTemasNoTelemovel() {
     agendarAtualizacaoStickyTemas();
 }
 
+function rolarParaPrimeiraLinhaProdutos() {
+    const vitrine = document.getElementById('vitrine-produtos');
+    if (!vitrine) return;
+
+    const header = document.querySelector('header');
+    const margem = 16;
+    const headerAltura = header ? header.getBoundingClientRect().height : 0;
+    const destino = vitrine.getBoundingClientRect().top + window.scrollY - headerAltura - margem;
+    const reduzirMovimento = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    window.scrollTo({
+        top: Math.max(0, destino),
+        behavior: reduzirMovimento ? 'auto' : 'smooth'
+    });
+}
+
 function filtrarTema(filtro, botao){
     document.querySelectorAll('.btn-tema, .btn-subtema').forEach(btn => { btn.classList.remove('ativo'); });
     botao.classList.add('ativo');
@@ -657,8 +673,8 @@ function filtrarTema(filtro, botao){
         if(grupoAlvo && partes.length === 1){ grupoAlvo.classList.add('aberto'); }
     }
 
-    executarFiltrosCombinados();
     recolherMenuTemasNoTelemovel();
+    executarFiltrosCombinados({ rolarParaProdutos: true });
 }
 
 function verificarTeclaEnter(evento) {
@@ -690,9 +706,17 @@ function atualizarContadorProdutos(totalVisiveis, totalProdutos, pesquisaAtiva) 
     contador.append(destaque, document.createTextNode(' ' + legenda));
 }
 
-function executarFiltrosCombinados() {
-    if (!document.getElementById('campo-pesquisa')) return;
-    reiniciarVitrinePaginada().catch(erro => {
-        console.error('Erro ao aplicar filtros:', erro);
-    });
+function executarFiltrosCombinados(opcoes = {}) {
+    if (!document.getElementById('campo-pesquisa')) return Promise.resolve();
+
+    return reiniciarVitrinePaginada()
+        .then(() => {
+            if (!opcoes.rolarParaProdutos) return;
+            requestAnimationFrame(() => {
+                rolarParaPrimeiraLinhaProdutos();
+            });
+        })
+        .catch(erro => {
+            console.error('Erro ao aplicar filtros:', erro);
+        });
 }
