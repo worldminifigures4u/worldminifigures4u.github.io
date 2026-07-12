@@ -5,4 +5,8 @@
     for (var i = 0; i < folhas.length; i += 1) {
         folhas[i].media = 'all';
     }
+
+    if (typeof window.sincronizarEspacamentoCabecalho === 'function') {
+        window.requestAnimationFrame(window.sincronizarEspacamentoCabecalho);
+    }
 })();

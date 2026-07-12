@@ -28,7 +28,8 @@
     }
 
     function obterEspacoAbaixoCabecalho() {
-        const valor = getComputedStyle(document.documentElement)
+        const alvo = document.body || document.documentElement;
+        const valor = getComputedStyle(alvo)
             .getPropertyValue('--espaco-abaixo-cabecalho')
             .trim();
         const numero = parseFloat(valor);

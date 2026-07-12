@@ -30,6 +30,10 @@
 }
 
 @media (max-width: 1100px) {
+    body[data-page="loja"] {
+        --espaco-abaixo-cabecalho: 0px;
+    }
+
     .vista-loja.ativa {
         flex-direction: column;
     }

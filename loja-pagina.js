@@ -27,7 +27,7 @@
     function garantirAppLoja() {
         if (typeof inicializarPaginaLoja === 'function') return Promise.resolve();
         if (!promessaAppLoja) {
-            promessaAppLoja = carregarScript('app-loja.js?v=20260712-temas-sem-fenda');
+            promessaAppLoja = carregarScript('app-loja.js?v=20260712-offset-loja');
         }
         return promessaAppLoja;
     }

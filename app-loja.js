@@ -89,9 +89,17 @@ window.addEventListener('hashchange', () => {
 });
 
 function inicializarPaginaLoja() {
+    if (typeof window.sincronizarEspacamentoCabecalho === 'function') {
+        window.sincronizarEspacamentoCabecalho();
+    }
     observarTamanhoMenuTemas();
     agendarAtualizacaoStickyTemas();
-    document.fonts?.ready.then(agendarAtualizacaoStickyTemas);
+    document.fonts?.ready.then(() => {
+        if (typeof window.sincronizarEspacamentoCabecalho === 'function') {
+            window.sincronizarEspacamentoCabecalho();
+        }
+        agendarAtualizacaoStickyTemas();
+    });
     window.addEventListener('resize', agendarAtualizacaoStickyTemas);
     window.visualViewport?.addEventListener('resize', agendarAtualizacaoStickyTemas);
     window.addEventListener('scroll', agendarAtualizacaoStickyTemas, { passive: true });
