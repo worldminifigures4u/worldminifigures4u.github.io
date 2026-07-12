@@ -618,16 +618,25 @@ function pontuarCorrespondenciaPlataforma(termo, produto) {
     return Math.max(similaridade, similaridade * 0.72 + cobertura * 0.28, contem);
 }
 
+const PLATAFORMA_PRECO_LISTA_PADRAO = String.raw`\b\d{1,4}[,.]\d{2}\b(?:\s*(?:€|eur(?:os?)?))?`;
+
+function contarPrecosListaPlataforma(texto) {
+    const unico = String(texto || '').replace(/\r?\n/g, ' ');
+    const correspondencias = unico.match(new RegExp(PLATAFORMA_PRECO_LISTA_PADRAO, 'gi')) || [];
+    return correspondencias.length;
+}
+
 function linhaParecePrecoListaPlataforma(texto) {
     const linha = String(texto || '').trim();
     return /^(?:€\s*)?\d{1,4}(?:[,.]\d{1,2})?\s*€?$/i.test(linha)
-        || /^\d{1,4}(?:[,.]\d{1,2})?\s*(?:€|eur|euros?)$/i.test(linha);
+        || /^\d{1,4}(?:[,.]\d{1,2})?\s*(?:€|eur|euros?)$/i.test(linha)
+        || /^\d{1,4}[,.]\d{2}$/.test(linha);
 }
 
 function removerPrecoFinalLinhaListaPlataforma(texto) {
     return String(texto || '')
         .trim()
-        .replace(/\s+\d{1,4}(?:[,.]\d{1,2})?\s*€\s*$/i, '')
+        .replace(new RegExp(String.raw`\s+${PLATAFORMA_PRECO_LISTA_PADRAO}\s*$`, 'i'), '')
         .trim();
 }
 
@@ -636,13 +645,27 @@ function limparTextoProdutoListaPlataforma(texto) {
     if (!limpo) return '';
 
     limpo = limpo
-        .replace(/(?:€|eur(?:os?)?)\s*\d{1,4}(?:[,.]\d{1,2})?/gi, ' ')
-        .replace(/\d{1,4}(?:[,.]\d{1,2})?\s*(?:€|eur(?:os?)?)/gi, ' ')
+        .replace(new RegExp(PLATAFORMA_PRECO_LISTA_PADRAO, 'gi'), ' ')
         .replace(/^(?:\([^)]+\)\s*)+/g, '')
         .replace(/\s+/g, ' ')
         .trim();
 
     return limpo;
+}
+
+function normalizarNomeClienteListaPlataforma(texto) {
+    let nome = String(texto || '').trim();
+    if (!nome) return '';
+
+    nome = nome
+        .replace(/^(?:y\s+)?(?:el|la|los|las|un|una|unos|unas)\s+/i, '')
+        .replace(/\brd[\s-]*d2\b/gi, 'r2-d2')
+        .replace(/\br2\s*d2\b/gi, 'r2-d2')
+        .replace(/\bc[\s-]*3[\s-]*po\b/gi, 'c-3po')
+        .replace(/\s+/g, ' ')
+        .trim();
+
+    return nome;
 }
 
 function obterChaveTextoListaPlataforma(texto) {
@@ -682,18 +705,19 @@ function preprocessarLinhasListaProdutosPlataforma(linhas) {
 function listaPareceCompactaPlataforma(texto) {
     const linhas = String(texto || '').split(/\r?\n/).map(linha => linha.trim()).filter(Boolean);
     const unico = linhas.join(' ');
-    const precos = (unico.match(/\d{1,4}[,.]\d{1,2}\s*(?:€|eur)/gi) || []).length;
+    const precos = contarPrecosListaPlataforma(unico);
+    if (precos >= 2 && linhas.length === 1) return true;
     if (!precos) return linhas.length <= 1 && unico.length > 120;
-    if (linhas.length <= 1) return true;
+    if (linhas.length <= 1) return precos >= 1;
     if (precos >= 2 && linhas.length < precos) return true;
-    return (unico.length / Math.max(precos, 1)) > 45 && precos >= 2;
+    return (unico.length / Math.max(precos, 1)) > 35 && precos >= 2;
 }
 
 function dividirTextoPorPrecosListaPlataforma(texto) {
     const normalizado = String(texto || '').replace(/\s+/g, ' ').trim();
     if (!normalizado) return [];
 
-    const regex = /\d{1,4}[,.]\d{1,2}\s*(?:€|eur(?:os?)?)\s*/gi;
+    const regex = new RegExp(PLATAFORMA_PRECO_LISTA_PADRAO, 'gi');
     const blocos = [];
     let ultimoIndice = 0;
     let correspondencia = regex.exec(normalizado);
@@ -718,7 +742,8 @@ function extrairNomeBlocoListaPlataforma(bloco) {
     if (repetido) texto = repetido[1].trim();
 
     texto = texto.replace(/\s+[A-Z]{1,6}\d{2,}\s*$/i, '').trim();
-    return limparTextoProdutoListaPlataforma(texto);
+    texto = normalizarNomeClienteListaPlataforma(limparTextoProdutoListaPlataforma(texto));
+    return texto;
 }
 
 function expandirTextoParaLinhasListaPlataforma(texto) {
@@ -736,7 +761,7 @@ function expandirTextoParaLinhasListaPlataforma(texto) {
 }
 
 function obterTermosPesquisaLinhaPlataforma(texto) {
-    const original = String(texto || '').trim();
+    const original = normalizarNomeClienteListaPlataforma(String(texto || '').trim());
     if (!original) return [];
 
     const termos = new Set();
@@ -854,6 +879,7 @@ function interpretarLinhaProdutosPlataforma(linha, indice, opcoes = {}) {
         quantidade = Math.max(1, Number(fim[2]) || 1);
     }
     texto = limparTextoProdutoListaPlataforma(texto);
+    texto = normalizarNomeClienteListaPlataforma(texto);
     if (!texto) return null;
     return { indice, original: texto, quantidade };
 }
