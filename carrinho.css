@@ -444,7 +444,9 @@
         font-size:17px;
         line-height:1.1;
         white-space:nowrap;
-        justify-self:start;
+        justify-self:center;
+        text-align:center;
+        width:72px;
     }
 
     .controlos-carrinho{
@@ -484,6 +486,7 @@
 
     .preco-carrinho{
         font-size:18px;
+        width:80px;
     }
 
     .vista-carrinho .carrinho {
