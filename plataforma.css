@@ -134,6 +134,19 @@ body.pagina-wallapop{
             margin-top:9px;
         }
 
+        .plataforma-lista-previa,
+        .plataforma-lista-resumo{
+            margin:8px 0 0;
+            color:#9fdcff;
+            font-size:13px;
+            font-weight:700;
+            line-height:1.4;
+        }
+
+        .plataforma-lista-resumo{
+            margin:0 0 12px;
+        }
+
         .wallapop-resultado,
         .wallapop-selecionado{
             display:grid;

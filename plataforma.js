@@ -621,6 +621,89 @@ function pontuarCorrespondenciaPlataforma(termo, produto) {
     return Math.max(similaridade, similaridade * 0.72 + cobertura * 0.28, contem);
 }
 
+function linhaParecePrecoListaPlataforma(texto) {
+    const linha = String(texto || '').trim();
+    return /^(?:€\s*)?\d{1,4}(?:[,.]\d{1,2})?\s*€?$/i.test(linha)
+        || /^\d{1,4}(?:[,.]\d{1,2})?\s*(?:€|eur|euros?)$/i.test(linha);
+}
+
+function removerPrecoFinalLinhaListaPlataforma(texto) {
+    return String(texto || '')
+        .trim()
+        .replace(/\s+\d{1,4}(?:[,.]\d{1,2})?\s*€\s*$/i, '')
+        .trim();
+}
+
+function preprocessarLinhasListaProdutosPlataforma(linhas) {
+    const resultado = [];
+    let anteriorNormalizado = '';
+
+    linhas.forEach(bruta => {
+        let linha = String(bruta || '').trim();
+        if (!linha) return;
+        if (linhaParecePrecoListaPlataforma(linha)) return;
+
+        linha = removerPrecoFinalLinhaListaPlataforma(linha);
+        if (!linha || linhaParecePrecoListaPlataforma(linha)) return;
+
+        const normalizado = normalizarTextoWallapop(linha);
+        if (normalizado && normalizado === anteriorNormalizado) return;
+
+        anteriorNormalizado = normalizado;
+        resultado.push(linha);
+    });
+
+    return resultado;
+}
+
+function obterTermosPesquisaLinhaPlataforma(texto) {
+    const original = String(texto || '').trim();
+    if (!original) return [];
+
+    const termos = new Set();
+    termos.add(normalizarTextoWallapop(original));
+
+    const semParenteses = original
+        .replace(/\s*\([^)]*\)/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim();
+    if (semParenteses) termos.add(normalizarTextoWallapop(semParenteses));
+
+    const codigoFinal = original.match(/\b([A-Za-z]{1,6}\d{2,})\s*$/);
+    if (codigoFinal) termos.add(normalizarTextoWallapop(codigoFinal[1]));
+
+    return [...termos].filter(Boolean);
+}
+
+function obterCandidatosLinhaListaPlataforma(textoOriginal) {
+    const termos = obterTermosPesquisaLinhaPlataforma(textoOriginal);
+    const mapa = new Map();
+
+    termos.forEach(termo => {
+        wallapopProdutos.forEach(produto => {
+            const pontuacao = pontuarCorrespondenciaPlataforma(termo, produto);
+            if (pontuacao < 0.48) return;
+            const id = String(produto.id);
+            const existente = mapa.get(id);
+            if (!existente || pontuacao > existente.pontuacao) {
+                mapa.set(id, { produto, pontuacao });
+            }
+        });
+    });
+
+    return [...mapa.values()]
+        .sort((a, b) => b.pontuacao - a.pontuacao || String(a.produto.nome).localeCompare(String(b.produto.nome), 'pt'))
+        .slice(0, 8);
+}
+
+function resumirAnaliseListaPlataforma(linhas) {
+    const figuras = (linhas || []).reduce((total, linha) => total + Math.max(1, Number(linha.quantidade) || 1), 0);
+    const exatas = linhas.filter(linha => linha.estado === 'exata').length;
+    const sugeridas = linhas.filter(linha => linha.estado === 'sugerida').length;
+    const rever = linhas.filter(linha => linha.estado === 'rever').length;
+    return { figuras, exatas, sugeridas, rever, produtos: linhas.length };
+}
+
 function linhaProdutosTemQuantidadeExplicitaPlataforma(texto) {
     const linha = String(texto || '').trim().replace(/^[\s\-*\u2022]+/, '');
     return /^\d+\s*(?:x|un(?:id(?:ades?)?)?\.?)\s+.+$/i.test(linha)
@@ -663,21 +746,18 @@ function interpretarLinhaProdutosPlataforma(linha, indice, opcoes = {}) {
 }
 
 function analisarListaProdutosPlataforma(texto) {
-    const linhasOriginais = String(texto || '')
-        .split(/\r?\n/)
-        .map(linha => String(linha || '').trim())
-        .filter(Boolean);
+    const linhasOriginais = preprocessarLinhasListaProdutosPlataforma(
+        String(texto || '')
+            .split(/\r?\n/)
+            .map(linha => String(linha || '').trim())
+            .filter(Boolean)
+    );
     const ignorarNumeracao = listaProdutosPareceNumeradaPlataforma(linhasOriginais);
     return linhasOriginais
         .map((linha, indice) => interpretarLinhaProdutosPlataforma(linha, indice, { ignorarNumeracao }))
         .filter(Boolean)
         .map(linha => {
-            const termo = normalizarTextoWallapop(linha.original);
-            const candidatos = wallapopProdutos
-                .map(produto => ({ produto, pontuacao: pontuarCorrespondenciaPlataforma(termo, produto) }))
-                .filter(item => item.pontuacao >= 0.48)
-                .sort((a, b) => b.pontuacao - a.pontuacao || String(a.produto.nome).localeCompare(String(b.produto.nome), 'pt'))
-                .slice(0, 8);
+            const candidatos = obterCandidatosLinhaListaPlataforma(linha.original);
             const melhor = candidatos[0];
             const segundo = candidatos[1];
             const exata = melhor?.pontuacao === 1;
@@ -743,6 +823,35 @@ function fecharRevisaoListaProdutosPlataforma() {
     document.body.classList.remove('plataforma-modal-aberto');
 }
 
+function aplicarSelecoesListaProdutosPlataforma(selecoes) {
+    if (!selecoes.length) return 0;
+
+    const agrupadas = new Map();
+    selecoes.forEach(item => agrupadas.set(item.produtoId, (agrupadas.get(item.produtoId) || 0) + item.quantidade));
+
+    let adicionados = 0;
+    agrupadas.forEach((quantidade, produtoId) => {
+        const produto = wallapopProdutos.find(item => String(item.id) === String(produtoId));
+        if (!produto) return;
+        const existente = wallapopItens.find(item => String(item.id) === String(produtoId));
+        const quantidadeTotal = (existente ? Number(existente.quantidade || 0) : 0) + quantidade;
+        if (!confirmarStockNegativoPlataforma(produto, quantidadeTotal)) return;
+        if (existente) existente.quantidade = quantidadeTotal;
+        else wallapopItens.push({ ...produto, quantidade });
+        adicionados += quantidade;
+    });
+
+    if (!adicionados) return 0;
+    guardarItensWallapop();
+    marcarWallapopPorRegistar();
+    renderizarSelecionadosWallapop();
+    renderizarFolhaWallapop();
+    document.getElementById('plataforma-lista-produtos').value = '';
+    fecharRevisaoListaProdutosPlataforma();
+    atualizarPreviaListaProdutosPlataforma();
+    return adicionados;
+}
+
 function adicionarListaRevistaPlataforma(linhas, modal) {
     const selecoes = [...modal.querySelectorAll('[data-linha-lista]')].map((linha, indice) => ({
         produtoId: linha.querySelector('select').value,
@@ -754,28 +863,40 @@ function adicionarListaRevistaPlataforma(linhas, modal) {
         return;
     }
 
-    const agrupadas = new Map();
-    selecoes.forEach(item => agrupadas.set(item.produtoId, (agrupadas.get(item.produtoId) || 0) + item.quantidade));
-    let adicionados = 0;
-    agrupadas.forEach((quantidade, produtoId) => {
-        const produto = wallapopProdutos.find(item => String(item.id) === String(produtoId));
-        if (!produto) return;
-        const existente = wallapopItens.find(item => String(item.id) === String(produtoId));
-        const quantidadeFinal = quantidade;
-        if (!confirmarStockNegativoPlataforma(produto, quantidadeFinal)) return;
-        if (existente) existente.quantidade = quantidadeFinal;
-        else wallapopItens.push({ ...produto, quantidade });
-        adicionados += quantidade;
-    });
-
+    const adicionados = aplicarSelecoesListaProdutosPlataforma(selecoes);
     if (!adicionados) return;
-    guardarItensWallapop();
-    marcarWallapopPorRegistar();
-    renderizarSelecionadosWallapop();
-    renderizarFolhaWallapop();
-    document.getElementById('plataforma-lista-produtos').value = '';
-    fecharRevisaoListaProdutosPlataforma();
-    definirStatusWallapop(`${adicionados} produto(s) adicionado(s) a partir da lista.`);
+    definirStatusWallapop(`${adicionados} figura(s) adicionada(s) a partir da lista.`);
+}
+
+function adicionarListaAnalisadaPlataforma(linhas) {
+    const selecoes = linhas
+        .filter(linha => linha.produtoId)
+        .map(linha => ({ produtoId: linha.produtoId, quantidade: linha.quantidade }));
+    return aplicarSelecoesListaProdutosPlataforma(selecoes);
+}
+
+function atualizarPreviaListaProdutosPlataforma() {
+    const textarea = document.getElementById('plataforma-lista-produtos');
+    const previa = document.getElementById('plataforma-lista-previa');
+    if (!textarea || !previa) return;
+
+    const texto = textarea.value;
+    if (!texto.trim()) {
+        previa.hidden = true;
+        previa.textContent = '';
+        return;
+    }
+
+    const linhas = analisarListaProdutosPlataforma(texto);
+    if (!linhas.length) {
+        previa.hidden = false;
+        previa.textContent = 'Nenhum produto detetado. Verifica se a lista tem nomes ou refer\u00eancias v\u00e1lidas.';
+        return;
+    }
+
+    const resumo = resumirAnaliseListaPlataforma(linhas);
+    previa.hidden = false;
+    previa.textContent = `${resumo.produtos} produtos | ${resumo.figuras} figuras | ${resumo.exatas + resumo.sugeridas} reconhecidos | ${resumo.rever} a rever`;
 }
 
 function abrirRevisaoListaProdutosPlataforma() {
@@ -793,6 +914,15 @@ function abrirRevisaoListaProdutosPlataforma() {
     if (!linhas.length) {
         definirStatusWallapop('Cola primeiro uma lista com uma figura por linha.', true);
         return;
+    }
+
+    const resumo = resumirAnaliseListaPlataforma(linhas);
+    if (!resumo.rever) {
+        const adicionados = adicionarListaAnalisadaPlataforma(linhas);
+        if (adicionados > 0) {
+            definirStatusWallapop(`${resumo.figuras} figura(s) adicionada(s) (${resumo.produtos} produtos reconhecidos).`);
+            return;
+        }
     }
 
     fecharRevisaoListaProdutosPlataforma();
@@ -815,6 +945,9 @@ function abrirRevisaoListaProdutosPlataforma() {
 
     const explicacao = document.createElement('p');
     explicacao.textContent = 'Confirma as correspond\u00eancias. As corre\u00e7\u00f5es prov\u00e1veis j\u00e1 est\u00e3o selecionadas; os casos duvidosos ficam por escolher.';
+    const resumoEl = document.createElement('p');
+    resumoEl.className = 'plataforma-lista-resumo';
+    resumoEl.textContent = `${resumo.produtos} produtos | ${resumo.figuras} figuras | ${resumo.exatas} exatas | ${resumo.sugeridas} sugeridas | ${resumo.rever} a rever`;
     const lista = document.createElement('div');
     lista.className = 'plataforma-lista-revisao';
 
@@ -901,7 +1034,7 @@ function abrirRevisaoListaProdutosPlataforma() {
     adicionar.textContent = 'Adicionar produtos selecionados';
     adicionar.onclick = () => adicionarListaRevistaPlataforma(linhas, modal);
     acoes.append(cancelar, adicionar);
-    dialogo.append(topo, explicacao, lista, aviso, acoes);
+    dialogo.append(topo, explicacao, resumoEl, lista, aviso, acoes);
     modal.appendChild(dialogo);
     modal.addEventListener('click', evento => {
         if (evento.target === modal) fecharRevisaoListaProdutosPlataforma();
@@ -2304,6 +2437,21 @@ async function iniciarWallapopAdmin() {
 
 document.getElementById('wallapop-pesquisa').addEventListener('input', renderizarResultadosWallapop);
 document.getElementById('btn-analisar-lista-produtos').addEventListener('click', abrirRevisaoListaProdutosPlataforma);
+document.getElementById('plataforma-lista-produtos')?.addEventListener('input', () => {
+    clearTimeout(window.__plataformaListaPreviaTimer);
+    window.__plataformaListaPreviaTimer = setTimeout(atualizarPreviaListaProdutosPlataforma, 180);
+});
+document.getElementById('plataforma-lista-produtos')?.addEventListener('paste', () => {
+    document.querySelector('.plataforma-importar-lista')?.setAttribute('open', '');
+    clearTimeout(window.__plataformaListaPreviaTimer);
+    window.__plataformaListaPreviaTimer = setTimeout(atualizarPreviaListaProdutosPlataforma, 80);
+});
+document.getElementById('plataforma-lista-produtos')?.addEventListener('keydown', evento => {
+    if (evento.key === 'Enter' && (evento.ctrlKey || evento.metaKey)) {
+        evento.preventDefault();
+        abrirRevisaoListaProdutosPlataforma();
+    }
+});
 document.getElementById('btn-limpar-wallapop').addEventListener('click', limparListaWallapop);
 document.getElementById('btn-descarregar-wallapop').addEventListener('click', guardarFicheirosPlataforma);
 document.getElementById('btn-registar-wallapop').addEventListener('click', registarEncomendaWallapop);
