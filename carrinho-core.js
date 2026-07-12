@@ -170,8 +170,17 @@ function atualizarCarrinho(opcoes = {}) {
         preco.className = 'preco-carrinho';
         preco.textContent = formatarEuro(item.preco * item.quantidade) + ' €';
 
+        const tema = document.createElement('span');
+        tema.className = 'carrinho-tema';
+        const temaDetalhe = [produtoCompleto?.tema, produtoCompleto?.subtema, item.tema, item.subtema]
+            .map(valor => String(valor || '').trim())
+            .filter(valor => valor && !/^sem\s*subtema$/i.test(valor));
+        tema.textContent = temaDetalhe.length
+            ? [...new Set(temaDetalhe)].join(' - ')
+            : 'Sem tema';
+
         linhaPrincipal.append(nome, preco);
-        info.appendChild(linhaPrincipal);
+        info.append(linhaPrincipal, tema);
 
         const botoes = document.createElement('div');
         botoes.className = 'controlos-carrinho';

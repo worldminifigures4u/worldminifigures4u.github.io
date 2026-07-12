@@ -114,6 +114,10 @@
             white-space:nowrap;
         }
 
+        .carrinho-tema{
+            display:none;
+        }
+
         .preco-carrinho{
             color:#fff;
             font-weight:bold;
@@ -408,10 +412,11 @@
         grid-template-columns:72px minmax(0, 1fr);
         grid-template-areas:
             "imagem nome"
+            "imagem tema"
             "preco acoes";
         align-items:center;
         column-gap:10px;
-        row-gap:8px;
+        row-gap:4px;
     }
 
     .info-carrinho,
@@ -421,26 +426,43 @@
 
     .imagem-carrinho{
         grid-area:imagem;
+        grid-row:1 / 3;
         width:72px;
         height:72px;
         flex-basis:72px;
+        align-self:center;
     }
 
     .linha-carrinho strong{
         grid-area:nome;
-        align-self:center;
-        font-size:16px;
-        line-height:1.15;
+        align-self:end;
+        font-size:15px;
+        line-height:1.1;
         white-space:normal;
         display:-webkit-box;
-        -webkit-line-clamp:3;
+        -webkit-line-clamp:2;
         -webkit-box-orient:vertical;
         overflow:hidden;
         min-width:0;
     }
 
+    .carrinho-tema{
+        display:block;
+        grid-area:tema;
+        align-self:start;
+        color:#aaa;
+        font-size:13px;
+        font-weight:700;
+        line-height:1.1;
+        overflow:hidden;
+        text-overflow:ellipsis;
+        white-space:nowrap;
+        min-width:0;
+    }
+
     .preco-carrinho{
         grid-area:preco;
+        margin-top:4px;
         font-size:17px;
         line-height:1.1;
         white-space:nowrap;
@@ -451,6 +473,7 @@
 
     .controlos-carrinho{
         grid-area:acoes;
+        margin-top:4px;
         width:100%;
         justify-content:space-between;
         gap:8px;
@@ -481,7 +504,11 @@
     }
 
     .linha-carrinho strong{
-        font-size:18px;
+        font-size:16px;
+    }
+
+    .carrinho-tema{
+        font-size:14px;
     }
 
     .preco-carrinho{
