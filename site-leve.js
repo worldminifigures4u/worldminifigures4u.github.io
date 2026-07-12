@@ -1,7 +1,12 @@
 (function () {
-    const SUPABASE_URL = "https://gksndzxadndrsynvzgzb.supabase.co";
-    const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imdrc25kenhhZG5kcnN5bnZ6Z3piIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkwODc5NzMsImV4cCI6MjA5NDY2Mzk3M30.EHZgacYr27dqoc4CJHsOwkNnJFGlLIteSHBi4B1HfVE";
-    const NOME_CONTA_CABECALHO_KEY = 'figures-planet-conta-primeiro-nome';
+    const RECURSOS_PREFETCH_LOJA = [
+        'index.html',
+        'app-config.js',
+        'app-core.js',
+        'app-loja.js',
+        'loja-produtos.js',
+        'cart-mini.js'
+    ];
 
     function carregarCarrinhoLocal() {
         try {
@@ -93,6 +98,17 @@
         window.location.href = 'index.html' + (pesquisa ? '?q=' + encodeURIComponent(pesquisa) : '');
     };
 
+    function prefetchRecursosLoja() {
+        RECURSOS_PREFETCH_LOJA.forEach((href) => {
+            if (document.querySelector(`link[rel="prefetch"][href="${href}"]`)) return;
+            const link = document.createElement('link');
+            link.rel = 'prefetch';
+            link.href = href;
+            link.as = href.endsWith('.html') ? 'document' : 'script';
+            document.head.appendChild(link);
+        });
+    }
+
     document.addEventListener('DOMContentLoaded', () => {
         iniciarCabecalhoLeve();
         atualizarContadorCarrinhoCabecalho();
@@ -106,8 +122,10 @@
         const atualizar = () => atualizarNomeContaCabecalho();
         if ('requestIdleCallback' in window) {
             requestIdleCallback(atualizar, { timeout: 2000 });
+            requestIdleCallback(prefetchRecursosLoja, { timeout: 5000 });
         } else {
             setTimeout(atualizar, 0);
+            setTimeout(prefetchRecursosLoja, 1500);
         }
     });
     window.addEventListener('storage', atualizarContadorCarrinhoCabecalho);
