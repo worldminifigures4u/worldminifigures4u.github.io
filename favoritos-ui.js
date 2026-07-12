@@ -150,7 +150,18 @@ function criarCardFavoritoCliente(produto) {
     const remover = document.createElement('button');
     remover.type = 'button';
     remover.className = 'btn-favorito-remover';
-    remover.textContent = 'Remover';
+    remover.setAttribute('aria-label', 'Remover dos favoritos');
+
+    const iconeRemover = document.createElement('span');
+    iconeRemover.className = 'btn-favorito-remover-icone';
+    iconeRemover.setAttribute('aria-hidden', 'true');
+    iconeRemover.textContent = 'X';
+
+    const textoRemover = document.createElement('span');
+    textoRemover.className = 'btn-favorito-remover-texto';
+    textoRemover.textContent = 'Remover';
+
+    remover.append(iconeRemover, textoRemover);
     remover.addEventListener('click', () => removerFavoritoProduto(produto.id));
 
     acoes.append(adicionar, remover);

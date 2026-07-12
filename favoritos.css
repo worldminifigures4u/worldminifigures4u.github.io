@@ -160,6 +160,14 @@
     color:#ff8a8a;
 }
 
+.btn-favorito-remover-icone{
+    display:none;
+}
+
+.btn-favorito-remover-texto{
+    display:inline;
+}
+
 .btn-favorito-adicionar:disabled{
     cursor:not-allowed;
     opacity:.5;
@@ -192,10 +200,10 @@
 
 @media(max-width:800px){
     .favorito-card{
-        grid-template-columns:72px minmax(0, 1fr);
+        grid-template-columns:72px minmax(0, 1fr) auto;
         grid-template-areas:
-            "imagem detalhes"
-            "acoes acoes";
+            "imagem detalhes remover"
+            "acoes acoes acoes";
         width:100%;
         max-width:100%;
         box-sizing:border-box;
@@ -249,20 +257,40 @@
     }
 
     .favorito-acoes{
-        grid-area:acoes;
-        grid-column:1 / -1;
-        display:flex;
-        flex-direction:column;
-        gap:6px;
-        width:100%;
-        margin-top:6px;
+        display:contents;
     }
 
-    .btn-favorito-adicionar,
-    .btn-favorito-remover{
+    .btn-favorito-adicionar{
+        grid-area:acoes;
         width:100%;
         flex:none;
         min-height:40px;
+    }
+
+    .btn-favorito-remover{
+        grid-area:remover;
+        align-self:stretch;
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        width:40px;
+        min-width:40px;
+        min-height:72px;
+        padding:0;
+        background:#ff4d4d;
+        color:#fff;
+        border-radius:8px;
+    }
+
+    .btn-favorito-remover-icone{
+        display:inline;
+        font-size:16px;
+        font-weight:900;
+        line-height:1;
+    }
+
+    .btn-favorito-remover-texto{
+        display:none;
     }
 }
 
@@ -302,7 +330,7 @@
     }
 
     .favorito-card{
-        grid-template-columns:80px minmax(0, 1fr);
+        grid-template-columns:80px minmax(0, 1fr) auto;
         column-gap:12px;
         padding:10px 12px;
     }
@@ -314,6 +342,16 @@
 
     .favorito-detalhes{
         min-height:80px;
+    }
+
+    .btn-favorito-remover{
+        min-height:80px;
+        width:44px;
+        min-width:44px;
+    }
+
+    .btn-favorito-remover-icone{
+        font-size:18px;
     }
 
     .favorito-detalhes strong{
@@ -333,8 +371,7 @@
         font-size:12px;
     }
 
-    .btn-favorito-adicionar,
-    .btn-favorito-remover{
+    .btn-favorito-adicionar{
         padding:10px 12px;
         font-size:13px;
     }
