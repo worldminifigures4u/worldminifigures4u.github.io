@@ -32,6 +32,9 @@
 
     async function iniciarPaginaFavoritos() {
         if (document.body?.dataset?.page !== 'favoritos') return;
+        if (typeof window.garantirAppFavoritos === 'function') {
+            await window.garantirAppFavoritos();
+        }
         await garantirFavoritosUi();
         if (typeof renderizarFavoritosCliente === 'function') {
             renderizarFavoritosCliente();

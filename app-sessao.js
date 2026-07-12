@@ -296,6 +296,7 @@ function existePaginaFavoritos() {
 
 async function aguardarModulosFavoritos() {
     if (!existePaginaFavoritos()) return;
+    await aguardarAppFavoritos();
     if (typeof renderizarFavoritosCliente === 'function') return;
     if (typeof window.garantirFavoritosUi === 'function') {
         await window.garantirFavoritosUi();
