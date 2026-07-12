@@ -215,7 +215,7 @@
         grid-area:detalhes;
         min-height:72px;
         justify-content:center;
-        gap:0;
+        gap:4px;
     }
 
     .favorito-detalhes strong{
@@ -231,10 +231,6 @@
     .favorito-linha-secundaria span:not(.favorito-preco){
         font-size:13px;
         line-height:1.1;
-    }
-
-    .favorito-linha-secundaria{
-        margin-top:1px;
     }
 
     .favorito-preco{
