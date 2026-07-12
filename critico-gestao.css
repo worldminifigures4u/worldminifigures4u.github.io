@@ -1,0 +1,19 @@
+/* Layout crítico da gestão até conta.css e gestao.css carregarem. */
+.gestao-bloqueio {
+    padding: 20px;
+    text-align: center;
+    color: #bbb;
+}
+
+.area-cliente,
+.painel-admin,
+.admin-seccao {
+    max-width: 100%;
+}
+
+.form-cliente,
+.form-admin {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}

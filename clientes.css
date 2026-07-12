@@ -42,7 +42,8 @@
     flex-direction:column;
     gap:6px;
     padding:6px;
-    overflow:hidden;
+    overflow:auto;
+    max-height:calc(100vh - 280px);
 }
 
 .clientes-lista-item{

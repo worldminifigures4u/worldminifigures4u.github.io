@@ -1,0 +1,40 @@
+/* Layout crítico da vitrine até loja.css carregar. */
+.vista-loja.ativa {
+    display: flex;
+    gap: 20px;
+    align-items: flex-start;
+}
+
+.coluna-esquerda {
+    width: 250px;
+    align-self: flex-start;
+}
+
+.conteudo-central {
+    flex: 1;
+    min-width: 0;
+}
+
+.produtos {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+    gap: 20px;
+}
+
+.estado-vitrine {
+    background: #111;
+    padding: 30px;
+    border-radius: 12px;
+    text-align: center;
+    grid-column: 1 / -1;
+}
+
+@media (max-width: 1100px) {
+    .vista-loja.ativa {
+        flex-direction: column;
+    }
+
+    .coluna-esquerda {
+        width: 100%;
+    }
+}
