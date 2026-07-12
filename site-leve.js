@@ -7,6 +7,7 @@
         'app-loja.js',
         'loja-produtos.js',
         'loja.css',
+        'styles-tema.css',
         'cart-mini.js'
     ];
 

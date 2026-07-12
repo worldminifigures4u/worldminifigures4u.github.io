@@ -162,6 +162,7 @@
             'app-loja.js',
             'loja-produtos.js',
             'loja.css',
+            'styles-tema.css',
             'cart-mini.js'
         ];
         recursos.forEach(function (href) {
@@ -182,6 +183,7 @@
             [
                 'conta.html',
                 'conta.css',
+                'styles-tema.css',
                 'app-sessao.js',
                 'conta-pagina.js'
             ].forEach(function (href) {
@@ -211,6 +213,7 @@
                 'gestao-admin-loader.js',
                 'gestao.css',
                 'conta.css',
+                'styles-admin.css',
                 'app-core.js',
                 'app-sku.js'
             ].forEach(function (href) {
@@ -238,6 +241,7 @@
             [
                 'carrinho.html',
                 'carrinho.css',
+                'styles-tema.css',
                 'app-sessao.js',
                 'app-carrinho.js',
                 'carrinho-core.js'
@@ -266,6 +270,7 @@
             [
                 'favoritos.html',
                 'favoritos.css',
+                'styles-tema.css',
                 'app-favoritos.js',
                 'favoritos-ui.js'
             ].forEach(function (href) {
@@ -349,7 +354,7 @@
 
         const carregarCheckout = () => new Promise((resolve, reject) => {
             const script = document.createElement('script');
-            script.src = 'checkout.js?v=20260711-leve-r19';
+            script.src = 'checkout.js?v=20260711-leve-r20';
             script.defer = true;
             script.onload = () => resolve();
             script.onerror = () => reject(new Error('Falha ao carregar checkout.'));

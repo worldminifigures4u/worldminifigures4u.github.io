@@ -1,9 +1,10 @@
-const CACHE_ESTATICO = 'figures-planet-estatico-v12';
+const CACHE_ESTATICO = 'figures-planet-estatico-v13';
 
 const RECURSOS_PRECARGA = [
     'app-config.js',
     'app-util.js',
     'styles.css',
+    'styles-tema.css',
     'loja.css',
     'conta.css',
     'gestao.css',

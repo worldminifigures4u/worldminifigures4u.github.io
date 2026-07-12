@@ -467,6 +467,6 @@ function precarregarImagemProduto(url) {
 
 if ('serviceWorker' in navigator && window.location.protocol !== 'file:') {
     window.addEventListener('load', () => {
-        navigator.serviceWorker.register('sw.js?v=20260711-leve-r19').catch(() => {});
+        navigator.serviceWorker.register('sw.js?v=20260711-leve-r20').catch(() => {});
     });
 }
