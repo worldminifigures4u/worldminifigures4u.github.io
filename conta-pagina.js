@@ -1,25 +1,5 @@
-// Carregamento tardio de conta-cliente.js na pagina Conta.
+// Agendamento de conta-cliente.js na pagina Conta.
 (function () {
-    let promessaContaCliente = null;
-
-    function garantirContaCliente() {
-        if (typeof fazerLogin === 'function') return Promise.resolve();
-        if (promessaContaCliente) return promessaContaCliente;
-
-        promessaContaCliente = new Promise((resolve, reject) => {
-            const script = document.createElement('script');
-            script.src = 'conta-cliente.js?v=20260711-leve-r13';
-            script.defer = true;
-            script.onload = () => resolve();
-            script.onerror = () => reject(new Error('Falha ao carregar conta-cliente.js'));
-            document.body.appendChild(script);
-        });
-
-        return promessaContaCliente;
-    }
-
-    window.garantirContaCliente = garantirContaCliente;
-
     function urlTemRecuperacaoConta() {
         const params = new URLSearchParams(window.location.search);
         const hash = window.location.hash ? window.location.hash.replace(/^#/, '') : '';
@@ -42,11 +22,12 @@
     }
 
     function agendarCarregamentoConta() {
+        if (typeof window.garantirContaCliente !== 'function') return;
         if (urlTemRecuperacaoConta() || pareceSessaoAtiva()) {
-            garantirContaCliente().catch(console.error);
+            window.garantirContaCliente().catch(console.error);
             return;
         }
-        const iniciar = () => garantirContaCliente().catch(console.error);
+        const iniciar = () => window.garantirContaCliente().catch(console.error);
         if ('requestIdleCallback' in window) {
             window.requestIdleCallback(iniciar, { timeout: 3000 });
         } else {
@@ -59,7 +40,11 @@
         const formLogin = document.getElementById('form-login');
         if (!painel && !formLogin) return;
 
-        const pedirConta = () => garantirContaCliente().catch(console.error);
+        const pedirConta = () => {
+            if (typeof window.garantirContaCliente === 'function') {
+                window.garantirContaCliente().catch(console.error);
+            }
+        };
         const raiz = painel || document.body;
 
         raiz.querySelectorAll('form, button, input, select, textarea, a[data-aba-cliente], [data-acao-cliente], [data-seccao-conta]').forEach((elemento) => {

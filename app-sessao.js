@@ -337,6 +337,18 @@ async function aguardarModulosContaCliente() {
     }
 }
 
+function existePaginaFavoritos() {
+    return document.body?.dataset?.page === 'favoritos' || !!document.getElementById('lista-favoritos-cliente');
+}
+
+async function aguardarModulosFavoritos() {
+    if (!existePaginaFavoritos()) return;
+    if (typeof renderizarFavoritosCliente === 'function') return;
+    if (typeof window.garantirFavoritosUi === 'function') {
+        await window.garantirFavoritosUi();
+    }
+}
+
 window.addEventListener('load', async () => {
     atualizarCarrinhoSeDisponivel();
     const nomeCache = localStorage.getItem(NOME_CONTA_CABECALHO_KEY);
@@ -354,6 +366,7 @@ window.addEventListener('load', async () => {
     iniciarClientesSupabase();
 
     await aguardarModulosContaCliente();
+    await aguardarModulosFavoritos();
 
     if (urlTemRecuperacaoPassword()) {
         await prepararRecuperacaoPassword();
@@ -365,6 +378,6 @@ window.addEventListener('load', async () => {
 
 if ('serviceWorker' in navigator && window.location.protocol !== 'file:') {
     window.addEventListener('load', () => {
-        navigator.serviceWorker.register('sw.js?v=20260711-leve-r13').catch(() => {});
+        navigator.serviceWorker.register('sw.js?v=20260711-leve-r14').catch(() => {});
     });
 }
