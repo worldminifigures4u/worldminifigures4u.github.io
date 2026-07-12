@@ -516,6 +516,25 @@ function atualizarOpcoesEnvioPlataforma() {
     atualizarResumoPlataforma();
 }
 
+function formatarContagemFigurasPlataforma(total) {
+    const valor = Math.max(0, Number(total) || 0);
+    return `${valor} ${valor === 1 ? 'figura' : 'figuras'}`;
+}
+
+function atualizarContagemFigurasPlataforma() {
+    const total = calcularTotalFigurasLoteWallapop(wallapopItens);
+    const texto = formatarContagemFigurasPlataforma(total);
+    const resumo = document.getElementById('plataforma-resumo-figuras');
+    const totalOlx = document.getElementById('plataforma-total-figuras');
+    if (resumo) resumo.textContent = texto;
+    if (totalOlx) totalOlx.textContent = String(total);
+
+    const aviso = document.getElementById('plataforma-edicao');
+    if (aviso && !aviso.hidden && encomendaPlataformaEmEdicao) {
+        aviso.textContent = `A editar encomenda ${encomendaPlataformaEmEdicao.codigo_encomenda} - ${encomendaPlataformaEmEdicao.origem} \u2022 ${texto}`;
+    }
+}
+
 function atualizarResumoPlataforma() {
     const subtotal = calcularSubtotalPlataforma();
     const envio = obterEnvioPlataforma();
@@ -525,6 +544,7 @@ function atualizarResumoPlataforma() {
     document.getElementById('plataforma-subtotal').textContent = `${formatarEuroWallapop(subtotal)} \u20ac`;
     document.getElementById('plataforma-portes').textContent = `${formatarEuroWallapop(portes)} \u20ac`;
     document.getElementById('plataforma-total').textContent = `${formatarEuroWallapop(subtotal + portes)} \u20ac`;
+    atualizarContagemFigurasPlataforma();
 }
 
 function atualizarModoPlataforma() {
@@ -1185,6 +1205,7 @@ function renderizarSelecionadosWallapop() {
     }
     if (obterPlataformaAtual() === 'OLX') atualizarOpcoesEnvioPlataforma();
     else atualizarResumoPlataforma();
+    atualizarContagemFigurasPlataforma();
 }
 
 let folhaDinamicaWallapop = null;
@@ -1859,10 +1880,11 @@ function mostrarEdicaoPlataforma(encomenda) {
     if (!encomenda) {
         aviso.hidden = true;
         aviso.textContent = '';
+        atualizarContagemFigurasPlataforma();
         return;
     }
-    aviso.textContent = `A editar encomenda ${encomenda.codigo_encomenda} - ${encomenda.origem}`;
     aviso.hidden = false;
+    atualizarContagemFigurasPlataforma();
 }
 
 function obterQuantidadesAtuaisPlataforma() {
