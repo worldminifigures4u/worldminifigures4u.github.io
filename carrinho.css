@@ -407,11 +407,16 @@
         display:grid;
         grid-template-columns:72px minmax(0, 1fr);
         grid-template-areas:
-            "imagem detalhes"
-            "acoes acoes";
+            "imagem nome"
+            "preco acoes";
         align-items:center;
         column-gap:10px;
         row-gap:8px;
+    }
+
+    .info-carrinho,
+    .carrinho-linha-principal{
+        display:contents;
     }
 
     .imagem-carrinho{
@@ -421,38 +426,25 @@
         flex-basis:72px;
     }
 
-    .info-carrinho{
-        grid-area:detalhes;
-        min-height:72px;
-        display:flex;
-        flex-direction:column;
-        justify-content:center;
-    }
-
-    .carrinho-linha-principal{
-        flex-direction:row;
-        justify-content:space-between;
-        align-items:baseline;
-        gap:10px;
-    }
-
-    .carrinho-linha-principal strong{
+    .linha-carrinho strong{
+        grid-area:nome;
+        align-self:center;
         font-size:16px;
         line-height:1.15;
         white-space:normal;
         display:-webkit-box;
-        -webkit-line-clamp:2;
+        -webkit-line-clamp:3;
         -webkit-box-orient:vertical;
         overflow:hidden;
-        flex:1 1 auto;
         min-width:0;
     }
 
     .preco-carrinho{
+        grid-area:preco;
         font-size:17px;
         line-height:1.1;
         white-space:nowrap;
-        flex:0 0 auto;
+        justify-self:start;
     }
 
     .controlos-carrinho{
@@ -486,11 +478,7 @@
         flex-basis:80px;
     }
 
-    .info-carrinho{
-        min-height:80px;
-    }
-
-    .carrinho-linha-principal strong{
+    .linha-carrinho strong{
         font-size:18px;
     }
 
