@@ -17,8 +17,17 @@
 
     <link rel="stylesheet" href="styles.css?v=20260711-logo-centro">
     <link rel="stylesheet" href="styles-admin.css?v=20260711-menu-admin">
-    <link rel="stylesheet" href="conta.css?v=20260710-hierarquia-global">
-    <link rel="stylesheet" href="gestao.css?v=20260710-hierarquia-global">
+    <style>
+        .gestao-bloqueio{padding:20px;text-align:center;color:#bbb}
+        .area-cliente,.painel-admin,.admin-seccao{max-width:100%}
+        .form-cliente,.form-admin{display:flex;flex-direction:column;gap:10px}
+    </style>
+    <link rel="preload" href="conta.css?v=20260710-hierarquia-global" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <link rel="preload" href="gestao.css?v=20260710-hierarquia-global" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <noscript>
+        <link rel="stylesheet" href="conta.css?v=20260710-hierarquia-global">
+        <link rel="stylesheet" href="gestao.css?v=20260710-hierarquia-global">
+    </noscript>
 </head>
 <body data-page="conta" class="pagina-gestao">
 
@@ -422,13 +431,13 @@
     </div>
 </footer>
 <script src="supabase-cdn.js?v=20260711-leve" defer></script>
-<script src="app-config.js?v=20260711-leve-r18" defer></script>
-<script src="app-util.js?v=20260711-leve-r18" defer></script>
-<script src="app-core.js?v=20260711-leve-r18" defer></script>
-<script src="gestao-admin-loader.js?v=20260711-leve-r18" defer></script>
-<script src="conta-cliente-loader.js?v=20260711-leve-r18" defer></script>
-<script src="gestao-pagina.js?v=20260711-leve-r18" defer></script>
-<script src="inline-listeners-base.js?v=20260711-leve-r18" defer></script>
-<script src="inline-listeners-admin.js?v=20260711-leve-r18" defer></script>
+<script src="app-config.js?v=20260711-leve-r19" defer></script>
+<script src="app-util.js?v=20260711-leve-r19" defer></script>
+<script src="app-core.js?v=20260711-leve-r19" defer></script>
+<script src="gestao-admin-loader.js?v=20260711-leve-r19" defer></script>
+<script src="conta-cliente-loader.js?v=20260711-leve-r19" defer></script>
+<script src="gestao-pagina.js?v=20260711-leve-r19" defer></script>
+<script src="inline-listeners-base.js?v=20260711-leve-r19" defer></script>
+<script src="inline-listeners-admin.js?v=20260711-leve-r19" defer></script>
 </body>
 </html>

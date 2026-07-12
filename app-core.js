@@ -338,19 +338,6 @@ async function verificarSessaoSupabase() {
 const FORNECEDORES_STORAGE_KEY = "figures-planet-fornecedores-pedidos";
 const FORNECEDORES_FICHAS_KEY = "figures-planet-fornecedores-fichas";
 
-function utilizadorAdmin(user) {
-    const email = String(user?.email || '').toLowerCase();
-    return ADMIN_EMAILS.includes(email);
-}
-
-function garantirEstilosAdmin() {
-    if (document.querySelector('link[href*="styles-admin.css"]')) return;
-    const folha = document.createElement('link');
-    folha.rel = 'stylesheet';
-    folha.href = 'styles-admin.css?v=20260711-menu-admin';
-    document.head.appendChild(folha);
-}
-
 function atualizarVisibilidadeAdmin(user) {
     const painel = document.getElementById('painel-admin');
     const adminAtivo = utilizadorAdmin(user);
@@ -480,6 +467,6 @@ function precarregarImagemProduto(url) {
 
 if ('serviceWorker' in navigator && window.location.protocol !== 'file:') {
     window.addEventListener('load', () => {
-        navigator.serviceWorker.register('sw.js?v=20260711-leve-r18').catch(() => {});
+        navigator.serviceWorker.register('sw.js?v=20260711-leve-r19').catch(() => {});
     });
 }

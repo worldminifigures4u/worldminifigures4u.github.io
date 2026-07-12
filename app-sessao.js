@@ -120,19 +120,6 @@ function mostrarContaAnonimaSeExistir() {
     if (anonimo) anonimo.classList.remove('oculto');
 }
 
-function utilizadorAdmin(user) {
-    const email = String(user?.email || '').toLowerCase();
-    return ADMIN_EMAILS.includes(email);
-}
-
-function garantirEstilosAdmin() {
-    if (document.querySelector('link[href*="styles-admin.css"]')) return;
-    const folha = document.createElement('link');
-    folha.rel = 'stylesheet';
-    folha.href = 'styles-admin.css?v=20260711-menu-admin';
-    document.head.appendChild(folha);
-}
-
 function atualizarVisibilidadeAdmin(user) {
     const adminAtivo = utilizadorAdmin(user);
     const atalhosAdmin = document.querySelectorAll('.acao-gestao-admin, .acao-plataforma-admin, .acao-anuncio-admin, .acao-mapas-admin, .acao-fornecedores-admin, .acao-encomendas-admin, .acao-estatisticas-admin, .acao-clientes-admin');
@@ -328,6 +315,6 @@ window.addEventListener('load', async () => {
 
 if ('serviceWorker' in navigator && window.location.protocol !== 'file:') {
     window.addEventListener('load', () => {
-        navigator.serviceWorker.register('sw.js?v=20260711-leve-r18').catch(() => {});
+        navigator.serviceWorker.register('sw.js?v=20260711-leve-r19').catch(() => {});
     });
 }

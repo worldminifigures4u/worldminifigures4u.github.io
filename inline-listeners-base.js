@@ -156,11 +156,12 @@
     function prefetchRecursosLoja() {
         const recursos = [
             'index.html',
-        'app-config.js',
-        'app-util.js',
-        'app-core.js',
+            'app-config.js',
+            'app-util.js',
+            'app-core.js',
             'app-loja.js',
             'loja-produtos.js',
+            'loja.css',
             'cart-mini.js'
         ];
         recursos.forEach(function (href) {
@@ -168,8 +169,35 @@
             const link = document.createElement('link');
             link.rel = 'prefetch';
             link.href = href;
-            link.as = href.endsWith('.html') ? 'document' : 'script';
+            link.as = href.endsWith('.html') ? 'document' : (href.endsWith('.css') ? 'style' : 'script');
             document.head.appendChild(link);
+        });
+    }
+
+    function ligarPrefetchConta() {
+        let prefetchFeito = false;
+        const iniciarPrefetch = function () {
+            if (prefetchFeito) return;
+            prefetchFeito = true;
+            [
+                'conta.html',
+                'conta.css',
+                'app-sessao.js',
+                'conta-pagina.js'
+            ].forEach(function (href) {
+                if (document.querySelector('link[rel="prefetch"][href="' + href + '"]')) return;
+                const link = document.createElement('link');
+                link.rel = 'prefetch';
+                link.href = href;
+                link.as = href.endsWith('.html') ? 'document' : (href.endsWith('.css') ? 'style' : 'script');
+                document.head.appendChild(link);
+            });
+        };
+
+        document.querySelectorAll('[data-vista-nav="conta"], a[href="conta.html"]').forEach(function (elemento) {
+            elemento.addEventListener('mouseenter', iniciarPrefetch, { once: true });
+            elemento.addEventListener('focus', iniciarPrefetch, { once: true });
+            elemento.addEventListener('touchstart', iniciarPrefetch, { once: true, passive: true });
         });
     }
 
@@ -181,6 +209,8 @@
             [
                 'gestao.html',
                 'gestao-admin-loader.js',
+                'gestao.css',
+                'conta.css',
                 'app-core.js',
                 'app-sku.js'
             ].forEach(function (href) {
@@ -188,7 +218,7 @@
                 const link = document.createElement('link');
                 link.rel = 'prefetch';
                 link.href = href;
-                link.as = href.endsWith('.html') ? 'document' : 'script';
+                link.as = href.endsWith('.html') ? 'document' : (href.endsWith('.css') ? 'style' : 'script');
                 document.head.appendChild(link);
             });
         };
@@ -207,6 +237,7 @@
             prefetchFeito = true;
             [
                 'carrinho.html',
+                'carrinho.css',
                 'app-sessao.js',
                 'app-carrinho.js',
                 'carrinho-core.js'
@@ -215,7 +246,7 @@
                 const link = document.createElement('link');
                 link.rel = 'prefetch';
                 link.href = href;
-                link.as = href.endsWith('.html') ? 'document' : 'script';
+                link.as = href.endsWith('.html') ? 'document' : (href.endsWith('.css') ? 'style' : 'script');
                 document.head.appendChild(link);
             });
         };
@@ -234,6 +265,7 @@
             prefetchFeito = true;
             [
                 'favoritos.html',
+                'favoritos.css',
                 'app-favoritos.js',
                 'favoritos-ui.js'
             ].forEach(function (href) {
@@ -241,7 +273,7 @@
                 const link = document.createElement('link');
                 link.rel = 'prefetch';
                 link.href = href;
-                link.as = href.endsWith('.html') ? 'document' : 'script';
+                link.as = href.endsWith('.html') ? 'document' : (href.endsWith('.css') ? 'style' : 'script');
                 document.head.appendChild(link);
             });
         };
@@ -317,7 +349,7 @@
 
         const carregarCheckout = () => new Promise((resolve, reject) => {
             const script = document.createElement('script');
-            script.src = 'checkout.js?v=20260711-leve-r18';
+            script.src = 'checkout.js?v=20260711-leve-r19';
             script.defer = true;
             script.onload = () => resolve();
             script.onerror = () => reject(new Error('Falha ao carregar checkout.'));
@@ -373,6 +405,7 @@
             ligarPrefetchLoja();
             ligarPrefetchFavoritos();
             ligarPrefetchCarrinho();
+            ligarPrefetchConta();
             ligarPrefetchGestao();
             if (config.rodape) inserirRodapeSite();
             atualizarContadorCarrinhoTopo();

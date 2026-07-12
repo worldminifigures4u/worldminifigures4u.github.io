@@ -67,3 +67,16 @@ function obterImagemPrincipalProduto(prod = {}) {
     listaImagens = listaImagens.filter(url => url && typeof url === 'string' && url.trim() !== '');
     return listaImagens.length > 0 ? listaImagens[0] : 'img/sem-imagem.png';
 }
+
+function utilizadorAdmin(user) {
+    const email = String(user?.email || '').toLowerCase();
+    return ADMIN_EMAILS.includes(email);
+}
+
+function garantirEstilosAdmin() {
+    if (document.querySelector('link[href*="styles-admin.css"]')) return;
+    const folha = document.createElement('link');
+    folha.rel = 'stylesheet';
+    folha.href = 'styles-admin.css?v=20260711-menu-admin';
+    document.head.appendChild(folha);
+}

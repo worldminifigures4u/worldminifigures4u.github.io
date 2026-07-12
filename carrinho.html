@@ -17,7 +17,13 @@
     <link rel="icon" type="image/webp" href="favicon-32.webp?v=20260711-leve" sizes="32x32">
 
     <link rel="stylesheet" href="styles.css?v=20260711-logo-centro">
-    <link rel="stylesheet" href="carrinho.css?v=20260705-confirm-order-btn">
+    <style>
+        .carrinho-lista{display:flex;flex-direction:column;gap:14px}
+        .carrinho-item{display:flex;gap:14px;padding:14px;background:#111;border-radius:12px;border:1px solid #333}
+        .carrinho-resumo{margin-top:20px;padding:16px;background:#111;border-radius:12px;border:1px solid #333}
+    </style>
+    <link rel="preload" href="carrinho.css?v=20260705-confirm-order-btn" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <noscript><link rel="stylesheet" href="carrinho.css?v=20260705-confirm-order-btn"></noscript>
 </head>
 <body data-page="carrinho">
 
@@ -166,13 +172,13 @@
     </div>
 </footer>
 <script src="supabase-cdn.js?v=20260711-leve" defer></script>
-<script src="app-config.js?v=20260711-leve-r18" defer></script>
-<script src="app-util.js?v=20260711-leve-r18" defer></script>
-<script src="app-sessao.js?v=20260711-leve-r18" defer></script>
-<script src="app-carrinho.js?v=20260711-leve-r18" defer></script>
-<script src="carrinho-core.js?v=20260711-leve-r18" defer></script>
-<script src="carrinho-pagina.js?v=20260711-leve-r18" defer></script>
-<script src="inline-listeners-base.js?v=20260711-leve-r18" defer></script>
-<script src="inline-listeners-carrinho.js?v=20260711-leve-r18" defer></script>
+<script src="app-config.js?v=20260711-leve-r19" defer></script>
+<script src="app-util.js?v=20260711-leve-r19" defer></script>
+<script src="app-sessao.js?v=20260711-leve-r19" defer></script>
+<script src="app-carrinho.js?v=20260711-leve-r19" defer></script>
+<script src="carrinho-core.js?v=20260711-leve-r19" defer></script>
+<script src="carrinho-pagina.js?v=20260711-leve-r19" defer></script>
+<script src="inline-listeners-base.js?v=20260711-leve-r19" defer></script>
+<script src="inline-listeners-carrinho.js?v=20260711-leve-r19" defer></script>
 </body>
 </html>
