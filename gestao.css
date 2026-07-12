@@ -303,8 +303,11 @@
     margin: 0 auto;
 }
 
-.pagina-gestao #conteudo-cliente-autenticado > :not(#painel-admin),
-.pagina-gestao #conteudo-cliente-anonimo {
+.pagina-gestao #conteudo-cliente-autenticado > :not(#painel-admin) {
+    display: none !important;
+}
+
+.pagina-gestao.cabecalho-com-admin #conteudo-cliente-anonimo {
     display: none !important;
 }
 

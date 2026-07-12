@@ -21,18 +21,90 @@
         }
     }
 
+    async function aguardarClienteSupabase(timeoutMs = 15000) {
+        const inicio = Date.now();
+        while ((typeof dbClient === 'undefined' || !dbClient) && Date.now() - inicio < timeoutMs) {
+            await new Promise((resolve) => window.setTimeout(resolve, 100));
+        }
+        if (!dbClient) {
+            throw new Error('Cliente Supabase indisponível.');
+        }
+    }
+
+    function mostrarLoginGestao() {
+        const bloqueio = document.getElementById('gestao-bloqueio');
+        if (bloqueio) bloqueio.hidden = true;
+
+        if (typeof mostrarContaAnonimaSeExistir === 'function') {
+            mostrarContaAnonimaSeExistir();
+            return;
+        }
+
+        const autenticado = document.getElementById('conteudo-cliente-autenticado');
+        const anonimo = document.getElementById('conteudo-cliente-anonimo');
+        if (autenticado) autenticado.classList.add('oculto');
+        if (anonimo) anonimo.classList.remove('oculto');
+    }
+
+    async function finalizarEstadoGestao() {
+        if (!document.body.classList.contains('pagina-gestao')) return;
+
+        const bloqueio = document.getElementById('gestao-bloqueio');
+        let temSessao = false;
+
+        try {
+            await aguardarClienteSupabase();
+
+            if (typeof verificarSessaoSupabase === 'function') {
+                await verificarSessaoSupabase();
+            } else if (dbClient?.auth) {
+                const { data: { session } } = await dbClient.auth.getSession();
+                if (session?.user && typeof obterDadosPerfilDaTabela === 'function') {
+                    await obterDadosPerfilDaTabela(session.user.id, session.user);
+                } else if (typeof atualizarVisibilidadeAdmin === 'function') {
+                    atualizarVisibilidadeAdmin(null);
+                }
+            }
+
+            if (dbClient?.auth) {
+                const { data: { session } } = await dbClient.auth.getSession();
+                temSessao = !!session?.user;
+            }
+        } catch (erro) {
+            console.error(erro);
+            if (bloqueio) {
+                bloqueio.hidden = false;
+                bloqueio.textContent = 'Erro ao verificar acesso. Recarregue a página.';
+            }
+            return;
+        }
+
+        if (document.body.classList.contains('cabecalho-com-admin')) {
+            if (bloqueio) bloqueio.hidden = true;
+            if (typeof window.garantirGestaoAdmin === 'function') {
+                await window.garantirGestaoAdmin();
+            }
+            return;
+        }
+
+        if (!temSessao) {
+            mostrarLoginGestao();
+            return;
+        }
+
+        if (bloqueio && bloqueio.textContent.trim() === 'A verificar acesso administrativo...') {
+            bloqueio.hidden = false;
+            bloqueio.textContent = 'Acesso reservado ao administrador.';
+        }
+    }
+
     function agendarCarregamentoConta() {
         if (typeof window.garantirContaCliente !== 'function') return;
         if (urlTemRecuperacaoConta()) {
             window.garantirContaCliente().catch(console.error);
             return;
         }
-        const iniciar = () => window.garantirContaCliente().catch(console.error);
-        if ('requestIdleCallback' in window) {
-            window.requestIdleCallback(iniciar, { timeout: 3500 });
-        } else {
-            window.setTimeout(iniciar, 2000);
-        }
+        window.garantirContaCliente().catch(console.error);
     }
 
     function agendarGestaoAdmin() {
@@ -82,5 +154,10 @@
         });
 
         agendarCarregamentoConta();
+    });
+
+    window.addEventListener('load', () => {
+        if (!document.body.classList.contains('pagina-gestao')) return;
+        finalizarEstadoGestao().catch(console.error);
     });
 })();
