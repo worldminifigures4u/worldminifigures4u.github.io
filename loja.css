@@ -429,6 +429,18 @@
         box-shadow:none;
     }
 
+    body[data-page="loja"] header::after{
+        content:'';
+        position:absolute;
+        left:0;
+        right:0;
+        bottom:-4px;
+        height:4px;
+        background:#111;
+        z-index:1001;
+        pointer-events:none;
+    }
+
     .vista.vista-loja.ativa{ flex-direction:column; gap:12px; }
     .coluna-esquerda{
         order:1;
@@ -437,10 +449,11 @@
         box-sizing:border-box;
         position:sticky;
         top:var(--temas-sticky-top, calc(var(--cabecalho-offset, 112px) - var(--espaco-abaixo-cabecalho, 24px)));
-        z-index:5;
+        z-index:999;
         align-self:stretch;
         background:#111;
         gap:0;
+        isolation:isolate;
     }
 
     body[data-page="loja"] .coluna-esquerda{
@@ -450,11 +463,13 @@
     }
 
     body[data-page="loja"] .menu-temas{
+        position:relative;
         border-radius:0;
         border-top:none;
         border-left:none;
         border-right:none;
         border-bottom:1px solid #333;
+        box-shadow:0 -4px 0 #111;
     }
 
     .menu-temas:has(.lista-temas.recolhida){

@@ -43,8 +43,9 @@ function atualizarStickyTemas() {
     if (!coluna || !menu) return;
 
     if (window.matchMedia && window.matchMedia('(max-width: 1100px)').matches) {
-        const headerHeight = header ? Math.round(header.getBoundingClientRect().height) : 76;
-        definirCssDinamicoTemas(`.coluna-esquerda { --temas-sticky-top: ${headerHeight}px; }`);
+        const headerBottom = header ? header.getBoundingClientRect().bottom : 76;
+        const stickyTop = Math.max(0, Math.floor(headerBottom) - 2);
+        definirCssDinamicoTemas(`.coluna-esquerda { --temas-sticky-top: ${stickyTop}px; }`);
         return;
     }
 
