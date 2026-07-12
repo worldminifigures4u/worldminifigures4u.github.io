@@ -701,7 +701,106 @@ function resumirAnaliseListaPlataforma(linhas) {
     const exatas = linhas.filter(linha => linha.estado === 'exata').length;
     const sugeridas = linhas.filter(linha => linha.estado === 'sugerida').length;
     const rever = linhas.filter(linha => linha.estado === 'rever').length;
-    return { figuras, exatas, sugeridas, rever, produtos: linhas.length };
+    const repetidas = linhas.filter(linha => linha.repeticaoTexto || linha.repeticaoProduto).length;
+    const linhasOriginais = linhas.reduce((total, linha) => total + Math.max(1, Number(linha.repeticoes || 1)), 0);
+    return { figuras, exatas, sugeridas, rever, repetidas, linhasOriginais, produtos: linhas.length };
+}
+
+function consolidarLinhasTextoListaPlataforma(linhas) {
+    const mapa = new Map();
+    const ordem = [];
+
+    linhas.forEach(linha => {
+        const chave = normalizarTextoWallapop(linha.original);
+        if (!chave) return;
+        const existente = mapa.get(chave);
+        if (existente) {
+            existente.quantidade += Math.max(1, Number(linha.quantidade) || 1);
+            existente.repeticoes += 1;
+            existente.ocorrencias.push(linha.indice);
+        } else {
+            mapa.set(chave, {
+                ...linha,
+                quantidade: Math.max(1, Number(linha.quantidade) || 1),
+                repeticoes: 1,
+                ocorrencias: [linha.indice],
+                repeticaoTexto: false
+            });
+            ordem.push(chave);
+        }
+    });
+
+    return ordem.map(chave => {
+        const entrada = mapa.get(chave);
+        entrada.repeticaoTexto = entrada.repeticoes > 1;
+        return entrada;
+    });
+}
+
+function consolidarLinhasProdutoListaPlataforma(linhas) {
+    const resultado = [];
+    const mapa = new Map();
+
+    linhas.forEach(linha => {
+        if (!linha.produtoId) {
+            resultado.push({
+                ...linha,
+                repeticaoProduto: false,
+                repeticoesProduto: 1,
+                textosOriginais: [linha.original]
+            });
+            return;
+        }
+
+        const chave = linha.produtoId;
+        if (!mapa.has(chave)) {
+            const entrada = {
+                ...linha,
+                repeticoesProduto: 1,
+                repeticaoProduto: false,
+                textosOriginais: [linha.original]
+            };
+            mapa.set(chave, entrada);
+            resultado.push(entrada);
+            return;
+        }
+
+        const entrada = mapa.get(chave);
+        entrada.quantidade += Math.max(1, Number(linha.quantidade) || 1);
+        entrada.repeticoesProduto += Math.max(1, Number(linha.repeticoes) || 1);
+        entrada.repeticaoProduto = true;
+        entrada.repeticaoTexto = entrada.repeticaoTexto || linha.repeticaoTexto;
+        if (!entrada.textosOriginais.includes(linha.original)) {
+            entrada.textosOriginais.push(linha.original);
+        }
+        if (linha.estado === 'rever') entrada.estado = 'rever';
+        else if (linha.estado === 'sugerida' && entrada.estado === 'exata') entrada.estado = 'sugerida';
+    });
+
+    return resultado;
+}
+
+function obterRotuloEstadoLinhaListaPlataforma(linha) {
+    if (linha.repeticaoTexto || linha.repeticaoProduto) {
+        const vezes = Math.max(linha.repeticoes || 0, linha.repeticoesProduto || 0, 2);
+        return `Repetida ${vezes}x na lista (quantidades somadas)`;
+    }
+    if (linha.estado === 'exata') return 'Correspond\u00eancia exata';
+    if (linha.estado === 'sugerida') return 'Corre\u00e7\u00e3o sugerida';
+    return 'Escolha necess\u00e1ria';
+}
+
+function formatarPreviaListaPlataforma(resumo) {
+    const partes = [
+        `${resumo.produtos} produtos`,
+        `${resumo.figuras} figuras`
+    ];
+    if (resumo.repetidas > 0) {
+        partes.push(`${resumo.repetidas} repetida(s) em linhas diferentes`);
+    }
+    partes.push(`${resumo.exatas + resumo.sugeridas} reconhecidos`);
+    partes.push(`${resumo.rever} a rever`);
+    return partes.join(' | ');
 }
 
 function linhaProdutosTemQuantidadeExplicitaPlataforma(texto) {
@@ -753,23 +852,28 @@ function analisarListaProdutosPlataforma(texto) {
             .filter(Boolean)
     );
     const ignorarNumeracao = listaProdutosPareceNumeradaPlataforma(linhasOriginais);
-    return linhasOriginais
-        .map((linha, indice) => interpretarLinhaProdutosPlataforma(linha, indice, { ignorarNumeracao }))
-        .filter(Boolean)
-        .map(linha => {
-            const candidatos = obterCandidatosLinhaListaPlataforma(linha.original);
-            const melhor = candidatos[0];
-            const segundo = candidatos[1];
-            const exata = melhor?.pontuacao === 1;
-            const segura = Boolean(melhor && melhor.pontuacao >= 0.78
-                && (!segundo || melhor.pontuacao - segundo.pontuacao >= 0.045));
-            return {
-                ...linha,
-                candidatos,
-                produtoId: exata || segura ? String(melhor.produto.id) : '',
-                estado: exata ? 'exata' : (segura ? 'sugerida' : 'rever')
-            };
-        });
+    const linhasInterpretadas = consolidarLinhasTextoListaPlataforma(
+        linhasOriginais
+            .map((linha, indice) => interpretarLinhaProdutosPlataforma(linha, indice, { ignorarNumeracao }))
+            .filter(Boolean)
+    );
+
+    const linhasAnalisadas = linhasInterpretadas.map(linha => {
+        const candidatos = obterCandidatosLinhaListaPlataforma(linha.original);
+        const melhor = candidatos[0];
+        const segundo = candidatos[1];
+        const exata = melhor?.pontuacao === 1;
+        const segura = Boolean(melhor && melhor.pontuacao >= 0.78
+            && (!segundo || melhor.pontuacao - segundo.pontuacao >= 0.045));
+        return {
+            ...linha,
+            candidatos,
+            produtoId: exata || segura ? String(melhor.produto.id) : '',
+            estado: exata ? 'exata' : (segura ? 'sugerida' : 'rever')
+        };
+    });
+
+    return consolidarLinhasProdutoListaPlataforma(linhasAnalisadas);
 }
 
 function textoOpcaoProdutoPlataforma(produto) {
@@ -896,7 +1000,7 @@ function atualizarPreviaListaProdutosPlataforma() {
 
     const resumo = resumirAnaliseListaPlataforma(linhas);
     previa.hidden = false;
-    previa.textContent = `${resumo.produtos} produtos | ${resumo.figuras} figuras | ${resumo.exatas + resumo.sugeridas} reconhecidos | ${resumo.rever} a rever`;
+    previa.textContent = formatarPreviaListaPlataforma(resumo);
 }
 
 function abrirRevisaoListaProdutosPlataforma() {
@@ -947,7 +1051,7 @@ function abrirRevisaoListaProdutosPlataforma() {
     explicacao.textContent = 'Confirma as correspond\u00eancias. As corre\u00e7\u00f5es prov\u00e1veis j\u00e1 est\u00e3o selecionadas; os casos duvidosos ficam por escolher.';
     const resumoEl = document.createElement('p');
     resumoEl.className = 'plataforma-lista-resumo';
-    resumoEl.textContent = `${resumo.produtos} produtos | ${resumo.figuras} figuras | ${resumo.exatas} exatas | ${resumo.sugeridas} sugeridas | ${resumo.rever} a rever`;
+    resumoEl.textContent = formatarPreviaListaPlataforma(resumo);
     const lista = document.createElement('div');
     lista.className = 'plataforma-lista-revisao';
 
@@ -960,11 +1064,14 @@ function abrirRevisaoListaProdutosPlataforma() {
         const quantidade = document.createElement('strong');
         quantidade.textContent = `${linha.quantidade}x`;
         const nome = document.createElement('span');
-        nome.textContent = linha.original;
+        nome.textContent = Array.isArray(linha.textosOriginais) && linha.textosOriginais.length > 1
+            ? linha.textosOriginais.join(' / ')
+            : linha.original;
         const estado = document.createElement('small');
-        estado.textContent = linha.estado === 'exata'
-            ? 'Correspond\u00eancia exata'
-            : (linha.estado === 'sugerida' ? 'Corre\u00e7\u00e3o sugerida' : 'Escolha necess\u00e1ria');
+        estado.textContent = obterRotuloEstadoLinhaListaPlataforma(linha);
+        if (linha.repeticaoTexto || linha.repeticaoProduto) {
+            item.classList.add('estado-repetida');
+        }
         original.append(quantidade, nome, estado);
 
         const select = document.createElement('select');

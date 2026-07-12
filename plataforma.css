@@ -722,6 +722,10 @@ body.pagina-wallapop{
             border-left-color:#ff6262;
         }
 
+        .plataforma-lista-linha.estado-repetida{
+            border-left-color:#ffd54f;
+        }
+
         .plataforma-lista-original{
             min-width:0;
             display:grid;
