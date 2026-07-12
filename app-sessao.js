@@ -350,6 +350,16 @@ window.addEventListener('load', async () => {
 
 if ('serviceWorker' in navigator && window.location.protocol !== 'file:') {
     window.addEventListener('load', () => {
-        navigator.serviceWorker.register('sw.js?v=20260712-csp-fix').catch(() => {});
+        navigator.serviceWorker.register('sw.js?v=20260712-csp-fix2').then((registo) => {
+            registo.addEventListener('updatefound', () => {
+                const novoWorker = registo.installing;
+                if (!novoWorker) return;
+                novoWorker.addEventListener('statechange', () => {
+                    if (novoWorker.state === 'activated' && navigator.serviceWorker.controller) {
+                        window.location.reload();
+                    }
+                });
+            });
+        }).catch(() => {});
     });
 }

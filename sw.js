@@ -1,4 +1,4 @@
-const CACHE_ESTATICO = 'figures-planet-estatico-v17';
+const CACHE_ESTATICO = 'figures-planet-estatico-v18';
 
 const RECURSOS_PRECARGA = [
     'app-config.js',
@@ -51,6 +51,10 @@ self.addEventListener('activate', evento => {
                 chaves
                     .filter(chave => chave !== CACHE_ESTATICO)
                     .map(chave => caches.delete(chave))
+            ))
+            .then(() => self.clients.matchAll({ type: 'window' }))
+            .then(clientes => Promise.all(
+                clientes.map(cliente => cliente.navigate(cliente.url))
             ))
             .then(() => self.clients.claim())
     );
