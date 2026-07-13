@@ -51,6 +51,22 @@ function criarCampoCliente(rotulo, valor) {
     return campo;
 }
 
+function criarCampoFichaMoradaCliente(cliente) {
+    const campo = criarElementoCliente("div", "admin-cliente-campo admin-cliente-campo-morada-bloco");
+    campo.appendChild(criarElementoCliente("strong", "", "Morada"));
+    const formatar = window.MoradaFormato;
+    if (formatar?.criarBlocoMorada) {
+        campo.appendChild(formatar.criarBlocoMorada(formatar.formatarLinhasMorada(cliente), criarElementoCliente));
+    } else {
+        campo.appendChild(criarElementoCliente(
+            "span",
+            "",
+            [cliente.morada, cliente.cp, cliente.cidade, cliente.pais].filter(Boolean).join(", ") || "-"
+        ));
+    }
+    return campo;
+}
+
 function obterRotuloPerfilCliente(perfil, indice) {
     if (perfil?.plataforma && perfil?.utilizador) {
         return `${perfil.plataforma}: ${perfil.utilizador}`;
@@ -80,10 +96,7 @@ function montarVistaConsultaCliente(dados) {
     const grelha = criarElementoCliente("div", "admin-cliente-grelha");
     grelha.append(
         criarCampoCliente("Nome", cliente.nome),
-        criarCampoCliente("Morada", cliente.morada),
-        criarCampoCliente("C\u00f3digo postal", cliente.cp),
-        criarCampoCliente("Cidade", cliente.cidade),
-        criarCampoCliente("Pa\u00eds", cliente.pais),
+        criarCampoFichaMoradaCliente(cliente),
         criarCampoCliente("E-mail", cliente.email),
         criarCampoCliente("Telem\u00f3vel", cliente.telefone)
     );
@@ -128,7 +141,7 @@ function clienteRegistadoNoSite(cliente) {
 
 function aplicarCamposClienteRegistadoSite(formulario, cliente) {
     if (!clienteRegistadoNoSite(cliente)) return;
-    ["nome", "morada", "cp", "cidade", "pais", "email", "telefone"].forEach((nome) => {
+    ["nome", "morada", "morada_linha1", "morada_linha2", "cp", "cidade", "pais", "email", "telefone"].forEach((nome) => {
         const input = formulario.querySelector(`input[name="${nome}"]`);
         if (!input) return;
         input.readOnly = true;
@@ -424,7 +437,10 @@ function montarFormularioCliente(dados, opcoes = {}) {
 
     formulario.append(
         criarInputCliente("Nome", "nome", cliente.nome, "text", true),
-        criarInputCliente("Morada", "morada", cliente.morada),
+        window.MoradaFormato?.criarCampoMoradaEdicao(
+            criarElementoCliente,
+            window.MoradaFormato.obterMoradaEdicao(cliente.morada)
+        ) || criarInputCliente("Morada", "morada", cliente.morada),
         criarInputCliente("C\u00f3digo postal", "cp", cliente.cp),
         criarInputCliente("Cidade", "cidade", cliente.cidade),
         criarInputCliente("Pa\u00eds", "pais", cliente.pais),
@@ -505,7 +521,7 @@ function montarFormularioCliente(dados, opcoes = {}) {
             p_nome: String(campos.get("nome") || ""),
             p_email: String(campos.get("email") || ""),
             p_telefone: String(campos.get("telefone") || ""),
-            p_morada: String(campos.get("morada") || ""),
+            p_morada: window.MoradaFormato?.obterMoradaFormulario(formulario) || String(campos.get("morada") || ""),
             p_cp: String(campos.get("cp") || ""),
             p_cidade: String(campos.get("cidade") || ""),
             p_pais: String(campos.get("pais") || "")

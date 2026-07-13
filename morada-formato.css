@@ -1,0 +1,36 @@
+.morada-formatada{
+    display:flex;
+    flex-direction:column;
+    gap:2px;
+}
+
+.morada-formatada-linha{
+    display:block;
+    line-height:1.35;
+    white-space:normal;
+    word-break:break-word;
+}
+
+.morada-edicao-linhas{
+    grid-column:1 / -1;
+    display:grid;
+    gap:8px;
+}
+
+.admin-encomenda-detalhe-linha-morada{
+    grid-column:1 / -1;
+}
+
+.admin-cliente-campo-morada-bloco{
+    grid-column:1 / -1;
+}
+
+.admin-cliente-campo-morada-bloco span:last-child{
+    display:block;
+}
+
+@media (min-width: 701px){
+    .clientes-formulario .morada-edicao-linhas{
+        grid-column:1 / -1;
+    }
+}

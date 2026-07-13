@@ -19,7 +19,10 @@
     function garantirAdminEncomendaVista() {
         if (window.AdminEncomendaVista) return Promise.resolve();
         if (!promessaVista) {
-            promessaVista = carregarScript('admin-encomenda-vista.js?v=20260713-contagem-anexos');
+            promessaVista = carregarScript('morada-formato.js?v=20260713-morada-formatada')
+                .then(function () {
+                    return carregarScript('admin-encomenda-vista.js?v=20260713-morada-formatada');
+                });
         }
         return promessaVista;
     }

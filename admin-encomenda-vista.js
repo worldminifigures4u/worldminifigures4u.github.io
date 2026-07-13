@@ -446,8 +446,9 @@ window.AdminEncomendaVista = (function () {
     }
 
     function textoCompleto(encomenda) {
-        const morada = [encomenda.morada_cliente, encomenda.cp_cliente, encomenda.cidade_cliente, encomenda.pais_cliente]
-            .filter(Boolean).join(", ");
+        const morada = window.MoradaFormato?.formatarMoradaTexto(encomenda)
+            || [encomenda.morada_cliente, encomenda.cp_cliente, encomenda.cidade_cliente, encomenda.pais_cliente]
+                .filter(Boolean).join(", ");
         return [
             `Encomenda: ${encomenda.codigo_encomenda || encomenda.id}`,
             `Data: ${formatarData(encomenda.created_at)}`,
@@ -458,7 +459,8 @@ window.AdminEncomendaVista = (function () {
             `Cliente: ${encomenda.nome_cliente || ""}`,
             `E-mail: ${encomenda.email_cliente || ""}`,
             `Telemóvel: ${encomenda.telefone_cliente || ""}`,
-            `Morada: ${morada}`,
+            "Morada:",
+            morada,
             "",
             `Envio: ${encomenda.metodo_envio_nome || encomenda.metodo_envio || ""}`,
             `Portes: ${formatarEuro(encomenda.portes)}`,
@@ -809,6 +811,20 @@ window.AdminEncomendaVista = (function () {
         return linha;
     }
 
+    function criarLinhaDetalheMorada(encomenda) {
+        const linha = criarElemento("div", "admin-encomenda-detalhe-linha admin-encomenda-detalhe-linha-morada");
+        linha.appendChild(criarElemento("strong", "", "Morada"));
+        const formatar = window.MoradaFormato;
+        if (formatar?.criarBlocoMorada) {
+            linha.appendChild(formatar.criarBlocoMorada(formatar.formatarLinhasMorada(encomenda), criarElemento));
+        } else {
+            const morada = [encomenda.morada_cliente, encomenda.cp_cliente, encomenda.cidade_cliente, encomenda.pais_cliente]
+                .filter(Boolean).join(", ");
+            linha.appendChild(criarElemento("span", "", morada || "—"));
+        }
+        return linha;
+    }
+
     function criarCardEncomenda(encomenda, opcoes = {}) {
         const modoModal = opcoes.modoModal === true;
         const ocultarCliente = opcoes.ocultarCliente === true;
@@ -898,13 +914,11 @@ window.AdminEncomendaVista = (function () {
         }
 
         const dados = criarElemento("div", "admin-encomenda-dados");
-        const morada = [encomenda.morada_cliente, encomenda.cp_cliente, encomenda.cidade_cliente, encomenda.pais_cliente]
-            .filter(Boolean).join(", ");
         dados.append(
             criarLinhaDetalhe("Nome", encomenda.nome_cliente),
             criarLinhaDetalhe("E-mail", encomenda.email_cliente),
             criarLinhaDetalhe("Telemóvel", encomenda.telefone_cliente),
-            criarLinhaDetalhe("Morada", morada),
+            criarLinhaDetalheMorada(encomenda),
             criarLinhaDetalhe("Envio", encomenda.metodo_envio_nome || encomenda.metodo_envio),
             criarLinhaDetalhe("Portes", formatarEuro(encomenda.portes)),
             criarLinhaDetalhe("Pagamento", encomenda.metodo_pagamento)

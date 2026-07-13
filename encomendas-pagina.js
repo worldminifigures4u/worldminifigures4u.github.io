@@ -3,18 +3,25 @@
 
     let promessaEncomendasJs = null;
 
+    function carregarScript(src) {
+        return new Promise(function (resolve, reject) {
+            const script = document.createElement('script');
+            script.src = src;
+            script.defer = true;
+            script.onload = function () { resolve(); };
+            script.onerror = function () { reject(new Error('Falha ao carregar ' + src)); };
+            document.body.appendChild(script);
+        });
+    }
+
     function carregarEncomendasJs() {
         if (typeof iniciarPainelEncomendas === 'function') return Promise.resolve();
         if (promessaEncomendasJs) return promessaEncomendasJs;
 
-        promessaEncomendasJs = new Promise(function (resolve, reject) {
-            const script = document.createElement('script');
-            script.src = 'encomendas.js?v=20260713-contagem-anexos';
-            script.defer = true;
-            script.onload = function () { resolve(); };
-            script.onerror = function () { reject(new Error('Falha ao carregar encomendas.js')); };
-            document.body.appendChild(script);
-        });
+        promessaEncomendasJs = carregarScript('morada-formato.js?v=20260713-morada-formatada')
+            .then(function () {
+                return carregarScript('encomendas.js?v=20260713-morada-formatada');
+            });
 
         return promessaEncomendasJs;
     }

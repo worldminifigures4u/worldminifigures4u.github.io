@@ -119,6 +119,22 @@ function criarCampoFichaCliente(rotulo, valor) {
     return linha;
 }
 
+function criarCampoFichaMorada(cliente) {
+    const linha = criarElementoEncomenda('div', 'admin-cliente-campo admin-cliente-campo-morada-bloco');
+    linha.appendChild(criarElementoEncomenda('strong', '', 'Morada'));
+    const formatar = window.MoradaFormato;
+    if (formatar?.criarBlocoMorada) {
+        linha.appendChild(formatar.criarBlocoMorada(formatar.formatarLinhasMorada(cliente), criarElementoEncomenda));
+    } else {
+        linha.appendChild(criarElementoEncomenda(
+            'span',
+            '',
+            [cliente.morada, cliente.cp, cliente.cidade, cliente.pais].filter(Boolean).join(', ') || '\u2014'
+        ));
+    }
+    return linha;
+}
+
 function criarCampoEdicaoCliente(rotulo, nome, valor, tipo = 'text', obrigatorio = false) {
     const campo = document.createElement('label');
     campo.className = 'admin-cliente-formulario-campo';
@@ -162,7 +178,10 @@ function renderizarFormularioClienteExterno(dados, secao) {
         criarCampoEdicaoCliente('Nome', 'nome', cliente.nome, 'text', true),
         criarCampoEdicaoCliente('E-mail', 'email', cliente.email, 'email'),
         criarCampoEdicaoCliente('Telem\u00f3vel', 'telefone', cliente.telefone),
-        criarCampoEdicaoCliente('Morada', 'morada', cliente.morada),
+        window.MoradaFormato?.criarCampoMoradaEdicao(
+            criarElementoEncomenda,
+            window.MoradaFormato.obterMoradaEdicao(cliente.morada)
+        ) || criarCampoEdicaoCliente('Morada', 'morada', cliente.morada),
         criarCampoEdicaoCliente('C\u00f3digo postal', 'cp', cliente.cp),
         criarCampoEdicaoCliente('Cidade', 'cidade', cliente.cidade),
         criarCampoEdicaoCliente('Pa\u00eds', 'pais', cliente.pais)
@@ -191,7 +210,7 @@ function renderizarFormularioClienteExterno(dados, secao) {
             p_nome: String(campos.get('nome') || ''),
             p_email: String(campos.get('email') || ''),
             p_telefone: String(campos.get('telefone') || ''),
-            p_morada: String(campos.get('morada') || ''),
+            p_morada: window.MoradaFormato?.obterMoradaFormulario(formulario) || String(campos.get('morada') || ''),
             p_cp: String(campos.get('cp') || ''),
             p_cidade: String(campos.get('cidade') || ''),
             p_pais: String(campos.get('pais') || '')
@@ -263,7 +282,7 @@ function renderizarFichaClienteAdmin(dados) {
         criarCampoFichaCliente('Nome', cliente.nome),
         criarCampoFichaCliente('E-mail', cliente.email),
         criarCampoFichaCliente('Telem\u00f3vel', cliente.telefone),
-        criarCampoFichaCliente('Morada', [cliente.morada, cliente.cp, cliente.cidade, cliente.pais].filter(Boolean).join(', '))
+        criarCampoFichaMorada(cliente)
     );
     dadosPessoais.appendChild(grelha);
     const restricoes = [];
