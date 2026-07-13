@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Wallapop etiqueta - PDF
 // @namespace    figuresplanet
-// @version      3.1
+// @version      3.2
 // @description  Guarda etiqueta Wallapop como PDF pronto a imprimir (sem bibliotecas externas)
 // @match        https://wallapop-delivery-labels.wallapop.com/*
 // @run-at       document-end
@@ -55,49 +55,86 @@
 
   function criarPdfComJpeg(jpeg, imgW, imgH, pageWpt, pageHpt) {
     const enc = new TextEncoder();
-    const chunks = [];
-    let size = 0;
-    const offsets = [];
+    const parts = [];
+    let len = 0;
+    const objOffsets = [];
 
-    function addText(text) {
-      offsets.push(size);
-      const bytes = enc.encode(text);
-      chunks.push(bytes);
-      size += bytes.length;
+    function write(str) {
+      const bytes = typeof str === 'string' ? enc.encode(str) : str;
+      parts.push(bytes);
+      len += bytes.length;
     }
 
-    function addBytes(bytes) {
-      offsets.push(size);
-      chunks.push(bytes);
-      size += bytes.length;
+    function startObject() {
+      objOffsets.push(len);
     }
 
-    addText('%PDF-1.4\n');
+    const sx = (pageWpt / imgW).toFixed(5);
+    const sy = (pageHpt / imgH).toFixed(5);
+    const content = `q ${sx} 0 0 ${sy} 0 0 cm /Im1 Do Q\n`;
 
-    addText('1 0 obj\n<< /Type /Catalog /Pages 2 0 R >>\nendobj\n');
-    addText('2 0 obj\n<< /Type /Pages /Kids [3 0 R] /Count 1 >>\nendobj\n');
-    addText(
+    write('%PDF-1.4\n');
+
+    startObject();
+    write('1 0 obj\n<< /Type /Catalog /Pages 2 0 R >>\nendobj\n');
+
+    startObject();
+    write('2 0 obj\n<< /Type /Pages /Kids [3 0 R] /Count 1 >>\nendobj\n');
+
+    startObject();
+    write(
       `3 0 obj\n<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ${pageWpt.toFixed(2)} ${pageHpt.toFixed(2)}] ` +
         '/Resources << /XObject << /Im1 4 0 R >> >> /Contents 5 0 R >>\nendobj\n'
     );
-    addText(
+
+    startObject();
+    write(
       `4 0 obj\n<< /Type /XObject /Subtype /Image /Width ${imgW} /Height ${imgH} ` +
         `/ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length ${jpeg.length} >>\nstream\n`
     );
-    addBytes(jpeg);
-    addText('\nendstream\nendobj\n');
+    write(jpeg);
+    write('\nendstream\nendobj\n');
 
-    const content = `q ${pageWpt.toFixed(2)} 0 0 ${pageHpt.toFixed(2)} 0 0 cm /Im1 Do Q\n`;
-    addText(`5 0 obj\n<< /Length ${content.length} >>\nstream\n${content}endstream\nendobj\n`);
+    startObject();
+    write(`5 0 obj\n<< /Length ${content.length} >>\nstream\n${content}endstream\nendobj\n`);
 
-    const xrefPos = size;
-    addText(`xref\n0 6\n0000000000 65535 f \n`);
-    for (let i = 1; i <= 5; i++) {
-      addText(`${String(offsets[i]).padStart(10, '0')} 00000 n \n`);
+    const xrefStart = len;
+    write(`xref\n0 ${objOffsets.length + 1}\n`);
+    write('0000000000 65535 f \n');
+    for (const off of objOffsets) {
+      write(`${String(off).padStart(10, '0')} 00000 n \n`);
     }
-    addText(`trailer\n<< /Size 6 /Root 1 0 R >>\nstartxref\n${xrefPos}\n%%EOF\n`);
+    write(`trailer\n<< /Size ${objOffsets.length + 1} /Root 1 0 R >>\nstartxref\n${xrefStart}\n%%EOF\n`);
 
-    return new Blob(chunks, { type: 'application/pdf' });
+    return new Blob(parts, { type: 'application/pdf' });
+  }
+
+  async function abrirImpressaoEtiqueta(blob) {
+    const dataUrl = await new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = reject;
+      reader.readAsDataURL(blob);
+    });
+
+    const bitmap = await createImageBitmap(blob);
+    const alturaMm = LARGURA_MM * (bitmap.height / bitmap.width);
+    bitmap.close();
+
+    const janela = window.open('', '_blank');
+    if (!janela) throw new Error('popup');
+
+    janela.document.write(`<!DOCTYPE html>
+<html><head><meta charset="utf-8"><title>${NOME}</title>
+<style>
+  @page { size: ${LARGURA_MM}mm ${alturaMm.toFixed(1)}mm; margin: 0; }
+  html, body { margin: 0; padding: 0; width: ${LARGURA_MM}mm; height: ${alturaMm.toFixed(1)}mm; background: #fff; }
+  img { width: 100%; height: 100%; object-fit: contain; display: block; }
+</style></head>
+<body><img src="${dataUrl}" alt="etiqueta"></body></html>`);
+    janela.document.close();
+    janela.focus();
+    setTimeout(() => janela.print(), 600);
   }
 
   function descarregar(blob, nome) {
@@ -123,7 +160,13 @@
       descarregar(pdf, `${NOME}.pdf`);
     } catch (err) {
       console.error('[Wallapop PDF]', err);
-      alert('Não foi possível criar o PDF. Tenta recarregar a página (F5).');
+      try {
+        const blob = await obterBlobImagem();
+        await abrirImpressaoEtiqueta(blob);
+      } catch (err2) {
+        console.error('[Wallapop PDF fallback]', err2);
+        alert('Não foi possível criar o PDF. Tenta recarregar a página (F5).');
+      }
     } finally {
       btn.textContent = textoOriginal;
       btn.disabled = false;
