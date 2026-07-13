@@ -18,7 +18,7 @@
 }
 
 .admin-encomenda-detalhe-linha-morada{
-    grid-column:1 / -1;
+    align-items:start;
 }
 
 .admin-cliente-campo-morada-bloco{
