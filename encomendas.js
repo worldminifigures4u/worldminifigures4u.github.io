@@ -623,6 +623,7 @@ function renderizarEncomendasAdmin() {
         return;
     }
     filtradas.forEach(encomenda => lista.appendChild(criarCardEncomenda(encomenda)));
+    AdminEncomendaVista.carregarContagensAnexosLista(filtradas).catch(console.warn);
 }
 
 function obterCodigoEncomendaUrlAdmin() {

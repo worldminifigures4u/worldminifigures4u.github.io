@@ -189,6 +189,51 @@ window.AdminEncomendaVista = (function () {
         return String(nome || "").replace(/^\d{13}-[a-z0-9]{6}-/i, "");
     }
 
+    function formatarTextoContagemAnexos(quantidade) {
+        const n = Number(quantidade);
+        if (!Number.isFinite(n) || n < 0) return "…";
+        if (n === 0) return "0 anexos";
+        return n === 1 ? "1 anexo" : `${n} anexos`;
+    }
+
+    function atualizarContagemAnexosLista(encomenda, quantidade) {
+        const valor = Number(quantidade);
+        if (!Number.isFinite(valor) || valor < 0) return;
+        sincronizarEncomendaNaLista(encomenda, { num_anexos: valor });
+        document
+            .querySelectorAll(`.admin-encomenda-anexos-contagem[data-encomenda-id="${String(encomenda.id)}"]`)
+            .forEach((elemento) => {
+                elemento.textContent = formatarTextoContagemAnexos(valor);
+                elemento.title = formatarTextoContagemAnexos(valor);
+                elemento.classList.toggle("sem-anexos", valor === 0);
+            });
+    }
+
+    async function contarAnexos(encomenda) {
+        if (estadoNormalizado(encomenda.estado) === "Concluído") return 0;
+        const anexos = await listarAnexos(encomenda);
+        return anexos.length;
+    }
+
+    async function carregarContagensAnexosLista(encomendas) {
+        if (!Array.isArray(encomendas) || !encomendas.length) return;
+        await Promise.all(encomendas.map(async (encomenda) => {
+            if (estadoNormalizado(encomenda.estado) === "Concluído") {
+                atualizarContagemAnexosLista(encomenda, 0);
+                return;
+            }
+            try {
+                const quantidade = await contarAnexos(encomenda);
+                atualizarContagemAnexosLista(encomenda, quantidade);
+            } catch (error) {
+                console.warn("Contagem de anexos indisponivel para encomenda.", encomenda.id, error);
+                if (typeof encomenda.num_anexos === "number") {
+                    atualizarContagemAnexosLista(encomenda, encomenda.num_anexos);
+                }
+            }
+        }));
+    }
+
     async function listarAnexos(encomenda) {
         const { data, error } = await obterClient().storage
             .from(ANEXOS_BUCKET)
@@ -262,6 +307,7 @@ window.AdminEncomendaVista = (function () {
                     lista.appendChild(linha);
                 });
             }
+            atualizarContagemAnexosLista(encomenda, anexos.length);
             status.textContent = "";
         } catch (error) {
             lista.replaceChildren();
@@ -805,6 +851,15 @@ window.AdminEncomendaVista = (function () {
             criarElemento("span", `estado-encomenda estado-${normalizar(estadoNormalizado(encomenda.estado)).replace(/\s+/g, "-")}`, estadoNormalizado(encomenda.estado))
         );
 
+        const anexosContagem = criarElemento(
+            "span",
+            `admin-encomenda-anexos-contagem${Number(encomenda.num_anexos) === 0 ? " sem-anexos" : ""}`,
+            formatarTextoContagemAnexos(encomenda.num_anexos)
+        );
+        anexosContagem.dataset.encomendaId = String(encomenda.id);
+        anexosContagem.title = formatarTextoContagemAnexos(encomenda.num_anexos);
+        linha.appendChild(anexosContagem);
+
         if (estadoNormalizado(encomenda.estado) === "Pago") {
             const prioridade = criarElemento("label", "admin-encomenda-prioridade");
             const checkbox = document.createElement("input");
@@ -972,6 +1027,8 @@ window.AdminEncomendaVista = (function () {
         ESTADOS_ENCOMENDA,
         configurar,
         criarCardEncomenda,
+        carregarContagensAnexosLista,
+        atualizarContagemAnexosLista,
         carregarImagensParaEncomendas,
         limparCacheImagens,
         formatarEuro,

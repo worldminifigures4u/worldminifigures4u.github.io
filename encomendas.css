@@ -264,7 +264,7 @@ body.pagina-encomendas-admin{
             flex:1;
             min-width:0;
             display:grid;
-            grid-template-columns:68px 130px 84px minmax(120px, 1fr) 76px 148px 88px;
+            grid-template-columns:68px 130px 84px minmax(120px, 1fr) 76px 148px 72px 88px;
             column-gap:16px;
             align-items:center;
         }
@@ -349,6 +349,20 @@ body.pagina-encomendas-admin{
         .admin-encomenda-linha .estado-encomenda{
             justify-self:start;
             white-space:nowrap;
+        }
+
+        .admin-encomenda-anexos-contagem{
+            justify-self:start;
+            color:#bdbdbd;
+            font-size:11px;
+            font-weight:700;
+            line-height:1.3;
+            white-space:nowrap;
+        }
+
+        .admin-encomenda-anexos-contagem.sem-anexos{
+            color:#777;
+            font-weight:600;
         }
 
         .admin-encomenda-linha .admin-encomenda-prioridade,
@@ -747,7 +761,7 @@ body.pagina-encomendas-admin{
                 padding:8px 10px;
             }
             .admin-encomenda-linha{
-                grid-template-columns:60px 118px 76px minmax(80px, 1fr) 68px 120px 72px;
+                grid-template-columns:60px 118px 76px minmax(80px, 1fr) 68px 120px 64px 72px;
                 column-gap:10px;
                 overflow-x:auto;
             }
