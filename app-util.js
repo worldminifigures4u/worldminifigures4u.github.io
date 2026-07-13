@@ -1,4 +1,14 @@
 // Utilitarios partilhados (imagens, moeda, mensagens).
+function obterUrlPublicoAtual() {
+    try {
+        const origem = window.location.origin;
+        if (origem && origem !== 'null') {
+            return `${origem}/`;
+        }
+    } catch (_) {}
+    return URL_PUBLICO_FALLBACK;
+}
+
 function formatarEuro(valor) {
     return Number(valor || 0).toFixed(2).replace('.', ',');
 }
