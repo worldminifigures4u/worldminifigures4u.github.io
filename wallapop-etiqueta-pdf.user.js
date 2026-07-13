@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         Wallapop etiqueta - PDF
 // @namespace    figuresplanet
-// @version      4.2
-// @description  Guarda etiqueta Wallapop em PDF A4 (20% altura, topo centrado)
+// @version      4.3
+// @description  Guarda etiqueta Wallapop em PDF A4 (25% altura, topo com margem)
 // @match        https://wallapop-delivery-labels.wallapop.com/*
 // @run-at       document-idle
 // @connect      wallapop-delivery-labels.wallapop.com
@@ -15,7 +15,8 @@
   const NOME = 'Etiqueta';
   const A4_LARGURA_MM = 210;
   const A4_ALTURA_MM = 297;
-  const FRACAO_ALTURA_ETIQUETA = 0.20;
+  const FRACAO_ALTURA_ETIQUETA = 0.25;
+  const MARGEM_TOPO_MM = 15;
 
   function mmParaPt(mm) {
     return (mm * 72) / 25.4;
@@ -74,7 +75,7 @@
     const pageH = mmParaPt(A4_ALTURA_MM);
     const { largura, altura } = calcularTamanhoEtiqueta(pageW, pageH, image.width, image.height);
     const x = (pageW - largura) / 2;
-    const y = pageH - altura;
+    const y = pageH - altura - mmParaPt(MARGEM_TOPO_MM);
 
     const page = pdfDoc.addPage([pageW, pageH]);
     page.drawImage(image, { x, y, width: largura, height: altura });
@@ -111,7 +112,8 @@
   @page { size: A4 portrait; margin: 0; }
   html, body {
     margin: 0; padding: 0; width: ${A4_LARGURA_MM}mm; height: ${A4_ALTURA_MM}mm;
-    background: #fff; display: flex; align-items: center; justify-content: center;
+    background: #fff; display: flex; align-items: flex-start; justify-content: center;
+    padding-top: ${MARGEM_TOPO_MM}mm; box-sizing: border-box;
   }
   img {
     height: ${FRACAO_ALTURA_ETIQUETA * 100}%;
