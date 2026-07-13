@@ -526,7 +526,7 @@
     };
 
     if ('serviceWorker' in navigator && window.location.protocol !== 'file:') {
-        navigator.serviceWorker.register('sw.js?v=20260713-r26').then((registo) => {
+        navigator.serviceWorker.register('sw.js?v=20260713-r27').then((registo) => {
             registo.addEventListener('updatefound', () => {
                 const novoWorker = registo.installing;
                 if (!novoWorker) return;

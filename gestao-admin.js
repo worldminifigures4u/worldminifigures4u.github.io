@@ -732,7 +732,7 @@ function garantirScriptImportacaoGestao() {
 
     promessaScriptImportacaoGestao = new Promise((resolve, reject) => {
         const script = document.createElement('script');
-        script.src = 'gestao-importacao.js?v=20260713-r25';
+        script.src = 'gestao-importacao.js?v=20260713-r27';
         script.defer = true;
         script.onload = () => {
             scriptImportacaoGestaoCarregado = true;
@@ -743,6 +743,16 @@ function garantirScriptImportacaoGestao() {
     });
 
     return promessaScriptImportacaoGestao;
+}
+
+function prefetchBibliotecaSheetJsAdmin() {
+    const url = 'https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js';
+    if (document.querySelector('link[rel="prefetch"][href="' + url + '"]')) return;
+    const link = document.createElement('link');
+    link.rel = 'prefetch';
+    link.href = url;
+    link.as = 'script';
+    document.head.appendChild(link);
 }
 
 function ligarElementoGestao(id, evento, handler) {
@@ -820,9 +830,21 @@ function ligarGestaoAdmin() {
                 painel.hidden = !ativo;
             });
             if (destino === 'importar') {
-                garantirScriptImportacaoGestao().catch(console.error);
+                prefetchBibliotecaSheetJsAdmin();
+                garantirScriptImportacaoGestao()
+                    .then(function () {
+                        if (typeof garantirXlsxAdmin === 'function') {
+                            return garantirXlsxAdmin();
+                        }
+                    })
+                    .catch(console.error);
             }
         });
+    });
+
+    document.querySelectorAll('[data-tab-gestao="importar"]').forEach(function (botao) {
+        botao.addEventListener('mouseenter', prefetchBibliotecaSheetJsAdmin, { once: true });
+        botao.addEventListener('focus', prefetchBibliotecaSheetJsAdmin, { once: true });
     });
 
     const uploadNovo = document.getElementById('admin-produto-upload-imagens');

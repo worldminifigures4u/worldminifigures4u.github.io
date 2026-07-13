@@ -648,3 +648,5 @@ async function confirmarImportacaoCatalogoAdmin() {
     }
 }
 
+window.garantirXlsxAdmin = garantirXlsxAdmin;
+

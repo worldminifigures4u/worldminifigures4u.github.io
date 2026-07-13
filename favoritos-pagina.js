@@ -1,6 +1,26 @@
 // Carregamento tardio de favoritos-ui.js na pagina Favoritos.
 (function () {
     let promessaFavoritosUi = null;
+    let promessaCartMini = null;
+
+    function carregarScript(src) {
+        return new Promise((resolve, reject) => {
+            const script = document.createElement('script');
+            script.src = src;
+            script.defer = true;
+            script.onload = () => resolve();
+            script.onerror = () => reject(new Error('Falha ao carregar ' + src));
+            document.body.appendChild(script);
+        });
+    }
+
+    function garantirCartMini() {
+        if (typeof adicionarAoCarrinho === 'function') return Promise.resolve();
+        if (!promessaCartMini) {
+            promessaCartMini = carregarScript('cart-mini.js?v=20260711-leve');
+        }
+        return promessaCartMini;
+    }
 
     function garantirFavoritosUi() {
         if (typeof renderizarFavoritosCliente === 'function') return Promise.resolve();
@@ -35,6 +55,7 @@
         if (typeof window.garantirAppFavoritos === 'function') {
             await window.garantirAppFavoritos();
         }
+        await garantirCartMini();
         await garantirFavoritosUi();
         if (typeof renderizarFavoritosCliente === 'function') {
             renderizarFavoritosCliente();

@@ -19,7 +19,7 @@
     function garantirAdminEncomendaVista() {
         if (window.AdminEncomendaVista) return Promise.resolve();
         if (!promessaVista) {
-            promessaVista = carregarScript('admin-encomenda-vista.js?v=20260713-r26');
+            promessaVista = carregarScript('admin-encomenda-vista.js?v=20260713-r27');
         }
         return promessaVista;
     }
@@ -31,7 +31,7 @@
         if (!promessaModal) {
             promessaModal = garantirAdminEncomendaVista()
                 .then(function () {
-                    return carregarScript('clientes-encomenda-modal.js?v=20260713-r26');
+                    return carregarScript('clientes-encomenda-modal.js?v=20260713-r27');
                 })
                 .then(function () {
                     if (typeof configurarModalEncomendaCliente === 'function' && !modalConfigurado) {

@@ -9,7 +9,7 @@
 
         promessaEncomendasJs = new Promise(function (resolve, reject) {
             const script = document.createElement('script');
-            script.src = 'encomendas.js?v=20260713-r26';
+            script.src = 'encomendas.js?v=20260713-r27';
             script.defer = true;
             script.onload = function () { resolve(); };
             script.onerror = function () { reject(new Error('Falha ao carregar encomendas.js')); };
@@ -23,7 +23,6 @@
         if (!document.getElementById('encomendas-bloqueio')) return;
 
         await window.garantirAdminEncomendaVista();
-        await window.garantirModalEncomendaCliente();
         await carregarEncomendasJs();
 
         if (typeof iniciarPainelEncomendas === 'function') {

@@ -26,7 +26,7 @@
         if (typeof carregarProdutosAdminDaNuvem === 'function') return Promise.resolve();
         if (!promessaGestaoAdmin) {
             promessaGestaoAdmin = garantirAppSku()
-                .then(() => carregarScript('gestao-admin.js?v=20260713-r25'));
+                .then(() => carregarScript('gestao-admin.js?v=20260713-r27'));
         }
         return promessaGestaoAdmin;
     }
