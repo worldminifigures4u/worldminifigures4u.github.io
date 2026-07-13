@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         Wallapop etiqueta - PDF
 // @namespace    figuresplanet
-// @version      4.1
-// @description  Guarda etiqueta Wallapop em PDF A4 (etiqueta a 25% da altura)
+// @version      4.2
+// @description  Guarda etiqueta Wallapop em PDF A4 (20% altura, topo centrado)
 // @match        https://wallapop-delivery-labels.wallapop.com/*
 // @run-at       document-idle
 // @connect      wallapop-delivery-labels.wallapop.com
@@ -15,7 +15,7 @@
   const NOME = 'Etiqueta';
   const A4_LARGURA_MM = 210;
   const A4_ALTURA_MM = 297;
-  const FRACAO_ALTURA_ETIQUETA = 0.25;
+  const FRACAO_ALTURA_ETIQUETA = 0.20;
 
   function mmParaPt(mm) {
     return (mm * 72) / 25.4;
@@ -74,7 +74,7 @@
     const pageH = mmParaPt(A4_ALTURA_MM);
     const { largura, altura } = calcularTamanhoEtiqueta(pageW, pageH, image.width, image.height);
     const x = (pageW - largura) / 2;
-    const y = (pageH - altura) / 2;
+    const y = pageH - altura;
 
     const page = pdfDoc.addPage([pageW, pageH]);
     page.drawImage(image, { x, y, width: largura, height: altura });
