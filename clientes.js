@@ -308,7 +308,12 @@ function criarCodigoHistoricoCliente(item, indice, historico) {
     botao.className = "clientes-historico-codigo";
     botao.textContent = codigo;
     botao.title = "Consultar encomenda (janela rápida)";
-    botao.addEventListener("click", () => abrirModalEncomendaCliente(historico, indice));
+    botao.addEventListener("click", () => {
+        const abrir = typeof abrirModalEncomendaClienteLazy === "function"
+            ? abrirModalEncomendaClienteLazy
+            : abrirModalEncomendaCliente;
+        abrir(historico, indice)?.catch?.(console.error);
+    });
     return botao;
 }
 
@@ -597,7 +602,6 @@ async function iniciarClientesAdmin() {
         mostrarNavegacaoAdminValidada();
         bloqueio.hidden = true;
         document.getElementById("clientes-aplicacao").hidden = false;
-        configurarModalEncomendaCliente();
         await pesquisarClientes();
     } catch (error) {
         console.error(error);
@@ -611,4 +615,9 @@ document.getElementById("clientes-pesquisa").addEventListener("input", () => {
     clearTimeout(window.__clientesPesquisaTimer);
     window.__clientesPesquisaTimer = setTimeout(pesquisarClientes, 250);
 });
+document.getElementById("clientes-ficha")?.addEventListener("mouseenter", () => {
+    if (typeof window.garantirModalEncomendaCliente === "function") {
+        window.garantirModalEncomendaCliente().catch(() => {});
+    }
+}, { once: true });
 window.addEventListener("load", iniciarClientesAdmin);

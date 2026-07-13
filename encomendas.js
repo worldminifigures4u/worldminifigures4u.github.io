@@ -231,7 +231,12 @@ function criarCodigoHistoricoEncomenda(item, indice, historico) {
     botao.className = 'clientes-historico-codigo';
     botao.textContent = codigo;
     botao.title = 'Consultar encomenda (janela r\u00e1pida)';
-    botao.addEventListener('click', () => abrirModalEncomendaCliente(historico, indice));
+    botao.addEventListener('click', () => {
+        const abrir = typeof abrirModalEncomendaClienteLazy === 'function'
+            ? abrirModalEncomendaClienteLazy
+            : abrirModalEncomendaCliente;
+        abrir(historico, indice)?.catch?.(console.error);
+    });
     return botao;
 }
 
@@ -460,8 +465,12 @@ function criarHistoricoModalVendasFigura(vendas) {
 }
 
 function abrirEncomendaVendaFigura(indice, vendas) {
-    if (typeof abrirModalEncomendaCliente !== 'function' || !Array.isArray(vendas) || !vendas[indice]) return;
-    abrirModalEncomendaCliente(criarHistoricoModalVendasFigura(vendas), indice);
+    if (!Array.isArray(vendas) || !vendas[indice]) return;
+    if (typeof abrirModalEncomendaClienteLazy !== 'function' && typeof abrirModalEncomendaCliente !== 'function') return;
+    const abrir = typeof abrirModalEncomendaClienteLazy === 'function'
+        ? abrirModalEncomendaClienteLazy
+        : abrirModalEncomendaCliente;
+    abrir(criarHistoricoModalVendasFigura(vendas), indice)?.catch?.(console.error);
 }
 
 function atualizarModoPesquisaFiguraAdmin(ativo) {
@@ -668,7 +677,6 @@ async function iniciarPainelEncomendas() {
         await window.carregarScriptSupabase();
         if (typeof supabase === 'undefined') throw new Error('A biblioteca Supabase não carregou.');
         encomendasClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-        if (typeof configurarModalEncomendaCliente === 'function') configurarModalEncomendaCliente();
         configurarVistaEncomendasAdmin();
         const { data: { user }, error } = await encomendasClient.auth.getUser();
         if (error || !user || !ADMIN_EMAILS.includes(String(user.email || '').toLowerCase())) {
@@ -713,4 +721,3 @@ document.addEventListener('keydown', evento => {
         fecharFichaClienteAdmin();
     }
 });
-window.addEventListener('load', iniciarPainelEncomendas);

@@ -183,13 +183,33 @@
 
     window.garantirVitrineLojaPronta = garantirVitrineLojaPronta;
 
-    document.addEventListener('DOMContentLoaded', () => {
+    document.addEventListener('DOMContentLoaded', function () {
         if (!document.getElementById('vitrine-produtos')) return;
 
         garantirModulosLoja().catch(console.error);
         ligarInteracaoModulosLoja();
         agendarFavoritosLoja();
+        agendarPrefetchModulosLoja();
     });
+
+    function agendarPrefetchModulosLoja() {
+        const iniciar = function () {
+            ['loja-produtos.js?v=20260712-pesquisa-live', 'cart-mini.js?v=20260711-leve'].forEach(function (href) {
+                if (document.querySelector('link[rel="prefetch"][href="' + href + '"]')) return;
+                const link = document.createElement('link');
+                link.rel = 'prefetch';
+                link.href = href;
+                link.as = 'script';
+                document.head.appendChild(link);
+            });
+        };
+
+        if ('requestIdleCallback' in window) {
+            window.requestIdleCallback(iniciar, { timeout: 5000 });
+        } else {
+            window.setTimeout(iniciar, 2000);
+        }
+    }
 
     window.addEventListener('load', () => {
         if (document.body?.dataset?.page !== 'loja' && !document.getElementById('vitrine-produtos')) return;
