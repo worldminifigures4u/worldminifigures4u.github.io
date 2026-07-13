@@ -354,6 +354,24 @@ function criarCodigoHistoricoCliente(item, indice, historico) {
     return botao;
 }
 
+function criarSecaoRestricoesCliente(checkboxBloquearCompras, checkboxBloquearConta) {
+    if (!checkboxBloquearCompras && !checkboxBloquearConta) return null;
+    const secao = criarElementoCliente("div", "clientes-restricoes-secao");
+    secao.appendChild(criarElementoCliente("h3", "admin-cliente-formulario-subtitulo", "Restricoes do site"));
+    secao.appendChild(criarElementoCliente(
+        "p",
+        "clientes-restricoes-ajuda",
+        "Bloquear compras: o cliente mantem login, mas nao finaliza encomendas. Bloquear login: a conta deixa de entrar no site."
+    ));
+    if (checkboxBloquearCompras) {
+        secao.appendChild(checkboxBloquearCompras);
+    }
+    if (checkboxBloquearConta) {
+        secao.appendChild(checkboxBloquearConta);
+    }
+    return secao;
+}
+
 function montarFormularioCliente(dados, opcoes = {}) {
     const { novoCliente = false, mostrarCancelar = false, acoesNoTopo = false, acoesAntesCampos = false } = opcoes;
     const cliente = dados.cliente || {};
@@ -411,11 +429,16 @@ function montarFormularioCliente(dados, opcoes = {}) {
         checkboxBloquearConta = criarCheckboxCliente("Bloquear login no site", "bloquear_conta", cliente.bloquear_conta);
     }
 
+    const secaoRestricoes = criarSecaoRestricoesCliente(checkboxBloquearCompras, checkboxBloquearConta);
+
     if (acoesNoTopo) {
         if (checkboxAviso) {
             checkboxAviso.querySelector("input")?.setAttribute("form", formulario.id);
         }
         guardar.setAttribute("form", formulario.id);
+        if (secaoRestricoes) {
+            formulario.appendChild(secaoRestricoes);
+        }
     }
 
     if (!acoesNoTopo && !acoesAntesCampos) {
@@ -423,15 +446,8 @@ function montarFormularioCliente(dados, opcoes = {}) {
         if (checkboxAviso) {
             rodapeFormulario.appendChild(checkboxAviso);
         }
-        if (checkboxBloquearCompras || checkboxBloquearConta) {
-            const restricoesAjuda = criarElementoCliente("p", "clientes-restricoes-ajuda", "Bloquear compras: o cliente mantem login, mas nao finaliza encomendas. Bloquear login: a conta deixa de entrar no site.");
-            rodapeFormulario.appendChild(restricoesAjuda);
-        }
-        if (checkboxBloquearCompras) {
-            rodapeFormulario.appendChild(checkboxBloquearCompras);
-        }
-        if (checkboxBloquearConta) {
-            rodapeFormulario.appendChild(checkboxBloquearConta);
+        if (secaoRestricoes) {
+            rodapeFormulario.appendChild(secaoRestricoes);
         }
         const acoes = criarElementoCliente("div", "admin-cliente-formulario-acoes");
         if (cancelar) {

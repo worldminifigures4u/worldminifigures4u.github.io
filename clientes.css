@@ -467,6 +467,17 @@ body.clientes-encomenda-modal-aberto{
     line-height:1.45;
 }
 
+.clientes-restricoes-secao{
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+    margin-top:8px;
+}
+
+.clientes-restricoes-secao .admin-cliente-checkbox{
+    margin-top:2px;
+}
+
 .clientes-restricoes-lista,
 .clientes-ficha-restricoes-topo{
     display:flex;
