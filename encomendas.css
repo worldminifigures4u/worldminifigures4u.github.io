@@ -508,6 +508,17 @@ body.pagina-encomendas-admin{
         .admin-encomenda-anexos-upload .input-upload-admin{
             width:100%;
             min-width:0;
+            font-size:12px;
+        }
+
+        .admin-encomenda-anexos-upload .input-upload-admin::file-selector-button{
+            font-size:13px;
+        }
+
+        .admin-encomenda-anexos-upload .wallapop-botao-destaque{
+            min-width:0;
+            padding:8px 14px;
+            white-space:nowrap;
         }
 
         .input-upload-admin{

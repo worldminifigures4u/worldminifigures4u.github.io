@@ -19,7 +19,7 @@
     function garantirAdminEncomendaVista() {
         if (window.AdminEncomendaVista) return Promise.resolve();
         if (!promessaVista) {
-            promessaVista = carregarScript('admin-encomenda-vista.js?v=20260713-upload-anexos');
+            promessaVista = carregarScript('admin-encomenda-vista.js?v=20260713-gravar-anexos');
         }
         return promessaVista;
     }
