@@ -163,7 +163,7 @@ begin
   end if;
 
   if coalesce(v_restricoes.bloquear_compras, false) then
-    raise exception 'Compras bloqueadas para esta conta. Contacte-nos.';
+    raise exception 'Compras bloqueadas para esta conta.';
   end if;
 end;
 $$;
