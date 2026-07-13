@@ -1,33 +1,41 @@
 // ==UserScript==
 // @name         Wallapop etiqueta - PDF
 // @namespace    figuresplanet
-// @version      3.2
-// @description  Guarda etiqueta Wallapop como PDF pronto a imprimir (sem bibliotecas externas)
+// @version      4.0
+// @description  Guarda etiqueta Wallapop como PDF pronto a imprimir
 // @match        https://wallapop-delivery-labels.wallapop.com/*
-// @run-at       document-end
-// @grant        none
+// @run-at       document-idle
+// @connect      wallapop-delivery-labels.wallapop.com
+// @require      https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/dist/pdf-lib.min.js
 // ==/UserScript==
 
 (function () {
+  'use strict';
+
   const NOME = 'Etiqueta';
   const LARGURA_MM = 100;
 
+  function mmParaPt(mm) {
+    return (mm * 72) / 25.4;
+  }
+
   function obterUrlImagem() {
     if (/\.(png|jpg|jpeg|webp)(\?|$)/i.test(location.pathname)) {
-      return location.href;
+      return location.href.split('#')[0];
     }
     const img = document.querySelector('img');
     return img ? img.src : location.href;
   }
 
-  async function obterBlobImagem() {
+  async function obterBytesImagem() {
     const url = obterUrlImagem();
     const res = await fetch(url, { credentials: 'include' });
     if (!res.ok) throw new Error('fetch');
-    return res.blob();
+    return { bytes: await res.arrayBuffer(), url };
   }
 
-  async function blobParaJpeg(blob) {
+  async function bytesComFundoBranco(bytes, url) {
+    const blob = new Blob([bytes]);
     const bitmap = await createImageBitmap(blob);
     const canvas = document.createElement('canvas');
     canvas.width = bitmap.width;
@@ -38,78 +46,38 @@
     ctx.drawImage(bitmap, 0, 0);
     bitmap.close();
 
-    const jpegBlob = await new Promise((resolve, reject) => {
-      canvas.toBlob((b) => (b ? resolve(b) : reject(new Error('canvas'))), 'image/jpeg', 0.95);
+    const pngBlob = await new Promise((resolve, reject) => {
+      canvas.toBlob((b) => (b ? resolve(b) : reject(new Error('canvas'))), 'image/png');
     });
-
-    return {
-      jpeg: new Uint8Array(await jpegBlob.arrayBuffer()),
-      width: canvas.width,
-      height: canvas.height
-    };
+    return new Uint8Array(await pngBlob.arrayBuffer());
   }
 
-  function mmParaPt(mm) {
-    return (mm * 72) / 25.4;
+  async function criarPdf(pngBytes) {
+    const { PDFDocument } = PDFLib;
+    const pdfDoc = await PDFDocument.create();
+    const image = await pdfDoc.embedPng(pngBytes);
+
+    const pageW = mmParaPt(LARGURA_MM);
+    const pageH = pageW * (image.height / image.width);
+    const page = pdfDoc.addPage([pageW, pageH]);
+    page.drawImage(image, { x: 0, y: 0, width: pageW, height: pageH });
+
+    return pdfDoc.save();
   }
 
-  function criarPdfComJpeg(jpeg, imgW, imgH, pageWpt, pageHpt) {
-    const enc = new TextEncoder();
-    const parts = [];
-    let len = 0;
-    const objOffsets = [];
-
-    function write(str) {
-      const bytes = typeof str === 'string' ? enc.encode(str) : str;
-      parts.push(bytes);
-      len += bytes.length;
-    }
-
-    function startObject() {
-      objOffsets.push(len);
-    }
-
-    const sx = (pageWpt / imgW).toFixed(5);
-    const sy = (pageHpt / imgH).toFixed(5);
-    const content = `q ${sx} 0 0 ${sy} 0 0 cm /Im1 Do Q\n`;
-
-    write('%PDF-1.4\n');
-
-    startObject();
-    write('1 0 obj\n<< /Type /Catalog /Pages 2 0 R >>\nendobj\n');
-
-    startObject();
-    write('2 0 obj\n<< /Type /Pages /Kids [3 0 R] /Count 1 >>\nendobj\n');
-
-    startObject();
-    write(
-      `3 0 obj\n<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ${pageWpt.toFixed(2)} ${pageHpt.toFixed(2)}] ` +
-        '/Resources << /XObject << /Im1 4 0 R >> >> /Contents 5 0 R >>\nendobj\n'
-    );
-
-    startObject();
-    write(
-      `4 0 obj\n<< /Type /XObject /Subtype /Image /Width ${imgW} /Height ${imgH} ` +
-        `/ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length ${jpeg.length} >>\nstream\n`
-    );
-    write(jpeg);
-    write('\nendstream\nendobj\n');
-
-    startObject();
-    write(`5 0 obj\n<< /Length ${content.length} >>\nstream\n${content}endstream\nendobj\n`);
-
-    const xrefStart = len;
-    write(`xref\n0 ${objOffsets.length + 1}\n`);
-    write('0000000000 65535 f \n');
-    for (const off of objOffsets) {
-      write(`${String(off).padStart(10, '0')} 00000 n \n`);
-    }
-    write(`trailer\n<< /Size ${objOffsets.length + 1} /Root 1 0 R >>\nstartxref\n${xrefStart}\n%%EOF\n`);
-
-    return new Blob(parts, { type: 'application/pdf' });
+  function descarregar(bytes, nome) {
+    const blob = new Blob([bytes], { type: 'application/pdf' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = nome;
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(url), 2000);
   }
 
-  async function abrirImpressaoEtiqueta(blob) {
+  async function imprimirEtiqueta(bytes, url) {
+    const pngBytes = await bytesComFundoBranco(bytes, url);
+    const blob = new Blob([pngBytes], { type: 'image/png' });
     const dataUrl = await new Promise((resolve, reject) => {
       const reader = new FileReader();
       reader.onload = () => resolve(reader.result);
@@ -117,10 +85,14 @@
       reader.readAsDataURL(blob);
     });
 
-    const bitmap = await createImageBitmap(blob);
-    const alturaMm = LARGURA_MM * (bitmap.height / bitmap.width);
-    bitmap.close();
+    const img = await new Promise((resolve, reject) => {
+      const el = new Image();
+      el.onload = () => resolve(el);
+      el.onerror = reject;
+      el.src = dataUrl;
+    });
 
+    const alturaMm = LARGURA_MM * (img.naturalHeight / img.naturalWidth);
     const janela = window.open('', '_blank');
     if (!janela) throw new Error('popup');
 
@@ -137,32 +109,22 @@
     setTimeout(() => janela.print(), 600);
   }
 
-  function descarregar(blob, nome) {
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = nome;
-    a.click();
-    setTimeout(() => URL.revokeObjectURL(url), 1000);
-  }
-
   async function guardarPdf(btn) {
     const textoOriginal = btn.textContent;
     btn.textContent = 'A gerar PDF...';
     btn.disabled = true;
 
     try {
-      const blob = await obterBlobImagem();
-      const { jpeg, width, height } = await blobParaJpeg(blob);
-      const pageWpt = mmParaPt(LARGURA_MM);
-      const pageHpt = mmParaPt(LARGURA_MM * (height / width));
-      const pdf = criarPdfComJpeg(jpeg, width, height, pageWpt, pageHpt);
-      descarregar(pdf, `${NOME}.pdf`);
+      const { bytes, url } = await obterBytesImagem();
+      const pngBytes = await bytesComFundoBranco(bytes, url);
+      const pdfBytes = await criarPdf(pngBytes);
+      descarregar(pdfBytes, `${NOME}.pdf`);
     } catch (err) {
       console.error('[Wallapop PDF]', err);
       try {
-        const blob = await obterBlobImagem();
-        await abrirImpressaoEtiqueta(blob);
+        const { bytes, url } = await obterBytesImagem();
+        await imprimirEtiqueta(bytes, url);
+        alert('PDF automático falhou. Use «Guardar como PDF» na janela que abriu (nome: Etiqueta).');
       } catch (err2) {
         console.error('[Wallapop PDF fallback]', err2);
         alert('Não foi possível criar o PDF. Tenta recarregar a página (F5).');
