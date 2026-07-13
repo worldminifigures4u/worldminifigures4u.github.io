@@ -196,6 +196,14 @@
     outline:none;
 }
 
+.clientes-historico-cancelada{
+    opacity:0.82;
+}
+
+.clientes-historico-estado-cancelada{
+    color:#f08a8a;
+}
+
 .clientes-encomenda-modal[hidden]{ display:none; }
 
 .clientes-encomenda-modal{

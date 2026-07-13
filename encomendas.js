@@ -311,11 +311,14 @@ function renderizarFichaClienteAdmin(dados) {
     historicoSecao.appendChild(criarElementoEncomenda('h3', '', 'Hist\u00f3rico de encomendas'));
     const listaHistorico = criarElementoEncomenda('div', 'admin-cliente-historico');
     historico.forEach((item, indice) => {
+        const cancelada = String(item.estado || '').trim().toLowerCase() === 'cancelado';
         const linha = criarElementoEncomenda('div', 'admin-cliente-historico-linha');
+        if (cancelada) linha.classList.add('clientes-historico-cancelada');
+        const estado = criarElementoEncomenda('span', cancelada ? 'clientes-historico-estado-cancelada' : '', item.estado || '');
         linha.append(
             criarCodigoHistoricoEncomenda(item, indice, historico),
             criarElementoEncomenda('span', '', item.origem || 'Site'),
-            criarElementoEncomenda('span', '', item.estado || ''),
+            estado,
             criarElementoEncomenda('span', '', formatarDataEncomenda(item.data)),
             criarElementoEncomenda('strong', '', formatarEuroEncomenda(item.total))
         );

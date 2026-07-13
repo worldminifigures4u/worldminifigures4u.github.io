@@ -569,6 +569,31 @@ $$;
 revoke execute on function public.guardar_perfis_cliente_admin(uuid, jsonb) from public, anon;
 grant execute on function public.guardar_perfis_cliente_admin(uuid, jsonb) to authenticated;
 
+create or replace function public.vincular_encomendas_cliente_gestao(p_cliente_id uuid)
+returns void
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  update public.encomendas e
+  set cliente_gestao_id = cg.id
+  from public.clientes_gestao cg
+  where cg.id = p_cliente_id
+    and e.cliente_gestao_id is null
+    and (
+      (cg.auth_user_id is not null and e.id_cliente = cg.auth_user_id)
+      or (
+        nullif(trim(coalesce(cg.email, '')), '') is not null
+        and lower(trim(coalesce(e.email_cliente, ''))) = lower(trim(cg.email))
+      )
+    );
+end;
+$$;
+
+revoke execute on function public.vincular_encomendas_cliente_gestao(uuid) from public, anon, authenticated;
+grant execute on function public.vincular_encomendas_cliente_gestao(uuid) to authenticated;
+
 create or replace function public.obter_ficha_cliente_por_perfil_admin(p_url_perfil text)
 returns jsonb
 language plpgsql
@@ -605,20 +630,35 @@ begin
     );
   end if;
 
+  perform public.vincular_encomendas_cliente_gestao(v_cliente.id);
+
   select coalesce(jsonb_agg(jsonb_build_object(
     'plataforma', plataforma, 'utilizador', utilizador, 'url', url_perfil
   ) order by plataforma, utilizador), '[]'::jsonb)
   into v_perfis from public.clientes_perfis_externos where cliente_id = v_cliente.id;
 
   select coalesce(jsonb_agg(jsonb_build_object(
-    'id', id, 'codigo', codigo_encomenda, 'data', created_at, 'origem', origem,
-    'estado', estado, 'total', total
-  ) order by created_at desc), '[]'::jsonb)
-  into v_historico from public.encomendas where cliente_gestao_id = v_cliente.id;
+    'id', e.id, 'codigo', e.codigo_encomenda, 'data', e.created_at, 'origem', e.origem,
+    'estado', e.estado, 'total', e.total
+  ) order by e.created_at desc), '[]'::jsonb)
+  into v_historico
+  from public.encomendas e
+  where e.cliente_gestao_id = v_cliente.id
+     or (v_cliente.auth_user_id is not null and e.id_cliente = v_cliente.auth_user_id)
+     or (
+       nullif(trim(coalesce(v_cliente.email, '')), '') is not null
+       and lower(trim(coalesce(e.email_cliente, ''))) = lower(trim(v_cliente.email))
+     );
 
-  select count(*), coalesce(sum(total) filter (where estado <> 'Cancelado'), 0), max(created_at)
+  select count(*), coalesce(sum(e.total) filter (where e.estado <> 'Cancelado'), 0), max(e.created_at)
   into v_quantidade, v_total, v_ultima
-  from public.encomendas where cliente_gestao_id = v_cliente.id;
+  from public.encomendas e
+  where e.cliente_gestao_id = v_cliente.id
+     or (v_cliente.auth_user_id is not null and e.id_cliente = v_cliente.auth_user_id)
+     or (
+       nullif(trim(coalesce(v_cliente.email, '')), '') is not null
+       and lower(trim(coalesce(e.email_cliente, ''))) = lower(trim(v_cliente.email))
+     );
 
   return jsonb_build_object(
     'sucesso', true,
@@ -654,20 +694,35 @@ begin
   select * into v_cliente from public.clientes_gestao where id = p_cliente_id;
   if not found then raise exception 'Cliente nao encontrado'; end if;
 
+  perform public.vincular_encomendas_cliente_gestao(v_cliente.id);
+
   select coalesce(jsonb_agg(jsonb_build_object(
     'plataforma', plataforma, 'utilizador', utilizador, 'url', url_perfil
   ) order by plataforma, utilizador), '[]'::jsonb)
   into v_perfis from public.clientes_perfis_externos where cliente_id = v_cliente.id;
 
   select coalesce(jsonb_agg(jsonb_build_object(
-    'id', id, 'codigo', codigo_encomenda, 'data', created_at, 'origem', origem,
-    'estado', estado, 'total', total
-  ) order by created_at desc), '[]'::jsonb)
-  into v_historico from public.encomendas where cliente_gestao_id = v_cliente.id;
+    'id', e.id, 'codigo', e.codigo_encomenda, 'data', e.created_at, 'origem', e.origem,
+    'estado', e.estado, 'total', e.total
+  ) order by e.created_at desc), '[]'::jsonb)
+  into v_historico
+  from public.encomendas e
+  where e.cliente_gestao_id = v_cliente.id
+     or (v_cliente.auth_user_id is not null and e.id_cliente = v_cliente.auth_user_id)
+     or (
+       nullif(trim(coalesce(v_cliente.email, '')), '') is not null
+       and lower(trim(coalesce(e.email_cliente, ''))) = lower(trim(v_cliente.email))
+     );
 
-  select count(*), coalesce(sum(total) filter (where estado <> 'Cancelado'), 0), max(created_at)
+  select count(*), coalesce(sum(e.total) filter (where e.estado <> 'Cancelado'), 0), max(e.created_at)
   into v_quantidade, v_total, v_ultima
-  from public.encomendas where cliente_gestao_id = v_cliente.id;
+  from public.encomendas e
+  where e.cliente_gestao_id = v_cliente.id
+     or (v_cliente.auth_user_id is not null and e.id_cliente = v_cliente.auth_user_id)
+     or (
+       nullif(trim(coalesce(v_cliente.email, '')), '') is not null
+       and lower(trim(coalesce(e.email_cliente, ''))) = lower(trim(v_cliente.email))
+     );
 
   return jsonb_build_object(
     'sucesso', true,

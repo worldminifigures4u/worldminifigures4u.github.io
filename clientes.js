@@ -341,11 +341,14 @@ function criarSecaoHistoricoCliente(historico = []) {
     historicoSecao.appendChild(criarElementoCliente("h3", "", "Histórico de encomendas"));
     const listaHistorico = criarElementoCliente("div", "admin-cliente-historico");
     historico.forEach((item, indice) => {
+        const cancelada = String(item.estado || "").trim().toLowerCase() === "cancelado";
         const linha = criarElementoCliente("div", "admin-cliente-historico-linha");
+        if (cancelada) linha.classList.add("clientes-historico-cancelada");
+        const estado = criarElementoCliente("span", cancelada ? "clientes-historico-estado-cancelada" : "", item.estado || "");
         linha.append(
             criarCodigoHistoricoCliente(item, indice, historico),
             criarElementoCliente("span", "", item.origem || "Site"),
-            criarElementoCliente("span", "", item.estado || ""),
+            estado,
             criarElementoCliente("span", "", formatarDataCliente(item.data)),
             criarElementoCliente("strong", "", formatarEuroCliente(item.total))
         );
