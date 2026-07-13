@@ -467,14 +467,14 @@ body.clientes-encomenda-modal-aberto{
     line-height:1.45;
 }
 
-.clientes-restricoes-secao{
+.clientes-restricoes-formulario{
     display:flex;
     flex-direction:column;
     gap:10px;
     margin-top:8px;
 }
 
-.clientes-restricoes-secao .admin-cliente-checkbox{
+.clientes-restricoes-formulario .admin-cliente-checkbox{
     margin-top:2px;
 }
 

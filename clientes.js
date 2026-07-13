@@ -354,9 +354,9 @@ function criarCodigoHistoricoCliente(item, indice, historico) {
     return botao;
 }
 
-function criarSecaoRestricoesCliente(checkboxBloquearCompras, checkboxBloquearConta) {
+function criarSecaoRestricoesFormularioCliente(checkboxBloquearCompras, checkboxBloquearConta) {
     if (!checkboxBloquearCompras && !checkboxBloquearConta) return null;
-    const secao = criarElementoCliente("div", "clientes-restricoes-secao");
+    const secao = criarElementoCliente("div", "clientes-restricoes-formulario");
     secao.appendChild(criarElementoCliente("h3", "admin-cliente-formulario-subtitulo", "Restricoes do site"));
     secao.appendChild(criarElementoCliente(
         "p",
@@ -429,7 +429,7 @@ function montarFormularioCliente(dados, opcoes = {}) {
         checkboxBloquearConta = criarCheckboxCliente("Bloquear login no site", "bloquear_conta", cliente.bloquear_conta);
     }
 
-    const secaoRestricoes = criarSecaoRestricoesCliente(checkboxBloquearCompras, checkboxBloquearConta);
+    const secaoRestricoes = criarSecaoRestricoesFormularioCliente(checkboxBloquearCompras, checkboxBloquearConta);
 
     if (acoesNoTopo) {
         if (checkboxAviso) {
