@@ -130,7 +130,7 @@ function mostrarAvisoContaBloqueadaSeExistir() {
     localStorage.removeItem(CONTA_BLOQUEADA_KEY);
     const statusDiv = document.getElementById('status-cliente');
     if (statusDiv && typeof mostrarMensagem === 'function') {
-        mostrarMensagem(statusDiv, 'Esta conta foi suspensa e nao pode iniciar sessao. Contacte-nos se precisar de ajuda.', 'msg-erro');
+        mostrarMensagem(statusDiv, MENSAGEM_CONTA_SUSPENSA, 'msg-erro');
     }
 }
 

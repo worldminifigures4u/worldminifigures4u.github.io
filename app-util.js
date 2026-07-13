@@ -13,6 +13,43 @@ function formatarEuro(valor) {
     return Number(valor || 0).toFixed(2).replace('.', ',');
 }
 
+const MENSAGEM_CONTA_SUSPENSA = 'Esta conta foi suspensa e nao pode iniciar sessao.';
+
+function obterMensagemErroAuth(erro, contexto = 'login') {
+    if (!erro) {
+        return contexto === 'login'
+            ? 'E-mail ou palavra-passe invalidos.'
+            : 'Ocorreu um erro. Tente novamente.';
+    }
+
+    const codigo = String(erro.code || erro.error || '').toLowerCase();
+    let mensagem = erro.message || erro.error_description || erro.msg || '';
+    if (mensagem && typeof mensagem === 'object') {
+        mensagem = mensagem.message || mensagem.error_description || '';
+    }
+    mensagem = String(mensagem || '').trim();
+    const texto = `${codigo} ${mensagem}`.toLowerCase();
+
+    if (
+        codigo === 'user_banned'
+        || mensagem === '{}'
+        || texto.includes('banned')
+        || texto.includes('banido')
+        || texto.includes('suspens')
+        || texto.includes('bloquead')
+    ) {
+        return MENSAGEM_CONTA_SUSPENSA;
+    }
+
+    if (mensagem && mensagem !== '[object Object]') {
+        return mensagem;
+    }
+
+    return contexto === 'login'
+        ? 'E-mail ou palavra-passe invalidos.'
+        : 'Ocorreu um erro. Tente novamente.';
+}
+
 function mostrarMensagem(elemento, mensagem, tipo = '') {
     if (!elemento) return;
     elemento.className = tipo ? `msg-status ${tipo}` : 'msg-status';

@@ -149,7 +149,7 @@ async function fazerLogin(event) {
             );
             const { data: { session } } = await dbClient.auth.getSession();
             if (!session) {
-                mostrarMensagem(statusDiv, "Esta conta foi suspensa e não pode iniciar sessão. Contacte-nos se precisar de ajuda.", "msg-erro");
+                mostrarMensagem(statusDiv, MENSAGEM_CONTA_SUSPENSA, "msg-erro");
                 return;
             }
             if (document.body.classList.contains('pagina-gestao') && typeof atualizarVisibilidadeAdmin === 'function') {
@@ -162,7 +162,7 @@ async function fazerLogin(event) {
         }
     } catch (erro) {
         console.error(erro);
-        mostrarMensagem(statusDiv, "Erro: " + (erro.message || "E-mail ou password inválidos."), "msg-erro");
+        mostrarMensagem(statusDiv, obterMensagemErroAuth(erro, 'login'), "msg-erro");
     } finally {
         botaoLogin.disabled = false;
         botaoLogin.innerText = "Entrar na Conta";
