@@ -732,7 +732,7 @@ function garantirScriptImportacaoGestao() {
 
     promessaScriptImportacaoGestao = new Promise((resolve, reject) => {
         const script = document.createElement('script');
-        script.src = 'gestao-importacao.js?v=20260711-leve';
+        script.src = 'gestao-importacao.js?v=20260713-r25';
         script.defer = true;
         script.onload = () => {
             scriptImportacaoGestaoCarregado = true;

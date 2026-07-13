@@ -71,7 +71,6 @@ function aplicarPainelGestaoAdmin(user) {
     }
 
     if (painel.querySelector('.gestao-tabs')) {
-        carregarCatalogoAdminQuandoDisponivel();
         return;
     }
 
