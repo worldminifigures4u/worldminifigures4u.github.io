@@ -122,6 +122,27 @@ function montarVistaConsultaCliente(dados) {
     return contentor;
 }
 
+function clienteRegistadoNoSite(cliente) {
+    return Boolean(cliente?.auth_user_id);
+}
+
+function aplicarCamposClienteRegistadoSite(formulario, cliente) {
+    if (!clienteRegistadoNoSite(cliente)) return;
+    ["nome", "morada", "cp", "cidade", "pais", "email", "telefone"].forEach((nome) => {
+        const input = formulario.querySelector(`input[name="${nome}"]`);
+        if (!input) return;
+        input.readOnly = true;
+        input.title = "Gerido pelo cliente no site";
+        input.closest(".admin-cliente-formulario-campo")?.classList.add("clientes-campo-site");
+    });
+    const aviso = criarElementoCliente(
+        "p",
+        "admin-cliente-aviso-conta clientes-aviso-edicao-site",
+        "Os dados pessoais desta conta sao geridos pelo proprio cliente no site. Pode alterar aviso, restricoes, links externos e notas internas."
+    );
+    formulario.insertBefore(aviso, formulario.firstChild);
+}
+
 function criarInputCliente(rotulo, nome, valor, tipo = "text", obrigatorio = false) {
     const campo = document.createElement("label");
     campo.className = "admin-cliente-formulario-campo";
@@ -419,6 +440,7 @@ function montarFormularioCliente(dados, opcoes = {}) {
     }
 
     formulario.appendChild(criarTextareaCliente("Notas internas", "notas", cliente.notas));
+    aplicarCamposClienteRegistadoSite(formulario, cliente);
 
     let checkboxAviso = null;
     let checkboxBloquearCompras = null;
@@ -485,19 +507,23 @@ function montarFormularioCliente(dados, opcoes = {}) {
             p_cidade: String(campos.get("cidade") || ""),
             p_pais: String(campos.get("pais") || "")
         };
-        const { data, error } = novoCliente
-            ? await clientesClient.rpc("criar_cliente_externo_admin", parametrosCliente)
-            : await clientesClient.rpc("atualizar_cliente_externo_admin", {
-                p_cliente_id: cliente.id,
-                ...parametrosCliente
-            });
-        if (error || data?.sucesso === false) {
-            guardar.disabled = false;
-            if (cancelar) cancelar.disabled = false;
-            definirStatusClientes("Erro ao guardar dados: " + (error?.message || data?.erro || "sem detalhe"), true);
-            return;
+        const clienteRegistadoSite = !novoCliente && clienteRegistadoNoSite(cliente);
+        let clienteId = cliente.id;
+        if (!clienteRegistadoSite) {
+            const { data, error } = novoCliente
+                ? await clientesClient.rpc("criar_cliente_externo_admin", parametrosCliente)
+                : await clientesClient.rpc("atualizar_cliente_externo_admin", {
+                    p_cliente_id: cliente.id,
+                    ...parametrosCliente
+                });
+            if (error || data?.sucesso === false) {
+                guardar.disabled = false;
+                if (cancelar) cancelar.disabled = false;
+                definirStatusClientes("Erro ao guardar dados: " + (error?.message || data?.erro || "sem detalhe"), true);
+                return;
+            }
+            clienteId = data?.cliente?.id || cliente.id;
         }
-        const clienteId = data?.cliente?.id || cliente.id;
         const aviso = novoCliente
             ? { data: null, error: null }
             : await guardarAvisoClienteAdmin(clienteId, campos.get("tem_aviso") === "on");
@@ -541,7 +567,11 @@ function montarFormularioCliente(dados, opcoes = {}) {
             ? "Ficha guardada, mas o aviso nao foi atualizado: " + avisoErro
             : restricoesErro
                 ? "Ficha guardada, mas as restricoes nao foram atualizadas: " + restricoesErro
-                : (novoCliente ? "Cliente criado." : "Ficha guardada."),
+                : (novoCliente
+                    ? "Cliente criado."
+                    : (clienteRegistadoSite
+                        ? "Aviso, restricoes, links e notas guardados."
+                        : "Ficha guardada.")),
             Boolean(avisoErro || restricoesErro)
         );
         await pesquisarClientes();

@@ -467,6 +467,15 @@ body.clientes-encomenda-modal-aberto{
     line-height:1.45;
 }
 
+.clientes-campo-site input{
+    opacity:0.72;
+    cursor:not-allowed;
+}
+
+.clientes-aviso-edicao-site{
+    margin:0 0 12px;
+}
+
 .clientes-restricoes-formulario{
     display:flex;
     flex-direction:column;
