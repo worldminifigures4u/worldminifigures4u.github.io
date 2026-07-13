@@ -25,6 +25,19 @@ function mudarAba(tipo) {
     }
 }
 
+async function sincronizarFichaClienteSite() {
+    if (!dbClient) return;
+    try {
+        const { data: { session } } = await dbClient.auth.getSession();
+        if (!session?.user) return;
+        await dbClient.rpc('sincronizar_ficha_cliente_site');
+    } catch (erro) {
+        console.warn('Ficha cliente site nao sincronizada:', erro);
+    }
+}
+
+window.sincronizarFichaClienteSite = sincronizarFichaClienteSite;
+
 function mostrarFormularioRecuperacaoPassword() {
     if (!existeAreaClientePagina()) {
         window.location.href = 'conta.html' + (window.location.hash || '');
@@ -186,6 +199,7 @@ async function registarCliente(event) {
         if (error) throw error;
 
         if (data && data.user) {
+            await sincronizarFichaClienteSite();
             await dbClient.auth.signOut();
 
             mostrarMensagem(statusDiv, " Registo efetuado!\nEnviámos um link de confirmação para o seu e-mail. Ative a conta antes de tentar fazer login.", "msg-sucesso");
@@ -437,6 +451,8 @@ async function guardarDadosCliente(event) {
             .upsert(perfilAtualizado, { onConflict: 'id' });
 
         if (error) throw error;
+
+        await sincronizarFichaClienteSite();
 
         preencherFormularioDadosCliente(perfilAtualizado, user);
         mostrarMensagem(

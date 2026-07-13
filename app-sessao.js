@@ -178,6 +178,21 @@ function atualizarVisibilidadeAdmin(user) {
     aplicarPainel();
 }
 
+async function sincronizarFichaClienteSiteRemota() {
+    if (!dbClient) return;
+    try {
+        const { data: { session } } = await dbClient.auth.getSession();
+        if (!session?.user?.email_confirmed_at) return;
+        if (typeof window.sincronizarFichaClienteSite === 'function') {
+            await window.sincronizarFichaClienteSite();
+            return;
+        }
+        await dbClient.rpc('sincronizar_ficha_cliente_site');
+    } catch (erro) {
+        console.warn('Ficha cliente site nao sincronizada:', erro);
+    }
+}
+
 async function obterDadosPerfilDaTabela(userId, user = null) {
     try {
         const { data, error } = await dbClient
@@ -220,6 +235,8 @@ async function obterDadosPerfilDaTabela(userId, user = null) {
         }
     } catch (e) {
         console.error(e);
+    } finally {
+        await sincronizarFichaClienteSiteRemota();
     }
 }
 
