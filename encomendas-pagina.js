@@ -9,7 +9,7 @@
 
         promessaEncomendasJs = new Promise(function (resolve, reject) {
             const script = document.createElement('script');
-            script.src = 'encomendas.js?v=20260713-r27';
+            script.src = 'encomendas.js?v=20260713-bloquear-cliente';
             script.defer = true;
             script.onload = function () { resolve(); };
             script.onerror = function () { reject(new Error('Falha ao carregar encomendas.js')); };

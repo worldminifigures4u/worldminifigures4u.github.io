@@ -122,6 +122,32 @@ function mostrarContaAnonimaSeExistir() {
     const anonimo = document.getElementById('conteudo-cliente-anonimo');
     if (autenticado) autenticado.classList.add('oculto');
     if (anonimo) anonimo.classList.remove('oculto');
+    mostrarAvisoContaBloqueadaSeExistir();
+}
+
+function mostrarAvisoContaBloqueadaSeExistir() {
+    if (localStorage.getItem(CONTA_BLOQUEADA_KEY) !== '1') return;
+    localStorage.removeItem(CONTA_BLOQUEADA_KEY);
+    const statusDiv = document.getElementById('status-cliente');
+    if (statusDiv && typeof mostrarMensagem === 'function') {
+        mostrarMensagem(statusDiv, 'Esta conta foi suspensa e nao pode iniciar sessao. Contacte-nos se precisar de ajuda.', 'msg-erro');
+    }
+}
+
+async function verificarRestricoesContaClienteSite(user) {
+    if (!dbClient || !user || utilizadorAdmin(user)) return false;
+    try {
+        const { data, error } = await dbClient.rpc('obter_restricoes_cliente_site');
+        if (error) return false;
+        if (!data?.bloquear_conta) return false;
+        localStorage.removeItem(NOME_CONTA_CABECALHO_KEY);
+        localStorage.setItem(CONTA_BLOQUEADA_KEY, '1');
+        await dbClient.auth.signOut();
+        return true;
+    } catch (erro) {
+        console.warn('Restricoes de conta nao verificadas:', erro);
+        return false;
+    }
 }
 
 function atualizarVisibilidadeAdmin(user) {
@@ -195,6 +221,13 @@ async function sincronizarFichaClienteSiteRemota() {
 
 async function obterDadosPerfilDaTabela(userId, user = null) {
     try {
+        if (user && await verificarRestricoesContaClienteSite(user)) {
+            atualizarVisibilidadeAdmin(null);
+            mostrarContaAnonimaSeExistir();
+            atualizarCabecalhoCliente();
+            return;
+        }
+
         const { data, error } = await dbClient
             .from('clientes')
             .select('*')

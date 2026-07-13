@@ -5,3 +5,4 @@ const URL_PUBLICO_FALLBACK = 'https://figuresplanet.com/';
 const ADMIN_EMAILS = ['worldminifigures4u@gmail.com'];
 const PESO_PADRAO_PRODUTO_GRAMAS = 10;
 const NOME_CONTA_CABECALHO_KEY = 'figures-planet-conta-primeiro-nome';
+const CONTA_BLOQUEADA_KEY = 'figures-planet-conta-bloqueada';

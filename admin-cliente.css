@@ -143,6 +143,13 @@
             font-size:13px;
         }
 
+        .admin-cliente-restricoes{
+            margin:10px 0 0;
+            color:#ff8a80;
+            font-size:13px;
+            font-weight:600;
+        }
+
         .admin-cliente-grelha,
         .admin-cliente-resumo{
             display:grid;

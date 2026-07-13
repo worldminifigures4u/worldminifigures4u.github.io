@@ -73,6 +73,9 @@ function montarVistaConsultaCliente(dados) {
     const perfis = Array.isArray(dados.perfis) ? dados.perfis : [];
     const contentor = criarElementoCliente("div", "clientes-ficha-consulta");
 
+    const restricoes = criarSecaoRestricoesCliente(cliente);
+    if (restricoes) contentor.appendChild(restricoes);
+
     const dadosSecao = criarElementoCliente("section", "admin-cliente-secao");
     const grelha = criarElementoCliente("div", "admin-cliente-grelha");
     grelha.append(
@@ -202,6 +205,35 @@ async function guardarAvisoClienteAdmin(clienteId, temAviso) {
     });
 }
 
+async function guardarRestricoesClienteAdmin(clienteId, bloquearCompras, bloquearConta) {
+    if (!clienteId) return { data: null, error: null };
+    return clientesClient.rpc("guardar_restricoes_cliente_admin", {
+        p_cliente_id: clienteId,
+        p_bloquear_compras: Boolean(bloquearCompras),
+        p_bloquear_conta: Boolean(bloquearConta)
+    });
+}
+
+function criarBadgesRestricoesCliente(cliente, classeContentor = "clientes-restricoes-lista") {
+    const lista = criarElementoCliente("div", classeContentor);
+    if (cliente?.bloquear_conta) {
+        lista.appendChild(criarElementoCliente("span", "clientes-restricao-badge clientes-restricao-conta", "Login bloqueado"));
+    }
+    if (cliente?.bloquear_compras) {
+        lista.appendChild(criarElementoCliente("span", "clientes-restricao-badge clientes-restricao-compras", "Compras bloqueadas"));
+    }
+    return lista.childElementCount ? lista : null;
+}
+
+function criarSecaoRestricoesCliente(cliente) {
+    const badges = criarBadgesRestricoesCliente(cliente);
+    if (!badges) return null;
+    const secao = criarElementoCliente("section", "admin-cliente-secao clientes-restricoes-secao");
+    secao.appendChild(criarElementoCliente("h3", "", "Restricoes no site"));
+    secao.appendChild(badges);
+    return secao;
+}
+
 function renderizarClientesLista() {
     const caixa = document.getElementById("clientes-lista");
     caixa.replaceChildren();
@@ -221,6 +253,11 @@ function renderizarClientesLista() {
         botao.appendChild(criarElementoCliente("span", "clientes-lista-nome", cliente.nome || "Cliente sem nome"));
         if (cliente.tem_aviso) {
             botao.appendChild(criarIconeFichaCliente());
+        }
+        if (cliente.bloquear_conta) {
+            botao.appendChild(criarElementoCliente("span", "clientes-lista-restricao", "Login"));
+        } else if (cliente.bloquear_compras) {
+            botao.appendChild(criarElementoCliente("span", "clientes-lista-restricao", "Compras"));
         }
         caixa.appendChild(botao);
     });
@@ -366,8 +403,12 @@ function montarFormularioCliente(dados, opcoes = {}) {
     formulario.appendChild(criarTextareaCliente("Notas internas", "notas", cliente.notas));
 
     let checkboxAviso = null;
+    let checkboxBloquearCompras = null;
+    let checkboxBloquearConta = null;
     if (!novoCliente) {
         checkboxAviso = criarCheckboxCliente("Cliente com aviso a ler", "tem_aviso", cliente.tem_aviso);
+        checkboxBloquearCompras = criarCheckboxCliente("Bloquear compras no site", "bloquear_compras", cliente.bloquear_compras);
+        checkboxBloquearConta = criarCheckboxCliente("Bloquear login no site", "bloquear_conta", cliente.bloquear_conta);
     }
 
     if (acoesNoTopo) {
@@ -381,6 +422,16 @@ function montarFormularioCliente(dados, opcoes = {}) {
         const rodapeFormulario = criarElementoCliente("div", "clientes-formulario-rodape");
         if (checkboxAviso) {
             rodapeFormulario.appendChild(checkboxAviso);
+        }
+        if (checkboxBloquearCompras || checkboxBloquearConta) {
+            const restricoesAjuda = criarElementoCliente("p", "clientes-restricoes-ajuda", "Bloquear compras: o cliente mantem login, mas nao finaliza encomendas. Bloquear login: a conta deixa de entrar no site.");
+            rodapeFormulario.appendChild(restricoesAjuda);
+        }
+        if (checkboxBloquearCompras) {
+            rodapeFormulario.appendChild(checkboxBloquearCompras);
+        }
+        if (checkboxBloquearConta) {
+            rodapeFormulario.appendChild(checkboxBloquearConta);
         }
         const acoes = criarElementoCliente("div", "admin-cliente-formulario-acoes");
         if (cancelar) {
@@ -437,6 +488,16 @@ function montarFormularioCliente(dados, opcoes = {}) {
         const avisoErro = aviso.error || aviso.data?.sucesso === false
             ? (aviso.error?.message || aviso.data?.erro || "sem detalhe")
             : "";
+        const restricoes = novoCliente
+            ? { data: null, error: null }
+            : await guardarRestricoesClienteAdmin(
+                clienteId,
+                campos.get("bloquear_compras") === "on",
+                campos.get("bloquear_conta") === "on"
+            );
+        const restricoesErro = restricoes.error || restricoes.data?.sucesso === false
+            ? (restricoes.error?.message || restricoes.data?.erro || "sem detalhe")
+            : "";
         const perfisResposta = await clientesClient.rpc("guardar_perfis_cliente_admin", {
             p_cliente_id: clienteId,
             p_perfis: obterPerfisFormularioCliente(formulario)
@@ -462,8 +523,10 @@ function montarFormularioCliente(dados, opcoes = {}) {
         }
         definirStatusClientes(avisoErro
             ? "Ficha guardada, mas o aviso nao foi atualizado: " + avisoErro
-            : (novoCliente ? "Cliente criado." : "Ficha guardada."),
-            Boolean(avisoErro)
+            : restricoesErro
+                ? "Ficha guardada, mas as restricoes nao foram atualizadas: " + restricoesErro
+                : (novoCliente ? "Cliente criado." : "Ficha guardada."),
+            Boolean(avisoErro || restricoesErro)
         );
         await pesquisarClientes();
         await abrirCliente(clienteId);
@@ -568,7 +631,9 @@ function renderizarFichaCliente(dados) {
         );
         titulo.appendChild(aviso);
     }
+    const restricoesTopo = criarBadgesRestricoesCliente(cliente, "clientes-ficha-restricoes-topo");
     topo.append(titulo);
+    if (restricoesTopo) topo.appendChild(restricoesTopo);
     const editar = criarElementoCliente("button", "wallapop-botao", "Editar ficha");
     editar.type = "button";
     editar.addEventListener("click", () => renderizarEdicaoCliente(dados));

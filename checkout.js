@@ -27,6 +27,13 @@ async function criarNovaEncomenda() {
     return;
   }
 
+  const { error: bloqueioErro } = await dbClient.rpc('assert_cliente_pode_comprar_site');
+  if (bloqueioErro) {
+    statusDiv.className = "msg-status msg-erro";
+    statusDiv.innerText = bloqueioErro.message || "Nao e possivel concluir compras com esta conta.";
+    return;
+  }
+
   const totais = recalcularTotais();
 
   const metodoPagamento = obterMetodoPagamentoSelecionado();

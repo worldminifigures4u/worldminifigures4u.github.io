@@ -266,6 +266,16 @@ function renderizarFichaClienteAdmin(dados) {
         criarCampoFichaCliente('Morada', [cliente.morada, cliente.cp, cliente.cidade, cliente.pais].filter(Boolean).join(', '))
     );
     dadosPessoais.appendChild(grelha);
+    const restricoes = [];
+    if (cliente.bloquear_conta) restricoes.push('Login bloqueado no site');
+    if (cliente.bloquear_compras) restricoes.push('Compras bloqueadas no site');
+    if (restricoes.length) {
+        dadosPessoais.appendChild(criarElementoEncomenda(
+            'p',
+            'admin-cliente-restricoes',
+            restricoes.join(' \u2022 ')
+        ));
+    }
     if (cliente.auth_user_id) {
         dadosPessoais.appendChild(criarElementoEncomenda(
             'p',
