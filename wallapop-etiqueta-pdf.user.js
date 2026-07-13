@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         Wallapop etiqueta - PDF
 // @namespace    figuresplanet
-// @version      4.0
-// @description  Guarda etiqueta Wallapop como PDF pronto a imprimir
+// @version      4.1
+// @description  Guarda etiqueta Wallapop em PDF A4 (etiqueta a 25% da altura)
 // @match        https://wallapop-delivery-labels.wallapop.com/*
 // @run-at       document-idle
 // @connect      wallapop-delivery-labels.wallapop.com
@@ -13,10 +13,23 @@
   'use strict';
 
   const NOME = 'Etiqueta';
-  const LARGURA_MM = 100;
+  const A4_LARGURA_MM = 210;
+  const A4_ALTURA_MM = 297;
+  const FRACAO_ALTURA_ETIQUETA = 0.25;
 
   function mmParaPt(mm) {
     return (mm * 72) / 25.4;
+  }
+
+  function calcularTamanhoEtiqueta(pageW, pageH, imgW, imgH) {
+    let altura = pageH * FRACAO_ALTURA_ETIQUETA;
+    let largura = altura * (imgW / imgH);
+    const maxLargura = pageW * 0.9;
+    if (largura > maxLargura) {
+      largura = maxLargura;
+      altura = largura * (imgH / imgW);
+    }
+    return { largura, altura };
   }
 
   function obterUrlImagem() {
@@ -57,10 +70,14 @@
     const pdfDoc = await PDFDocument.create();
     const image = await pdfDoc.embedPng(pngBytes);
 
-    const pageW = mmParaPt(LARGURA_MM);
-    const pageH = pageW * (image.height / image.width);
+    const pageW = mmParaPt(A4_LARGURA_MM);
+    const pageH = mmParaPt(A4_ALTURA_MM);
+    const { largura, altura } = calcularTamanhoEtiqueta(pageW, pageH, image.width, image.height);
+    const x = (pageW - largura) / 2;
+    const y = (pageH - altura) / 2;
+
     const page = pdfDoc.addPage([pageW, pageH]);
-    page.drawImage(image, { x: 0, y: 0, width: pageW, height: pageH });
+    page.drawImage(image, { x, y, width: largura, height: altura });
 
     return pdfDoc.save();
   }
@@ -85,23 +102,24 @@
       reader.readAsDataURL(blob);
     });
 
-    const img = await new Promise((resolve, reject) => {
-      const el = new Image();
-      el.onload = () => resolve(el);
-      el.onerror = reject;
-      el.src = dataUrl;
-    });
-
-    const alturaMm = LARGURA_MM * (img.naturalHeight / img.naturalWidth);
     const janela = window.open('', '_blank');
     if (!janela) throw new Error('popup');
 
     janela.document.write(`<!DOCTYPE html>
 <html><head><meta charset="utf-8"><title>${NOME}</title>
 <style>
-  @page { size: ${LARGURA_MM}mm ${alturaMm.toFixed(1)}mm; margin: 0; }
-  html, body { margin: 0; padding: 0; width: ${LARGURA_MM}mm; height: ${alturaMm.toFixed(1)}mm; background: #fff; }
-  img { width: 100%; height: 100%; object-fit: contain; display: block; }
+  @page { size: A4 portrait; margin: 0; }
+  html, body {
+    margin: 0; padding: 0; width: ${A4_LARGURA_MM}mm; height: ${A4_ALTURA_MM}mm;
+    background: #fff; display: flex; align-items: center; justify-content: center;
+  }
+  img {
+    height: ${FRACAO_ALTURA_ETIQUETA * 100}%;
+    width: auto;
+    max-width: 90%;
+    object-fit: contain;
+    display: block;
+  }
 </style></head>
 <body><img src="${dataUrl}" alt="etiqueta"></body></html>`);
     janela.document.close();
