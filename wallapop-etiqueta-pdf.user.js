@@ -1,18 +1,24 @@
 // ==UserScript==
 // @name         Wallapop etiqueta - PDF
 // @namespace    figuresplanet
-// @version      4.4
-// @description  Guarda etiqueta Wallapop em PDF A4 (25% altura, topo com margem)
+// @version      5.0
+// @description  Guarda etiqueta Wallapop em PDF A4 com nome do cliente no ficheiro
+// @match        https://*.wallapop.com/*
 // @match        https://wallapop-delivery-labels.wallapop.com/*
 // @run-at       document-idle
 // @connect      wallapop-delivery-labels.wallapop.com
+// @grant        GM_setValue
+// @grant        GM_getValue
 // @require      https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/dist/pdf-lib.min.js
 // ==/UserScript==
 
 (function () {
   'use strict';
 
-  const NOME = 'Etiqueta';
+  const STORAGE_NOME = 'fp_wallapop_cliente';
+  const STORAGE_TS = 'fp_wallapop_cliente_ts';
+  const EXPIRACAO_MS = 30 * 60 * 1000;
+
   const A4_LARGURA_MM = 210;
   const A4_ALTURA_MM = 297;
   const FRACAO_ALTURA_ETIQUETA = 0.25;
@@ -20,6 +26,76 @@
 
   function mmParaPt(mm) {
     return (mm * 72) / 25.4;
+  }
+
+  function nomeFicheiroSeguro(nome) {
+    return nome
+      .replace(/[<>:"/\\|?*\u0000-\u001f]/g, '')
+      .replace(/\s+/g, ' ')
+      .trim()
+      .slice(0, 80);
+  }
+
+  function extrairNomeCliente() {
+    const texto = document.body?.innerText || '';
+    const idx = texto.search(/Comprado por/i);
+    if (idx >= 0) {
+      const linhas = texto
+        .slice(idx, idx + 300)
+        .split(/\n/)
+        .map((l) => l.trim())
+        .filter(Boolean);
+      const rotulo = linhas.findIndex((l) => /^Comprado por\s*:?$/i.test(l));
+      if (rotulo >= 0 && linhas[rotulo + 1]) {
+        const nome = nomeFicheiroSeguro(linhas[rotulo + 1]);
+        if (nome && !/^(produto|preço|mostrar)/i.test(nome)) return nome;
+      }
+      const inline = texto.slice(idx).match(/Comprado por\s*:?\s*([A-Za-zÀ-ÿ][A-Za-zÀ-ÿ0-9 .'\-]{0,60})/i);
+      if (inline?.[1]) {
+        const nome = nomeFicheiroSeguro(inline[1]);
+        if (nome) return nome;
+      }
+    }
+    return null;
+  }
+
+  function guardarNomeCliente() {
+    const nome = extrairNomeCliente();
+    if (!nome) return;
+    GM_setValue(STORAGE_NOME, nome);
+    GM_setValue(STORAGE_TS, Date.now());
+  }
+
+  function obterNomeEtiqueta() {
+    const nome = GM_getValue(STORAGE_NOME, '');
+    const ts = GM_getValue(STORAGE_TS, 0);
+    if (!nome || Date.now() - ts > EXPIRACAO_MS) return 'Etiqueta';
+    return `Etiqueta - ${nome}`;
+  }
+
+  function obterNomePdf() {
+    return `${obterNomeEtiqueta()}.pdf`;
+  }
+
+  function iniciarCapturaCliente() {
+    guardarNomeCliente();
+
+    document.addEventListener(
+      'click',
+      (e) => {
+        const alvo = e.target.closest('button, a, [role="button"]');
+        if (alvo && /mostrar etiqueta/i.test(alvo.textContent || '')) {
+          guardarNomeCliente();
+        }
+      },
+      true
+    );
+
+    const obs = new MutationObserver(guardarNomeCliente);
+    if (document.body) {
+      obs.observe(document.body, { childList: true, subtree: true });
+      setTimeout(() => obs.disconnect(), 120000);
+    }
   }
 
   function calcularTamanhoEtiqueta(pageW, pageH, imgW, imgH) {
@@ -48,7 +124,7 @@
     return { bytes: await res.arrayBuffer(), url };
   }
 
-  async function bytesComFundoBranco(bytes, url) {
+  async function bytesComFundoBranco(bytes) {
     const blob = new Blob([bytes]);
     const bitmap = await createImageBitmap(blob);
     const canvas = document.createElement('canvas');
@@ -93,8 +169,8 @@
     setTimeout(() => URL.revokeObjectURL(url), 2000);
   }
 
-  async function imprimirEtiqueta(bytes, url) {
-    const pngBytes = await bytesComFundoBranco(bytes, url);
+  async function imprimirEtiqueta(bytes) {
+    const pngBytes = await bytesComFundoBranco(bytes);
     const blob = new Blob([pngBytes], { type: 'image/png' });
     const dataUrl = await new Promise((resolve, reject) => {
       const reader = new FileReader();
@@ -103,11 +179,12 @@
       reader.readAsDataURL(blob);
     });
 
+    const titulo = obterNomeEtiqueta();
     const janela = window.open('', '_blank');
     if (!janela) throw new Error('popup');
 
     janela.document.write(`<!DOCTYPE html>
-<html><head><meta charset="utf-8"><title>${NOME}</title>
+<html><head><meta charset="utf-8"><title>${titulo}</title>
 <style>
   @page { size: A4 portrait; margin: 0; }
   html, body {
@@ -135,16 +212,16 @@
     btn.disabled = true;
 
     try {
-      const { bytes, url } = await obterBytesImagem();
-      const pngBytes = await bytesComFundoBranco(bytes, url);
+      const { bytes } = await obterBytesImagem();
+      const pngBytes = await bytesComFundoBranco(bytes);
       const pdfBytes = await criarPdf(pngBytes);
-      descarregar(pdfBytes, `${NOME}.pdf`);
+      descarregar(pdfBytes, obterNomePdf());
     } catch (err) {
       console.error('[Wallapop PDF]', err);
       try {
-        const { bytes, url } = await obterBytesImagem();
-        await imprimirEtiqueta(bytes, url);
-        alert('PDF automático falhou. Use «Guardar como PDF» na janela que abriu (nome: Etiqueta).');
+        const { bytes } = await obterBytesImagem();
+        await imprimirEtiqueta(bytes);
+        alert(`PDF automático falhou. Use «Guardar como PDF» na janela que abriu (nome: ${obterNomeEtiqueta()}).`);
       } catch (err2) {
         console.error('[Wallapop PDF fallback]', err2);
         alert('Não foi possível criar o PDF. Tenta recarregar a página (F5).');
@@ -182,6 +259,14 @@
     (document.body || document.documentElement).appendChild(btn);
   }
 
-  document.title = 'etiqueta';
-  criarBotao();
+  function iniciarEtiqueta() {
+    document.title = obterNomeEtiqueta();
+    criarBotao();
+  }
+
+  if (location.hostname === 'wallapop-delivery-labels.wallapop.com') {
+    iniciarEtiqueta();
+  } else {
+    iniciarCapturaCliente();
+  }
 })();
