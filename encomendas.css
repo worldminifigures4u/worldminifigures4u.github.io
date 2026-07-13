@@ -505,13 +505,36 @@ body.pagina-encomendas-admin{
             margin-bottom:10px;
         }
 
-        .admin-encomenda-anexos-upload input{
+        .admin-encomenda-anexos-upload .input-upload-admin{
+            width:100%;
             min-width:0;
-            padding:8px;
-            border:1px solid #444;
-            border-radius:5px;
-            background:#222;
+        }
+
+        .input-upload-admin{
+            border:1px dashed #555;
+            background:#181818;
+            border-radius:8px;
+            padding:8px 10px;
             color:#ddd;
+            font:inherit;
+        }
+
+        .input-upload-admin::file-selector-button{
+            margin-right:10px;
+            min-height:36px;
+            padding:8px 12px;
+            border:1px solid var(--cor-botao-secundario-borda, #ffc107);
+            border-radius:6px;
+            background:transparent;
+            color:var(--cor-botao-secundario-texto, #fff);
+            font:inherit;
+            font-weight:700;
+            cursor:pointer;
+        }
+
+        .input-upload-admin::file-selector-button:hover{
+            border-color:var(--cor-acao-principal, #ffc107);
+            color:var(--cor-acao-principal, #ffc107);
         }
 
         .admin-encomenda-anexos-lista{

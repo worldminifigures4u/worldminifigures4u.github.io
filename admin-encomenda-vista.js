@@ -316,6 +316,7 @@ window.AdminEncomendaVista = (function () {
             const upload = criarElemento("div", "admin-encomenda-anexos-upload");
             const input = document.createElement("input");
             input.type = "file";
+            input.className = "input-upload-admin";
             input.accept = ".pdf,image/jpeg,image/png,image/webp";
             input.multiple = true;
             const enviar = criarElemento("button", "wallapop-botao wallapop-botao-destaque", "Adicionar anexos");
