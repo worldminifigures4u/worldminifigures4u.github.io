@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Wallapop etiqueta - PDF
 // @namespace    figuresplanet
-// @version      4.3
+// @version      4.4
 // @description  Guarda etiqueta Wallapop em PDF A4 (25% altura, topo com margem)
 // @match        https://wallapop-delivery-labels.wallapop.com/*
 // @run-at       document-idle
@@ -16,7 +16,7 @@
   const A4_LARGURA_MM = 210;
   const A4_ALTURA_MM = 297;
   const FRACAO_ALTURA_ETIQUETA = 0.25;
-  const MARGEM_TOPO_MM = 15;
+  const MARGEM_TOPO_MM = 30;
 
   function mmParaPt(mm) {
     return (mm * 72) / 25.4;
