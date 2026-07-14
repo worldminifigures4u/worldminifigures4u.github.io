@@ -764,27 +764,39 @@ body.pagina-encomendas-admin{
         }
 
         .admin-encomenda-estado-caixa select{
-            width:152px;
+            width:184px;
             max-width:100%;
             min-width:0;
             min-height:32px;
             height:32px;
-            padding:0 24px 0 8px;
+            padding:0 28px 0 8px;
             border:1px solid #555;
             border-radius:6px;
             background-color:#222;
             background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath fill='%23aaa' d='M1 1l4 4 4-4'/%3E%3C/svg%3E");
             background-repeat:no-repeat;
-            background-position:right 8px center;
+            background-position:right 10px center;
             background-size:10px 6px;
             color:#ddd;
             font-size:12px;
             font-weight:600;
             line-height:1.2;
             box-sizing:border-box;
+            outline:none;
             -webkit-appearance:none;
             -moz-appearance:none;
             appearance:none;
+        }
+
+        .admin-encomenda-estado-caixa select:hover{
+            border-color:#777;
+        }
+
+        .admin-encomenda-estado-caixa select:focus,
+        .admin-encomenda-estado-caixa select:focus-visible{
+            outline:none;
+            border-color:var(--cor-acao-principal, #ffc107);
+            box-shadow:0 0 0 1px var(--cor-acao-principal, #ffc107);
         }
 
         .admin-encomenda-anexos-conteudo{
