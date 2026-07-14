@@ -533,6 +533,7 @@ body.pagina-encomendas-admin{
             border:1px dashed #555;
             border-radius:8px;
             background:#181818;
+            overflow:hidden;
         }
 
         .admin-encomenda-anexos-ficheiro{
@@ -540,6 +541,8 @@ body.pagina-encomendas-admin{
             min-width:0;
             display:flex;
             align-items:center;
+            overflow:hidden;
+            border-radius:6px;
         }
 
         .admin-encomenda-anexos-upload .input-upload-admin{
@@ -551,10 +554,25 @@ body.pagina-encomendas-admin{
             background:transparent;
             color:#ddd;
             font-size:12px;
+            border-radius:0;
         }
 
         .admin-encomenda-anexos-upload .input-upload-admin::file-selector-button{
-            font-size:13px;
+            margin-right:10px;
+            min-height:36px;
+            padding:8px 12px;
+            border:1px solid var(--cor-botao-secundario-borda, #ffc107);
+            border-radius:6px;
+            background:transparent;
+            color:var(--cor-botao-secundario-texto, #fff);
+            font:inherit;
+            font-weight:700;
+            cursor:pointer;
+        }
+
+        .admin-encomenda-anexos-upload .input-upload-admin::file-selector-button:hover{
+            border-color:var(--cor-acao-principal, #ffc107);
+            color:var(--cor-acao-principal, #ffc107);
         }
 
         .admin-encomenda-anexos-upload .wallapop-botao-destaque{
@@ -614,7 +632,7 @@ body.pagina-encomendas-admin{
             align-items:center;
             padding:7px;
             border:1px solid #333;
-            border-radius:5px;
+            border-radius:8px;
             background:#1b1b1b;
         }
 
@@ -629,6 +647,7 @@ body.pagina-encomendas-admin{
         .admin-encomenda-anexo .wallapop-botao{
             padding:7px 9px;
             font-size:12px;
+            border-radius:6px;
         }
 
         .admin-encomenda-anexo .admin-encomenda-anexo-apagar{
