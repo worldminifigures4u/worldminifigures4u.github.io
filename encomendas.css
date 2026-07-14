@@ -769,6 +769,7 @@ body.pagina-encomendas-admin{
             border:1px solid #555;
             border-radius:6px;
             background:#222;
+            color-scheme:dark;
             transition:border-color .15s ease;
         }
 
@@ -796,16 +797,22 @@ body.pagina-encomendas-admin{
             background-repeat:no-repeat;
             background-position:right 10px center;
             background-size:10px 6px;
-            color:#ddd;
+            color:#fff;
             font-size:12px;
             font-weight:600;
             line-height:1.2;
             box-sizing:border-box;
             outline:none;
             box-shadow:none;
+            color-scheme:dark;
             -webkit-appearance:none;
             -moz-appearance:none;
             appearance:none;
+        }
+
+        .admin-encomenda-estado-caixa select option{
+            background-color:#222;
+            color:#fff;
         }
 
         .admin-encomenda-estado-caixa select:focus,
