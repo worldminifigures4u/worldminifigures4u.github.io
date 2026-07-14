@@ -322,7 +322,7 @@ window.AdminEncomendaVista = (function () {
         const compacto = opcoes.compacto === true;
         const notasSecao = criarElemento("section", `admin-encomenda-notas${compacto ? " admin-encomenda-notas-cabecalho" : ""}`);
         const notas = document.createElement("textarea");
-        notas.rows = compacto ? 2 : 4;
+        notas.rows = compacto ? 5 : 4;
         notas.maxLength = 10000;
         notas.value = encomenda.notas_internas || "";
         notas.placeholder = "Pormenores de preparação visíveis apenas ao administrador.";
