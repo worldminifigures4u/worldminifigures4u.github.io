@@ -487,12 +487,6 @@ body.pagina-encomendas-admin{
             height:100%;
         }
 
-        .admin-encomenda-notas-cabecalho h3{
-            margin:0 0 8px;
-            color:var(--cor-texto-principal, #fff);
-            font-size:13px;
-        }
-
         .admin-encomenda-notas-cabecalho textarea{
             flex:1 1 auto;
             min-height:118px;

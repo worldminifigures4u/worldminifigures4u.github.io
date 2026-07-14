@@ -321,7 +321,6 @@ window.AdminEncomendaVista = (function () {
     function criarSecaoNotasInternasEncomenda(encomenda, opcoes = {}) {
         const compacto = opcoes.compacto === true;
         const notasSecao = criarElemento("section", `admin-encomenda-notas${compacto ? " admin-encomenda-notas-cabecalho" : ""}`);
-        notasSecao.appendChild(criarElemento("h3", "", "Notas internas"));
         const notas = document.createElement("textarea");
         notas.rows = compacto ? 5 : 4;
         notas.maxLength = 10000;
