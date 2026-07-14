@@ -109,7 +109,7 @@ window.AdminEncomendaVista = (function () {
         dialogo.setAttribute("role", "dialog");
         dialogo.setAttribute("aria-modal", "true");
         dialogo.setAttribute("aria-labelledby", "admin-notas-confirmar-texto");
-        const texto = criarElemento("p", "", "As notas foram alteradas. Gravar?");
+        const texto = criarElemento("p", "", "Existem alterações por guardar. Gravar?");
         texto.id = "admin-notas-confirmar-texto";
         const acoes = criarElemento("div", "admin-notas-confirmar-acoes");
         const sim = criarElemento("button", "wallapop-botao wallapop-botao-destaque", "Sim");
@@ -403,6 +403,7 @@ window.AdminEncomendaVista = (function () {
 
     function criarSecaoNotasInternasEncomenda(encomenda, opcoes = {}) {
         const compacto = opcoes.compacto === true;
+        const semBotao = opcoes.semBotao === true;
         const notasSecao = criarElemento("section", `admin-encomenda-notas${compacto ? " admin-encomenda-notas-cabecalho" : ""}`);
         const notas = document.createElement("textarea");
         notas.rows = compacto ? 2 : 4;
@@ -412,27 +413,20 @@ window.AdminEncomendaVista = (function () {
         notas.placeholder = "Pormenores de preparação visíveis apenas ao administrador.";
         notas.addEventListener("click", evento => evento.stopPropagation());
         notas.addEventListener("keydown", evento => evento.stopPropagation());
-        const guardarNotas = criarElemento("button", "wallapop-botao wallapop-botao-destaque", compacto ? "Gravar" : "Guardar notas");
-        guardarNotas.type = "button";
-        guardarNotas.addEventListener("click", evento => evento.stopPropagation());
         const statusNotas = criarElemento("p", "admin-encomenda-gestao-status");
-        let ignorarBlurNotas = false;
-        let promessaConfirmacaoNotas = null;
 
         function temAlteracoesPendentes() {
             return notas.value !== valorGuardado;
         }
 
         async function guardarNotasInternas() {
-            guardarNotas.disabled = true;
             if (!compacto) statusNotas.textContent = "A guardar...";
             const { data, error } = await obterClient().rpc("guardar_notas_encomenda_admin", {
                 p_encomenda_id: String(encomenda.id),
                 p_notas: notas.value
             });
-            guardarNotas.disabled = false;
             if (error || data?.sucesso === false) {
-                const mensagem = "Erro ao guardar: " + (error?.message || data?.erro || "sem detalhe");
+                const mensagem = "Erro ao guardar notas: " + (error?.message || data?.erro || "sem detalhe");
                 if (compacto) hooks.definirStatus(mensagem, true);
                 else statusNotas.textContent = mensagem;
                 return false;
@@ -443,55 +437,79 @@ window.AdminEncomendaVista = (function () {
             return true;
         }
 
-        async function confirmarSaidaNotas() {
-            if (!temAlteracoesPendentes()) return true;
-            if (promessaConfirmacaoNotas) return promessaConfirmacaoNotas;
-
-            promessaConfirmacaoNotas = (async () => {
-                const gravar = await perguntarGravarNotasAlteradas();
-                if (gravar) return guardarNotasInternas();
-                notas.value = valorGuardado;
-                if (!compacto) statusNotas.textContent = "";
-                return true;
-            })();
-
-            try {
-                return await promessaConfirmacaoNotas;
-            } finally {
-                promessaConfirmacaoNotas = null;
-            }
+        function reverterNotas() {
+            notas.value = valorGuardado;
+            if (!compacto) statusNotas.textContent = "";
         }
 
-        guardarNotas.addEventListener("mousedown", () => {
-            ignorarBlurNotas = true;
-        });
-        guardarNotas.addEventListener("click", async () => {
-            ignorarBlurNotas = false;
-            await guardarNotasInternas();
-        });
-        notas.addEventListener("blur", () => {
-            window.setTimeout(async () => {
-                if (ignorarBlurNotas) {
-                    ignorarBlurNotas = false;
-                    return;
+        if (!semBotao) {
+            const guardarNotas = criarElemento("button", "wallapop-botao wallapop-botao-destaque", compacto ? "Gravar" : "Guardar notas");
+            guardarNotas.type = "button";
+            guardarNotas.addEventListener("click", evento => evento.stopPropagation());
+            let ignorarBlurNotas = false;
+            let promessaConfirmacaoNotas = null;
+
+            async function confirmarSaidaNotas() {
+                if (!temAlteracoesPendentes()) return true;
+                if (promessaConfirmacaoNotas) return promessaConfirmacaoNotas;
+
+                promessaConfirmacaoNotas = (async () => {
+                    const gravar = await perguntarGravarNotasAlteradas();
+                    if (gravar) return guardarNotasInternas();
+                    reverterNotas();
+                    return true;
+                })();
+
+                try {
+                    return await promessaConfirmacaoNotas;
+                } finally {
+                    promessaConfirmacaoNotas = null;
                 }
-                if (notasSecao.contains(document.activeElement)) return;
-                await confirmarSaidaNotas();
-            }, 0);
-        });
+            }
 
-        if (compacto) {
-            const linhaNotas = criarElemento("div", "admin-encomenda-notas-linha");
-            linhaNotas.append(notas, guardarNotas);
-            notasSecao.appendChild(linhaNotas);
-        } else {
-            notasSecao.append(notas, guardarNotas, statusNotas);
+            guardarNotas.addEventListener("mousedown", () => {
+                ignorarBlurNotas = true;
+            });
+            guardarNotas.addEventListener("click", async () => {
+                ignorarBlurNotas = false;
+                guardarNotas.disabled = true;
+                await guardarNotasInternas();
+                guardarNotas.disabled = false;
+            });
+            notas.addEventListener("blur", () => {
+                window.setTimeout(async () => {
+                    if (ignorarBlurNotas) {
+                        ignorarBlurNotas = false;
+                        return;
+                    }
+                    if (notasSecao.contains(document.activeElement)) return;
+                    await confirmarSaidaNotas();
+                }, 0);
+            });
+
+            if (compacto) {
+                const linhaNotas = criarElemento("div", "admin-encomenda-notas-linha");
+                linhaNotas.append(notas, guardarNotas);
+                notasSecao.appendChild(linhaNotas);
+            } else {
+                notasSecao.append(notas, guardarNotas, statusNotas);
+            }
+
+            return {
+                elemento: notasSecao,
+                guardar: guardarNotasInternas,
+                confirmarSaida: confirmarSaidaNotas,
+                temAlteracoesPendentes,
+                reverter: reverterNotas
+            };
         }
 
+        notasSecao.appendChild(notas);
         return {
             elemento: notasSecao,
-            confirmarSaida: confirmarSaidaNotas,
-            temAlteracoesPendentes
+            guardar: guardarNotasInternas,
+            temAlteracoesPendentes,
+            reverter: reverterNotas
         };
     }
 
@@ -520,25 +538,27 @@ window.AdminEncomendaVista = (function () {
             input.className = "input-upload-admin";
             input.accept = ".pdf,image/jpeg,image/png,image/webp";
             input.multiple = true;
-            const enviar = criarElemento("button", "wallapop-botao wallapop-botao-destaque", "Gravar");
-            enviar.type = "button";
-            enviar.addEventListener("click", async () => {
+            campoFicheiro.appendChild(input);
+            upload.appendChild(campoFicheiro);
+            anexosSecao.appendChild(upload);
+
+            coluna.temAnexosPendentes = () => Boolean(input.files?.length);
+            coluna.reverterAnexos = () => {
+                input.value = "";
+            };
+            coluna.enviarAnexosPendentes = async () => {
                 const ficheiros = [...input.files];
-                if (!ficheiros.length) {
-                    statusAnexos.textContent = "Seleciona pelo menos um ficheiro.";
-                    return;
-                }
+                if (!ficheiros.length) return true;
                 const tiposInvalidos = ficheiros.filter(item => !ANEXO_TIPOS_PERMITIDOS.has(item.type));
                 if (tiposInvalidos.length) {
                     statusAnexos.textContent = "Só são permitidos anexos PDF, JPEG, PNG ou WebP.";
-                    return;
+                    return false;
                 }
                 const demasiadoGrandes = ficheiros.filter(item => item.size > ANEXO_MAX_BYTES);
                 if (demasiadoGrandes.length) {
                     statusAnexos.textContent = "Cada anexo pode ter no máximo 10 MB.";
-                    return;
+                    return false;
                 }
-                enviar.disabled = true;
                 input.disabled = true;
                 statusAnexos.textContent = "A enviar anexos...";
                 try {
@@ -554,16 +574,14 @@ window.AdminEncomendaVista = (function () {
                     input.value = "";
                     await carregarAnexos(encomenda, lista, statusAnexos);
                     statusAnexos.textContent = `${ficheiros.length} anexo(s) guardado(s).`;
+                    return true;
                 } catch (error) {
                     statusAnexos.textContent = "Erro no envio: " + (error.message || "sem detalhe");
+                    return false;
                 } finally {
-                    enviar.disabled = false;
                     input.disabled = false;
                 }
-            });
-            campoFicheiro.appendChild(input);
-            upload.append(campoFicheiro, enviar);
-            anexosSecao.appendChild(upload);
+            };
         }
         anexosSecao.append(lista, statusAnexos);
         coluna.carregarAnexos = async () => {
@@ -677,9 +695,10 @@ window.AdminEncomendaVista = (function () {
         return Number(valor || 0).toFixed(2).replace(".", ",");
     }
 
-    async function atualizarTotalEncomenda(encomenda, total, input, card) {
+    async function atualizarTotalEncomenda(encomenda, total, input, card, opcoes = {}) {
+        const silencioso = opcoes.silencioso === true;
         input.disabled = true;
-        hooks.definirStatus("A guardar total...");
+        if (!silencioso) hooks.definirStatus("A guardar total...");
         try {
             const { data, error } = await obterClient().rpc("atualizar_total_encomenda_admin", {
                 p_encomenda_id: String(encomenda.id),
@@ -694,14 +713,18 @@ window.AdminEncomendaVista = (function () {
             const valorLinha = card.querySelector(".admin-encomenda-valor-linha");
             if (valorLinha) valorLinha.textContent = formatarEuro(totalGuardado);
             atualizarListaAposAlteracaoEncomenda();
-            hooks.definirStatus(`Total da encomenda atualizado para ${formatarEuro(totalGuardado)}.`);
+            if (!silencioso) hooks.definirStatus(`Total da encomenda atualizado para ${formatarEuro(totalGuardado)}.`);
+            return true;
         } catch (error) {
             input.value = formatarEuroInput(encomenda.total);
-            hooks.definirStatus(
-                "Erro ao guardar total: " + detalheErro(error)
-                + ". Execute o SQL atualizado do painel de encomendas no Supabase.",
-                true
-            );
+            if (!silencioso) {
+                hooks.definirStatus(
+                    "Erro ao guardar total: " + detalheErro(error)
+                    + ". Execute o SQL atualizado do painel de encomendas no Supabase.",
+                    true
+                );
+            }
+            return false;
         } finally {
             input.disabled = false;
         }
@@ -716,7 +739,8 @@ window.AdminEncomendaVista = (function () {
         input.inputMode = "decimal";
         input.autocomplete = "off";
         input.spellcheck = false;
-        input.value = formatarEuroInput(encomenda.total);
+        let valorGuardado = Number(encomenda.total);
+        input.value = formatarEuroInput(valorGuardado);
         input.title = "Editar valor total da encomenda";
         input.addEventListener("click", evento => evento.stopPropagation());
         input.addEventListener("keydown", evento => evento.stopPropagation());
@@ -725,21 +749,38 @@ window.AdminEncomendaVista = (function () {
             evento.preventDefault();
             input.blur();
         });
+
+        function reverter() {
+            input.value = formatarEuroInput(valorGuardado);
+        }
+
+        function temAlteracao() {
+            const total = parseEuroInput(input.value);
+            return !Number.isNaN(total) && total !== valorGuardado;
+        }
+
+        async function guardar() {
+            const total = parseEuroInput(input.value);
+            if (Number.isNaN(total)) {
+                reverter();
+                return false;
+            }
+            if (total === valorGuardado) return true;
+            const ok = await atualizarTotalEncomenda(encomenda, total, input, card, { silencioso: true });
+            if (ok) valorGuardado = Number(encomenda.total);
+            return ok;
+        }
+
         input.addEventListener("blur", () => {
             const total = parseEuroInput(input.value);
             if (Number.isNaN(total)) {
-                input.value = formatarEuroInput(encomenda.total);
-                hooks.definirStatus("Total inválido.", true);
+                reverter();
                 return;
             }
-            if (total === Number(encomenda.total)) {
-                input.value = formatarEuroInput(encomenda.total);
-                return;
-            }
-            atualizarTotalEncomenda(encomenda, total, input, card);
+            input.value = formatarEuroInput(total);
         });
         linha.appendChild(input);
-        return linha;
+        return { elemento: linha, temAlteracao, reverter, guardar };
     }
 
     async function atualizarPrioridade(encomenda, prioritaria, checkbox) {
@@ -1129,14 +1170,66 @@ window.AdminEncomendaVista = (function () {
         detalhes.hidden = false;
         let gestaoEncomenda = null;
         let controloNotas = null;
+        let controloTotal = null;
+        let selectEstado = null;
+        let statusGravar = null;
+        let gravarTudo = null;
+
+        function temAlteracoesPendentes() {
+            return Boolean(
+                controloNotas?.temAlteracoesPendentes?.()
+                || gestaoEncomenda?.temAnexosPendentes?.()
+                || controloTotal?.temAlteracao?.()
+                || (selectEstado && selectEstado.value !== selectEstado.dataset.estadoAtual)
+            );
+        }
+
+        function reverterAlteracoesPendentes() {
+            controloNotas?.reverter?.();
+            gestaoEncomenda?.reverterAnexos?.();
+            controloTotal?.reverter?.();
+            if (selectEstado) selectEstado.value = selectEstado.dataset.estadoAtual;
+            if (statusGravar) statusGravar.textContent = "";
+        }
+
+        async function gravarAlteracoesPendentes() {
+            if (!temAlteracoesPendentes()) {
+                if (statusGravar) statusGravar.textContent = "";
+                return true;
+            }
+            if (gravarTudo) gravarTudo.disabled = true;
+            if (statusGravar) statusGravar.textContent = "A guardar...";
+            let ok = true;
+
+            if (controloNotas?.temAlteracoesPendentes?.()) {
+                ok = (await controloNotas.guardar()) && ok;
+            }
+            if (ok && gestaoEncomenda?.temAnexosPendentes?.()) {
+                ok = (await gestaoEncomenda.enviarAnexosPendentes()) && ok;
+            }
+            if (ok && controloTotal?.temAlteracao?.()) {
+                ok = (await controloTotal.guardar()) && ok;
+            }
+            if (ok && selectEstado && selectEstado.value !== selectEstado.dataset.estadoAtual) {
+                await atualizarEstado(encomenda, selectEstado.value, selectEstado);
+                if (selectEstado.value !== selectEstado.dataset.estadoAtual) ok = false;
+            }
+
+            if (statusGravar) {
+                statusGravar.textContent = ok ? "Alterações guardadas." : "Algumas alterações não foram guardadas.";
+            }
+            if (gravarTudo) gravarTudo.disabled = false;
+            return ok;
+        }
 
         if (!modoModal) {
             detalhes.hidden = true;
             card.classList.remove("aberta");
             const alternarDetalhes = async () => {
-                if (!detalhes.hidden && controloNotas) {
-                    const podeSair = await controloNotas.confirmarSaida();
-                    if (!podeSair) return;
+                if (!detalhes.hidden && temAlteracoesPendentes()) {
+                    const gravar = await perguntarGravarNotasAlteradas();
+                    if (gravar) await gravarAlteracoesPendentes();
+                    else reverterAlteracoesPendentes();
                 }
                 detalhes.hidden = !detalhes.hidden;
                 card.classList.toggle("aberta", !detalhes.hidden);
@@ -1175,7 +1268,7 @@ window.AdminEncomendaVista = (function () {
             colunaDireita.appendChild(criarLinhaDetalhe("Stock", "Reposto após cancelamento"));
         }
 
-        controloNotas = criarSecaoNotasInternasEncomenda(encomenda, { compacto: true });
+        controloNotas = criarSecaoNotasInternasEncomenda(encomenda, { compacto: true, semBotao: true });
         colunaNotas.appendChild(controloNotas.elemento);
         dados.append(colunaEsquerda, colunaDireita, colunaNotas);
 
@@ -1198,7 +1291,8 @@ window.AdminEncomendaVista = (function () {
             );
             lista.appendChild(linhaProduto);
         });
-        produtos.append(lista, criarLinhaTotalEditavel(encomenda, card));
+        controloTotal = criarLinhaTotalEditavel(encomenda, card);
+        produtos.append(lista, controloTotal.elemento);
 
         const gestaoLinha = criarElemento("div", "admin-encomenda-gestao");
         const colunaEstado = criarElemento("div", "admin-encomenda-gestao-coluna admin-encomenda-estado-coluna");
@@ -1212,13 +1306,25 @@ window.AdminEncomendaVista = (function () {
             select.add(option);
         });
         select.dataset.estadoAtual = estadoAtual;
-        select.addEventListener("change", () => atualizarEstado(encomenda, select.value, select));
+        select.addEventListener("click", evento => evento.stopPropagation());
+        select.addEventListener("keydown", evento => evento.stopPropagation());
         caixaEstado.appendChild(select);
         secaoEstado.appendChild(caixaEstado);
         colunaEstado.appendChild(secaoEstado);
+        selectEstado = select;
 
         gestaoEncomenda = criarGestaoEncomenda(encomenda);
         gestaoLinha.append(colunaEstado, gestaoEncomenda);
+
+        const gravarLinha = criarElemento("div", "admin-encomenda-gravar-linha");
+        gravarTudo = criarElemento("button", "wallapop-botao wallapop-botao-destaque", "Gravar");
+        gravarTudo.type = "button";
+        gravarTudo.addEventListener("click", evento => {
+            evento.stopPropagation();
+            gravarAlteracoesPendentes();
+        });
+        statusGravar = criarElemento("p", "admin-encomenda-gestao-status");
+        gravarLinha.append(gravarTudo, statusGravar);
 
         const acoes = criarElemento("div", "admin-encomenda-acoes");
         const copiar = criarElemento("button", "wallapop-botao", "Copiar dados");
@@ -1242,7 +1348,7 @@ window.AdminEncomendaVista = (function () {
         botoes.appendChild(apagar);
         acoes.appendChild(botoes);
 
-        detalhes.append(dados, produtos, gestaoLinha, acoes);
+        detalhes.append(dados, produtos, gestaoLinha, gravarLinha, acoes);
         card.append(cabecalho, detalhes);
         if (modoModal) gestaoEncomenda.carregarAnexos?.();
         return card;
