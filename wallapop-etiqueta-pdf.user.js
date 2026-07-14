@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         Wallapop etiqueta - PDF
 // @namespace    figuresplanet
-// @version      5.1
-// @description  Guarda etiqueta Wallapop em PDF A4 com nome do cliente no ficheiro (imagem ou PDF)
+// @version      5.2
+// @description  Guarda etiqueta Wallapop em PDF A4 com nome do cliente (imagem) ou PDF original (etiqueta CTT)
 // @match        https://*.wallapop.com/*
 // @match        https://wallapop-delivery-labels.wallapop.com/*
 // @run-at       document-idle
@@ -177,29 +177,8 @@
     return pdfDoc.save();
   }
 
-  async function criarPdfAPartirDePdf(pdfBytes) {
-    const { PDFDocument } = PDFLib;
-    const origem = await PDFDocument.load(pdfBytes);
-    const [paginaOrigem] = origem.getPages();
-    if (!paginaOrigem) throw new Error('pdf-sem-paginas');
-
-    const { width: srcW, height: srcH } = paginaOrigem.getSize();
-    const pdfDoc = await PDFDocument.create();
-    const pageW = mmParaPt(A4_LARGURA_MM);
-    const pageH = mmParaPt(A4_ALTURA_MM);
-    const { largura, altura } = calcularTamanhoEtiqueta(pageW, pageH, srcW, srcH);
-    const x = (pageW - largura) / 2;
-    const y = pageH - altura - mmParaPt(MARGEM_TOPO_MM);
-
-    const paginaEmbutida = await pdfDoc.embedPage(paginaOrigem);
-    const page = pdfDoc.addPage([pageW, pageH]);
-    page.drawPage(paginaEmbutida, { x, y, width: largura, height: altura });
-
-    return pdfDoc.save();
-  }
-
   async function processarEtiqueta(bytes, tipo) {
-    if (tipo === 'pdf') return criarPdfAPartirDePdf(bytes);
+    if (tipo === 'pdf') return new Uint8Array(bytes);
     const pngBytes = await bytesComFundoBranco(bytes);
     return criarPdf(pngBytes);
   }
@@ -212,14 +191,6 @@
     a.download = nome;
     a.click();
     setTimeout(() => URL.revokeObjectURL(url), 2000);
-  }
-
-  async function imprimirPdf(bytes) {
-    const blob = new Blob([bytes], { type: 'application/pdf' });
-    const url = URL.createObjectURL(blob);
-    const janela = window.open(url, '_blank');
-    if (!janela) throw new Error('popup');
-    setTimeout(() => URL.revokeObjectURL(url), 60000);
   }
 
   async function imprimirEtiqueta(bytes) {
@@ -273,11 +244,6 @@
       try {
         const { bytes, tipo } = await obterBytesEtiqueta();
         if (tipo === 'pdf') {
-          const pdfBytes = await criarPdfAPartirDePdf(bytes).catch(() => null);
-          if (pdfBytes) {
-            descarregar(pdfBytes, obterNomePdf());
-            return;
-          }
           descarregar(new Uint8Array(bytes), obterNomePdf());
           return;
         }
