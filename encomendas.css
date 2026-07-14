@@ -544,11 +544,19 @@ body.pagina-encomendas-admin{
 
         .admin-encomenda-anexos-upload .wallapop-botao-destaque{
             min-width:0;
-            padding:6px 12px;
-            font-size:13px;
-            line-height:1.2;
+            min-height:36px;
+            height:36px;
+            padding:8px 12px;
+            border-radius:6px;
+            font-size:inherit;
+            font-weight:700;
+            line-height:1;
             align-self:center;
-            height:auto;
+            box-sizing:border-box;
+            display:inline-flex;
+            align-items:center;
+            justify-content:center;
+            white-space:nowrap;
         }
 
         .input-upload-admin{
