@@ -542,11 +542,30 @@ window.AdminEncomendaVista = (function () {
                 criarElemento("span", "admin-encomenda-anexos-escolher-texto", "Escolher Ficheiros")
             );
             upload.appendChild(campoFicheiro);
-            conteudo.appendChild(upload);
+            const listaPendentes = criarElemento("div", "admin-encomenda-anexos-pendentes");
+            conteudo.append(upload, listaPendentes);
+
+            function atualizarAnexosPendentes() {
+                listaPendentes.replaceChildren();
+                const ficheiros = [...input.files];
+                const semAnexos = lista.querySelector(".admin-encomenda-anexos-vazio");
+                if (semAnexos) semAnexos.hidden = ficheiros.length > 0;
+                if (!ficheiros.length) return;
+                ficheiros.forEach(ficheiro => {
+                    const linha = criarElemento("div", "admin-encomenda-anexo admin-encomenda-anexo-pendente");
+                    const nome = criarElemento("span", "", ficheiro.name);
+                    nome.title = ficheiro.name;
+                    linha.appendChild(nome);
+                    listaPendentes.appendChild(linha);
+                });
+            }
+
+            input.addEventListener("change", atualizarAnexosPendentes);
 
             bloco.temAnexosPendentes = () => Boolean(input.files?.length);
             bloco.reverterAnexos = () => {
                 input.value = "";
+                atualizarAnexosPendentes();
             };
             bloco.enviarAnexosPendentes = async () => {
                 const ficheiros = [...input.files];
@@ -574,6 +593,7 @@ window.AdminEncomendaVista = (function () {
                         if (error) throw error;
                     }
                     input.value = "";
+                    atualizarAnexosPendentes();
                     await carregarAnexos(encomenda, lista, statusAnexos);
                     statusAnexos.textContent = `${ficheiros.length} anexo(s) guardado(s).`;
                     return true;

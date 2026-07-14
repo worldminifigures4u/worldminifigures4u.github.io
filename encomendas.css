@@ -1030,13 +1030,28 @@ body.pagina-encomendas-admin{
             color:var(--cor-acao-principal, #ffc107);
         }
 
-        .admin-encomenda-anexos-lista{
+        .admin-encomenda-anexos-lista,
+        .admin-encomenda-anexos-pendentes{
             display:flex;
             flex-direction:row;
             flex-wrap:wrap;
             align-items:center;
             gap:6px;
             min-width:0;
+        }
+
+        .admin-encomenda-anexos-pendentes:empty{
+            display:none;
+        }
+
+        .admin-encomenda-anexo-pendente{
+            border-style:dashed;
+            border-color:#666;
+            background:#242424;
+        }
+
+        .admin-encomenda-anexos-vazio[hidden]{
+            display:none;
         }
 
         .admin-encomenda-anexo{
