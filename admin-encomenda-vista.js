@@ -514,22 +514,21 @@ window.AdminEncomendaVista = (function () {
     }
 
     function criarGestaoEncomenda(encomenda) {
-        const coluna = criarElemento("div", "admin-encomenda-gestao-coluna admin-encomenda-anexos-coluna");
-        const anexosSecao = criarElemento("section", "admin-encomenda-anexos admin-encomenda-gestao-secao");
-        anexosSecao.appendChild(criarElemento("h3", "", "Anexos"));
+        const bloco = criarElemento("div", "admin-encomenda-gestao-bloco admin-encomenda-gestao-anexos");
+        bloco.appendChild(criarElemento("span", "admin-encomenda-gestao-rotulo", "Anexos"));
+        const conteudo = criarElemento("div", "admin-encomenda-anexos-conteudo");
         const lista = criarElemento("div", "admin-encomenda-anexos-lista");
         const statusAnexos = criarElemento("p", "admin-encomenda-gestao-status");
         const concluida = estadoNormalizado(encomenda.estado) === "Concluído";
         let avisoConcluida = null;
+
         if (concluida) {
             avisoConcluida = criarElemento(
                 "p",
                 "admin-encomenda-anexos-aviso",
                 "Os anexos foram eliminados quando a encomenda foi concluída."
             );
-            const caixaAviso = criarElemento("div", "admin-encomenda-gestao-caixa admin-encomenda-anexos-aviso-caixa");
-            caixaAviso.appendChild(avisoConcluida);
-            anexosSecao.appendChild(caixaAviso);
+            conteudo.appendChild(avisoConcluida);
         } else {
             const upload = criarElemento("div", "admin-encomenda-gestao-caixa admin-encomenda-anexos-upload");
             const campoFicheiro = criarElemento("div", "admin-encomenda-anexos-ficheiro");
@@ -540,13 +539,13 @@ window.AdminEncomendaVista = (function () {
             input.multiple = true;
             campoFicheiro.appendChild(input);
             upload.appendChild(campoFicheiro);
-            anexosSecao.appendChild(upload);
+            conteudo.appendChild(upload);
 
-            coluna.temAnexosPendentes = () => Boolean(input.files?.length);
-            coluna.reverterAnexos = () => {
+            bloco.temAnexosPendentes = () => Boolean(input.files?.length);
+            bloco.reverterAnexos = () => {
                 input.value = "";
             };
-            coluna.enviarAnexosPendentes = async () => {
+            bloco.enviarAnexosPendentes = async () => {
                 const ficheiros = [...input.files];
                 if (!ficheiros.length) return true;
                 const tiposInvalidos = ficheiros.filter(item => !ANEXO_TIPOS_PERMITIDOS.has(item.type));
@@ -583,10 +582,12 @@ window.AdminEncomendaVista = (function () {
                 }
             };
         }
-        anexosSecao.append(lista, statusAnexos);
-        coluna.carregarAnexos = async () => {
-            if (coluna.dataset.anexosCarregados === "true") return;
-            coluna.dataset.anexosCarregados = "true";
+
+        conteudo.append(lista, statusAnexos);
+        bloco.appendChild(conteudo);
+        bloco.carregarAnexos = async () => {
+            if (bloco.dataset.anexosCarregados === "true") return;
+            bloco.dataset.anexosCarregados = "true";
             if (concluida) {
                 statusAnexos.textContent = "A verificar anexos residuais...";
                 try {
@@ -596,15 +597,14 @@ window.AdminEncomendaVista = (function () {
                         : "Não existem anexos nesta encomenda concluída. As notas internas foram mantidas.";
                     statusAnexos.textContent = "";
                 } catch (error) {
-                    coluna.dataset.anexosCarregados = "false";
+                    bloco.dataset.anexosCarregados = "false";
                     statusAnexos.textContent = "Não foi possível verificar a eliminação dos anexos: " + (error.message || "sem detalhe");
                 }
                 return;
             }
             await carregarAnexos(encomenda, lista, statusAnexos);
         };
-        coluna.appendChild(anexosSecao);
-        return coluna;
+        return bloco;
     }
 
     function textoProdutos(encomenda) {
@@ -1325,9 +1325,8 @@ window.AdminEncomendaVista = (function () {
         produtos.append(lista, controloTotal.elemento);
 
         const gestaoLinha = criarElemento("div", "admin-encomenda-gestao");
-        const colunaEstado = criarElemento("div", "admin-encomenda-gestao-coluna admin-encomenda-estado-coluna");
-        const secaoEstado = criarElemento("section", "admin-encomenda-gestao-secao admin-encomenda-estado-secao");
-        secaoEstado.appendChild(criarElemento("h3", "", "Estado"));
+        const blocoEstado = criarElemento("div", "admin-encomenda-gestao-bloco admin-encomenda-gestao-estado");
+        blocoEstado.appendChild(criarElemento("span", "admin-encomenda-gestao-rotulo", "Estado"));
         const caixaEstado = criarElemento("div", "admin-encomenda-gestao-caixa admin-encomenda-estado-caixa");
         const select = document.createElement("select");
         const estadoAtual = estadoNormalizado(encomenda.estado);
@@ -1339,12 +1338,11 @@ window.AdminEncomendaVista = (function () {
         select.addEventListener("click", evento => evento.stopPropagation());
         select.addEventListener("keydown", evento => evento.stopPropagation());
         caixaEstado.appendChild(select);
-        secaoEstado.appendChild(caixaEstado);
-        colunaEstado.appendChild(secaoEstado);
+        blocoEstado.appendChild(caixaEstado);
         selectEstado = select;
 
         gestaoEncomenda = criarGestaoEncomenda(encomenda);
-        gestaoLinha.append(colunaEstado, gestaoEncomenda);
+        gestaoLinha.append(blocoEstado, gestaoEncomenda);
 
         detalhes.append(dados, gestaoLinha, produtos);
         card.append(cabecalho, detalhes);

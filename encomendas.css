@@ -693,8 +693,34 @@ body.pagina-encomendas-admin{
             padding-top:14px;
             border-top:1px solid #333;
             display:flex;
-            align-items:stretch;
+            align-items:center;
             gap:18px;
+            flex-wrap:wrap;
+        }
+
+        .admin-encomenda-gestao-bloco{
+            display:flex;
+            align-items:center;
+            gap:10px;
+            min-width:0;
+        }
+
+        .admin-encomenda-gestao-estado{
+            flex:0 0 auto;
+        }
+
+        .admin-encomenda-gestao-anexos{
+            flex:1 1 320px;
+            min-width:0;
+        }
+
+        .admin-encomenda-gestao-rotulo{
+            flex:0 0 auto;
+            color:var(--cor-texto-principal, #fff);
+            font-size:15px;
+            font-weight:700;
+            line-height:1.2;
+            white-space:nowrap;
         }
 
         .admin-encomenda-gestao-coluna{
@@ -728,17 +754,18 @@ body.pagina-encomendas-admin{
             display:flex;
             align-items:center;
             gap:8px;
-            min-height:52px;
-            padding:8px 10px;
+            min-height:36px;
+            padding:0;
             border:0;
-            border-radius:8px;
-            background:#181818;
+            border-radius:0;
+            background:transparent;
             box-sizing:border-box;
             overflow:hidden;
         }
 
         .admin-encomenda-estado-caixa select{
-            width:100%;
+            width:min(240px, 34vw);
+            min-width:180px;
             min-height:36px;
             height:36px;
             padding:0 10px;
@@ -747,6 +774,20 @@ body.pagina-encomendas-admin{
             background:#222;
             color:#fff;
             font:inherit;
+            box-sizing:border-box;
+        }
+
+        .admin-encomenda-anexos-conteudo{
+            display:flex;
+            flex:1 1 auto;
+            align-items:center;
+            gap:8px;
+            min-width:0;
+            flex-wrap:wrap;
+            min-height:36px;
+            padding:6px 10px;
+            border-radius:8px;
+            background:#181818;
             box-sizing:border-box;
         }
 
@@ -781,8 +822,10 @@ body.pagina-encomendas-admin{
         }
 
         .admin-encomenda-anexos-upload{
-            margin-bottom:10px;
+            margin:0;
             justify-content:flex-start;
+            flex:0 1 auto;
+            min-width:0;
         }
 
         .admin-encomenda-anexos-ficheiro{
@@ -872,22 +915,27 @@ body.pagina-encomendas-admin{
 
         .admin-encomenda-anexos-lista{
             display:flex;
-            flex-direction:column;
+            flex-direction:row;
+            flex-wrap:wrap;
+            align-items:center;
             gap:6px;
+            min-width:0;
         }
 
         .admin-encomenda-anexo{
-            display:grid;
-            grid-template-columns:minmax(0, 1fr) auto auto;
-            gap:7px;
+            display:flex;
             align-items:center;
-            padding:7px;
+            gap:7px;
+            min-width:0;
+            max-width:min(100%, 360px);
+            padding:4px 8px;
             border:1px solid #333;
             border-radius:8px;
             background:#1b1b1b;
         }
 
         .admin-encomenda-anexo span{
+            flex:1 1 auto;
             overflow:hidden;
             color:#ddd;
             font-size:13px;
@@ -909,10 +957,14 @@ body.pagina-encomendas-admin{
         .admin-encomenda-anexos-vazio,
         .admin-encomenda-anexos-aviso,
         .admin-encomenda-gestao-status{
-            margin:7px 0 0;
+            margin:0;
             color:#999;
             font-size:12px;
             line-height:1.4;
+        }
+
+        .admin-encomenda-anexos-conteudo .admin-encomenda-gestao-status:empty{
+            display:none;
         }
 
         .admin-encomenda-anexos-aviso{
@@ -1170,7 +1222,22 @@ body.pagina-encomendas-admin{
             }
             .admin-encomenda-gestao{
                 flex-direction:column;
+                align-items:stretch;
                 margin-top:14px;
+            }
+
+            .admin-encomenda-gestao-bloco{
+                width:100%;
+                flex-wrap:wrap;
+            }
+
+            .admin-encomenda-gestao-anexos{
+                flex:1 1 auto;
+            }
+
+            .admin-encomenda-estado-caixa select{
+                width:100%;
+                min-width:0;
             }
 
             .admin-encomenda-estado-coluna,
@@ -1178,8 +1245,7 @@ body.pagina-encomendas-admin{
                 width:100%;
             }
             .admin-encomenda-anexos-upload{
-                flex-direction:column;
-                align-items:stretch;
+                flex:1 1 100%;
             }
 
             .admin-encomenda-anexos-upload .wallapop-botao-destaque{
