@@ -829,9 +829,9 @@ body.pagina-encomendas-admin{
         }
 
         .admin-encomenda-anexos-ficheiro{
-            flex:0 1 auto;
+            flex:0 0 auto;
             width:auto;
-            max-width:min(100%, 420px);
+            max-width:none;
             min-width:0;
             display:flex;
             align-items:center;
@@ -840,25 +840,27 @@ body.pagina-encomendas-admin{
         }
 
         .admin-encomenda-anexos-upload .input-upload-admin{
-            width:100%;
+            width:auto;
+            max-width:none;
             min-width:0;
             margin:0;
             padding:0;
             border:0;
             background:transparent;
-            color:#ddd;
-            font-size:12px;
+            color:transparent;
+            font-size:0;
             border-radius:0;
         }
 
         .admin-encomenda-anexos-upload .input-upload-admin::file-selector-button{
-            margin-right:10px;
+            margin-right:0;
             min-height:36px;
             padding:8px 12px;
             border:1px solid var(--cor-botao-secundario-borda, #ffc107);
             border-radius:6px;
             background:transparent;
             color:var(--cor-botao-secundario-texto, #fff);
+            font-size:12px;
             font:inherit;
             font-weight:700;
             cursor:pointer;
