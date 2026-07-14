@@ -155,6 +155,27 @@ window.AdminEncomendaVista = (function () {
         });
     }
 
+    let confirmacaoSaidaGlobalRegistada = false;
+
+    function alvoIgnoradoConfirmacaoSaida(alvo, opcoes = {}) {
+        if (!alvo) return true;
+        const { textarea, gravarTudo, modal } = opcoes;
+        if (textarea && (alvo === textarea || textarea.contains?.(alvo))) return true;
+        if (gravarTudo && (alvo === gravarTudo || gravarTudo.contains?.(alvo))) return true;
+        if (modal && modal.contains?.(alvo)) return true;
+        return false;
+    }
+
+    function registarConfirmacaoSaidaGlobal() {
+        if (confirmacaoSaidaGlobalRegistada) return;
+        confirmacaoSaidaGlobalRegistada = true;
+        document.addEventListener("pointerdown", evento => {
+            const card = document.querySelector(".admin-encomenda-card.aberta:not(.admin-encomenda-card-modal)");
+            if (!card || typeof card._aoPointerDownForaNotas !== "function") return;
+            void card._aoPointerDownForaNotas(evento);
+        }, true);
+    }
+
     function obterProdutos(encomenda) {
         let produtos = encomenda.produtos;
         if (typeof produtos === "string") {
@@ -1271,14 +1292,30 @@ window.AdminEncomendaVista = (function () {
             return ok;
         }
 
+        let promessaConfirmacaoSaida = null;
+
+        async function confirmarAlteracoesAntesDeSair() {
+            if (!temAlteracoesPendentes()) return true;
+            if (promessaConfirmacaoSaida) return promessaConfirmacaoSaida;
+            promessaConfirmacaoSaida = (async () => {
+                const gravar = await perguntarGravarNotasAlteradas();
+                if (gravar) await gravarAlteracoesPendentes();
+                else reverterAlteracoesPendentes();
+                return true;
+            })();
+            try {
+                return await promessaConfirmacaoSaida;
+            } finally {
+                promessaConfirmacaoSaida = null;
+            }
+        }
+
         if (!modoModal) {
             detalhes.hidden = true;
             card.classList.remove("aberta");
             const alternarDetalhes = async () => {
-                if (!detalhes.hidden && temAlteracoesPendentes()) {
-                    const gravar = await perguntarGravarNotasAlteradas();
-                    if (gravar) await gravarAlteracoesPendentes();
-                    else reverterAlteracoesPendentes();
+                if (!detalhes.hidden) {
+                    await confirmarAlteracoesAntesDeSair();
                 }
                 detalhes.hidden = !detalhes.hidden;
                 card.classList.toggle("aberta", !detalhes.hidden);
@@ -1408,6 +1445,51 @@ window.AdminEncomendaVista = (function () {
         detalhes.append(dados, gestaoLinha, produtos);
         card.append(cabecalho, detalhes);
         ligarAlturaNotasComInfo(card, grupoInfo, controloNotas, colunaAcoes);
+
+        if (!modoModal) {
+            registarConfirmacaoSaidaGlobal();
+            const textareaNotas = controloNotas?.elemento?.querySelector("textarea");
+            let ignorarConfirmacaoNotas = false;
+
+            gravarTudo?.addEventListener("mousedown", () => {
+                ignorarConfirmacaoNotas = true;
+            });
+
+            card._aoPointerDownForaNotas = async evento => {
+                if (detalhes.hidden) return;
+                if (!temAlteracoesPendentes()) return;
+                const modal = obterModalConfirmarNotas();
+                if (!modal.hidden) return;
+                if (alvoIgnoradoConfirmacaoSaida(evento.target, {
+                    textarea: textareaNotas,
+                    gravarTudo,
+                    modal
+                })) return;
+
+                evento.preventDefault();
+                evento.stopImmediatePropagation();
+                await confirmarAlteracoesAntesDeSair();
+            };
+
+            textareaNotas?.addEventListener("blur", () => {
+                window.setTimeout(async () => {
+                    if (ignorarConfirmacaoNotas) {
+                        ignorarConfirmacaoNotas = false;
+                        return;
+                    }
+                    if (detalhes.hidden || !temAlteracoesPendentes()) return;
+                    const modal = obterModalConfirmarNotas();
+                    if (!modal.hidden) return;
+                    if (alvoIgnoradoConfirmacaoSaida(document.activeElement, {
+                        textarea: textareaNotas,
+                        gravarTudo,
+                        modal
+                    })) return;
+                    await confirmarAlteracoesAntesDeSair();
+                }, 0);
+            });
+        }
+
         if (modoModal) {
             gestaoEncomenda.carregarAnexos?.();
             card._ajustarAlturaNotas?.();
