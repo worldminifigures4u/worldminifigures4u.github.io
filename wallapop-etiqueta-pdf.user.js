@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         Wallapop etiqueta - PDF
 // @namespace    figuresplanet
-// @version      5.2
-// @description  Guarda etiqueta Wallapop em PDF A4 com nome do cliente (imagem) ou PDF original (etiqueta CTT)
+// @version      5.3
+// @description  Guarda etiqueta Wallapop em PDF A4 com nome do cliente (imagem) ou PDF a 90% (etiqueta CTT)
 // @match        https://*.wallapop.com/*
 // @match        https://wallapop-delivery-labels.wallapop.com/*
 // @run-at       document-idle
@@ -22,6 +22,7 @@
   const A4_LARGURA_MM = 210;
   const A4_ALTURA_MM = 297;
   const FRACAO_ALTURA_ETIQUETA = 0.25;
+  const FRACAO_TAMANHO_PDF_ETIQUETA = 0.9;
   const MARGEM_TOPO_MM = 30;
 
   function mmParaPt(mm) {
@@ -177,8 +178,31 @@
     return pdfDoc.save();
   }
 
+  async function criarPdfAPartirDePdf(pdfBytes) {
+    const { PDFDocument } = PDFLib;
+    const origem = await PDFDocument.load(pdfBytes);
+    const [paginaOrigem] = origem.getPages();
+    if (!paginaOrigem) throw new Error('pdf-sem-paginas');
+
+    const { width: srcW, height: srcH } = paginaOrigem.getSize();
+    const largura = srcW * FRACAO_TAMANHO_PDF_ETIQUETA;
+    const altura = srcH * FRACAO_TAMANHO_PDF_ETIQUETA;
+
+    const pdfDoc = await PDFDocument.create();
+    const pageW = mmParaPt(A4_LARGURA_MM);
+    const pageH = mmParaPt(A4_ALTURA_MM);
+    const x = (pageW - largura) / 2;
+    const y = (pageH - altura) / 2;
+
+    const paginaEmbutida = await pdfDoc.embedPage(paginaOrigem);
+    const page = pdfDoc.addPage([pageW, pageH]);
+    page.drawPage(paginaEmbutida, { x, y, width: largura, height: altura });
+
+    return pdfDoc.save();
+  }
+
   async function processarEtiqueta(bytes, tipo) {
-    if (tipo === 'pdf') return new Uint8Array(bytes);
+    if (tipo === 'pdf') return criarPdfAPartirDePdf(bytes);
     const pngBytes = await bytesComFundoBranco(bytes);
     return criarPdf(pngBytes);
   }
@@ -244,6 +268,11 @@
       try {
         const { bytes, tipo } = await obterBytesEtiqueta();
         if (tipo === 'pdf') {
+          const pdfBytes = await criarPdfAPartirDePdf(bytes).catch(() => null);
+          if (pdfBytes) {
+            descarregar(pdfBytes, obterNomePdf());
+            return;
+          }
           descarregar(new Uint8Array(bytes), obterNomePdf());
           return;
         }
