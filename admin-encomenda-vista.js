@@ -180,9 +180,11 @@ window.AdminEncomendaVista = (function () {
         const extensao = partes.length > 1 ? `.${partes.pop().toLowerCase()}` : "";
         const base = partes.join(".")
             .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
-            .replace(/[^a-zA-Z0-9_-]+/g, "-")
-            .replace(/^-+|-+$/g, "") || "anexo";
-        return `${base.slice(0, 100)}${extensao}`;
+            .replace(/[\\/:*?"<>|#\u0000-\u001f]/g, "")
+            .replace(/\s+/g, " ")
+            .trim()
+            .slice(0, 100) || "anexo";
+        return `${base}${extensao}`;
     }
 
     function nomeVisivelAnexo(nome) {
