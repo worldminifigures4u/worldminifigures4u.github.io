@@ -472,6 +472,22 @@ body.pagina-encomendas-admin{
             min-width:0;
         }
 
+        .admin-encomenda-dados-info-grupo{
+            display:flex;
+            gap:16px 20px;
+            flex:0 0 auto;
+            align-items:flex-start;
+            align-self:stretch;
+        }
+
+        .admin-encomenda-dados-conteudo{
+            display:flex;
+            flex:1 1 auto;
+            gap:16px 20px;
+            align-items:stretch;
+            min-width:0;
+        }
+
         .admin-encomenda-dados-cliente{
             min-width:min(100%, 300px);
         }
@@ -502,12 +518,15 @@ body.pagina-encomendas-admin{
             min-width:0;
             align-self:stretch;
             display:flex;
+            min-height:0;
         }
 
         .admin-encomenda-dados-notas .admin-encomenda-notas-cabecalho{
             flex:1 1 auto;
             display:flex;
+            width:100%;
             min-height:0;
+            height:100%;
         }
 
         .admin-encomenda-dados-acoes{
@@ -571,19 +590,20 @@ body.pagina-encomendas-admin{
             flex:1 1 auto;
             width:100%;
             min-width:0;
-            min-height:132px;
+            min-height:0;
             height:100%;
             margin:0;
             resize:vertical;
             box-sizing:border-box;
-            padding:8px 10px;
+            padding:0 8px;
             border:1px solid #444;
             border-radius:5px;
             background:#222;
             color:#fff;
-            font:inherit;
-            line-height:1.35;
+            font-size:13px;
+            line-height:1.25;
             display:block;
+            overflow:auto;
         }
 
         .admin-encomenda-gravar-linha{
@@ -1245,6 +1265,8 @@ body.pagina-encomendas-admin{
                 flex-direction:column;
             }
 
+            .admin-encomenda-dados-conteudo,
+            .admin-encomenda-dados-info-grupo,
             .admin-encomenda-dados-cliente,
             .admin-encomenda-dados-contacto,
             .admin-encomenda-dados-info,
@@ -1271,6 +1293,16 @@ body.pagina-encomendas-admin{
             .admin-encomenda-gravar-status{
                 flex:1 1 100%;
                 text-align:left;
+            }
+
+            .admin-encomenda-dados-conteudo{
+                flex-direction:column;
+                width:100%;
+            }
+
+            .admin-encomenda-dados-info-grupo{
+                flex-direction:column;
+                width:100%;
             }
 
             .admin-encomenda-notas-cabecalho textarea{

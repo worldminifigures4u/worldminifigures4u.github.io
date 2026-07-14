@@ -1272,6 +1272,12 @@ window.AdminEncomendaVista = (function () {
             colunaContacto.appendChild(criarLinhaDetalhe("Stock", "Reposto após cancelamento"));
         }
 
+        const grupoInfo = criarElemento("div", "admin-encomenda-dados-info-grupo");
+        grupoInfo.append(colunaCliente, colunaContacto);
+
+        const grupoConteudo = criarElemento("div", "admin-encomenda-dados-conteudo");
+        grupoConteudo.append(grupoInfo, colunaNotas);
+
         controloNotas = criarSecaoNotasInternasEncomenda(encomenda, { compacto: true, semBotao: true });
         colunaNotas.appendChild(controloNotas.elemento);
 
@@ -1303,7 +1309,7 @@ window.AdminEncomendaVista = (function () {
             apagarEncomenda(encomenda, apagar);
         });
         colunaAcoes.append(apagar, statusGravar);
-        dados.append(colunaCliente, colunaContacto, colunaNotas, colunaAcoes);
+        dados.append(grupoConteudo, colunaAcoes);
 
         const produtos = criarElemento("div", "admin-encomenda-produtos");
         produtos.appendChild(criarElemento("h3", "", "Produtos"));
