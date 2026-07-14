@@ -462,8 +462,13 @@ body.pagina-encomendas-admin{
 
         .admin-encomenda-dados{
             display:flex;
-            gap:4px 22px;
-            align-items:flex-start;
+            gap:16px 20px;
+            align-items:stretch;
+        }
+
+        .admin-encomenda-dados-info{
+            flex:0 0 auto;
+            min-width:min(100%, 280px);
         }
 
         .admin-encomenda-dados-esquerda,
@@ -481,7 +486,55 @@ body.pagina-encomendas-admin{
         .admin-encomenda-dados-notas{
             flex:1 1 auto;
             min-width:0;
+            align-self:stretch;
+            display:flex;
+        }
+
+        .admin-encomenda-dados-notas .admin-encomenda-notas-cabecalho{
+            flex:1 1 auto;
+            display:flex;
+            min-height:0;
+        }
+
+        .admin-encomenda-dados-acoes{
+            flex:0 0 112px;
+            display:flex;
+            flex-direction:column;
+            gap:8px;
             align-self:flex-start;
+        }
+
+        .admin-encomenda-dados-acoes .wallapop-botao,
+        .admin-encomenda-dados-acoes .admin-encomenda-editar{
+            width:100%;
+            min-height:36px;
+            height:36px;
+            padding:8px 12px;
+            box-sizing:border-box;
+            display:inline-flex;
+            align-items:center;
+            justify-content:center;
+            text-align:center;
+            text-decoration:none;
+            font-size:13px;
+            font-weight:700;
+            line-height:1;
+            white-space:nowrap;
+        }
+
+        .admin-encomenda-dados-acoes .admin-encomenda-gravar{
+            font-size:14px;
+        }
+
+        .admin-encomenda-gravar-status{
+            margin:0;
+            text-align:center;
+            font-size:11px;
+            line-height:1.3;
+        }
+
+        .admin-encomenda-gravar-status:empty{
+            display:none;
         }
 
         .admin-encomenda-notas-cabecalho{
@@ -504,53 +557,22 @@ body.pagina-encomendas-admin{
             flex:1 1 auto;
             width:100%;
             min-width:0;
-            min-height:56px;
-            height:56px;
+            min-height:132px;
+            height:100%;
             margin:0;
             resize:vertical;
             box-sizing:border-box;
-            padding:6px 8px;
+            padding:8px 10px;
             border:1px solid #444;
             border-radius:5px;
             background:#222;
             color:#fff;
             font:inherit;
-            line-height:1.3;
-            vertical-align:bottom;
+            line-height:1.35;
             display:block;
         }
 
         .admin-encomenda-gravar-linha{
-            margin-top:12px;
-            display:flex;
-            align-items:center;
-            justify-content:flex-end;
-            gap:12px;
-            flex-wrap:wrap;
-        }
-
-        .admin-encomenda-gravar-linha .wallapop-botao-destaque{
-            min-height:36px;
-            height:36px;
-            padding:8px 18px;
-            font-size:13px;
-            font-weight:700;
-            line-height:1;
-            box-sizing:border-box;
-            display:inline-flex;
-            align-items:center;
-            justify-content:center;
-            white-space:nowrap;
-        }
-
-        .admin-encomenda-gravar-linha .admin-encomenda-gestao-status{
-            margin:0;
-            flex:1 1 auto;
-            min-width:0;
-            text-align:right;
-        }
-
-        .admin-encomenda-gravar-linha .admin-encomenda-gestao-status:empty{
             display:none;
         }
 
@@ -641,8 +663,8 @@ body.pagina-encomendas-admin{
         }
 
         .admin-encomenda-produtos{
-            margin-top:8px;
-            padding-top:10px;
+            margin-top:14px;
+            padding-top:14px;
             border-top:1px solid #333;
         }
 
@@ -653,7 +675,7 @@ body.pagina-encomendas-admin{
         }
 
         .admin-encomenda-gestao{
-            margin-top:18px;
+            margin-top:14px;
             padding-top:14px;
             border-top:1px solid #333;
             display:flex;
@@ -1087,11 +1109,35 @@ body.pagina-encomendas-admin{
                 flex-direction:column;
             }
 
+            .admin-encomenda-dados-info,
             .admin-encomenda-dados-esquerda,
             .admin-encomenda-dados-direita,
-            .admin-encomenda-dados-notas{
+            .admin-encomenda-dados-notas,
+            .admin-encomenda-dados-acoes{
                 flex:1 1 auto;
                 width:100%;
+            }
+
+            .admin-encomenda-dados-acoes{
+                flex-direction:row;
+                flex-wrap:wrap;
+                align-self:stretch;
+            }
+
+            .admin-encomenda-dados-acoes .wallapop-botao,
+            .admin-encomenda-dados-acoes .admin-encomenda-editar{
+                flex:1 1 100px;
+                width:auto;
+            }
+
+            .admin-encomenda-gravar-status{
+                flex:1 1 100%;
+                text-align:left;
+            }
+
+            .admin-encomenda-notas-cabecalho textarea{
+                min-height:88px;
+                height:auto;
             }
             .admin-encomenda-produto{
                 grid-template-columns:36px minmax(0, 1fr) 52px 76px;

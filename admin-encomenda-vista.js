@@ -1244,16 +1244,13 @@ window.AdminEncomendaVista = (function () {
         }
 
         const dados = criarElemento("div", "admin-encomenda-dados");
-        const colunaEsquerda = criarElemento("div", "admin-encomenda-dados-coluna admin-encomenda-dados-esquerda");
-        const colunaDireita = criarElemento("div", "admin-encomenda-dados-coluna admin-encomenda-dados-direita");
+        const colunaInfo = criarElemento("div", "admin-encomenda-dados-coluna admin-encomenda-dados-info");
         const colunaNotas = criarElemento("div", "admin-encomenda-dados-coluna admin-encomenda-dados-notas");
+        const colunaAcoes = criarElemento("div", "admin-encomenda-dados-coluna admin-encomenda-dados-acoes");
 
-        colunaEsquerda.append(
+        colunaInfo.append(
             criarLinhaDetalhe("Nome", encomenda.nome_cliente),
-            criarLinhaDetalheMorada(encomenda)
-        );
-
-        colunaDireita.append(
+            criarLinhaDetalheMorada(encomenda),
             criarLinhaDetalhe("E-mail", encomenda.email_cliente),
             criarLinhaDetalhe("Telemóvel", encomenda.telefone_cliente),
             criarLinhaDetalhe("Envio", encomenda.metodo_envio_nome || encomenda.metodo_envio),
@@ -1262,15 +1259,44 @@ window.AdminEncomendaVista = (function () {
         );
 
         if (encomenda.referencia_externa) {
-            colunaDireita.appendChild(criarLinhaDetalhe("Referência externa", encomenda.referencia_externa));
+            colunaInfo.appendChild(criarLinhaDetalhe("Referência externa", encomenda.referencia_externa));
         }
         if (encomenda.stock_reposto) {
-            colunaDireita.appendChild(criarLinhaDetalhe("Stock", "Reposto após cancelamento"));
+            colunaInfo.appendChild(criarLinhaDetalhe("Stock", "Reposto após cancelamento"));
         }
 
         controloNotas = criarSecaoNotasInternasEncomenda(encomenda, { compacto: true, semBotao: true });
         colunaNotas.appendChild(controloNotas.elemento);
-        dados.append(colunaEsquerda, colunaDireita, colunaNotas);
+
+        gravarTudo = criarElemento("button", "wallapop-botao wallapop-botao-destaque admin-encomenda-gravar", "Gravar");
+        gravarTudo.type = "button";
+        gravarTudo.addEventListener("click", evento => {
+            evento.stopPropagation();
+            gravarAlteracoesPendentes();
+        });
+        statusGravar = criarElemento("p", "admin-encomenda-gestao-status admin-encomenda-gravar-status");
+
+        const origem = normalizar(encomenda.origem);
+        const plataformaExterna = ["wallapop", "olx", "todocoleccion"].includes(origem);
+        const podeEditar = plataformaExterna
+            && estadoNormalizado(encomenda.estado) !== "Cancelado"
+            && encomenda.codigo_encomenda;
+
+        colunaAcoes.appendChild(gravarTudo);
+        if (podeEditar) {
+            const editar = criarElemento("a", "wallapop-botao admin-encomenda-editar", "Editar");
+            editar.href = `plataforma.html?editar=${encodeURIComponent(encomenda.codigo_encomenda)}`;
+            editar.addEventListener("click", evento => evento.stopPropagation());
+            colunaAcoes.appendChild(editar);
+        }
+        const apagar = criarElemento("button", "wallapop-botao admin-encomenda-apagar", "Apagar");
+        apagar.type = "button";
+        apagar.addEventListener("click", evento => {
+            evento.stopPropagation();
+            apagarEncomenda(encomenda, apagar);
+        });
+        colunaAcoes.append(apagar, statusGravar);
+        dados.append(colunaInfo, colunaNotas, colunaAcoes);
 
         const produtos = criarElemento("div", "admin-encomenda-produtos");
         produtos.appendChild(criarElemento("h3", "", "Produtos"));
@@ -1316,39 +1342,7 @@ window.AdminEncomendaVista = (function () {
         gestaoEncomenda = criarGestaoEncomenda(encomenda);
         gestaoLinha.append(colunaEstado, gestaoEncomenda);
 
-        const gravarLinha = criarElemento("div", "admin-encomenda-gravar-linha");
-        gravarTudo = criarElemento("button", "wallapop-botao wallapop-botao-destaque", "Gravar");
-        gravarTudo.type = "button";
-        gravarTudo.addEventListener("click", evento => {
-            evento.stopPropagation();
-            gravarAlteracoesPendentes();
-        });
-        statusGravar = criarElemento("p", "admin-encomenda-gestao-status");
-        gravarLinha.append(gravarTudo, statusGravar);
-
-        const acoes = criarElemento("div", "admin-encomenda-acoes");
-        const copiar = criarElemento("button", "wallapop-botao", "Copiar dados");
-        copiar.type = "button";
-        copiar.addEventListener("click", () => copiarEncomenda(encomenda));
-        const botoes = criarElemento("div", "admin-encomenda-botoes");
-        const origem = normalizar(encomenda.origem);
-        const plataformaExterna = ["wallapop", "olx", "todocoleccion"].includes(origem);
-        const podeEditar = plataformaExterna
-            && estadoNormalizado(encomenda.estado) !== "Cancelado"
-            && encomenda.codigo_encomenda;
-        if (podeEditar) {
-            const editar = criarElemento("a", "wallapop-botao admin-encomenda-editar", "Editar encomenda");
-            editar.href = `plataforma.html?editar=${encodeURIComponent(encomenda.codigo_encomenda)}`;
-            botoes.appendChild(editar);
-        }
-        const apagar = criarElemento("button", "wallapop-botao admin-encomenda-apagar", "Apagar encomenda");
-        apagar.type = "button";
-        apagar.addEventListener("click", () => apagarEncomenda(encomenda, apagar));
-        botoes.appendChild(copiar);
-        botoes.appendChild(apagar);
-        acoes.appendChild(botoes);
-
-        detalhes.append(dados, produtos, gestaoLinha, gravarLinha, acoes);
+        detalhes.append(dados, gestaoLinha, produtos);
         card.append(cabecalho, detalhes);
         if (modoModal) gestaoEncomenda.carregarAnexos?.();
         return card;
