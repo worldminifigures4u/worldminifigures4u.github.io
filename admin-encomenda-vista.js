@@ -399,19 +399,21 @@ window.AdminEncomendaVista = (function () {
 
         async function guardarNotasInternas() {
             guardarNotas.disabled = true;
-            statusNotas.textContent = "A guardar...";
+            if (!compacto) statusNotas.textContent = "A guardar...";
             const { data, error } = await obterClient().rpc("guardar_notas_encomenda_admin", {
                 p_encomenda_id: String(encomenda.id),
                 p_notas: notas.value
             });
             guardarNotas.disabled = false;
             if (error || data?.sucesso === false) {
-                statusNotas.textContent = "Erro ao guardar: " + (error?.message || data?.erro || "sem detalhe");
+                const mensagem = "Erro ao guardar: " + (error?.message || data?.erro || "sem detalhe");
+                if (compacto) hooks.definirStatus(mensagem, true);
+                else statusNotas.textContent = mensagem;
                 return false;
             }
             valorGuardado = notas.value;
             encomenda.notas_internas = notas.value;
-            statusNotas.textContent = "Notas guardadas.";
+            if (!compacto) statusNotas.textContent = "";
             return true;
         }
 
@@ -423,7 +425,7 @@ window.AdminEncomendaVista = (function () {
                 const gravar = await perguntarGravarNotasAlteradas();
                 if (gravar) return guardarNotasInternas();
                 notas.value = valorGuardado;
-                statusNotas.textContent = "";
+                if (!compacto) statusNotas.textContent = "";
                 return true;
             })();
 
@@ -455,7 +457,7 @@ window.AdminEncomendaVista = (function () {
         if (compacto) {
             const linhaNotas = criarElemento("div", "admin-encomenda-notas-linha");
             linhaNotas.append(notas, guardarNotas);
-            notasSecao.append(linhaNotas, statusNotas);
+            notasSecao.appendChild(linhaNotas);
         } else {
             notasSecao.append(notas, guardarNotas, statusNotas);
         }
