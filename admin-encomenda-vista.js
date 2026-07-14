@@ -1357,7 +1357,6 @@ window.AdminEncomendaVista = (function () {
         dados.append(grupoConteudo, colunaAcoes);
 
         const produtos = criarElemento("div", "admin-encomenda-produtos");
-        produtos.appendChild(criarElemento("h3", "", "Produtos"));
         const lista = criarElemento("div", "admin-encomenda-produtos-lista");
         obterProdutos(encomenda).forEach(item => {
             const linhaProduto = criarElemento("div", "admin-encomenda-produto");
