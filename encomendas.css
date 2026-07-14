@@ -464,7 +464,7 @@ body.pagina-encomendas-admin{
 
         .admin-encomenda-dados{
             display:grid;
-            grid-template-columns:minmax(0, 1.15fr) minmax(0, 0.85fr);
+            grid-template-columns:minmax(0, 0.95fr) minmax(0, 0.85fr) minmax(0, 1.2fr);
             gap:8px 22px;
             align-items:start;
         }
@@ -474,6 +474,41 @@ body.pagina-encomendas-admin{
             flex-direction:column;
             gap:8px;
             min-width:0;
+        }
+
+        .admin-encomenda-dados-notas{
+            min-height:100%;
+        }
+
+        .admin-encomenda-notas-cabecalho{
+            display:flex;
+            flex-direction:column;
+            min-width:0;
+            height:100%;
+        }
+
+        .admin-encomenda-notas-cabecalho h3{
+            margin:0 0 8px;
+            color:var(--cor-texto-principal, #fff);
+            font-size:13px;
+        }
+
+        .admin-encomenda-notas-cabecalho textarea{
+            flex:1 1 auto;
+            min-height:118px;
+            margin-bottom:8px;
+        }
+
+        .admin-encomenda-notas-cabecalho .wallapop-botao-destaque{
+            align-self:flex-start;
+            min-height:32px;
+            height:32px;
+            padding:6px 12px;
+            font-size:12px;
+        }
+
+        .admin-encomenda-notas-cabecalho .admin-encomenda-gestao-status{
+            margin:6px 0 0;
         }
 
         .admin-encomenda-detalhe-linha{
@@ -508,9 +543,6 @@ body.pagina-encomendas-admin{
             margin-top:18px;
             padding-top:14px;
             border-top:1px solid #333;
-            display:grid;
-            grid-template-columns:1fr 1fr;
-            gap:18px;
         }
 
         .admin-encomenda-gestao h3{
@@ -835,6 +867,10 @@ body.pagina-encomendas-admin{
             .admin-encomenda-dados{
                 grid-template-columns:1fr;
             }
+
+            .admin-encomenda-dados-notas{
+                margin-top:4px;
+            }
             .admin-encomenda-produto{
                 grid-template-columns:36px minmax(0, 1fr) 52px 76px;
             }
@@ -847,7 +883,7 @@ body.pagina-encomendas-admin{
                 flex-direction:column;
             }
             .admin-encomenda-gestao{
-                grid-template-columns:1fr;
+                margin-top:14px;
             }
             .admin-encomenda-anexos-upload{
                 flex-direction:column;

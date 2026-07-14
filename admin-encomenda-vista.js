@@ -318,17 +318,20 @@ window.AdminEncomendaVista = (function () {
         }
     }
 
-    function criarGestaoEncomenda(encomenda) {
-        const painel = criarElemento("div", "admin-encomenda-gestao");
-        const notasSecao = criarElemento("section", "admin-encomenda-notas");
-        notasSecao.appendChild(criarElemento("h3", "", "Notas internas da encomenda"));
+    function criarSecaoNotasInternasEncomenda(encomenda, opcoes = {}) {
+        const compacto = opcoes.compacto === true;
+        const notasSecao = criarElemento("section", `admin-encomenda-notas${compacto ? " admin-encomenda-notas-cabecalho" : ""}`);
+        notasSecao.appendChild(criarElemento("h3", "", "Notas internas"));
         const notas = document.createElement("textarea");
-        notas.rows = 4;
+        notas.rows = compacto ? 5 : 4;
         notas.maxLength = 10000;
         notas.value = encomenda.notas_internas || "";
         notas.placeholder = "Pormenores de preparação visíveis apenas ao administrador.";
+        notas.addEventListener("click", evento => evento.stopPropagation());
+        notas.addEventListener("keydown", evento => evento.stopPropagation());
         const guardarNotas = criarElemento("button", "wallapop-botao wallapop-botao-destaque", "Guardar notas");
         guardarNotas.type = "button";
+        guardarNotas.addEventListener("click", evento => evento.stopPropagation());
         const statusNotas = criarElemento("p", "admin-encomenda-gestao-status");
         guardarNotas.addEventListener("click", async () => {
             guardarNotas.disabled = true;
@@ -346,7 +349,11 @@ window.AdminEncomendaVista = (function () {
             statusNotas.textContent = "Notas guardadas.";
         });
         notasSecao.append(notas, guardarNotas, statusNotas);
+        return notasSecao;
+    }
 
+    function criarGestaoEncomenda(encomenda) {
+        const painel = criarElemento("div", "admin-encomenda-gestao");
         const anexosSecao = criarElemento("section", "admin-encomenda-anexos");
         anexosSecao.appendChild(criarElemento("h3", "", "Anexos"));
         const lista = criarElemento("div", "admin-encomenda-anexos-lista");
@@ -433,7 +440,7 @@ window.AdminEncomendaVista = (function () {
             }
             await carregarAnexos(encomenda, lista, statusAnexos);
         };
-        painel.append(notasSecao, anexosSecao);
+        painel.appendChild(anexosSecao);
         return painel;
     }
 
@@ -921,6 +928,7 @@ window.AdminEncomendaVista = (function () {
         const dados = criarElemento("div", "admin-encomenda-dados");
         const colunaEsquerda = criarElemento("div", "admin-encomenda-dados-coluna admin-encomenda-dados-esquerda");
         const colunaDireita = criarElemento("div", "admin-encomenda-dados-coluna admin-encomenda-dados-direita");
+        const colunaNotas = criarElemento("div", "admin-encomenda-dados-coluna admin-encomenda-dados-notas");
 
         colunaEsquerda.append(
             criarLinhaDetalhe("Nome", encomenda.nome_cliente),
@@ -942,7 +950,8 @@ window.AdminEncomendaVista = (function () {
             colunaDireita.appendChild(criarLinhaDetalhe("Stock", "Reposto após cancelamento"));
         }
 
-        dados.append(colunaEsquerda, colunaDireita);
+        colunaNotas.appendChild(criarSecaoNotasInternasEncomenda(encomenda, { compacto: true }));
+        dados.append(colunaEsquerda, colunaDireita, colunaNotas);
 
         const produtos = criarElemento("div", "admin-encomenda-produtos");
         produtos.appendChild(criarElemento("h3", "", "Produtos"));
