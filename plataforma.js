@@ -352,11 +352,25 @@ function formatarOrdinalEncomendaPlataforma(numero) {
     return `${valor}.\u00aa encomenda`;
 }
 
-function criarIconeFichaClientePlataforma() {
-    const aviso = document.createElement('span');
-    aviso.className = 'plataforma-cliente-ficha-alerta';
-    aviso.title = 'Ler ficha do cliente antes de preparar a proxima encomenda';
-    aviso.setAttribute('aria-label', 'Ler ficha do cliente antes de preparar a proxima encomenda');
+function formatarDataPlataforma(valor) {
+    if (!valor) return '\u2014';
+    const data = new Date(valor);
+    if (Number.isNaN(data.getTime())) return '\u2014';
+    return new Intl.DateTimeFormat('pt-PT', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+    }).format(data);
+}
+
+function criarBotaoAbrirFichaClientePlataforma() {
+    const botao = document.createElement('button');
+    botao.type = 'button';
+    botao.className = 'plataforma-cliente-ficha-abrir';
+    botao.title = 'Abrir ficha do cliente';
+    botao.setAttribute('aria-label', 'Abrir ficha do cliente');
 
     const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
     svg.classList.add('plataforma-cliente-ficha-icone');
@@ -375,8 +389,17 @@ function criarIconeFichaClientePlataforma() {
         svg.appendChild(path);
     });
 
-    aviso.appendChild(svg);
-    return aviso;
+    botao.appendChild(svg);
+    return botao;
+}
+
+function abrirFichaClientePlataformaModal() {
+    const clienteId = fichaClientePlataformaAtual?.cliente?.id;
+    if (!clienteId) {
+        definirStatusWallapop('Sem ficha de cliente para abrir.', true);
+        return;
+    }
+    window.AdminFichaCliente?.abrirPorId(clienteId);
 }
 
 function renderizarFichaClientePlataforma(dados) {
@@ -392,8 +415,15 @@ function renderizarFichaClientePlataforma(dados) {
     fichaClientePlataformaAtual = dados;
 
     const cliente = dados.cliente || {};
-    const linha = document.createElement('div');
+    const linha = document.createElement('button');
+    linha.type = 'button';
     linha.className = 'plataforma-cliente-ficha-linha';
+    if (cliente.id) {
+        linha.title = 'Abrir ficha do cliente';
+        linha.addEventListener('click', abrirFichaClientePlataformaModal);
+    } else {
+        linha.disabled = true;
+    }
 
     const nome = document.createElement('span');
     nome.className = 'plataforma-cliente-ficha-nome';
@@ -410,8 +440,14 @@ function renderizarFichaClientePlataforma(dados) {
     );
     direita.appendChild(encomendas);
 
-    if (cliente.tem_aviso) {
-        direita.appendChild(criarIconeFichaClientePlataforma());
+    if (cliente.id) {
+        const botaoFicha = criarBotaoAbrirFichaClientePlataforma();
+        botaoFicha.addEventListener('click', (evento) => {
+            evento.stopPropagation();
+            abrirFichaClientePlataformaModal();
+        });
+        if (cliente.tem_aviso) botaoFicha.classList.add('plataforma-cliente-ficha-abrir-aviso');
+        direita.appendChild(botaoFicha);
     }
 
     linha.appendChild(direita);
@@ -2547,6 +2583,12 @@ async function iniciarWallapopAdmin() {
         }
 
         mostrarNavegacaoAdminValidada();
+        window.AdminFichaCliente?.configurar({
+            client: wallapopClient,
+            formatarEuro: formatarEuroWallapop,
+            formatarData: formatarDataPlataforma
+        });
+        window.AdminFichaCliente?.initEventos();
         await carregarCatalogoWallapop();
         bloqueio.hidden = true;
         document.getElementById('wallapop-aplicacao').hidden = false;

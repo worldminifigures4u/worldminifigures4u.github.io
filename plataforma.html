@@ -17,7 +17,9 @@
     <link rel="icon" type="image/webp" href="favicon-32.webp?v=20260711-leve" sizes="32x32">
     <link rel="stylesheet" href="styles.css?v=20260712-pesquisa-sem-zoom">
     <link rel="stylesheet" href="styles-admin.css?v=20260713-r25">
-    <link rel="stylesheet" href="plataforma.css?v=20260712-lista-sem-somar">
+    <link rel="stylesheet" href="plataforma.css?v=20260714-ficha-cliente">
+    <link rel="stylesheet" href="admin-cliente.css?v=20260714-ficha-cliente">
+    <link rel="stylesheet" href="morada-formato.css?v=20260714-ficha-cliente">
     <link rel="stylesheet" href="styles-tema.css?v=20260713-r25" media="print" data-async-css>
     <noscript><link rel="stylesheet" href="styles-tema.css?v=20260713-r25"></noscript>
     <script src="async-css.js?v=20260713-r25"></script>
@@ -187,6 +189,14 @@
             </div>
         </section>
     </main>
+    <div class="admin-cliente-modal" id="admin-cliente-modal" hidden role="dialog" aria-modal="true" aria-labelledby="admin-cliente-titulo">
+        <div class="admin-cliente-dialogo">
+            <button type="button" class="admin-cliente-fechar" id="admin-cliente-fechar" aria-label="Fechar ficha do cliente">&times;</button>
+            <h2 id="admin-cliente-titulo">Ficha de cliente</h2>
+            <div id="admin-cliente-conteudo"></div>
+            <p class="wallapop-status" id="admin-cliente-status" aria-live="polite"></p>
+        </div>
+    </div>
     <footer class="rodape-site">
         <div class="rodape-conteudo">
             <div class="rodape-frase">Figures Planet &copy; 2026 &middot; Minifiguras, colecion&aacute;veis e pe&ccedil;as especiais</div>
@@ -199,8 +209,10 @@
         </div>
     </footer>
 <script src="supabase-cdn.js?v=20260711-leve" defer></script>
-<script src="app-config.js?v=20260713-r25" defer></script>
-    <script src="plataforma.js?v=20260713-r25" defer></script>
+<script src="app-config.js?v=20260714-ficha-cliente" defer></script>
+<script src="morada-formato.js?v=20260714-ficha-cliente" defer></script>
+<script src="admin-ficha-cliente.js?v=20260714-ficha-cliente" defer></script>
+    <script src="plataforma.js?v=20260714-ficha-cliente" defer></script>
 <script src="inline-listeners-base.js?v=20260713-r25" defer></script>
 <script src="inline-listeners-admin.js?v=20260713-r25" defer></script>
 </body>

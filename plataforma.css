@@ -904,6 +904,67 @@ body.pagina-wallapop{
     justify-content:space-between;
     gap:12px;
     min-height:22px;
+    width:100%;
+    margin:0;
+    padding:0;
+    border:0;
+    background:transparent;
+    color:inherit;
+    font:inherit;
+    text-align:left;
+    cursor:pointer;
+}
+
+.plataforma-cliente-ficha-linha:disabled{
+    cursor:default;
+}
+
+.plataforma-cliente-ficha-linha:not(:disabled):hover{
+    background:rgba(255, 255, 255, 0.03);
+    border-radius:6px;
+}
+
+.plataforma-cliente-ficha-abrir{
+    width:28px;
+    height:24px;
+    flex:0 0 auto;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    padding:0;
+    border:1px solid rgba(245, 166, 35, 0.35);
+    border-radius:999px;
+    background:rgba(245, 166, 35, 0.12);
+    cursor:pointer;
+}
+
+.plataforma-cliente-ficha-abrir-aviso{
+    background:rgba(245, 166, 35, 0.22);
+    border-color:rgba(245, 166, 35, 0.65);
+}
+
+.plataforma-cliente-ficha-abrir:hover,
+.plataforma-cliente-ficha-abrir:focus-visible{
+    background:rgba(245, 166, 35, 0.2);
+    border-color:rgba(245, 166, 35, 0.55);
+    outline:none;
+}
+
+.plataforma-cliente-ficha-alerta{
+    width:28px;
+    height:24px;
+    flex:0 0 auto;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    background:rgba(245, 166, 35, 0.12);
+    border:1px solid rgba(245, 166, 35, 0.35);
+    border-radius:999px;
+}
+
+.plataforma-cliente-ficha-alerta:hover{
+    background:rgba(245, 166, 35, 0.2);
+    border-color:rgba(245, 166, 35, 0.55);
 }
 
 .plataforma-cliente-ficha-nome{
@@ -933,23 +994,6 @@ body.pagina-wallapop{
     font-weight:500;
     line-height:1.2;
     white-space:nowrap;
-}
-
-.plataforma-cliente-ficha-alerta{
-    width:28px;
-    height:24px;
-    flex:0 0 auto;
-    display:inline-flex;
-    align-items:center;
-    justify-content:center;
-    background:rgba(245, 166, 35, 0.12);
-    border:1px solid rgba(245, 166, 35, 0.35);
-    border-radius:999px;
-}
-
-.plataforma-cliente-ficha-alerta:hover{
-    background:rgba(245, 166, 35, 0.2);
-    border-color:rgba(245, 166, 35, 0.55);
 }
 
 .plataforma-cliente-ficha-icone{
