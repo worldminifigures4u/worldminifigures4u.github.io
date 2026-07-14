@@ -1324,12 +1324,13 @@ window.AdminEncomendaVista = (function () {
             && estadoNormalizado(encomenda.estado) !== "Cancelado"
             && encomenda.codigo_encomenda;
 
-        colunaAcoes.appendChild(gravarTudo);
+        const botoesAcoes = criarElemento("div", "admin-encomenda-dados-botoes");
+        botoesAcoes.appendChild(gravarTudo);
         if (podeEditar) {
             const editar = criarElemento("a", "wallapop-botao admin-encomenda-editar", "Editar");
             editar.href = `plataforma.html?editar=${encodeURIComponent(encomenda.codigo_encomenda)}`;
             editar.addEventListener("click", evento => evento.stopPropagation());
-            colunaAcoes.appendChild(editar);
+            botoesAcoes.appendChild(editar);
         }
         const apagar = criarElemento("button", "wallapop-botao admin-encomenda-apagar", "Apagar");
         apagar.type = "button";
@@ -1337,7 +1338,8 @@ window.AdminEncomendaVista = (function () {
             evento.stopPropagation();
             apagarEncomenda(encomenda, apagar);
         });
-        colunaAcoes.append(apagar, statusGravar);
+        botoesAcoes.appendChild(apagar);
+        colunaAcoes.append(botoesAcoes, statusGravar);
         dados.append(grupoConteudo, colunaAcoes);
 
         const produtos = criarElemento("div", "admin-encomenda-produtos");

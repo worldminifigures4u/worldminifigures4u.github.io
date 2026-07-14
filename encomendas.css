@@ -528,8 +528,18 @@ body.pagina-encomendas-admin{
             flex:0 0 112px;
             display:flex;
             flex-direction:column;
+            gap:6px;
+            align-self:stretch;
+            min-height:0;
+        }
+
+        .admin-encomenda-dados-botoes{
+            flex:1 1 auto;
+            display:flex;
+            flex-direction:column;
+            justify-content:space-between;
             gap:8px;
-            align-self:flex-start;
+            min-height:0;
         }
 
         .admin-encomenda-dados-acoes .wallapop-botao,
@@ -1273,9 +1283,15 @@ body.pagina-encomendas-admin{
             }
 
             .admin-encomenda-dados-acoes{
+                flex-direction:column;
+                flex-wrap:nowrap;
+                align-self:stretch;
+            }
+
+            .admin-encomenda-dados-botoes{
                 flex-direction:row;
                 flex-wrap:wrap;
-                align-self:stretch;
+                justify-content:flex-start;
             }
 
             .admin-encomenda-dados-acoes .wallapop-botao,
