@@ -659,7 +659,7 @@ body.pagina-encomendas-admin{
             gap:8px;
             min-height:52px;
             padding:8px 10px;
-            border:1px dashed #555;
+            border:0;
             border-radius:8px;
             background:#181818;
             box-sizing:border-box;
