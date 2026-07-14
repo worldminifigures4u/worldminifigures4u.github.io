@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         Wallapop etiqueta - PDF
 // @namespace    figuresplanet
-// @version      5.0
-// @description  Guarda etiqueta Wallapop em PDF A4 com nome do cliente no ficheiro
+// @version      5.1
+// @description  Guarda etiqueta Wallapop em PDF A4 com nome do cliente no ficheiro (imagem ou PDF)
 // @match        https://*.wallapop.com/*
 // @match        https://wallapop-delivery-labels.wallapop.com/*
 // @run-at       document-idle
@@ -109,19 +109,37 @@
     return { largura, altura };
   }
 
-  function obterUrlImagem() {
-    if (/\.(png|jpg|jpeg|webp)(\?|$)/i.test(location.pathname)) {
-      return location.href.split('#')[0];
+  function detetarTipoBytes(bytes) {
+    const u8 = new Uint8Array(bytes);
+    if (u8.length >= 4 && u8[0] === 0x25 && u8[1] === 0x50 && u8[2] === 0x44 && u8[3] === 0x46) {
+      return 'pdf';
     }
-    const img = document.querySelector('img');
-    return img ? img.src : location.href;
+    return 'imagem';
   }
 
-  async function obterBytesImagem() {
-    const url = obterUrlImagem();
+  function detetarTipoEtiqueta(url, contentType, bytes) {
+    if (/\.pdf(\?|$)/i.test(url) || /application\/pdf/i.test(contentType || '')) return 'pdf';
+    if (/\.(png|jpg|jpeg|webp)(\?|$)/i.test(url) || /^image\//i.test(contentType || '')) return 'imagem';
+    return detetarTipoBytes(bytes);
+  }
+
+  function obterUrlEtiqueta() {
+    if (/\.(png|jpg|jpeg|webp|pdf)(\?|$)/i.test(location.pathname)) {
+      return location.href.split('#')[0];
+    }
+    const embed = document.querySelector('embed[type="application/pdf"], object[type="application/pdf"]');
+    if (embed?.src) return embed.src.split('#')[0];
+    const img = document.querySelector('img');
+    return img ? img.src.split('#')[0] : location.href.split('#')[0];
+  }
+
+  async function obterBytesEtiqueta() {
+    const url = obterUrlEtiqueta();
     const res = await fetch(url, { credentials: 'include' });
     if (!res.ok) throw new Error('fetch');
-    return { bytes: await res.arrayBuffer(), url };
+    const bytes = await res.arrayBuffer();
+    const contentType = res.headers.get('content-type') || '';
+    return { bytes, url, tipo: detetarTipoEtiqueta(url, contentType, bytes) };
   }
 
   async function bytesComFundoBranco(bytes) {
@@ -159,6 +177,33 @@
     return pdfDoc.save();
   }
 
+  async function criarPdfAPartirDePdf(pdfBytes) {
+    const { PDFDocument } = PDFLib;
+    const origem = await PDFDocument.load(pdfBytes);
+    const [paginaOrigem] = origem.getPages();
+    if (!paginaOrigem) throw new Error('pdf-sem-paginas');
+
+    const { width: srcW, height: srcH } = paginaOrigem.getSize();
+    const pdfDoc = await PDFDocument.create();
+    const pageW = mmParaPt(A4_LARGURA_MM);
+    const pageH = mmParaPt(A4_ALTURA_MM);
+    const { largura, altura } = calcularTamanhoEtiqueta(pageW, pageH, srcW, srcH);
+    const x = (pageW - largura) / 2;
+    const y = pageH - altura - mmParaPt(MARGEM_TOPO_MM);
+
+    const paginaEmbutida = await pdfDoc.embedPage(paginaOrigem);
+    const page = pdfDoc.addPage([pageW, pageH]);
+    page.drawPage(paginaEmbutida, { x, y, width: largura, height: altura });
+
+    return pdfDoc.save();
+  }
+
+  async function processarEtiqueta(bytes, tipo) {
+    if (tipo === 'pdf') return criarPdfAPartirDePdf(bytes);
+    const pngBytes = await bytesComFundoBranco(bytes);
+    return criarPdf(pngBytes);
+  }
+
   function descarregar(bytes, nome) {
     const blob = new Blob([bytes], { type: 'application/pdf' });
     const url = URL.createObjectURL(blob);
@@ -167,6 +212,14 @@
     a.download = nome;
     a.click();
     setTimeout(() => URL.revokeObjectURL(url), 2000);
+  }
+
+  async function imprimirPdf(bytes) {
+    const blob = new Blob([bytes], { type: 'application/pdf' });
+    const url = URL.createObjectURL(blob);
+    const janela = window.open(url, '_blank');
+    if (!janela) throw new Error('popup');
+    setTimeout(() => URL.revokeObjectURL(url), 60000);
   }
 
   async function imprimirEtiqueta(bytes) {
@@ -212,14 +265,22 @@
     btn.disabled = true;
 
     try {
-      const { bytes } = await obterBytesImagem();
-      const pngBytes = await bytesComFundoBranco(bytes);
-      const pdfBytes = await criarPdf(pngBytes);
+      const { bytes, tipo } = await obterBytesEtiqueta();
+      const pdfBytes = await processarEtiqueta(bytes, tipo);
       descarregar(pdfBytes, obterNomePdf());
     } catch (err) {
       console.error('[Wallapop PDF]', err);
       try {
-        const { bytes } = await obterBytesImagem();
+        const { bytes, tipo } = await obterBytesEtiqueta();
+        if (tipo === 'pdf') {
+          const pdfBytes = await criarPdfAPartirDePdf(bytes).catch(() => null);
+          if (pdfBytes) {
+            descarregar(pdfBytes, obterNomePdf());
+            return;
+          }
+          descarregar(new Uint8Array(bytes), obterNomePdf());
+          return;
+        }
         await imprimirEtiqueta(bytes);
         alert(`PDF automático falhou. Use «Guardar como PDF» na janela que abriu (nome: ${obterNomeEtiqueta()}).`);
       } catch (err2) {
