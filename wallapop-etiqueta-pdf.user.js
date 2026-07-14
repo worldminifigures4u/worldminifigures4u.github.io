@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Wallapop etiqueta - PDF
 // @namespace    figuresplanet
-// @version      5.3
+// @version      5.4
 // @description  Guarda etiqueta Wallapop em PDF A4 com nome do cliente (imagem) ou PDF a 90% (etiqueta CTT)
 // @match        https://*.wallapop.com/*
 // @match        https://wallapop-delivery-labels.wallapop.com/*
@@ -191,8 +191,8 @@
     const pdfDoc = await PDFDocument.create();
     const pageW = mmParaPt(A4_LARGURA_MM);
     const pageH = mmParaPt(A4_ALTURA_MM);
-    const x = (pageW - largura) / 2;
-    const y = (pageH - altura) / 2;
+    const x = 0;
+    const y = pageH - altura;
 
     const paginaEmbutida = await pdfDoc.embedPage(paginaOrigem);
     const page = pdfDoc.addPage([pageW, pageH]);
