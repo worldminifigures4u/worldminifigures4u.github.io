@@ -529,6 +529,7 @@ body.pagina-encomendas-admin{
             grid-template-columns:minmax(0, 1fr) auto;
             gap:8px;
             margin-bottom:10px;
+            align-items:center;
         }
 
         .admin-encomenda-anexos-upload .input-upload-admin{
@@ -543,8 +544,11 @@ body.pagina-encomendas-admin{
 
         .admin-encomenda-anexos-upload .wallapop-botao-destaque{
             min-width:0;
-            padding:8px 14px;
-            white-space:nowrap;
+            padding:6px 12px;
+            font-size:13px;
+            line-height:1.2;
+            align-self:center;
+            height:auto;
         }
 
         .input-upload-admin{
