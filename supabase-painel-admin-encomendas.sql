@@ -103,6 +103,46 @@ from public, anon;
 grant execute on function public.atualizar_prioridade_encomenda_admin(text, boolean)
 to authenticated;
 
+create or replace function public.atualizar_total_encomenda_admin(
+  p_encomenda_id text,
+  p_total numeric
+)
+returns jsonb
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_total numeric;
+begin
+  if coalesce(auth.jwt() ->> 'email', '') <> 'worldminifigures4u@gmail.com' then
+    raise exception 'Acesso reservado ao administrador';
+  end if;
+
+  if p_total is null or p_total < 0 then
+    raise exception 'Total invalido';
+  end if;
+
+  v_total := round(p_total, 2);
+
+  update public.encomendas
+  set total = v_total
+  where id::text = p_encomenda_id;
+
+  if not found then
+    raise exception 'Encomenda nao encontrada';
+  end if;
+
+  return jsonb_build_object('sucesso', true, 'total', v_total);
+end;
+$$;
+
+revoke execute on function public.atualizar_total_encomenda_admin(text, numeric)
+from public, anon;
+
+grant execute on function public.atualizar_total_encomenda_admin(text, numeric)
+to authenticated;
+
 -- Devolve apenas as imagens necessarias ao painel de encomendas. Ao usar uma
 -- funcao administrativa, as fotografias continuam disponiveis mesmo quando o
 -- produto ficou sem stock e deixou de aparecer na vista publica da loja.

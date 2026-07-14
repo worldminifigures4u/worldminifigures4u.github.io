@@ -639,6 +639,81 @@ window.AdminEncomendaVista = (function () {
         return data;
     }
 
+    function parseEuroInput(texto) {
+        const limpo = String(texto || "").replace(/\s/g, "").replace(/€/g, "").replace(",", ".");
+        const valor = Number.parseFloat(limpo);
+        return Number.isFinite(valor) ? Math.round(valor * 100) / 100 : Number.NaN;
+    }
+
+    function formatarEuroInput(valor) {
+        return Number(valor || 0).toFixed(2).replace(".", ",");
+    }
+
+    async function atualizarTotalEncomenda(encomenda, total, input, card) {
+        input.disabled = true;
+        hooks.definirStatus("A guardar total...");
+        try {
+            const { data, error } = await obterClient().rpc("atualizar_total_encomenda_admin", {
+                p_encomenda_id: String(encomenda.id),
+                p_total: total
+            });
+            if (error || data?.sucesso === false) {
+                throw error || new Error(data?.erro || "Não foi possível guardar o total.");
+            }
+            const totalGuardado = Number(data?.total ?? total);
+            sincronizarEncomendaNaLista(encomenda, { total: totalGuardado });
+            input.value = formatarEuroInput(totalGuardado);
+            const valorLinha = card.querySelector(".admin-encomenda-valor-linha");
+            if (valorLinha) valorLinha.textContent = formatarEuro(totalGuardado);
+            atualizarListaAposAlteracaoEncomenda();
+            hooks.definirStatus(`Total da encomenda atualizado para ${formatarEuro(totalGuardado)}.`);
+        } catch (error) {
+            input.value = formatarEuroInput(encomenda.total);
+            hooks.definirStatus(
+                "Erro ao guardar total: " + detalheErro(error)
+                + ". Execute o SQL atualizado do painel de encomendas no Supabase.",
+                true
+            );
+        } finally {
+            input.disabled = false;
+        }
+    }
+
+    function criarLinhaTotalEditavel(encomenda, card) {
+        const linha = criarElemento("div", "admin-encomenda-total-linha");
+        linha.appendChild(criarElemento("span", "admin-encomenda-total-rotulo", "Total:"));
+        const input = document.createElement("input");
+        input.type = "text";
+        input.className = "admin-encomenda-total-input";
+        input.inputMode = "decimal";
+        input.autocomplete = "off";
+        input.spellcheck = false;
+        input.value = formatarEuroInput(encomenda.total);
+        input.title = "Editar valor total da encomenda";
+        input.addEventListener("click", evento => evento.stopPropagation());
+        input.addEventListener("keydown", evento => evento.stopPropagation());
+        input.addEventListener("keydown", evento => {
+            if (evento.key !== "Enter") return;
+            evento.preventDefault();
+            input.blur();
+        });
+        input.addEventListener("blur", () => {
+            const total = parseEuroInput(input.value);
+            if (Number.isNaN(total)) {
+                input.value = formatarEuroInput(encomenda.total);
+                hooks.definirStatus("Total inválido.", true);
+                return;
+            }
+            if (total === Number(encomenda.total)) {
+                input.value = formatarEuroInput(encomenda.total);
+                return;
+            }
+            atualizarTotalEncomenda(encomenda, total, input, card);
+        });
+        linha.appendChild(input);
+        return linha;
+    }
+
     async function atualizarPrioridade(encomenda, prioritaria, checkbox) {
         checkbox.disabled = true;
         hooks.definirStatus("A guardar prioridade...");
@@ -1093,7 +1168,7 @@ window.AdminEncomendaVista = (function () {
             );
             lista.appendChild(linhaProduto);
         });
-        produtos.append(lista, criarElemento("p", "admin-encomenda-total", `Total: ${formatarEuro(encomenda.total)}`));
+        produtos.append(lista, criarLinhaTotalEditavel(encomenda, card));
 
         const acoes = criarElemento("div", "admin-encomenda-acoes");
         const grupoEstado = criarElemento("label", "admin-encomenda-estado-edicao");

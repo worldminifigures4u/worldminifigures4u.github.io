@@ -834,6 +834,44 @@ body.pagina-encomendas-admin{
             object-fit:contain;
         }
 
+        .admin-encomenda-total-linha{
+            margin:12px 0 0;
+            display:flex;
+            justify-content:flex-end;
+            align-items:center;
+            gap:8px;
+        }
+
+        .admin-encomenda-total-rotulo{
+            color:#29b6f6;
+            font-size:18px;
+            font-weight:800;
+        }
+
+        .admin-encomenda-total-input{
+            width:112px;
+            padding:4px 8px;
+            border:1px solid #3a4a55;
+            border-radius:6px;
+            background:#151515;
+            color:#29b6f6;
+            font-size:18px;
+            font-weight:800;
+            text-align:right;
+            font:inherit;
+            box-sizing:border-box;
+        }
+
+        .admin-encomenda-total-input:focus{
+            outline:none;
+            border-color:#29b6f6;
+            box-shadow:0 0 0 2px rgba(41, 182, 246, 0.2);
+        }
+
+        .admin-encomenda-total-input:disabled{
+            opacity:.7;
+        }
+
         .admin-encomenda-total{
             margin:12px 0 0;
             color:#29b6f6;
