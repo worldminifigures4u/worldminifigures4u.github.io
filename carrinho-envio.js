@@ -71,8 +71,13 @@ function obterAvisoMetodoEnvioSelecionado(metodoId) {
     return '';
 }
 
-function obterRotuloOpcaoEnvio(opcao) {
+function mostrarBadgeRecomendadoEnvio(opcoes) {
+    return opcoes.some(opcao => !metodoEnvioRegistado(opcao.id));
+}
+
+function obterRotuloOpcaoEnvio(opcao, opcoesVisiveis) {
     const preco = formatarEuro(valorPortesComIva(opcao.valor)) + ' €';
+    const recomendado = mostrarBadgeRecomendadoEnvio(opcoesVisiveis) && metodoEnvioRegistado(opcao.id);
 
     if (opcao.id === 'entrega_tomar') {
         return { nome: 'Entrega em mão em Tomar', preco };
@@ -84,16 +89,16 @@ function obterRotuloOpcaoEnvio(opcao) {
         return { nome: 'CTT Azul', preco, subtitulo: 'Sem rastreamento' };
     }
     if (opcao.id === 'ctt_registado') {
-        return { nome: 'CTT Registado', preco, badge: 'Recomendado' };
+        return { nome: 'CTT Registado', preco, badge: recomendado ? 'Recomendado' : '' };
     }
     if (opcao.id === 'inpost_registado') {
-        return { nome: 'InPost Registado', preco, badge: 'Recomendado' };
+        return { nome: 'InPost Registado', preco, badge: recomendado ? 'Recomendado' : '' };
     }
     return { nome: opcao.nome, preco };
 }
 
-function criarOpcaoEnvioCheckout(opcao, selecionado) {
-    const rotulo = obterRotuloOpcaoEnvio(opcao);
+function criarOpcaoEnvioCheckout(opcao, selecionado, opcoesVisiveis) {
+    const rotulo = obterRotuloOpcaoEnvio(opcao, opcoesVisiveis);
     const label = document.createElement('label');
     label.className = 'opcao-envio';
 
@@ -234,7 +239,7 @@ function atualizarOpcoesEnvio() {
         : (metodoRegistado?.id || opcoes[0].id);
 
     opcoes.forEach(opcao => {
-        containerMetodos.appendChild(criarOpcaoEnvioCheckout(opcao, opcao.id === metodoSelecionado));
+        containerMetodos.appendChild(criarOpcaoEnvioCheckout(opcao, opcao.id === metodoSelecionado, opcoes));
     });
 
     inputMetodo.value = metodoSelecionado;

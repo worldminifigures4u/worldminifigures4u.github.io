@@ -26,7 +26,7 @@
         if (typeof atualizarOpcoesEnvio === 'function') return Promise.resolve();
         if (!promessaEnvio) {
             promessaEnvio = garantirAppPortes()
-                .then(() => carregarScript('carrinho-envio.js?v=20260713-r25'));
+                .then(() => carregarScript('carrinho-envio.js?v=20260714-r1'));
         }
         return promessaEnvio;
     }
