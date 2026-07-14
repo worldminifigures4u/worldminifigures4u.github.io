@@ -360,6 +360,7 @@ window.AdminEncomendaVista = (function () {
             anexosSecao.appendChild(avisoConcluida);
         } else {
             const upload = criarElemento("div", "admin-encomenda-anexos-upload");
+            const campoFicheiro = criarElemento("div", "admin-encomenda-anexos-ficheiro");
             const input = document.createElement("input");
             input.type = "file";
             input.className = "input-upload-admin";
@@ -406,7 +407,8 @@ window.AdminEncomendaVista = (function () {
                     input.disabled = false;
                 }
             });
-            upload.append(input, enviar);
+            campoFicheiro.appendChild(input);
+            upload.append(campoFicheiro, enviar);
             anexosSecao.appendChild(upload);
         }
         anexosSecao.append(lista, statusAnexos);
