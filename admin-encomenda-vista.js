@@ -406,7 +406,7 @@ window.AdminEncomendaVista = (function () {
         const semBotao = opcoes.semBotao === true;
         const notasSecao = criarElemento("section", `admin-encomenda-notas${compacto ? " admin-encomenda-notas-cabecalho" : ""}`);
         const notas = document.createElement("textarea");
-        notas.rows = compacto ? 2 : 4;
+        notas.rows = compacto ? 1 : 4;
         notas.maxLength = 10000;
         let valorGuardado = encomenda.notas_internas || "";
         notas.value = valorGuardado;
@@ -1100,6 +1100,32 @@ window.AdminEncomendaVista = (function () {
         return linha;
     }
 
+    function ligarAlturaNotasComInfo(card, grupoInfo, controloNotas) {
+        const textarea = controloNotas?.elemento?.querySelector("textarea");
+        if (!grupoInfo || !textarea) return;
+
+        const ajustar = () => {
+            const altura = Math.round(grupoInfo.offsetHeight);
+            if (altura > 0) {
+                textarea.style.height = `${altura}px`;
+                textarea.style.minHeight = `${altura}px`;
+            }
+        };
+
+        requestAnimationFrame(() => requestAnimationFrame(ajustar));
+
+        if (typeof ResizeObserver !== "undefined") {
+            const observador = new ResizeObserver(ajustar);
+            observador.observe(grupoInfo);
+            card._limparAlturaNotas = () => observador.disconnect();
+        } else {
+            window.addEventListener("resize", ajustar);
+            card._limparAlturaNotas = () => window.removeEventListener("resize", ajustar);
+        }
+
+        card._ajustarAlturaNotas = ajustar;
+    }
+
     function criarCardEncomenda(encomenda, opcoes = {}) {
         const modoModal = opcoes.modoModal === true;
         const ocultarCliente = opcoes.ocultarCliente === true;
@@ -1236,7 +1262,10 @@ window.AdminEncomendaVista = (function () {
                 }
                 detalhes.hidden = !detalhes.hidden;
                 card.classList.toggle("aberta", !detalhes.hidden);
-                if (!detalhes.hidden) gestaoEncomenda?.carregarAnexos?.();
+                if (!detalhes.hidden) {
+                    gestaoEncomenda?.carregarAnexos?.();
+                    card._ajustarAlturaNotas?.();
+                }
             };
             cabecalho.addEventListener("click", alternarDetalhes);
             cabecalho.addEventListener("keydown", evento => {
@@ -1355,7 +1384,11 @@ window.AdminEncomendaVista = (function () {
 
         detalhes.append(dados, gestaoLinha, produtos);
         card.append(cabecalho, detalhes);
-        if (modoModal) gestaoEncomenda.carregarAnexos?.();
+        ligarAlturaNotasComInfo(card, grupoInfo, controloNotas);
+        if (modoModal) {
+            gestaoEncomenda.carregarAnexos?.();
+            card._ajustarAlturaNotas?.();
+        }
         return card;
     }
 

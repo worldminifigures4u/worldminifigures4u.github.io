@@ -477,14 +477,13 @@ body.pagina-encomendas-admin{
             gap:16px 20px;
             flex:0 0 auto;
             align-items:flex-start;
-            align-self:stretch;
         }
 
         .admin-encomenda-dados-conteudo{
             display:flex;
             flex:1 1 auto;
             gap:16px 20px;
-            align-items:stretch;
+            align-items:flex-start;
             min-width:0;
         }
 
@@ -516,17 +515,13 @@ body.pagina-encomendas-admin{
         .admin-encomenda-dados-notas{
             flex:1 1 auto;
             min-width:0;
-            align-self:stretch;
-            display:flex;
-            min-height:0;
+            align-self:flex-start;
+            display:block;
         }
 
         .admin-encomenda-dados-notas .admin-encomenda-notas-cabecalho{
-            flex:1 1 auto;
-            display:flex;
+            display:block;
             width:100%;
-            min-height:0;
-            height:100%;
         }
 
         .admin-encomenda-dados-acoes{
@@ -587,11 +582,10 @@ body.pagina-encomendas-admin{
         }
 
         .admin-encomenda-notas-cabecalho textarea{
-            flex:1 1 auto;
             width:100%;
             min-width:0;
             min-height:0;
-            height:100%;
+            height:auto;
             margin:0;
             resize:vertical;
             box-sizing:border-box;
