@@ -1225,7 +1225,6 @@ window.AdminEncomendaVista = (function () {
         let controloNotas = null;
         let controloTotal = null;
         let selectEstado = null;
-        let statusGravar = null;
         let gravarTudo = null;
 
         function temAlteracoesPendentes() {
@@ -1242,16 +1241,11 @@ window.AdminEncomendaVista = (function () {
             gestaoEncomenda?.reverterAnexos?.();
             controloTotal?.reverter?.();
             if (selectEstado) selectEstado.value = selectEstado.dataset.estadoAtual;
-            if (statusGravar) statusGravar.textContent = "";
         }
 
         async function gravarAlteracoesPendentes() {
-            if (!temAlteracoesPendentes()) {
-                if (statusGravar) statusGravar.textContent = "";
-                return true;
-            }
+            if (!temAlteracoesPendentes()) return true;
             if (gravarTudo) gravarTudo.disabled = true;
-            if (statusGravar) statusGravar.textContent = "A guardar...";
             let ok = true;
 
             if (controloNotas?.temAlteracoesPendentes?.()) {
@@ -1268,9 +1262,7 @@ window.AdminEncomendaVista = (function () {
                 if (selectEstado.value !== selectEstado.dataset.estadoAtual) ok = false;
             }
 
-            if (statusGravar) {
-                statusGravar.textContent = ok ? "Alterações guardadas." : "Algumas alterações não foram guardadas.";
-            }
+            if (!ok) hooks.definirStatus("Algumas alterações não foram guardadas.", true);
             if (gravarTudo) gravarTudo.disabled = false;
             return ok;
         }
@@ -1340,8 +1332,6 @@ window.AdminEncomendaVista = (function () {
             evento.stopPropagation();
             gravarAlteracoesPendentes();
         });
-        statusGravar = criarElemento("p", "admin-encomenda-gestao-status admin-encomenda-gravar-status");
-
         const origem = normalizar(encomenda.origem);
         const plataformaExterna = ["wallapop", "olx", "todocoleccion"].includes(origem);
         const podeEditar = plataformaExterna
@@ -1364,9 +1354,7 @@ window.AdminEncomendaVista = (function () {
         });
         botoesAcoes.appendChild(apagar);
         colunaAcoes.appendChild(botoesAcoes);
-        const colunaAcoesWrap = criarElemento("div", "admin-encomenda-dados-acoes-wrap");
-        colunaAcoesWrap.append(colunaAcoes, statusGravar);
-        dados.append(grupoConteudo, colunaAcoesWrap);
+        dados.append(grupoConteudo, colunaAcoes);
 
         const produtos = criarElemento("div", "admin-encomenda-produtos");
         produtos.appendChild(criarElemento("h3", "", "Produtos"));
