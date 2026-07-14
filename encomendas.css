@@ -494,8 +494,9 @@ body.pagina-encomendas-admin{
         }
 
         .admin-encomenda-notas-linha{
-            display:flex;
-            align-items:flex-end;
+            display:grid;
+            grid-template-columns:minmax(0, 1fr) auto;
+            align-items:end;
             gap:10px;
             width:100%;
             min-width:0;
@@ -503,7 +504,7 @@ body.pagina-encomendas-admin{
 
         .admin-encomenda-notas-cabecalho textarea{
             flex:1 1 auto;
-            width:auto;
+            width:100%;
             min-width:0;
             min-height:72px;
             height:72px;
@@ -516,14 +517,21 @@ body.pagina-encomendas-admin{
             background:#222;
             color:#fff;
             font:inherit;
+            vertical-align:bottom;
         }
 
         .admin-encomenda-notas-cabecalho .wallapop-botao-destaque{
             flex:0 0 auto;
+            box-sizing:border-box;
+            margin:0;
             min-height:32px;
             height:32px;
             padding:6px 14px;
             font-size:12px;
+            line-height:1;
+            display:inline-flex;
+            align-items:center;
+            justify-content:center;
         }
 
         .admin-encomenda-notas-cabecalho .admin-encomenda-gestao-status{
@@ -587,6 +595,10 @@ body.pagina-encomendas-admin{
             background:#222;
             color:#fff;
             font:inherit;
+        }
+
+        .admin-encomenda-notas-cabecalho .admin-encomenda-notas-linha textarea{
+            margin:0;
         }
 
         .admin-encomenda-anexos-upload{
