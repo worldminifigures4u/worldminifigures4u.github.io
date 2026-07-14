@@ -471,7 +471,7 @@ window.AdminEncomendaVista = (function () {
 
     function criarGestaoEncomenda(encomenda) {
         const coluna = criarElemento("div", "admin-encomenda-gestao-coluna admin-encomenda-anexos-coluna");
-        const anexosSecao = criarElemento("section", "admin-encomenda-anexos");
+        const anexosSecao = criarElemento("section", "admin-encomenda-anexos admin-encomenda-gestao-secao");
         anexosSecao.appendChild(criarElemento("h3", "", "Anexos"));
         const lista = criarElemento("div", "admin-encomenda-anexos-lista");
         const statusAnexos = criarElemento("p", "admin-encomenda-gestao-status");
@@ -483,9 +483,11 @@ window.AdminEncomendaVista = (function () {
                 "admin-encomenda-anexos-aviso",
                 "Os anexos foram eliminados quando a encomenda foi concluída."
             );
-            anexosSecao.appendChild(avisoConcluida);
+            const caixaAviso = criarElemento("div", "admin-encomenda-gestao-caixa admin-encomenda-anexos-aviso-caixa");
+            caixaAviso.appendChild(avisoConcluida);
+            anexosSecao.appendChild(caixaAviso);
         } else {
-            const upload = criarElemento("div", "admin-encomenda-anexos-upload");
+            const upload = criarElemento("div", "admin-encomenda-gestao-caixa admin-encomenda-anexos-upload");
             const campoFicheiro = criarElemento("div", "admin-encomenda-anexos-ficheiro");
             const input = document.createElement("input");
             input.type = "file";
@@ -1172,8 +1174,9 @@ window.AdminEncomendaVista = (function () {
 
         const gestaoLinha = criarElemento("div", "admin-encomenda-gestao");
         const colunaEstado = criarElemento("div", "admin-encomenda-gestao-coluna admin-encomenda-estado-coluna");
-        const grupoEstado = criarElemento("label", "admin-encomenda-estado-edicao");
-        grupoEstado.appendChild(criarElemento("span", "", "Estado"));
+        const secaoEstado = criarElemento("section", "admin-encomenda-gestao-secao admin-encomenda-estado-secao");
+        secaoEstado.appendChild(criarElemento("h3", "", "Estado"));
+        const caixaEstado = criarElemento("div", "admin-encomenda-gestao-caixa admin-encomenda-estado-caixa");
         const select = document.createElement("select");
         const estadoAtual = estadoNormalizado(encomenda.estado);
         ESTADOS_ENCOMENDA.forEach(estado => {
@@ -1182,8 +1185,9 @@ window.AdminEncomendaVista = (function () {
         });
         select.dataset.estadoAtual = estadoAtual;
         select.addEventListener("change", () => atualizarEstado(encomenda, select.value, select));
-        grupoEstado.appendChild(select);
-        colunaEstado.appendChild(grupoEstado);
+        caixaEstado.appendChild(select);
+        secaoEstado.appendChild(caixaEstado);
+        colunaEstado.appendChild(secaoEstado);
 
         gestaoEncomenda = criarGestaoEncomenda(encomenda);
         gestaoLinha.append(colunaEstado, gestaoEncomenda);

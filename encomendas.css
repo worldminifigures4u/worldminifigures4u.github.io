@@ -97,8 +97,7 @@ body.pagina-encomendas-admin{
         }
 
         .admin-encomendas-filtros label,
-        .admin-encomendas-filtro-campo,
-        .admin-encomenda-estado-edicao{
+        .admin-encomendas-filtro-campo{
             display:flex;
             flex-direction:column;
             gap:6px;
@@ -114,8 +113,7 @@ body.pagina-encomendas-admin{
         }
 
         .admin-encomendas-filtros input,
-        .admin-encomendas-filtros select,
-        .admin-encomenda-estado-edicao select{
+        .admin-encomendas-filtros select{
             width:100%;
             min-height:42px;
             padding:9px 10px;
@@ -624,7 +622,7 @@ body.pagina-encomendas-admin{
             padding-top:14px;
             border-top:1px solid #333;
             display:flex;
-            align-items:flex-start;
+            align-items:stretch;
             gap:18px;
         }
 
@@ -633,11 +631,52 @@ body.pagina-encomendas-admin{
         }
 
         .admin-encomenda-estado-coluna{
-            flex:0 0 auto;
+            flex:0 0 min(280px, 34%);
         }
 
         .admin-encomenda-anexos-coluna{
             flex:1 1 auto;
+        }
+
+        .admin-encomenda-gestao-secao{
+            display:flex;
+            flex-direction:column;
+            min-width:0;
+            height:100%;
+        }
+
+        .admin-encomenda-gestao-secao > h3{
+            margin:0 0 10px;
+            color:var(--cor-texto-principal, #fff);
+            font-size:15px;
+            font-weight:700;
+            line-height:1.2;
+        }
+
+        .admin-encomenda-gestao-caixa{
+            display:flex;
+            align-items:center;
+            gap:8px;
+            min-height:52px;
+            padding:8px 10px;
+            border:1px dashed #555;
+            border-radius:8px;
+            background:#181818;
+            box-sizing:border-box;
+            overflow:hidden;
+        }
+
+        .admin-encomenda-estado-caixa select{
+            width:100%;
+            min-height:36px;
+            height:36px;
+            padding:0 10px;
+            border:1px solid #555;
+            border-radius:6px;
+            background:#222;
+            color:#fff;
+            font:inherit;
+            box-sizing:border-box;
         }
 
         .admin-encomenda-anexos-coluna .admin-encomenda-anexos{
@@ -649,6 +688,7 @@ body.pagina-encomendas-admin{
             margin:0 0 10px;
             color:var(--cor-texto-principal, #fff);
             font-size:15px;
+            font-weight:700;
         }
 
         .admin-encomenda-notas textarea{
@@ -670,15 +710,7 @@ body.pagina-encomendas-admin{
         }
 
         .admin-encomenda-anexos-upload{
-            display:flex;
-            align-items:center;
-            gap:8px;
             margin-bottom:10px;
-            padding:8px 10px;
-            border:1px dashed #555;
-            border-radius:8px;
-            background:#181818;
-            overflow:hidden;
         }
 
         .admin-encomenda-anexos-ficheiro{
@@ -810,10 +842,13 @@ body.pagina-encomendas-admin{
         }
 
         .admin-encomenda-anexos-aviso{
-            padding:9px;
-            border-left:3px solid #43c76f;
-            background:#15241a;
+            margin:0;
+            padding:0;
+            border:0;
+            background:transparent;
             color:#9be9b3;
+            font-size:13px;
+            line-height:1.4;
         }
 
         .admin-encomenda-produto{
@@ -937,10 +972,6 @@ body.pagina-encomendas-admin{
             background:#a52828;
         }
 
-        .admin-encomenda-estado-edicao{
-            width:min(300px, 100%);
-        }
-
         .admin-encomendas-vazio{
             padding:45px 20px;
             border:1px solid #333;
@@ -1048,7 +1079,8 @@ body.pagina-encomendas-admin{
                 display:grid;
                 grid-template-columns:repeat(auto-fit, minmax(150px, 1fr));
             }
-            .admin-encomenda-estado-edicao{
+            .admin-encomenda-estado-coluna{
+                flex:1 1 auto;
                 width:100%;
             }
         }
