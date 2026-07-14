@@ -719,6 +719,7 @@ body.pagina-encomendas-admin{
             align-items:center;
             gap:12px;
             flex-wrap:wrap;
+            --admin-gestao-controlo-altura:28px;
         }
 
         .admin-encomenda-gestao-bloco{
@@ -788,12 +789,16 @@ body.pagina-encomendas-admin{
 
         .admin-encomenda-estado-caixa{
             flex:0 0 auto;
+            display:flex;
+            align-items:center;
+            height:var(--admin-gestao-controlo-altura);
             padding:0;
             border:1px solid #555;
             border-radius:6px;
             background:#222;
             color-scheme:dark;
             transition:border-color .15s ease;
+            box-sizing:border-box;
         }
 
         .admin-encomenda-estado-caixa:hover{
@@ -810,8 +815,8 @@ body.pagina-encomendas-admin{
             width:184px;
             max-width:100%;
             min-width:0;
-            min-height:26px;
-            height:26px;
+            height:100%;
+            min-height:0;
             padding:0 26px 0 8px;
             border:0;
             border-radius:6px;
@@ -903,8 +908,8 @@ body.pagina-encomendas-admin{
             display:inline-flex;
             align-items:center;
             justify-content:center;
-            min-height:26px;
-            height:26px;
+            min-height:var(--admin-gestao-controlo-altura);
+            height:var(--admin-gestao-controlo-altura);
             padding:0 10px;
             border:1px solid var(--cor-botao-secundario-borda, #ffc107);
             border-radius:6px;
@@ -1037,25 +1042,36 @@ body.pagina-encomendas-admin{
             gap:6px;
             min-width:0;
             max-width:min(100%, 360px);
-            padding:2px 6px;
+            padding:0 6px;
             border:1px solid #333;
             border-radius:6px;
             background:#1b1b1b;
+            box-sizing:border-box;
         }
 
         .admin-encomenda-anexo span{
             flex:1 1 auto;
             overflow:hidden;
             color:#ddd;
-            font-size:13px;
+            font-size:12px;
+            line-height:1.2;
             text-overflow:ellipsis;
             white-space:nowrap;
         }
 
         .admin-encomenda-anexo .wallapop-botao{
-            padding:7px 9px;
-            font-size:12px;
+            flex:0 0 auto;
+            display:inline-flex;
+            align-items:center;
+            justify-content:center;
+            min-height:var(--admin-gestao-controlo-altura);
+            height:var(--admin-gestao-controlo-altura);
+            padding:0 10px;
             border-radius:6px;
+            font-size:12px;
+            font-weight:700;
+            line-height:1;
+            box-sizing:border-box;
         }
 
         .admin-encomenda-anexo .admin-encomenda-anexo-apagar{
