@@ -680,16 +680,21 @@ window.AdminEncomendaVista = (function () {
     }
 
     async function atualizarEstadoDireto(encomenda, estado, dataPagamentoIso = null) {
-        const atualizacao = { estado };
-        if (dataPagamentoIso) atualizacao.created_at = dataPagamentoIso;
         const { data, error } = await obterClient()
             .from("encomendas")
-            .update(atualizacao)
+            .update({ estado })
             .eq("id", String(encomenda.id))
             .select("id, estado, created_at")
             .single();
         if (error) throw error;
-        return data;
+        if (!dataPagamentoIso) return data;
+
+        try {
+            return await atualizarDataPagamento(encomenda, dataPagamentoIso);
+        } catch (erroData) {
+            console.warn("Nao foi possivel atualizar data de pagamento.", erroData);
+            return data;
+        }
     }
 
     function deveAtualizarDataPagamento(estadoAnterior, estadoNovo) {
@@ -990,8 +995,13 @@ window.AdminEncomendaVista = (function () {
                         );
                     }
                 } else if (dataPagamentoIso) {
-                    const dataAtualizada = await atualizarDataPagamento(encomenda, dataPagamentoIso);
-                    data = { ...(data || {}), created_at: dataAtualizada?.created_at || dataPagamentoIso };
+                    try {
+                        const dataAtualizada = await atualizarDataPagamento(encomenda, dataPagamentoIso);
+                        data = { ...(data || {}), created_at: dataAtualizada?.created_at || dataPagamentoIso };
+                    } catch (erroData) {
+                        console.warn("Nao foi possivel atualizar data de pagamento.", erroData);
+                        data = { ...(data || {}), created_at: dataPagamentoIso };
+                    }
                 }
             }
             if (error) throw error;
@@ -1157,6 +1167,7 @@ window.AdminEncomendaVista = (function () {
             "article",
             `admin-encomenda-card${encomenda.prioritaria ? " prioritaria" : ""}${modoModal ? " admin-encomenda-card-modal" : ""}`
         );
+        card.dataset.encomendaId = String(encomenda.id);
 
         const cabecalho = criarElemento("div", "admin-encomenda-cabecalho");
         if (!modoModal) {
@@ -1224,7 +1235,6 @@ window.AdminEncomendaVista = (function () {
         let gestaoEncomenda = null;
         let controloNotas = null;
         let controloTotal = null;
-        let selectEstado = null;
         let gravarTudo = null;
 
         function temAlteracoesPendentes() {
@@ -1232,7 +1242,6 @@ window.AdminEncomendaVista = (function () {
                 controloNotas?.temAlteracoesPendentes?.()
                 || gestaoEncomenda?.temAnexosPendentes?.()
                 || controloTotal?.temAlteracao?.()
-                || (selectEstado && selectEstado.value !== selectEstado.dataset.estadoAtual)
             );
         }
 
@@ -1240,7 +1249,6 @@ window.AdminEncomendaVista = (function () {
             controloNotas?.reverter?.();
             gestaoEncomenda?.reverterAnexos?.();
             controloTotal?.reverter?.();
-            if (selectEstado) selectEstado.value = selectEstado.dataset.estadoAtual;
         }
 
         async function gravarAlteracoesPendentes() {
@@ -1256,10 +1264,6 @@ window.AdminEncomendaVista = (function () {
             }
             if (ok && controloTotal?.temAlteracao?.()) {
                 ok = (await controloTotal.guardar()) && ok;
-            }
-            if (ok && selectEstado && selectEstado.value !== selectEstado.dataset.estadoAtual) {
-                await atualizarEstado(encomenda, selectEstado.value, selectEstado);
-                if (selectEstado.value !== selectEstado.dataset.estadoAtual) ok = false;
             }
 
             if (!ok) hooks.definirStatus("Algumas alterações não foram guardadas.", true);
@@ -1390,9 +1394,13 @@ window.AdminEncomendaVista = (function () {
         select.dataset.estadoAtual = estadoAtual;
         select.addEventListener("click", evento => evento.stopPropagation());
         select.addEventListener("keydown", evento => evento.stopPropagation());
+        select.addEventListener("change", evento => {
+            evento.stopPropagation();
+            if (select.value === select.dataset.estadoAtual) return;
+            atualizarEstado(encomenda, select.value, select);
+        });
         caixaEstado.appendChild(select);
         blocoEstado.appendChild(caixaEstado);
-        selectEstado = select;
 
         gestaoEncomenda = criarGestaoEncomenda(encomenda);
         gestaoLinha.append(blocoEstado, gestaoEncomenda);

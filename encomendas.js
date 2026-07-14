@@ -623,6 +623,7 @@ function encomendasFiltradasAdmin() {
 function renderizarEncomendasAdmin() {
     const lista = document.getElementById('lista-encomendas-admin');
     const pesquisaFigura = Boolean(obterTermoPesquisaFiguraAdmin());
+    const idEncomendaAberta = document.querySelector('.admin-encomenda-card.aberta')?.dataset.encomendaId || '';
 
     if (pesquisaFigura) {
         if (lista) {
@@ -642,6 +643,16 @@ function renderizarEncomendasAdmin() {
         return;
     }
     filtradas.forEach(encomenda => lista.appendChild(criarCardEncomenda(encomenda)));
+    if (idEncomendaAberta) {
+        const cardAberta = lista.querySelector(`.admin-encomenda-card[data-encomenda-id="${idEncomendaAberta}"]`);
+        const detalhesAbertos = cardAberta?.querySelector('.admin-encomenda-detalhes');
+        if (cardAberta && detalhesAbertos) {
+            detalhesAbertos.hidden = false;
+            cardAberta.classList.add('aberta');
+            cardAberta._ajustarAlturaNotas?.();
+            cardAberta.querySelector('.admin-encomenda-gestao-anexos')?.carregarAnexos?.();
+        }
+    }
     AdminEncomendaVista.carregarContagensAnexosLista(filtradas).catch(console.warn);
 }
 
