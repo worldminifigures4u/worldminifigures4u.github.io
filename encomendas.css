@@ -718,12 +718,12 @@ body.pagina-encomendas-admin{
         }
 
         .admin-encomenda-gestao{
-            margin-top:14px;
-            padding-top:14px;
+            margin-top:8px;
+            padding-top:8px;
             border-top:1px solid #333;
             display:flex;
             align-items:center;
-            gap:18px;
+            gap:12px;
             flex-wrap:wrap;
         }
 
@@ -746,7 +746,7 @@ body.pagina-encomendas-admin{
         .admin-encomenda-gestao-rotulo{
             flex:0 0 auto;
             color:var(--cor-texto-principal, #fff);
-            font-size:15px;
+            font-size:13px;
             font-weight:700;
             line-height:1.2;
             white-space:nowrap;
@@ -783,7 +783,7 @@ body.pagina-encomendas-admin{
             display:flex;
             align-items:center;
             gap:8px;
-            min-height:36px;
+            min-height:0;
             padding:0;
             border:0;
             border-radius:0;
@@ -816,9 +816,9 @@ body.pagina-encomendas-admin{
             width:184px;
             max-width:100%;
             min-width:0;
-            min-height:30px;
-            height:30px;
-            padding:0 28px 0 8px;
+            min-height:26px;
+            height:26px;
+            padding:0 26px 0 8px;
             border:0;
             border-radius:6px;
             background-color:transparent;
@@ -856,12 +856,12 @@ body.pagina-encomendas-admin{
             display:flex;
             flex:1 1 auto;
             align-items:center;
-            gap:8px;
+            gap:6px;
             min-width:0;
             flex-wrap:wrap;
-            min-height:36px;
-            padding:6px 10px;
-            border-radius:8px;
+            min-height:0;
+            padding:2px 8px;
+            border-radius:6px;
             background:#181818;
             box-sizing:border-box;
         }
@@ -909,8 +909,9 @@ body.pagina-encomendas-admin{
             display:inline-flex;
             align-items:center;
             justify-content:center;
-            min-height:36px;
-            padding:8px 12px;
+            min-height:26px;
+            height:26px;
+            padding:0 10px;
             border:1px solid var(--cor-botao-secundario-borda, #ffc107);
             border-radius:6px;
             background:transparent;
@@ -1039,12 +1040,12 @@ body.pagina-encomendas-admin{
         .admin-encomenda-anexo{
             display:flex;
             align-items:center;
-            gap:7px;
+            gap:6px;
             min-width:0;
             max-width:min(100%, 360px);
-            padding:4px 8px;
+            padding:2px 6px;
             border:1px solid #333;
-            border-radius:8px;
+            border-radius:6px;
             background:#1b1b1b;
         }
 
