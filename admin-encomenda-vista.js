@@ -834,7 +834,7 @@ window.AdminEncomendaVista = (function () {
         const ocultarCliente = opcoes.ocultarCliente === true;
         const card = criarElemento(
             "article",
-            `admin-encomenda-card aberta${encomenda.prioritaria ? " prioritaria" : ""}${modoModal ? " admin-encomenda-card-modal" : ""}`
+            `admin-encomenda-card${encomenda.prioritaria ? " prioritaria" : ""}${modoModal ? " admin-encomenda-card-modal" : ""}`
         );
 
         const cabecalho = criarElemento("div", "admin-encomenda-cabecalho");
@@ -904,6 +904,7 @@ window.AdminEncomendaVista = (function () {
 
         if (!modoModal) {
             detalhes.hidden = true;
+            card.classList.remove("aberta");
             const alternarDetalhes = () => {
                 detalhes.hidden = !detalhes.hidden;
                 card.classList.toggle("aberta", !detalhes.hidden);

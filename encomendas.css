@@ -236,10 +236,14 @@ body.pagina-encomendas-admin{
         }
 
         .admin-encomenda-card.aberta{
-            border-color:#7a6200;
+            border-color:#333;
         }
 
         .admin-encomenda-card.prioritaria{
+            border-color:#ffc107;
+        }
+
+        .admin-encomenda-card.prioritaria.aberta{
             border-color:#ffc107;
         }
 
@@ -254,6 +258,11 @@ body.pagina-encomendas-admin{
             display:flex;
             align-items:center;
             gap:12px;
+        }
+
+        .admin-encomenda-cabecalho:focus-visible{
+            outline:none;
+            box-shadow:inset 0 0 0 2px rgba(255, 193, 7, 0.35);
         }
 
         .admin-encomenda-cabecalho:hover{
