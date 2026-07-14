@@ -35,6 +35,10 @@ window.AdminEncomendaVista = (function () {
     let imagensProdutosPorSku = new Map();
     let referenciasProdutos = new Map();
     let referenciasProdutosPorSku = new Map();
+    let temasProdutos = new Map();
+    let temasProdutosPorSku = new Map();
+    let subtemasProdutos = new Map();
+    let subtemasProdutosPorSku = new Map();
 
     function configurar(opcoes = {}) {
         if (opcoes.client) client = opcoes.client;
@@ -185,6 +189,28 @@ window.AdminEncomendaVista = (function () {
             || referenciasProdutos.get(String(item.id_produto || item.id || ""))
             || referenciasProdutosPorSku.get(String(item.sku || "").toUpperCase())
             || "";
+    }
+
+    function formatarSubtemaProduto(valor) {
+        const texto = String(valor || "").trim();
+        if (!texto || texto === "semsubtema" || /^sem\s*subtema$/i.test(texto)) return "—";
+        return texto;
+    }
+
+    function obterTemaProduto(item) {
+        const tema = item.tema
+            || temasProdutos.get(String(item.id_produto || item.id || ""))
+            || temasProdutosPorSku.get(String(item.sku || "").toUpperCase())
+            || "";
+        return String(tema).trim() || "—";
+    }
+
+    function obterSubtemaProduto(item) {
+        const subtema = item.subtema
+            || subtemasProdutos.get(String(item.id_produto || item.id || ""))
+            || subtemasProdutosPorSku.get(String(item.sku || "").toUpperCase())
+            || "";
+        return formatarSubtemaProduto(subtema);
     }
 
     function abrirImagemProduto(url, nome) {
@@ -1164,6 +1190,8 @@ window.AdminEncomendaVista = (function () {
                 criarElemento("span", "admin-encomenda-produto-quantidade", `${quantidade}x`),
                 criarElemento("strong", "admin-encomenda-produto-nome", item.nome || "Produto"),
                 criarMiniaturaProduto(item),
+                criarElemento("span", "admin-encomenda-produto-tema", obterTemaProduto(item)),
+                criarElemento("span", "admin-encomenda-produto-subtema", obterSubtemaProduto(item)),
                 criarElemento("span", "admin-encomenda-produto-referencia", `Ref. ${obterReferenciaProduto(item) || "—"}`),
                 criarElemento("span", "admin-encomenda-produto-sku", `SKU ${item.sku || "—"}`),
                 criarElemento("span", "admin-encomenda-produto-preco", formatarEuro(preco))
@@ -1238,7 +1266,7 @@ window.AdminEncomendaVista = (function () {
             } else {
                 const respostaPublica = await obterClient()
                     .from("produtos_loja")
-                    .select("id, sku, imagens, referencia")
+                    .select("id, sku, imagens, referencia, tema, subtema")
                     .in("id", loteIds);
                 if (respostaPublica.error) {
                     console.warn("Nao foi possivel carregar fotografias das encomendas.", respostaPublica.error);
@@ -1253,6 +1281,16 @@ window.AdminEncomendaVista = (function () {
                     referenciasProdutos.set(String(produto.id), referencia);
                     if (produto.sku) referenciasProdutosPorSku.set(String(produto.sku).toUpperCase(), referencia);
                 }
+                const tema = String(produto.tema || "").trim();
+                if (tema) {
+                    temasProdutos.set(String(produto.id), tema);
+                    if (produto.sku) temasProdutosPorSku.set(String(produto.sku).toUpperCase(), tema);
+                }
+                const subtema = String(produto.subtema || "").trim();
+                if (subtema) {
+                    subtemasProdutos.set(String(produto.id), subtema);
+                    if (produto.sku) subtemasProdutosPorSku.set(String(produto.sku).toUpperCase(), subtema);
+                }
                 const imagem = obterPrimeiraImagem(produto.imagens);
                 if (!imagem) return;
                 imagensProdutos.set(String(produto.id), imagem);
@@ -1266,6 +1304,10 @@ window.AdminEncomendaVista = (function () {
         imagensProdutosPorSku = new Map();
         referenciasProdutos = new Map();
         referenciasProdutosPorSku = new Map();
+        temasProdutos = new Map();
+        temasProdutosPorSku = new Map();
+        subtemasProdutos = new Map();
+        subtemasProdutosPorSku = new Map();
     }
 
     return {
