@@ -94,6 +94,63 @@ window.AdminEncomendaVista = (function () {
         return elemento;
     }
 
+    let modalConfirmarNotas = null;
+
+    function obterModalConfirmarNotas() {
+        if (modalConfirmarNotas) return modalConfirmarNotas;
+
+        modalConfirmarNotas = criarElemento("div", "admin-notas-confirmar-modal");
+        modalConfirmarNotas.hidden = true;
+        const dialogo = criarElemento("div", "admin-notas-confirmar-dialogo");
+        dialogo.setAttribute("role", "dialog");
+        dialogo.setAttribute("aria-modal", "true");
+        dialogo.setAttribute("aria-labelledby", "admin-notas-confirmar-texto");
+        const texto = criarElemento("p", "", "As notas foram alteradas. Gravar?");
+        texto.id = "admin-notas-confirmar-texto";
+        const acoes = criarElemento("div", "admin-notas-confirmar-acoes");
+        const sim = criarElemento("button", "wallapop-botao wallapop-botao-destaque", "Sim");
+        sim.type = "button";
+        sim.dataset.acao = "sim";
+        const nao = criarElemento("button", "wallapop-botao", "Não");
+        nao.type = "button";
+        nao.dataset.acao = "nao";
+        acoes.append(sim, nao);
+        dialogo.append(texto, acoes);
+        modalConfirmarNotas.appendChild(dialogo);
+        document.body.appendChild(modalConfirmarNotas);
+        return modalConfirmarNotas;
+    }
+
+    function perguntarGravarNotasAlteradas() {
+        const modal = obterModalConfirmarNotas();
+        return new Promise(resolve => {
+            const concluir = valor => {
+                modal.hidden = true;
+                document.body.classList.remove("admin-notas-confirmar-aberto");
+                modal.removeEventListener("click", aoClicarModal);
+                document.removeEventListener("keydown", aoTeclaModal);
+                resolve(valor);
+            };
+            const aoClicarModal = evento => {
+                const botao = evento.target.closest("button[data-acao]");
+                if (!botao) return;
+                evento.preventDefault();
+                concluir(botao.dataset.acao === "sim");
+            };
+            const aoTeclaModal = evento => {
+                if (evento.key === "Escape") {
+                    evento.preventDefault();
+                    concluir(false);
+                }
+            };
+            modal.hidden = false;
+            document.body.classList.add("admin-notas-confirmar-aberto");
+            modal.addEventListener("click", aoClicarModal);
+            document.addEventListener("keydown", aoTeclaModal);
+            modal.querySelector('[data-acao="sim"]')?.focus();
+        });
+    }
+
     function obterProdutos(encomenda) {
         let produtos = encomenda.produtos;
         if (typeof produtos === "string") {
@@ -324,7 +381,8 @@ window.AdminEncomendaVista = (function () {
         const notas = document.createElement("textarea");
         notas.rows = compacto ? 2 : 4;
         notas.maxLength = 10000;
-        notas.value = encomenda.notas_internas || "";
+        let valorGuardado = encomenda.notas_internas || "";
+        notas.value = valorGuardado;
         notas.placeholder = "Pormenores de preparação visíveis apenas ao administrador.";
         notas.addEventListener("click", evento => evento.stopPropagation());
         notas.addEventListener("keydown", evento => evento.stopPropagation());
@@ -332,7 +390,14 @@ window.AdminEncomendaVista = (function () {
         guardarNotas.type = "button";
         guardarNotas.addEventListener("click", evento => evento.stopPropagation());
         const statusNotas = criarElemento("p", "admin-encomenda-gestao-status");
-        guardarNotas.addEventListener("click", async () => {
+        let ignorarBlurNotas = false;
+        let promessaConfirmacaoNotas = null;
+
+        function temAlteracoesPendentes() {
+            return notas.value !== valorGuardado;
+        }
+
+        async function guardarNotasInternas() {
             guardarNotas.disabled = true;
             statusNotas.textContent = "A guardar...";
             const { data, error } = await obterClient().rpc("guardar_notas_encomenda_admin", {
@@ -342,11 +407,51 @@ window.AdminEncomendaVista = (function () {
             guardarNotas.disabled = false;
             if (error || data?.sucesso === false) {
                 statusNotas.textContent = "Erro ao guardar: " + (error?.message || data?.erro || "sem detalhe");
-                return;
+                return false;
             }
+            valorGuardado = notas.value;
             encomenda.notas_internas = notas.value;
             statusNotas.textContent = "Notas guardadas.";
+            return true;
+        }
+
+        async function confirmarSaidaNotas() {
+            if (!temAlteracoesPendentes()) return true;
+            if (promessaConfirmacaoNotas) return promessaConfirmacaoNotas;
+
+            promessaConfirmacaoNotas = (async () => {
+                const gravar = await perguntarGravarNotasAlteradas();
+                if (gravar) return guardarNotasInternas();
+                notas.value = valorGuardado;
+                statusNotas.textContent = "";
+                return true;
+            })();
+
+            try {
+                return await promessaConfirmacaoNotas;
+            } finally {
+                promessaConfirmacaoNotas = null;
+            }
+        }
+
+        guardarNotas.addEventListener("mousedown", () => {
+            ignorarBlurNotas = true;
         });
+        guardarNotas.addEventListener("click", async () => {
+            ignorarBlurNotas = false;
+            await guardarNotasInternas();
+        });
+        notas.addEventListener("blur", () => {
+            window.setTimeout(async () => {
+                if (ignorarBlurNotas) {
+                    ignorarBlurNotas = false;
+                    return;
+                }
+                if (notasSecao.contains(document.activeElement)) return;
+                await confirmarSaidaNotas();
+            }, 0);
+        });
+
         if (compacto) {
             const linhaNotas = criarElemento("div", "admin-encomenda-notas-linha");
             linhaNotas.append(notas, guardarNotas);
@@ -354,7 +459,12 @@ window.AdminEncomendaVista = (function () {
         } else {
             notasSecao.append(notas, guardarNotas, statusNotas);
         }
-        return notasSecao;
+
+        return {
+            elemento: notasSecao,
+            confirmarSaida: confirmarSaidaNotas,
+            temAlteracoesPendentes
+        };
     }
 
     function criarGestaoEncomenda(encomenda) {
@@ -913,11 +1023,16 @@ window.AdminEncomendaVista = (function () {
         const detalhes = criarElemento("div", "admin-encomenda-detalhes");
         detalhes.hidden = false;
         let gestaoEncomenda = null;
+        let controloNotas = null;
 
         if (!modoModal) {
             detalhes.hidden = true;
             card.classList.remove("aberta");
-            const alternarDetalhes = () => {
+            const alternarDetalhes = async () => {
+                if (!detalhes.hidden && controloNotas) {
+                    const podeSair = await controloNotas.confirmarSaida();
+                    if (!podeSair) return;
+                }
                 detalhes.hidden = !detalhes.hidden;
                 card.classList.toggle("aberta", !detalhes.hidden);
                 if (!detalhes.hidden) gestaoEncomenda?.carregarAnexos?.();
@@ -955,7 +1070,8 @@ window.AdminEncomendaVista = (function () {
             colunaDireita.appendChild(criarLinhaDetalhe("Stock", "Reposto após cancelamento"));
         }
 
-        colunaNotas.appendChild(criarSecaoNotasInternasEncomenda(encomenda, { compacto: true }));
+        controloNotas = criarSecaoNotasInternasEncomenda(encomenda, { compacto: true });
+        colunaNotas.appendChild(controloNotas.elemento);
         dados.append(colunaEsquerda, colunaDireita, colunaNotas);
 
         const produtos = criarElemento("div", "admin-encomenda-produtos");
