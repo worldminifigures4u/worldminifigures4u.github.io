@@ -322,13 +322,13 @@ window.AdminEncomendaVista = (function () {
         const compacto = opcoes.compacto === true;
         const notasSecao = criarElemento("section", `admin-encomenda-notas${compacto ? " admin-encomenda-notas-cabecalho" : ""}`);
         const notas = document.createElement("textarea");
-        notas.rows = compacto ? 5 : 4;
+        notas.rows = compacto ? 3 : 4;
         notas.maxLength = 10000;
         notas.value = encomenda.notas_internas || "";
         notas.placeholder = "Pormenores de preparação visíveis apenas ao administrador.";
         notas.addEventListener("click", evento => evento.stopPropagation());
         notas.addEventListener("keydown", evento => evento.stopPropagation());
-        const guardarNotas = criarElemento("button", "wallapop-botao wallapop-botao-destaque", "Guardar notas");
+        const guardarNotas = criarElemento("button", "wallapop-botao wallapop-botao-destaque", compacto ? "Gravar" : "Guardar notas");
         guardarNotas.type = "button";
         guardarNotas.addEventListener("click", evento => evento.stopPropagation());
         const statusNotas = criarElemento("p", "admin-encomenda-gestao-status");
@@ -347,7 +347,13 @@ window.AdminEncomendaVista = (function () {
             encomenda.notas_internas = notas.value;
             statusNotas.textContent = "Notas guardadas.";
         });
-        notasSecao.append(notas, guardarNotas, statusNotas);
+        if (compacto) {
+            const linhaNotas = criarElemento("div", "admin-encomenda-notas-linha");
+            linhaNotas.append(notas, guardarNotas);
+            notasSecao.append(linhaNotas, statusNotas);
+        } else {
+            notasSecao.append(notas, guardarNotas, statusNotas);
+        }
         return notasSecao;
     }
 
