@@ -1248,54 +1248,91 @@ window.AdminEncomendaVista = (function () {
         return card;
     }
 
-    async function carregarImagensParaEncomendas(encomendas) {
-        const ids = [...new Set((encomendas || []).flatMap(obterProdutos)
-            .map(item => String(item.id_produto || item.id || ""))
-            .filter(Boolean))];
-        if (!ids.length) return;
+    function aplicarMetadadosProdutoEncomenda(produto) {
+        if (!produto) return;
+        const id = String(produto.id || "");
+        const sku = String(produto.sku || "").trim();
+        const skuChave = sku.toUpperCase();
 
+        const referencia = String(produto.referencia || "").trim();
+        if (referencia) {
+            if (id) referenciasProdutos.set(id, referencia);
+            if (skuChave) referenciasProdutosPorSku.set(skuChave, referencia);
+        }
+
+        const tema = String(produto.tema || "").trim();
+        if (tema) {
+            if (id) temasProdutos.set(id, tema);
+            if (skuChave) temasProdutosPorSku.set(skuChave, tema);
+        }
+
+        const subtema = String(produto.subtema || "").trim();
+        if (subtema) {
+            if (id) subtemasProdutos.set(id, subtema);
+            if (skuChave) subtemasProdutosPorSku.set(skuChave, subtema);
+        }
+
+        const imagem = obterPrimeiraImagem(produto.imagens);
+        if (imagem) {
+            if (id) imagensProdutos.set(id, imagem);
+            if (skuChave) imagensProdutosPorSku.set(skuChave, imagem);
+        }
+    }
+
+    async function carregarMetadadosProdutosLojaPorIds(ids) {
         for (let inicio = 0; inicio < ids.length; inicio += 200) {
             const loteIds = ids.slice(inicio, inicio + 200);
-            let produtos = [];
-            const respostaAdmin = await obterClient().rpc("obter_imagens_produtos_encomendas_admin", {
-                p_ids: loteIds
-            });
-
-            if (!respostaAdmin.error) {
-                produtos = Array.isArray(respostaAdmin.data) ? respostaAdmin.data : [];
-            } else {
-                const respostaPublica = await obterClient()
-                    .from("produtos_loja")
-                    .select("id, sku, imagens, referencia, tema, subtema")
-                    .in("id", loteIds);
-                if (respostaPublica.error) {
-                    console.warn("Nao foi possivel carregar fotografias das encomendas.", respostaPublica.error);
-                    continue;
-                }
-                produtos = respostaPublica.data || [];
+            const { data, error } = await obterClient()
+                .from("produtos_loja")
+                .select("id, sku, tema, subtema, imagens")
+                .in("id", loteIds);
+            if (error) {
+                console.warn("Nao foi possivel carregar tema/subtema por id.", error);
+                continue;
             }
+            (data || []).forEach(aplicarMetadadosProdutoEncomenda);
+        }
+    }
 
-            produtos.forEach(produto => {
-                const referencia = String(produto.referencia || "").trim();
-                if (referencia) {
-                    referenciasProdutos.set(String(produto.id), referencia);
-                    if (produto.sku) referenciasProdutosPorSku.set(String(produto.sku).toUpperCase(), referencia);
+    async function carregarMetadadosProdutosLojaPorSkus(skus) {
+        for (let inicio = 0; inicio < skus.length; inicio += 200) {
+            const loteSkus = skus.slice(inicio, inicio + 200);
+            const { data, error } = await obterClient()
+                .from("produtos_loja")
+                .select("id, sku, tema, subtema, imagens")
+                .in("sku", loteSkus);
+            if (error) {
+                console.warn("Nao foi possivel carregar tema/subtema por sku.", error);
+                continue;
+            }
+            (data || []).forEach(aplicarMetadadosProdutoEncomenda);
+        }
+    }
+
+    async function carregarImagensParaEncomendas(encomendas) {
+        const itens = (encomendas || []).flatMap(obterProdutos);
+        const ids = [...new Set(itens.map(item => String(item.id_produto || item.id || "")).filter(Boolean))];
+        const skus = [...new Set(itens.map(item => String(item.sku || "").trim()).filter(Boolean))];
+        if (!ids.length && !skus.length) return;
+
+        if (ids.length) {
+            for (let inicio = 0; inicio < ids.length; inicio += 200) {
+                const loteIds = ids.slice(inicio, inicio + 200);
+                const respostaAdmin = await obterClient().rpc("obter_imagens_produtos_encomendas_admin", {
+                    p_ids: loteIds
+                });
+
+                if (!respostaAdmin.error) {
+                    const produtos = Array.isArray(respostaAdmin.data) ? respostaAdmin.data : [];
+                    produtos.forEach(aplicarMetadadosProdutoEncomenda);
                 }
-                const tema = String(produto.tema || "").trim();
-                if (tema) {
-                    temasProdutos.set(String(produto.id), tema);
-                    if (produto.sku) temasProdutosPorSku.set(String(produto.sku).toUpperCase(), tema);
-                }
-                const subtema = String(produto.subtema || "").trim();
-                if (subtema) {
-                    subtemasProdutos.set(String(produto.id), subtema);
-                    if (produto.sku) subtemasProdutosPorSku.set(String(produto.sku).toUpperCase(), subtema);
-                }
-                const imagem = obterPrimeiraImagem(produto.imagens);
-                if (!imagem) return;
-                imagensProdutos.set(String(produto.id), imagem);
-                if (produto.sku) imagensProdutosPorSku.set(String(produto.sku).toUpperCase(), imagem);
-            });
+            }
+            await carregarMetadadosProdutosLojaPorIds(ids);
+        }
+
+        const skusEmFalta = skus.filter(sku => !temasProdutosPorSku.has(sku.toUpperCase()));
+        if (skusEmFalta.length) {
+            await carregarMetadadosProdutosLojaPorSkus(skusEmFalta);
         }
     }
 
