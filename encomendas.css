@@ -711,10 +711,13 @@ body.pagina-encomendas-admin{
 
         .admin-encomenda-anexos-upload{
             margin-bottom:10px;
+            justify-content:flex-start;
         }
 
         .admin-encomenda-anexos-ficheiro{
-            flex:1;
+            flex:0 1 auto;
+            width:auto;
+            max-width:min(100%, 420px);
             min-width:0;
             display:flex;
             align-items:center;
