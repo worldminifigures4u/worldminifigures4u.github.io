@@ -623,9 +623,29 @@ body.pagina-encomendas-admin{
             margin-top:18px;
             padding-top:14px;
             border-top:1px solid #333;
+            display:flex;
+            align-items:flex-start;
+            gap:18px;
         }
 
-        .admin-encomenda-gestao h3{
+        .admin-encomenda-gestao-coluna{
+            min-width:0;
+        }
+
+        .admin-encomenda-estado-coluna{
+            flex:0 0 auto;
+        }
+
+        .admin-encomenda-anexos-coluna{
+            flex:1 1 auto;
+        }
+
+        .admin-encomenda-anexos-coluna .admin-encomenda-anexos{
+            min-width:0;
+        }
+
+        .admin-encomenda-gestao h3,
+        .admin-encomenda-anexos h3{
             margin:0 0 10px;
             color:var(--cor-texto-principal, #fff);
             font-size:15px;
@@ -881,10 +901,10 @@ body.pagina-encomendas-admin{
         }
 
         .admin-encomenda-acoes{
-            margin-top:16px;
+            margin-top:12px;
             display:flex;
-            justify-content:space-between;
-            align-items:end;
+            justify-content:flex-end;
+            align-items:center;
             gap:12px;
         }
 
@@ -1008,7 +1028,13 @@ body.pagina-encomendas-admin{
                 flex-direction:column;
             }
             .admin-encomenda-gestao{
+                flex-direction:column;
                 margin-top:14px;
+            }
+
+            .admin-encomenda-estado-coluna,
+            .admin-encomenda-anexos-coluna{
+                width:100%;
             }
             .admin-encomenda-anexos-upload{
                 flex-direction:column;
