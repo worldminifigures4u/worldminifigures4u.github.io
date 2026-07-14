@@ -1100,7 +1100,7 @@ window.AdminEncomendaVista = (function () {
         return linha;
     }
 
-    function ligarAlturaNotasComInfo(card, grupoInfo, controloNotas) {
+    function ligarAlturaNotasComInfo(card, grupoInfo, controloNotas, colunaAcoes) {
         const textarea = controloNotas?.elemento?.querySelector("textarea");
         if (!grupoInfo || !textarea) return;
 
@@ -1109,6 +1109,10 @@ window.AdminEncomendaVista = (function () {
             if (altura > 0) {
                 textarea.style.height = `${altura}px`;
                 textarea.style.minHeight = `${altura}px`;
+                if (colunaAcoes) {
+                    colunaAcoes.style.height = `${altura}px`;
+                    colunaAcoes.style.maxHeight = `${altura}px`;
+                }
             }
         };
 
@@ -1339,8 +1343,10 @@ window.AdminEncomendaVista = (function () {
             apagarEncomenda(encomenda, apagar);
         });
         botoesAcoes.appendChild(apagar);
-        colunaAcoes.append(botoesAcoes, statusGravar);
-        dados.append(grupoConteudo, colunaAcoes);
+        colunaAcoes.appendChild(botoesAcoes);
+        const colunaAcoesWrap = criarElemento("div", "admin-encomenda-dados-acoes-wrap");
+        colunaAcoesWrap.append(colunaAcoes, statusGravar);
+        dados.append(grupoConteudo, colunaAcoesWrap);
 
         const produtos = criarElemento("div", "admin-encomenda-produtos");
         produtos.appendChild(criarElemento("h3", "", "Produtos"));
@@ -1386,7 +1392,7 @@ window.AdminEncomendaVista = (function () {
 
         detalhes.append(dados, gestaoLinha, produtos);
         card.append(cabecalho, detalhes);
-        ligarAlturaNotasComInfo(card, grupoInfo, controloNotas);
+        ligarAlturaNotasComInfo(card, grupoInfo, controloNotas, colunaAcoes);
         if (modoModal) {
             gestaoEncomenda.carregarAnexos?.();
             card._ajustarAlturaNotas?.();

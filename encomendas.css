@@ -524,13 +524,24 @@ body.pagina-encomendas-admin{
             width:100%;
         }
 
-        .admin-encomenda-dados-acoes{
+        .admin-encomenda-dados-acoes-wrap{
             flex:0 0 112px;
             display:flex;
             flex-direction:column;
-            gap:6px;
-            align-self:stretch;
+            gap:4px;
+            align-self:flex-start;
+            min-width:0;
+        }
+
+        .admin-encomenda-dados-acoes{
+            flex:0 0 auto;
+            display:flex;
+            flex-direction:column;
+            width:100%;
+            gap:0;
             min-height:0;
+            overflow:hidden;
+            box-sizing:border-box;
         }
 
         .admin-encomenda-dados-botoes{
@@ -538,37 +549,42 @@ body.pagina-encomendas-admin{
             display:flex;
             flex-direction:column;
             justify-content:space-between;
-            gap:8px;
+            gap:4px;
             min-height:0;
+            height:100%;
+            overflow:hidden;
         }
 
         .admin-encomenda-dados-acoes .wallapop-botao,
         .admin-encomenda-dados-acoes .admin-encomenda-editar{
             width:100%;
-            min-height:36px;
-            height:36px;
-            padding:8px 12px;
+            flex:1 1 0;
+            min-height:0;
+            height:auto;
+            padding:4px 8px;
             box-sizing:border-box;
             display:inline-flex;
             align-items:center;
             justify-content:center;
             text-align:center;
             text-decoration:none;
-            font-size:13px;
+            font-size:12px;
             font-weight:700;
-            line-height:1;
+            line-height:1.1;
             white-space:nowrap;
         }
 
         .admin-encomenda-dados-acoes .admin-encomenda-gravar{
-            font-size:14px;
+            font-size:12px;
         }
 
         .admin-encomenda-gravar-status{
+            flex:0 0 auto;
             margin:0;
             text-align:center;
-            font-size:11px;
-            line-height:1.3;
+            font-size:10px;
+            line-height:1.2;
+            overflow:hidden;
         }
 
         .admin-encomenda-gravar-status:empty{
@@ -1277,11 +1293,13 @@ body.pagina-encomendas-admin{
             .admin-encomenda-dados-esquerda,
             .admin-encomenda-dados-direita,
             .admin-encomenda-dados-notas,
+            .admin-encomenda-dados-acoes-wrap,
             .admin-encomenda-dados-acoes{
                 flex:1 1 auto;
                 width:100%;
             }
 
+            .admin-encomenda-dados-acoes-wrap,
             .admin-encomenda-dados-acoes{
                 flex-direction:column;
                 flex-wrap:nowrap;
