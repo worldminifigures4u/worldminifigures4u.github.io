@@ -466,6 +466,20 @@ body.pagina-encomendas-admin{
             align-items:stretch;
         }
 
+        .admin-encomenda-dados-cliente,
+        .admin-encomenda-dados-contacto{
+            flex:0 0 auto;
+            min-width:0;
+        }
+
+        .admin-encomenda-dados-cliente{
+            min-width:min(100%, 300px);
+        }
+
+        .admin-encomenda-dados-contacto{
+            min-width:min(100%, 220px);
+        }
+
         .admin-encomenda-dados-info{
             flex:0 0 auto;
             min-width:min(100%, 280px);
@@ -1109,6 +1123,8 @@ body.pagina-encomendas-admin{
                 flex-direction:column;
             }
 
+            .admin-encomenda-dados-cliente,
+            .admin-encomenda-dados-contacto,
             .admin-encomenda-dados-info,
             .admin-encomenda-dados-esquerda,
             .admin-encomenda-dados-direita,

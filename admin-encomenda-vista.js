@@ -1244,13 +1244,17 @@ window.AdminEncomendaVista = (function () {
         }
 
         const dados = criarElemento("div", "admin-encomenda-dados");
-        const colunaInfo = criarElemento("div", "admin-encomenda-dados-coluna admin-encomenda-dados-info");
+        const colunaCliente = criarElemento("div", "admin-encomenda-dados-coluna admin-encomenda-dados-cliente");
+        const colunaContacto = criarElemento("div", "admin-encomenda-dados-coluna admin-encomenda-dados-contacto");
         const colunaNotas = criarElemento("div", "admin-encomenda-dados-coluna admin-encomenda-dados-notas");
         const colunaAcoes = criarElemento("div", "admin-encomenda-dados-coluna admin-encomenda-dados-acoes");
 
-        colunaInfo.append(
+        colunaCliente.append(
             criarLinhaDetalhe("Nome", encomenda.nome_cliente),
-            criarLinhaDetalheMorada(encomenda),
+            criarLinhaDetalheMorada(encomenda)
+        );
+
+        colunaContacto.append(
             criarLinhaDetalhe("E-mail", encomenda.email_cliente),
             criarLinhaDetalhe("Telemóvel", encomenda.telefone_cliente),
             criarLinhaDetalhe("Envio", encomenda.metodo_envio_nome || encomenda.metodo_envio),
@@ -1259,10 +1263,10 @@ window.AdminEncomendaVista = (function () {
         );
 
         if (encomenda.referencia_externa) {
-            colunaInfo.appendChild(criarLinhaDetalhe("Referência externa", encomenda.referencia_externa));
+            colunaContacto.appendChild(criarLinhaDetalhe("Referência externa", encomenda.referencia_externa));
         }
         if (encomenda.stock_reposto) {
-            colunaInfo.appendChild(criarLinhaDetalhe("Stock", "Reposto após cancelamento"));
+            colunaContacto.appendChild(criarLinhaDetalhe("Stock", "Reposto após cancelamento"));
         }
 
         controloNotas = criarSecaoNotasInternasEncomenda(encomenda, { compacto: true, semBotao: true });
@@ -1296,7 +1300,7 @@ window.AdminEncomendaVista = (function () {
             apagarEncomenda(encomenda, apagar);
         });
         colunaAcoes.append(apagar, statusGravar);
-        dados.append(colunaInfo, colunaNotas, colunaAcoes);
+        dados.append(colunaCliente, colunaContacto, colunaNotas, colunaAcoes);
 
         const produtos = criarElemento("div", "admin-encomenda-produtos");
         produtos.appendChild(criarElemento("h3", "", "Produtos"));
