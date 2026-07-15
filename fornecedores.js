@@ -1858,7 +1858,7 @@ function sincronizarLargurasColunasTabelaEncomendaFornecedor() {
         const linhas = [...corpo.querySelectorAll("tbody tr")];
         if (!ths.length || !linhas.length) return;
 
-        const minimos = [44, 88, 68, 42, 52, 52, 56];
+        const minimos = [60, 88, 68, 42, 52, 52, 56];
         const larguras = ths.map((_, indice) => minimos[indice] || 0);
 
         linhas.forEach((linha) => {
@@ -1872,6 +1872,18 @@ function sincronizarLargurasColunasTabelaEncomendaFornecedor() {
 
         aplicarColgroupTabelaEncomendaFornecedor(cabecalho, larguras);
         aplicarColgroupTabelaEncomendaFornecedor(corpo, larguras);
+    });
+}
+
+function observarImagensTabelaEncomendaFornecedor() {
+    const corpo = document.querySelector("#fornecedor-resultados .fornecedor-tabela-encomenda");
+    if (!corpo) return;
+
+    corpo.querySelectorAll("img").forEach((img) => {
+        if (img.complete) return;
+        img.addEventListener("load", () => {
+            sincronizarLargurasColunasTabelaEncomendaFornecedor();
+        }, { once: true });
     });
 }
 
@@ -2021,6 +2033,7 @@ function renderizarResultadosFornecedorTabelaEncomenda(caixa, resultados) {
     caixa.appendChild(envoltorio);
     ligarScrollHorizontalTabelaEncomendaFornecedor();
     sincronizarLargurasColunasTabelaEncomendaFornecedor();
+    observarImagensTabelaEncomendaFornecedor();
 }
 
 function renderizarResultadosFornecedor() {
