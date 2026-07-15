@@ -648,6 +648,9 @@ body.pagina-fornecedores-admin{ margin:0; padding-left:0; padding-right:0; paddi
 }
 
 .pagina-fornecedores-unificada .mapas-produtos-tabela {
+    table-layout: auto;
+    width: max-content;
+    max-width: 100%;
     font-size: 13px;
 }
 
