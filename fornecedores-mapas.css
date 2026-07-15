@@ -505,6 +505,16 @@ body.pagina-fornecedores-admin{ margin:0; padding-left:0; padding-right:0; paddi
     background: #171717;
 }
 
+.mapas-produtos-tabela tbody tr.mapa-linha-quantidade-ativa td {
+    background: #2a2410 !important;
+    border-top-color: #80612d;
+    border-bottom-color: #80612d;
+}
+
+.mapas-produtos-tabela tbody tr.mapa-linha-quantidade-ativa td:first-child {
+    box-shadow: inset 3px 0 0 #ffc400;
+}
+
 .mapas-spacer-virtual td {
     padding: 0 !important;
     border: 0 !important;
@@ -617,6 +627,12 @@ body.pagina-fornecedores-admin{ margin:0; padding-left:0; padding-right:0; paddi
     font-weight: 800;
     appearance: textfield;
     -moz-appearance: textfield;
+}
+
+.mapa-quantidade-input:focus {
+    border-color: #ffc400;
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(255, 196, 0, 0.22);
 }
 
 .mapa-quantidade-input::-webkit-outer-spin-button,

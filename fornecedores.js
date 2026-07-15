@@ -1331,6 +1331,21 @@ function limparListaFinalEdicaoFornecedor() {
     if (area) area.value = "";
 }
 
+function definirSelecaoLinhaQuantidadeMapa(input, ativa) {
+    const linha = input?.closest("tr");
+    if (!linha) return;
+    linha.classList.toggle("mapa-linha-quantidade-ativa", ativa);
+}
+
+function ligarSelecaoLinhaQuantidadeMapa(input) {
+    input.addEventListener("focus", () => {
+        document.querySelectorAll(".mapas-produtos-tabela tbody tr.mapa-linha-quantidade-ativa")
+            .forEach(linha => linha.classList.remove("mapa-linha-quantidade-ativa"));
+        definirSelecaoLinhaQuantidadeMapa(input, true);
+    });
+    input.addEventListener("blur", () => definirSelecaoLinhaQuantidadeMapa(input, false));
+}
+
 function focarQuantidadeMapaRelativa(inputAtual, direcao) {
     const inputs = Array.from(document.querySelectorAll(".mapa-quantidade-input"));
     const indiceAtual = inputs.indexOf(inputAtual);
@@ -1826,6 +1841,7 @@ function renderizarResultadosFornecedorTabelaEncomenda(caixa, resultados) {
         input.addEventListener("keydown", tratarTeclaQuantidadeMapa);
         input.addEventListener("change", () => definirQuantidadeMapaFornecedor(atual, input.value));
         input.addEventListener("blur", () => definirQuantidadeMapaFornecedor(atual, input.value));
+        ligarSelecaoLinhaQuantidadeMapa(input);
         qtdCelula.appendChild(input);
         linha.appendChild(qtdCelula);
 
