@@ -2270,7 +2270,6 @@ async function criarPedidoFornecedor() {
         return;
     }
     const fornecedor = document.getElementById('fornecedor-nome').value;
-    const referencia = document.getElementById('fornecedor-referencia')?.value.trim() || '';
     const itens = fornecedorSelecao.map(item => ({
         id: item.id,
         nome: item.nome,
@@ -2295,7 +2294,7 @@ async function criarPedidoFornecedor() {
         definirStatusFornecedor('A criar encomenda no Supabase...');
         const { data, error } = await fornecedoresClient.rpc('criar_encomenda_fornecedor_admin', {
             p_fornecedor: fornecedor,
-            p_referencia: referencia,
+            p_referencia: '',
             p_itens: itens
         });
         if (error) throw error;
@@ -2304,9 +2303,6 @@ async function criarPedidoFornecedor() {
         guardarPedidosFornecedores();
         fornecedorSelecao = [];
         guardarSelecaoFornecedor();
-        if (document.getElementById('fornecedor-referencia')) {
-            document.getElementById('fornecedor-referencia').value = '';
-        }
         renderizarResultadosFornecedor();
         renderizarSelecionadosFornecedor();
         renderizarPedidosFornecedores();
