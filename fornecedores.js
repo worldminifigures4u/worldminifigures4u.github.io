@@ -177,8 +177,10 @@ function obterFichaFornecedorPorNome(nome) {
 
 function renderizarFornecedoresGuardados() {
     const selectPedido = document.getElementById("fornecedor-nome");
+    const selectMarcacao = document.getElementById("fornecedor-filtro-marcacao-fornecedor");
     const selectFicha = document.getElementById("fornecedor-ficha-lista");
     const valorAtual = selectPedido?.value || "";
+    const valorMarcacaoAtual = selectMarcacao?.value || "mesmo";
 
     if (selectPedido) {
         selectPedido.replaceChildren();
@@ -192,6 +194,27 @@ function renderizarFornecedoresGuardados() {
             });
         if (valorAtual && Array.from(selectPedido.options).some(option => option.value === valorAtual)) {
             selectPedido.value = valorAtual;
+        }
+    }
+
+    if (selectMarcacao) {
+        selectMarcacao.replaceChildren();
+        const opcaoMesma = document.createElement("option");
+        opcaoMesma.value = "mesmo";
+        opcaoMesma.textContent = "Encomenda";
+        selectMarcacao.appendChild(opcaoMesma);
+        fornecedorFichas
+            .filter(ficha => ficha.ativo)
+            .forEach(ficha => {
+                const option = document.createElement("option");
+                option.value = ficha.nome;
+                option.textContent = ficha.nome;
+                selectMarcacao.appendChild(option);
+            });
+        if (valorMarcacaoAtual && Array.from(selectMarcacao.options).some(option => option.value === valorMarcacaoAtual)) {
+            selectMarcacao.value = valorMarcacaoAtual;
+        } else {
+            selectMarcacao.value = "mesmo";
         }
     }
 
@@ -765,17 +788,27 @@ function classificarValorFornecedor(valor) {
     return { tipo: "info", texto };
 }
 
-function produtoPassaFiltroFornecedor(produto, fornecedorNome, filtro) {
-    if (!filtro || filtro === "todos" || fornecedorNome === "Outro") return true;
-    const valor = obterValorFornecedorProduto(produto, fornecedorNome);
+function obterFornecedorMarcacaoFiltro(fornecedorEncomenda) {
+    const select = document.getElementById("fornecedor-filtro-marcacao-fornecedor");
+    const escolha = select?.value || "mesmo";
+    if (escolha && escolha !== "mesmo") return escolha;
+    return fornecedorEncomenda || "";
+}
+
+function produtoPassaFiltroFornecedor(produto, fornecedorMarcacao, filtro) {
+    if (!filtro || filtro === "todos" || !fornecedorMarcacao || fornecedorMarcacao === "Outro") return true;
+    const valor = obterValorFornecedorProduto(produto, fornecedorMarcacao);
     const estado = classificarValorFornecedor(valor);
+    if (filtro === "os-ou-ex") return estado.tipo === "os" || estado.tipo === "ex";
     return estado.tipo === filtro;
 }
 
 function obterControlosResultadosFornecedor() {
+    const fornecedor = document.getElementById("fornecedor-nome")?.value || "";
     return {
         termo: normalizarFornecedor(document.getElementById("fornecedor-pesquisa")?.value || ""),
-        fornecedor: document.getElementById("fornecedor-nome")?.value || "",
+        fornecedor,
+        fornecedorMarcacao: obterFornecedorMarcacaoFiltro(fornecedor),
         filtroFornecedor: document.getElementById("fornecedor-filtro-marcacao")?.value || "todos",
         filtroTop: document.getElementById("fornecedor-filtro-top")?.value || "todos",
         filtroArquivado: document.getElementById("fornecedor-filtro-arquivado")?.value || "todos",
@@ -1788,7 +1821,7 @@ function renderizarResultadosFornecedor() {
     const caixa = document.getElementById("fornecedor-resultados");
     if (!caixa) return;
 
-    const { termo, fornecedor, filtroFornecedor, filtroTop, filtroArquivado, filtroDescontinuado, ordenacao } = obterControlosResultadosFornecedor();
+    const { termo, fornecedor, fornecedorMarcacao, filtroFornecedor, filtroTop, filtroArquivado, filtroDescontinuado, ordenacao } = obterControlosResultadosFornecedor();
     caixa.replaceChildren();
 
     const resultados = fornecedorProdutos
@@ -1798,7 +1831,7 @@ function renderizarResultadosFornecedor() {
         }))
         .filter((item) => (
             (!termo || item.score < 99)
-            && produtoPassaFiltroFornecedor(item.produto, fornecedor, filtroFornecedor)
+            && produtoPassaFiltroFornecedor(item.produto, fornecedorMarcacao, filtroFornecedor)
             && produtoPassaFiltroTopFornecedor(item.produto, filtroTop)
             && produtoPassaFiltroArquivadoFornecedor(item.produto, filtroArquivado)
             && produtoPassaFiltroDescontinuadoFornecedor(item.produto, filtroDescontinuado)
@@ -1842,11 +1875,11 @@ function renderizarResultadosFornecedor() {
         ids.textContent = `${atual.referencia ? `Ref. ${atual.referencia} | ` : ""}SKU ${atual.sku || "-"}`;
         info.appendChild(ids);
 
-        const estadoFornecedor = classificarValorFornecedor(obterValorFornecedorProduto(atual, fornecedor));
-        if (fornecedor && fornecedor !== "Outro" && filtroFornecedor !== "todos") {
+        const estadoFornecedor = classificarValorFornecedor(obterValorFornecedorProduto(atual, fornecedorMarcacao));
+        if (fornecedorMarcacao && fornecedorMarcacao !== "Outro" && filtroFornecedor !== "todos") {
             const fornecedorLinha = document.createElement("span");
             fornecedorLinha.className = `fornecedor-marcacao ${estadoFornecedor.tipo}`;
-            fornecedorLinha.textContent = `${fornecedor}: ${estadoFornecedor.texto}`;
+            fornecedorLinha.textContent = `${fornecedorMarcacao}: ${estadoFornecedor.texto}`;
             info.appendChild(fornecedorLinha);
         }
 
@@ -2732,6 +2765,7 @@ function ligarEventoFornecedor(id, evento, handler) {
 ligarEventoFornecedor('fornecedor-pesquisa', 'input', agendarRenderizacaoResultadosFornecedor);
 ligarEventoFornecedor('fornecedor-nome', 'change', agendarRenderizacaoResultadosFornecedor);
 ligarEventoFornecedor('fornecedor-ordenacao-stock', 'change', agendarRenderizacaoResultadosFornecedor);
+ligarEventoFornecedor('fornecedor-filtro-marcacao-fornecedor', 'change', agendarRenderizacaoResultadosFornecedor);
 ligarEventoFornecedor('fornecedor-filtro-marcacao', 'change', agendarRenderizacaoResultadosFornecedor);
 ligarEventoFornecedor('fornecedor-filtro-top', 'change', agendarRenderizacaoResultadosFornecedor);
 ligarEventoFornecedor('fornecedor-filtro-arquivado', 'change', agendarRenderizacaoResultadosFornecedor);

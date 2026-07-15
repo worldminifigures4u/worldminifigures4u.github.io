@@ -102,12 +102,19 @@
                             <button type="button" id="btn-editar-fornecedor-selecionado" class="fornecedor-btn-editar-ficha">Editar</button>
                         </span>
                     </label>
-                    <label class="fornecedor-controle-filtro-compacto" for="fornecedor-filtro-marcacao" title="Filtro do fornecedor">
+                    <label class="fornecedor-controle-filtro-compacto" for="fornecedor-filtro-marcacao-fornecedor" title="Fornecedor de onde ler a marcação OS/EX">
+                        Marcação de
+                        <select id="fornecedor-filtro-marcacao-fornecedor">
+                            <option value="mesmo">Encomenda</option>
+                        </select>
+                    </label>
+                    <label class="fornecedor-controle-filtro-compacto" for="fornecedor-filtro-marcacao" title="Filtro de marcação">
                         Marcação
                         <select id="fornecedor-filtro-marcacao">
                             <option value="todos">Todos</option>
                             <option value="os">OS</option>
                             <option value="ex">EX</option>
+                            <option value="os-ou-ex">OS ou EX</option>
                             <option value="disponivel">Disponivel</option>
                         </select>
                     </label>
@@ -208,7 +215,7 @@
     </footer>
 <script src="supabase-cdn.js?v=20260711-leve" defer></script>
 <script src="app-config.js?v=20260713-r25" defer></script>
-    <script src="fornecedores.js?v=20260713-r25" defer></script>
+    <script src="fornecedores.js?v=20260715-marcacao-fornecedor" defer></script>
 <script src="inline-listeners-base.js?v=20260713-r25" defer></script>
 <script src="inline-listeners-admin.js?v=20260713-r25" defer></script>
 </body>
