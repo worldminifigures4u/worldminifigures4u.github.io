@@ -380,6 +380,27 @@ body.pagina-fornecedores-admin{ margin:0; padding-left:0; padding-right:0; paddi
     border-radius: 0;
 }
 
+.pagina-fornecedores-unificada .fornecedor-tabela-cabecalho-fixo {
+    overflow: hidden;
+    border-bottom: 1px solid #8a6a00;
+    background: #101010;
+}
+
+.pagina-fornecedores-unificada .fornecedor-tabela-cabecalho-fixo .fornecedor-tabela-wrapper-centro {
+    display: flex;
+    justify-content: center;
+    width: 100%;
+}
+
+.pagina-fornecedores-unificada .fornecedor-tabela-encomenda-cabecalho th {
+    position: static;
+    top: auto;
+}
+
+.pagina-fornecedores-unificada .fornecedor-tabela-encomenda-corpo tbody tr:first-child td {
+    border-top: 0;
+}
+
 .fornecedor-resumo-encomenda {
     position: sticky;
     top: 0;
@@ -429,6 +450,7 @@ body.pagina-fornecedores-admin{ margin:0; padding-left:0; padding-right:0; paddi
 .pagina-fornecedores-unificada .fornecedor-resultados {
     max-height: calc(62vh + 120px);
     overflow: auto;
+    scrollbar-gutter: stable;
 }
 
 .mapas-contador-filtros {
@@ -666,9 +688,9 @@ body.pagina-fornecedores-admin{ margin:0; padding-left:0; padding-right:0; paddi
 }
 
 .pagina-fornecedores-unificada .fornecedor-resultados .fornecedor-tabela-encomenda th {
-    position: sticky;
-    top: 0;
-    z-index: 2;
+    position: static;
+    top: auto;
+    z-index: auto;
     padding: 7px 4px;
     font-size: 12px;
 }
