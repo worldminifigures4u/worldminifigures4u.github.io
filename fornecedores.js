@@ -811,8 +811,8 @@ function obterControlosResultadosFornecedor() {
         fornecedorMarcacao: obterFornecedorMarcacaoFiltro(fornecedor),
         filtroFornecedor: document.getElementById("fornecedor-filtro-marcacao")?.value || "todos",
         filtroTop: document.getElementById("fornecedor-filtro-top")?.value || "todos",
-        filtroArquivado: document.getElementById("fornecedor-filtro-arquivado")?.value || "todos",
-        filtroDescontinuado: document.getElementById("fornecedor-filtro-descontinuado")?.value || "todos",
+        filtroArquivado: document.getElementById("fornecedor-filtro-arquivado")?.value || "nao",
+        filtroDescontinuado: document.getElementById("fornecedor-filtro-descontinuado")?.value || "nao",
         ordenacao: document.getElementById("fornecedor-ordenacao-stock")?.value || "nome",
     };
 }
