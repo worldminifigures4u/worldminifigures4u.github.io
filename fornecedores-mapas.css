@@ -807,6 +807,7 @@ body.pagina-fornecedores-admin{ margin:0; padding-left:0; padding-right:0; paddi
     background: #151515;
     color: #fff;
     font-size: 16px;
+    text-align: center;
 }
 
 .pagina-fornecedores-unificada .fornecedor-selecionados-bloco .fornecedor-selecionados {
