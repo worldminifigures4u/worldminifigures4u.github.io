@@ -8,7 +8,7 @@ alter table public.produtos
 
 create table if not exists public.encomendas_fornecedores (
     id uuid primary key default gen_random_uuid(),
-    codigo text not null unique,
+    codigo text unique,
     fornecedor text not null,
     referencia text,
     estado text not null default 'A preparar'
@@ -208,7 +208,7 @@ begin
 
     insert into public.encomendas_fornecedores (codigo, fornecedor, referencia, estado, itens, criado_por)
     values (
-        public.gerar_codigo_encomenda_fornecedor(),
+        null,
         nullif(trim(p_fornecedor), ''),
         nullif(trim(coalesce(p_referencia, '')), ''),
         'A preparar',
@@ -356,7 +356,10 @@ set search_path = public
 as $$
 declare
     atualizada public.encomendas_fornecedores;
-    v_codigo text := nullif(trim(p_dados ->> 'codigo'), '');
+    v_codigo text := case
+        when p_dados ? 'codigo' then nullif(trim(coalesce(p_dados ->> 'codigo', '')), '')
+        else null
+    end;
     v_fornecedor text := nullif(trim(p_dados ->> 'fornecedor'), '');
     v_referencia text := case
         when p_dados ? 'referencia' then nullif(trim(coalesce(p_dados ->> 'referencia', '')), '')
@@ -375,7 +378,7 @@ begin
 
     update public.encomendas_fornecedores
     set
-        codigo = coalesce(v_codigo, codigo),
+        codigo = case when p_dados ? 'codigo' then v_codigo else codigo end,
         fornecedor = coalesce(v_fornecedor, fornecedor),
         referencia = case when p_dados ? 'referencia' then v_referencia else referencia end,
         estado = coalesce(v_estado, estado),
@@ -404,3 +407,6 @@ grant execute on function public.alterar_estado_encomenda_fornecedor_admin(text,
 grant execute on function public.apagar_encomenda_fornecedor_admin(text) to authenticated;
 grant execute on function public.receber_stock_fornecedor_admin(text, jsonb) to authenticated;
 grant execute on function public.atualizar_encomenda_fornecedor_admin(text, jsonb) to authenticated;
+
+-- Migração: permitir encomendas sem código de seguimento até o fornecedor o enviar
+alter table public.encomendas_fornecedores alter column codigo drop not null;

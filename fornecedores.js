@@ -374,11 +374,16 @@ async function guardarFichaFornecedor(evento) {
     fecharModalFichaFornecedor();
 }
 
+function obterTextoCodigoPedidoFornecedor(pedido) {
+    const codigo = String(pedido?.codigo || "").trim();
+    return codigo || "Sem código";
+}
+
 function normalizarPedidoFornecedor(pedido) {
     if (!pedido) return null;
     return {
         id: String(pedido.id || pedido.codigo || Date.now()),
-        codigo: pedido.codigo || '',
+        codigo: String(pedido.codigo || '').trim(),
         fornecedor: pedido.fornecedor || '',
         referencia: pedido.referencia || '',
         estado: pedido.estado || 'A preparar',
@@ -2623,7 +2628,11 @@ async function criarPedidoFornecedor() {
         renderizarSelecionadosFornecedor();
         renderizarPedidosFornecedores();
         exportarTxtPedidoFornecedor(pedido);
-        definirStatusFornecedor(`Encomenda ${pedido.codigo} criada.`);
+        definirStatusFornecedor(
+            pedido.codigo
+                ? `Encomenda ${pedido.codigo} criada.`
+                : "Encomenda criada. Adicione o código de seguimento quando o receber."
+        );
     } catch (error) {
         console.error(error);
         definirStatusFornecedor('Erro ao criar encomenda de fornecedor: ' + (error.message || 'erro desconhecido'), true);
@@ -2654,7 +2663,7 @@ async function alterarEstadoPedidoFornecedor(id, estado) {
 async function apagarPedidoFornecedor(id) {
     const pedido = fornecedorPedidos.find(item => item.id === id);
     if (!pedido) return;
-    if (!window.confirm(`Apagar a encomenda ${pedido.codigo}? Isto nao altera o stock.`)) return;
+    if (!window.confirm(`Apagar a encomenda ${obterTextoCodigoPedidoFornecedor(pedido)}? Isto nao altera o stock.`)) return;
     try {
         const { error } = await fornecedoresClient.rpc('apagar_encomenda_fornecedor_admin', { p_id: id });
         if (error) throw error;
@@ -2822,7 +2831,7 @@ function atualizarBotaoJuntarSelecaoFornecedor() {
     } else if (!pedido) {
         botao.title = "Abra acima a encomenda existente onde pretende juntar a seleção.";
     } else {
-        botao.title = `Juntar seleção à encomenda ${pedido.codigo || pedido.id}.`;
+        botao.title = `Juntar seleção à encomenda ${obterTextoCodigoPedidoFornecedor(pedido)}.`;
     }
 }
 
@@ -2845,7 +2854,7 @@ async function adicionarSelecaoAoPedidoFornecedor(id) {
         return;
     }
     const total = fornecedorSelecao.reduce((soma, item) => soma + Math.max(1, Math.floor(Number(item.quantidade) || 1)), 0);
-    if (!window.confirm(`Adicionar ${total} unidade(s) selecionada(s) a ${pedido.codigo}?`)) return;
+    if (!window.confirm(`Adicionar ${total} unidade(s) selecionada(s) a ${obterTextoCodigoPedidoFornecedor(pedido)}?`)) return;
 
     const itens = serializarItensPedidoFornecedor(pedido.itens);
     const itensExportar = [];
@@ -2901,7 +2910,7 @@ function garantirModalEdicaoFornecedor() {
                     <div class="fornecedor-edicao-grid">
                         <label>
                             Código da encomenda
-                            <input type="text" id="fornecedor-edicao-codigo" required>
+                            <input type="text" id="fornecedor-edicao-codigo" placeholder="Código de seguimento do fornecedor">
                         </label>
                         <label>
                             Fornecedor
@@ -3038,12 +3047,6 @@ async function guardarEdicaoPedidoFornecedor(evento) {
     const estado = modal.querySelector('#fornecedor-edicao-estado').value;
     const itens = lerItensEditadosPedidoFornecedor(pedido, modal);
 
-    if (!codigo) {
-        status.textContent = 'Indique o codigo da encomenda.';
-        status.classList.remove('status-aviso', 'status-sucesso', 'status-neutro');
-        status.classList.add('status-erro');
-        return;
-    }
     if (!fornecedor) {
         status.textContent = 'Indique o fornecedor.';
         status.classList.remove('status-aviso', 'status-sucesso', 'status-neutro');
@@ -3062,7 +3065,13 @@ async function guardarEdicaoPedidoFornecedor(evento) {
         status.textContent = 'A guardar ficha...';
         status.classList.remove('status-erro', 'status-sucesso', 'status-aviso');
         status.classList.add('status-neutro');
-        const atualizado = await atualizarPedidoFornecedor(id, { codigo, fornecedor, referencia: referencia || null, estado, itens });
+        const atualizado = await atualizarPedidoFornecedor(id, {
+            codigo: codigo || null,
+            fornecedor,
+            referencia: referencia || null,
+            estado,
+            itens
+        });
         status.textContent = 'A marcar OS no mapa do fornecedor...';
         await sincronizarOsProdutosFornecedor(itens, fornecedor);
         status.textContent = 'A atualizar preço compra nos produtos...';
@@ -3334,7 +3343,7 @@ function renderizarPedidosFornecedores() {
         const linha = criarElementoPedidoFornecedor("div", "admin-encomenda-linha fornecedor-pedido-linha-cabecalho");
         const resumo = `${totaisPedido.itens} artigo(s) | ${totaisPedido.quantidade} unidade(s) | ${totaisPedido.pendente} por receber${totaisPedido.os > 0 ? ` | ${totaisPedido.os} OS` : ""}`;
         linha.append(
-            criarElementoPedidoFornecedor("strong", "admin-encomenda-codigo", pedido.codigo || `#${pedido.id}`),
+            criarElementoPedidoFornecedor("strong", "admin-encomenda-codigo", obterTextoCodigoPedidoFornecedor(pedido)),
             criarElementoPedidoFornecedor("span", "admin-encomenda-data", formatarDataPedidoFornecedor(pedido.criado_em)),
             criarElementoPedidoFornecedor("span", "fornecedor-pedido-fornecedor-nome", pedido.fornecedor || "Fornecedor"),
             criarElementoPedidoFornecedor("span", "fornecedor-pedido-resumo", resumo),
