@@ -813,8 +813,28 @@ body.pagina-fornecedores-admin{ margin:0; padding-left:0; padding-right:0; paddi
 .pagina-fornecedores-unificada .fornecedor-selecionados-bloco .fornecedor-selecionados {
     display: block;
     margin-top: 0;
-    padding: 8px 0 12px;
+    padding: 8px 0 4px;
     background: #101010;
+}
+
+.pagina-fornecedores-unificada .fornecedor-selecionados-bloco .fornecedor-acoes-encomenda {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    margin: 0;
+    padding: 10px 12px 14px;
+    border-top: 1px solid #333;
+    background: #101010;
+}
+
+.pagina-fornecedores-unificada .fornecedor-selecionados-bloco .fornecedor-acoes-encomenda .wallapop-botao {
+    flex: 0 0 auto;
+    width: auto;
+    min-width: 132px;
+    min-height: 34px;
+    padding: 7px 16px;
+    font-size: 13px;
 }
 
 .pagina-fornecedores-unificada :is(.fornecedor-resultados, .fornecedor-selecionados) .fornecedor-tabela-encomenda .mapa-preco-input {
