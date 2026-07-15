@@ -154,7 +154,7 @@ body.pagina-fornecedores-admin{ margin:0; padding-left:0; padding-right:0; paddi
             min-height:42px;
             font:inherit;
         }
-        .pagina-fornecedores-unificada .fornecedor-resultados{ display:block; max-height:calc(52vh + 120px); overflow:auto; overscroll-behavior:contain; padding-right:0; border:0; border-radius:0; background:#101010; }
+        .pagina-fornecedores-unificada .fornecedor-resultados{ display:block; max-height:calc(52vh - 8px); overflow:auto; overscroll-behavior:contain; padding-right:0; border:0; border-radius:0; background:#101010; }
         .pagina-fornecedores-unificada .fornecedor-pedidos{ max-height:none; }
         .fornecedor-ficha-box{ margin:14px 0 8px; padding:12px; border:1px solid #333; border-radius:8px; background:#101010; }
         .fornecedor-ficha-box summary{ color:#ffc400; font-weight:900; cursor:pointer; }
@@ -376,7 +376,7 @@ body.pagina-fornecedores-admin{ margin:0; padding-left:0; padding-right:0; paddi
     border: 0;
     border-radius: 0;
     overflow: auto;
-    max-height: calc(62vh + 120px);
+    max-height: calc(62vh - 8px);
     scrollbar-gutter: stable;
     overscroll-behavior: contain;
 }
@@ -463,7 +463,7 @@ body.pagina-fornecedores-admin{ margin:0; padding-left:0; padding-right:0; paddi
 }
 
 .pagina-fornecedores-unificada .fornecedor-resultados {
-    max-height: calc(62vh + 120px);
+    max-height: calc(62vh - 8px);
     overflow: auto;
     scrollbar-gutter: stable;
     overscroll-behavior: contain;
@@ -1192,7 +1192,7 @@ body.mapas-produto-modal-aberto {
     }
 
     .pagina-fornecedores-unificada .fornecedor-resultados {
-        max-height: calc(65vh + 120px);
+        max-height: calc(65vh - 8px);
     }
 
     .pagina-mapas-admin .fornecedor-resultados {
