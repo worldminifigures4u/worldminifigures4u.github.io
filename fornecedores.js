@@ -1750,16 +1750,14 @@ function atualizarResumoEncomendaFornecedor(opcoes = {}) {
     }
 
     const { totalFiltrados, limite } = fornecedorResumoEncomenda;
-    const { fornecedor, fornecedorMarcacao, filtroFornecedor } = obterControlosResultadosFornecedor();
-    const resumoMarcacao = obterTextoResumoMarcacaoFornecedor(fornecedor, fornecedorMarcacao, filtroFornecedor);
 
     let textoProdutos;
     if (totalFiltrados <= 0) {
         textoProdutos = "Nenhum produto encontrado.";
     } else if (totalFiltrados > limite) {
-        textoProdutos = `${Math.min(totalFiltrados, limite)} de ${totalFiltrados} produto(s) apresentados.`;
+        textoProdutos = `${Math.min(totalFiltrados, limite)} de ${totalFiltrados} produto(s)`;
     } else {
-        textoProdutos = `${totalFiltrados} produto(s) apresentados.`;
+        textoProdutos = `${totalFiltrados} produto(s)`;
     }
 
     let texto = document.getElementById("fornecedor-resumo-encomenda-texto");
@@ -1769,7 +1767,7 @@ function atualizarResumoEncomendaFornecedor(opcoes = {}) {
         texto.className = "fornecedor-resumo-encomenda-texto";
         alvo.querySelector(".fornecedor-resumo-encomenda-esquerda")?.appendChild(texto);
     }
-    texto.textContent = `${textoProdutos}${resumoMarcacao}`;
+    texto.textContent = textoProdutos;
 
     let unidades = document.getElementById("fornecedor-resumo-encomenda-unidades");
     if (!unidades) {
