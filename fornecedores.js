@@ -1943,12 +1943,12 @@ function criarTheadTabelaEncomendaFornecedor() {
     const cabecalho = document.createElement("tr");
     [
         ["", "mapas-col-foto", ""],
-        ["nome", "mapas-col-nome", "nome"],
+        ["Nome", "mapas-col-nome", "nome"],
         ["Ref.", "mapas-col-ref", "ref"],
-        ["stock", "mapas-col-stock", "stock"],
-        ["chegar", "mapas-col-pendente", "pendente"],
-        ["prev.", "mapas-col-previsto", "previsto"],
-        ["qtd", "mapas-col-qtd", "qtd"],
+        ["Stock", "mapas-col-stock", "stock"],
+        ["Chegar", "mapas-col-pendente", "pendente"],
+        ["Prev.", "mapas-col-previsto", "previsto"],
+        ["Qtd", "mapas-col-qtd", "qtd"],
     ].forEach(([texto, classe, coluna]) => {
         const th = document.createElement("th");
         th.className = `${classe} mapas-th-ordenavel`;
@@ -2224,11 +2224,11 @@ function renderizarSelecionadosFornecedorTabela(caixa) {
     const cabecalho = document.createElement("tr");
     [
         ["", "mapas-col-foto", ""],
-        ["nome", "mapas-col-nome", "nome"],
+        ["Nome", "mapas-col-nome", "nome"],
         ["Ref.", "mapas-col-ref", "ref"],
-        ["stock", "mapas-col-stock", "stock"],
-        ["qtd", "mapas-col-qtd", "qtd"],
-        ["preço", "mapas-col-preco", "preco"],
+        ["Stock", "mapas-col-stock", "stock"],
+        ["Qtd", "mapas-col-qtd", "qtd"],
+        ["Preço", "mapas-col-preco", "preco"],
         ["", "mapas-col-remover", ""],
     ].forEach(([texto, classe, coluna]) => {
         const th = document.createElement("th");

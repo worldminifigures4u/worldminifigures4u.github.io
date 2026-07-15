@@ -357,6 +357,159 @@ body.pagina-fornecedores-admin{ margin:0; padding-left:0; padding-right:0; paddi
     gap: 8px;
 }
 
+.pagina-fornecedores-unificada {
+    --fp-fonte-ui: 13px;
+    --fp-fonte-ui-pequena: 12px;
+    --fp-borda-ui: 1px solid #444;
+    --fp-raio-ui: 6px;
+    --fp-altura-campo: 36px;
+    --fp-fundo-campo: #242424;
+    --fp-texto-campo: #fff;
+    --fp-texto-suave: #bdbdbd;
+    --fp-cor-destaque: #ffc400;
+    --fp-foco-campo: 0 0 0 2px rgba(255, 196, 0, 0.18);
+}
+
+.pagina-fornecedores-unificada .fornecedor-controles-unificados label,
+.pagina-fornecedores-unificada .fornecedor-resumo-pesquisa {
+    gap: 4px;
+    font-size: var(--fp-fonte-ui-pequena);
+    font-weight: 700;
+    color: var(--fp-texto-suave);
+}
+
+.pagina-fornecedores-unificada .fornecedor-controles-unificados input,
+.pagina-fornecedores-unificada .fornecedor-controles-unificados select,
+.pagina-fornecedores-unificada .fornecedor-filtro-estado-select,
+.pagina-fornecedores-unificada .fornecedor-resumo-pesquisa .fornecedor-pesquisa-compacta {
+    min-height: var(--fp-altura-campo);
+    box-sizing: border-box;
+    padding: 7px 12px;
+    font-size: var(--fp-fonte-ui);
+    border: var(--fp-borda-ui);
+    border-radius: var(--fp-raio-ui);
+    background: var(--fp-fundo-campo);
+    color: var(--fp-texto-campo);
+}
+
+.pagina-fornecedores-unificada .fornecedor-controle-filtro-compacto select {
+    padding-right: 28px;
+}
+
+.pagina-fornecedores-unificada .fornecedor-controles-unificados input:focus,
+.pagina-fornecedores-unificada .fornecedor-controles-unificados select:focus,
+.pagina-fornecedores-unificada .fornecedor-filtro-estado-select:focus,
+.pagina-fornecedores-unificada .fornecedor-resumo-pesquisa .fornecedor-pesquisa-compacta:focus {
+    border-color: var(--fp-cor-destaque);
+    outline: none;
+    box-shadow: var(--fp-foco-campo);
+}
+
+.pagina-fornecedores-unificada .fornecedor-btn-editar-ficha {
+    min-height: var(--fp-altura-campo);
+    padding: 7px 12px;
+    font-size: var(--fp-fonte-ui);
+    border: var(--fp-borda-ui);
+    border-radius: var(--fp-raio-ui);
+    background: var(--fp-fundo-campo);
+    color: var(--fp-texto-campo);
+    font-weight: 700;
+}
+
+.pagina-fornecedores-unificada .fornecedor-btn-editar-ficha:hover,
+.pagina-fornecedores-unificada .fornecedor-btn-editar-ficha:focus-visible {
+    border-color: var(--fp-cor-destaque);
+    color: var(--fp-cor-destaque);
+    background: var(--fp-fundo-campo);
+    outline: none;
+    box-shadow: var(--fp-foco-campo);
+}
+
+.pagina-fornecedores-unificada .fornecedor-resumo-encomenda {
+    font-size: var(--fp-fonte-ui);
+    color: var(--fp-texto-suave);
+}
+
+.pagina-fornecedores-unificada .fornecedor-resumo-encomenda-unidades {
+    padding: 6px 10px;
+    border: var(--fp-borda-ui);
+    border-radius: var(--fp-raio-ui);
+    background: var(--fp-fundo-campo);
+    color: var(--fp-cor-destaque);
+    font-size: var(--fp-fonte-ui);
+    font-weight: 700;
+    box-shadow: none;
+}
+
+.pagina-fornecedores-unificada .fornecedor-selecionados-titulo {
+    font-size: var(--fp-fonte-ui);
+    font-weight: 800;
+}
+
+.pagina-fornecedores-unificada :is(.fornecedor-resultados, .fornecedor-selecionados) .fornecedor-tabela-encomenda {
+    font-size: var(--fp-fonte-ui);
+}
+
+.pagina-fornecedores-unificada :is(.fornecedor-resultados, .fornecedor-selecionados) .fornecedor-tabela-encomenda thead th {
+    padding: 8px 6px;
+    font-size: var(--fp-fonte-ui);
+    font-weight: 800;
+    color: #111;
+    border: 1px solid #8a6a00;
+    background: var(--fp-cor-destaque);
+}
+
+.pagina-fornecedores-unificada :is(.fornecedor-resultados, .fornecedor-selecionados) .fornecedor-tabela-encomenda td {
+    font-size: var(--fp-fonte-ui);
+    font-weight: 700;
+    color: var(--fp-texto-campo);
+    border-color: #333;
+}
+
+.pagina-fornecedores-unificada .mapa-stock-celula.sem-stock {
+    color: #ff6b6b !important;
+}
+
+.pagina-fornecedores-unificada .mapa-pendente-celula.com-pendente,
+.pagina-fornecedores-unificada .mapa-previsto-celula.com-pendente {
+    color: var(--fp-texto-campo) !important;
+}
+
+.pagina-fornecedores-unificada .mapa-quantidade-input,
+.pagina-fornecedores-unificada .mapa-preco-input {
+    border: var(--fp-borda-ui);
+    border-radius: 5px;
+    background: var(--fp-fundo-campo);
+    color: var(--fp-texto-campo);
+    font-size: var(--fp-fonte-ui);
+    font-weight: 700;
+}
+
+.pagina-fornecedores-unificada .mapa-quantidade-input:focus,
+.pagina-fornecedores-unificada .mapa-preco-input:focus {
+    border-color: var(--fp-cor-destaque);
+    outline: none;
+    box-shadow: var(--fp-foco-campo);
+}
+
+.pagina-fornecedores-unificada .fornecedor-total-figuras-encomenda {
+    font-size: var(--fp-fonte-ui);
+    font-weight: 700;
+    color: var(--fp-cor-destaque);
+    border: var(--fp-borda-ui);
+    background: var(--fp-fundo-campo);
+}
+
+.pagina-fornecedores-unificada .fornecedor-acoes-encomenda .wallapop-botao {
+    min-height: var(--fp-altura-campo);
+    font-size: var(--fp-fonte-ui);
+    border: var(--fp-borda-ui);
+}
+
+.pagina-fornecedores-unificada .fornecedor-acoes-encomenda .wallapop-botao-destaque {
+    border: 1px solid var(--fp-cor-destaque);
+}
+
 .pagina-mapas-admin .fornecedor-resultados,
 .pagina-fornecedores-unificada .fornecedor-resultados {
     display: block;
