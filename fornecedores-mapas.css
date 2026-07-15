@@ -647,6 +647,52 @@ body.pagina-fornecedores-admin{ margin:0; padding-left:0; padding-right:0; paddi
     opacity: 1;
 }
 
+.pagina-fornecedores-unificada .mapas-produtos-tabela {
+    font-size: 13px;
+}
+
+.pagina-fornecedores-unificada .mapas-produtos-tabela th,
+.pagina-fornecedores-unificada .mapas-produtos-tabela td {
+    padding: 5px 4px;
+}
+
+.pagina-fornecedores-unificada .mapas-produtos-tabela th {
+    padding: 7px 4px;
+    font-size: 12px;
+}
+
+.pagina-fornecedores-unificada .mapas-col-foto { width: 44px; }
+.pagina-fornecedores-unificada .mapas-col-nome { width: auto; }
+.pagina-fornecedores-unificada .mapas-col-ref { width: 68px; }
+.pagina-fornecedores-unificada .mapas-col-stock { width: 42px; }
+.pagina-fornecedores-unificada .mapas-col-pendente { width: 52px; }
+.pagina-fornecedores-unificada .mapas-col-previsto { width: 52px; }
+.pagina-fornecedores-unificada .mapas-col-qtd { width: 56px; }
+
+.pagina-fornecedores-unificada .mapas-col-ref,
+.pagina-fornecedores-unificada .mapas-produto-nome-botao {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.pagina-fornecedores-unificada .mapas-produto-nome-botao {
+    display: block;
+    max-width: 100%;
+    line-height: 1.25;
+}
+
+.pagina-fornecedores-unificada .mapas-col-foto .fornecedor-produto-foto {
+    width: 36px;
+    height: 36px;
+}
+
+.pagina-fornecedores-unificada .mapa-quantidade-input {
+    width: 48px;
+    padding: 5px 2px;
+    font-size: 12px;
+}
+
 .mapa-stock-celula {
     font-weight: 900;
 }
