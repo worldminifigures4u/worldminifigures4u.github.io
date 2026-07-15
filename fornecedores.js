@@ -1820,6 +1820,56 @@ function ligarScrollHorizontalTabelaEncomendaFornecedor() {
     }, { passive: true });
 }
 
+function aplicarColgroupTabelaEncomendaFornecedor(tabela, larguras) {
+    let colgroup = tabela.querySelector("colgroup");
+    if (!colgroup) {
+        colgroup = document.createElement("colgroup");
+        tabela.insertBefore(colgroup, tabela.firstChild);
+    }
+    colgroup.replaceChildren();
+    larguras.forEach((largura) => {
+        const col = document.createElement("col");
+        col.style.width = `${largura}px`;
+        colgroup.appendChild(col);
+    });
+    tabela.style.tableLayout = "fixed";
+    tabela.style.width = `${larguras.reduce((total, largura) => total + largura, 0)}px`;
+}
+
+function sincronizarLargurasColunasTabelaEncomendaFornecedor() {
+    const cabecalho = document.querySelector(".pagina-fornecedores-unificada .mapas-produtos-tabela-cabecalho");
+    const corpo = document.querySelector(".pagina-fornecedores-unificada .mapas-produtos-tabela-corpo");
+    if (!cabecalho || !corpo) return;
+
+    const linhas = [...corpo.querySelectorAll("tbody tr")];
+    const ths = [...cabecalho.querySelectorAll("thead th")];
+    if (!linhas.length || !ths.length) return;
+
+    cabecalho.style.tableLayout = "auto";
+    corpo.style.tableLayout = "auto";
+    cabecalho.style.width = "max-content";
+    corpo.style.width = "max-content";
+    cabecalho.querySelector("colgroup")?.remove();
+    corpo.querySelector("colgroup")?.remove();
+
+    requestAnimationFrame(() => {
+        const minimos = [44, 88, 68, 42, 52, 52, 56];
+        const larguras = ths.map((_, indice) => minimos[indice] || 0);
+
+        linhas.forEach((linha) => {
+            [...linha.children].forEach((celula, indice) => {
+                larguras[indice] = Math.max(larguras[indice], celula.offsetWidth);
+            });
+        });
+        ths.forEach((th, indice) => {
+            larguras[indice] = Math.max(larguras[indice], th.offsetWidth);
+        });
+
+        aplicarColgroupTabelaEncomendaFornecedor(cabecalho, larguras);
+        aplicarColgroupTabelaEncomendaFornecedor(corpo, larguras);
+    });
+}
+
 function criarCabecalhoTabelaEncomendaFornecedor() {
     const tabela = document.createElement("table");
     tabela.className = "mapas-produtos-tabela mapas-produtos-tabela-cabecalho";

@@ -662,19 +662,17 @@ body.pagina-fornecedores-admin{ margin:0; padding-left:0; padding-right:0; paddi
     opacity: 1;
 }
 
-.pagina-fornecedores-unificada .mapas-produtos-tabela {
-    table-layout: auto;
-    width: max-content;
-    max-width: 100%;
+.pagina-fornecedores-unificada .mapas-produtos-tabela-cabecalho,
+.pagina-fornecedores-unificada .mapas-produtos-tabela-corpo {
     font-size: 13px;
 }
 
-.pagina-fornecedores-unificada .mapas-produtos-tabela th,
-.pagina-fornecedores-unificada .mapas-produtos-tabela td {
+.pagina-fornecedores-unificada .mapas-produtos-tabela-cabecalho th,
+.pagina-fornecedores-unificada .mapas-produtos-tabela-corpo td {
     padding: 5px 4px;
 }
 
-.pagina-fornecedores-unificada .mapas-produtos-tabela th {
+.pagina-fornecedores-unificada .mapas-produtos-tabela-cabecalho th {
     padding: 7px 4px;
     font-size: 12px;
 }
