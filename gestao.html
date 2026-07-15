@@ -318,6 +318,18 @@
                         </div>
 
                             <div class="admin-seccao">
+                            <h3>Atualizar catálogo (sem alterar stock)</h3>
+                            <div class="form-admin">
+                                <input class="input-upload-admin" type="file" id="admin-ficheiro-catalogo-sem-stock" accept=".ods,.xlsx,.xls">
+                                <p class="ajuda-admin">Importa nome, preço, Ref., SKU, tema, subtema, peso e dados dos fornecedores. O stock e o estado ativo dos produtos existentes são preservados. Produtos novos entram com stock 0. Produtos que não constem do ficheiro não são removidos.</p>
+                                <div id="resumo-importacao-catalogo-sem-stock" class="resumo-importacao-stock oculto"></div>
+                                <div id="detalhes-importacao-catalogo-sem-stock" class="lista-importacao-stock oculto"></div>
+                                <button type="button" id="btn-confirmar-importacao-catalogo-sem-stock" class="btn-acao-cliente" disabled>Atualizar catálogo no Supabase</button>
+                                <div id="status-importacao-catalogo-sem-stock" class="msg-status"></div>
+                            </div>
+                        </div>
+
+                            <div class="admin-seccao">
                             <h3>Substituir catálogo pelo Mapas.ods</h3>
                             <div class="form-admin">
                                 <input class="input-upload-admin" type="file" id="admin-ficheiro-catalogo" accept=".ods,.xlsx,.xls">

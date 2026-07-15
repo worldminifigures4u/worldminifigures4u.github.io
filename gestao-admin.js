@@ -732,7 +732,7 @@ function garantirScriptImportacaoGestao() {
 
     promessaScriptImportacaoGestao = new Promise((resolve, reject) => {
         const script = document.createElement('script');
-        script.src = 'gestao-importacao.js?v=20260713-r27';
+        script.src = 'gestao-importacao.js?v=20260715-catalogo-sem-stock';
         script.defer = true;
         script.onload = () => {
             scriptImportacaoGestaoCarregado = true;
@@ -781,6 +781,16 @@ function ligarGestaoAdmin() {
     ligarElementoGestao('btn-confirmar-importacao-stock', 'click', function () {
         garantirScriptImportacaoGestao().then(() => {
             if (typeof confirmarImportacaoStockAdmin === 'function') confirmarImportacaoStockAdmin();
+        }).catch(console.error);
+    });
+    ligarElementoGestao('admin-ficheiro-catalogo-sem-stock', 'change', function () {
+        garantirScriptImportacaoGestao().then(() => {
+            if (typeof analisarFicheiroCatalogoSemStockAdmin === 'function') analisarFicheiroCatalogoSemStockAdmin(this);
+        }).catch(console.error);
+    });
+    ligarElementoGestao('btn-confirmar-importacao-catalogo-sem-stock', 'click', function () {
+        garantirScriptImportacaoGestao().then(() => {
+            if (typeof confirmarImportacaoCatalogoSemStockAdmin === 'function') confirmarImportacaoCatalogoSemStockAdmin();
         }).catch(console.error);
     });
     ligarElementoGestao('admin-ficheiro-catalogo', 'change', function () {

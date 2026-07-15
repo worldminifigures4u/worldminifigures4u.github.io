@@ -3,6 +3,7 @@
 
 let importacaoStockPendente = null;
 let importacaoCatalogoPendente = null;
+let importacaoCatalogoSemStockPendente = null;
 
 function normalizarCabecalhoStock(valor) {
     return String(valor || '')
@@ -402,36 +403,62 @@ function obterIndiceColuna(cabecalhos, nomes, obrigatoria = true) {
     return indice;
 }
 
-function renderizarResumoImportacaoCatalogo(resultado) {
-    const resumo = document.getElementById('resumo-importacao-catalogo');
-    const detalhes = document.getElementById('detalhes-importacao-catalogo');
+function renderizarResumoImportacaoCatalogo(resultado, ids) {
+    const resumo = document.getElementById(ids.resumo);
+    const detalhes = document.getElementById(ids.detalhes);
     if(!resumo || !detalhes) return;
 
-    resumo.replaceChildren(
-        criarIndicadorImportacaoStock(resultado.produtos.length, 'Produtos válidos'),
-        criarIndicadorImportacaoStock(resultado.totalStockLinhasFicheiro, 'Stock linhas ficheiro'),
-        criarIndicadorImportacaoStock(resultado.totalStockFicheiro, 'Stock no ficheiro'),
-        criarIndicadorImportacaoStock(resultado.novos.length, 'Novos'),
-        criarIndicadorImportacaoStock(resultado.existentes.length, 'Atualizados'),
-        criarIndicadorImportacaoStock(resultado.remover.length, 'A remover'),
-        criarIndicadorImportacaoStock(resultado.ativos, 'Ativos'),
-        criarIndicadorImportacaoStock(resultado.inativos, 'Inativos')
-    );
+    const indicadores = resultado.preservarStock
+        ? [
+            criarIndicadorImportacaoStock(resultado.produtos.length, 'Produtos válidos'),
+            criarIndicadorImportacaoStock(resultado.totalStockAtual, 'Stock atual site'),
+            criarIndicadorImportacaoStock(resultado.novos.length, 'Novos com stock 0'),
+            criarIndicadorImportacaoStock(resultado.existentes.length, 'Atualizados'),
+            criarIndicadorImportacaoStock(resultado.ativos, 'Ativos no ficheiro'),
+            criarIndicadorImportacaoStock(resultado.inativos, 'Inativos no ficheiro')
+        ]
+        : [
+            criarIndicadorImportacaoStock(resultado.produtos.length, 'Produtos válidos'),
+            criarIndicadorImportacaoStock(resultado.totalStockLinhasFicheiro, 'Stock linhas ficheiro'),
+            criarIndicadorImportacaoStock(resultado.totalStockFicheiro, 'Stock no ficheiro'),
+            criarIndicadorImportacaoStock(resultado.novos.length, 'Novos'),
+            criarIndicadorImportacaoStock(resultado.existentes.length, 'Atualizados'),
+            criarIndicadorImportacaoStock(resultado.remover.length, 'A remover'),
+            criarIndicadorImportacaoStock(resultado.ativos, 'Ativos'),
+            criarIndicadorImportacaoStock(resultado.inativos, 'Inativos')
+        ];
+
+    resumo.replaceChildren(...indicadores);
     resumo.classList.remove('oculto');
 
     detalhes.replaceChildren();
-    const diferencaLinhas = resultado.totalStockFicheiro - resultado.totalStockLinhasFicheiro;
-    const linhas = [
-        `${resultado.produtos.length} produtos serão importados do ficheiro.`,
-        `Stock bruto nas linhas do ficheiro: ${resultado.totalStockLinhasFicheiro}.`,
-        `Stock total do ficheiro: ${resultado.totalStockFicheiro}.`,
-        `${resultado.novos.length} produtos serão adicionados.`,
-        `${resultado.existentes.length} produtos existentes serão atualizados por SKU.`,
-        `${resultado.remover.length} produtos atuais não constam do ficheiro e serão removidos.`
-    ];
-    if(diferencaLinhas !== 0) linhas.push(`Diferença entre linhas do ficheiro e produtos importados: ${diferencaLinhas > 0 ? '+' : ''}${diferencaLinhas}. Verifique duplicados ou linhas ignoradas.`);
+    const linhas = resultado.preservarStock
+        ? [
+            `${resultado.produtos.length} produtos serão importados do ficheiro.`,
+            'O stock e o estado ativo dos produtos existentes serão preservados.',
+            `${resultado.novos.length} produto(s) novo(s) entrarão com stock 0.`,
+            `${resultado.existentes.length} produto(s) existente(s) serão atualizados por SKU.`,
+            'Produtos que não constem do ficheiro não serão removidos.'
+        ]
+        : [
+            `${resultado.produtos.length} produtos serão importados do ficheiro.`,
+            `Stock bruto nas linhas do ficheiro: ${resultado.totalStockLinhasFicheiro}.`,
+            `Stock total do ficheiro: ${resultado.totalStockFicheiro}.`,
+            `${resultado.novos.length} produtos serão adicionados.`,
+            `${resultado.existentes.length} produtos existentes serão atualizados por SKU.`,
+            `${resultado.remover.length} produtos atuais não constam do ficheiro e serão removidos.`
+        ];
+
+    if(!resultado.preservarStock) {
+        const diferencaLinhas = resultado.totalStockFicheiro - resultado.totalStockLinhasFicheiro;
+        if(diferencaLinhas !== 0) {
+            linhas.push(`Diferença entre linhas do ficheiro e produtos importados: ${diferencaLinhas > 0 ? '+' : ''}${diferencaLinhas}. Verifique duplicados ou linhas ignoradas.`);
+        }
+    }
     if(resultado.invalidos.length) linhas.push(`${resultado.invalidos.length} linha(s) inválida(s) foram ignoradas.`);
-    resultado.remover.slice(0, 30).forEach(produto => linhas.push(`Remover: ${produto.sku} | ${produto.nome || ''}`));
+    if(!resultado.preservarStock) {
+        resultado.remover.slice(0, 30).forEach(produto => linhas.push(`Remover: ${produto.sku} | ${produto.nome || ''}`));
+    }
 
     linhas.forEach(linha => {
         const div = document.createElement('div');
@@ -449,102 +476,137 @@ function atualizarConfirmacaoCatalogoAdmin() {
     }
 }
 
-async function analisarFicheiroCatalogoAdmin(input) {
-    const status = document.getElementById('status-importacao-catalogo');
-    importacaoCatalogoPendente = null;
-    atualizarConfirmacaoCatalogoAdmin();
+function atualizarConfirmacaoCatalogoSemStockAdmin() {
+    const botao = document.getElementById('btn-confirmar-importacao-catalogo-sem-stock');
+    if(botao) {
+        botao.disabled = !importacaoCatalogoSemStockPendente;
+    }
+}
+
+async function extrairProdutosCatalogoDoFicheiro(conteudo, { preservarStock = false } = {}) {
+    const { linhas, cabecalhos, primeiraLinhaDados } = lerFolhaMapas(conteudo);
+    const colunas = {
+        lego:obterIndiceColuna(cabecalhos, 'lego', false),
+        nome:obterIndiceColuna(cabecalhos, 'nome'),
+        preco:obterIndiceColuna(cabecalhos, 'preco'),
+        sku:obterIndiceColuna(cabecalhos, 'sku'),
+        top:obterIndiceColuna(cabecalhos, 'top', false),
+        arquivado:obterIndiceColuna(cabecalhos, ['arquivado', 'arquivada', 'arquivados', 'arquivadas', 'archived'], false),
+        descontinuado:obterIndiceColuna(cabecalhos, ['descontinuado', 'descontinuada', 'descontinuados', 'descontinuadas', 'discontinued'], false),
+        novidade:obterIndiceColuna(cabecalhos, ['novidade', 'nova', 'novo'], false),
+        referencia:obterIndiceColuna(cabecalhos, 'referencia', false),
+        stock:obterIndiceColuna(cabecalhos, 'stock', !preservarStock),
+        tema:obterIndiceColuna(cabecalhos, 'tema'),
+        subtema:obterIndiceColuna(cabecalhos, 'subtema', false),
+        peso:obterIndiceColuna(cabecalhos, 'peso')
+    };
+
+    const produtosPorSku = new Map();
+    const invalidos = [];
+    let totalStockLinhasFicheiro = 0;
+
+    linhas.forEach((linha, indice) => {
+        if(!linha.some(valor => valor !== null && valor !== '')) return;
+        const lego = colunas.lego >= 0 ? String(linha[colunas.lego] || '').trim() : '';
+        const nome = String(linha[colunas.nome] || '').trim();
+        const sku = normalizarTextoSku(linha[colunas.sku]).replace(/[^A-Z0-9]/g, '');
+        const top = colunas.top >= 0 ? String(linha[colunas.top] || '').trim() : '';
+        const arquivado = colunas.arquivado >= 0 ? obterBooleanoImportacao(linha[colunas.arquivado]) : false;
+        const descontinuado = colunas.descontinuado >= 0 ? obterBooleanoImportacao(linha[colunas.descontinuado]) : false;
+        const novidade = colunas.novidade >= 0 ? obterBooleanoImportacao(linha[colunas.novidade]) : false;
+        const referencia = colunas.referencia >= 0 ? String(linha[colunas.referencia] || '').trim() : '';
+        const preco = Number(linha[colunas.preco]);
+        const stockBruto = colunas.stock >= 0 ? Number(linha[colunas.stock]) : 0;
+        const stock = preservarStock ? 0 : stockBruto;
+        const tema = String(linha[colunas.tema] || '').trim();
+        const subtema = colunas.subtema >= 0 ? String(linha[colunas.subtema] || '').trim() : '';
+        const peso = Number(linha[colunas.peso]);
+        const fornecedores = extrairFornecedoresImportacao(linha, cabecalhos);
+
+        if(!preservarStock && Number.isInteger(stockBruto) && stockBruto >= 0) {
+            totalStockLinhasFicheiro += stockBruto;
+        }
+
+        const stockValido = preservarStock || (Number.isInteger(stockBruto) && stockBruto >= 0);
+        if(!nome || !sku || !tema || !Number.isFinite(preco) || preco < 0 || !stockValido || !Number.isFinite(peso) || peso < 1 || produtosPorSku.has(sku)) {
+            invalidos.push(indice + primeiraLinhaDados);
+            return;
+        }
+
+        produtosPorSku.set(sku, {
+            lego,
+            nome,
+            preco,
+            sku,
+            top,
+            arquivado,
+            descontinuado,
+            novidade,
+            referencia,
+            stock,
+            tema,
+            subtema:subtema || 'semsubtema',
+            peso,
+            fornecedores,
+            ativo: preservarStock ? false : stock > 0
+        });
+    });
+
+    return {
+        produtosPorSku,
+        invalidos,
+        totalStockLinhasFicheiro
+    };
+}
+
+async function analisarFicheiroCatalogoComum(input, opcoes) {
+    const {
+        preservarStock,
+        statusId,
+        definirPendente,
+        idsResumo,
+        atualizarConfirmacao,
+        mensagemErroInvalidos
+    } = opcoes;
+    const status = document.getElementById(statusId);
+    definirPendente(null);
+    atualizarConfirmacao();
 
     try {
         const ficheiro = input.files?.[0];
         if(!ficheiro) return;
         await garantirXlsxAdmin();
-        mostrarMensagem(status, 'A analisar o catálogo completo...');
+        mostrarMensagem(status, preservarStock
+            ? 'A analisar o catálogo (stock será preservado)...'
+            : 'A analisar o catálogo completo...');
 
         const conteudo = await ficheiro.arrayBuffer();
-        const { linhas, cabecalhos, primeiraLinhaDados } = lerFolhaMapas(conteudo);
-        const colunas = {
-            lego:obterIndiceColuna(cabecalhos, 'lego', false),
-            nome:obterIndiceColuna(cabecalhos, 'nome'),
-            preco:obterIndiceColuna(cabecalhos, 'preco'),
-            sku:obterIndiceColuna(cabecalhos, 'sku'),
-            top:obterIndiceColuna(cabecalhos, 'top', false),
-            arquivado:obterIndiceColuna(cabecalhos, ['arquivado', 'arquivada', 'arquivados', 'arquivadas', 'archived'], false),
-            descontinuado:obterIndiceColuna(cabecalhos, ['descontinuado', 'descontinuada', 'descontinuados', 'descontinuadas', 'discontinued'], false),
-            novidade:obterIndiceColuna(cabecalhos, ['novidade', 'nova', 'novo'], false),
-            referencia:obterIndiceColuna(cabecalhos, 'referencia', false),
-            stock:obterIndiceColuna(cabecalhos, 'stock'),
-            tema:obterIndiceColuna(cabecalhos, 'tema'),
-            subtema:obterIndiceColuna(cabecalhos, 'subtema', false),
-            peso:obterIndiceColuna(cabecalhos, 'peso')
-        };
-
-        const produtosPorSku = new Map();
-        const invalidos = [];
-        let totalStockLinhasFicheiro = 0;
-
-        linhas.forEach((linha, indice) => {
-            if(!linha.some(valor => valor !== null && valor !== '')) return;
-            const lego = colunas.lego >= 0 ? String(linha[colunas.lego] || '').trim() : '';
-            const nome = String(linha[colunas.nome] || '').trim();
-            const sku = normalizarTextoSku(linha[colunas.sku]).replace(/[^A-Z0-9]/g, '');
-            const top = colunas.top >= 0 ? String(linha[colunas.top] || '').trim() : '';
-            const arquivado = colunas.arquivado >= 0 ? obterBooleanoImportacao(linha[colunas.arquivado]) : false;
-            const descontinuado = colunas.descontinuado >= 0 ? obterBooleanoImportacao(linha[colunas.descontinuado]) : false;
-            const novidade = colunas.novidade >= 0 ? obterBooleanoImportacao(linha[colunas.novidade]) : false;
-            const referencia = colunas.referencia >= 0 ? String(linha[colunas.referencia] || '').trim() : '';
-            const preco = Number(linha[colunas.preco]);
-            const stock = Number(linha[colunas.stock]);
-            const tema = String(linha[colunas.tema] || '').trim();
-            const subtema = colunas.subtema >= 0 ? String(linha[colunas.subtema] || '').trim() : '';
-            const peso = Number(linha[colunas.peso]);
-            const fornecedores = extrairFornecedoresImportacao(linha, cabecalhos);
-            if(Number.isInteger(stock) && stock >= 0) {
-                totalStockLinhasFicheiro += stock;
-            }
-
-            if(!nome || !sku || !tema || !Number.isFinite(preco) || preco < 0 || !Number.isInteger(stock) || stock < 0 || !Number.isFinite(peso) || peso < 1 || produtosPorSku.has(sku)) {
-                invalidos.push(indice + primeiraLinhaDados);
-                return;
-            }
-
-            produtosPorSku.set(sku, {
-                lego,
-                nome,
-                preco,
-                sku,
-                top,
-                arquivado,
-                descontinuado,
-                novidade,
-                referencia,
-                stock,
-                tema,
-                subtema:subtema || 'semsubtema',
-                peso,
-                fornecedores,
-                ativo:stock > 0
-            });
-        });
+        const { produtosPorSku, invalidos, totalStockLinhasFicheiro } = await extrairProdutosCatalogoDoFicheiro(conteudo, { preservarStock });
 
         if(produtosPorSku.size === 0) {
             throw new Error('O ficheiro não contém produtos válidos.');
         }
         if(invalidos.length > 0) {
-            throw new Error(`Foram encontradas ${invalidos.length} linha(s) inválida(s). Corrija o ficheiro antes de substituir o catálogo.`);
+            throw new Error(`Foram encontradas ${invalidos.length} linha(s) inválida(s). Corrija o ficheiro antes de ${preservarStock ? 'atualizar' : 'substituir'} o catálogo.`);
         }
 
         const atuaisPorSku = new Map(todosOsProdutos.map(produto => [String(produto.sku || '').trim().toUpperCase(), produto]));
         const produtos = [...produtosPorSku.values()];
         const novos = produtos.filter(produto => !atuaisPorSku.has(produto.sku));
         const existentes = produtos.filter(produto => atuaisPorSku.has(produto.sku));
-        const remover = todosOsProdutos.filter(produto => !produtosPorSku.has(String(produto.sku || '').trim().toUpperCase()));
+        const remover = preservarStock
+            ? []
+            : todosOsProdutos.filter(produto => !produtosPorSku.has(String(produto.sku || '').trim().toUpperCase()));
         const totalStockFicheiro = somarStockProdutos(produtos);
+        const totalStockAtual = somarStockProdutos(todosOsProdutos);
 
-        importacaoCatalogoPendente = {
+        const resultado = {
             nomeFicheiro:ficheiro.name,
+            preservarStock,
             produtos,
             totalStockLinhasFicheiro,
             totalStockFicheiro,
+            totalStockAtual,
             novos,
             existentes,
             remover,
@@ -553,13 +615,40 @@ async function analisarFicheiroCatalogoAdmin(input) {
             inativos:produtos.filter(produto => !produto.ativo).length
         };
 
-        renderizarResumoImportacaoCatalogo(importacaoCatalogoPendente);
-        atualizarConfirmacaoCatalogoAdmin();
-        mostrarMensagem(status, 'Análise concluída. Reveja o resumo antes de confirmar.', 'msg-sucesso');
+        definirPendente(resultado);
+        renderizarResumoImportacaoCatalogo(resultado, idsResumo);
+        atualizarConfirmacao();
+        mostrarMensagem(status, mensagemErroInvalidos || 'Análise concluída. Reveja o resumo antes de confirmar.', 'msg-sucesso');
     } catch(error) {
-        console.error('Erro ao analisar catálogo:', error);
+        console.error(`Erro ao analisar catálogo${preservarStock ? ' sem stock' : ''}:`, error);
         mostrarMensagem(status, 'Erro: ' + (error.message || 'Não foi possível analisar o catálogo.'), 'msg-erro');
     }
+}
+
+async function analisarFicheiroCatalogoAdmin(input) {
+    return analisarFicheiroCatalogoComum(input, {
+        preservarStock: false,
+        statusId: 'status-importacao-catalogo',
+        definirPendente: (valor) => { importacaoCatalogoPendente = valor; },
+        idsResumo: {
+            resumo: 'resumo-importacao-catalogo',
+            detalhes: 'detalhes-importacao-catalogo'
+        },
+        atualizarConfirmacao: atualizarConfirmacaoCatalogoAdmin
+    });
+}
+
+async function analisarFicheiroCatalogoSemStockAdmin(input) {
+    return analisarFicheiroCatalogoComum(input, {
+        preservarStock: true,
+        statusId: 'status-importacao-catalogo-sem-stock',
+        definirPendente: (valor) => { importacaoCatalogoSemStockPendente = valor; },
+        idsResumo: {
+            resumo: 'resumo-importacao-catalogo-sem-stock',
+            detalhes: 'detalhes-importacao-catalogo-sem-stock'
+        },
+        atualizarConfirmacao: atualizarConfirmacaoCatalogoSemStockAdmin
+    });
 }
 
 function descarregarBackupCatalogoAdmin() {
@@ -645,6 +734,58 @@ async function confirmarImportacaoCatalogoAdmin() {
         console.error('Erro ao substituir catálogo:', error);
         botao.disabled = false;
         mostrarMensagem(status, 'Erro: ' + (error.message || 'Não foi possível substituir o catálogo.'), 'msg-erro');
+    }
+}
+
+async function confirmarImportacaoCatalogoSemStockAdmin() {
+    const status = document.getElementById('status-importacao-catalogo-sem-stock');
+    const botao = document.getElementById('btn-confirmar-importacao-catalogo-sem-stock');
+    const importacao = importacaoCatalogoSemStockPendente;
+    if(!importacao) return;
+
+    try {
+        const { data: { user }, error:authError } = await dbClient.auth.getUser();
+        if(authError || !utilizadorAdmin(user)) {
+            throw new Error('Apenas o administrador pode atualizar o catálogo.');
+        }
+
+        botao.disabled = true;
+        descarregarBackupCatalogoAdmin();
+        mostrarMensagem(status, 'Backup criado. A atualizar o catálogo (stock preservado)...');
+
+        const stockAntes = somarStockProdutos(todosOsProdutos);
+        const tamanhoLote = 100;
+        let importados = 0;
+        for(let inicio = 0; inicio < importacao.produtos.length; inicio += tamanhoLote) {
+            const lote = importacao.produtos.slice(inicio, inicio + tamanhoLote);
+            const { data, error } = await dbClient.rpc('importar_produtos_sem_stock_admin', {
+                p_produtos:lote
+            });
+            if(error) throw error;
+            const quantidadeImportada = Number(data?.importados || 0);
+            if(quantidadeImportada !== lote.length) {
+                throw new Error('Nem todos os produtos do lote foram importados.');
+            }
+            importados += quantidadeImportada;
+            mostrarMensagem(status, `A atualizar catálogo: ${importados}/${importacao.produtos.length}`);
+        }
+
+        importacaoCatalogoSemStockPendente = null;
+        await carregarProdutosAdminDaNuvem();
+        const stockDepois = somarStockProdutos(todosOsProdutos);
+        const diferencaStock = stockDepois - stockAntes;
+        mostrarMensagem(
+            status,
+            diferencaStock === 0
+                ? `${importados} produto(s) atualizados. Stock total preservado: ${stockDepois}. ${importacao.novos.length} novo(s), ${importacao.existentes.length} existente(s).`
+                : `${importados} produto(s) atualizados. Stock total: ${stockAntes} → ${stockDepois} (${diferencaStock > 0 ? '+' : ''}${diferencaStock}). Verifique produtos novos com stock 0.`,
+            diferencaStock === 0 ? 'msg-sucesso' : 'msg-erro'
+        );
+    } catch(error) {
+        console.error('Erro ao atualizar catálogo sem stock:', error);
+        botao.disabled = false;
+        atualizarConfirmacaoCatalogoSemStockAdmin();
+        mostrarMensagem(status, 'Erro: ' + (error.message || 'Não foi possível atualizar o catálogo.'), 'msg-erro');
     }
 }
 
