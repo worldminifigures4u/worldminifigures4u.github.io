@@ -80,13 +80,13 @@ body.pagina-fornecedores-admin{ margin:0; padding-left:0; padding-right:0; paddi
         .fornecedores-cabecalho-lista h2{ margin:0; }
         .fornecedor-filtro-estado-select{
             width:auto;
-            min-height:36px;
+            min-height:42px;
             box-sizing:border-box;
             border:1px solid #444;
             border-radius:6px;
             background:#242424;
             color:#fff;
-            padding:8px 28px 8px 12px;
+            padding:11px 28px 11px 12px;
             font:inherit;
             field-sizing:content;
             flex:0 0 auto;
@@ -280,7 +280,9 @@ body.pagina-fornecedores-admin{ margin:0; padding-left:0; padding-right:0; paddi
         }
         .fornecedor-pedido-acoes .admin-encomenda-estado-edicao .fornecedor-status-select{
             min-height:42px;
+            padding:11px 28px 11px 12px;
             margin:0;
+            font:inherit;
         }
         .fornecedor-pedido-produtos.admin-encomenda-produtos{ margin-top:0; padding-top:0; border-top:0; }
         .fornecedor-pedidos.admin-encomendas-lista{
@@ -396,12 +398,23 @@ body.pagina-fornecedores-admin{ margin:0; padding-left:0; padding-right:0; paddi
 
 .pagina-fornecedores-unificada .fornecedor-controles-unificados input,
 .pagina-fornecedores-unificada .fornecedor-controles-unificados select,
-.pagina-fornecedores-unificada .fornecedor-filtro-estado-select,
 .pagina-fornecedores-unificada .fornecedor-resumo-pesquisa .fornecedor-pesquisa-compacta {
     min-height: var(--fp-altura-campo);
     box-sizing: border-box;
     padding: 7px 12px;
     font-size: var(--fp-fonte-ui);
+    border: var(--fp-borda-ui);
+    border-radius: var(--fp-raio-ui);
+    background: var(--fp-fundo-campo);
+    color: var(--fp-texto-campo);
+}
+
+.pagina-fornecedores-unificada .fornecedor-filtro-estado-select,
+.pagina-fornecedores-unificada .fornecedor-pedido-acoes .fornecedor-status-select {
+    min-height: 42px;
+    padding: 11px 28px 11px 12px;
+    font: inherit;
+    font-size: inherit;
     border: var(--fp-borda-ui);
     border-radius: var(--fp-raio-ui);
     background: var(--fp-fundo-campo);
