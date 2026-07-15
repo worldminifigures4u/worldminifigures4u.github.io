@@ -294,6 +294,13 @@ body.pagina-fornecedores-admin{ margin:0; padding-left:0; padding-right:0; paddi
             margin-top:10px;
         }
         .fornecedor-pedido-acoes{ flex-wrap:wrap; margin-bottom:4px; }
+        .pagina-fornecedores-unificada .fornecedor-pedido-acoes{
+            justify-content:center;
+        }
+        .pagina-fornecedores-unificada .fornecedor-pedido-acoes .admin-encomenda-botoes{
+            justify-content:center;
+            flex-wrap:wrap;
+        }
         .fornecedor-pedido-acoes .admin-encomenda-estado-edicao{
             display:flex;
             align-items:center;
