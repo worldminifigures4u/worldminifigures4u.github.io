@@ -107,7 +107,7 @@ begin
     'sucesso', true,
     'estado', p_estado,
     'stock_reposto', false,
-    'stock_reduzido', coalesce(v_encomenda.stock_reposto, false)
+    'stock_reduzido', v_stock_era_reposto
   );
 end;
 $$;
@@ -132,6 +132,7 @@ as $$
 declare
   v_encomenda public.encomendas%rowtype;
   v_item record;
+  v_repostou_agora boolean := false;
 begin
   if coalesce(auth.jwt() ->> 'email', '') <> 'worldminifigures4u@gmail.com' then
     raise exception 'Acesso reservado ao administrador';
@@ -146,7 +147,8 @@ begin
     raise exception 'Encomenda nao encontrada';
   end if;
 
-  if p_repor_stock and not coalesce(v_encomenda.stock_reposto, false) then
+  if not coalesce(v_encomenda.stock_reposto, false) then
+    v_repostou_agora := true;
     for v_item in
       select
         coalesce(nullif(item->>'id_produto', ''), nullif(item->>'id', '')) as id_produto,
@@ -183,7 +185,8 @@ begin
   return jsonb_build_object(
     'sucesso', true,
     'estado', 'Cancelado',
-    'stock_reposto', v_encomenda.stock_reposto
+    'stock_reposto', v_encomenda.stock_reposto,
+    'stock_reposto_agora', v_repostou_agora
   );
 end;
 $$;

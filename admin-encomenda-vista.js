@@ -893,7 +893,7 @@ window.AdminEncomendaVista = (function () {
         const estadoAnterior = estadoNormalizado(encomenda.estado);
         const atualizarDataPagamentoFlag = deveAtualizarDataPagamento(estadoAnterior, estado);
         const dataPagamentoIso = atualizarDataPagamentoFlag ? new Date().toISOString() : null;
-        let reporStock = false;
+        let reporStock = true;
 
         if (estado === "Concluído" && estadoAnterior !== "Concluído") {
             const confirmado = window.confirm(
@@ -918,14 +918,14 @@ window.AdminEncomendaVista = (function () {
         }
 
         if (estado === "Cancelado") {
+            const codigo = encomenda.codigo_encomenda || "";
             const mensagemCancelamento = encomenda.stock_reposto
-                ? `Cancelar esta encomenda ${encomenda.codigo_encomenda || ""}? O stock já foi reposto anteriormente.`
-                : `Cancelar esta encomenda ${encomenda.codigo_encomenda || ""} e repor automaticamente o stock dos produtos?`;
+                ? `Cancelar novamente a encomenda ${codigo}?`
+                : `Cancelar a encomenda ${codigo} e repor automaticamente o stock dos produtos?`;
             if (!window.confirm(mensagemCancelamento)) {
                 select.value = estadoAnterior;
                 return;
             }
-            reporStock = !encomenda.stock_reposto;
         }
 
         if (estado === "Pago" && estadoAnterior !== "Pago") {
@@ -1055,7 +1055,7 @@ window.AdminEncomendaVista = (function () {
                 );
             } else {
                 const limpeza = estado === "Concluído" ? ` ${anexosEliminados} anexo(s) eliminado(s).` : "";
-                const reposicao = estado === "Cancelado" && data?.stock_reposto ? " Stock reposto." : "";
+                const reposicao = estado === "Cancelado" && data?.stock_reposto_agora ? " Stock reposto." : "";
                 const recuperacao = estadoAnterior === "Cancelado" && estado !== "Cancelado"
                     ? (data?.stock_reduzido ? " Stock reduzido novamente." : " Encomenda recuperada.")
                     : "";
