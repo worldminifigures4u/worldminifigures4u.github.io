@@ -905,10 +905,16 @@ window.AdminEncomendaVista = (function () {
             }
         }
 
-        if (estadoAnterior === "Cancelado" && encomenda.stock_reposto && estado !== "Cancelado") {
-            select.value = estadoAnterior;
-            hooks.definirStatus("Esta encomenda foi cancelada com reposição de stock e não pode ser reaberta.", true);
-            return;
+        if (estadoAnterior === "Cancelado" && estado !== "Cancelado") {
+            const codigo = encomenda.codigo_encomenda || "";
+            let mensagemRecuperacao = `Recuperar a encomenda ${codigo} para o estado «${estado}»?`;
+            if (encomenda.stock_reposto) {
+                mensagemRecuperacao += "\n\nO stock dos produtos será novamente reduzido.";
+            }
+            if (!window.confirm(mensagemRecuperacao)) {
+                select.value = estadoAnterior;
+                return;
+            }
         }
 
         if (estado === "Cancelado") {
@@ -948,6 +954,20 @@ window.AdminEncomendaVista = (function () {
                     p_encomenda_id: String(encomenda.id),
                     p_repor_stock: reporStock
                 }));
+            } else if (estadoAnterior === "Cancelado") {
+                ({ data, error } = await obterClient().rpc("recuperar_encomenda_admin", {
+                    p_encomenda_id: String(encomenda.id),
+                    p_estado: estado
+                }));
+                if (!error && dataPagamentoIso) {
+                    try {
+                        const dataAtualizada = await atualizarDataPagamento(encomenda, dataPagamentoIso);
+                        data = { ...(data || {}), created_at: dataAtualizada?.created_at || dataPagamentoIso };
+                    } catch (erroData) {
+                        console.warn("Nao foi possivel atualizar data de pagamento.", erroData);
+                        data = { ...(data || {}), created_at: dataPagamentoIso };
+                    }
+                }
             } else {
                 let respostaRpc;
                 try {
@@ -986,7 +1006,8 @@ window.AdminEncomendaVista = (function () {
             encomenda.estado = estado;
             if (data?.created_at) encomenda.created_at = data.created_at;
             else if (dataPagamentoIso) encomenda.created_at = dataPagamentoIso;
-            if (data?.stock_reposto) encomenda.stock_reposto = true;
+            if (typeof data?.stock_reposto === "boolean") encomenda.stock_reposto = data.stock_reposto;
+            else if (data?.stock_reposto) encomenda.stock_reposto = true;
             sincronizarEncomendaNaLista(encomenda, {
                 estado,
                 created_at: encomenda.created_at,
@@ -1035,9 +1056,12 @@ window.AdminEncomendaVista = (function () {
             } else {
                 const limpeza = estado === "Concluído" ? ` ${anexosEliminados} anexo(s) eliminado(s).` : "";
                 const reposicao = estado === "Cancelado" && data?.stock_reposto ? " Stock reposto." : "";
+                const recuperacao = estadoAnterior === "Cancelado" && estado !== "Cancelado"
+                    ? (data?.stock_reduzido ? " Stock reduzido novamente." : " Encomenda recuperada.")
+                    : "";
                 const faturaComErro = mensagemFatura.includes("nao emitida");
                 hooks.definirStatus(
-                    `Estado da encomenda ${encomenda.codigo_encomenda || ""} atualizado.${limpeza}${reposicao}${mensagemFatura}`,
+                    `Estado da encomenda ${encomenda.codigo_encomenda || ""} atualizado.${limpeza}${reposicao}${recuperacao}${mensagemFatura}`,
                     faturaComErro
                 );
             }
