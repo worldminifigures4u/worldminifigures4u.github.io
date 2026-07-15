@@ -706,14 +706,25 @@ body.pagina-fornecedores-admin{ margin:0; padding-left:0; padding-right:0; paddi
 
 .pagina-fornecedores-unificada .fornecedor-resultados .fornecedor-tabela-encomenda .mapas-col-foto .fornecedor-produto-foto {
     display: block;
-    width: 52px;
-    height: 52px;
+    width: 50px;
+    height: 50px;
     margin: 0 auto;
+    padding: 0;
+    border: 1px solid #3a3a3a;
+    border-radius: 4px;
     overflow: hidden;
     box-sizing: border-box;
+    background: #222;
+    cursor: zoom-in;
+}
+
+.pagina-fornecedores-unificada .fornecedor-resultados .fornecedor-tabela-encomenda .mapas-col-foto .fornecedor-produto-foto:disabled {
+    cursor: default;
+    opacity: 0.75;
 }
 
 .pagina-fornecedores-unificada .fornecedor-resultados .fornecedor-tabela-encomenda .mapas-col-foto .fornecedor-produto-foto img,
+.pagina-fornecedores-unificada .fornecedor-resultados .fornecedor-tabela-encomenda .mapas-col-foto .fornecedor-miniatura,
 .pagina-fornecedores-unificada .fornecedor-resultados .fornecedor-tabela-encomenda .mapas-col-foto .fornecedor-miniatura.pequena {
     display: block;
     width: 100%;
@@ -721,6 +732,8 @@ body.pagina-fornecedores-admin{ margin:0; padding-left:0; padding-right:0; paddi
     max-width: 100%;
     max-height: 100%;
     object-fit: contain;
+    background: transparent;
+    border-radius: 0;
 }
 
 .pagina-fornecedores-unificada .fornecedor-tabela-encomenda-cabecalho .mapas-col-foto {
@@ -752,11 +765,6 @@ body.pagina-fornecedores-admin{ margin:0; padding-left:0; padding-right:0; paddi
     display: block;
     max-width: 100%;
     line-height: 1.25;
-}
-
-.pagina-fornecedores-unificada .fornecedor-resultados .fornecedor-tabela-encomenda .mapas-col-foto .fornecedor-produto-foto {
-    width: 36px;
-    height: 36px;
 }
 
 .pagina-fornecedores-unificada .fornecedor-resultados .fornecedor-tabela-encomenda .mapa-quantidade-input {

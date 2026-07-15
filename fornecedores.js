@@ -1858,7 +1858,7 @@ function sincronizarLargurasColunasTabelaEncomendaFornecedor() {
         const linhas = [...corpo.querySelectorAll("tbody tr")];
         if (!ths.length || !linhas.length) return;
 
-        const minimos = [60, 88, 68, 42, 52, 52, 56];
+        const minimos = [58, 88, 68, 42, 52, 52, 56];
         const larguras = ths.map((_, indice) => minimos[indice] || 0);
 
         linhas.forEach((linha) => {
