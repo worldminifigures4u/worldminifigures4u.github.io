@@ -2948,15 +2948,6 @@ function criarElementoPedidoFornecedor(tag, classe, texto) {
     return elemento;
 }
 
-function criarLinhaDetalhePedidoFornecedor(rotulo, valor) {
-    const linha = criarElementoPedidoFornecedor("div", "admin-encomenda-detalhe-linha");
-    linha.append(
-        criarElementoPedidoFornecedor("strong", "", rotulo),
-        criarElementoPedidoFornecedor("span", "", valor || "—")
-    );
-    return linha;
-}
-
 function renderizarPedidosFornecedores() {
     const caixa = document.getElementById('fornecedor-pedidos');
     if (!caixa) return;
@@ -3022,7 +3013,6 @@ function renderizarPedidosFornecedores() {
         detalhes.hidden = !aberto;
 
         const produtos = criarElementoPedidoFornecedor("div", "admin-encomenda-produtos fornecedor-pedido-produtos");
-        produtos.appendChild(criarElementoPedidoFornecedor("h3", "", "Produtos"));
         const lista = criarElementoPedidoFornecedor("div", "fornecedor-pedido-produtos");
         pedido.itens.forEach(item => {
             const produtoAtual = obterProdutoParaPedidoFornecedor(item) || item;
