@@ -1724,18 +1724,24 @@ async function guardarEdicaoProdutoMapa(evento) {
     }
 }
 
-function obterResumoSelecaoEncomendaFornecedor() {
-    const itens = fornecedorSelecao.filter(item => Math.max(0, Number(item.quantidade || 0)) > 0);
-    const figuras = itens.length;
-    const unidades = itens.reduce((soma, item) => soma + Math.max(0, Number(item.quantidade || 0)), 0);
-    return { figuras, unidades };
+function obterTotalUnidadesEncomendaFornecedor() {
+    return fornecedorSelecao.reduce((soma, item) => soma + Math.max(0, Number(item.quantidade || 0)), 0);
 }
 
-function obterTextoResumoEncomendaActualFornecedor() {
-    const { figuras, unidades } = obterResumoSelecaoEncomendaFornecedor();
-    if (figuras === 0) return "Encomenda actual: 0 figuras";
-    if (unidades === figuras) return `Encomenda actual: ${figuras} figura(s)`;
-    return `Encomenda actual: ${figuras} figura(s), ${unidades} unidade(s)`;
+function obterTextoTotalUnidadesEncomendaFornecedor() {
+    const unidades = obterTotalUnidadesEncomendaFornecedor();
+    if (unidades === 0) return "Encomenda actual: 0 unidades";
+    if (unidades === 1) return "Encomenda actual: 1 unidade";
+    return `Encomenda actual: ${unidades} unidades`;
+}
+
+function atualizarTotalUnidadesEncomendaFornecedor() {
+    if (!estaPaginaFornecedoresUnificada()) return;
+    const texto = obterTextoTotalUnidadesEncomendaFornecedor();
+    const qtdTotal = document.getElementById("fornecedor-qtd-total-unidades");
+    if (qtdTotal) qtdTotal.textContent = texto;
+    const selecionadosTotal = document.getElementById("fornecedor-selecionados-total");
+    if (selecionadosTotal) selecionadosTotal.textContent = texto;
 }
 
 function atualizarResumoEncomendaFornecedor(opcoes = {}) {
@@ -1755,7 +1761,6 @@ function atualizarResumoEncomendaFornecedor(opcoes = {}) {
     const { totalFiltrados, limite } = fornecedorResumoEncomenda;
     const { fornecedor, fornecedorMarcacao, filtroFornecedor } = obterControlosResultadosFornecedor();
     const resumoMarcacao = obterTextoResumoMarcacaoFornecedor(fornecedor, fornecedorMarcacao, filtroFornecedor);
-    const resumoEncomenda = obterTextoResumoEncomendaActualFornecedor();
 
     let textoProdutos;
     if (totalFiltrados <= 0) {
@@ -1766,7 +1771,8 @@ function atualizarResumoEncomendaFornecedor(opcoes = {}) {
         textoProdutos = `${totalFiltrados} produto(s) apresentados.`;
     }
 
-    alvo.textContent = `${textoProdutos}${resumoMarcacao} | ${resumoEncomenda}`;
+    alvo.textContent = `${textoProdutos}${resumoMarcacao}`;
+    atualizarTotalUnidadesEncomendaFornecedor();
 }
 
 function obterTextoResumoMarcacaoFornecedor(fornecedor, fornecedorMarcacao, filtroFornecedor) {
@@ -1818,6 +1824,14 @@ function renderizarResultadosFornecedorTabelaEncomenda(caixa, resultados) {
     ].forEach(([texto, classe, coluna]) => {
         const th = document.createElement("th");
         th.className = `${classe} mapas-th-ordenavel`;
+        const envoltorioCabecalho = document.createElement("div");
+        envoltorioCabecalho.className = coluna === "qtd" ? "mapas-col-qtd-cabecalho" : "mapas-col-cabecalho";
+        if (coluna === "qtd") {
+            const totalUnidades = document.createElement("span");
+            totalUnidades.id = "fornecedor-qtd-total-unidades";
+            totalUnidades.className = "fornecedor-qtd-total-unidades";
+            envoltorioCabecalho.appendChild(totalUnidades);
+        }
         const botao = document.createElement("button");
         botao.type = "button";
         botao.textContent = texto;
@@ -1840,7 +1854,8 @@ function renderizarResultadosFornecedorTabelaEncomenda(caixa, resultados) {
                 renderizarResultadosFornecedor();
             });
         }
-        th.appendChild(botao);
+        envoltorioCabecalho.appendChild(botao);
+        th.appendChild(envoltorioCabecalho);
         cabecalho.appendChild(th);
     });
     thead.appendChild(cabecalho);
@@ -1914,6 +1929,7 @@ function renderizarResultadosFornecedorTabelaEncomenda(caixa, resultados) {
     tabela.appendChild(tbody);
     envoltorio.appendChild(tabela);
     caixa.appendChild(envoltorio);
+    atualizarTotalUnidadesEncomendaFornecedor();
 }
 
 function renderizarResultadosFornecedor() {
@@ -1956,12 +1972,7 @@ function renderizarResultadosFornecedor() {
         const atual = produto;
         const linha = document.createElement("div");
         linha.className = "fornecedor-produto";
-
-        const img = document.createElement("img");
-        img.className = "fornecedor-miniatura";
-        img.src = obterImagemProdutoFornecedor(atual);
-        img.alt = atual.nome || "Produto";
-        linha.appendChild(img);
+        linha.appendChild(criarImagemFornecedor(atual, "fornecedor-miniatura"));
 
         const info = document.createElement("div");
         info.className = "fornecedor-info";
@@ -2068,12 +2079,7 @@ function renderizarSelecionadosFornecedor() {
         const atual = obterProdutoAtual(item.id) || item;
         const linha = document.createElement("div");
         linha.className = "fornecedor-item";
-
-        const img = document.createElement("img");
-        img.className = "fornecedor-miniatura";
-        img.src = obterImagemProdutoFornecedor(atual);
-        img.alt = atual.nome || "Produto";
-        linha.appendChild(img);
+        linha.appendChild(criarImagemFornecedor(atual, "fornecedor-miniatura"));
 
         const info = document.createElement("div");
         info.className = "fornecedor-info";

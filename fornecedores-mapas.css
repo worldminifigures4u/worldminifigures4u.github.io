@@ -596,8 +596,55 @@ body.pagina-fornecedores-admin{ margin:0; padding-left:0; padding-right:0; paddi
 .mapas-col-peso,
 .mapas-col-pendente,
 .mapas-col-previsto,
-.mapas-col-qtd {
+.mapas-col-qtd,
+.mapas-col-foto {
     text-align: center;
+}
+
+.mapas-col-foto .fornecedor-produto-foto {
+    width: 46px;
+    height: 46px;
+    margin: 0 auto;
+}
+
+.fornecedor-produto .fornecedor-produto-foto,
+.fornecedor-item .fornecedor-produto-foto {
+    width: 74px;
+    height: 74px;
+}
+
+.fornecedor-pedido-linha .fornecedor-produto-foto {
+    width: 52px;
+    height: 52px;
+}
+
+.mapas-th-sem-ordenacao {
+    cursor: default;
+    opacity: 1;
+}
+
+.mapas-col-qtd-cabecalho {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+}
+
+.fornecedor-qtd-total-unidades,
+.fornecedor-selecionados-total {
+    display: block;
+    color: #ffc400;
+    font-size: 11px;
+    font-weight: 800;
+    line-height: 1.2;
+    text-align: center;
+    white-space: normal;
+}
+
+.fornecedor-selecionados-total {
+    margin: -4px 0 8px;
+    font-size: 13px;
+    text-align: left;
 }
 
 .mapa-stock-celula {
