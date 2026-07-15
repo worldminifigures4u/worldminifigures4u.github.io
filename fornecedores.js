@@ -1360,6 +1360,34 @@ function ligarSelecaoLinhaQuantidadeMapa(input) {
     input.addEventListener("blur", () => definirSelecaoLinhaQuantidadeMapa(input, false));
 }
 
+function obterAlturaCabecalhoFixoFornecedor() {
+    const header = document.querySelector(".cabecalho-site-admin");
+    return header ? header.getBoundingClientRect().height : 0;
+}
+
+function ajustarVistaEncomendaFornecedor() {
+    if (!estaPaginaFornecedoresUnificada()) return;
+
+    const caixaResultados = document.getElementById("fornecedor-resultados");
+    if (caixaResultados) caixaResultados.scrollTop = 0;
+
+    const controles = document.querySelector(".fornecedor-controles-unificados");
+    const tituloSelecionados = document.querySelector(".fornecedor-selecionados-titulo");
+    if (!controles || !tituloSelecionados) return;
+
+    const headerAltura = obterAlturaCabecalhoFixoFornecedor();
+    const margemTopo = 8;
+    const margemFundo = 20;
+
+    const controlesTop = controles.getBoundingClientRect().top + window.scrollY;
+    const tituloBottom = tituloSelecionados.getBoundingClientRect().bottom + window.scrollY;
+    const scrollParaControles = controlesTop - headerAltura - margemTopo;
+    const scrollParaTitulo = tituloBottom - window.innerHeight + margemFundo;
+    const scrollY = Math.max(0, Math.min(scrollParaControles, scrollParaTitulo));
+
+    window.scrollTo({ top: scrollY, behavior: "smooth" });
+}
+
 function obterCaixaScrollQuantidadeMapa(input) {
     return input?.closest("#fornecedor-resultados, #fornecedor-selecionados") || null;
 }
@@ -3171,6 +3199,7 @@ ligarEventoFornecedor('fornecedor-filtro-marcacao', 'change', agendarRenderizaca
 ligarEventoFornecedor('fornecedor-filtro-top', 'change', agendarRenderizacaoResultadosFornecedor);
 ligarEventoFornecedor('fornecedor-filtro-arquivado', 'change', agendarRenderizacaoResultadosFornecedor);
 ligarEventoFornecedor('fornecedor-filtro-descontinuado', 'change', agendarRenderizacaoResultadosFornecedor);
+ligarEventoFornecedor('btn-fornecedor-ajustar-vista', 'click', ajustarVistaEncomendaFornecedor);
 ligarEventoFornecedor('btn-limpar-fornecedor', 'click', limparSelecaoFornecedor);
 ligarEventoFornecedor('btn-criar-fornecedor', 'click', criarPedidoFornecedor);
 ligarEventoFornecedor('fornecedor-filtro-estado', 'change', renderizarPedidosFornecedores);

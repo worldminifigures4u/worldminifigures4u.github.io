@@ -510,6 +510,29 @@ body.pagina-fornecedores-admin{ margin:0; padding-left:0; padding-right:0; paddi
     border: 1px solid var(--fp-cor-destaque);
 }
 
+.pagina-fornecedores-unificada .fornecedor-btn-ajustar-vista {
+    flex: 0 0 auto;
+    align-self: flex-end;
+    min-height: var(--fp-altura-campo);
+    padding: 7px 14px;
+    border: 1px solid #0d8fbf;
+    border-radius: var(--fp-raio-ui);
+    background: #18c4ff;
+    color: #081018;
+    font-size: var(--fp-fonte-ui);
+    font-weight: 800;
+    white-space: nowrap;
+    cursor: pointer;
+}
+
+.pagina-fornecedores-unificada .fornecedor-btn-ajustar-vista:hover,
+.pagina-fornecedores-unificada .fornecedor-btn-ajustar-vista:focus-visible {
+    background: #47d1ff;
+    border-color: #47d1ff;
+    outline: none;
+    box-shadow: var(--fp-foco-campo);
+}
+
 .pagina-mapas-admin .fornecedor-resultados,
 .pagina-fornecedores-unificada .fornecedor-resultados {
     display: block;
