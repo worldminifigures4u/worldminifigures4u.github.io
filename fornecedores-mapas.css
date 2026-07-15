@@ -411,12 +411,13 @@ body.pagina-fornecedores-admin{ margin:0; padding-left:0; padding-right:0; paddi
     align-items: center;
     justify-content: space-between;
     gap: 10px 14px;
+    min-height: 52px;
     padding: 8px 12px;
     border-bottom: 1px solid #333;
     background: #151515;
     color: #cfcfcf;
     font-size: 13px;
-    line-height: 1.45;
+    line-height: 1.2;
 }
 
 .fornecedor-resumo-encomenda-esquerda {
@@ -429,13 +430,12 @@ body.pagina-fornecedores-admin{ margin:0; padding-left:0; padding-right:0; paddi
 }
 
 .fornecedor-resumo-pesquisa {
-    display: grid;
-    gap: 4px;
+    display: flex;
+    align-items: center;
     flex: 0 1 280px;
     min-width: 180px;
     max-width: 320px;
-    font-weight: 700;
-    color: #ddd;
+    margin: 0;
 }
 
 .fornecedor-resumo-pesquisa .fornecedor-pesquisa-compacta {
@@ -451,11 +451,15 @@ body.pagina-fornecedores-admin{ margin:0; padding-left:0; padding-right:0; paddi
 }
 
 .fornecedor-resumo-encomenda-texto {
+    display: flex;
+    align-items: center;
     flex: 1 1 200px;
     min-width: 0;
 }
 
 .fornecedor-resumo-encomenda-unidades {
+    display: inline-flex;
+    align-items: center;
     flex: 0 0 auto;
     padding: 6px 12px;
     border: 2px solid #ffc400;
