@@ -383,7 +383,9 @@ function normalizarPedidoFornecedor(pedido) {
         estado: pedido.estado || 'A preparar',
         criado_em: pedido.criado_em || new Date().toISOString(),
         atualizado_em: pedido.atualizado_em || pedido.criado_em || new Date().toISOString(),
-        itens: Array.isArray(pedido.itens) ? pedido.itens.map(normalizarItemPedidoFornecedor).filter(Boolean) : []
+        itens: consolidarItensPedidoFornecedor(
+            Array.isArray(pedido.itens) ? pedido.itens.map(normalizarItemPedidoFornecedor).filter(Boolean) : []
+        )
     };
 }
 
@@ -414,13 +416,72 @@ function obterChaveItemPedidoFornecedor(item) {
     if (sku) return `sku:${sku}`;
     const referencia = String(item?.referencia || '').trim().toLowerCase();
     if (referencia) return `ref:${referencia}`;
+    const nome = normalizarFornecedor(item?.nome);
+    if (nome) return `nome:${nome}`;
     return '';
 }
 
+function itensPedidoFornecedorCorrespondem(itemA, itemB) {
+    if (!itemA || !itemB) return false;
+
+    const idA = String(itemA.id || '').trim();
+    const idB = String(itemB.id || '').trim();
+    if (idA && idB && idA === idB) return true;
+
+    if (correspondeReferenciaListaFornecedor(itemA.referencia, itemB.referencia)) return true;
+    if (correspondeReferenciaListaFornecedor(itemA.referencia, itemB.sku)) return true;
+    if (correspondeReferenciaListaFornecedor(itemA.sku, itemB.referencia)) return true;
+    if (correspondeReferenciaListaFornecedor(itemA.sku, itemB.sku)) return true;
+
+    const nomeA = normalizarFornecedor(itemA.nome);
+    const nomeB = normalizarFornecedor(itemB.nome);
+    return Boolean(nomeA && nomeB && nomeA === nomeB);
+}
+
 function encontrarItemPedidoFornecedor(itens, selecionado) {
-    const chave = obterChaveItemPedidoFornecedor(selecionado);
-    if (!chave) return null;
-    return (itens || []).find(item => obterChaveItemPedidoFornecedor(item) === chave) || null;
+    if (!selecionado) return null;
+    return (itens || []).find(item => itensPedidoFornecedorCorrespondem(item, selecionado)) || null;
+}
+
+function fundirItemPedidoFornecedor(destino, origem) {
+    if (!destino || !origem) return destino;
+    const quantidadeOrigem = Math.max(0, Math.floor(Number(origem.quantidade || 0)));
+    const quantidadeOriginalOrigem = Math.max(
+        quantidadeOrigem,
+        Math.floor(Number(origem.quantidade_original || origem.quantidade || 0))
+    );
+    destino.quantidade = Math.max(0, Math.floor(Number(destino.quantidade || 0))) + quantidadeOrigem;
+    destino.quantidade_original = Math.max(0, Math.floor(Number(destino.quantidade_original || destino.quantidade || 0))) + quantidadeOriginalOrigem;
+    destino.recebido = Math.max(0, Math.floor(Number(destino.recebido || 0))) + Math.max(0, Math.floor(Number(origem.recebido || 0)));
+    destino.falta_os = Math.max(0, Math.floor(Number(destino.falta_os || 0))) + Math.max(0, Math.floor(Number(origem.falta_os || 0)));
+    if (!destino.id && origem.id) destino.id = String(origem.id);
+    if (!destino.sku && origem.sku) destino.sku = String(origem.sku);
+    if (!destino.referencia && origem.referencia) destino.referencia = String(origem.referencia);
+    if (!destino.nome && origem.nome) destino.nome = String(origem.nome);
+    const precoCusto = Math.max(0, Number(origem.preco_custo ?? origem.preco ?? 0) || 0);
+    if (precoCusto > 0) {
+        destino.preco_custo = precoCusto;
+        destino.preco = precoCusto;
+    }
+    if (!destino.origem_ajuste && origem.origem_ajuste) {
+        destino.origem_ajuste = origem.origem_ajuste;
+    }
+    return destino;
+}
+
+function consolidarItensPedidoFornecedor(itens) {
+    const consolidados = [];
+    (itens || []).forEach(item => {
+        const serializado = serializarItemPedidoFornecedor(item);
+        if (!serializado) return;
+        const existente = consolidados.find(atual => itensPedidoFornecedorCorrespondem(atual, serializado));
+        if (!existente) {
+            consolidados.push({ ...serializado });
+            return;
+        }
+        fundirItemPedidoFornecedor(existente, serializado);
+    });
+    return consolidados;
 }
 
 function serializarItemPedidoFornecedor(item) {
@@ -2603,7 +2664,7 @@ async function atualizarPedidoFornecedor(id, alteracoes) {
     const idPedido = String(id);
     const payload = { ...(alteracoes || {}) };
     if (Array.isArray(payload.itens)) {
-        payload.itens = serializarItensPedidoFornecedor(payload.itens);
+        payload.itens = consolidarItensPedidoFornecedor(serializarItensPedidoFornecedor(payload.itens));
     }
     const { data, error } = await fornecedoresClient.rpc('atualizar_encomenda_fornecedor_admin', {
         p_id: idPedido,
@@ -2799,7 +2860,7 @@ async function adicionarSelecaoAoPedidoFornecedor(id) {
 
     try {
         definirStatusFornecedor('A completar encomenda com a selecao...');
-        const atualizado = await atualizarPedidoFornecedor(pedido.id, { itens });
+        const atualizado = await atualizarPedidoFornecedor(pedido.id, { itens: consolidarItensPedidoFornecedor(itens) });
         fornecedorSelecao = [];
         guardarSelecaoFornecedor();
         renderizarSelecionadosFornecedor();
