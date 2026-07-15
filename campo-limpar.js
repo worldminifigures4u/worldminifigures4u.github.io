@@ -6,13 +6,15 @@
         'input[type="email"]',
         'input[type="tel"]',
         'input[type="url"]',
-        'input[type="number"]',
         'textarea',
     ].join(", ");
+
+    const SELETOR_EXCLUIR = '.mapa-quantidade-input, .fornecedor-quantidade-input';
 
     function campoAceitaLimpar(campo) {
         if (!campo || !(campo instanceof HTMLElement)) return false;
         if (campo.closest(".campo-com-limpar")) return false;
+        if (campo.matches(SELETOR_EXCLUIR)) return false;
         if (campo.dataset.semLimparCampo === "1" || campo.closest("[data-sem-limpar-campo]")) return false;
         if (campo.disabled || campo.readOnly) return false;
         if (!campo.matches(SELETOR_CAMPOS)) return false;
