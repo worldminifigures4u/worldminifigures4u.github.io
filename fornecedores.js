@@ -552,7 +552,7 @@ function criarNomeFicheiroExportacaoFornecedor(pedido) {
 }
 
 function obterTextoExportacaoPedidoFornecedor(pedido) {
-    return (pedido?.itens || [])
+    return ordenarItensPedidoFornecedor(pedido?.itens || [])
         .map(item => {
             const referencia = limparCampoExportacaoFornecedor(item.referencia);
             const quantidade = Math.max(0, Math.floor(Number(item.quantidade || 0)));
