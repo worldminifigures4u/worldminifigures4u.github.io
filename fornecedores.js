@@ -1697,16 +1697,36 @@ async function guardarEdicaoProdutoMapa(evento) {
     }
 }
 
+function obterTextoResumoMarcacaoFornecedor(fornecedor, fornecedorMarcacao, filtroFornecedor) {
+    if (!filtroFornecedor || filtroFornecedor === "todos") return "";
+    const rotulos = {
+        os: "OS",
+        ex: "EX",
+        "os-ou-ex": "OS ou EX",
+        disponivel: "Disponivel"
+    };
+    const rotulo = rotulos[filtroFornecedor] || filtroFornecedor;
+    if (fornecedorMarcacao && fornecedor && fornecedorMarcacao !== fornecedor) {
+        return ` | Marcação ${rotulo} de ${fornecedorMarcacao} (encomenda a ${fornecedor})`;
+    }
+    if (fornecedorMarcacao) {
+        return ` | Marcação ${rotulo} de ${fornecedorMarcacao}`;
+    }
+    return "";
+}
+
 function renderizarResultadosFornecedorTabelaEncomenda(caixa, resultados) {
     caixa.classList.add("fornecedor-resultados-mapa");
     const limiteResultados = 250;
+    const { fornecedor, fornecedorMarcacao, filtroFornecedor } = obterControlosResultadosFornecedor();
+    const resumoMarcacao = obterTextoResumoMarcacaoFornecedor(fornecedor, fornecedorMarcacao, filtroFornecedor);
 
     const resumo = document.createElement("p");
     resumo.className = "fornecedor-contagem-lista mapas-tabela-resumo";
     resumo.textContent = resultados.length > limiteResultados
-        ? `${limiteResultados} de ${resultados.length} produto(s) apresentados. Pesquise ou filtre para encontrar mais rapidamente.`
+        ? `${limiteResultados} de ${resultados.length} produto(s) apresentados. Pesquise ou filtre para encontrar mais rapidamente.${resumoMarcacao}`
         : resultados.length
-        ? `${resultados.length} produto(s) apresentados`
+        ? `${resultados.length} produto(s) apresentados.${resumoMarcacao}`
         : "Nenhum produto encontrado.";
     caixa.appendChild(resumo);
 
@@ -1847,8 +1867,9 @@ function renderizarResultadosFornecedor() {
 
     const resumo = document.createElement("p");
     resumo.className = "fornecedor-contagem-lista";
+    const resumoMarcacao = obterTextoResumoMarcacaoFornecedor(fornecedor, fornecedorMarcacao, filtroFornecedor);
     resumo.textContent = resultados.length
-        ? `${resultados.length} produto(s) apresentados`
+        ? `${resultados.length} produto(s) apresentados${resumoMarcacao}`
         : "Nenhum produto encontrado.";
     caixa.appendChild(resumo);
 
