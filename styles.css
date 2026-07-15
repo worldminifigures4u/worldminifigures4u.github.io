@@ -561,3 +561,66 @@ body{
 .oculto{
     display:none !important;
 }
+
+.campo-com-limpar{
+    position:relative;
+    display:block;
+    width:100%;
+    max-width:100%;
+    min-width:0;
+    --campo-limpar-tamanho:28px;
+}
+
+.campo-com-limpar > :is(input, textarea){
+    box-sizing:border-box;
+    width:100%;
+}
+
+.campo-com-limpar > :is(input, textarea).tem-limpar-campo{
+    padding-right:calc(var(--campo-limpar-tamanho) + 8px);
+}
+
+.campo-limpar-botao{
+    position:absolute;
+    right:3px;
+    top:50%;
+    transform:translateY(-50%);
+    width:var(--campo-limpar-tamanho);
+    height:var(--campo-limpar-tamanho);
+    border:0;
+    border-radius:2px;
+    background:#d32f2f;
+    color:#fff;
+    font-size:calc(var(--campo-limpar-tamanho) * 0.62);
+    font-weight:800;
+    line-height:1;
+    padding:0;
+    cursor:pointer;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+}
+
+.campo-limpar-botao[hidden]{
+    display:none !important;
+}
+
+.campo-limpar-botao:hover,
+.campo-limpar-botao:focus-visible{
+    background:#b71c1c;
+    outline:2px solid rgba(255,255,255,0.35);
+    outline-offset:1px;
+}
+
+.campo-com-limpar--textarea .campo-limpar-botao{
+    top:4px;
+    transform:none;
+}
+
+.campo-com-limpar--cabecalho .campo-limpar-botao{
+    right:36px;
+}
+
+.campo-com-limpar--cabecalho > input.tem-limpar-campo{
+    padding-right:calc(44px + var(--campo-limpar-tamanho) + 6px);
+}
