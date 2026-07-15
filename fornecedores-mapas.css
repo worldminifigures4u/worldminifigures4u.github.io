@@ -383,6 +383,11 @@ body.pagina-fornecedores-admin{ margin:0; padding-left:0; padding-right:0; paddi
     --fp-texto-suave: #bdbdbd;
     --fp-cor-destaque: #ffc400;
     --fp-foco-campo: 0 0 0 2px rgba(255, 196, 0, 0.18);
+    --fp-cabecalho-tabela-fundo: #181818;
+    --fp-cabecalho-tabela-texto: #9a9a9a;
+    --fp-cabecalho-tabela-texto-ativo: #e6e6e6;
+    --fp-cabecalho-tabela-borda: #333;
+    --fp-cabecalho-tabela-acento: rgba(255, 196, 0, 0.42);
 }
 
 .pagina-fornecedores-unificada .fornecedor-controles-unificados label {
@@ -485,11 +490,15 @@ body.pagina-fornecedores-admin{ margin:0; padding-left:0; padding-right:0; paddi
 
 .pagina-fornecedores-unificada :is(.fornecedor-resultados, .fornecedor-selecionados, .fornecedor-pedido-produtos) .fornecedor-tabela-encomenda thead th {
     padding: 8px 6px;
-    font-size: var(--fp-fonte-ui);
-    font-weight: 800;
-    color: #111;
-    border: 1px solid #8a6a00;
-    background: var(--fp-cor-destaque);
+    font-size: var(--fp-fonte-ui-pequena);
+    font-weight: 700;
+    color: var(--fp-cabecalho-tabela-texto);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    border: 1px solid var(--fp-cabecalho-tabela-borda);
+    border-bottom: 2px solid var(--fp-cabecalho-tabela-acento);
+    background: var(--fp-cabecalho-tabela-fundo);
+    box-shadow: inset 0 -1px 0 rgba(255, 255, 255, 0.03);
 }
 
 .pagina-fornecedores-unificada :is(.fornecedor-resultados, .fornecedor-selecionados, .fornecedor-pedido-produtos) .fornecedor-tabela-encomenda td {
@@ -780,12 +789,17 @@ body.pagina-fornecedores-admin{ margin:0; padding-left:0; padding-right:0; paddi
     position: sticky;
     top: 0;
     z-index: 2;
-    background: #ffc400;
-    color: #000;
+    background: #181818;
+    color: #9a9a9a;
     padding: 9px 8px;
-    border: 1px solid #8a6a00;
+    border: 1px solid #333;
+    border-bottom: 2px solid rgba(255, 196, 0, 0.42);
     text-align: left;
-    font-weight: 900;
+    font-weight: 700;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    box-shadow: inset 0 -1px 0 rgba(255, 255, 255, 0.03);
 }
 
 .mapas-produtos-tabela td {
@@ -916,10 +930,7 @@ body.pagina-fornecedores-admin{ margin:0; padding-left:0; padding-right:0; paddi
     top: 0;
     z-index: 2;
     padding: 7px 4px;
-    font-size: 12px;
     text-align: center;
-    background: #ffc400;
-    box-shadow: 0 1px 0 #8a6a00;
 }
 
 .pagina-fornecedores-unificada :is(.fornecedor-resultados, .fornecedor-selecionados, .fornecedor-pedido-produtos) .fornecedor-tabela-encomenda .mapas-col-nome {
@@ -1377,9 +1388,27 @@ body.mapas-produto-modal-aberto {
     background: transparent;
     color: inherit;
     font: inherit;
-    font-weight: 900;
+    font-weight: inherit;
     text-align: inherit;
     cursor: pointer;
+    letter-spacing: inherit;
+    text-transform: inherit;
+}
+
+.mapas-th-ordenavel button:not(:disabled):hover,
+.mapas-th-ordenavel button:not(:disabled):focus-visible {
+    color: var(--fp-cabecalho-tabela-texto-ativo, #e6e6e6);
+    outline: none;
+}
+
+.mapas-th-ordenavel button[aria-sort] {
+    color: var(--fp-cor-destaque, #ffc400);
+}
+
+.pagina-fornecedores-unificada .fornecedor-tabela-cabecalho-fixo {
+    overflow: hidden;
+    background: var(--fp-cabecalho-tabela-fundo);
+    border-bottom: 1px solid var(--fp-cabecalho-tabela-borda);
 }
 
 .mapas-ref-com-imagem {
