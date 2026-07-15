@@ -499,11 +499,6 @@ body.pagina-fornecedores-admin{ margin:0; padding-left:0; padding-right:0; paddi
     color: #ff6b6b !important;
 }
 
-.pagina-fornecedores-unificada .mapa-pendente-celula.com-pendente,
-.pagina-fornecedores-unificada .mapa-previsto-celula.com-pendente {
-    color: var(--fp-texto-campo) !important;
-}
-
 .pagina-fornecedores-unificada .mapa-quantidade-input,
 .pagina-fornecedores-unificada .mapa-preco-input {
     border: var(--fp-borda-ui);
