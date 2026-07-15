@@ -809,7 +809,7 @@ function obterControlosResultadosFornecedor() {
         termo: normalizarFornecedor(document.getElementById("fornecedor-pesquisa")?.value || ""),
         fornecedor,
         fornecedorMarcacao: obterFornecedorMarcacaoFiltro(fornecedor),
-        filtroFornecedor: document.getElementById("fornecedor-filtro-marcacao")?.value || "todos",
+        filtroFornecedor: document.getElementById("fornecedor-filtro-marcacao")?.value || "disponivel",
         filtroTop: document.getElementById("fornecedor-filtro-top")?.value || "todos",
         filtroArquivado: document.getElementById("fornecedor-filtro-arquivado")?.value || "nao",
         filtroDescontinuado: document.getElementById("fornecedor-filtro-descontinuado")?.value || "nao",
