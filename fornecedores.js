@@ -1791,23 +1791,38 @@ function obterTextoResumoMarcacaoFornecedor(fornecedor, fornecedorMarcacao, filt
     return "";
 }
 
-function renderizarResultadosFornecedorTabelaEncomenda(caixa, resultados) {
-    caixa.classList.add("fornecedor-resultados-mapa");
-    const limiteResultados = 250;
+function obterCabecalhoFixoTabelaEncomendaFornecedor() {
+    const caixa = document.getElementById("fornecedor-resultados");
+    const bloc = caixa?.closest(".fornecedor-tabela-encomenda-bloco");
+    if (!bloc || !estaPaginaFornecedoresUnificada()) return null;
 
-    atualizarResumoEncomendaFornecedor({
-        totalFiltrados: resultados.length,
-        apresentados: Math.min(resultados.length, limiteResultados),
-        limite: limiteResultados
-    });
+    let cabecalhoFixo = bloc.querySelector(".fornecedor-tabela-cabecalho-fixo");
+    if (!cabecalhoFixo) {
+        cabecalhoFixo = document.createElement("div");
+        cabecalhoFixo.className = "fornecedor-tabela-cabecalho-fixo";
+        bloc.insertBefore(cabecalhoFixo, caixa);
+    }
+    return cabecalhoFixo;
+}
 
-    if (!resultados.length) return;
+function limparCabecalhoFixoTabelaEncomendaFornecedor() {
+    obterCabecalhoFixoTabelaEncomendaFornecedor()?.replaceChildren();
+}
 
-    const envoltorio = document.createElement("div");
-    envoltorio.className = "mapas-tabela-wrapper";
+function ligarScrollHorizontalTabelaEncomendaFornecedor() {
+    const caixa = document.getElementById("fornecedor-resultados");
+    const cabecalhoFixo = obterCabecalhoFixoTabelaEncomendaFornecedor();
+    if (!caixa || !cabecalhoFixo || caixa.dataset.scrollSync === "1") return;
 
+    caixa.dataset.scrollSync = "1";
+    caixa.addEventListener("scroll", () => {
+        cabecalhoFixo.scrollLeft = caixa.scrollLeft;
+    }, { passive: true });
+}
+
+function criarCabecalhoTabelaEncomendaFornecedor() {
     const tabela = document.createElement("table");
-    tabela.className = "mapas-produtos-tabela";
+    tabela.className = "mapas-produtos-tabela mapas-produtos-tabela-cabecalho";
 
     const thead = document.createElement("thead");
     const cabecalho = document.createElement("tr");
@@ -1849,6 +1864,34 @@ function renderizarResultadosFornecedorTabelaEncomenda(caixa, resultados) {
     });
     thead.appendChild(cabecalho);
     tabela.appendChild(thead);
+    return tabela;
+}
+
+function renderizarResultadosFornecedorTabelaEncomenda(caixa, resultados) {
+    caixa.classList.add("fornecedor-resultados-mapa");
+    const limiteResultados = 250;
+
+    atualizarResumoEncomendaFornecedor({
+        totalFiltrados: resultados.length,
+        apresentados: Math.min(resultados.length, limiteResultados),
+        limite: limiteResultados
+    });
+
+    if (!resultados.length) {
+        limparCabecalhoFixoTabelaEncomendaFornecedor();
+        return;
+    }
+
+    const cabecalhoFixo = obterCabecalhoFixoTabelaEncomendaFornecedor();
+    if (cabecalhoFixo) {
+        cabecalhoFixo.replaceChildren(criarCabecalhoTabelaEncomendaFornecedor());
+    }
+
+    const envoltorio = document.createElement("div");
+    envoltorio.className = "mapas-tabela-wrapper";
+
+    const tabela = document.createElement("table");
+    tabela.className = "mapas-produtos-tabela mapas-produtos-tabela-corpo";
 
     const tbody = document.createElement("tbody");
     const resultadosOrdenados = resultados
@@ -1918,11 +1961,16 @@ function renderizarResultadosFornecedorTabelaEncomenda(caixa, resultados) {
     tabela.appendChild(tbody);
     envoltorio.appendChild(tabela);
     caixa.appendChild(envoltorio);
+    ligarScrollHorizontalTabelaEncomendaFornecedor();
 }
 
 function renderizarResultadosFornecedor() {
     const caixa = document.getElementById("fornecedor-resultados");
     if (!caixa) return;
+
+    if (estaPaginaFornecedoresUnificada()) {
+        limparCabecalhoFixoTabelaEncomendaFornecedor();
+    }
 
     const { termo, fornecedor, fornecedorMarcacao, filtroFornecedor, filtroTop, filtroArquivado, filtroDescontinuado, ordenacao } = obterControlosResultadosFornecedor();
     caixa.replaceChildren();

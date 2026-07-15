@@ -380,6 +380,21 @@ body.pagina-fornecedores-admin{ margin:0; padding-left:0; padding-right:0; paddi
     border-radius: 0;
 }
 
+.pagina-fornecedores-unificada .fornecedor-tabela-cabecalho-fixo {
+    overflow: hidden;
+    border-bottom: 1px solid #8a6a00;
+    background: #101010;
+}
+
+.pagina-fornecedores-unificada .mapas-produtos-tabela-cabecalho th {
+    position: static;
+    top: auto;
+}
+
+.pagina-fornecedores-unificada .mapas-produtos-tabela-corpo tbody tr:first-child td {
+    border-top: 0;
+}
+
 .fornecedor-resumo-encomenda {
     position: sticky;
     top: 0;
@@ -665,12 +680,15 @@ body.pagina-fornecedores-admin{ margin:0; padding-left:0; padding-right:0; paddi
 }
 
 .pagina-fornecedores-unificada .mapas-col-foto { width: 44px; }
-.pagina-fornecedores-unificada .mapas-col-nome { width: auto; }
-.pagina-fornecedores-unificada .mapas-col-ref { width: 68px; }
-.pagina-fornecedores-unificada .mapas-col-stock { width: 42px; }
-.pagina-fornecedores-unificada .mapas-col-pendente { width: 52px; }
-.pagina-fornecedores-unificada .mapas-col-previsto { width: 52px; }
-.pagina-fornecedores-unificada .mapas-col-qtd { width: 56px; }
+.pagina-fornecedores-unificada .mapas-col-nome {
+    width: auto;
+    max-width: 240px;
+}
+.pagina-fornecedores-unificada .mapas-col-ref { width: 68px; white-space: nowrap; }
+.pagina-fornecedores-unificada .mapas-col-stock { width: 42px; white-space: nowrap; }
+.pagina-fornecedores-unificada .mapas-col-pendente { width: 52px; white-space: nowrap; }
+.pagina-fornecedores-unificada .mapas-col-previsto { width: 52px; white-space: nowrap; }
+.pagina-fornecedores-unificada .mapas-col-qtd { width: 56px; white-space: nowrap; }
 
 .pagina-fornecedores-unificada .mapas-col-ref,
 .pagina-fornecedores-unificada .mapas-produto-nome-botao {
