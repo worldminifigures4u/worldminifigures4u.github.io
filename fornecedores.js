@@ -531,6 +531,13 @@ function pedidoFornecedorPassaFiltroEstado(pedido, filtro) {
     return normalizarEstadoPedidoFornecedor(pedido.estado) === filtroNormalizado;
 }
 
+function obterTextoOrigemAjustePedidoFornecedor(origemAjuste) {
+    if (origemAjuste === "substituicao") return "Adicionado depois";
+    if (origemAjuste === "reforco") return "Quantidade aumentada";
+    if (origemAjuste === "lista-final") return "Ajustado pela lista final";
+    return "";
+}
+
 function escaparHtmlFornecedor(valor) {
     return String(valor ?? '').replace(/[&<>"']/g, (caracter) => ({
         '&': '&amp;',
@@ -1308,7 +1315,8 @@ function montarLinhaEdicaoProdutoFornecedor(pedido, item, indice) {
         ? `Inicial: ${quantidadeOriginal} | OS: ${faltaAtual}`
         : `Inicial: ${quantidadeOriginal}`;
     if (item.origem_ajuste) {
-        ajuste.textContent += item.origem_ajuste === "substituicao" ? " | Substituto" : " | Reforco";
+        const textoOrigem = obterTextoOrigemAjustePedidoFornecedor(item.origem_ajuste);
+        if (textoOrigem) ajuste.textContent += ` | ${textoOrigem}`;
     }
     info.append(nome, ids, ajuste);
 
@@ -3242,9 +3250,7 @@ function renderizarPedidoFornecedorProdutosTabela(caixa, pedido) {
         if (item.origem_ajuste) {
             const origemSpan = document.createElement("span");
             origemSpan.className = "fornecedor-ajuste-os";
-            origemSpan.textContent = item.origem_ajuste === "substituicao"
-                ? "Substituto para completar encomenda"
-                : "Reforco adicionado";
+            origemSpan.textContent = obterTextoOrigemAjustePedidoFornecedor(item.origem_ajuste);
             infoCelula.appendChild(origemSpan);
         }
         linha.appendChild(infoCelula);
@@ -3357,7 +3363,7 @@ function renderizarPedidosFornecedores() {
                 if (faltaOs > 0) linhaProduto.classList.add("tem-os");
                 linhaProduto.appendChild(criarImagemFornecedor(produtoAtual, "fornecedor-miniatura pequena"));
                 const info = criarElementoPedidoFornecedor("div", "fornecedor-info");
-                info.innerHTML = `<strong>${escaparHtmlFornecedor(item.nome)}</strong><span class="fornecedor-identificadores">Ref. ${escaparHtmlFornecedor(item.referencia || "-")} | SKU ${escaparHtmlFornecedor(item.sku || "-")}</span><span>Pedido: ${Number(item.quantidade || 0)} | Recebido: ${recebido} | Stock atual: ${Number(produtoAtual.stock || 0)}</span>${faltaOs > 0 ? `<span class="fornecedor-ajuste-os ativo">OS/Falta: ${faltaOs}${item.quantidade_original ? ` de ${Number(item.quantidade_original || 0)}` : ""}</span>` : ""}${item.origem_ajuste ? `<span class="fornecedor-ajuste-os">${item.origem_ajuste === "substituicao" ? "Substituto para completar encomenda" : "Reforco adicionado"}</span>` : ""}`;
+                info.innerHTML = `<strong>${escaparHtmlFornecedor(item.nome)}</strong><span class="fornecedor-identificadores">Ref. ${escaparHtmlFornecedor(item.referencia || "-")} | SKU ${escaparHtmlFornecedor(item.sku || "-")}</span><span>Pedido: ${Number(item.quantidade || 0)} | Recebido: ${recebido} | Stock atual: ${Number(produtoAtual.stock || 0)}</span>${faltaOs > 0 ? `<span class="fornecedor-ajuste-os ativo">OS/Falta: ${faltaOs}${item.quantidade_original ? ` de ${Number(item.quantidade_original || 0)}` : ""}</span>` : ""}${item.origem_ajuste ? `<span class="fornecedor-ajuste-os">${escaparHtmlFornecedor(obterTextoOrigemAjustePedidoFornecedor(item.origem_ajuste))}</span>` : ""}`;
                 const input = document.createElement("input");
                 input.type = "number";
                 input.min = "0";
