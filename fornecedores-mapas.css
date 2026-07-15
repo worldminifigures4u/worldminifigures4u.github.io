@@ -418,8 +418,39 @@ body.pagina-fornecedores-admin{ margin:0; padding-left:0; padding-right:0; paddi
     line-height: 1.45;
 }
 
+.fornecedor-resumo-encomenda-esquerda {
+    display: flex;
+    flex: 1 1 auto;
+    align-items: center;
+    gap: 12px 16px;
+    min-width: 0;
+    flex-wrap: wrap;
+}
+
+.fornecedor-resumo-pesquisa {
+    display: grid;
+    gap: 4px;
+    flex: 0 1 280px;
+    min-width: 180px;
+    max-width: 320px;
+    font-weight: 700;
+    color: #ddd;
+}
+
+.fornecedor-resumo-pesquisa .fornecedor-pesquisa-compacta {
+    width: 100%;
+    min-height: 36px;
+    box-sizing: border-box;
+    border: 1px solid #444;
+    border-radius: 6px;
+    background: #242424;
+    color: #fff;
+    padding: 8px 10px;
+    font: inherit;
+}
+
 .fornecedor-resumo-encomenda-texto {
-    flex: 1 1 240px;
+    flex: 1 1 200px;
     min-width: 0;
 }
 

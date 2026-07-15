@@ -1762,15 +1762,23 @@ function atualizarResumoEncomendaFornecedor(opcoes = {}) {
         textoProdutos = `${totalFiltrados} produto(s) apresentados.`;
     }
 
-    const texto = document.createElement("span");
-    texto.className = "fornecedor-resumo-encomenda-texto";
+    let texto = document.getElementById("fornecedor-resumo-encomenda-texto");
+    if (!texto) {
+        texto = document.createElement("span");
+        texto.id = "fornecedor-resumo-encomenda-texto";
+        texto.className = "fornecedor-resumo-encomenda-texto";
+        alvo.querySelector(".fornecedor-resumo-encomenda-esquerda")?.appendChild(texto);
+    }
     texto.textContent = `${textoProdutos}${resumoMarcacao}`;
 
-    const unidades = document.createElement("span");
-    unidades.className = "fornecedor-resumo-encomenda-unidades";
+    let unidades = document.getElementById("fornecedor-resumo-encomenda-unidades");
+    if (!unidades) {
+        unidades = document.createElement("span");
+        unidades.id = "fornecedor-resumo-encomenda-unidades";
+        unidades.className = "fornecedor-resumo-encomenda-unidades";
+        alvo.appendChild(unidades);
+    }
     unidades.textContent = obterTextoTotalUnidadesEncomendaFornecedor();
-
-    alvo.replaceChildren(texto, unidades);
 }
 
 function obterTextoResumoMarcacaoFornecedor(fornecedor, fornecedorMarcacao, filtroFornecedor) {
