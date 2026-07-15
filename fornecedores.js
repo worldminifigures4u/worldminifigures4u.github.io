@@ -2205,7 +2205,6 @@ function renderizarSelecionadosFornecedorTabela(caixa) {
         const atual = obterProdutoAtual(item.id) || item;
         const stockNumero = Number(atual.stock || 0);
         const linha = document.createElement("tr");
-        linha.className = "mapa-linha-quantidade-ativa";
 
         const fotoCelula = document.createElement("td");
         fotoCelula.className = "mapas-col-foto";
