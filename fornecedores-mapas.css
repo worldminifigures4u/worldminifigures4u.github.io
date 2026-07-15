@@ -1053,6 +1053,35 @@ body.pagina-fornecedores-admin{ margin:0; padding-left:0; padding-right:0; paddi
     font-size: 13px;
 }
 
+.pagina-fornecedores-unificada .fornecedor-selecionados-bloco .fornecedor-acoes-encomenda #btn-juntar-selecao-fornecedor {
+    min-width: 0;
+    max-width: min(320px, 100%);
+    white-space: normal;
+    line-height: 1.2;
+    text-align: center;
+}
+
+.pagina-fornecedores-unificada .fornecedor-selecionados-bloco .fornecedor-acoes-encomenda #btn-juntar-selecao-fornecedor:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+}
+
+.pagina-fornecedores-unificada .fornecedor-pedido-card.fornecedor-pedido-alvo-juntar {
+    box-shadow: inset 0 0 0 1px rgba(255, 196, 0, 0.35);
+}
+
+.pagina-fornecedores-unificada .fornecedor-pedido-card.fornecedor-pedido-alvo-juntar .fornecedor-pedido-cabecalho::after {
+    content: "Destino da seleção";
+    margin-left: auto;
+    padding: 2px 8px;
+    border: 1px solid rgba(255, 196, 0, 0.35);
+    border-radius: 999px;
+    color: #ffc400;
+    font-size: 11px;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
 .pagina-fornecedores-unificada .fornecedor-total-figuras-encomenda {
     display: inline-flex;
     align-items: center;

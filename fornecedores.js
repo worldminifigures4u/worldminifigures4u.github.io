@@ -24,6 +24,7 @@ let fornecedorRenderizacaoPendente = null;
 const FORNECEDOR_LISTA_MAX_CARACTERES = 30000;
 const FORNECEDOR_LISTA_MAX_LINHAS = 500;
 let fornecedorPedidosAbertos = new Set();
+let fornecedorPedidoAlvoJuntar = null;
 
 function normalizarFornecedor(texto) {
     return String(texto || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim();
@@ -1850,6 +1851,7 @@ function atualizarResumoEncomendaFornecedor(opcoes = {}) {
     }
     unidades.textContent = obterTextoTotalUnidadesEncomendaFornecedor();
     atualizarTotalFigurasEncomendaFornecedor();
+    atualizarBotaoJuntarSelecaoFornecedor();
 }
 
 function obterTextoResumoMarcacaoFornecedor(fornecedor, fornecedorMarcacao, filtroFornecedor) {
@@ -2671,6 +2673,50 @@ async function sincronizarPrecoCompraProdutosFornecedor(itens) {
     return atualizados;
 }
 
+function sincronizarPedidoAlvoJuntarSelecaoFornecedor() {
+    if (fornecedorPedidoAlvoJuntar && fornecedorPedidosAbertos.has(fornecedorPedidoAlvoJuntar)) {
+        return;
+    }
+    const abertos = [...fornecedorPedidosAbertos];
+    fornecedorPedidoAlvoJuntar = abertos.length ? abertos[abertos.length - 1] : null;
+}
+
+function obterPedidoAlvoJuntarSelecaoFornecedor() {
+    if (!fornecedorPedidoAlvoJuntar) return null;
+    return fornecedorPedidos.find(pedido => String(pedido.id) === fornecedorPedidoAlvoJuntar) || null;
+}
+
+function atualizarBotaoJuntarSelecaoFornecedor() {
+    const botao = document.getElementById("btn-juntar-selecao-fornecedor");
+    if (!botao || !estaPaginaFornecedoresUnificada()) return;
+
+    sincronizarPedidoAlvoJuntarSelecaoFornecedor();
+    const pedido = obterPedidoAlvoJuntarSelecaoFornecedor();
+    const temSelecao = fornecedorSelecao.length > 0;
+    const podeJuntar = temSelecao && Boolean(pedido);
+
+    botao.disabled = !podeJuntar;
+
+    if (!temSelecao) {
+        botao.title = "Selecione primeiro produtos na lista acima.";
+    } else if (!pedido) {
+        botao.title = "Abra acima a encomenda existente onde pretende juntar a seleção.";
+    } else {
+        botao.title = `Juntar seleção à encomenda ${pedido.codigo || pedido.id}.`;
+    }
+}
+
+async function juntarSelecaoAEncomendaExistenteFornecedor() {
+    sincronizarPedidoAlvoJuntarSelecaoFornecedor();
+    const pedido = obterPedidoAlvoJuntarSelecaoFornecedor();
+    if (!pedido) {
+        definirStatusFornecedor("Abra acima a encomenda existente onde pretende juntar a seleção.", true);
+        return;
+    }
+    await adicionarSelecaoAoPedidoFornecedor(pedido.id);
+    atualizarBotaoJuntarSelecaoFornecedor();
+}
+
 async function adicionarSelecaoAoPedidoFornecedor(id) {
     const pedido = fornecedorPedidos.find(item => item.id === id);
     if (!pedido) return;
@@ -3068,11 +3114,13 @@ function renderizarPedidosFornecedores() {
         vazio.className = 'fornecedor-vazio';
         vazio.textContent = 'Ainda nao existem encomendas neste estado.';
         caixa.appendChild(vazio);
+        atualizarBotaoJuntarSelecaoFornecedor();
         return;
     }
 
     pedidos.forEach(pedido => {
         const aberto = fornecedorPedidosAbertos.has(String(pedido.id));
+        const alvoJuntar = String(pedido.id) === fornecedorPedidoAlvoJuntar && aberto;
         const totaisPedido = (pedido.itens || []).reduce((totais, item) => {
             const quantidade = Math.max(0, Number(item.quantidade || 0));
             const recebido = Math.max(0, Number(item.recebido || 0));
@@ -3084,7 +3132,7 @@ function renderizarPedidosFornecedores() {
             return totais;
         }, { itens: 0, quantidade: 0, os: 0, pendente: 0 });
 
-        const card = criarElementoPedidoFornecedor("article", `admin-encomenda-card fornecedor-pedido-card${aberto ? " aberta" : ""}`);
+        const card = criarElementoPedidoFornecedor("article", `admin-encomenda-card fornecedor-pedido-card${aberto ? " aberta" : ""}${alvoJuntar ? " fornecedor-pedido-alvo-juntar" : ""}`);
         const cabecalho = criarElementoPedidoFornecedor("div", "admin-encomenda-cabecalho fornecedor-pedido-cabecalho");
         cabecalho.tabIndex = 0;
         cabecalho.setAttribute("role", "button");
@@ -3096,7 +3144,9 @@ function renderizarPedidosFornecedores() {
                 fornecedorPedidosAbertos.delete(idPedido);
             } else {
                 fornecedorPedidosAbertos.add(idPedido);
+                fornecedorPedidoAlvoJuntar = idPedido;
             }
+            sincronizarPedidoAlvoJuntarSelecaoFornecedor();
             renderizarPedidosFornecedores();
         };
         cabecalho.addEventListener("click", alternarPedido);
@@ -3169,9 +3219,6 @@ function renderizarPedidosFornecedores() {
         const editar = criarElementoPedidoFornecedor("button", "wallapop-botao", "Editar encomenda");
         editar.type = "button";
         editar.addEventListener("click", () => abrirEdicaoPedidoFornecedor(pedido.id));
-        const completar = criarElementoPedidoFornecedor("button", "wallapop-botao", "Juntar selecao");
-        completar.type = "button";
-        completar.addEventListener("click", () => adicionarSelecaoAoPedidoFornecedor(pedido.id));
         const imprimir = criarElementoPedidoFornecedor("button", "wallapop-botao", "Imprimir");
         imprimir.type = "button";
         imprimir.addEventListener("click", () => imprimirPedidoFornecedor(pedido.id));
@@ -3192,13 +3239,14 @@ function renderizarPedidosFornecedores() {
         const apagar = criarElementoPedidoFornecedor("button", "wallapop-botao admin-encomenda-apagar", "Apagar pedido");
         apagar.type = "button";
         apagar.addEventListener("click", () => apagarPedidoFornecedor(pedido.id));
-        botoes.append(editar, completar, imprimir, exportarTxt, receber, apagar);
+        botoes.append(editar, imprimir, exportarTxt, receber, apagar);
         acoes.append(grupoEstado, botoes);
 
         detalhes.append(acoes, produtos);
         card.append(cabecalho, detalhes);
         caixa.appendChild(card);
     });
+    atualizarBotaoJuntarSelecaoFornecedor();
 }
 
 async function receberPedidoFornecedor(id) {
@@ -3303,6 +3351,7 @@ ligarEventoFornecedor('fornecedor-filtro-arquivado', 'change', agendarRenderizac
 ligarEventoFornecedor('fornecedor-filtro-descontinuado', 'change', agendarRenderizacaoResultadosFornecedor);
 ligarEventoFornecedor('btn-fornecedor-ajustar-vista', 'click', ajustarVistaEncomendaFornecedor);
 ligarEventoFornecedor('btn-limpar-fornecedor', 'click', limparSelecaoFornecedor);
+ligarEventoFornecedor('btn-juntar-selecao-fornecedor', 'click', juntarSelecaoAEncomendaExistenteFornecedor);
 ligarEventoFornecedor('btn-criar-fornecedor', 'click', criarPedidoFornecedor);
 ligarEventoFornecedor('fornecedor-filtro-estado', 'change', renderizarPedidosFornecedores);
 ligarEventoFornecedor('btn-editar-fornecedor-selecionado', 'click', editarFornecedorSelecionado);
