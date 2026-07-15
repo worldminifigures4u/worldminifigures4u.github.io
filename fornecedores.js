@@ -2970,6 +2970,27 @@ async function iniciarFornecedoresAdmin() {
     }
 }
 
+function ligarBloqueioScrollExternoListaFornecedor() {
+    const caixa = document.getElementById("fornecedor-resultados");
+    if (!caixa || caixa.dataset.scrollChainBlock === "1") return;
+
+    caixa.dataset.scrollChainBlock = "1";
+    caixa.addEventListener("wheel", (evento) => {
+        if (!estaPaginaFornecedoresUnificada()) return;
+
+        const delta = evento.deltaY;
+        if (delta === 0) return;
+
+        const { scrollTop, scrollHeight, clientHeight } = caixa;
+        const noTopo = scrollTop <= 0;
+        const noFundo = Math.ceil(scrollTop + clientHeight) >= scrollHeight;
+
+        if ((delta < 0 && noTopo) || (delta > 0 && noFundo)) {
+            evento.preventDefault();
+        }
+    }, { passive: false });
+}
+
 function ligarEventoFornecedor(id, evento, handler) {
     const elemento = document.getElementById(id);
     if (elemento) {
@@ -2977,6 +2998,7 @@ function ligarEventoFornecedor(id, evento, handler) {
     }
 }
 
+ligarBloqueioScrollExternoListaFornecedor();
 ligarEventoFornecedor('fornecedor-pesquisa', 'input', agendarRenderizacaoResultadosFornecedor);
 ligarEventoFornecedor('fornecedor-nome', 'change', agendarRenderizacaoResultadosFornecedor);
 ligarEventoFornecedor('fornecedor-ordenacao-stock', 'change', agendarRenderizacaoResultadosFornecedor);
