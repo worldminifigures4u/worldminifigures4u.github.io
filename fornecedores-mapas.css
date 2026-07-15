@@ -372,34 +372,13 @@ body.pagina-fornecedores-admin{ margin:0; padding-left:0; padding-right:0; paddi
     border: 1px solid #333;
     border-radius: 8px;
     background: #101010;
-    overflow: hidden;
+    overflow: visible;
 }
 
 .pagina-fornecedores-unificada .fornecedor-tabela-encomenda-bloco .fornecedor-resultados {
     border: 0;
     border-radius: 0;
-}
-
-.pagina-fornecedores-unificada .fornecedor-tabela-cabecalho-fixo {
     overflow: hidden;
-    border-bottom: 1px solid #8a6a00;
-    background: #101010;
-}
-
-.pagina-fornecedores-unificada .fornecedor-tabela-cabecalho-fixo .fornecedor-tabela-wrapper-centro {
-    display: flex;
-    justify-content: center;
-    width: 100%;
-}
-
-.pagina-fornecedores-unificada .fornecedor-tabela-encomenda-cabecalho th {
-    position: static;
-    top: auto;
-    vertical-align: middle;
-}
-
-.pagina-fornecedores-unificada .fornecedor-tabela-encomenda-corpo tbody tr:first-child td {
-    border-top: 0;
 }
 
 .fornecedor-resumo-encomenda {
@@ -715,6 +694,8 @@ body.pagina-fornecedores-admin{ margin:0; padding-left:0; padding-right:0; paddi
     width: max-content;
     max-width: 100%;
     table-layout: auto;
+    border-collapse: separate;
+    border-spacing: 0;
     font-size: 13px;
 }
 
@@ -724,18 +705,20 @@ body.pagina-fornecedores-admin{ margin:0; padding-left:0; padding-right:0; paddi
     vertical-align: middle;
 }
 
-.pagina-fornecedores-unificada .fornecedor-resultados .fornecedor-tabela-encomenda th {
-    position: static;
-    top: auto;
-    z-index: auto;
+.pagina-fornecedores-unificada .fornecedor-resultados .fornecedor-tabela-encomenda thead th {
+    position: sticky;
+    top: 0;
+    z-index: 2;
     padding: 7px 4px;
     font-size: 12px;
     text-align: center;
+    background: #ffc400;
+    box-shadow: 0 1px 0 #8a6a00;
 }
 
-.pagina-fornecedores-unificada .fornecedor-resultados .fornecedor-tabela-encomenda .mapas-col-nome,
-.pagina-fornecedores-unificada .fornecedor-tabela-encomenda-cabecalho .mapas-col-nome {
+.pagina-fornecedores-unificada .fornecedor-resultados .fornecedor-tabela-encomenda .mapas-col-nome {
     text-align: left;
+    max-width: 240px;
 }
 
 .pagina-fornecedores-unificada .fornecedor-resultados .fornecedor-tabela-encomenda .mapas-col-foto {
@@ -777,15 +760,6 @@ body.pagina-fornecedores-admin{ margin:0; padding-left:0; padding-right:0; paddi
     object-fit: contain;
     background: transparent;
     border-radius: 0;
-}
-
-.pagina-fornecedores-unificada .fornecedor-tabela-encomenda-cabecalho .mapas-col-foto {
-    width: auto;
-    min-width: 60px;
-}
-
-.pagina-fornecedores-unificada .fornecedor-resultados .fornecedor-tabela-encomenda .mapas-col-nome {
-    max-width: 240px;
 }
 
 .pagina-fornecedores-unificada .fornecedor-resultados .fornecedor-tabela-encomenda .mapas-col-ref,

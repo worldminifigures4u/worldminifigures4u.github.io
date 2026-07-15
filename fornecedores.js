@@ -1947,27 +1947,19 @@ function renderizarResultadosFornecedorTabelaEncomenda(caixa, resultados) {
     });
 
     if (!resultados.length) {
-        limparCabecalhoFixoTabelaEncomendaFornecedor();
+        removerCabecalhoFixoTabelaEncomendaFornecedor();
         return;
     }
 
-    const cabecalhoFixo = obterCabecalhoFixoTabelaEncomendaFornecedor();
-    if (cabecalhoFixo) {
-        cabecalhoFixo.replaceChildren();
-        const envoltorioCabecalho = document.createElement("div");
-        envoltorioCabecalho.className = "mapas-tabela-wrapper fornecedor-tabela-wrapper-centro";
-        const tabelaCabecalho = document.createElement("table");
-        tabelaCabecalho.className = "mapas-produtos-tabela fornecedor-tabela-encomenda fornecedor-tabela-encomenda-cabecalho";
-        tabelaCabecalho.appendChild(criarTheadTabelaEncomendaFornecedor());
-        envoltorioCabecalho.appendChild(tabelaCabecalho);
-        cabecalhoFixo.appendChild(envoltorioCabecalho);
-    }
+    removerCabecalhoFixoTabelaEncomendaFornecedor();
 
     const envoltorio = document.createElement("div");
     envoltorio.className = "mapas-tabela-wrapper fornecedor-tabela-wrapper-centro";
 
     const tabela = document.createElement("table");
-    tabela.className = "mapas-produtos-tabela fornecedor-tabela-encomenda fornecedor-tabela-encomenda-corpo";
+    tabela.className = "mapas-produtos-tabela fornecedor-tabela-encomenda";
+
+    tabela.appendChild(criarTheadTabelaEncomendaFornecedor());
 
     const tbody = document.createElement("tbody");
     const resultadosOrdenados = resultados
@@ -2037,9 +2029,6 @@ function renderizarResultadosFornecedorTabelaEncomenda(caixa, resultados) {
     tabela.appendChild(tbody);
     envoltorio.appendChild(tabela);
     caixa.appendChild(envoltorio);
-    ligarScrollHorizontalTabelaEncomendaFornecedor();
-    sincronizarLargurasColunasTabelaEncomendaFornecedor();
-    observarImagensTabelaEncomendaFornecedor();
 }
 
 function renderizarResultadosFornecedor() {
