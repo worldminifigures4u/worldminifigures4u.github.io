@@ -19,6 +19,7 @@ let fornecedorSelecao = carregarSelecaoFornecedor();
 let fornecedorPedidos = carregarPedidosFornecedores();
 let fornecedorFichas = carregarFichasFornecedores();
 let fornecedorMapaOrdenacao = { coluna: "stock", direcao: "asc" };
+let fornecedorResumoEncomenda = { totalFiltrados: 0, apresentados: 0, limite: 250 };
 let fornecedorRenderizacaoPendente = null;
 const FORNECEDOR_LISTA_MAX_CARACTERES = 30000;
 const FORNECEDOR_LISTA_MAX_LINHAS = 500;
@@ -813,7 +814,7 @@ function obterControlosResultadosFornecedor() {
         filtroTop: document.getElementById("fornecedor-filtro-top")?.value || "todos",
         filtroArquivado: document.getElementById("fornecedor-filtro-arquivado")?.value || "nao",
         filtroDescontinuado: document.getElementById("fornecedor-filtro-descontinuado")?.value || "nao",
-        ordenacao: document.getElementById("fornecedor-ordenacao-stock")?.value || "nome",
+        ordenacao: document.getElementById("fornecedor-ordenacao-stock")?.value || "stock-asc",
     };
 }
 
@@ -1712,6 +1713,51 @@ async function guardarEdicaoProdutoMapa(evento) {
     }
 }
 
+function obterResumoSelecaoEncomendaFornecedor() {
+    const itens = fornecedorSelecao.filter(item => Math.max(0, Number(item.quantidade || 0)) > 0);
+    const figuras = itens.length;
+    const unidades = itens.reduce((soma, item) => soma + Math.max(0, Number(item.quantidade || 0)), 0);
+    return { figuras, unidades };
+}
+
+function obterTextoResumoEncomendaActualFornecedor() {
+    const { figuras, unidades } = obterResumoSelecaoEncomendaFornecedor();
+    if (figuras === 0) return "Encomenda actual: 0 figuras";
+    if (unidades === figuras) return `Encomenda actual: ${figuras} figura(s)`;
+    return `Encomenda actual: ${figuras} figura(s), ${unidades} unidade(s)`;
+}
+
+function atualizarResumoEncomendaFornecedor(opcoes = {}) {
+    const alvo = document.getElementById("fornecedor-resumo-encomenda");
+    if (!alvo || !estaPaginaFornecedoresUnificada()) return;
+
+    if (typeof opcoes.totalFiltrados === "number") {
+        fornecedorResumoEncomenda.totalFiltrados = opcoes.totalFiltrados;
+    }
+    if (typeof opcoes.apresentados === "number") {
+        fornecedorResumoEncomenda.apresentados = opcoes.apresentados;
+    }
+    if (typeof opcoes.limite === "number") {
+        fornecedorResumoEncomenda.limite = opcoes.limite;
+    }
+
+    const { totalFiltrados, limite } = fornecedorResumoEncomenda;
+    const { fornecedor, fornecedorMarcacao, filtroFornecedor } = obterControlosResultadosFornecedor();
+    const resumoMarcacao = obterTextoResumoMarcacaoFornecedor(fornecedor, fornecedorMarcacao, filtroFornecedor);
+    const resumoEncomenda = obterTextoResumoEncomendaActualFornecedor();
+
+    let textoProdutos;
+    if (totalFiltrados <= 0) {
+        textoProdutos = "Nenhum produto encontrado.";
+    } else if (totalFiltrados > limite) {
+        textoProdutos = `${Math.min(totalFiltrados, limite)} de ${totalFiltrados} produto(s) apresentados. Pesquise ou filtre para encontrar mais rapidamente.`;
+    } else {
+        textoProdutos = `${totalFiltrados} produto(s) apresentados.`;
+    }
+
+    alvo.textContent = `${textoProdutos}${resumoMarcacao} | ${resumoEncomenda}`;
+}
+
 function obterTextoResumoMarcacaoFornecedor(fornecedor, fornecedorMarcacao, filtroFornecedor) {
     if (!filtroFornecedor || filtroFornecedor === "todos") return "";
     const rotulos = {
@@ -1733,17 +1779,12 @@ function obterTextoResumoMarcacaoFornecedor(fornecedor, fornecedorMarcacao, filt
 function renderizarResultadosFornecedorTabelaEncomenda(caixa, resultados) {
     caixa.classList.add("fornecedor-resultados-mapa");
     const limiteResultados = 250;
-    const { fornecedor, fornecedorMarcacao, filtroFornecedor } = obterControlosResultadosFornecedor();
-    const resumoMarcacao = obterTextoResumoMarcacaoFornecedor(fornecedor, fornecedorMarcacao, filtroFornecedor);
 
-    const resumo = document.createElement("p");
-    resumo.className = "fornecedor-contagem-lista mapas-tabela-resumo";
-    resumo.textContent = resultados.length > limiteResultados
-        ? `${limiteResultados} de ${resultados.length} produto(s) apresentados. Pesquise ou filtre para encontrar mais rapidamente.${resumoMarcacao}`
-        : resultados.length
-        ? `${resultados.length} produto(s) apresentados.${resumoMarcacao}`
-        : "Nenhum produto encontrado.";
-    caixa.appendChild(resumo);
+    atualizarResumoEncomendaFornecedor({
+        totalFiltrados: resultados.length,
+        apresentados: Math.min(resultados.length, limiteResultados),
+        limite: limiteResultados
+    });
 
     if (!resultados.length) return;
 
@@ -1997,6 +2038,7 @@ function renderizarSelecionadosFornecedor() {
         vazio.className = 'fornecedor-vazio';
         vazio.textContent = 'A lista esta vazia.';
         caixa.appendChild(vazio);
+        atualizarResumoEncomendaFornecedor();
         return;
     }
 
@@ -2075,6 +2117,7 @@ function renderizarSelecionadosFornecedor() {
         linha.appendChild(controlos);
         caixa.appendChild(linha);
     });
+    atualizarResumoEncomendaFornecedor();
 }
 
 function limparSelecaoFornecedor() {

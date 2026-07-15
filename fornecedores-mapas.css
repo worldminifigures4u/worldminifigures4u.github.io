@@ -157,7 +157,7 @@ body.pagina-fornecedores-admin{ margin:0; padding-left:0; padding-right:0; paddi
             min-height:42px;
             font:inherit;
         }
-        .pagina-fornecedores-unificada .fornecedor-resultados{ display:block; max-height:52vh; overflow:auto; padding-right:0; border:1px solid #333; border-radius:8px; background:#101010; }
+        .pagina-fornecedores-unificada .fornecedor-resultados{ display:block; max-height:52vh; overflow:auto; padding-right:0; border:0; border-radius:0; background:#101010; }
         .pagina-fornecedores-unificada .fornecedor-pedidos{ max-height:none; }
         .fornecedor-ficha-box{ margin:14px 0 8px; padding:12px; border:1px solid #333; border-radius:8px; background:#101010; }
         .fornecedor-ficha-box summary{ color:#ffc400; font-weight:900; cursor:pointer; }
@@ -364,9 +364,37 @@ body.pagina-fornecedores-admin{ margin:0; padding-left:0; padding-right:0; paddi
 .pagina-fornecedores-unificada .fornecedor-resultados {
     display: block;
     padding-right: 0;
+    background: #101010;
+}
+
+.pagina-fornecedores-unificada .fornecedor-tabela-encomenda-bloco {
+    margin-top: 12px;
     border: 1px solid #333;
     border-radius: 8px;
     background: #101010;
+    overflow: hidden;
+}
+
+.pagina-fornecedores-unificada .fornecedor-tabela-encomenda-bloco .fornecedor-resultados {
+    border: 0;
+    border-radius: 0;
+}
+
+.fornecedor-resumo-encomenda {
+    position: sticky;
+    top: 0;
+    z-index: 3;
+    padding: 8px 12px;
+    border-bottom: 1px solid #333;
+    background: #151515;
+    color: #cfcfcf;
+    font-size: 13px;
+    line-height: 1.45;
+}
+
+.pagina-mapas-admin .fornecedor-resultados {
+    border: 1px solid #333;
+    border-radius: 8px;
 }
 
 .pagina-mapas-admin .fornecedor-resultados {
