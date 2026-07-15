@@ -370,12 +370,19 @@ body.pagina-fornecedores-admin{ margin:0; padding-left:0; padding-right:0; paddi
     --fp-foco-campo: 0 0 0 2px rgba(255, 196, 0, 0.18);
 }
 
-.pagina-fornecedores-unificada .fornecedor-controles-unificados label,
-.pagina-fornecedores-unificada .fornecedor-resumo-pesquisa {
+.pagina-fornecedores-unificada .fornecedor-controles-unificados label {
     gap: 4px;
     font-size: var(--fp-fonte-ui-pequena);
     font-weight: 700;
     color: var(--fp-texto-suave);
+}
+
+.pagina-fornecedores-unificada .fornecedor-resumo-pesquisa {
+    display: block;
+    margin: 0;
+    font-size: inherit;
+    font-weight: inherit;
+    color: inherit;
 }
 
 .pagina-fornecedores-unificada .fornecedor-controles-unificados input,
@@ -562,10 +569,8 @@ body.pagina-fornecedores-admin{ margin:0; padding-left:0; padding-right:0; paddi
     top: 0;
     z-index: 3;
     display: flex;
-    flex-wrap: wrap;
-    align-items: center;
     justify-content: center;
-    gap: 8px 14px;
+    align-items: center;
     min-height: 0;
     padding: 6px 10px;
     border-bottom: 1px solid #333;
@@ -575,28 +580,40 @@ body.pagina-fornecedores-admin{ margin:0; padding-left:0; padding-right:0; paddi
     line-height: 1.15;
 }
 
-.fornecedor-resumo-pesquisa {
-    display: flex;
+.fornecedor-resumo-encomenda-centro {
+    display: inline-flex;
     align-items: center;
+    justify-content: center;
+    gap: 14px;
+    flex-wrap: wrap;
+    width: max-content;
+    max-width: 100%;
+}
+
+.fornecedor-resumo-pesquisa {
+    display: block;
     flex: 0 1 280px;
-    width: min(280px, 100%);
-    min-width: 180px;
+    width: 280px;
+    max-width: 100%;
     margin: 0;
 }
 
 .fornecedor-resumo-pesquisa .fornecedor-pesquisa-compacta {
     width: 100%;
-    min-height: 30px;
+    min-height: 36px;
     box-sizing: border-box;
     border: 1px solid #444;
     border-radius: 6px;
     background: #242424;
     color: #fff;
-    padding: 5px 8px;
+    padding: 7px 12px;
     font: inherit;
 }
 
 .fornecedor-resumo-encomenda-texto {
+    display: inline-flex;
+    align-items: center;
+    min-height: 36px;
     flex: 0 0 auto;
     text-align: center;
     white-space: nowrap;
@@ -605,6 +622,7 @@ body.pagina-fornecedores-admin{ margin:0; padding-left:0; padding-right:0; paddi
 .fornecedor-resumo-encomenda-unidades {
     display: inline-flex;
     align-items: center;
+    min-height: 36px;
     flex: 0 0 auto;
     padding: 3px 10px;
     border: 2px solid #ffc400;
