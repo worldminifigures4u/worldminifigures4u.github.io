@@ -2169,28 +2169,32 @@ function removerProdutoFornecedor(id) {
 }
 
 function renderizarSelecionadosFornecedorTabela(caixa) {
-    caixa.classList.add("fornecedor-selecionados-tabela");
-
     const envoltorio = document.createElement("div");
     envoltorio.className = "mapas-tabela-wrapper fornecedor-tabela-wrapper-centro";
 
     const tabela = document.createElement("table");
-    tabela.className = "mapas-produtos-tabela fornecedor-tabela-encomenda fornecedor-tabela-selecionados";
+    tabela.className = "mapas-produtos-tabela fornecedor-tabela-encomenda";
 
     const thead = document.createElement("thead");
     const cabecalho = document.createElement("tr");
     [
-        ["", "mapas-col-foto"],
-        ["nome", "mapas-col-nome"],
-        ["Ref.", "mapas-col-ref"],
-        ["stock", "mapas-col-stock"],
-        ["qtd", "mapas-col-qtd"],
-        ["preço", "mapas-col-preco"],
-        ["", "mapas-col-remover"],
-    ].forEach(([texto, classe]) => {
+        ["", "mapas-col-foto", ""],
+        ["nome", "mapas-col-nome", "nome"],
+        ["Ref.", "mapas-col-ref", "ref"],
+        ["stock", "mapas-col-stock", "stock"],
+        ["qtd", "mapas-col-qtd", "qtd"],
+        ["preço", "mapas-col-preco", "preco"],
+        ["", "mapas-col-remover", ""],
+    ].forEach(([texto, classe, coluna]) => {
         const th = document.createElement("th");
-        th.className = classe;
-        th.textContent = texto;
+        th.className = `${classe} mapas-th-ordenavel`;
+        const botao = document.createElement("button");
+        botao.type = "button";
+        botao.textContent = texto;
+        botao.tabIndex = -1;
+        botao.disabled = true;
+        botao.classList.add("mapas-th-sem-ordenacao");
+        th.appendChild(botao);
         cabecalho.appendChild(th);
     });
     thead.appendChild(cabecalho);
@@ -2210,10 +2214,14 @@ function renderizarSelecionadosFornecedorTabela(caixa) {
 
         const nomeCelula = document.createElement("td");
         nomeCelula.className = "mapas-col-nome";
-        const nome = document.createElement("strong");
-        nome.className = "fornecedor-selecionado-nome";
-        nome.textContent = atual.nome || "Produto sem nome";
-        nomeCelula.appendChild(nome);
+        const nomeBotao = document.createElement("button");
+        nomeBotao.type = "button";
+        nomeBotao.className = "mapas-produto-nome-botao";
+        nomeBotao.textContent = atual.nome || "Produto sem nome";
+        nomeBotao.title = "Editar produto";
+        nomeBotao.tabIndex = -1;
+        nomeBotao.addEventListener("click", () => abrirEdicaoProdutoMapa(atual.id));
+        nomeCelula.appendChild(nomeBotao);
         linha.appendChild(nomeCelula);
 
         const refCelula = document.createElement("td");
@@ -2234,6 +2242,7 @@ function renderizarSelecionadosFornecedorTabela(caixa) {
         qtd.step = "1";
         qtd.inputMode = "numeric";
         qtd.className = "mapa-quantidade-input";
+        qtd.dataset.semLimparCampo = "1";
         qtd.value = String(Math.max(1, Number(item.quantidade) || 1));
         qtd.setAttribute("aria-label", `Quantidade de ${atual.nome || "produto"}`);
         qtd.addEventListener("change", () => definirQuantidadeFornecedor(atual.id, qtd.value));
@@ -2248,7 +2257,8 @@ function renderizarSelecionadosFornecedorTabela(caixa) {
         precoCustoInput.min = "0";
         precoCustoInput.step = "0.01";
         precoCustoInput.inputMode = "decimal";
-        precoCustoInput.className = "fornecedor-preco-custo-input fornecedor-preco-custo-input-tabela";
+        precoCustoInput.className = "mapa-quantidade-input mapa-preco-input";
+        precoCustoInput.dataset.semLimparCampo = "1";
         precoCustoInput.value = Number(item.preco_custo ?? item.custo ?? 0).toFixed(2);
         precoCustoInput.setAttribute("aria-label", `preço compra de ${atual.nome || "produto"}`);
         precoCustoInput.addEventListener("change", () => definirPrecoCustoFornecedor(atual.id, precoCustoInput.value));
@@ -2279,7 +2289,6 @@ function renderizarSelecionadosFornecedor() {
     const caixa = document.getElementById("fornecedor-selecionados");
     if (!caixa) return;
     caixa.replaceChildren();
-    caixa.classList.remove("fornecedor-selecionados-tabela");
 
     if (!fornecedorSelecao.length) {
         const vazio = document.createElement('p');

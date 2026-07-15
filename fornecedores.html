@@ -17,7 +17,7 @@
     <link rel="icon" type="image/webp" href="favicon-32.webp?v=20260711-leve" sizes="32x32">
     <link rel="stylesheet" href="styles.css?v=20260715-campo-limpar">
     <link rel="stylesheet" href="styles-admin.css?v=20260713-r25">
-    <link rel="stylesheet" href="fornecedores-mapas.css?v=20260715-selecionados-tabela">
+    <link rel="stylesheet" href="fornecedores-mapas.css?v=20260715-selecionados-igual">
     <link rel="stylesheet" href="styles-tema.css?v=20260713-r25" media="print" data-async-css>
     <link rel="stylesheet" href="admin-imagem.css?v=20260628-css-split-admin-imagem" media="print" data-async-css>
     <link rel="stylesheet" href="encomendas.css?v=20260713-contagem-anexos" media="print" data-async-css>
@@ -152,8 +152,10 @@
                     <div id="fornecedor-resultados" class="fornecedor-resultados"></div>
                 </div>
 
-                <h3>Produtos selecionados</h3>
-                <div id="fornecedor-selecionados" class="fornecedor-selecionados" data-sem-limpar-campo></div>
+                <div class="fornecedor-tabela-encomenda-bloco fornecedor-selecionados-bloco">
+                    <h3 class="fornecedor-selecionados-titulo">Produtos selecionados</h3>
+                    <div id="fornecedor-selecionados" class="fornecedor-selecionados" data-sem-limpar-campo></div>
+                </div>
                 <div class="fornecedores-acoes fornecedor-acoes-encomenda">
                     <button type="button" id="btn-limpar-fornecedor" class="wallapop-botao">Limpar lista</button>
                     <button type="button" id="btn-criar-fornecedor" class="wallapop-botao wallapop-botao-destaque">Criar encomenda</button>
@@ -218,8 +220,8 @@
     </footer>
 <script src="supabase-cdn.js?v=20260711-leve" defer></script>
 <script src="app-config.js?v=20260713-r25" defer></script>
-    <script src="fornecedores.js?v=20260715-selecionados-tabela" defer></script>
-<script src="campo-limpar.js?v=20260715-sem-selecionados" defer></script>
+    <script src="fornecedores.js?v=20260715-selecionados-igual" defer></script>
+<script src="campo-limpar.js?v=20260715-sem-preco" defer></script>
 <script src="inline-listeners-base.js?v=20260713-r25" defer></script>
 <script src="inline-listeners-admin.js?v=20260713-r25" defer></script>
 </body>

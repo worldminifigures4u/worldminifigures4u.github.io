@@ -9,7 +9,7 @@
         'textarea',
     ].join(", ");
 
-    const SELETOR_EXCLUIR = '.mapa-quantidade-input, .fornecedor-quantidade-input, .fornecedor-preco-custo-input';
+    const SELETOR_EXCLUIR = '.mapa-quantidade-input, .mapa-preco-input, .fornecedor-quantidade-input, .fornecedor-preco-custo-input';
 
     function campoAceitaLimpar(campo) {
         if (!campo || !(campo instanceof HTMLElement)) return false;
