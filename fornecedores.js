@@ -3060,10 +3060,10 @@ function renderizarPedidosFornecedores() {
         produtos.appendChild(lista);
 
         const acoes = criarElementoPedidoFornecedor("div", "admin-encomenda-acoes fornecedor-pedido-acoes");
-        const grupoEstado = criarElementoPedidoFornecedor("label", "admin-encomenda-estado-edicao");
-        grupoEstado.appendChild(criarElementoPedidoFornecedor("span", "", "Estado"));
+        const grupoEstado = criarElementoPedidoFornecedor("div", "admin-encomenda-estado-edicao");
         const estado = document.createElement("select");
         estado.className = "fornecedor-status-select";
+        estado.setAttribute("aria-label", "Estado da encomenda");
         obterEstadosPedidoFornecedor().forEach(opcao => {
             const opt = document.createElement("option");
             opt.value = opcao;
