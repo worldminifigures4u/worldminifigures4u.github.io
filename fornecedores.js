@@ -19,6 +19,7 @@ let fornecedorSelecao = carregarSelecaoFornecedor();
 let fornecedorPedidos = carregarPedidosFornecedores();
 let fornecedorFichas = carregarFichasFornecedores();
 let fornecedorMapaOrdenacao = { coluna: "stock", direcao: "asc" };
+let fornecedorPedidoItensOrdenacao = { coluna: "nome", direcao: "asc" };
 let fornecedorResumoEncomenda = { totalFiltrados: 0, apresentados: 0, limite: 250 };
 let fornecedorRenderizacaoPendente = null;
 const FORNECEDOR_LISTA_MAX_CARACTERES = 30000;
@@ -3103,6 +3104,41 @@ function obterClasseBadgeEstadoPedidoFornecedor(estado) {
     return mapa[normalizarEstadoPedidoFornecedor(estado)] || "estado-fornecedor-a-preparar";
 }
 
+function obterValorOrdenacaoItemPedidoFornecedor(item, coluna) {
+    const produtoAtual = obterProdutoParaPedidoFornecedor(item) || item;
+    if (coluna === "nome") return item?.nome || "";
+    if (coluna === "ref") return item?.referencia || "";
+    if (coluna === "estado") return Math.max(0, Number(item?.quantidade || 0));
+    if (coluna === "receber") {
+        const recebido = Math.max(0, Number(item?.recebido || 0));
+        return Math.max(0, Number(item?.quantidade || 0) - recebido);
+    }
+    if (coluna === "stock") return Math.max(0, Number(produtoAtual?.stock || 0));
+    return item?.nome || "";
+}
+
+function compararItensPedidoFornecedorPorColuna(itemA, itemB, coluna, direcao = "asc") {
+    const valorA = obterValorOrdenacaoItemPedidoFornecedor(itemA, coluna);
+    const valorB = obterValorOrdenacaoItemPedidoFornecedor(itemB, coluna);
+    let resultado;
+    if (typeof valorA === "number" || typeof valorB === "number") {
+        resultado = Number(valorA || 0) - Number(valorB || 0);
+    } else {
+        resultado = compararTextoFornecedor(valorA, valorB);
+    }
+    if (resultado === 0 && coluna !== "nome") {
+        resultado = compararTextoFornecedor(itemA?.nome, itemB?.nome);
+    }
+    return direcao === "desc" ? -resultado : resultado;
+}
+
+function ordenarItensPedidoFornecedor(itens) {
+    const { coluna, direcao } = fornecedorPedidoItensOrdenacao;
+    return (itens || [])
+        .slice()
+        .sort((a, b) => compararItensPedidoFornecedorPorColuna(a, b, coluna, direcao));
+}
+
 function criarElementoPedidoFornecedor(tag, classe, texto) {
     const elemento = document.createElement(tag);
     if (classe) elemento.className = classe;
@@ -3121,19 +3157,35 @@ function renderizarPedidoFornecedorProdutosTabela(caixa, pedido) {
     const cabecalho = document.createElement("tr");
     [
         ["", "mapas-col-foto", ""],
-        ["Nome", "mapas-col-nome", ""],
-        ["Ref.", "mapas-col-ref", ""],
-        ["Estado", "mapas-col-pedido-info", ""],
-        ["Receber", "mapas-col-qtd", ""],
-    ].forEach(([texto, classe]) => {
+        ["Nome", "mapas-col-nome", "nome"],
+        ["Ref.", "mapas-col-ref", "ref"],
+        ["Estado", "mapas-col-pedido-info", "estado"],
+        ["Receber", "mapas-col-qtd", "receber"],
+    ].forEach(([texto, classe, coluna]) => {
         const th = document.createElement("th");
         th.className = `${classe} mapas-th-ordenavel`;
         const botao = document.createElement("button");
         botao.type = "button";
         botao.textContent = texto;
         botao.tabIndex = -1;
-        botao.disabled = true;
-        botao.classList.add("mapas-th-sem-ordenacao");
+        if (!coluna) {
+            botao.disabled = true;
+            botao.classList.add("mapas-th-sem-ordenacao");
+        } else {
+            const ativo = fornecedorPedidoItensOrdenacao.coluna === coluna;
+            if (ativo) {
+                botao.setAttribute("aria-sort", fornecedorPedidoItensOrdenacao.direcao === "asc" ? "ascending" : "descending");
+                botao.textContent += fornecedorPedidoItensOrdenacao.direcao === "asc" ? " ▲" : " ▼";
+            }
+            botao.addEventListener("click", () => {
+                const mesmaColuna = fornecedorPedidoItensOrdenacao.coluna === coluna;
+                fornecedorPedidoItensOrdenacao = {
+                    coluna,
+                    direcao: mesmaColuna && fornecedorPedidoItensOrdenacao.direcao === "asc" ? "desc" : "asc"
+                };
+                renderizarPedidosFornecedores();
+            });
+        }
         th.appendChild(botao);
         cabecalho.appendChild(th);
     });
@@ -3141,7 +3193,7 @@ function renderizarPedidoFornecedorProdutosTabela(caixa, pedido) {
     tabela.appendChild(thead);
 
     const tbody = document.createElement("tbody");
-    (pedido.itens || []).forEach(item => {
+    ordenarItensPedidoFornecedor(pedido.itens || []).forEach(item => {
         const produtoAtual = obterProdutoParaPedidoFornecedor(item) || item;
         const recebido = Number(item.recebido || 0);
         const restante = Math.max(0, Number(item.quantidade || 0) - recebido);
