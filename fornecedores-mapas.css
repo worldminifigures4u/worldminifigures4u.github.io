@@ -566,7 +566,8 @@ body.pagina-fornecedores-admin{ margin:0; padding-left:0; padding-right:0; paddi
 }
 
 .mapas-col-lego { width: 70px; }
-.mapas-col-nome { width: 260px; }
+.mapas-col-foto { width: 58px; }
+.mapas-col-nome { width: 240px; }
 .mapas-col-preco-compra { width: 96px; }
 .mapas-col-preco { width: 70px; }
 .mapas-col-sku { width: 70px; }

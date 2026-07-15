@@ -692,33 +692,44 @@ function fecharImagemFornecedorModal() {
     document.body.classList.remove('admin-imagem-modal-aberto');
 }
 
-function tornarImagemFornecedorAmpliavel(img, produto) {
-    const modal = document.getElementById('admin-imagem-modal');
-    const url = obterImagemFornecedor(produto);
-    if (!modal || !url || url === FORNECEDORES_SEM_IMAGEM) return;
-    img.classList.add('fornecedor-miniatura-clicavel');
-    img.title = 'Ver imagem maior';
-    img.tabIndex = 0;
-    const abrir = () => abrirImagemFornecedorModal(url, img.alt);
-    img.addEventListener('click', abrir);
-    img.addEventListener('keydown', (evento) => {
-        if (evento.key === 'Enter' || evento.key === ' ') {
-            evento.preventDefault();
-            abrir();
-        }
-    });
-}
-
 function criarImagemFornecedor(produto, classe = 'fornecedor-miniatura') {
+    const url = obterImagemFornecedor(produto);
+    const nome = produto?.nome || 'Produto';
+    const temFoto = Boolean(url && url !== FORNECEDORES_SEM_IMAGEM);
+    const modal = document.getElementById('admin-imagem-modal');
+
+    if (modal) {
+        const botao = document.createElement('button');
+        botao.type = 'button';
+        botao.className = 'admin-encomenda-produto-foto fornecedor-produto-foto';
+        botao.disabled = !temFoto;
+        botao.title = temFoto ? 'Ampliar fotografia' : 'Produto sem fotografia';
+        const img = document.createElement('img');
+        img.className = classe;
+        img.alt = nome;
+        img.src = temFoto ? url : FORNECEDORES_SEM_IMAGEM;
+        img.loading = 'lazy';
+        img.onerror = () => {
+            img.onerror = null;
+            img.src = FORNECEDORES_SEM_IMAGEM;
+            botao.disabled = true;
+            botao.title = 'Produto sem fotografia';
+        };
+        if (temFoto) {
+            botao.addEventListener('click', () => abrirImagemFornecedorModal(url, nome));
+        }
+        botao.appendChild(img);
+        return botao;
+    }
+
     const img = document.createElement('img');
     img.className = classe;
-    img.alt = produto?.nome || 'Produto';
-    img.src = obterImagemFornecedor(produto);
+    img.alt = nome;
+    img.src = url;
     img.onerror = () => {
         img.onerror = null;
         img.src = FORNECEDORES_SEM_IMAGEM;
     };
-    tornarImagemFornecedorAmpliavel(img, produto);
     return img;
 }
 
@@ -1797,6 +1808,7 @@ function renderizarResultadosFornecedorTabelaEncomenda(caixa, resultados) {
     const thead = document.createElement("thead");
     const cabecalho = document.createElement("tr");
     [
+        ["", "mapas-col-foto", ""],
         ["nome", "mapas-col-nome", "nome"],
         ["Ref.", "mapas-col-ref", "ref"],
         ["stock", "mapas-col-stock", "stock"],
@@ -1810,19 +1822,24 @@ function renderizarResultadosFornecedorTabelaEncomenda(caixa, resultados) {
         botao.type = "button";
         botao.textContent = texto;
         botao.tabIndex = -1;
-        const ativo = fornecedorMapaOrdenacao.coluna === coluna;
-        if (ativo) {
-            botao.setAttribute("aria-sort", fornecedorMapaOrdenacao.direcao === "asc" ? "ascending" : "descending");
-            botao.textContent += fornecedorMapaOrdenacao.direcao === "asc" ? " ▲" : " ▼";
+        if (!coluna) {
+            botao.disabled = true;
+            botao.classList.add("mapas-th-sem-ordenacao");
+        } else {
+            const ativo = fornecedorMapaOrdenacao.coluna === coluna;
+            if (ativo) {
+                botao.setAttribute("aria-sort", fornecedorMapaOrdenacao.direcao === "asc" ? "ascending" : "descending");
+                botao.textContent += fornecedorMapaOrdenacao.direcao === "asc" ? " ▲" : " ▼";
+            }
+            botao.addEventListener("click", () => {
+                const mesmaColuna = fornecedorMapaOrdenacao.coluna === coluna;
+                fornecedorMapaOrdenacao = {
+                    coluna,
+                    direcao: mesmaColuna && fornecedorMapaOrdenacao.direcao === "asc" ? "desc" : "asc"
+                };
+                renderizarResultadosFornecedor();
+            });
         }
-        botao.addEventListener("click", () => {
-            const mesmaColuna = fornecedorMapaOrdenacao.coluna === coluna;
-            fornecedorMapaOrdenacao = {
-                coluna,
-                direcao: mesmaColuna && fornecedorMapaOrdenacao.direcao === "asc" ? "desc" : "asc"
-            };
-            renderizarResultadosFornecedor();
-        });
         th.appendChild(botao);
         cabecalho.appendChild(th);
     });
@@ -1842,6 +1859,11 @@ function renderizarResultadosFornecedorTabelaEncomenda(caixa, resultados) {
         const pendentes = obterPendentesDetalhadosProdutoFornecedor(atual);
         const pendente = pendentes.total;
         const previsto = stockNumero + pendente;
+
+        const fotoCelula = document.createElement("td");
+        fotoCelula.className = "mapas-col-foto";
+        fotoCelula.appendChild(criarImagemFornecedor(atual, "fornecedor-miniatura pequena"));
+        linha.appendChild(fotoCelula);
 
         const nomeCelula = document.createElement("td");
         nomeCelula.className = "mapas-col-nome";
