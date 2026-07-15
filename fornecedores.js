@@ -3084,13 +3084,24 @@ function renderizarPedidosFornecedores() {
         const imprimir = criarElementoPedidoFornecedor("button", "wallapop-botao", "Imprimir");
         imprimir.type = "button";
         imprimir.addEventListener("click", () => imprimirPedidoFornecedor(pedido.id));
+        const exportarTxt = criarElementoPedidoFornecedor("button", "wallapop-botao", "Exportar TXT");
+        exportarTxt.type = "button";
+        exportarTxt.addEventListener("click", () => {
+            const texto = obterTextoExportacaoPedidoFornecedor(pedido);
+            if (!texto) {
+                definirStatusFornecedor("A encomenda nao tem produtos para exportar.", true);
+                return;
+            }
+            exportarTxtPedidoFornecedor(pedido);
+            definirStatusFornecedor(`TXT da encomenda ${pedido.codigo || pedido.id} exportado.`);
+        });
         const receber = criarElementoPedidoFornecedor("button", "wallapop-botao wallapop-botao-destaque", "Receber stock");
         receber.type = "button";
         receber.addEventListener("click", () => receberPedidoFornecedor(pedido.id));
         const apagar = criarElementoPedidoFornecedor("button", "wallapop-botao admin-encomenda-apagar", "Apagar pedido");
         apagar.type = "button";
         apagar.addEventListener("click", () => apagarPedidoFornecedor(pedido.id));
-        botoes.append(editar, completar, imprimir, receber, apagar);
+        botoes.append(editar, completar, imprimir, exportarTxt, receber, apagar);
         acoes.append(grupoEstado, botoes);
 
         detalhes.append(dados, acoes, produtos);
