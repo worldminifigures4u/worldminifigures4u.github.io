@@ -202,8 +202,25 @@ body.pagina-fornecedores-admin{ margin:0; padding-left:0; padding-right:0; paddi
             max-width:100%;
         }
         .fornecedor-pedido-cabecalho .admin-encomenda-linha.fornecedor-pedido-linha-cabecalho{
-            grid-template-columns:minmax(0,0.72fr) minmax(0,0.95fr) minmax(0,1fr) minmax(0,1.45fr) auto;
-            column-gap:14px;
+            grid-template-columns:minmax(0,0.68fr) minmax(0,0.88fr) minmax(0,0.92fr) minmax(0,1.15fr) auto;
+            column-gap:12px;
+        }
+        .fornecedor-pedido-cabecalho .admin-encomenda-linha.fornecedor-pedido-linha-cabecalho.com-destino-selecao{
+            grid-template-columns:minmax(0,0.62fr) minmax(0,0.82fr) minmax(0,0.86fr) minmax(0,1fr) auto auto;
+        }
+        .fornecedor-pedido-destino-selecao{
+            justify-self:end;
+            min-width:0;
+            max-width:100%;
+            padding:2px 7px;
+            border:1px solid rgba(255,196,0,.35);
+            border-radius:999px;
+            color:#ffc400;
+            font-size:11px;
+            font-weight:700;
+            white-space:nowrap;
+            overflow:hidden;
+            text-overflow:ellipsis;
         }
         .fornecedor-pedido-linha-cabecalho .admin-encomenda-codigo{
             font-size:16px;
@@ -1070,16 +1087,8 @@ body.pagina-fornecedores-admin{ margin:0; padding-left:0; padding-right:0; paddi
     box-shadow: inset 0 0 0 1px rgba(255, 196, 0, 0.35);
 }
 
-.pagina-fornecedores-unificada .fornecedor-pedido-card.fornecedor-pedido-alvo-juntar .fornecedor-pedido-cabecalho::after {
-    content: "Destino da seleção";
-    margin-left: auto;
-    padding: 2px 8px;
-    border: 1px solid rgba(255, 196, 0, 0.35);
-    border-radius: 999px;
-    color: #ffc400;
-    font-size: 11px;
-    font-weight: 700;
-    white-space: nowrap;
+.pagina-fornecedores-unificada .fornecedor-pedido-cabecalho .admin-encomenda-seta {
+    flex: 0 0 auto;
 }
 
 .pagina-fornecedores-unificada .fornecedor-total-figuras-encomenda {

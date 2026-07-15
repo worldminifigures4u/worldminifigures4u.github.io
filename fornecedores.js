@@ -3166,6 +3166,10 @@ function renderizarPedidosFornecedores() {
             criarElementoPedidoFornecedor("span", "fornecedor-pedido-resumo", resumo),
             criarElementoPedidoFornecedor("span", `estado-encomenda ${obterClasseBadgeEstadoPedidoFornecedor(pedido.estado)}`, pedido.estado || "A preparar")
         );
+        if (alvoJuntar) {
+            linha.classList.add("com-destino-selecao");
+            linha.appendChild(criarElementoPedidoFornecedor("span", "fornecedor-pedido-destino-selecao", "Destino seleção"));
+        }
         cabecalho.append(linha, criarElementoPedidoFornecedor("span", "admin-encomenda-seta", "▾"));
 
         const detalhes = criarElementoPedidoFornecedor("div", "admin-encomenda-detalhes fornecedor-pedido-detalhes");
