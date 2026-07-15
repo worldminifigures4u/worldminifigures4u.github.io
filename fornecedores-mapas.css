@@ -296,21 +296,28 @@ body.pagina-fornecedores-admin{ margin:0; padding-left:0; padding-right:0; paddi
         .fornecedor-pedido-acoes{ flex-wrap:wrap; margin-bottom:4px; }
         .pagina-fornecedores-unificada .fornecedor-pedido-acoes{
             justify-content:center;
+            gap:8px;
         }
         .pagina-fornecedores-unificada .fornecedor-pedido-acoes .admin-encomenda-botoes{
             justify-content:center;
             flex-wrap:wrap;
+            gap:8px;
+        }
+        .pagina-fornecedores-unificada .fornecedor-pedido-acoes .wallapop-botao{
+            min-height:34px;
+            padding:6px 12px;
+            font-size:12px;
+            font-weight:700;
+        }
+        .pagina-fornecedores-unificada .fornecedor-pedido-acoes .admin-encomenda-estado-edicao .fornecedor-status-select{
+            min-height:34px;
+            padding:7px 24px 7px 10px;
+            font-size:12px;
         }
         .fornecedor-pedido-acoes .admin-encomenda-estado-edicao{
             display:flex;
             align-items:center;
             margin:0;
-        }
-        .fornecedor-pedido-acoes .admin-encomenda-estado-edicao .fornecedor-status-select{
-            min-height:42px;
-            padding:11px 28px 11px 12px;
-            margin:0;
-            font:inherit;
         }
         .fornecedor-pedido-produtos.admin-encomenda-produtos{ margin-top:0; padding-top:0; border-top:0; }
         .fornecedor-pedidos.admin-encomendas-lista{
@@ -444,10 +451,10 @@ body.pagina-fornecedores-admin{ margin:0; padding-left:0; padding-right:0; paddi
 
 .pagina-fornecedores-unificada .fornecedor-filtro-estado-select,
 .pagina-fornecedores-unificada .fornecedor-pedido-acoes .fornecedor-status-select {
-    min-height: 42px;
-    padding: 11px 28px 11px 12px;
+    min-height: 34px;
+    padding: 7px 24px 7px 10px;
     font: inherit;
-    font-size: inherit;
+    font-size: 12px;
     border: var(--fp-borda-ui);
     border-radius: var(--fp-raio-ui);
     background: var(--fp-fundo-campo);
