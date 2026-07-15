@@ -106,6 +106,39 @@ window.AdminEncomendaVista = (function () {
         return Array.isArray(produtos) ? produtos : [];
     }
 
+    function resumirQuantidadesProdutos(encomenda) {
+        const itens = obterProdutos(encomenda);
+        let totalPecas = 0;
+        const distintos = new Set();
+        itens.forEach((item, indice) => {
+            const quantidade = Math.max(1, Number(item.quantidade || item.qtd || 1) || 1);
+            totalPecas += quantidade;
+            const chave = String(item.sku || item.id_produto || item.id || item.nome || `linha-${indice}`).trim().toUpperCase();
+            distintos.add(chave);
+        });
+        return { totalPecas, diferentes: distintos.size };
+    }
+
+    function criarResumoPecasProdutos(encomenda) {
+        const { totalPecas, diferentes } = resumirQuantidadesProdutos(encomenda);
+        const resumo = criarElemento("div", "admin-encomenda-resumo-pecas");
+
+        function adicionarItem(rotulo, valor, titulo) {
+            const item = criarElemento("span", "admin-encomenda-resumo-pecas-item");
+            const rotuloElemento = criarElemento("span", "admin-encomenda-resumo-rotulo", rotulo);
+            rotuloElemento.title = titulo;
+            item.append(
+                rotuloElemento,
+                criarElemento("strong", "admin-encomenda-resumo-valor", String(valor))
+            );
+            resumo.appendChild(item);
+        }
+
+        adicionarItem("Peças:", totalPecas, "Total de figuras");
+        adicionarItem("Diferentes:", diferentes, "Figuras diferentes");
+        return resumo;
+    }
+
     function obterPrimeiraImagem(imagens) {
         let lista = imagens;
         if (typeof lista === "string") {
@@ -700,7 +733,10 @@ window.AdminEncomendaVista = (function () {
 
     function criarLinhaTotalEditavel(encomenda, card) {
         const linha = criarElemento("div", "admin-encomenda-total-linha");
-        linha.appendChild(criarElemento("span", "admin-encomenda-total-rotulo", "Total:"));
+        linha.appendChild(criarResumoPecasProdutos(encomenda));
+
+        const totalGrupo = criarElemento("div", "admin-encomenda-total-grupo");
+        totalGrupo.appendChild(criarElemento("span", "admin-encomenda-total-rotulo", "Total:"));
         const input = document.createElement("input");
         input.type = "text";
         input.className = "admin-encomenda-total-input";
@@ -747,7 +783,8 @@ window.AdminEncomendaVista = (function () {
             }
             input.value = formatarEuroInput(total);
         });
-        linha.appendChild(input);
+        totalGrupo.appendChild(input);
+        linha.appendChild(totalGrupo);
         return { elemento: linha, temAlteracao, reverter, guardar };
     }
 
