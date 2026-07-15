@@ -1750,7 +1750,7 @@ function atualizarResumoEncomendaFornecedor(opcoes = {}) {
     if (totalFiltrados <= 0) {
         textoProdutos = "Nenhum produto encontrado.";
     } else if (totalFiltrados > limite) {
-        textoProdutos = `${Math.min(totalFiltrados, limite)} de ${totalFiltrados} produto(s) apresentados. Pesquise ou filtre para encontrar mais rapidamente.`;
+        textoProdutos = `${Math.min(totalFiltrados, limite)} de ${totalFiltrados} produto(s) apresentados.`;
     } else {
         textoProdutos = `${totalFiltrados} produto(s) apresentados.`;
     }
