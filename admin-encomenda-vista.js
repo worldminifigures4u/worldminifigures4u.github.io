@@ -693,7 +693,7 @@ window.AdminEncomendaVista = (function () {
     }
 
     function formatarEuroInput(valor) {
-        return Number(valor || 0).toFixed(2).replace(".", ",");
+        return Number(valor || 0).toFixed(2).replace(".", ",") + " €";
     }
 
     async function atualizarTotalEncomenda(encomenda, total, input, card, opcoes = {}) {
