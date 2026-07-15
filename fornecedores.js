@@ -407,6 +407,54 @@ function normalizarItemPedidoFornecedor(item) {
     };
 }
 
+function obterChaveItemPedidoFornecedor(item) {
+    const id = String(item?.id || '').trim();
+    if (id) return `id:${id}`;
+    const sku = String(item?.sku || '').trim().toLowerCase();
+    if (sku) return `sku:${sku}`;
+    const referencia = String(item?.referencia || '').trim().toLowerCase();
+    if (referencia) return `ref:${referencia}`;
+    return '';
+}
+
+function encontrarItemPedidoFornecedor(itens, selecionado) {
+    const chave = obterChaveItemPedidoFornecedor(selecionado);
+    if (!chave) return null;
+    return (itens || []).find(item => obterChaveItemPedidoFornecedor(item) === chave) || null;
+}
+
+function serializarItemPedidoFornecedor(item) {
+    const normalizado = normalizarItemPedidoFornecedor(item);
+    if (!normalizado) return null;
+    const precoCusto = Math.max(0, Number(normalizado.preco_custo || 0) || 0);
+    const imagens = Array.isArray(normalizado.imagens)
+        ? normalizado.imagens.map(valor => String(valor || '').trim()).filter(Boolean).slice(0, 5)
+        : [];
+    return {
+        id: String(normalizado.id || ''),
+        nome: String(normalizado.nome || ''),
+        sku: String(normalizado.sku || ''),
+        referencia: String(normalizado.referencia || ''),
+        tema: String(normalizado.tema || ''),
+        subtema: String(normalizado.subtema || ''),
+        quantidade: Math.max(0, Math.floor(Number(normalizado.quantidade || 0))),
+        quantidade_original: Math.max(0, Math.floor(Number(normalizado.quantidade_original || normalizado.quantidade || 0))),
+        falta_os: Math.max(0, Math.floor(Number(normalizado.falta_os || 0))),
+        estado_fornecedor: String(normalizado.estado_fornecedor || ''),
+        origem_ajuste: String(normalizado.origem_ajuste || ''),
+        recebido: Math.max(0, Math.floor(Number(normalizado.recebido || 0))),
+        novidade: Boolean(normalizado.novidade),
+        stock_no_momento: Math.max(0, Math.floor(Number(normalizado.stock_no_momento || 0))),
+        preco_custo: precoCusto,
+        preco: precoCusto,
+        imagens
+    };
+}
+
+function serializarItensPedidoFornecedor(itens) {
+    return (itens || []).map(serializarItemPedidoFornecedor).filter(Boolean);
+}
+
 function obterEstadosPedidoFornecedor() {
     return ['A preparar', 'Encomendada', 'Recebida parcialmente', 'Recebida', 'Cancelada'];
 }
@@ -2553,12 +2601,14 @@ async function apagarPedidoFornecedor(id) {
 
 async function atualizarPedidoFornecedor(id, alteracoes) {
     const idPedido = String(id);
-    const { data, error } = await fornecedoresClient
-        .from('encomendas_fornecedores')
-        .update(alteracoes)
-        .eq('id', idPedido)
-        .select()
-        .single();
+    const payload = { ...(alteracoes || {}) };
+    if (Array.isArray(payload.itens)) {
+        payload.itens = serializarItensPedidoFornecedor(payload.itens);
+    }
+    const { data, error } = await fornecedoresClient.rpc('atualizar_encomenda_fornecedor_admin', {
+        p_id: idPedido,
+        p_dados: payload
+    });
     if (error) throw error;
     const atualizado = normalizarPedidoFornecedor(data);
     fornecedorPedidos = fornecedorPedidos.map(item => String(item.id) === idPedido ? atualizado : item);
@@ -2727,18 +2777,23 @@ async function adicionarSelecaoAoPedidoFornecedor(id) {
     const total = fornecedorSelecao.reduce((soma, item) => soma + Math.max(1, Math.floor(Number(item.quantidade) || 1)), 0);
     if (!window.confirm(`Adicionar ${total} unidade(s) selecionada(s) a ${pedido.codigo}?`)) return;
 
-    const itens = [...pedido.itens.map(normalizarItemPedidoFornecedor)];
+    const itens = serializarItensPedidoFornecedor(pedido.itens);
     const itensExportar = [];
     fornecedorSelecao.forEach(selecionado => {
-        const existente = itens.find(item => String(item.id) === String(selecionado.id));
+        const existente = encontrarItemPedidoFornecedor(itens, selecionado);
         const quantidade = Math.max(1, Math.floor(Number(selecionado.quantidade) || 1));
-        itensExportar.push(criarItemFornecedorAPartirSelecao(selecionado, 'substituicao'));
+        itensExportar.push(criarItemFornecedorAPartirSelecao(selecionado, existente ? 'reforco' : 'substituicao'));
         if (existente) {
             existente.quantidade = Math.max(0, Number(existente.quantidade || 0)) + quantidade;
             existente.quantidade_original = Math.max(0, Number(existente.quantidade_original || existente.quantidade || 0)) + quantidade;
             existente.origem_ajuste = existente.origem_ajuste || 'reforco';
+            const precoCusto = Math.max(0, Number(selecionado.preco_custo ?? selecionado.custo ?? 0) || 0);
+            if (precoCusto > 0) {
+                existente.preco_custo = precoCusto;
+                existente.preco = precoCusto;
+            }
         } else {
-            itens.push(criarItemFornecedorAPartirSelecao(selecionado, 'substituicao'));
+            itens.push(serializarItemPedidoFornecedor(criarItemFornecedorAPartirSelecao(selecionado, 'substituicao')));
         }
     });
 
