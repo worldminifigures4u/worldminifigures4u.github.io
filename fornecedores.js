@@ -1766,6 +1766,19 @@ function obterTextoTotalUnidadesEncomendaFornecedor() {
     return `Encomenda actual: ${unidades} unidades`;
 }
 
+function obterTextoTotalFigurasEncomendaFornecedor() {
+    const total = obterTotalUnidadesEncomendaFornecedor();
+    if (total === 1) return "1 figura";
+    return `${total} figuras`;
+}
+
+function atualizarTotalFigurasEncomendaFornecedor() {
+    const alvo = document.getElementById("fornecedor-total-figuras-encomenda");
+    if (!alvo || !estaPaginaFornecedoresUnificada()) return;
+    alvo.textContent = obterTextoTotalFigurasEncomendaFornecedor();
+    alvo.hidden = fornecedorSelecao.length === 0;
+}
+
 function atualizarResumoEncomendaFornecedor(opcoes = {}) {
     const alvo = document.getElementById("fornecedor-resumo-encomenda");
     if (!alvo || !estaPaginaFornecedoresUnificada()) return;
@@ -1808,6 +1821,7 @@ function atualizarResumoEncomendaFornecedor(opcoes = {}) {
         alvo.appendChild(unidades);
     }
     unidades.textContent = obterTextoTotalUnidadesEncomendaFornecedor();
+    atualizarTotalFigurasEncomendaFornecedor();
 }
 
 function obterTextoResumoMarcacaoFornecedor(fornecedor, fornecedorMarcacao, filtroFornecedor) {

@@ -837,6 +837,25 @@ body.pagina-fornecedores-admin{ margin:0; padding-left:0; padding-right:0; paddi
     font-size: 13px;
 }
 
+.pagina-fornecedores-unificada .fornecedor-total-figuras-encomenda {
+    display: inline-flex;
+    align-items: center;
+    flex: 0 0 auto;
+    margin-left: 4px;
+    padding: 6px 12px;
+    border: 1px solid #444;
+    border-radius: 6px;
+    background: #1a1a1a;
+    color: #ffc400;
+    font-size: 13px;
+    font-weight: 800;
+    white-space: nowrap;
+}
+
+.pagina-fornecedores-unificada .fornecedor-total-figuras-encomenda[hidden] {
+    display: none;
+}
+
 .pagina-fornecedores-unificada :is(.fornecedor-resultados, .fornecedor-selecionados) .fornecedor-tabela-encomenda .mapa-preco-input {
     display: block;
     width: 56px;
