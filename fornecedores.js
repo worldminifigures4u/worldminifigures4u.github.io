@@ -3021,18 +3021,6 @@ function renderizarPedidosFornecedores() {
         const detalhes = criarElementoPedidoFornecedor("div", "admin-encomenda-detalhes fornecedor-pedido-detalhes");
         detalhes.hidden = !aberto;
 
-        const dados = criarElementoPedidoFornecedor("div", "admin-encomenda-dados");
-        dados.append(
-            criarLinhaDetalhePedidoFornecedor("Fornecedor", pedido.fornecedor),
-            criarLinhaDetalhePedidoFornecedor("Referência", pedido.referencia),
-            criarLinhaDetalhePedidoFornecedor("Código", pedido.codigo),
-            criarLinhaDetalhePedidoFornecedor("Criada", formatarDataPedidoFornecedor(pedido.criado_em)),
-            criarLinhaDetalhePedidoFornecedor("Artigos", String(totaisPedido.itens)),
-            criarLinhaDetalhePedidoFornecedor("Unidades", String(totaisPedido.quantidade)),
-            criarLinhaDetalhePedidoFornecedor("Por receber", String(totaisPedido.pendente)),
-            criarLinhaDetalhePedidoFornecedor("OS/Falta", totaisPedido.os > 0 ? String(totaisPedido.os) : "0")
-        );
-
         const produtos = criarElementoPedidoFornecedor("div", "admin-encomenda-produtos fornecedor-pedido-produtos");
         produtos.appendChild(criarElementoPedidoFornecedor("h3", "", "Produtos"));
         const lista = criarElementoPedidoFornecedor("div", "fornecedor-pedido-produtos");
@@ -3104,7 +3092,7 @@ function renderizarPedidosFornecedores() {
         botoes.append(editar, completar, imprimir, exportarTxt, receber, apagar);
         acoes.append(grupoEstado, botoes);
 
-        detalhes.append(dados, acoes, produtos);
+        detalhes.append(acoes, produtos);
         card.append(cabecalho, detalhes);
         caixa.appendChild(card);
     });
