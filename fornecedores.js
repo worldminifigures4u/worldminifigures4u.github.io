@@ -1837,7 +1837,7 @@ function atualizarResumoEncomendaFornecedor(opcoes = {}) {
         texto = document.createElement("span");
         texto.id = "fornecedor-resumo-encomenda-texto";
         texto.className = "fornecedor-resumo-encomenda-texto";
-        alvo.querySelector(".fornecedor-resumo-encomenda-esquerda")?.appendChild(texto);
+        alvo.appendChild(texto);
     }
     texto.textContent = textoProdutos;
 
