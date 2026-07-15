@@ -380,21 +380,6 @@ body.pagina-fornecedores-admin{ margin:0; padding-left:0; padding-right:0; paddi
     border-radius: 0;
 }
 
-.pagina-fornecedores-unificada .fornecedor-tabela-cabecalho-fixo {
-    overflow: hidden;
-    border-bottom: 1px solid #8a6a00;
-    background: #101010;
-}
-
-.pagina-fornecedores-unificada .mapas-produtos-tabela-cabecalho th {
-    position: static;
-    top: auto;
-}
-
-.pagina-fornecedores-unificada .mapas-produtos-tabela-corpo tbody tr:first-child td {
-    border-top: 0;
-}
-
 .fornecedor-resumo-encomenda {
     position: sticky;
     top: 0;

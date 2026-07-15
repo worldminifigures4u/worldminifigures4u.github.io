@@ -1791,89 +1791,11 @@ function obterTextoResumoMarcacaoFornecedor(fornecedor, fornecedorMarcacao, filt
     return "";
 }
 
-function obterCabecalhoFixoTabelaEncomendaFornecedor() {
-    const caixa = document.getElementById("fornecedor-resultados");
-    const bloc = caixa?.closest(".fornecedor-tabela-encomenda-bloco");
-    if (!bloc || !estaPaginaFornecedoresUnificada()) return null;
-
-    let cabecalhoFixo = bloc.querySelector(".fornecedor-tabela-cabecalho-fixo");
-    if (!cabecalhoFixo) {
-        cabecalhoFixo = document.createElement("div");
-        cabecalhoFixo.className = "fornecedor-tabela-cabecalho-fixo";
-        bloc.insertBefore(cabecalhoFixo, caixa);
-    }
-    return cabecalhoFixo;
+function removerCabecalhoFixoTabelaEncomendaFornecedor() {
+    document.querySelector(".fornecedor-tabela-cabecalho-fixo")?.remove();
 }
 
-function limparCabecalhoFixoTabelaEncomendaFornecedor() {
-    obterCabecalhoFixoTabelaEncomendaFornecedor()?.replaceChildren();
-}
-
-function ligarScrollHorizontalTabelaEncomendaFornecedor() {
-    const caixa = document.getElementById("fornecedor-resultados");
-    const cabecalhoFixo = obterCabecalhoFixoTabelaEncomendaFornecedor();
-    if (!caixa || !cabecalhoFixo || caixa.dataset.scrollSync === "1") return;
-
-    caixa.dataset.scrollSync = "1";
-    caixa.addEventListener("scroll", () => {
-        cabecalhoFixo.scrollLeft = caixa.scrollLeft;
-    }, { passive: true });
-}
-
-function aplicarColgroupTabelaEncomendaFornecedor(tabela, larguras) {
-    let colgroup = tabela.querySelector("colgroup");
-    if (!colgroup) {
-        colgroup = document.createElement("colgroup");
-        tabela.insertBefore(colgroup, tabela.firstChild);
-    }
-    colgroup.replaceChildren();
-    larguras.forEach((largura) => {
-        const col = document.createElement("col");
-        col.style.width = `${largura}px`;
-        colgroup.appendChild(col);
-    });
-    tabela.style.tableLayout = "fixed";
-    tabela.style.width = `${larguras.reduce((total, largura) => total + largura, 0)}px`;
-}
-
-function sincronizarLargurasColunasTabelaEncomendaFornecedor() {
-    const cabecalho = document.querySelector(".pagina-fornecedores-unificada .mapas-produtos-tabela-cabecalho");
-    const corpo = document.querySelector(".pagina-fornecedores-unificada .mapas-produtos-tabela-corpo");
-    if (!cabecalho || !corpo) return;
-
-    const linhas = [...corpo.querySelectorAll("tbody tr")];
-    const ths = [...cabecalho.querySelectorAll("thead th")];
-    if (!linhas.length || !ths.length) return;
-
-    cabecalho.style.tableLayout = "auto";
-    corpo.style.tableLayout = "auto";
-    cabecalho.style.width = "max-content";
-    corpo.style.width = "max-content";
-    cabecalho.querySelector("colgroup")?.remove();
-    corpo.querySelector("colgroup")?.remove();
-
-    requestAnimationFrame(() => {
-        const minimos = [44, 88, 68, 42, 52, 52, 56];
-        const larguras = ths.map((_, indice) => minimos[indice] || 0);
-
-        linhas.forEach((linha) => {
-            [...linha.children].forEach((celula, indice) => {
-                larguras[indice] = Math.max(larguras[indice], celula.offsetWidth);
-            });
-        });
-        ths.forEach((th, indice) => {
-            larguras[indice] = Math.max(larguras[indice], th.offsetWidth);
-        });
-
-        aplicarColgroupTabelaEncomendaFornecedor(cabecalho, larguras);
-        aplicarColgroupTabelaEncomendaFornecedor(corpo, larguras);
-    });
-}
-
-function criarCabecalhoTabelaEncomendaFornecedor() {
-    const tabela = document.createElement("table");
-    tabela.className = "mapas-produtos-tabela mapas-produtos-tabela-cabecalho";
-
+function criarTheadTabelaEncomendaFornecedor() {
     const thead = document.createElement("thead");
     const cabecalho = document.createElement("tr");
     [
@@ -1913,8 +1835,7 @@ function criarCabecalhoTabelaEncomendaFornecedor() {
         cabecalho.appendChild(th);
     });
     thead.appendChild(cabecalho);
-    tabela.appendChild(thead);
-    return tabela;
+    return thead;
 }
 
 function renderizarResultadosFornecedorTabelaEncomenda(caixa, resultados) {
@@ -1927,21 +1848,17 @@ function renderizarResultadosFornecedorTabelaEncomenda(caixa, resultados) {
         limite: limiteResultados
     });
 
-    if (!resultados.length) {
-        limparCabecalhoFixoTabelaEncomendaFornecedor();
-        return;
-    }
+    removerCabecalhoFixoTabelaEncomendaFornecedor();
 
-    const cabecalhoFixo = obterCabecalhoFixoTabelaEncomendaFornecedor();
-    if (cabecalhoFixo) {
-        cabecalhoFixo.replaceChildren(criarCabecalhoTabelaEncomendaFornecedor());
-    }
+    if (!resultados.length) return;
 
     const envoltorio = document.createElement("div");
-    envoltorio.className = "mapas-tabela-wrapper";
+    envoltorio.className = "mapas-tabela-wrapper fornecedor-tabela-wrapper-centro";
 
     const tabela = document.createElement("table");
-    tabela.className = "mapas-produtos-tabela mapas-produtos-tabela-corpo";
+    tabela.className = "mapas-produtos-tabela fornecedor-tabela-encomenda";
+
+    tabela.appendChild(criarTheadTabelaEncomendaFornecedor());
 
     const tbody = document.createElement("tbody");
     const resultadosOrdenados = resultados
@@ -2011,7 +1928,6 @@ function renderizarResultadosFornecedorTabelaEncomenda(caixa, resultados) {
     tabela.appendChild(tbody);
     envoltorio.appendChild(tabela);
     caixa.appendChild(envoltorio);
-    ligarScrollHorizontalTabelaEncomendaFornecedor();
 }
 
 function renderizarResultadosFornecedor() {
@@ -2019,7 +1935,8 @@ function renderizarResultadosFornecedor() {
     if (!caixa) return;
 
     if (estaPaginaFornecedoresUnificada()) {
-        limparCabecalhoFixoTabelaEncomendaFornecedor();
+        removerCabecalhoFixoTabelaEncomendaFornecedor();
+        delete caixa.dataset.scrollSync;
     }
 
     const { termo, fornecedor, fornecedorMarcacao, filtroFornecedor, filtroTop, filtroArquivado, filtroDescontinuado, ordenacao } = obterControlosResultadosFornecedor();
