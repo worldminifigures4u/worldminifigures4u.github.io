@@ -934,7 +934,7 @@ body.mapas-produto-modal-aberto {
     }
 
     .pagina-fornecedores-unificada .fornecedor-resultados {
-        max-height: 65vh;
+        max-height: calc(65vh + 120px);
     }
 
     .pagina-mapas-admin .fornecedor-resultados {

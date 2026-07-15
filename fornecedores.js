@@ -1816,8 +1816,8 @@ function renderizarResultadosFornecedorTabelaEncomenda(caixa, resultados) {
         ["nome", "mapas-col-nome", "nome"],
         ["Ref.", "mapas-col-ref", "ref"],
         ["stock", "mapas-col-stock", "stock"],
-        ["a chegar", "mapas-col-pendente", "pendente"],
-        ["previsto", "mapas-col-previsto", "previsto"],
+        ["chegar", "mapas-col-pendente", "pendente"],
+        ["prev.", "mapas-col-previsto", "previsto"],
         ["qtd", "mapas-col-qtd", "qtd"],
     ].forEach(([texto, classe, coluna]) => {
         const th = document.createElement("th");
