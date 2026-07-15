@@ -1735,15 +1735,6 @@ function obterTextoTotalUnidadesEncomendaFornecedor() {
     return `Encomenda actual: ${unidades} unidades`;
 }
 
-function atualizarTotalUnidadesEncomendaFornecedor() {
-    if (!estaPaginaFornecedoresUnificada()) return;
-    const texto = obterTextoTotalUnidadesEncomendaFornecedor();
-    const qtdTotal = document.getElementById("fornecedor-qtd-total-unidades");
-    if (qtdTotal) qtdTotal.textContent = texto;
-    const selecionadosTotal = document.getElementById("fornecedor-selecionados-total");
-    if (selecionadosTotal) selecionadosTotal.textContent = texto;
-}
-
 function atualizarResumoEncomendaFornecedor(opcoes = {}) {
     const alvo = document.getElementById("fornecedor-resumo-encomenda");
     if (!alvo || !estaPaginaFornecedoresUnificada()) return;
@@ -1771,8 +1762,15 @@ function atualizarResumoEncomendaFornecedor(opcoes = {}) {
         textoProdutos = `${totalFiltrados} produto(s) apresentados.`;
     }
 
-    alvo.textContent = `${textoProdutos}${resumoMarcacao}`;
-    atualizarTotalUnidadesEncomendaFornecedor();
+    const texto = document.createElement("span");
+    texto.className = "fornecedor-resumo-encomenda-texto";
+    texto.textContent = `${textoProdutos}${resumoMarcacao}`;
+
+    const unidades = document.createElement("span");
+    unidades.className = "fornecedor-resumo-encomenda-unidades";
+    unidades.textContent = obterTextoTotalUnidadesEncomendaFornecedor();
+
+    alvo.replaceChildren(texto, unidades);
 }
 
 function obterTextoResumoMarcacaoFornecedor(fornecedor, fornecedorMarcacao, filtroFornecedor) {
@@ -1824,14 +1822,6 @@ function renderizarResultadosFornecedorTabelaEncomenda(caixa, resultados) {
     ].forEach(([texto, classe, coluna]) => {
         const th = document.createElement("th");
         th.className = `${classe} mapas-th-ordenavel`;
-        const envoltorioCabecalho = document.createElement("div");
-        envoltorioCabecalho.className = coluna === "qtd" ? "mapas-col-qtd-cabecalho" : "mapas-col-cabecalho";
-        if (coluna === "qtd") {
-            const totalUnidades = document.createElement("span");
-            totalUnidades.id = "fornecedor-qtd-total-unidades";
-            totalUnidades.className = "fornecedor-qtd-total-unidades";
-            envoltorioCabecalho.appendChild(totalUnidades);
-        }
         const botao = document.createElement("button");
         botao.type = "button";
         botao.textContent = texto;
@@ -1854,8 +1844,7 @@ function renderizarResultadosFornecedorTabelaEncomenda(caixa, resultados) {
                 renderizarResultadosFornecedor();
             });
         }
-        envoltorioCabecalho.appendChild(botao);
-        th.appendChild(envoltorioCabecalho);
+        th.appendChild(botao);
         cabecalho.appendChild(th);
     });
     thead.appendChild(cabecalho);
@@ -1929,7 +1918,6 @@ function renderizarResultadosFornecedorTabelaEncomenda(caixa, resultados) {
     tabela.appendChild(tbody);
     envoltorio.appendChild(tabela);
     caixa.appendChild(envoltorio);
-    atualizarTotalUnidadesEncomendaFornecedor();
 }
 
 function renderizarResultadosFornecedor() {

@@ -384,12 +384,36 @@ body.pagina-fornecedores-admin{ margin:0; padding-left:0; padding-right:0; paddi
     position: sticky;
     top: 0;
     z-index: 3;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px 14px;
     padding: 8px 12px;
     border-bottom: 1px solid #333;
     background: #151515;
     color: #cfcfcf;
     font-size: 13px;
     line-height: 1.45;
+}
+
+.fornecedor-resumo-encomenda-texto {
+    flex: 1 1 240px;
+    min-width: 0;
+}
+
+.fornecedor-resumo-encomenda-unidades {
+    flex: 0 0 auto;
+    padding: 6px 12px;
+    border: 2px solid #ffc400;
+    border-radius: 6px;
+    background: #211c12;
+    color: #ffc400;
+    font-size: 13px;
+    font-weight: 800;
+    line-height: 1.2;
+    white-space: nowrap;
+    box-shadow: 0 0 0 1px rgba(255, 196, 0, 0.12);
 }
 
 .pagina-mapas-admin .fornecedor-resultados {
@@ -621,30 +645,6 @@ body.pagina-fornecedores-admin{ margin:0; padding-left:0; padding-right:0; paddi
 .mapas-th-sem-ordenacao {
     cursor: default;
     opacity: 1;
-}
-
-.mapas-col-qtd-cabecalho {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 4px;
-}
-
-.fornecedor-qtd-total-unidades,
-.fornecedor-selecionados-total {
-    display: block;
-    color: #ffc400;
-    font-size: 11px;
-    font-weight: 800;
-    line-height: 1.2;
-    text-align: center;
-    white-space: normal;
-}
-
-.fornecedor-selecionados-total {
-    margin: -4px 0 8px;
-    font-size: 13px;
-    text-align: left;
 }
 
 .mapa-stock-celula {
