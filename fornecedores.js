@@ -2168,16 +2168,130 @@ function removerProdutoFornecedor(id) {
     renderizarSelecionadosFornecedor();
 }
 
+function renderizarSelecionadosFornecedorTabela(caixa) {
+    caixa.classList.add("fornecedor-selecionados-tabela");
+
+    const envoltorio = document.createElement("div");
+    envoltorio.className = "mapas-tabela-wrapper fornecedor-tabela-wrapper-centro";
+
+    const tabela = document.createElement("table");
+    tabela.className = "mapas-produtos-tabela fornecedor-tabela-encomenda fornecedor-tabela-selecionados";
+
+    const thead = document.createElement("thead");
+    const cabecalho = document.createElement("tr");
+    [
+        ["", "mapas-col-foto"],
+        ["nome", "mapas-col-nome"],
+        ["Ref.", "mapas-col-ref"],
+        ["stock", "mapas-col-stock"],
+        ["qtd", "mapas-col-qtd"],
+        ["preço", "mapas-col-preco"],
+        ["", "mapas-col-remover"],
+    ].forEach(([texto, classe]) => {
+        const th = document.createElement("th");
+        th.className = classe;
+        th.textContent = texto;
+        cabecalho.appendChild(th);
+    });
+    thead.appendChild(cabecalho);
+    tabela.appendChild(thead);
+
+    const tbody = document.createElement("tbody");
+    fornecedorSelecao.forEach((item) => {
+        const atual = obterProdutoAtual(item.id) || item;
+        const stockNumero = Number(atual.stock || 0);
+        const linha = document.createElement("tr");
+        linha.className = "mapa-linha-quantidade-ativa";
+
+        const fotoCelula = document.createElement("td");
+        fotoCelula.className = "mapas-col-foto";
+        fotoCelula.appendChild(criarImagemFornecedor(atual, "fornecedor-miniatura pequena"));
+        linha.appendChild(fotoCelula);
+
+        const nomeCelula = document.createElement("td");
+        nomeCelula.className = "mapas-col-nome";
+        const nome = document.createElement("strong");
+        nome.className = "fornecedor-selecionado-nome";
+        nome.textContent = atual.nome || "Produto sem nome";
+        nomeCelula.appendChild(nome);
+        linha.appendChild(nomeCelula);
+
+        const refCelula = document.createElement("td");
+        refCelula.className = "mapas-col-ref";
+        refCelula.textContent = atual.referencia || "-";
+        linha.appendChild(refCelula);
+
+        linha.appendChild(criarCelulaMapaFornecedor(
+            stockNumero,
+            `mapas-col-stock mapa-stock-celula ${stockNumero <= 0 ? "sem-stock" : ""}`
+        ));
+
+        const qtdCelula = document.createElement("td");
+        qtdCelula.className = "mapas-col-qtd";
+        const qtd = document.createElement("input");
+        qtd.type = "number";
+        qtd.min = "1";
+        qtd.step = "1";
+        qtd.inputMode = "numeric";
+        qtd.className = "mapa-quantidade-input";
+        qtd.value = String(Math.max(1, Number(item.quantidade) || 1));
+        qtd.setAttribute("aria-label", `Quantidade de ${atual.nome || "produto"}`);
+        qtd.addEventListener("change", () => definirQuantidadeFornecedor(atual.id, qtd.value));
+        qtd.addEventListener("blur", () => definirQuantidadeFornecedor(atual.id, qtd.value));
+        qtdCelula.appendChild(qtd);
+        linha.appendChild(qtdCelula);
+
+        const precoCelula = document.createElement("td");
+        precoCelula.className = "mapas-col-preco";
+        const precoCustoInput = document.createElement("input");
+        precoCustoInput.type = "number";
+        precoCustoInput.min = "0";
+        precoCustoInput.step = "0.01";
+        precoCustoInput.inputMode = "decimal";
+        precoCustoInput.className = "fornecedor-preco-custo-input fornecedor-preco-custo-input-tabela";
+        precoCustoInput.value = Number(item.preco_custo ?? item.custo ?? 0).toFixed(2);
+        precoCustoInput.setAttribute("aria-label", `preço compra de ${atual.nome || "produto"}`);
+        precoCustoInput.addEventListener("change", () => definirPrecoCustoFornecedor(atual.id, precoCustoInput.value));
+        precoCustoInput.addEventListener("blur", () => definirPrecoCustoFornecedor(atual.id, precoCustoInput.value));
+        precoCelula.appendChild(precoCustoInput);
+        linha.appendChild(precoCelula);
+
+        const removerCelula = document.createElement("td");
+        removerCelula.className = "mapas-col-remover";
+        const remover = document.createElement("button");
+        remover.type = "button";
+        remover.className = "fornecedor-remover-linha";
+        remover.textContent = "×";
+        remover.setAttribute("aria-label", `Remover ${atual.nome || "produto"}`);
+        remover.addEventListener("click", () => removerProdutoFornecedor(atual.id));
+        removerCelula.appendChild(remover);
+        linha.appendChild(removerCelula);
+
+        tbody.appendChild(linha);
+    });
+
+    tabela.appendChild(tbody);
+    envoltorio.appendChild(tabela);
+    caixa.appendChild(envoltorio);
+}
+
 function renderizarSelecionadosFornecedor() {
     const caixa = document.getElementById("fornecedor-selecionados");
     if (!caixa) return;
     caixa.replaceChildren();
+    caixa.classList.remove("fornecedor-selecionados-tabela");
 
     if (!fornecedorSelecao.length) {
         const vazio = document.createElement('p');
         vazio.className = 'fornecedor-vazio';
         vazio.textContent = 'A lista esta vazia.';
         caixa.appendChild(vazio);
+        atualizarResumoEncomendaFornecedor();
+        return;
+    }
+
+    if (estaPaginaFornecedoresUnificada()) {
+        renderizarSelecionadosFornecedorTabela(caixa);
         atualizarResumoEncomendaFornecedor();
         return;
     }

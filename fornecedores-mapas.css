@@ -796,6 +796,59 @@ body.pagina-fornecedores-admin{ margin:0; padding-left:0; padding-right:0; paddi
     vertical-align: middle;
 }
 
+.pagina-fornecedores-unificada .fornecedor-selecionados-tabela {
+    display: block;
+    margin-top: 0;
+}
+
+.pagina-fornecedores-unificada .fornecedor-tabela-selecionados thead th {
+    position: static;
+    background: #2a2a2a;
+    color: #ddd;
+    border-color: #444;
+    font-size: 12px;
+    font-weight: 800;
+}
+
+.pagina-fornecedores-unificada .fornecedor-tabela-selecionados .fornecedor-selecionado-nome {
+    display: block;
+    font-weight: 800;
+    line-height: 1.25;
+}
+
+.pagina-fornecedores-unificada .fornecedor-tabela-selecionados .fornecedor-preco-custo-input-tabela {
+    width: 72px;
+    height: 32px;
+    padding: 4px 6px;
+    font-size: 12px;
+}
+
+.pagina-fornecedores-unificada .fornecedor-tabela-selecionados .mapas-col-preco,
+.pagina-fornecedores-unificada .fornecedor-tabela-selecionados .mapas-col-remover {
+    width: 1%;
+    white-space: nowrap;
+    text-align: center;
+}
+
+.pagina-fornecedores-unificada .fornecedor-remover-linha {
+    width: 28px;
+    height: 28px;
+    border: 0;
+    border-radius: 4px;
+    background: #ff4747;
+    color: #fff;
+    font-size: 18px;
+    font-weight: 800;
+    line-height: 1;
+    padding: 0;
+    cursor: pointer;
+}
+
+.pagina-fornecedores-unificada .fornecedor-remover-linha:hover,
+.pagina-fornecedores-unificada .fornecedor-remover-linha:focus-visible {
+    background: #d32f2f;
+}
+
 .mapa-stock-celula {
     font-weight: 900;
 }
