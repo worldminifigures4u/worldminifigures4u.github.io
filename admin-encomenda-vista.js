@@ -98,84 +98,6 @@ window.AdminEncomendaVista = (function () {
         return elemento;
     }
 
-    let modalConfirmarNotas = null;
-
-    function obterModalConfirmarNotas() {
-        if (modalConfirmarNotas) return modalConfirmarNotas;
-
-        modalConfirmarNotas = criarElemento("div", "admin-notas-confirmar-modal");
-        modalConfirmarNotas.hidden = true;
-        const dialogo = criarElemento("div", "admin-notas-confirmar-dialogo");
-        dialogo.setAttribute("role", "dialog");
-        dialogo.setAttribute("aria-modal", "true");
-        dialogo.setAttribute("aria-labelledby", "admin-notas-confirmar-texto");
-        const texto = criarElemento("p", "", "Existem alterações por guardar. Gravar?");
-        texto.id = "admin-notas-confirmar-texto";
-        const acoes = criarElemento("div", "admin-notas-confirmar-acoes");
-        const sim = criarElemento("button", "wallapop-botao wallapop-botao-destaque", "Sim");
-        sim.type = "button";
-        sim.dataset.acao = "sim";
-        const nao = criarElemento("button", "wallapop-botao", "Não");
-        nao.type = "button";
-        nao.dataset.acao = "nao";
-        acoes.append(sim, nao);
-        dialogo.append(texto, acoes);
-        modalConfirmarNotas.appendChild(dialogo);
-        document.body.appendChild(modalConfirmarNotas);
-        return modalConfirmarNotas;
-    }
-
-    function perguntarGravarNotasAlteradas() {
-        const modal = obterModalConfirmarNotas();
-        return new Promise(resolve => {
-            const concluir = valor => {
-                modal.hidden = true;
-                document.body.classList.remove("admin-notas-confirmar-aberto");
-                modal.removeEventListener("click", aoClicarModal);
-                document.removeEventListener("keydown", aoTeclaModal);
-                resolve(valor);
-            };
-            const aoClicarModal = evento => {
-                const botao = evento.target.closest("button[data-acao]");
-                if (!botao) return;
-                evento.preventDefault();
-                concluir(botao.dataset.acao === "sim");
-            };
-            const aoTeclaModal = evento => {
-                if (evento.key === "Escape") {
-                    evento.preventDefault();
-                    concluir(false);
-                }
-            };
-            modal.hidden = false;
-            document.body.classList.add("admin-notas-confirmar-aberto");
-            modal.addEventListener("click", aoClicarModal);
-            document.addEventListener("keydown", aoTeclaModal);
-            modal.querySelector('[data-acao="sim"]')?.focus();
-        });
-    }
-
-    let confirmacaoSaidaGlobalRegistada = false;
-
-    function alvoIgnoradoConfirmacaoSaida(alvo, opcoes = {}) {
-        if (!alvo) return true;
-        const { textarea, gravarTudo, modal } = opcoes;
-        if (textarea && (alvo === textarea || textarea.contains?.(alvo))) return true;
-        if (gravarTudo && (alvo === gravarTudo || gravarTudo.contains?.(alvo))) return true;
-        if (modal && modal.contains?.(alvo)) return true;
-        return false;
-    }
-
-    function registarConfirmacaoSaidaGlobal() {
-        if (confirmacaoSaidaGlobalRegistada) return;
-        confirmacaoSaidaGlobalRegistada = true;
-        document.addEventListener("pointerdown", evento => {
-            const card = document.querySelector(".admin-encomenda-card.aberta:not(.admin-encomenda-card-modal)");
-            if (!card || typeof card._aoPointerDownForaNotas !== "function") return;
-            void card._aoPointerDownForaNotas(evento);
-        }, true);
-    }
-
     function obterProdutos(encomenda) {
         let produtos = encomenda.produtos;
         if (typeof produtos === "string") {
@@ -441,6 +363,7 @@ window.AdminEncomendaVista = (function () {
         }
 
         async function guardarNotasInternas() {
+            if (!temAlteracoesPendentes()) return true;
             if (!compacto) statusNotas.textContent = "A guardar...";
             const { data, error } = await obterClient().rpc("guardar_notas_encomenda_admin", {
                 p_encomenda_id: String(encomenda.id),
@@ -463,49 +386,50 @@ window.AdminEncomendaVista = (function () {
             if (!compacto) statusNotas.textContent = "";
         }
 
+        let ignorarBlurNotas = false;
+        let promessaGravacaoNotas = null;
+
+        async function gravarNotasAoSair() {
+            if (!temAlteracoesPendentes()) return true;
+            if (promessaGravacaoNotas) return promessaGravacaoNotas;
+            promessaGravacaoNotas = guardarNotasInternas().finally(() => {
+                promessaGravacaoNotas = null;
+            });
+            return promessaGravacaoNotas;
+        }
+
+        function ignorarProximoBlurNotas() {
+            ignorarBlurNotas = true;
+        }
+
+        notas.addEventListener("blur", () => {
+            window.setTimeout(async () => {
+                if (ignorarBlurNotas) {
+                    ignorarBlurNotas = false;
+                    return;
+                }
+                if (notasSecao.contains(document.activeElement)) return;
+                await gravarNotasAoSair();
+            }, 0);
+        });
+
+        const controloNotas = {
+            guardar: guardarNotasInternas,
+            gravarAoSair: gravarNotasAoSair,
+            temAlteracoesPendentes,
+            reverter: reverterNotas,
+            ignorarProximoBlur: ignorarProximoBlurNotas
+        };
+
         if (!semBotao) {
             const guardarNotas = criarElemento("button", "wallapop-botao wallapop-botao-destaque", compacto ? "Gravar" : "Guardar notas");
             guardarNotas.type = "button";
             guardarNotas.addEventListener("click", evento => evento.stopPropagation());
-            let ignorarBlurNotas = false;
-            let promessaConfirmacaoNotas = null;
-
-            async function confirmarSaidaNotas() {
-                if (!temAlteracoesPendentes()) return true;
-                if (promessaConfirmacaoNotas) return promessaConfirmacaoNotas;
-
-                promessaConfirmacaoNotas = (async () => {
-                    const gravar = await perguntarGravarNotasAlteradas();
-                    if (gravar) return guardarNotasInternas();
-                    reverterNotas();
-                    return true;
-                })();
-
-                try {
-                    return await promessaConfirmacaoNotas;
-                } finally {
-                    promessaConfirmacaoNotas = null;
-                }
-            }
-
-            guardarNotas.addEventListener("mousedown", () => {
-                ignorarBlurNotas = true;
-            });
+            guardarNotas.addEventListener("mousedown", ignorarProximoBlurNotas);
             guardarNotas.addEventListener("click", async () => {
-                ignorarBlurNotas = false;
                 guardarNotas.disabled = true;
                 await guardarNotasInternas();
                 guardarNotas.disabled = false;
-            });
-            notas.addEventListener("blur", () => {
-                window.setTimeout(async () => {
-                    if (ignorarBlurNotas) {
-                        ignorarBlurNotas = false;
-                        return;
-                    }
-                    if (notasSecao.contains(document.activeElement)) return;
-                    await confirmarSaidaNotas();
-                }, 0);
             });
 
             if (compacto) {
@@ -518,19 +442,14 @@ window.AdminEncomendaVista = (function () {
 
             return {
                 elemento: notasSecao,
-                guardar: guardarNotasInternas,
-                confirmarSaida: confirmarSaidaNotas,
-                temAlteracoesPendentes,
-                reverter: reverterNotas
+                ...controloNotas
             };
         }
 
         notasSecao.appendChild(notas);
         return {
             elemento: notasSecao,
-            guardar: guardarNotasInternas,
-            temAlteracoesPendentes,
-            reverter: reverterNotas
+            ...controloNotas
         };
     }
 
@@ -1267,7 +1186,6 @@ window.AdminEncomendaVista = (function () {
         }
 
         function reverterAlteracoesPendentes() {
-            controloNotas?.reverter?.();
             gestaoEncomenda?.reverterAnexos?.();
             controloTotal?.reverter?.();
         }
@@ -1292,22 +1210,9 @@ window.AdminEncomendaVista = (function () {
             return ok;
         }
 
-        let promessaConfirmacaoSaida = null;
-
-        async function confirmarAlteracoesAntesDeSair() {
-            if (!temAlteracoesPendentes()) return true;
-            if (promessaConfirmacaoSaida) return promessaConfirmacaoSaida;
-            promessaConfirmacaoSaida = (async () => {
-                const gravar = await perguntarGravarNotasAlteradas();
-                if (gravar) await gravarAlteracoesPendentes();
-                else reverterAlteracoesPendentes();
-                return true;
-            })();
-            try {
-                return await promessaConfirmacaoSaida;
-            } finally {
-                promessaConfirmacaoSaida = null;
-            }
+        async function prepararSaidaEncomenda() {
+            await controloNotas?.gravarAoSair?.();
+            reverterAlteracoesPendentes();
         }
 
         if (!modoModal) {
@@ -1315,7 +1220,7 @@ window.AdminEncomendaVista = (function () {
             card.classList.remove("aberta");
             const alternarDetalhes = async () => {
                 if (!detalhes.hidden) {
-                    await confirmarAlteracoesAntesDeSair();
+                    await prepararSaidaEncomenda();
                 }
                 detalhes.hidden = !detalhes.hidden;
                 card.classList.toggle("aberta", !detalhes.hidden);
@@ -1369,6 +1274,9 @@ window.AdminEncomendaVista = (function () {
 
         gravarTudo = criarElemento("button", "wallapop-botao wallapop-botao-destaque admin-encomenda-gravar", "Gravar");
         gravarTudo.type = "button";
+        gravarTudo.addEventListener("mousedown", () => {
+            controloNotas?.ignorarProximoBlur?.();
+        });
         gravarTudo.addEventListener("click", evento => {
             evento.stopPropagation();
             gravarAlteracoesPendentes();
@@ -1445,50 +1353,6 @@ window.AdminEncomendaVista = (function () {
         detalhes.append(dados, gestaoLinha, produtos);
         card.append(cabecalho, detalhes);
         ligarAlturaNotasComInfo(card, grupoInfo, controloNotas, colunaAcoes);
-
-        if (!modoModal) {
-            registarConfirmacaoSaidaGlobal();
-            const textareaNotas = controloNotas?.elemento?.querySelector("textarea");
-            let ignorarConfirmacaoNotas = false;
-
-            gravarTudo?.addEventListener("mousedown", () => {
-                ignorarConfirmacaoNotas = true;
-            });
-
-            card._aoPointerDownForaNotas = async evento => {
-                if (detalhes.hidden) return;
-                if (!temAlteracoesPendentes()) return;
-                const modal = obterModalConfirmarNotas();
-                if (!modal.hidden) return;
-                if (alvoIgnoradoConfirmacaoSaida(evento.target, {
-                    textarea: textareaNotas,
-                    gravarTudo,
-                    modal
-                })) return;
-
-                evento.preventDefault();
-                evento.stopImmediatePropagation();
-                await confirmarAlteracoesAntesDeSair();
-            };
-
-            textareaNotas?.addEventListener("blur", () => {
-                window.setTimeout(async () => {
-                    if (ignorarConfirmacaoNotas) {
-                        ignorarConfirmacaoNotas = false;
-                        return;
-                    }
-                    if (detalhes.hidden || !temAlteracoesPendentes()) return;
-                    const modal = obterModalConfirmarNotas();
-                    if (!modal.hidden) return;
-                    if (alvoIgnoradoConfirmacaoSaida(document.activeElement, {
-                        textarea: textareaNotas,
-                        gravarTudo,
-                        modal
-                    })) return;
-                    await confirmarAlteracoesAntesDeSair();
-                }, 0);
-            });
-        }
 
         if (modoModal) {
             gestaoEncomenda.carregarAnexos?.();
