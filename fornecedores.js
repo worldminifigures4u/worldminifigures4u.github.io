@@ -2948,6 +2948,115 @@ function criarElementoPedidoFornecedor(tag, classe, texto) {
     return elemento;
 }
 
+function renderizarPedidoFornecedorProdutosTabela(caixa, pedido) {
+    const envoltorio = document.createElement("div");
+    envoltorio.className = "mapas-tabela-wrapper fornecedor-tabela-wrapper-centro";
+
+    const tabela = document.createElement("table");
+    tabela.className = "mapas-produtos-tabela fornecedor-tabela-encomenda fornecedor-pedido-tabela";
+
+    const thead = document.createElement("thead");
+    const cabecalho = document.createElement("tr");
+    [
+        ["", "mapas-col-foto", ""],
+        ["Nome", "mapas-col-nome", ""],
+        ["Ref.", "mapas-col-ref", ""],
+        ["Estado", "mapas-col-pedido-info", ""],
+        ["Receber", "mapas-col-qtd", ""],
+    ].forEach(([texto, classe]) => {
+        const th = document.createElement("th");
+        th.className = `${classe} mapas-th-ordenavel`;
+        const botao = document.createElement("button");
+        botao.type = "button";
+        botao.textContent = texto;
+        botao.tabIndex = -1;
+        botao.disabled = true;
+        botao.classList.add("mapas-th-sem-ordenacao");
+        th.appendChild(botao);
+        cabecalho.appendChild(th);
+    });
+    thead.appendChild(cabecalho);
+    tabela.appendChild(thead);
+
+    const tbody = document.createElement("tbody");
+    (pedido.itens || []).forEach(item => {
+        const produtoAtual = obterProdutoParaPedidoFornecedor(item) || item;
+        const recebido = Number(item.recebido || 0);
+        const restante = Math.max(0, Number(item.quantidade || 0) - recebido);
+        const faltaOs = Math.max(0, Number(item.falta_os || 0));
+        const linha = document.createElement("tr");
+        if (faltaOs > 0) linha.classList.add("tem-os");
+
+        const fotoCelula = document.createElement("td");
+        fotoCelula.className = "mapas-col-foto";
+        fotoCelula.appendChild(criarImagemFornecedor(produtoAtual, "fornecedor-miniatura pequena"));
+        linha.appendChild(fotoCelula);
+
+        const nomeCelula = document.createElement("td");
+        nomeCelula.className = "mapas-col-nome";
+        const nomeBotao = document.createElement("button");
+        nomeBotao.type = "button";
+        nomeBotao.className = "mapas-produto-nome-botao";
+        nomeBotao.textContent = item.nome || "Produto sem nome";
+        nomeBotao.title = "Editar produto";
+        nomeBotao.tabIndex = -1;
+        if (produtoAtual?.id) {
+            nomeBotao.addEventListener("click", () => abrirEdicaoProdutoMapa(produtoAtual.id));
+        } else {
+            nomeBotao.disabled = true;
+        }
+        nomeCelula.appendChild(nomeBotao);
+        linha.appendChild(nomeCelula);
+
+        const refCelula = document.createElement("td");
+        refCelula.className = "mapas-col-ref";
+        refCelula.textContent = item.referencia || "-";
+        linha.appendChild(refCelula);
+
+        const infoCelula = document.createElement("td");
+        infoCelula.className = "mapas-col-pedido-info";
+        const infoPrincipal = document.createElement("span");
+        infoPrincipal.className = "fornecedor-pedido-info-linha";
+        infoPrincipal.textContent = `Pedido: ${Number(item.quantidade || 0)} | Recebido: ${recebido} | Stock atual: ${Number(produtoAtual.stock || 0)}`;
+        infoCelula.appendChild(infoPrincipal);
+        if (faltaOs > 0) {
+            const osSpan = document.createElement("span");
+            osSpan.className = "fornecedor-ajuste-os ativo";
+            osSpan.textContent = `OS/Falta: ${faltaOs}${item.quantidade_original ? ` de ${Number(item.quantidade_original || 0)}` : ""}`;
+            infoCelula.appendChild(osSpan);
+        }
+        if (item.origem_ajuste) {
+            const origemSpan = document.createElement("span");
+            origemSpan.className = "fornecedor-ajuste-os";
+            origemSpan.textContent = item.origem_ajuste === "substituicao"
+                ? "Substituto para completar encomenda"
+                : "Reforco adicionado";
+            infoCelula.appendChild(origemSpan);
+        }
+        linha.appendChild(infoCelula);
+
+        const qtdCelula = document.createElement("td");
+        qtdCelula.className = "mapas-col-qtd";
+        const input = document.createElement("input");
+        input.type = "number";
+        input.min = "0";
+        input.step = "1";
+        input.value = restante > 0 ? restante : 0;
+        input.className = "mapa-quantidade-input fornecedor-recebido-input";
+        input.dataset.pedido = pedido.id;
+        input.dataset.produto = item.id;
+        input.setAttribute("aria-label", `Quantidade a receber de ${item.nome || "produto"}`);
+        qtdCelula.appendChild(input);
+        linha.appendChild(qtdCelula);
+
+        tbody.appendChild(linha);
+    });
+
+    tabela.appendChild(tbody);
+    envoltorio.appendChild(tabela);
+    caixa.appendChild(envoltorio);
+}
+
 function renderizarPedidosFornecedores() {
     const caixa = document.getElementById('fornecedor-pedidos');
     if (!caixa) return;
@@ -3013,29 +3122,33 @@ function renderizarPedidosFornecedores() {
         detalhes.hidden = !aberto;
 
         const produtos = criarElementoPedidoFornecedor("div", "admin-encomenda-produtos fornecedor-pedido-produtos");
-        const lista = criarElementoPedidoFornecedor("div", "fornecedor-pedido-produtos");
-        pedido.itens.forEach(item => {
-            const produtoAtual = obterProdutoParaPedidoFornecedor(item) || item;
-            const recebido = Number(item.recebido || 0);
-            const restante = Math.max(0, Number(item.quantidade || 0) - recebido);
-            const faltaOs = Math.max(0, Number(item.falta_os || 0));
-            const linhaProduto = criarElementoPedidoFornecedor("div", "fornecedor-pedido-linha");
-            if (faltaOs > 0) linhaProduto.classList.add("tem-os");
-            linhaProduto.appendChild(criarImagemFornecedor(produtoAtual, "fornecedor-miniatura pequena"));
-            const info = criarElementoPedidoFornecedor("div", "fornecedor-info");
-            info.innerHTML = `<strong>${escaparHtmlFornecedor(item.nome)}</strong><span class="fornecedor-identificadores">Ref. ${escaparHtmlFornecedor(item.referencia || "-")} | SKU ${escaparHtmlFornecedor(item.sku || "-")}</span><span>Pedido: ${Number(item.quantidade || 0)} | Recebido: ${recebido} | Stock atual: ${Number(produtoAtual.stock || 0)}</span>${faltaOs > 0 ? `<span class="fornecedor-ajuste-os ativo">OS/Falta: ${faltaOs}${item.quantidade_original ? ` de ${Number(item.quantidade_original || 0)}` : ""}</span>` : ""}${item.origem_ajuste ? `<span class="fornecedor-ajuste-os">${item.origem_ajuste === "substituicao" ? "Substituto para completar encomenda" : "Reforco adicionado"}</span>` : ""}`;
-            const input = document.createElement("input");
-            input.type = "number";
-            input.min = "0";
-            input.step = "1";
-            input.value = restante > 0 ? restante : 0;
-            input.className = "fornecedor-recebido-input";
-            input.dataset.pedido = pedido.id;
-            input.dataset.produto = item.id;
-            linhaProduto.append(info, input);
-            lista.appendChild(linhaProduto);
-        });
-        produtos.appendChild(lista);
+        if (estaPaginaFornecedoresUnificada()) {
+            renderizarPedidoFornecedorProdutosTabela(produtos, pedido);
+        } else {
+            const lista = criarElementoPedidoFornecedor("div", "fornecedor-pedido-produtos-lista");
+            pedido.itens.forEach(item => {
+                const produtoAtual = obterProdutoParaPedidoFornecedor(item) || item;
+                const recebido = Number(item.recebido || 0);
+                const restante = Math.max(0, Number(item.quantidade || 0) - recebido);
+                const faltaOs = Math.max(0, Number(item.falta_os || 0));
+                const linhaProduto = criarElementoPedidoFornecedor("div", "fornecedor-pedido-linha");
+                if (faltaOs > 0) linhaProduto.classList.add("tem-os");
+                linhaProduto.appendChild(criarImagemFornecedor(produtoAtual, "fornecedor-miniatura pequena"));
+                const info = criarElementoPedidoFornecedor("div", "fornecedor-info");
+                info.innerHTML = `<strong>${escaparHtmlFornecedor(item.nome)}</strong><span class="fornecedor-identificadores">Ref. ${escaparHtmlFornecedor(item.referencia || "-")} | SKU ${escaparHtmlFornecedor(item.sku || "-")}</span><span>Pedido: ${Number(item.quantidade || 0)} | Recebido: ${recebido} | Stock atual: ${Number(produtoAtual.stock || 0)}</span>${faltaOs > 0 ? `<span class="fornecedor-ajuste-os ativo">OS/Falta: ${faltaOs}${item.quantidade_original ? ` de ${Number(item.quantidade_original || 0)}` : ""}</span>` : ""}${item.origem_ajuste ? `<span class="fornecedor-ajuste-os">${item.origem_ajuste === "substituicao" ? "Substituto para completar encomenda" : "Reforco adicionado"}</span>` : ""}`;
+                const input = document.createElement("input");
+                input.type = "number";
+                input.min = "0";
+                input.step = "1";
+                input.value = restante > 0 ? restante : 0;
+                input.className = "fornecedor-recebido-input";
+                input.dataset.pedido = pedido.id;
+                input.dataset.produto = item.id;
+                linhaProduto.append(info, input);
+                lista.appendChild(linhaProduto);
+            });
+            produtos.appendChild(lista);
+        }
 
         const acoes = criarElementoPedidoFornecedor("div", "admin-encomenda-acoes fornecedor-pedido-acoes");
         const grupoEstado = criarElementoPedidoFornecedor("div", "admin-encomenda-estado-edicao");
