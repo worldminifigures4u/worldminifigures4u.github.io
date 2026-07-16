@@ -24,7 +24,7 @@ body.pagina-mapas-admin,
 body.pagina-estatisticas-admin,
 body.pagina-wallapop,
 body.pagina-gestao.cabecalho-com-admin{
-    --cabecalho-offset:52px;
+    --cabecalho-offset:56px;
 }
 
 body.pagina-clientes-admin .logo-loja,
@@ -61,7 +61,7 @@ body.pagina-gestao.cabecalho-com-admin .cabecalho-loja{
     grid-template-columns:1fr;
     grid-template-rows:auto;
     gap:0;
-    padding:6px 16px;
+    padding:7px 18px;
     align-items:center;
 }
 
@@ -76,7 +76,7 @@ body.pagina-gestao.cabecalho-com-admin .navegacao-admin-cabecalho{
     grid-row:1;
     border-top:none;
     padding-top:0;
-    justify-content:flex-start;
+    justify-content:center;
 }
 
 @media(max-width:1100px){
@@ -202,7 +202,7 @@ body.pagina-estatisticas-admin > main.estatisticas-admin{
     display:flex;
     justify-content:center;
     align-items:center;
-    gap:5px;
+    gap:6px;
     min-width:0;
     padding-top:4px;
     border-top:1px solid #292929;
@@ -215,14 +215,14 @@ body.pagina-estatisticas-admin > main.estatisticas-admin{
 }
 
 .navegacao-admin-cabecalho .acao-cabecalho{
-    height:32px;
+    height:35px;
     min-width:max-content;
     flex-shrink:0;
-    padding:0 14px;
-    border-radius:18px;
+    padding:0 15px;
+    border-radius:20px;
     justify-content:center;
     white-space:nowrap;
-    font-size:14px;
+    font-size:15px;
 }
 
 .navegacao-admin-cabecalho .texto-acao,
@@ -257,7 +257,7 @@ body.pagina-com-cabecalho-site{
     .navegacao-admin-cabecalho .acao-cabecalho{
         width:auto;
         min-width:max-content;
-        padding:0 12px;
+        padding:0 13px;
     }
 
     body:not([data-page="loja"]) .navegacao-admin-cabecalho {
