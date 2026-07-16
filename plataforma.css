@@ -479,11 +479,6 @@ body.pagina-wallapop{
         }
 
         .wallapop-acoes-encomenda .wallapop-botao{
-            min-height:34px;
-            padding:6px 10px;
-            font-size:13px;
-            line-height:1.2;
-            white-space:nowrap;
             width:100%;
             box-sizing:border-box;
         }
