@@ -140,6 +140,14 @@
     padding-top:0;
     border-top:0;
     margin-bottom:0;
+    width:calc((100% - 18px) / 2);
+    max-width:calc((100% - 18px) / 2);
+}
+
+.clientes-resumo-grelha{
+    display:grid;
+    grid-template-columns:repeat(3, minmax(0, 1fr));
+    gap:10px 10px;
 }
 
 .clientes-ficha-topo{
@@ -236,17 +244,18 @@
     }
 }
 
-.clientes-resumo-grelha{
-    display:grid;
-    grid-template-columns:repeat(3, minmax(0, 1fr));
-    gap:10px 18px;
-}
-
 .clientes-resumo-encomendas,
 .clientes-resumo-total,
 .clientes-resumo-ultima{
     grid-column:auto;
     grid-row:1;
+}
+
+@media (max-width: 700px){
+    .clientes-resumo-secao{
+        width:100%;
+        max-width:none;
+    }
 }
 
 .clientes-historico-codigo{
