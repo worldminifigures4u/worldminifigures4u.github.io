@@ -69,6 +69,7 @@ body.pagina-encomendas-admin{
             display:flex;
             flex-direction:row;
             align-items:baseline;
+            justify-content:center;
             gap:8px;
         }
 
