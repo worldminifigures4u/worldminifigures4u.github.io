@@ -1420,7 +1420,91 @@ body.pagina-fornecedores-admin{ margin:0; padding-left:0; padding-right:0; paddi
 }
 
 .mapas-produto-fornecedores {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+}
+
+.mapas-produto-fornecedor-historico {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 12px;
+    border: 1px solid #333;
+    border-radius: 8px;
+    background: #171717;
+    box-sizing: border-box;
+}
+
+.mapas-produto-fornecedor-titulo {
+    color: #fff;
+    font-size: 14px;
+    font-weight: 800;
+}
+
+.fornecedor-historico-lista {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    max-height: 180px;
+    overflow: auto;
+}
+
+.fornecedor-historico-item {
+    display: grid;
+    grid-template-columns: minmax(110px, auto) minmax(0, 1fr);
+    gap: 10px;
+    align-items: center;
+    padding: 7px 10px;
+    border: 1px solid #333;
+    border-radius: 6px;
+    background: #1f1f1f;
+    font-size: 13px;
+}
+
+.fornecedor-historico-data {
+    color: #bbb;
+    font-variant-numeric: tabular-nums;
+}
+
+.fornecedor-historico-estado {
+    color: #fff;
+    font-weight: 700;
+}
+
+.fornecedor-historico-item.tipo-os .fornecedor-historico-estado {
+    color: #f0c36d;
+}
+
+.fornecedor-historico-item.tipo-encomendada .fornecedor-historico-estado {
+    color: #7ddea0;
+}
+
+.fornecedor-historico-vazio {
+    color: #888;
+    font-size: 13px;
+    padding: 4px 0;
+}
+
+.mapas-produto-fornecedor-marcacao-atual {
+    display: grid;
+    gap: 6px;
+    color: #bbb;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.mapas-produto-fornecedor-marcacao-atual input {
+    width: 100%;
+    box-sizing: border-box;
+    border: 1px solid #444;
+    border-radius: 6px;
+    background: #242424;
+    color: #fff;
+    padding: 8px 10px;
+    font: inherit;
 }
 
 .mapas-edicao-checkbox {

@@ -976,7 +976,7 @@ function formatarDataOsCurtaFornecedor(valor) {
     if (/^\d{4}-\d{2}-\d{2}$/.test(texto)) return soData;
     const hora = String(data.getHours()).padStart(2, "0");
     const minuto = String(data.getMinutes()).padStart(2, "0");
-    if (hora === "00" && minuto === "00" && texto.endsWith("T00:00:00.000Z")) return soData;
+    if (hora === "00" && minuto === "00" && /T00:00:00/.test(texto)) return soData;
     return `${soData} ${hora}:${minuto}`;
 }
 
@@ -1001,137 +1001,246 @@ function dataOsAgoraFornecedor() {
     return new Date().toISOString();
 }
 
-function extrairDatasOsMarcacao(valor) {
-    const datas = [];
-    const adicionar = (entrada, permitirDuplicado = false) => {
-        const texto = String(entrada || "").trim();
-        if (!texto) return;
-        if (!permitirDuplicado && datas.includes(texto)) return;
-        datas.push(texto);
+function rotuloHistoricoFornecedor(tipo) {
+    const normalizado = String(tipo || "").trim().toLowerCase();
+    if (normalizado === "os") return "OS";
+    if (normalizado === "encomendada" || normalizado === "encomendado") return "Encomendada";
+    if (normalizado === "ex") return "EX";
+    return String(tipo || "").trim() || "—";
+}
+
+function obterHistoricoFornecedor(valor) {
+    const eventos = [];
+    const adicionar = (tipo, data) => {
+        const tipoNorm = String(tipo || "").trim().toLowerCase();
+        if (!tipoNorm) return;
+        const dataNorm = String(data || "").trim() || null;
+        eventos.push({
+            tipo: tipoNorm === "encomendado" ? "encomendada" : tipoNorm,
+            data: dataNorm
+        });
     };
 
     if (valor && typeof valor === "object" && !Array.isArray(valor)) {
-        const lista = Array.isArray(valor.datas)
-            ? valor.datas
-            : (Array.isArray(valor.historico) ? valor.historico : []);
+        const lista = Array.isArray(valor.historico) ? valor.historico : [];
         if (lista.length) {
-            lista.forEach((entrada) => adicionar(entrada, true));
+            lista.forEach((item) => {
+                if (!item) return;
+                if (typeof item === "string") {
+                    const maiusculas = item.toUpperCase();
+                    if (maiusculas.includes("OS")) adicionar("os", extrairDataOsDeTextoFornecedor(item) || item);
+                    else if (maiusculas.includes("ENCOMEND")) adicionar("encomendada", extrairDataOsDeTextoFornecedor(item) || item);
+                    return;
+                }
+                adicionar(item.tipo || item.estado || item.status, item.data || item.em || item.desde || null);
+            });
         } else {
-            adicionar(valor.desde || valor.data_os || valor.data || valor.em || null);
+            const datasOs = Array.isArray(valor.datas) ? valor.datas : (Array.isArray(valor.historico_os) ? valor.historico_os : []);
+            if (datasOs.length) datasOs.forEach((data) => adicionar("os", data));
+            else if (String(valor.estado || "").toUpperCase() === "OS") {
+                adicionar("os", valor.desde || valor.data_os || valor.data || null);
+            } else if (String(valor.estado || "").toUpperCase() === "EX") {
+                adicionar("ex", valor.desde || valor.data || null);
+            } else if (/^-?\d+(?:[,.]\d+)?$/.test(String(valor.estado || "").trim())) {
+                adicionar("encomendada", valor.desde || valor.data || null);
+            }
         }
-        return datas;
+    } else {
+        const texto = String(valor ?? "").trim();
+        const maiusculas = texto.toUpperCase();
+        if (!texto) return [];
+        if (maiusculas === "OS" || maiusculas.startsWith("OS")) {
+            const matches = texto.match(/\d{1,2}[\/\-.]\d{1,2}[\/\-.]\d{4}|\d{4}-\d{2}-\d{2}/g) || [];
+            if (matches.length) matches.forEach((match) => adicionar("os", extrairDataOsDeTextoFornecedor(match) || match));
+            else adicionar("os", extrairDataOsDeTextoFornecedor(texto));
+        } else if (maiusculas === "EX") {
+            adicionar("ex", null);
+        } else if (/^-?\d+(?:[,.]\d+)?$/.test(texto)) {
+            adicionar("encomendada", null);
+        }
     }
 
-    const texto = String(valor ?? "");
-    const matches = texto.match(/\d{1,2}[\/\-.]\d{1,2}[\/\-.]\d{4}|\d{4}-\d{2}-\d{2}/g) || [];
-    matches.forEach((match) => {
-        const normalizada = extrairDataOsDeTextoFornecedor(match) || match;
-        adicionar(normalizada);
-    });
-    if (!matches.length) {
-        const unica = extrairDataOsDeTextoFornecedor(texto);
-        if (unica) adicionar(unica);
-    }
-    return datas;
+    return eventos.sort((a, b) => String(a.data || "").localeCompare(String(b.data || "")));
 }
 
-function formatarTextoOsComHistorico(datas) {
-    const lista = (datas || []).filter(Boolean);
-    if (!lista.length) return "OS";
-    const formatadas = lista.map(formatarDataOsCurtaFornecedor).filter(Boolean);
-    if (!formatadas.length) return "OS";
-    if (formatadas.length === 1) return `OS · ${formatadas[0]}`;
-    return `OS · ${formatadas.length}× · ${formatadas.join(" · ")}`;
+function formatarTextoHistoricoFornecedor(historico, estadoAtual = "") {
+    const lista = Array.isArray(historico) ? historico : [];
+    if (!lista.length) {
+        const estado = String(estadoAtual || "").trim();
+        return estado || "";
+    }
+    return lista
+        .map((item) => {
+            const data = item.data ? formatarDataOsCurtaFornecedor(item.data) : "sem data";
+            return `${data} — ${rotuloHistoricoFornecedor(item.tipo)}`;
+        })
+        .join("\n");
+}
+
+function formatarResumoHistoricoFornecedor(historico, estadoAtual = "") {
+    const lista = Array.isArray(historico) ? historico : [];
+    if (!lista.length) {
+        const estado = String(estadoAtual || "").trim().toUpperCase();
+        if (!estado) return "Disponivel";
+        if (estado === "OS") return "OS";
+        if (estado === "EX") return "EX";
+        if (/^-?\d+(?:[,.]\d+)?$/.test(estado)) return `Marcado no mapa: ${estado}`;
+        return estado;
+    }
+    const ultimo = lista[lista.length - 1];
+    const rotulo = rotuloHistoricoFornecedor(ultimo.tipo);
+    if (lista.length === 1) {
+        return ultimo.data ? `${rotulo} · ${formatarDataOsCurtaFornecedor(ultimo.data)}` : rotulo;
+    }
+    return `${rotulo} · ${lista.length}×`;
 }
 
 function normalizarMarcacaoFornecedor(valor) {
-    if (valor && typeof valor === "object" && !Array.isArray(valor)) {
-        const estado = String(valor.estado || valor.marcacao || valor.status || "").trim().toUpperCase();
-        const datas = extrairDatasOsMarcacao(valor);
-        const desde = datas[0] || valor.desde || valor.data_os || valor.data || valor.em || null;
-        if (estado === "OS") {
-            return {
-                tipo: "os",
-                estado: "OS",
-                desde,
-                datas,
-                texto: formatarTextoOsComHistorico(datas)
-            };
-        }
-        if (estado === "EX") {
-            return { tipo: "ex", estado: "EX", desde: null, datas: [], texto: "EX" };
-        }
-        const textoObj = String(valor.texto || estado || "").trim();
-        if (textoObj) return { tipo: "info", estado: textoObj, desde, datas, texto: textoObj };
-    }
+    const historico = obterHistoricoFornecedor(valor);
+    const ultimo = historico[historico.length - 1] || null;
+    const estadoObjeto = valor && typeof valor === "object" && !Array.isArray(valor)
+        ? String(valor.estado || "").trim()
+        : String(valor ?? "").trim();
+    const estado = estadoObjeto || (ultimo ? rotuloHistoricoFornecedor(ultimo.tipo) : "");
+    const estadoUpper = estado.toUpperCase();
 
-    const texto = String(valor ?? "").trim();
-    const maiusculas = texto.toUpperCase();
-    if (!texto) return { tipo: "disponivel", estado: "", desde: null, datas: [], texto: "Disponivel" };
-    if (maiusculas === "OS" || maiusculas.startsWith("OS ·") || maiusculas.startsWith("OS DESDE") || maiusculas.startsWith("OS ")) {
-        const datas = extrairDatasOsMarcacao(texto);
-        const desde = datas[0] || null;
-        return {
-            tipo: "os",
-            estado: "OS",
-            desde,
-            datas,
-            texto: formatarTextoOsComHistorico(datas)
-        };
-    }
-    if (maiusculas === "EX") return { tipo: "ex", estado: "EX", desde: null, datas: [], texto: "EX" };
-    if (/^-?\d+(?:[,.]\d+)?$/.test(texto)) {
-        return { tipo: "encomendado", estado: texto, desde: null, datas: [], texto: `Marcado no mapa: ${texto}` };
-    }
-    return { tipo: "info", estado: texto, desde: null, datas: [], texto };
+    let tipo = "disponivel";
+    if (ultimo?.tipo === "os" || estadoUpper === "OS") tipo = "os";
+    else if (ultimo?.tipo === "ex" || estadoUpper === "EX") tipo = "ex";
+    else if (ultimo?.tipo === "encomendada" || /^-?\d+(?:[,.]\d+)?$/.test(estado)) tipo = "encomendado";
+    else if (estado) tipo = "info";
+
+    const datas = historico.filter((item) => item.tipo === "os").map((item) => item.data).filter(Boolean);
+    return {
+        tipo,
+        estado: tipo === "os" ? "OS" : (tipo === "ex" ? "EX" : estado),
+        desde: historico[0]?.data || null,
+        datas,
+        historico,
+        texto: formatarResumoHistoricoFornecedor(historico, estado)
+    };
 }
 
 function formatarValorFornecedorParaInput(valor) {
     const marcacao = normalizarMarcacaoFornecedor(valor);
     if (marcacao.tipo === "disponivel") return "";
-    if (marcacao.tipo === "os") return marcacao.texto;
+    if (marcacao.tipo === "os") return "OS";
     if (marcacao.tipo === "ex") return "EX";
-    if (marcacao.tipo === "encomendado") return String(valor ?? "").trim();
-    return marcacao.texto;
+    if (marcacao.tipo === "encomendado") {
+        const bruto = valor && typeof valor === "object" ? String(valor.estado || "").trim() : String(valor ?? "").trim();
+        return /^-?\d+(?:[,.]\d+)?$/.test(bruto) ? bruto : "Encomendada";
+    }
+    return marcacao.estado || marcacao.texto;
+}
+
+function acrescentarHistoricoFornecedor(valorAnterior, tipo, novaData = dataOsAgoraFornecedor()) {
+    const anterior = normalizarMarcacaoFornecedor(valorAnterior);
+    const historico = [...(anterior.historico || [])];
+    const tipoNorm = String(tipo || "").trim().toLowerCase() === "encomendado"
+        ? "encomendada"
+        : String(tipo || "").trim().toLowerCase();
+    historico.push({
+        tipo: tipoNorm,
+        data: String(novaData || dataOsAgoraFornecedor())
+    });
+    const ultimo = historico[historico.length - 1];
+    const estado = ultimo.tipo === "os"
+        ? "OS"
+        : (ultimo.tipo === "ex" ? "EX" : (ultimo.tipo === "encomendada" ? "Encomendada" : String(anterior.estado || "")));
+    const datasOs = historico.filter((item) => item.tipo === "os").map((item) => item.data).filter(Boolean);
+    return {
+        estado,
+        desde: historico[0]?.data || null,
+        datas: datasOs,
+        historico
+    };
 }
 
 function criarMarcacaoOsFornecedor(valorAnterior, novaData = dataOsAgoraFornecedor()) {
-    const anterior = normalizarMarcacaoFornecedor(valorAnterior);
-    const datas = [...(anterior.datas || [])];
-    const nova = String(novaData || dataOsAgoraFornecedor());
-    datas.push(nova);
-    return {
-        estado: "OS",
-        desde: datas[0] || nova,
-        datas
-    };
+    return acrescentarHistoricoFornecedor(valorAnterior, "os", novaData);
 }
 
 function parseValorMarcacaoFornecedorInput(texto, valorAnterior) {
     const valor = String(texto || "").trim();
-    if (!valor) return "";
-    const marcacao = normalizarMarcacaoFornecedor(valor);
-    if (marcacao.tipo === "os") {
-        const anterior = normalizarMarcacaoFornecedor(valorAnterior);
-        // Edição manual: preserva o histórico já existente; se o texto trouxe datas novas, usa-as.
-        const datasTexto = marcacao.datas || [];
-        const datas = datasTexto.length >= (anterior.datas || []).length
-            ? datasTexto
-            : [...(anterior.datas || [])];
-        if (!datas.length) datas.push(dataOsHojeFornecedor());
+    const anterior = normalizarMarcacaoFornecedor(valorAnterior);
+    const historico = [...(anterior.historico || [])];
+    if (!valor) {
+        return historico.length ? { estado: "", historico, datas: anterior.datas || [], desde: anterior.desde || null } : "";
+    }
+    const maiusculas = valor.toUpperCase();
+    if (maiusculas === "OS" || maiusculas.startsWith("OS")) {
         return {
             estado: "OS",
-            desde: datas[0],
-            datas
+            desde: anterior.desde || historico[0]?.data || null,
+            datas: anterior.datas || [],
+            historico
         };
     }
-    if (marcacao.tipo === "ex") return "EX";
-    return valor;
+    if (maiusculas === "EX") {
+        return { estado: "EX", historico, desde: anterior.desde || null, datas: anterior.datas || [] };
+    }
+    if (/^-?\d+(?:[,.]\d+)?$/.test(valor)) {
+        return { estado: valor, historico, desde: anterior.desde || null, datas: anterior.datas || [] };
+    }
+    if (maiusculas === "ENCOMENDADA" || maiusculas === "ENCOMENDADO") {
+        return { estado: "Encomendada", historico, desde: anterior.desde || null, datas: anterior.datas || [] };
+    }
+    return { estado: valor, historico, desde: anterior.desde || null, datas: anterior.datas || [] };
 }
 
 function classificarValorFornecedor(valor) {
     const marcacao = normalizarMarcacaoFornecedor(valor);
     return { tipo: marcacao.tipo, texto: marcacao.texto };
+}
+
+function criarBlocoHistoricoFornecedorFicha(form, id, rotulo, valor) {
+    const marcacao = normalizarMarcacaoFornecedor(valor);
+    const bloco = document.createElement("div");
+    bloco.className = "mapas-produto-campo mapas-produto-fornecedor-historico";
+
+    const titulo = document.createElement("strong");
+    titulo.className = "mapas-produto-fornecedor-titulo";
+    titulo.textContent = rotulo;
+    bloco.appendChild(titulo);
+
+    const lista = document.createElement("ul");
+    lista.className = "fornecedor-historico-lista";
+    if (!marcacao.historico.length) {
+        const vazio = document.createElement("li");
+        vazio.className = "fornecedor-historico-vazio";
+        vazio.textContent = "Sem histórico de encomendas neste fornecedor.";
+        lista.appendChild(vazio);
+    } else {
+        marcacao.historico.forEach((item) => {
+            const li = document.createElement("li");
+            li.className = `fornecedor-historico-item tipo-${item.tipo || "info"}`;
+            const data = document.createElement("span");
+            data.className = "fornecedor-historico-data";
+            data.textContent = item.data ? formatarDataOsCurtaFornecedor(item.data) : "sem data";
+            const estado = document.createElement("span");
+            estado.className = "fornecedor-historico-estado";
+            estado.textContent = rotuloHistoricoFornecedor(item.tipo);
+            li.append(data, estado);
+            lista.appendChild(li);
+        });
+    }
+    bloco.appendChild(lista);
+
+    const label = document.createElement("label");
+    label.setAttribute("for", id);
+    label.className = "mapas-produto-fornecedor-marcacao-atual";
+    label.textContent = "Marcação atual";
+    const input = document.createElement("input");
+    input.id = id;
+    input.name = id;
+    input.type = "text";
+    input.value = formatarValorFornecedorParaInput(valor);
+    input.placeholder = "OS, EX, Encomendada ou vazio";
+    label.appendChild(input);
+    bloco.appendChild(label);
+
+    form.appendChild(bloco);
+    return input;
 }
 
 function obterFornecedorMarcacaoFiltro(fornecedorEncomenda) {
@@ -2046,11 +2155,11 @@ function abrirEdicaoProdutoMapa(produtoId) {
 
     const blocoFornecedores = criarSecaoEdicaoMapa("Fornecedores", "mapas-produto-fornecedores");
     obterCamposProdutoFornecedor().forEach(({ chave, rotulo }) => {
-        criarInputEdicaoMapa(
+        criarBlocoHistoricoFornecedorFicha(
             blocoFornecedores,
             `mapas-editar-fornecedor-${chave}`,
             rotulo,
-            formatarValorFornecedorParaInput(obterFornecedorPorChaveProduto(produto, chave))
+            obterFornecedorPorChaveProduto(produto, chave)
         );
     });
     campos.appendChild(blocoFornecedores);
@@ -2073,11 +2182,10 @@ function lerProdutoEditadoMapa() {
     const produtoAtual = obterProdutoAtual(produtoId) || fornecedorProdutos.find(item => String(item.id) === String(produtoId)) || null;
     obterCamposProdutoFornecedor().forEach(({ chave }) => {
         const valor = document.getElementById(`mapas-editar-fornecedor-${chave}`)?.value.trim() || "";
-        if (!valor) return;
-        fornecedores[chave] = parseValorMarcacaoFornecedorInput(
-            valor,
-            obterFornecedorPorChaveProduto(produtoAtual, chave)
-        );
+        const anterior = obterFornecedorPorChaveProduto(produtoAtual, chave);
+        const parsed = parseValorMarcacaoFornecedorInput(valor, anterior);
+        if (parsed === "" || parsed == null) return;
+        fornecedores[chave] = parsed;
     });
 
     const produto = {
@@ -2884,6 +2992,11 @@ async function criarPedidoFornecedor() {
         const pedido = normalizarPedidoFornecedor(data);
         fornecedorPedidos.unshift(pedido);
         guardarPedidosFornecedores();
+        try {
+            await sincronizarHistoricoPedidosFornecedor(itens, fornecedor, { modo: "criar" });
+        } catch (erroHistorico) {
+            console.warn("Nao foi possivel registar histórico Encomendada na ficha.", erroHistorico);
+        }
         fornecedorSelecao = [];
         guardarSelecaoFornecedor();
         renderizarResultadosFornecedor();
@@ -3006,16 +3119,69 @@ function definirFornecedorOsNoProduto(produto, fornecedorNome) {
     return fornecedores;
 }
 
-async function sincronizarOsProdutosFornecedor(itens, fornecedorNome) {
-    if (!fornecedoresClient || !fornecedorNome || fornecedorNome === 'Outro') return;
-    const itensOs = (itens || []).filter(item => Number(item?.falta_os || 0) > 0);
-    if (!itensOs.length) return;
+function definirEventoFornecedorNoProduto(produto, fornecedorNome, tipo, data = dataOsAgoraFornecedor()) {
+    const chaveNormalizada = normalizarChaveFornecedor(fornecedorNome);
+    if (!produto || !chaveNormalizada) return null;
+    const fornecedores = obterObjetoFornecedoresProduto(produto);
+    const chaveExistente = Object.keys(fornecedores).find(chave => normalizarChaveFornecedor(chave) === chaveNormalizada);
+    const chave = chaveExistente || fornecedorNome;
+    fornecedores[chave] = acrescentarHistoricoFornecedor(fornecedores[chave], tipo, data);
+    return fornecedores;
+}
 
-    for (const item of itensOs) {
+function chaveItemHistoricoPedidoFornecedor(item) {
+    return String(item?.id || item?.sku || item?.referencia || "").trim().toUpperCase();
+}
+
+function itemPedidoEstavaOsFornecedor(item) {
+    if (!item) return false;
+    return Math.max(0, Number(item.falta_os || 0)) > 0
+        || String(item.estado_fornecedor || "").trim().toUpperCase() === "OS";
+}
+
+async function sincronizarHistoricoPedidosFornecedor(itens, fornecedorNome, opcoes = {}) {
+    if (!fornecedoresClient || !fornecedorNome || fornecedorNome === "Outro") return 0;
+    const modo = String(opcoes.modo || "criar").trim().toLowerCase() === "editar" ? "editar" : "criar";
+    const mapaAnterior = new Map(
+        (opcoes.itensAnteriores || []).map((item) => [chaveItemHistoricoPedidoFornecedor(item), item])
+    );
+    const agora = dataOsAgoraFornecedor();
+    let atualizados = 0;
+
+    for (const item of (itens || [])) {
+        const quantidade = Math.max(0, Number(item?.quantidade || 0));
+        const faltaOs = Math.max(0, Number(item?.falta_os || 0));
+        if (quantidade <= 0 && faltaOs <= 0) continue;
+
         const produtoAtual = obterProdutoParaPedidoFornecedor(item);
         if (!produtoAtual?.id) continue;
-        const fornecedores = definirFornecedorOsNoProduto(produtoAtual, fornecedorNome);
-        if (!fornecedores) continue;
+
+        const anterior = mapaAnterior.get(chaveItemHistoricoPedidoFornecedor(item));
+        const eraOs = itemPedidoEstavaOsFornecedor(anterior);
+        const agoraOs = faltaOs > 0 || String(item.estado_fornecedor || "").trim().toUpperCase() === "OS";
+        const registarEncomendada = modo === "criar"
+            ? quantidade > 0
+            : (!anterior && quantidade > 0);
+        const registarOs = modo === "criar"
+            ? agoraOs
+            : (agoraOs && !eraOs);
+
+        if (!registarEncomendada && !registarOs) continue;
+
+        let fornecedores = obterObjetoFornecedoresProduto(produtoAtual);
+        const chaveNormalizada = normalizarChaveFornecedor(fornecedorNome);
+        const chaveExistente = Object.keys(fornecedores).find(chave => normalizarChaveFornecedor(chave) === chaveNormalizada);
+        const chave = chaveExistente || fornecedorNome;
+        let atual = fornecedores[chave];
+
+        if (registarEncomendada) {
+            atual = acrescentarHistoricoFornecedor(atual, "encomendada", agora);
+        }
+        if (registarOs) {
+            atual = acrescentarHistoricoFornecedor(atual, "os", agora);
+        }
+        fornecedores = { ...fornecedores, [chave]: atual };
+
         const { error } = await fornecedoresClient.rpc("atualizar_fornecedores_produto_admin", {
             p_id: produtoAtual.id,
             p_fornecedores: fornecedores
@@ -3024,7 +3190,14 @@ async function sincronizarOsProdutosFornecedor(itens, fornecedorNome) {
         fornecedorProdutos = fornecedorProdutos.map(produto =>
             String(produto.id) === String(produtoAtual.id) ? { ...produto, fornecedores } : produto
         );
+        atualizados += 1;
     }
+
+    return atualizados;
+}
+
+async function sincronizarOsProdutosFornecedor(itens, fornecedorNome) {
+    return sincronizarHistoricoPedidosFornecedor(itens, fornecedorNome, { modo: "criar" });
 }
 
 async function sincronizarPrecoCompraProdutosFornecedor(itens) {
@@ -3342,8 +3515,11 @@ async function guardarEdicaoPedidoFornecedor(evento) {
             estado,
             itens
         });
-        status.textContent = 'A marcar OS no mapa do fornecedor (com data)...';
-        await sincronizarOsProdutosFornecedor(itens, fornecedor);
+        status.textContent = 'A atualizar histórico OS/Encomendada na ficha do produto...';
+        await sincronizarHistoricoPedidosFornecedor(itens, fornecedor, {
+            modo: "editar",
+            itensAnteriores: pedido.itens || []
+        });
         status.textContent = 'A atualizar preço compra nos produtos...';
         let produtosComPrecoAtualizado = 0;
         let avisoPrecoCompra = '';
