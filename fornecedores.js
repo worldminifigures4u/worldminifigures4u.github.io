@@ -1284,20 +1284,34 @@ function criarBlocoHistoricoFornecedorFicha(form, id, rotulo, valor) {
     const bloco = document.createElement("div");
     bloco.className = "mapas-produto-campo mapas-produto-fornecedor-historico";
 
+    const cabecalho = document.createElement("div");
+    cabecalho.className = "mapas-produto-fornecedor-cabecalho";
     const titulo = document.createElement("strong");
     titulo.className = "mapas-produto-fornecedor-titulo";
     titulo.textContent = rotulo;
-    bloco.appendChild(titulo);
+    cabecalho.appendChild(titulo);
+
+    const botaoLimpar = document.createElement("button");
+    botaoLimpar.type = "button";
+    botaoLimpar.className = "mapas-produto-fornecedor-limpar-historico";
+    botaoLimpar.textContent = "Limpar histórico";
+    botaoLimpar.disabled = !marcacao.historico.length;
+    cabecalho.appendChild(botaoLimpar);
+    bloco.appendChild(cabecalho);
 
     const lista = document.createElement("ul");
     lista.className = "fornecedor-historico-lista";
-    if (!marcacao.historico.length) {
-        const vazio = document.createElement("li");
-        vazio.className = "fornecedor-historico-vazio";
-        vazio.textContent = "Sem histórico de encomendas neste fornecedor.";
-        lista.appendChild(vazio);
-    } else {
-        marcacao.historico.forEach((item) => {
+
+    const renderizarLista = (historico) => {
+        lista.replaceChildren();
+        if (!historico.length) {
+            const vazio = document.createElement("li");
+            vazio.className = "fornecedor-historico-vazio";
+            vazio.textContent = "Sem histórico de encomendas neste fornecedor.";
+            lista.appendChild(vazio);
+            return;
+        }
+        historico.forEach((item) => {
             const li = document.createElement("li");
             li.className = `fornecedor-historico-item tipo-${item.tipo || "info"}`;
             const data = document.createElement("span");
@@ -1309,7 +1323,8 @@ function criarBlocoHistoricoFornecedorFicha(form, id, rotulo, valor) {
             li.append(data, estado);
             lista.appendChild(li);
         });
-    }
+    };
+    renderizarLista(marcacao.historico);
     bloco.appendChild(lista);
 
     const label = document.createElement("label");
@@ -1322,8 +1337,19 @@ function criarBlocoHistoricoFornecedorFicha(form, id, rotulo, valor) {
     input.type = "text";
     input.value = formatarValorFornecedorParaInput(valor);
     input.placeholder = "OS, EX, Solicitada, Encomendada ou vazio";
+    input.dataset.historicoLimpo = "0";
     label.appendChild(input);
     bloco.appendChild(label);
+
+    botaoLimpar.addEventListener("click", () => {
+        if (!window.confirm(`Limpar o histórico de ${rotulo} nesta ficha?\n\nA marcação atual também fica vazia. Só fica definitivo ao guardar o produto.`)) {
+            return;
+        }
+        input.value = "";
+        input.dataset.historicoLimpo = "1";
+        botaoLimpar.disabled = true;
+        renderizarLista([]);
+    });
 
     form.appendChild(bloco);
     return input;
@@ -2267,11 +2293,23 @@ function lerProdutoEditadoMapa() {
     const produtoId = document.getElementById("mapas-editar-id")?.value || "";
     const produtoAtual = obterProdutoAtual(produtoId) || fornecedorProdutos.find(item => String(item.id) === String(produtoId)) || null;
     obterCamposProdutoFornecedor().forEach(({ chave }) => {
-        const valor = document.getElementById(`mapas-editar-fornecedor-${chave}`)?.value.trim() || "";
-        const anterior = obterFornecedorPorChaveProduto(produtoAtual, chave);
+        const input = document.getElementById(`mapas-editar-fornecedor-${chave}`);
+        const valor = input?.value.trim() || "";
+        const limparHistorico = input?.dataset.historicoLimpo === "1";
+        if (limparHistorico && !valor) return;
+        const anterior = limparHistorico ? "" : obterFornecedorPorChaveProduto(produtoAtual, chave);
         const parsed = parseValorMarcacaoFornecedorInput(valor, anterior);
         if (parsed === "" || parsed == null) return;
-        fornecedores[chave] = parsed;
+        if (limparHistorico && typeof parsed === "object") {
+            fornecedores[chave] = {
+                estado: String(parsed.estado || "").trim(),
+                historico: [],
+                datas: [],
+                desde: null
+            };
+        } else {
+            fornecedores[chave] = parsed;
+        }
     });
 
     const produto = {

@@ -1476,10 +1476,41 @@ body.pagina-fornecedores-admin{ margin:0; padding-left:0; padding-right:0; paddi
     box-sizing: border-box;
 }
 
+.mapas-produto-fornecedor-cabecalho {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+}
+
 .mapas-produto-fornecedor-titulo {
     color: #fff;
     font-size: 14px;
     font-weight: 800;
+}
+
+.mapas-produto-fornecedor-limpar-historico {
+    border: 1px solid #555;
+    border-radius: 6px;
+    background: #2a2a2a;
+    color: #ddd;
+    padding: 5px 9px;
+    font: inherit;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.mapas-produto-fornecedor-limpar-historico:hover:not(:disabled) {
+    border-color: #ff4d4d;
+    color: #fff;
+    background: #3a2222;
+}
+
+.mapas-produto-fornecedor-limpar-historico:disabled {
+    opacity: 0.45;
+    cursor: default;
 }
 
 .fornecedor-historico-lista {
