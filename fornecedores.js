@@ -696,16 +696,25 @@ async function imprimirPedidoFornecedor(id) {
         * { box-sizing: border-box; }
         body { margin: 0; color: #111; font-family: Arial, Helvetica, sans-serif; font-size: 12px; }
         h1 { margin: 0 0 14px; font-size: 22px; }
-        table { width: 100%; border-collapse: collapse; }
+        table { width: 100%; border-collapse: collapse; table-layout: fixed; }
         th, td { border: 1px solid #444; padding: 7px 8px; text-align: left; vertical-align: top; }
+        td { word-break: break-word; overflow-wrap: anywhere; }
         th { background: #f2c200; color: #000; font-weight: 700; }
-        td.quantidade, th.quantidade { width: 90px; text-align: center; }
-        td.novidade, th.novidade { width: 70px; text-align: center; font-weight: 700; }
+        td.quantidade, th.quantidade { text-align: center; }
+        td.novidade, th.novidade { text-align: center; font-weight: 700; }
     </style>
 </head>
 <body>
     <h1>${escaparHtmlFornecedor(pedido.codigo || 'Encomenda')}</h1>
     <table>
+        <colgroup>
+            <col style="width: 30%">
+            <col style="width: 13%">
+            <col style="width: 16%">
+            <col style="width: 15%">
+            <col style="width: 14%">
+            <col style="width: 12%">
+        </colgroup>
         <thead>
             <tr>
                 <th>Nome da figura</th>
