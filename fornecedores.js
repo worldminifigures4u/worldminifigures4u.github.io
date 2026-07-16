@@ -675,14 +675,14 @@ async function imprimirPedidoFornecedor(id) {
         const subtemaItem = item.subtema && item.subtema !== 'semsubtema' ? item.subtema : '';
         const novidade = obterBooleanoProdutoFornecedor(produtoAtual.novidade ?? item.novidade);
         return `
-            <div class="print-grid-row">
-                <div class="col-nome">${escaparHtmlFornecedor(produtoAtual.nome || item.nome || '')}</div>
-                <div class="col-tema">${escaparHtmlFornecedor(produtoAtual.tema || item.tema || '')}</div>
-                <div class="col-subtema">${escaparHtmlFornecedor(subtemaProduto || subtemaItem || '')}</div>
-                <div class="col-referencia">${escaparHtmlFornecedor(produtoAtual.referencia || item.referencia || '')}</div>
-                <div class="col-quantidade">${escaparHtmlFornecedor(item.quantidade || 0)}</div>
-                <div class="col-nota">${novidade ? 'NOVA' : ''}</div>
-            </div>`;
+            <tr>
+                <td>${escaparHtmlFornecedor(produtoAtual.nome || item.nome || '')}</td>
+                <td>${escaparHtmlFornecedor(produtoAtual.tema || item.tema || '')}</td>
+                <td>${escaparHtmlFornecedor(subtemaProduto || subtemaItem || '')}</td>
+                <td class="col-ref">${escaparHtmlFornecedor(produtoAtual.referencia || item.referencia || '')}</td>
+                <td class="col-qtd">${escaparHtmlFornecedor(item.quantidade || 0)}</td>
+                <td class="col-nota">${novidade ? 'NOVA' : ''}</td>
+            </tr>`;
     }).join('');
 
     janela.document.open();
@@ -694,54 +694,63 @@ async function imprimirPedidoFornecedor(id) {
     <style>
         @page { size: A4; margin: 14mm; }
         * { box-sizing: border-box; }
-        body { margin: 0; color: #111; font-family: Arial, Helvetica, sans-serif; font-size: 12px; }
-        h1 { margin: 0 0 14px; font-size: 22px; }
-        .print-grid {
-            display: grid;
-            grid-template-columns: 58mm 25mm 30mm 30mm 27mm 20mm;
-            width: 100%;
-            border-top: 1px solid #444;
-            border-left: 1px solid #444;
-        }
-        .print-grid-row { display: contents; }
-        .print-grid-row > div {
-            border-right: 1px solid #444;
-            border-bottom: 1px solid #444;
-            padding: 6px 8px;
+        body { margin: 0; color: #111; font-family: Arial, Helvetica, sans-serif; font-size: 11px; line-height: 1.25; }
+        h1 { margin: 0 0 14px; font-size: 20px; line-height: 1.2; }
+        table { width: 100%; border-collapse: collapse; table-layout: fixed; }
+        col.col-nome { width: 32%; }
+        col.col-tema { width: 12%; }
+        col.col-subtema { width: 18%; }
+        col.col-ref { width: 16%; }
+        col.col-qtd { width: 14%; }
+        col.col-nota { width: 8%; }
+        th, td {
+            border: 1px solid #444;
+            padding: 6px 7px;
             text-align: left;
             vertical-align: top;
-            word-break: break-word;
-            overflow-wrap: anywhere;
-            font-size: 12px;
-            line-height: 1.2;
+            font-size: 11px;
+            line-height: 1.25;
+            font-weight: 400;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
         }
-        .print-grid-cabecalho > div {
-            background: #f2c200;
-            color: #000;
-            font-weight: 700;
-        }
-        .print-grid .col-quantidade,
-        .print-grid .col-nota {
-            text-align: center;
-        }
-        .print-grid .col-nota {
-            font-weight: 700;
+        th { background: #f2c200; color: #000; font-weight: 700; }
+        td.col-ref, th.col-ref,
+        td.col-qtd, th.col-qtd,
+        td.col-nota, th.col-nota { text-align: center; }
+        td.col-nota, th.col-nota { font-weight: 700; }
+        thead { display: table-header-group; }
+        @media print {
+            table, thead, tbody, tr, th, td { page-break-inside: avoid; }
+            thead { display: table-header-group; }
         }
     </style>
 </head>
 <body>
     <h1>${escaparHtmlFornecedor(pedido.codigo || 'Encomenda')}</h1>
-    <div class="print-grid">
-        <div class="print-grid-row print-grid-cabecalho">
-            <div class="col-nome">Nome da figura</div>
-            <div class="col-tema">Tema</div>
-            <div class="col-subtema">Subtema</div>
-            <div class="col-referencia">Referência</div>
-            <div class="col-quantidade">Quantidade encomendada</div>
-            <div class="col-nota">Nota</div>
-        </div>
-        ${linhas || '<div class="print-grid-row"><div class="col-nome">Sem produtos.</div><div class="col-tema"></div><div class="col-subtema"></div><div class="col-referencia"></div><div class="col-quantidade"></div><div class="col-nota"></div></div>'}
-    </div>
+    <table>
+        <colgroup>
+            <col class="col-nome">
+            <col class="col-tema">
+            <col class="col-subtema">
+            <col class="col-ref">
+            <col class="col-qtd">
+            <col class="col-nota">
+        </colgroup>
+        <thead>
+            <tr>
+                <th>Nome da figura</th>
+                <th>Tema</th>
+                <th>Subtema</th>
+                <th class="col-ref">Referência</th>
+                <th class="col-qtd">Qtd.</th>
+                <th class="col-nota">Nota</th>
+            </tr>
+        </thead>
+        <tbody>
+            ${linhas || '<tr><td colspan="6">Sem produtos.</td></tr>'}
+        </tbody>
+    </table>
 </body>
 </html>`);
     janela.document.close();
