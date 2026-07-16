@@ -95,7 +95,6 @@ function montarVistaConsultaCliente(dados) {
     const dadosSecao = criarElementoCliente("section", "admin-cliente-secao");
     const grelha = criarElementoCliente("div", "admin-cliente-grelha");
     grelha.append(
-        criarCampoCliente("Nome", cliente.nome),
         criarCampoFichaMoradaCliente(cliente),
         criarCampoCliente("E-mail", cliente.email),
         criarCampoCliente("Telem\u00f3vel", cliente.telefone)

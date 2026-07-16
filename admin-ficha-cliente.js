@@ -197,7 +197,6 @@
         dadosPessoais.appendChild(cabecalhoDados);
         const grelha = criarElemento('div', 'admin-cliente-grelha');
         grelha.append(
-            criarCampoFichaCliente('Nome', cliente.nome),
             criarCampoFichaCliente('E-mail', cliente.email),
             criarCampoFichaCliente('Telem\u00f3vel', cliente.telefone),
             criarCampoFichaMorada(cliente)
