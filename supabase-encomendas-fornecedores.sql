@@ -208,7 +208,7 @@ begin
 
     insert into public.encomendas_fornecedores (codigo, fornecedor, referencia, estado, itens, criado_por)
     values (
-        null,
+        public.gerar_codigo_encomenda_fornecedor(),
         nullif(trim(p_fornecedor), ''),
         nullif(trim(coalesce(p_referencia, '')), ''),
         'A preparar',

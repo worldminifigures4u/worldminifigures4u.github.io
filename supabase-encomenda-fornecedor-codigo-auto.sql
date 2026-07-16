@@ -1,9 +1,5 @@
--- Figures Planet — encomendas a fornecedores sem código automático
--- Executar no Supabase SQL Editor (uma vez).
--- Depois de criar a encomenda, o código fica vazio ("Sem código") até editares.
-
-alter table public.encomendas_fornecedores
-    alter column codigo drop not null;
+-- Figures Planet — código automático nas encomendas a fornecedores
+-- Só precisas de correr isto no Supabase se tiveres executado antes o SQL que criava sem código.
 
 create or replace function public.criar_encomenda_fornecedor_admin(
     p_fornecedor text,
@@ -28,7 +24,7 @@ begin
 
     insert into public.encomendas_fornecedores (codigo, fornecedor, referencia, estado, itens, criado_por)
     values (
-        null,
+        public.gerar_codigo_encomenda_fornecedor(),
         nullif(trim(p_fornecedor), ''),
         nullif(trim(coalesce(p_referencia, '')), ''),
         'A preparar',
