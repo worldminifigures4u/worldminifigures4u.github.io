@@ -92,7 +92,9 @@ function montarVistaConsultaCliente(dados) {
     const restricoes = criarSecaoRestricoesCliente(cliente);
     if (restricoes) contentor.appendChild(restricoes);
 
-    const dadosSecao = criarElementoCliente("section", "admin-cliente-secao");
+    const linhaPrincipal = criarElementoCliente("div", "clientes-ficha-consulta-principal");
+
+    const dadosSecao = criarElementoCliente("section", "admin-cliente-secao clientes-ficha-consulta-dados");
     const grelha = criarElementoCliente("div", "admin-cliente-grelha");
     grelha.append(
         criarCampoFichaMoradaCliente(cliente),
@@ -100,7 +102,15 @@ function montarVistaConsultaCliente(dados) {
         criarCampoCliente("E-mail", cliente.email, "admin-cliente-campo-email")
     );
     dadosSecao.appendChild(grelha);
-    contentor.appendChild(dadosSecao);
+    linhaPrincipal.appendChild(dadosSecao);
+
+    const notasSecao = criarElementoCliente("section", "admin-cliente-secao clientes-ficha-consulta-notas");
+    const notas = criarElementoCliente("div", "admin-cliente-notas admin-cliente-notas-consulta");
+    notas.textContent = String(cliente.notas || "").trim() || "Sem notas internas.";
+    notasSecao.appendChild(notas);
+    linhaPrincipal.appendChild(notasSecao);
+
+    contentor.appendChild(linhaPrincipal);
 
     const linksSecao = criarElementoCliente("section", "admin-cliente-secao");
     const listaLinks = criarElementoCliente("div", "admin-cliente-perfis");
@@ -122,12 +132,6 @@ function montarVistaConsultaCliente(dados) {
     }
     linksSecao.appendChild(listaLinks);
     contentor.appendChild(linksSecao);
-
-    const notasSecao = criarElementoCliente("section", "admin-cliente-secao");
-    const notas = criarElementoCliente("div", "admin-cliente-notas admin-cliente-notas-consulta");
-    notas.textContent = String(cliente.notas || "").trim() || "Sem notas internas.";
-    notasSecao.appendChild(notas);
-    contentor.appendChild(notasSecao);
 
     return contentor;
 }

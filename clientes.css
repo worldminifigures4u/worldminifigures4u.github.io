@@ -130,7 +130,8 @@
 }
 
 .clientes-ficha > .admin-cliente-secao + .admin-cliente-secao,
-.clientes-ficha-consulta > .admin-cliente-secao + .admin-cliente-secao{
+.clientes-ficha-consulta > .admin-cliente-secao + .admin-cliente-secao,
+.clientes-ficha-consulta > .clientes-ficha-consulta-principal + .admin-cliente-secao{
     padding-top:16px;
     border-top:1px solid #333;
 }
@@ -216,9 +217,25 @@
     white-space:nowrap;
 }
 
+.clientes-ficha-consulta-principal{
+    display:grid;
+    grid-template-columns:minmax(0, 1fr) minmax(0, 1fr);
+    gap:16px 18px;
+    align-items:stretch;
+    min-width:0;
+}
+
+.clientes-ficha-consulta-principal > .admin-cliente-secao{
+    margin-top:0;
+    padding-top:0;
+    border-top:0;
+    min-width:0;
+}
+
 .clientes-ficha-consulta .admin-cliente-grelha{
     grid-template-columns:1fr;
-    max-width:calc((100% - 18px) / 2);
+    max-width:none;
+    width:100%;
 }
 
 .clientes-ficha-consulta .admin-cliente-campo-morada-bloco,
@@ -228,7 +245,23 @@
     grid-row:auto;
 }
 
+.clientes-ficha-consulta-notas{
+    display:flex;
+    flex-direction:column;
+    min-height:100%;
+}
+
+.clientes-ficha-consulta-notas .admin-cliente-notas-consulta{
+    flex:1 1 auto;
+    min-height:100%;
+    box-sizing:border-box;
+}
+
 @media (max-width: 700px){
+    .clientes-ficha-consulta-principal{
+        grid-template-columns:1fr;
+    }
+
     .clientes-ficha-consulta .admin-cliente-grelha{
         max-width:none;
     }
