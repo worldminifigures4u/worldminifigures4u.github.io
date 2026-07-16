@@ -435,6 +435,16 @@ function montarFormularioCliente(dados, opcoes = {}) {
         formulario.appendChild(acoesTopo);
     }
 
+    let checkboxAviso = null;
+    let checkboxBloquearCompras = null;
+    let checkboxBloquearConta = null;
+    if (!novoCliente) {
+        checkboxAviso = criarCheckboxCliente("Cliente com aviso a ler", "tem_aviso", cliente.tem_aviso);
+        checkboxBloquearCompras = criarCheckboxCliente("Bloquear compras no site", "bloquear_compras", cliente.bloquear_compras);
+        checkboxBloquearConta = criarCheckboxCliente("Bloquear login no site", "bloquear_conta", cliente.bloquear_conta);
+    }
+    const secaoRestricoes = criarSecaoRestricoesFormularioCliente(checkboxBloquearCompras, checkboxBloquearConta);
+
     const dadosCliente = criarElementoCliente("div", "clientes-formulario-dados");
     dadosCliente.append(
         criarInputCliente("Nome", "nome", cliente.nome, "text", true),
@@ -448,6 +458,9 @@ function montarFormularioCliente(dados, opcoes = {}) {
         criarInputCliente("Telem\u00f3vel", "telefone", cliente.telefone),
         criarInputCliente("E-mail", "email", cliente.email, "email")
     );
+    if (secaoRestricoes) {
+        dadosCliente.appendChild(secaoRestricoes);
+    }
     formulario.appendChild(dadosCliente);
 
     const linksExternos = criarElementoCliente("div", "clientes-formulario-links");
@@ -470,34 +483,17 @@ function montarFormularioCliente(dados, opcoes = {}) {
 
     aplicarCamposClienteRegistadoSite(formulario, cliente);
 
-    let checkboxAviso = null;
-    let checkboxBloquearCompras = null;
-    let checkboxBloquearConta = null;
-    if (!novoCliente) {
-        checkboxAviso = criarCheckboxCliente("Cliente com aviso a ler", "tem_aviso", cliente.tem_aviso);
-        checkboxBloquearCompras = criarCheckboxCliente("Bloquear compras no site", "bloquear_compras", cliente.bloquear_compras);
-        checkboxBloquearConta = criarCheckboxCliente("Bloquear login no site", "bloquear_conta", cliente.bloquear_conta);
-    }
-
-    const secaoRestricoes = criarSecaoRestricoesFormularioCliente(checkboxBloquearCompras, checkboxBloquearConta);
-
     if (acoesNoTopo) {
         if (checkboxAviso) {
             checkboxAviso.querySelector("input")?.setAttribute("form", formulario.id);
         }
         guardar.setAttribute("form", formulario.id);
-        if (secaoRestricoes) {
-            formulario.appendChild(secaoRestricoes);
-        }
     }
 
     if (!acoesNoTopo && !acoesAntesCampos) {
         const rodapeFormulario = criarElementoCliente("div", "clientes-formulario-rodape");
         if (checkboxAviso) {
             rodapeFormulario.appendChild(checkboxAviso);
-        }
-        if (secaoRestricoes) {
-            rodapeFormulario.appendChild(secaoRestricoes);
         }
         const acoes = criarElementoCliente("div", "admin-cliente-formulario-acoes");
         if (cancelar) {

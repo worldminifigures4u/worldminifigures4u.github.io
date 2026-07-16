@@ -426,7 +426,8 @@ body.clientes-encomenda-modal-aberto{
 @media (min-width: 701px){
     .clientes-formulario{
         grid-template-columns:minmax(0, 1.15fr) minmax(300px, 0.85fr);
-        gap:12px 28px;
+        column-gap:0;
+        row-gap:12px;
         align-items:start;
     }
 
@@ -440,10 +441,12 @@ body.clientes-encomenda-modal-aberto{
             "morada morada"
             "cp cidade"
             "pais ."
-            "telefone email";
+            "telefone email"
+            "restricoes restricoes";
         gap:12px 22px;
         align-content:start;
         min-width:0;
+        padding-right:24px;
     }
 
     .clientes-formulario-links{
@@ -453,6 +456,8 @@ body.clientes-encomenda-modal-aberto{
         gap:12px;
         align-content:start;
         min-width:0;
+        padding-left:24px;
+        border-left:1px solid #2e2e2e;
     }
 
     .clientes-formulario-links .admin-cliente-formulario-notas{
@@ -466,7 +471,6 @@ body.clientes-encomenda-modal-aberto{
         resize:vertical;
     }
 
-    .clientes-formulario .clientes-restricoes-formulario,
     .clientes-formulario .clientes-formulario-rodape,
     .clientes-formulario .clientes-formulario-acoes-topo,
     .clientes-formulario .clientes-campo-site,
@@ -511,6 +515,19 @@ body.clientes-encomenda-modal-aberto{
         grid-area:email;
         max-width:none;
         min-width:0;
+    }
+
+    .clientes-formulario-dados .clientes-restricoes-formulario{
+        grid-area:restricoes;
+        margin-top:4px;
+        padding-top:12px;
+        border-top:1px solid #2a2a2a;
+    }
+
+    .clientes-formulario-dados .clientes-restricoes-formulario .admin-cliente-formulario-subtitulo{
+        grid-column:auto;
+        margin:0;
+        font-size:14px;
     }
 
     .clientes-formulario-links [class*="admin-cliente-campo-perfil_url_"]{
