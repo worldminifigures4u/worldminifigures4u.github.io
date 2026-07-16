@@ -113,7 +113,33 @@
 .clientes-ficha{
     padding:16px;
     display:grid;
-    gap:14px;
+    gap:16px;
+}
+
+.clientes-ficha > .admin-cliente-secao,
+.clientes-ficha-consulta > .admin-cliente-secao{
+    margin-top:0;
+    padding-top:0;
+    border-top:0;
+}
+
+.clientes-ficha-consulta{
+    display:grid;
+    gap:16px;
+    min-width:0;
+}
+
+.clientes-ficha > .admin-cliente-secao + .admin-cliente-secao,
+.clientes-ficha-consulta > .admin-cliente-secao + .admin-cliente-secao{
+    padding-top:16px;
+    border-top:1px solid #333;
+}
+
+.clientes-resumo-secao{
+    margin-top:0;
+    padding-top:0;
+    border-top:0;
+    margin-bottom:0;
 }
 
 .clientes-ficha-topo{
@@ -180,10 +206,6 @@
     font-weight:700;
     line-height:1.2;
     white-space:nowrap;
-}
-
-.clientes-resumo-secao{
-    margin-top:0;
 }
 
 .clientes-ficha-consulta .admin-cliente-grelha{
