@@ -3002,9 +3002,7 @@ function definirFornecedorOsNoProduto(produto, fornecedorNome) {
     const fornecedores = obterObjetoFornecedoresProduto(produto);
     const chaveExistente = Object.keys(fornecedores).find(chave => normalizarChaveFornecedor(chave) === chaveNormalizada);
     const chave = chaveExistente || fornecedorNome;
-    const atual = normalizarMarcacaoFornecedor(fornecedores[chave]);
-    const desde = atual.tipo === "os" && atual.desde ? atual.desde : dataOsHojeFornecedor();
-    fornecedores[chave] = { estado: "OS", desde };
+    fornecedores[chave] = criarMarcacaoOsFornecedor(fornecedores[chave], dataOsAgoraFornecedor());
     return fornecedores;
 }
 
