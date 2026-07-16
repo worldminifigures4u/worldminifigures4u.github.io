@@ -328,9 +328,10 @@ body.pagina-wallapop{
 
         .plataforma-resumo-figuras{
             margin:0 0 12px;
-            color:#ffc107;
+            color:#29ad4b;
             font-size:16px;
             font-weight:800;
+            text-align:center;
         }
 
         @media (max-width:700px){
