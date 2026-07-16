@@ -14,15 +14,12 @@
     font-size:var(--fp-fonte-valor);
     height:var(--fp-clientes-altura);
     max-height:var(--fp-clientes-altura);
-    display:grid;
-    grid-template-rows:minmax(0, 1fr) auto;
     overflow:hidden;
 }
 
-.clientes-admin > .wallapop-status{
-    margin:8px 0 0;
-    padding:0 12px;
-    max-width:340px;
+.clientes-coluna-lista > .wallapop-status{
+    margin:0;
+    padding:2px 4px 0;
     box-sizing:border-box;
     min-height:1.2em;
     color:#29ad4b;
@@ -31,7 +28,7 @@
     text-align:center;
 }
 
-.clientes-admin > .wallapop-status:empty{
+.clientes-coluna-lista > .wallapop-status:empty{
     display:none;
 }
 
@@ -96,7 +93,7 @@
 
 .clientes-coluna-lista{
     display:grid;
-    grid-template-rows:auto minmax(0, 1fr);
+    grid-template-rows:auto minmax(0, 1fr) auto;
     gap:10px;
     min-width:0;
     min-height:0;

@@ -17,7 +17,7 @@
     <link rel="icon" type="image/webp" href="favicon-32.webp?v=20260711-leve" sizes="32x32">
     <link rel="stylesheet" href="styles.css?v=20260716-sem-cruz-azul">
     <link rel="stylesheet" href="styles-admin.css?v=20260716-menu-10pct">
-    <link rel="stylesheet" href="clientes.css?v=20260716-status-verde">
+    <link rel="stylesheet" href="clientes.css?v=20260716-status-abaixo">
     <link rel="stylesheet" href="morada-formato.css?v=20260716-morada-meia">
     <style>
         body.pagina-clientes-admin{ overflow:hidden; }
@@ -44,7 +44,7 @@
                 <img src="figures-planet-logo-transparent.webp?v=20260711-leve" alt="Figures Planet" width="383" height="100" decoding="async" fetchpriority="high">
             </a>
             <form class="cabecalho-pesquisa" action="index.html" method="get">
-                <input type="search" name="q" class="input-pesquisa" placeholder="O que est√°s √† procura?">
+                <input type="search" name="q" class="input-pesquisa" placeholder="O que est·s ‡ procura?">
                 <span class="icone-pesquisa" aria-hidden="true"></span>
             </form>
             <div class="acoes-cabecalho acoes-cabecalho-publicas">
@@ -65,14 +65,14 @@
                     <span class="badge-carrinho" id="contador-carrinho-cabecalho">0</span>
                 </a>
             </div>
-            <nav class="navegacao-admin-cabecalho" aria-label="Navega√ß√£o administrativa" hidden>
+            <nav class="navegacao-admin-cabecalho" aria-label="NavegaÁ„o administrativa" hidden>
                 <a class="acao-cabecalho acao-plataforma-admin" href="plataforma.html" aria-label="Gerir plataformas">Plataformas</a>
                 <a class="acao-cabecalho acao-clientes-admin ativa" href="clientes.html" aria-label="Gerir clientes">Clientes</a>
                 <a class="acao-cabecalho acao-encomendas-admin" href="encomendas.html" aria-label="Gerir encomendas">Encomendas</a>
                 <a class="acao-cabecalho acao-fornecedores-admin" href="fornecedores.html" aria-label="Gerir fornecedores">Fornecedores</a>
                 <a class="acao-cabecalho acao-mapas-admin" href="mapas.html" aria-label="Gerir mapas">Mapas</a>
-                <a class="acao-cabecalho acao-gestao-admin" href="gestao.html" aria-label="Abrir gest√£o administrativa">Gest√£o</a>
-                <a class="acao-cabecalho acao-estatisticas-admin" href="estatisticas.html" aria-label="Ver estat√≠sticas">Estat√≠sticas</a>
+                <a class="acao-cabecalho acao-gestao-admin" href="gestao.html" aria-label="Abrir gest„o administrativa">Gest„o</a>
+                <a class="acao-cabecalho acao-estatisticas-admin" href="estatisticas.html" aria-label="Ver estatÌsticas">EstatÌsticas</a>
                 <a class="acao-cabecalho acao-conta-admin" href="conta.html" aria-label="Abrir conta">Conta</a>
             </nav>
         </div>
@@ -91,12 +91,12 @@
                     </div>
                 </section>
                 <div class="clientes-lista" id="clientes-lista"></div>
+                <p class="wallapop-status" id="clientes-status" aria-live="polite"></p>
             </div>
             <article class="clientes-ficha" id="clientes-ficha">
                 <p class="admin-cliente-vazio">Escolha um cliente para abrir a ficha.</p>
             </article>
         </section>
-        <p class="wallapop-status" id="clientes-status" aria-live="polite"></p>
     </main>
 
     <div class="admin-imagem-modal" id="admin-imagem-modal" hidden role="dialog" aria-modal="true" aria-label="Fotografia do produto">
