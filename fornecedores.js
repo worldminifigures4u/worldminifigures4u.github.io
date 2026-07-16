@@ -1239,6 +1239,36 @@ function promoverUltimaSolicitadaParaEncomendada(valorAnterior, novaData = dataO
     return montarMarcacaoComHistorico(historico, "");
 }
 
+function confirmarTentativaParcialFornecedor(valorAnterior, novaData = dataOsAgoraFornecedor()) {
+    const anterior = normalizarMarcacaoFornecedor(valorAnterior);
+    const historico = [...(anterior.historico || [])];
+    const data = String(novaData || dataOsAgoraFornecedor());
+    let indiceSolicitada = -1;
+    let indiceOs = -1;
+    for (let i = historico.length - 1; i >= 0; i -= 1) {
+        if (indiceSolicitada < 0 && historico[i]?.tipo === "solicitada") indiceSolicitada = i;
+        if (indiceOs < 0 && historico[i]?.tipo === "os") indiceOs = i;
+        if (indiceSolicitada >= 0 && indiceOs >= 0) break;
+    }
+
+    if (indiceSolicitada >= 0) {
+        const dataOriginal = String(historico[indiceSolicitada].data || "").trim() || data;
+        historico[indiceSolicitada] = { tipo: "encomendada", data: dataOriginal };
+        if (indiceOs < 0 || indiceOs < indiceSolicitada) {
+            historico.push({ tipo: "os", data });
+        }
+    } else if (indiceOs >= 0) {
+        // Já tinha sido convertido só para OS: regista também Encomendada (parcial)
+        const dataOs = String(historico[indiceOs].data || "").trim() || data;
+        historico.splice(indiceOs, 0, { tipo: "encomendada", data: dataOs });
+    } else {
+        historico.push({ tipo: "encomendada", data });
+        historico.push({ tipo: "os", data });
+    }
+
+    return montarMarcacaoComHistorico(historico, "OS");
+}
+
 function aplicarMarcacaoAtualAposConfirmar(valorAnterior, estadoMarcacao, novaData = dataOsAgoraFornecedor()) {
     const anterior = normalizarMarcacaoFornecedor(valorAnterior);
     return montarMarcacaoComHistorico(anterior.historico || [], estadoMarcacao);
@@ -3398,17 +3428,24 @@ async function sincronizarHistoricoPedidosFornecedor(itens, fornecedorNome, opco
                 alterou = true;
             }
         } else if (modo === "editar") {
-            if (agoraOs && !eraOs) {
+            // OS total (nada a receber): atualiza historico já na edição
+            // OS parcial: historico Encomendada+OS só ao confirmar estado Encomendada
+            if (agoraOs && !eraOs && quantidade <= 0) {
                 atual = corrigirUltimaTentativaParaOs(atual, agora);
                 alterou = true;
             } else if (!anterior && quantidade > 0) {
-                atual = acrescentarHistoricoFornecedor(atual, agoraOs ? "os" : "solicitada", agora);
+                atual = acrescentarHistoricoFornecedor(atual, "solicitada", agora);
                 alterou = true;
             }
         } else if (modo === "confirmar") {
-            // A preparar → Encomendada: atualiza marcação atual
-            // Solicitada → Encomendada; OS → OS
-            if (agoraOs) {
+            // A preparar → Encomendada
+            const parcial = quantidade > 0 && agoraOs;
+            if (parcial) {
+                // Histórico: Encomendada + OS | Marcação atual: OS
+                atual = confirmarTentativaParcialFornecedor(atual, agora);
+                alterou = true;
+            } else if (agoraOs) {
+                // Sem unidades a receber: só OS
                 let base = atual;
                 const marcacao = normalizarMarcacaoFornecedor(atual);
                 const ultimo = marcacao.historico[marcacao.historico.length - 1];
@@ -3418,6 +3455,7 @@ async function sincronizarHistoricoPedidosFornecedor(itens, fornecedorNome, opco
                 atual = aplicarMarcacaoAtualAposConfirmar(base, "OS", agora);
                 alterou = true;
             } else if (quantidade > 0) {
+                // Tudo disponível: Encomendada no historico, marcação vazia
                 const promovido = promoverUltimaSolicitadaParaEncomendada(atual, agora);
                 if (!promovido) continue;
                 atual = promovido;
