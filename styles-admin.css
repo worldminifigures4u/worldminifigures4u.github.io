@@ -12,9 +12,98 @@ body.pagina-fornecedores-admin .rodape-site,
 body.pagina-mapas-admin .rodape-site,
 body.pagina-estatisticas-admin .rodape-site,
 body.pagina-wallapop .rodape-site,
-body.pagina-gestao .rodape-site,
-body.pagina-conta-admin .rodape-site{
+body.pagina-gestao .rodape-site{
     display:none !important;
+}
+
+/* Cabeçalho admin compacto: só menus admin (sem logo/pesquisa/Conta/Favoritos/Carrinho). */
+body.pagina-clientes-admin,
+body.pagina-encomendas-admin,
+body.pagina-fornecedores-admin,
+body.pagina-mapas-admin,
+body.pagina-estatisticas-admin,
+body.pagina-wallapop,
+body.pagina-gestao.cabecalho-com-admin{
+    --cabecalho-offset:52px;
+}
+
+body.pagina-clientes-admin .logo-loja,
+body.pagina-encomendas-admin .logo-loja,
+body.pagina-fornecedores-admin .logo-loja,
+body.pagina-mapas-admin .logo-loja,
+body.pagina-estatisticas-admin .logo-loja,
+body.pagina-wallapop .logo-loja,
+body.pagina-gestao.cabecalho-com-admin .logo-loja,
+body.pagina-clientes-admin .cabecalho-pesquisa,
+body.pagina-encomendas-admin .cabecalho-pesquisa,
+body.pagina-fornecedores-admin .cabecalho-pesquisa,
+body.pagina-mapas-admin .cabecalho-pesquisa,
+body.pagina-estatisticas-admin .cabecalho-pesquisa,
+body.pagina-wallapop .cabecalho-pesquisa,
+body.pagina-gestao.cabecalho-com-admin .cabecalho-pesquisa,
+body.pagina-clientes-admin .acoes-cabecalho-publicas,
+body.pagina-encomendas-admin .acoes-cabecalho-publicas,
+body.pagina-fornecedores-admin .acoes-cabecalho-publicas,
+body.pagina-mapas-admin .acoes-cabecalho-publicas,
+body.pagina-estatisticas-admin .acoes-cabecalho-publicas,
+body.pagina-wallapop .acoes-cabecalho-publicas,
+body.pagina-gestao.cabecalho-com-admin .acoes-cabecalho-publicas{
+    display:none !important;
+}
+
+body.pagina-clientes-admin .cabecalho-loja,
+body.pagina-encomendas-admin .cabecalho-loja,
+body.pagina-fornecedores-admin .cabecalho-loja,
+body.pagina-mapas-admin .cabecalho-loja,
+body.pagina-estatisticas-admin .cabecalho-loja,
+body.pagina-wallapop .cabecalho-loja,
+body.pagina-gestao.cabecalho-com-admin .cabecalho-loja{
+    grid-template-columns:1fr;
+    grid-template-rows:auto;
+    gap:0;
+    padding:6px 16px;
+    align-items:center;
+}
+
+body.pagina-clientes-admin .navegacao-admin-cabecalho,
+body.pagina-encomendas-admin .navegacao-admin-cabecalho,
+body.pagina-fornecedores-admin .navegacao-admin-cabecalho,
+body.pagina-mapas-admin .navegacao-admin-cabecalho,
+body.pagina-estatisticas-admin .navegacao-admin-cabecalho,
+body.pagina-wallapop .navegacao-admin-cabecalho,
+body.pagina-gestao.cabecalho-com-admin .navegacao-admin-cabecalho{
+    grid-column:1;
+    grid-row:1;
+    border-top:none;
+    padding-top:0;
+    justify-content:flex-start;
+}
+
+@media(max-width:1100px){
+    body.pagina-clientes-admin .navegacao-admin-cabecalho,
+    body.pagina-encomendas-admin .navegacao-admin-cabecalho,
+    body.pagina-fornecedores-admin .navegacao-admin-cabecalho,
+    body.pagina-mapas-admin .navegacao-admin-cabecalho,
+    body.pagina-estatisticas-admin .navegacao-admin-cabecalho,
+    body.pagina-wallapop .navegacao-admin-cabecalho,
+    body.pagina-gestao.cabecalho-com-admin .navegacao-admin-cabecalho{
+        grid-column:1;
+        grid-row:1;
+    }
+}
+
+@media(max-width:560px){
+    body.pagina-clientes-admin .navegacao-admin-cabecalho,
+    body.pagina-encomendas-admin .navegacao-admin-cabecalho,
+    body.pagina-fornecedores-admin .navegacao-admin-cabecalho,
+    body.pagina-mapas-admin .navegacao-admin-cabecalho,
+    body.pagina-estatisticas-admin .navegacao-admin-cabecalho,
+    body.pagina-wallapop .navegacao-admin-cabecalho,
+    body.pagina-gestao.cabecalho-com-admin .navegacao-admin-cabecalho{
+        grid-column:1;
+        grid-row:1;
+        padding:6px 0;
+    }
 }
 
 body.pagina-clientes-admin > main.clientes-admin{
