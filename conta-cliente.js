@@ -142,6 +142,10 @@ async function fazerLogin(event) {
                 mostrarMensagem(statusDiv, "E-mail não confirmado!\nPor favor, aceda à sua caixa de correio e clique no link de validação enviado para poder iniciar sessão.", "msg-erro");
                 return;
             }
+            if (typeof utilizadorAdmin === 'function' && utilizadorAdmin(data.user)) {
+                window.location.replace('plataforma.html');
+                return;
+            }
             await executarComTimeout(
                 obterDadosPerfilDaTabela(data.user.id, data.user),
                 15000,
