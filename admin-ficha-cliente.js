@@ -95,7 +95,7 @@
         notas.rows = linhas;
         notas.maxLength = 5000;
         notas.value = valor || '';
-        notas.placeholder = 'Prefer\u00eancias, observa\u00e7\u00f5es de entrega ou outra informa\u00e7\u00e3o realmente necess\u00e1ria.';
+        notas.placeholder = 'Notas internas visiveis apenas ao administrador.';
         campo.appendChild(notas);
         return campo;
     }
@@ -121,6 +121,33 @@
             }
         }
         return fragmento;
+    }
+
+    function criarCheckboxClienteModal(rotulo, nome, marcado = false) {
+        const campo = document.createElement('label');
+        campo.className = 'admin-cliente-formulario-campo admin-cliente-formulario-checkbox';
+        campo.classList.add(`admin-cliente-campo-${nome}`);
+        const input = document.createElement('input');
+        input.type = 'checkbox';
+        input.name = nome;
+        input.checked = Boolean(marcado);
+        campo.append(input, criarElemento('span', '', rotulo));
+        return campo;
+    }
+
+    function criarSecaoRestricoesFormularioModal(cliente = {}) {
+        const secao = criarElemento('div', 'clientes-restricoes-formulario');
+        secao.appendChild(criarElemento('h3', 'admin-cliente-formulario-subtitulo', 'Restricoes do site'));
+        secao.appendChild(criarElemento(
+            'p',
+            'clientes-restricoes-ajuda',
+            'Bloquear compras: o cliente mantem login, mas nao finaliza encomendas. Bloquear login: a conta deixa de entrar no site.'
+        ));
+        secao.append(
+            criarCheckboxClienteModal('Bloquear compras no site', 'bloquear_compras', cliente.bloquear_compras),
+            criarCheckboxClienteModal('Bloquear login no site', 'bloquear_conta', cliente.bloquear_conta)
+        );
+        return secao;
     }
 
     function montarFormularioClienteModal(opcoes = {}) {
@@ -166,6 +193,9 @@
             criarCampoEdicaoCliente('Telem\u00f3vel', 'telefone', cliente.telefone || ''),
             criarCampoEdicaoCliente('E-mail', 'email', cliente.email || '', 'email')
         );
+        if (!modoCriacao) {
+            dadosCliente.appendChild(criarSecaoRestricoesFormularioModal(cliente));
+        }
         formulario.appendChild(dadosCliente);
 
         const linksExternos = criarElemento('div', 'clientes-formulario-links');
@@ -230,7 +260,21 @@
                     definirStatusFichaCliente('Dados guardados, mas erro nas notas: ' + (resultadoNotas.error?.message || resultadoNotas.data?.erro || 'sem detalhe'), true);
                     return;
                 }
-                dados.cliente = { ...(data.cliente || cliente), notas: String(campos.get('notas') || '') };
+                const resultadoRestricoes = await fichaClient.rpc('guardar_restricoes_cliente_admin', {
+                    p_cliente_id: cliente.id,
+                    p_bloquear_compras: campos.get('bloquear_compras') === 'on',
+                    p_bloquear_conta: campos.get('bloquear_conta') === 'on'
+                });
+                if (resultadoRestricoes.error || resultadoRestricoes.data?.sucesso === false) {
+                    definirStatusFichaCliente('Dados guardados, mas erro nas restricoes: ' + (resultadoRestricoes.error?.message || resultadoRestricoes.data?.erro || 'sem detalhe'), true);
+                    return;
+                }
+                dados.cliente = {
+                    ...(data.cliente || cliente),
+                    notas: String(campos.get('notas') || ''),
+                    bloquear_compras: campos.get('bloquear_compras') === 'on',
+                    bloquear_conta: campos.get('bloquear_conta') === 'on'
+                };
                 const fichaAtualizada = await fichaClient.rpc('obter_ficha_cliente_por_id_admin', {
                     p_cliente_id: cliente.id
                 });

@@ -24,9 +24,134 @@
             color:#fff;
         }
 
-        .admin-cliente-dialogo .clientes-formulario{
+        /* Mesmo layout da edicao na pagina Clientes. */
+        .admin-cliente-dialogo .clientes-formulario.admin-cliente-formulario{
             display:grid;
             margin-top:0;
+            grid-template-columns:minmax(0, 1.15fr) minmax(280px, 0.85fr);
+            column-gap:0;
+            row-gap:12px;
+            align-items:start;
+            width:100%;
+            max-width:none;
+        }
+
+        .admin-cliente-dialogo .clientes-formulario .clientes-formulario-acoes-topo{
+            grid-column:1 / -1;
+            grid-row:1;
+            display:flex;
+            justify-content:flex-end;
+            gap:10px;
+            margin-bottom:2px;
+        }
+
+        .admin-cliente-dialogo .clientes-formulario-dados{
+            grid-column:1;
+            grid-row:2;
+            display:grid;
+            grid-template-columns:240px minmax(0, 1fr);
+            grid-template-areas:
+                "nome nome"
+                "morada morada"
+                "cp cidade"
+                "pais ."
+                "telefone ."
+                "email ."
+                "restricoes restricoes";
+            gap:12px 22px;
+            align-content:start;
+            min-width:0;
+            padding-right:24px;
+        }
+
+        .admin-cliente-dialogo .clientes-formulario-links{
+            grid-column:2;
+            grid-row:2;
+            display:grid;
+            gap:12px;
+            align-content:start;
+            min-width:0;
+            padding-left:24px;
+            border-left:1px solid #2e2e2e;
+        }
+
+        .admin-cliente-dialogo .clientes-formulario-dados .admin-cliente-campo-nome{ grid-area:nome; }
+        .admin-cliente-dialogo .clientes-formulario-dados .admin-cliente-campo-morada,
+        .admin-cliente-dialogo .clientes-formulario-dados .morada-edicao-linhas,
+        .admin-cliente-dialogo .clientes-formulario-dados .admin-cliente-campo-morada-bloco{ grid-area:morada; }
+        .admin-cliente-dialogo .clientes-formulario-dados .admin-cliente-campo-cp{
+            grid-area:cp;
+            width:240px;
+            max-width:240px;
+        }
+        .admin-cliente-dialogo .clientes-formulario-dados .admin-cliente-campo-cidade{
+            grid-area:cidade;
+            min-width:0;
+        }
+        .admin-cliente-dialogo .clientes-formulario-dados .admin-cliente-campo-pais{
+            grid-area:pais;
+            width:240px;
+            max-width:240px;
+        }
+        .admin-cliente-dialogo .clientes-formulario-dados .admin-cliente-campo-telefone{
+            grid-area:telefone;
+            width:240px;
+            max-width:240px;
+        }
+        .admin-cliente-dialogo .clientes-formulario-dados .admin-cliente-campo-email{
+            grid-area:email;
+            width:240px;
+            max-width:240px;
+            min-width:0;
+        }
+        .admin-cliente-dialogo .clientes-formulario-dados .clientes-restricoes-formulario{
+            grid-area:restricoes;
+            margin-top:4px;
+            padding-top:12px;
+            border-top:1px solid #2a2a2a;
+        }
+        .admin-cliente-dialogo .clientes-formulario-links .admin-cliente-notas{
+            min-height:140px;
+            width:100%;
+            box-sizing:border-box;
+            resize:vertical;
+        }
+        .admin-cliente-dialogo .clientes-formulario .admin-cliente-campo-cp input,
+        .admin-cliente-dialogo .clientes-formulario .admin-cliente-campo-cidade input,
+        .admin-cliente-dialogo .clientes-formulario .admin-cliente-campo-pais input,
+        .admin-cliente-dialogo .clientes-formulario .admin-cliente-campo-email input,
+        .admin-cliente-dialogo .clientes-formulario .admin-cliente-campo-telefone input,
+        .admin-cliente-dialogo .clientes-formulario [class*="admin-cliente-campo-perfil_url_"] input{
+            width:100%;
+        }
+
+        @media (max-width:700px){
+            .admin-cliente-dialogo .clientes-formulario.admin-cliente-formulario{
+                grid-template-columns:1fr;
+            }
+            .admin-cliente-dialogo .clientes-formulario-dados,
+            .admin-cliente-dialogo .clientes-formulario-links{
+                grid-column:1;
+                grid-row:auto;
+                grid-template-columns:1fr;
+                grid-template-areas:none;
+                padding:0;
+                border-left:0;
+            }
+            .admin-cliente-dialogo .clientes-formulario-dados .admin-cliente-campo-nome,
+            .admin-cliente-dialogo .clientes-formulario-dados .admin-cliente-campo-morada,
+            .admin-cliente-dialogo .clientes-formulario-dados .morada-edicao-linhas,
+            .admin-cliente-dialogo .clientes-formulario-dados .admin-cliente-campo-morada-bloco,
+            .admin-cliente-dialogo .clientes-formulario-dados .admin-cliente-campo-cp,
+            .admin-cliente-dialogo .clientes-formulario-dados .admin-cliente-campo-cidade,
+            .admin-cliente-dialogo .clientes-formulario-dados .admin-cliente-campo-pais,
+            .admin-cliente-dialogo .clientes-formulario-dados .admin-cliente-campo-telefone,
+            .admin-cliente-dialogo .clientes-formulario-dados .admin-cliente-campo-email,
+            .admin-cliente-dialogo .clientes-formulario-dados .clientes-restricoes-formulario{
+                grid-area:auto;
+                width:auto;
+                max-width:none;
+            }
         }
 
         .admin-cliente-dialogo > h2{
