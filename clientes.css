@@ -18,8 +18,8 @@
 }
 
 .clientes-coluna-lista > .wallapop-status{
-    margin:0;
-    padding:2px 4px 0;
+    margin:6px 0 0;
+    padding:0 4px;
     box-sizing:border-box;
     min-height:1.2em;
     color:#29ad4b;
