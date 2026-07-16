@@ -111,9 +111,10 @@
 }
 
 .clientes-ficha{
+    --fp-ficha-gap:12px;
     padding:16px;
     display:grid;
-    gap:16px;
+    gap:var(--fp-ficha-gap);
 }
 
 .clientes-ficha > .admin-cliente-secao,
@@ -125,15 +126,15 @@
 
 .clientes-ficha-consulta{
     display:grid;
-    gap:16px;
+    gap:var(--fp-ficha-gap);
     min-width:0;
 }
 
 .clientes-ficha > .admin-cliente-secao + .admin-cliente-secao,
 .clientes-ficha-consulta > .admin-cliente-secao + .admin-cliente-secao,
 .clientes-ficha-consulta > .clientes-ficha-consulta-principal + .admin-cliente-secao{
-    padding-top:16px;
-    border-top:1px solid #333;
+    padding-top:0;
+    border-top:0;
 }
 
 .clientes-resumo-secao{
@@ -148,7 +149,7 @@
 .clientes-resumo-grelha{
     display:grid;
     grid-template-columns:repeat(3, minmax(0, 1fr));
-    gap:10px 10px;
+    gap:var(--fp-ficha-gap);
 }
 
 .clientes-ficha-topo{
@@ -220,14 +221,14 @@
 .clientes-ficha-consulta-principal{
     display:grid;
     grid-template-columns:minmax(0, 1fr) minmax(0, 1fr);
-    gap:16px 18px;
+    gap:var(--fp-ficha-gap);
     align-items:stretch;
     min-width:0;
 }
 
 .clientes-ficha-consulta-esquerda{
     display:grid;
-    gap:16px;
+    gap:var(--fp-ficha-gap);
     min-width:0;
     align-content:start;
 }
@@ -249,6 +250,7 @@
     grid-template-columns:1fr;
     max-width:none;
     width:100%;
+    gap:var(--fp-ficha-gap);
 }
 
 .clientes-ficha-consulta .admin-cliente-campo-morada-bloco,
@@ -256,6 +258,10 @@
 .clientes-ficha-consulta .admin-cliente-campo-email{
     grid-column:1;
     grid-row:auto;
+}
+
+.clientes-ficha-consulta .admin-cliente-perfis{
+    gap:var(--fp-ficha-gap);
 }
 
 .clientes-ficha-consulta-notas{
