@@ -968,11 +968,16 @@ function formatarDataOsCurtaFornecedor(valor) {
     if (isoDia) return `${isoDia[3]}/${isoDia[2]}/${isoDia[1]}`;
     const data = new Date(texto);
     if (Number.isNaN(data.getTime())) return "";
-    return new Intl.DateTimeFormat("pt-PT", {
+    const soData = new Intl.DateTimeFormat("pt-PT", {
         day: "2-digit",
         month: "2-digit",
         year: "numeric"
     }).format(data);
+    if (/^\d{4}-\d{2}-\d{2}$/.test(texto)) return soData;
+    const hora = String(data.getHours()).padStart(2, "0");
+    const minuto = String(data.getMinutes()).padStart(2, "0");
+    if (hora === "00" && minuto === "00" && texto.endsWith("T00:00:00.000Z")) return soData;
+    return `${soData} ${hora}:${minuto}`;
 }
 
 function extrairDataOsDeTextoFornecedor(texto) {
@@ -992,42 +997,93 @@ function dataOsHojeFornecedor() {
     return new Date().toISOString().slice(0, 10);
 }
 
+function dataOsAgoraFornecedor() {
+    return new Date().toISOString();
+}
+
+function extrairDatasOsMarcacao(valor) {
+    const datas = [];
+    const adicionar = (entrada, permitirDuplicado = false) => {
+        const texto = String(entrada || "").trim();
+        if (!texto) return;
+        if (!permitirDuplicado && datas.includes(texto)) return;
+        datas.push(texto);
+    };
+
+    if (valor && typeof valor === "object" && !Array.isArray(valor)) {
+        const lista = Array.isArray(valor.datas)
+            ? valor.datas
+            : (Array.isArray(valor.historico) ? valor.historico : []);
+        if (lista.length) {
+            lista.forEach((entrada) => adicionar(entrada, true));
+        } else {
+            adicionar(valor.desde || valor.data_os || valor.data || valor.em || null);
+        }
+        return datas;
+    }
+
+    const texto = String(valor ?? "");
+    const matches = texto.match(/\d{1,2}[\/\-.]\d{1,2}[\/\-.]\d{4}|\d{4}-\d{2}-\d{2}/g) || [];
+    matches.forEach((match) => {
+        const normalizada = extrairDataOsDeTextoFornecedor(match) || match;
+        adicionar(normalizada);
+    });
+    if (!matches.length) {
+        const unica = extrairDataOsDeTextoFornecedor(texto);
+        if (unica) adicionar(unica);
+    }
+    return datas;
+}
+
+function formatarTextoOsComHistorico(datas) {
+    const lista = (datas || []).filter(Boolean);
+    if (!lista.length) return "OS";
+    const formatadas = lista.map(formatarDataOsCurtaFornecedor).filter(Boolean);
+    if (!formatadas.length) return "OS";
+    if (formatadas.length === 1) return `OS · ${formatadas[0]}`;
+    return `OS · ${formatadas.length}× · ${formatadas.join(" · ")}`;
+}
+
 function normalizarMarcacaoFornecedor(valor) {
     if (valor && typeof valor === "object" && !Array.isArray(valor)) {
         const estado = String(valor.estado || valor.marcacao || valor.status || "").trim().toUpperCase();
-        const desde = valor.desde || valor.data_os || valor.data || valor.em || null;
+        const datas = extrairDatasOsMarcacao(valor);
+        const desde = datas[0] || valor.desde || valor.data_os || valor.data || valor.em || null;
         if (estado === "OS") {
             return {
                 tipo: "os",
                 estado: "OS",
                 desde,
-                texto: desde ? `OS · ${formatarDataOsCurtaFornecedor(desde)}` : "OS"
+                datas,
+                texto: formatarTextoOsComHistorico(datas)
             };
         }
         if (estado === "EX") {
-            return { tipo: "ex", estado: "EX", desde: null, texto: "EX" };
+            return { tipo: "ex", estado: "EX", desde: null, datas: [], texto: "EX" };
         }
         const textoObj = String(valor.texto || estado || "").trim();
-        if (textoObj) return { tipo: "info", estado: textoObj, desde, texto: textoObj };
+        if (textoObj) return { tipo: "info", estado: textoObj, desde, datas, texto: textoObj };
     }
 
     const texto = String(valor ?? "").trim();
     const maiusculas = texto.toUpperCase();
-    if (!texto) return { tipo: "disponivel", estado: "", desde: null, texto: "Disponivel" };
+    if (!texto) return { tipo: "disponivel", estado: "", desde: null, datas: [], texto: "Disponivel" };
     if (maiusculas === "OS" || maiusculas.startsWith("OS ·") || maiusculas.startsWith("OS DESDE") || maiusculas.startsWith("OS ")) {
-        const desde = extrairDataOsDeTextoFornecedor(texto);
+        const datas = extrairDatasOsMarcacao(texto);
+        const desde = datas[0] || null;
         return {
             tipo: "os",
             estado: "OS",
             desde,
-            texto: desde ? `OS · ${formatarDataOsCurtaFornecedor(desde)}` : "OS"
+            datas,
+            texto: formatarTextoOsComHistorico(datas)
         };
     }
-    if (maiusculas === "EX") return { tipo: "ex", estado: "EX", desde: null, texto: "EX" };
+    if (maiusculas === "EX") return { tipo: "ex", estado: "EX", desde: null, datas: [], texto: "EX" };
     if (/^-?\d+(?:[,.]\d+)?$/.test(texto)) {
-        return { tipo: "encomendado", estado: texto, desde: null, texto: `Marcado no mapa: ${texto}` };
+        return { tipo: "encomendado", estado: texto, desde: null, datas: [], texto: `Marcado no mapa: ${texto}` };
     }
-    return { tipo: "info", estado: texto, desde: null, texto };
+    return { tipo: "info", estado: texto, desde: null, datas: [], texto };
 }
 
 function formatarValorFornecedorParaInput(valor) {
@@ -1039,16 +1095,35 @@ function formatarValorFornecedorParaInput(valor) {
     return marcacao.texto;
 }
 
+function criarMarcacaoOsFornecedor(valorAnterior, novaData = dataOsAgoraFornecedor()) {
+    const anterior = normalizarMarcacaoFornecedor(valorAnterior);
+    const datas = [...(anterior.datas || [])];
+    const nova = String(novaData || dataOsAgoraFornecedor());
+    datas.push(nova);
+    return {
+        estado: "OS",
+        desde: datas[0] || nova,
+        datas
+    };
+}
+
 function parseValorMarcacaoFornecedorInput(texto, valorAnterior) {
     const valor = String(texto || "").trim();
     if (!valor) return "";
     const marcacao = normalizarMarcacaoFornecedor(valor);
     if (marcacao.tipo === "os") {
         const anterior = normalizarMarcacaoFornecedor(valorAnterior);
-        const desde = marcacao.desde
-            || (anterior.tipo === "os" ? anterior.desde : null)
-            || dataOsHojeFornecedor();
-        return { estado: "OS", desde };
+        // Edição manual: preserva o histórico já existente; se o texto trouxe datas novas, usa-as.
+        const datasTexto = marcacao.datas || [];
+        const datas = datasTexto.length >= (anterior.datas || []).length
+            ? datasTexto
+            : [...(anterior.datas || [])];
+        if (!datas.length) datas.push(dataOsHojeFornecedor());
+        return {
+            estado: "OS",
+            desde: datas[0],
+            datas
+        };
     }
     if (marcacao.tipo === "ex") return "EX";
     return valor;
