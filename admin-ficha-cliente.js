@@ -73,6 +73,7 @@
     function criarCampoEdicaoCliente(rotulo, nome, valor, tipo = 'text', obrigatorio = false) {
         const campo = document.createElement('label');
         campo.className = 'admin-cliente-formulario-campo';
+        campo.classList.add(`admin-cliente-campo-${nome}`);
         campo.appendChild(criarElemento('span', '', rotulo));
         const input = document.createElement('input');
         input.type = tipo;
@@ -84,95 +85,161 @@
         return campo;
     }
 
+    function criarCampoNotasCliente(valor = '', linhas = 8) {
+        const campo = document.createElement('label');
+        campo.className = 'admin-cliente-formulario-campo admin-cliente-formulario-notas';
+        campo.appendChild(criarElemento('span', '', 'Notas internas'));
+        const notas = document.createElement('textarea');
+        notas.className = 'admin-cliente-notas';
+        notas.name = 'notas';
+        notas.rows = linhas;
+        notas.maxLength = 5000;
+        notas.value = valor || '';
+        notas.placeholder = 'Prefer\u00eancias, observa\u00e7\u00f5es de entrega ou outra informa\u00e7\u00e3o realmente necess\u00e1ria.';
+        campo.appendChild(notas);
+        return campo;
+    }
+
     function obterPerfisFormularioCliente(formulario) {
         return Array.from(formulario.querySelectorAll('[name^="perfil_url_"]'))
             .map((input) => ({ url: input.value.trim() }))
             .filter((perfil) => perfil.url);
     }
 
-    function criarCamposPerfisCliente(perfis = []) {
+    function criarCamposPerfisCliente(perfis = [], comNotas = false, notasValor = '') {
         const fragmento = document.createDocumentFragment();
         for (let indice = 0; indice < 5; indice += 1) {
             const perfil = perfis[indice] || {};
             fragmento.appendChild(criarCampoEdicaoCliente(
-                `Link externo ${indice + 1}`,
+                indice === 0 ? 'Link principal' : `Link externo ${indice + 1}`,
                 `perfil_url_${indice + 1}`,
                 perfil.url || '',
                 'url'
             ));
+            if (comNotas && indice === 0) {
+                fragmento.appendChild(criarCampoNotasCliente(notasValor));
+            }
         }
         return fragmento;
     }
 
-    function renderizarFormularioClienteExterno(dados, secao) {
-        const cliente = dados.cliente || {};
-        const perfis = Array.isArray(dados.perfis) ? dados.perfis : [];
+    function montarFormularioClienteModal(opcoes = {}) {
+        const {
+            cliente = {},
+            perfis = [],
+            modoCriacao = false,
+            onCancelar = null,
+            onSubmit = null
+        } = opcoes;
+
         const formulario = document.createElement('form');
-        formulario.className = 'admin-cliente-formulario';
-        formulario.append(
-            criarCampoEdicaoCliente('Nome', 'nome', cliente.nome, 'text', true),
-            criarCampoEdicaoCliente('E-mail', 'email', cliente.email, 'email'),
-            criarCampoEdicaoCliente('Telem\u00f3vel', 'telefone', cliente.telefone),
+        formulario.className = 'admin-cliente-formulario clientes-formulario';
+        formulario.id = `admin-cliente-formulario-${cliente.id || 'novo'}`;
+
+        const cancelar = criarElemento('button', 'wallapop-botao', 'Cancelar');
+        cancelar.type = 'button';
+        if (typeof onCancelar === 'function') {
+            cancelar.addEventListener('click', onCancelar);
+        }
+
+        const guardar = criarElemento(
+            'button',
+            'wallapop-botao wallapop-botao-destaque',
+            modoCriacao ? 'Gravar' : 'Guardar ficha'
+        );
+        guardar.type = 'submit';
+
+        const acoesTopo = criarElemento('div', 'clientes-formulario-acoes-topo admin-cliente-formulario-acoes');
+        acoesTopo.append(cancelar, guardar);
+        formulario.appendChild(acoesTopo);
+
+        const dadosCliente = criarElemento('div', 'clientes-formulario-dados');
+        dadosCliente.append(
+            criarCampoEdicaoCliente('Nome', 'nome', cliente.nome || '', 'text', true),
             global.MoradaFormato?.criarCampoMoradaEdicao(
                 criarElemento,
                 global.MoradaFormato.obterMoradaEdicao(cliente.morada)
-            ) || criarCampoEdicaoCliente('Morada', 'morada', cliente.morada),
-            criarCampoEdicaoCliente('C\u00f3digo postal', 'cp', cliente.cp),
-            criarCampoEdicaoCliente('Cidade', 'cidade', cliente.cidade),
-            criarCampoEdicaoCliente('Pa\u00eds', 'pais', cliente.pais)
+            ) || criarCampoEdicaoCliente('Morada', 'morada', cliente.morada || ''),
+            criarCampoEdicaoCliente('C\u00f3digo postal', 'cp', cliente.cp || ''),
+            criarCampoEdicaoCliente('Cidade', 'cidade', cliente.cidade || ''),
+            criarCampoEdicaoCliente('Pa\u00eds', 'pais', cliente.pais || (modoCriacao ? 'Portugal' : '')),
+            criarCampoEdicaoCliente('Telem\u00f3vel', 'telefone', cliente.telefone || ''),
+            criarCampoEdicaoCliente('E-mail', 'email', cliente.email || '', 'email')
         );
-        formulario.appendChild(criarElemento('h3', 'admin-cliente-formulario-subtitulo', 'Links externos'));
-        formulario.appendChild(criarCamposPerfisCliente(perfis));
+        formulario.appendChild(dadosCliente);
 
-        const acoes = criarElemento('div', 'admin-cliente-formulario-acoes');
-        const cancelar = criarElemento('button', 'wallapop-botao', 'Cancelar');
-        cancelar.type = 'button';
-        cancelar.addEventListener('click', () => renderizarFichaClienteAdmin(dados));
-        const guardar = criarElemento('button', 'wallapop-botao wallapop-botao-destaque', 'Guardar altera\u00e7\u00f5es');
-        guardar.type = 'submit';
-        acoes.append(cancelar, guardar);
-        formulario.appendChild(acoes);
+        const linksExternos = criarElemento('div', 'clientes-formulario-links');
+        linksExternos.appendChild(criarCamposPerfisCliente(perfis, true, cliente.notas || ''));
+        formulario.appendChild(linksExternos);
 
         formulario.addEventListener('submit', async (evento) => {
             evento.preventDefault();
+            if (typeof onSubmit !== 'function') return;
             guardar.disabled = true;
             cancelar.disabled = true;
-            definirStatusFichaCliente('A guardar dados do cliente...');
-            const campos = new FormData(formulario);
-            const { data, error } = await fichaClient.rpc('atualizar_cliente_externo_admin', {
-                p_cliente_id: cliente.id,
-                p_nome: String(campos.get('nome') || ''),
-                p_email: String(campos.get('email') || ''),
-                p_telefone: String(campos.get('telefone') || ''),
-                p_morada: global.MoradaFormato?.obterMoradaFormulario(formulario) || String(campos.get('morada') || ''),
-                p_cp: String(campos.get('cp') || ''),
-                p_cidade: String(campos.get('cidade') || ''),
-                p_pais: String(campos.get('pais') || '')
-            });
-            guardar.disabled = false;
-            cancelar.disabled = false;
-            if (error || data?.sucesso === false) {
-                definirStatusFichaCliente('Erro ao guardar dados: ' + (error?.message || data?.erro || 'sem detalhe'), true);
-                return;
+            try {
+                await onSubmit({ formulario, guardar, cancelar, campos: new FormData(formulario) });
+            } finally {
+                guardar.disabled = false;
+                cancelar.disabled = false;
             }
-            const perfisAtualizados = obterPerfisFormularioCliente(formulario);
-            const resultadoPerfis = await fichaClient.rpc('guardar_perfis_cliente_admin', {
-                p_cliente_id: cliente.id,
-                p_perfis: perfisAtualizados
-            });
-            if (resultadoPerfis.error || resultadoPerfis.data?.sucesso === false) {
-                definirStatusFichaCliente('Dados guardados, mas erro nos links: ' + (resultadoPerfis.error?.message || resultadoPerfis.data?.erro || 'sem detalhe'), true);
-                return;
-            }
-            dados.cliente = data.cliente;
-            const fichaAtualizada = await fichaClient.rpc('obter_ficha_cliente_por_id_admin', {
-                p_cliente_id: cliente.id
-            });
-            renderizarFichaClienteAdmin(fichaAtualizada.data?.sucesso ? fichaAtualizada.data : dados);
-            definirStatusFichaCliente('Dados do cliente atualizados.');
         });
 
-        secao.replaceChildren(criarElemento('h3', '', 'Editar dados do cliente'), formulario);
+        return { formulario, cancelar, guardar };
+    }
+
+    function renderizarFormularioClienteExterno(dados) {
+        const conteudo = document.getElementById('admin-cliente-conteudo');
+        if (!conteudo) return;
+        const cliente = dados.cliente || {};
+        const perfis = Array.isArray(dados.perfis) ? dados.perfis : [];
+        const { formulario } = montarFormularioClienteModal({
+            cliente,
+            perfis,
+            modoCriacao: false,
+            onCancelar: () => renderizarFichaClienteAdmin(dados),
+            onSubmit: async ({ formulario: form, campos }) => {
+                definirStatusFichaCliente('A guardar dados do cliente...');
+                const { data, error } = await fichaClient.rpc('atualizar_cliente_externo_admin', {
+                    p_cliente_id: cliente.id,
+                    p_nome: String(campos.get('nome') || ''),
+                    p_email: String(campos.get('email') || ''),
+                    p_telefone: String(campos.get('telefone') || ''),
+                    p_morada: global.MoradaFormato?.obterMoradaFormulario(form) || String(campos.get('morada') || ''),
+                    p_cp: String(campos.get('cp') || ''),
+                    p_cidade: String(campos.get('cidade') || ''),
+                    p_pais: String(campos.get('pais') || '')
+                });
+                if (error || data?.sucesso === false) {
+                    definirStatusFichaCliente('Erro ao guardar dados: ' + (error?.message || data?.erro || 'sem detalhe'), true);
+                    return;
+                }
+                const resultadoPerfis = await fichaClient.rpc('guardar_perfis_cliente_admin', {
+                    p_cliente_id: cliente.id,
+                    p_perfis: obterPerfisFormularioCliente(form)
+                });
+                if (resultadoPerfis.error || resultadoPerfis.data?.sucesso === false) {
+                    definirStatusFichaCliente('Dados guardados, mas erro nos links: ' + (resultadoPerfis.error?.message || resultadoPerfis.data?.erro || 'sem detalhe'), true);
+                    return;
+                }
+                const resultadoNotas = await fichaClient.rpc('guardar_notas_cliente_admin', {
+                    p_cliente_id: cliente.id,
+                    p_notas: String(campos.get('notas') || '')
+                });
+                if (resultadoNotas.error || resultadoNotas.data?.sucesso === false) {
+                    definirStatusFichaCliente('Dados guardados, mas erro nas notas: ' + (resultadoNotas.error?.message || resultadoNotas.data?.erro || 'sem detalhe'), true);
+                    return;
+                }
+                dados.cliente = { ...(data.cliente || cliente), notas: String(campos.get('notas') || '') };
+                const fichaAtualizada = await fichaClient.rpc('obter_ficha_cliente_por_id_admin', {
+                    p_cliente_id: cliente.id
+                });
+                renderizarFichaClienteAdmin(fichaAtualizada.data?.sucesso ? fichaAtualizada.data : dados);
+                definirStatusFichaCliente('Dados do cliente atualizados.');
+            }
+        });
+
+        conteudo.replaceChildren(formulario);
         formulario.querySelector('input[name="nome"]')?.focus();
     }
 
@@ -182,100 +249,60 @@
 
         const urlInicial = obterUrlExternoSeguro(opcoes.url || '');
         const nomeInicial = String(opcoes.nome || '').trim();
-        const formulario = document.createElement('form');
-        formulario.className = 'admin-cliente-formulario';
-        formulario.append(
-            criarCampoEdicaoCliente('Nome', 'nome', nomeInicial, 'text', true),
-            criarCampoEdicaoCliente('E-mail', 'email', '', 'email'),
-            criarCampoEdicaoCliente('Telem\u00f3vel', 'telefone'),
-            global.MoradaFormato?.criarCampoMoradaEdicao(criarElemento, '')
-                || criarCampoEdicaoCliente('Morada', 'morada'),
-            criarCampoEdicaoCliente('C\u00f3digo postal', 'cp'),
-            criarCampoEdicaoCliente('Cidade', 'cidade'),
-            criarCampoEdicaoCliente('Pa\u00eds', 'pais', 'Portugal')
-        );
-        formulario.appendChild(criarElemento('h3', 'admin-cliente-formulario-subtitulo', 'Links externos'));
-        formulario.appendChild(criarCamposPerfisCliente(urlInicial ? [{ url: urlInicial }] : []));
-
-        const notasCampo = document.createElement('label');
-        notasCampo.className = 'admin-cliente-formulario-campo';
-        notasCampo.appendChild(criarElemento('span', '', 'Notas internas'));
-        const notas = document.createElement('textarea');
-        notas.name = 'notas';
-        notas.rows = 4;
-        notas.maxLength = 5000;
-        notas.placeholder = 'Prefer\u00eancias, observa\u00e7\u00f5es ou outra informa\u00e7\u00e3o \u00fatil.';
-        notasCampo.appendChild(notas);
-        formulario.appendChild(notasCampo);
-
-        const acoes = criarElemento('div', 'admin-cliente-formulario-acoes');
-        const cancelar = criarElemento('button', 'wallapop-botao', 'Cancelar');
-        cancelar.type = 'button';
-        cancelar.addEventListener('click', fecharFichaClienteAdmin);
-        const guardar = criarElemento('button', 'wallapop-botao wallapop-botao-destaque', 'Criar ficha');
-        guardar.type = 'submit';
-        acoes.append(cancelar, guardar);
-        formulario.appendChild(acoes);
-
-        formulario.addEventListener('submit', async (evento) => {
-            evento.preventDefault();
-            if (!fichaClient) {
-                definirStatusFichaCliente('Sess\u00e3o indispon\u00edvel para criar a ficha.', true);
-                return;
-            }
-            guardar.disabled = true;
-            cancelar.disabled = true;
-            definirStatusFichaCliente('A criar ficha de cliente...');
-            const campos = new FormData(formulario);
-            const { data, error } = await fichaClient.rpc('criar_cliente_externo_admin', {
-                p_nome: String(campos.get('nome') || ''),
-                p_email: String(campos.get('email') || ''),
-                p_telefone: String(campos.get('telefone') || ''),
-                p_morada: global.MoradaFormato?.obterMoradaFormulario(formulario) || String(campos.get('morada') || ''),
-                p_cp: String(campos.get('cp') || ''),
-                p_cidade: String(campos.get('cidade') || ''),
-                p_pais: String(campos.get('pais') || '')
-            });
-            if (error || data?.sucesso === false) {
-                guardar.disabled = false;
-                cancelar.disabled = false;
-                definirStatusFichaCliente('Erro ao criar ficha: ' + (error?.message || data?.erro || 'sem detalhe'), true);
-                return;
-            }
-            const clienteId = data?.cliente?.id;
-            if (!clienteId) {
-                guardar.disabled = false;
-                cancelar.disabled = false;
-                definirStatusFichaCliente('Cliente criado sem identificador. Atualize a p\u00e1gina.', true);
-                return;
-            }
-            const perfisAtualizados = obterPerfisFormularioCliente(formulario);
-            const resultadoPerfis = await fichaClient.rpc('guardar_perfis_cliente_admin', {
-                p_cliente_id: clienteId,
-                p_perfis: perfisAtualizados
-            });
-            if (resultadoPerfis.error || resultadoPerfis.data?.sucesso === false) {
-                guardar.disabled = false;
-                cancelar.disabled = false;
-                definirStatusFichaCliente('Cliente criado, mas erro nos links: ' + (resultadoPerfis.error?.message || resultadoPerfis.data?.erro || 'sem detalhe'), true);
-                return;
-            }
-            const notasTexto = String(campos.get('notas') || '').trim();
-            if (notasTexto) {
-                await fichaClient.rpc('guardar_notas_cliente_admin', {
-                    p_cliente_id: clienteId,
-                    p_notas: notasTexto
+        const { formulario } = montarFormularioClienteModal({
+            cliente: { nome: nomeInicial, pais: 'Portugal' },
+            perfis: urlInicial ? [{ url: urlInicial }] : [],
+            modoCriacao: true,
+            onCancelar: fecharFichaClienteAdmin,
+            onSubmit: async ({ formulario: form, campos }) => {
+                if (!fichaClient) {
+                    definirStatusFichaCliente('Sess\u00e3o indispon\u00edvel para criar a ficha.', true);
+                    return;
+                }
+                definirStatusFichaCliente('A criar ficha de cliente...');
+                const { data, error } = await fichaClient.rpc('criar_cliente_externo_admin', {
+                    p_nome: String(campos.get('nome') || ''),
+                    p_email: String(campos.get('email') || ''),
+                    p_telefone: String(campos.get('telefone') || ''),
+                    p_morada: global.MoradaFormato?.obterMoradaFormulario(form) || String(campos.get('morada') || ''),
+                    p_cp: String(campos.get('cp') || ''),
+                    p_cidade: String(campos.get('cidade') || ''),
+                    p_pais: String(campos.get('pais') || '')
                 });
-            }
-            definirStatusFichaCliente('Ficha criada.');
-            const callback = aoCriarCliente;
-            aoCriarCliente = null;
-            fecharFichaClienteAdmin();
-            if (typeof callback === 'function') {
-                try {
-                    await callback(clienteId, data.cliente);
-                } catch (erroCallback) {
-                    console.error('Callback apos criar ficha falhou:', erroCallback);
+                if (error || data?.sucesso === false) {
+                    definirStatusFichaCliente('Erro ao criar ficha: ' + (error?.message || data?.erro || 'sem detalhe'), true);
+                    return;
+                }
+                const clienteId = data?.cliente?.id;
+                if (!clienteId) {
+                    definirStatusFichaCliente('Cliente criado sem identificador. Atualize a p\u00e1gina.', true);
+                    return;
+                }
+                const resultadoPerfis = await fichaClient.rpc('guardar_perfis_cliente_admin', {
+                    p_cliente_id: clienteId,
+                    p_perfis: obterPerfisFormularioCliente(form)
+                });
+                if (resultadoPerfis.error || resultadoPerfis.data?.sucesso === false) {
+                    definirStatusFichaCliente('Cliente criado, mas erro nos links: ' + (resultadoPerfis.error?.message || resultadoPerfis.data?.erro || 'sem detalhe'), true);
+                    return;
+                }
+                const notasTexto = String(campos.get('notas') || '').trim();
+                if (notasTexto) {
+                    await fichaClient.rpc('guardar_notas_cliente_admin', {
+                        p_cliente_id: clienteId,
+                        p_notas: notasTexto
+                    });
+                }
+                definirStatusFichaCliente('Ficha criada.');
+                const callback = aoCriarCliente;
+                aoCriarCliente = null;
+                fecharFichaClienteAdmin();
+                if (typeof callback === 'function') {
+                    try {
+                        await callback(clienteId, data.cliente);
+                    } catch (erroCallback) {
+                        console.error('Callback apos criar ficha falhou:', erroCallback);
+                    }
                 }
             }
         });
@@ -316,7 +343,7 @@
         if (!cliente.auth_user_id) {
             const editar = criarElemento('button', 'wallapop-botao admin-cliente-editar', 'Editar dados');
             editar.type = 'button';
-            editar.addEventListener('click', () => renderizarFormularioClienteExterno(dados, dadosPessoais));
+            editar.addEventListener('click', () => renderizarFormularioClienteExterno(dados));
             cabecalhoDados.appendChild(editar);
         }
         dadosPessoais.appendChild(cabecalhoDados);
