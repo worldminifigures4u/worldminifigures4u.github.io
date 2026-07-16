@@ -130,10 +130,28 @@
 
 .clientes-ficha-acoes{
     display:flex;
-    gap:10px;
+    gap:8px;
     justify-content:flex-end;
     align-items:center;
     flex-wrap:wrap;
+}
+
+.clientes-ficha-acoes .wallapop-botao{
+    box-sizing:border-box;
+    min-height:32px;
+    height:32px;
+    padding:0 12px;
+    font-size:12px;
+    font-weight:700;
+    line-height:1;
+    border:1px solid var(--cor-acao-principal, #ffc107);
+    border-radius:6px;
+}
+
+.clientes-ficha-acoes .wallapop-botao-destaque{
+    border:1px solid var(--cor-acao-principal, #ffc107);
+    background:var(--cor-acao-principal, #ffc107);
+    color:#000;
 }
 
 .clientes-ficha-acoes .admin-cliente-campo-tem_aviso{
