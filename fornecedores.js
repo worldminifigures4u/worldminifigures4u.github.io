@@ -1128,18 +1128,18 @@ function formatarResumoHistoricoFornecedor(historico, estadoAtual = "") {
 
 function normalizarMarcacaoFornecedor(valor) {
     const historico = obterHistoricoFornecedor(valor);
-    const ultimo = historico[historico.length - 1] || null;
     const estadoObjeto = valor && typeof valor === "object" && !Array.isArray(valor)
         ? String(valor.estado || "").trim()
-        : String(valor ?? "").trim();
-    const estado = estadoObjeto || (ultimo ? rotuloHistoricoFornecedor(ultimo.tipo) : "");
+        : (historico.length ? "" : String(valor ?? "").trim());
+    // Marcação atual = campo estado; não herda automaticamente do histórico
+    const estado = estadoObjeto;
     const estadoUpper = estado.toUpperCase();
 
     let tipo = "disponivel";
-    if (ultimo?.tipo === "os" || estadoUpper === "OS") tipo = "os";
-    else if (ultimo?.tipo === "ex" || estadoUpper === "EX") tipo = "ex";
-    else if (ultimo?.tipo === "solicitada" || estadoUpper === "SOLICITADA" || estadoUpper === "SOLICITADO") tipo = "solicitada";
-    else if (ultimo?.tipo === "encomendada" || estadoUpper === "ENCOMENDADA" || estadoUpper === "ENCOMENDADO" || /^-?\d+(?:[,.]\d+)?$/.test(estado)) tipo = "encomendado";
+    if (estadoUpper === "OS") tipo = "os";
+    else if (estadoUpper === "EX") tipo = "ex";
+    else if (estadoUpper === "ENCOMENDADA" || estadoUpper === "ENCOMENDADO" || /^-?\d+(?:[,.]\d+)?$/.test(estado)) tipo = "encomendado";
+    else if (estadoUpper === "SOLICITADA" || estadoUpper === "SOLICITADO") tipo = "solicitada";
     else if (estado) tipo = "info";
 
     const datas = historico.filter((item) => item.tipo === "os").map((item) => item.data).filter(Boolean);
@@ -1154,16 +1154,37 @@ function normalizarMarcacaoFornecedor(valor) {
 }
 
 function formatarValorFornecedorParaInput(valor) {
+    if (valor && typeof valor === "object" && !Array.isArray(valor)) {
+        const estado = String(valor.estado || "").trim();
+        if (!estado) return "";
+        const upper = estado.toUpperCase();
+        if (upper === "OS") return "OS";
+        if (upper === "EX") return "EX";
+        if (upper === "SOLICITADA" || upper === "SOLICITADO") return "Solicitada";
+        if (upper === "ENCOMENDADA" || upper === "ENCOMENDADO") return "Encomendada";
+        return estado;
+    }
     const marcacao = normalizarMarcacaoFornecedor(valor);
     if (marcacao.tipo === "disponivel") return "";
     if (marcacao.tipo === "os") return "OS";
     if (marcacao.tipo === "ex") return "EX";
     if (marcacao.tipo === "solicitada") return "Solicitada";
     if (marcacao.tipo === "encomendado") {
-        const bruto = valor && typeof valor === "object" ? String(valor.estado || "").trim() : String(valor ?? "").trim();
+        const bruto = String(valor ?? "").trim();
         return /^-?\d+(?:[,.]\d+)?$/.test(bruto) ? bruto : "Encomendada";
     }
-    return marcacao.estado || marcacao.texto;
+    return marcacao.estado || "";
+}
+
+function obterEstadoMarcacaoPreservado(valor) {
+    if (valor && typeof valor === "object" && !Array.isArray(valor)) {
+        return String(valor.estado || "").trim();
+    }
+    if (valor == null || valor === "") return "";
+    const historico = obterHistoricoFornecedor(valor);
+    // String antiga sem objeto: a própria string é a marcação
+    if (!historico.length) return String(valor).trim();
+    return String(valor).trim();
 }
 
 function acrescentarHistoricoFornecedor(valorAnterior, tipo, novaData = dataOsAgoraFornecedor()) {
@@ -1173,27 +1194,21 @@ function acrescentarHistoricoFornecedor(valorAnterior, tipo, novaData = dataOsAg
         tipo: normalizarTipoHistoricoFornecedor(tipo),
         data: String(novaData || dataOsAgoraFornecedor())
     });
-    return reconstruirMarcacaoHistoricoFornecedor(historico);
+    return montarMarcacaoComHistorico(historico, obterEstadoMarcacaoPreservado(valorAnterior));
 }
 
-function reconstruirMarcacaoHistoricoFornecedor(historico) {
+function montarMarcacaoComHistorico(historico, estadoAtual = "") {
     const lista = Array.isArray(historico) ? historico : [];
-    const ultimo = lista[lista.length - 1] || null;
-    const estado = !ultimo
-        ? ""
-        : (ultimo.tipo === "os"
-            ? "OS"
-            : (ultimo.tipo === "ex"
-                ? "EX"
-                : (ultimo.tipo === "solicitada"
-                    ? "Solicitada"
-                    : (ultimo.tipo === "encomendada" ? "Encomendada" : ""))));
     return {
-        estado,
+        estado: String(estadoAtual || "").trim(),
         desde: lista[0]?.data || null,
         datas: lista.filter((item) => item.tipo === "os").map((item) => item.data).filter(Boolean),
         historico: lista
     };
+}
+
+function reconstruirMarcacaoHistoricoFornecedor(historico, estadoAtual = "") {
+    return montarMarcacaoComHistorico(historico, estadoAtual);
 }
 
 function corrigirUltimaTentativaParaOs(valorAnterior, novaData = dataOsAgoraFornecedor()) {
@@ -1214,7 +1229,8 @@ function corrigirUltimaTentativaParaOs(valorAnterior, novaData = dataOsAgoraForn
         tipo: "os",
         data: String(novaData || dataOsAgoraFornecedor())
     };
-    return reconstruirMarcacaoHistoricoFornecedor(historico);
+    // Histórico passa a OS; marcação atual só muda ao confirmar Encomendada
+    return montarMarcacaoComHistorico(historico, obterEstadoMarcacaoPreservado(valorAnterior));
 }
 
 function promoverUltimaSolicitadaParaEncomendada(valorAnterior, novaData = dataOsAgoraFornecedor()) {
@@ -1232,7 +1248,12 @@ function promoverUltimaSolicitadaParaEncomendada(valorAnterior, novaData = dataO
         tipo: "encomendada",
         data: String(novaData || dataOsAgoraFornecedor())
     };
-    return reconstruirMarcacaoHistoricoFornecedor(historico);
+    return montarMarcacaoComHistorico(historico, "Encomendada");
+}
+
+function aplicarMarcacaoAtualAposConfirmar(valorAnterior, estadoMarcacao, novaData = dataOsAgoraFornecedor()) {
+    const anterior = normalizarMarcacaoFornecedor(valorAnterior);
+    return montarMarcacaoComHistorico(anterior.historico || [], estadoMarcacao);
 }
 
 function corrigirUltimaEncomendadaParaOs(valorAnterior, novaData = dataOsAgoraFornecedor()) {
@@ -1326,8 +1347,7 @@ function criarBlocoHistoricoFornecedorFicha(form, id, rotulo, valor) {
         input.dataset.historicoLimpo = historicoAtual.length ? "0" : "1";
         input.dataset.historicoJson = JSON.stringify(historicoAtual);
         botaoLimpar.disabled = !historicoAtual.length;
-        const reconstruido = reconstruirMarcacaoHistoricoFornecedor(historicoAtual);
-        input.value = historicoAtual.length ? String(reconstruido.estado || "") : "";
+        // Marcação atual não muda ao editar o histórico (só ao confirmar Encomendada na encomenda)
     };
 
     const renderizarLista = () => {
@@ -1376,6 +1396,7 @@ function criarBlocoHistoricoFornecedorFicha(form, id, rotulo, valor) {
             return;
         }
         historicoAtual = [];
+        input.value = "";
         sincronizarHistoricoInput();
         renderizarLista();
     });
@@ -3368,13 +3389,23 @@ async function sincronizarHistoricoPedidosFornecedor(itens, fornecedorNome, opco
                 alterou = true;
             }
         } else if (modo === "confirmar") {
-            // A preparar → Encomendada: Solicitada vira Encomendada; OS mantém-se
-            if (agoraOs) continue;
-            if (quantidade <= 0) continue;
-            const promovido = promoverUltimaSolicitadaParaEncomendada(atual, agora);
-            if (!promovido) continue;
-            atual = promovido;
-            alterou = true;
+            // A preparar → Encomendada: atualiza marcação atual
+            // Solicitada → Encomendada; OS → OS
+            if (agoraOs) {
+                let base = atual;
+                const marcacao = normalizarMarcacaoFornecedor(atual);
+                const ultimo = marcacao.historico[marcacao.historico.length - 1];
+                if (!ultimo || ultimo.tipo !== "os") {
+                    base = corrigirUltimaTentativaParaOs(atual, agora);
+                }
+                atual = aplicarMarcacaoAtualAposConfirmar(base, "OS", agora);
+                alterou = true;
+            } else if (quantidade > 0) {
+                const promovido = promoverUltimaSolicitadaParaEncomendada(atual, agora);
+                if (!promovido) continue;
+                atual = promovido;
+                alterou = true;
+            }
         }
 
         if (!alterou) continue;
