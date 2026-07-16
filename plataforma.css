@@ -65,6 +65,7 @@ body.pagina-wallapop{
             font-weight:800;
             line-height:1.2;
             color:#fff;
+            text-align:center;
         }
 
         .wallapop-pesquisa{
@@ -111,6 +112,7 @@ body.pagina-wallapop{
             font-size:16px;
             font-weight:800;
             line-height:1.2;
+            text-align:center;
         }
 
         .plataforma-importar-lista label{
@@ -245,6 +247,7 @@ body.pagina-wallapop{
             font-weight:800;
             line-height:1.2;
             color:#fff;
+            text-align:center;
         }
 
         .wallapop-dados-encomenda label{
