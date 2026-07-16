@@ -22,7 +22,8 @@
 }
 
 .admin-cliente-campo-morada-bloco{
-    grid-column:1 / -1;
+    grid-column:auto;
+    max-width:100%;
 }
 
 .admin-cliente-campo-morada-bloco span:last-child{
