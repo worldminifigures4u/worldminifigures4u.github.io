@@ -621,7 +621,7 @@ window.AdminEncomendaVista = (function () {
                 .filter(Boolean).join(", ");
         return [
             `Encomenda: ${encomenda.codigo_encomenda || encomenda.id}`,
-            `Data: ${formatarData(encomenda.created_at)}`,
+            `Data: ${formatarData(dataExibidaEncomenda(encomenda))}`,
             `Estado: ${estadoNormalizado(encomenda.estado)}`,
             `Origem: ${encomenda.origem || "Site"}`,
             encomenda.referencia_externa ? `Referência: ${encomenda.referencia_externa}` : "",
@@ -652,12 +652,16 @@ window.AdminEncomendaVista = (function () {
         }
     }
 
+    function dataExibidaEncomenda(encomenda) {
+        return encomenda?.data_pagamento || encomenda?.created_at || null;
+    }
+
     async function atualizarEstadoDireto(encomenda, estado, dataPagamentoIso = null) {
         const { data, error } = await obterClient()
             .from("encomendas")
             .update({ estado })
             .eq("id", String(encomenda.id))
-            .select("id, estado, created_at")
+            .select("id, estado, created_at, data_pagamento")
             .single();
         if (error) throw error;
         if (!dataPagamentoIso) return data;
@@ -678,9 +682,9 @@ window.AdminEncomendaVista = (function () {
     async function atualizarDataPagamento(encomenda, dataPagamentoIso) {
         const { data, error } = await obterClient()
             .from("encomendas")
-            .update({ created_at: dataPagamentoIso })
+            .update({ data_pagamento: dataPagamentoIso })
             .eq("id", String(encomenda.id))
-            .select("id, created_at")
+            .select("id, created_at, data_pagamento")
             .single();
         if (error) throw error;
         return data;
@@ -896,8 +900,15 @@ window.AdminEncomendaVista = (function () {
         let reporStock = true;
 
         if (estado === "Concluído" && estadoAnterior !== "Concluído") {
+            const codigo = encomenda.codigo_encomenda || "";
+            let avisoFatura = "";
+            if (podeEmitirFaturaMoloni(encomenda)) {
+                avisoFatura = encomendaOrigemOlx(encomenda)
+                    ? "\n\nDepois pode escolher se emite fatura-recibo no Moloni (com a data do pagamento)."
+                    : "\n\nSerá emitida automaticamente uma fatura-recibo no Moloni (com a data do pagamento).";
+            }
             const confirmado = window.confirm(
-                "Ao concluir a encomenda, todos os anexos serão eliminados definitivamente. As notas internas serão mantidas. Continuar?"
+                `Ao concluir a encomenda ${codigo}, todos os anexos serão eliminados definitivamente. As notas internas serão mantidas.${avisoFatura}\n\nContinuar?`
             );
             if (!confirmado) {
                 select.value = estadoAnterior;
@@ -931,13 +942,7 @@ window.AdminEncomendaVista = (function () {
         if (estado === "Pago" && estadoAnterior !== "Pago") {
             const codigo = encomenda.codigo_encomenda || "";
             const origem = encomenda.origem || "Site";
-            let avisoFatura = "";
-            if (podeEmitirFaturaMoloni(encomenda)) {
-                avisoFatura = encomendaOrigemOlx(encomenda)
-                    ? "\n\nDepois pode escolher se emite fatura-recibo no Moloni."
-                    : "\n\nSerá emitida automaticamente uma fatura-recibo no Moloni.";
-            }
-            if (!window.confirm(`Marcar a encomenda ${codigo} (${origem}) como Pago?${avisoFatura}`)) {
+            if (!window.confirm(`Marcar a encomenda ${codigo} (${origem}) como Pago?`)) {
                 select.value = estadoAnterior;
                 return;
             }
@@ -962,10 +967,13 @@ window.AdminEncomendaVista = (function () {
                 if (!error && dataPagamentoIso) {
                     try {
                         const dataAtualizada = await atualizarDataPagamento(encomenda, dataPagamentoIso);
-                        data = { ...(data || {}), created_at: dataAtualizada?.created_at || dataPagamentoIso };
+                        data = {
+                            ...(data || {}),
+                            data_pagamento: dataAtualizada?.data_pagamento || dataPagamentoIso
+                        };
                     } catch (erroData) {
                         console.warn("Nao foi possivel atualizar data de pagamento.", erroData);
-                        data = { ...(data || {}), created_at: dataPagamentoIso };
+                        data = { ...(data || {}), data_pagamento: dataPagamentoIso };
                     }
                 }
             } else {
@@ -984,7 +992,12 @@ window.AdminEncomendaVista = (function () {
                 if (error) {
                     try {
                         const dataAtualizada = await atualizarEstadoDireto(encomenda, estado, dataPagamentoIso);
-                        data = { sucesso: true, estado, created_at: dataAtualizada?.created_at || dataPagamentoIso };
+                        data = {
+                            sucesso: true,
+                            estado,
+                            created_at: dataAtualizada?.created_at,
+                            data_pagamento: dataAtualizada?.data_pagamento || dataPagamentoIso
+                        };
                         error = null;
                     } catch (erroFallback) {
                         throw new Error(
@@ -994,10 +1007,13 @@ window.AdminEncomendaVista = (function () {
                 } else if (dataPagamentoIso) {
                     try {
                         const dataAtualizada = await atualizarDataPagamento(encomenda, dataPagamentoIso);
-                        data = { ...(data || {}), created_at: dataAtualizada?.created_at || dataPagamentoIso };
+                        data = {
+                            ...(data || {}),
+                            data_pagamento: dataAtualizada?.data_pagamento || dataPagamentoIso
+                        };
                     } catch (erroData) {
                         console.warn("Nao foi possivel atualizar data de pagamento.", erroData);
-                        data = { ...(data || {}), created_at: dataPagamentoIso };
+                        data = { ...(data || {}), data_pagamento: dataPagamentoIso };
                     }
                 }
             }
@@ -1005,12 +1021,14 @@ window.AdminEncomendaVista = (function () {
             if (data?.sucesso === false) throw new Error(data.erro || "Não foi possível atualizar.");
             encomenda.estado = estado;
             if (data?.created_at) encomenda.created_at = data.created_at;
-            else if (dataPagamentoIso) encomenda.created_at = dataPagamentoIso;
+            if (data?.data_pagamento) encomenda.data_pagamento = data.data_pagamento;
+            else if (dataPagamentoIso) encomenda.data_pagamento = dataPagamentoIso;
             if (typeof data?.stock_reposto === "boolean") encomenda.stock_reposto = data.stock_reposto;
             else if (data?.stock_reposto) encomenda.stock_reposto = true;
             sincronizarEncomendaNaLista(encomenda, {
                 estado,
                 created_at: encomenda.created_at,
+                data_pagamento: encomenda.data_pagamento,
                 stock_reposto: encomenda.stock_reposto
             });
             let anexosEliminados = 0;
@@ -1026,12 +1044,22 @@ window.AdminEncomendaVista = (function () {
             select.dataset.estadoAtual = estado;
             atualizarListaAposAlteracaoEncomenda();
             let mensagemFatura = "";
-            if (estado === "Pago" && estadoAnterior !== "Pago" && podeEmitirFaturaMoloni(encomenda)) {
+            if (estado === "Concluído" && estadoAnterior !== "Concluído" && podeEmitirFaturaMoloni(encomenda)) {
                 let emitirFatura = deveEmitirFaturaMoloniAutomaticamente(encomenda);
                 if (encomendaOrigemOlx(encomenda)) {
                     emitirFatura = pedirEmissaoFaturaMoloniOlx(encomenda);
                 }
                 if (emitirFatura) {
+                    if (!encomenda.data_pagamento) {
+                        try {
+                            const agora = new Date().toISOString();
+                            const dataAtualizada = await atualizarDataPagamento(encomenda, agora);
+                            encomenda.data_pagamento = dataAtualizada?.data_pagamento || agora;
+                            sincronizarEncomendaNaLista(encomenda, { data_pagamento: encomenda.data_pagamento });
+                        } catch (erroData) {
+                            console.warn("Nao foi possivel gravar data de pagamento antes da fatura.", erroData);
+                        }
+                    }
                     hooks.definirStatus(`Estado atualizado. A emitir fatura-recibo Moloni para ${encomenda.codigo_encomenda || ""}...`);
                     try {
                         const fatura = await emitirFaturaMoloni(encomenda, {
@@ -1181,7 +1209,7 @@ window.AdminEncomendaVista = (function () {
         const linha = criarElemento("div", "admin-encomenda-linha");
         linha.append(
             criarElemento("strong", "admin-encomenda-codigo", encomenda.codigo_encomenda || `#${encomenda.id}`),
-            criarElemento("span", "admin-encomenda-data", formatarData(encomenda.created_at)),
+            criarElemento("span", "admin-encomenda-data", formatarData(dataExibidaEncomenda(encomenda))),
             criarElemento("span", `admin-encomenda-origem${obterClassePlataforma(encomenda.origem)}`, encomenda.origem || "Site")
         );
 

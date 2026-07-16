@@ -34,6 +34,8 @@ type EncomendaRow = {
   metodo_pagamento: string | null;
   moloni_document_id: number | null;
   moloni_fatura_numero: string | null;
+  data_pagamento: string | null;
+  created_at: string | null;
 };
 
 type DocumentProductLine = {
@@ -271,6 +273,13 @@ function construirLinhasFatura(
   return linhas;
 }
 
+function parseDataPagamento(valor: string | null | undefined): Date {
+  if (!valor) return new Date();
+  const data = new Date(valor);
+  if (Number.isNaN(data.getTime())) return new Date();
+  return data;
+}
+
 async function criarFaturaReciboMoloni(
   encomenda: EncomendaRow,
   companyId: number,
@@ -281,8 +290,8 @@ async function criarFaturaReciboMoloni(
   paymentMethodId: number,
   invoiceStatus: number,
 ) {
-  const agora = new Date();
-  const vencimento = adicionarDias(agora, 30);
+  const dataDocumento = parseDataPagamento(encomenda.data_pagamento || encomenda.created_at);
+  const vencimento = adicionarDias(dataDocumento, 30);
   const totalBruto = numero(encomenda.total);
   const portesBruto = numero(encomenda.portes);
   const linhas = construirLinhasFatura(totalBruto, portesBruto, productIdLote, productIdPortes);
@@ -310,7 +319,7 @@ async function criarFaturaReciboMoloni(
     data: {
       documentSetId,
       customerId,
-      date: formatarDataIso(agora),
+      date: formatarDataIso(dataDocumento),
       expirationDate: formatarDataVencimento(vencimento),
       status: invoiceStatus,
       yourReference: referencia,
@@ -320,7 +329,7 @@ async function criarFaturaReciboMoloni(
         {
           paymentMethodId,
           value: totalBruto,
-          date: formatarDataIso(agora),
+          date: formatarDataIso(dataDocumento),
           notes: notasPagamento || undefined,
         },
       ],
@@ -397,7 +406,7 @@ Deno.serve(async (request) => {
   const supabaseAdmin = createClient(supabaseUrl, serviceRoleKey);
   const { data: encomenda, error: encomendaError } = await supabaseAdmin
     .from("encomendas")
-    .select("id, codigo_encomenda, estado, origem, total, portes, metodo_pagamento, moloni_document_id, moloni_fatura_numero")
+    .select("id, codigo_encomenda, estado, origem, total, portes, metodo_pagamento, moloni_document_id, moloni_fatura_numero, data_pagamento, created_at")
     .eq("id", encomendaId)
     .maybeSingle();
 
@@ -411,8 +420,8 @@ Deno.serve(async (request) => {
     return jsonResponse(request, { ignorada: true, motivo: "origem_olx" });
   }
 
-  if (normalizarTexto(encomendaRow.estado) !== "pago") {
-    return jsonResponse(request, { error: "A encomenda tem de estar no estado Pago." }, 409);
+  if (normalizarTexto(encomendaRow.estado) !== "concluido") {
+    return jsonResponse(request, { error: "A encomenda tem de estar no estado Concluído." }, 409);
   }
 
   if (encomendaRow.moloni_document_id) {
