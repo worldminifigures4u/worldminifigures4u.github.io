@@ -431,12 +431,6 @@ body.clientes-encomenda-modal-aberto{
         min-width:0;
     }
 
-    .clientes-formulario-links-titulo{
-        margin:0;
-        padding-top:0;
-        line-height:1.2;
-    }
-
     .clientes-formulario .admin-cliente-formulario-notas,
     .clientes-formulario .clientes-restricoes-formulario,
     .clientes-formulario .clientes-formulario-rodape,

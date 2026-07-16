@@ -451,7 +451,6 @@ function montarFormularioCliente(dados, opcoes = {}) {
     formulario.appendChild(dadosCliente);
 
     const linksExternos = criarElementoCliente("div", "clientes-formulario-links");
-    linksExternos.appendChild(criarElementoCliente("h3", "admin-cliente-formulario-subtitulo clientes-formulario-links-titulo", "Links externos"));
     for (let indice = 0; indice < 5; indice += 1) {
         linksExternos.appendChild(criarInputCliente(
             `Link externo ${indice + 1}`,
