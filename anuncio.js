@@ -13,7 +13,7 @@ function formatarEuroWallapop(valor) {
 }
 
 function normalizarTextoWallapop(valor) {
-    return String(valor || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+    return String(valor || '').trim().normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
 }
 
 function obterImagemWallapop(produto = {}) {

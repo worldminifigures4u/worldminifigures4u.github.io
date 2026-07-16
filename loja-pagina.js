@@ -28,7 +28,7 @@
     function garantirAppLoja() {
         if (typeof inicializarPaginaLoja === 'function') return Promise.resolve();
         if (!promessaAppLoja) {
-            promessaAppLoja = carregarScript('app-loja.js?v=20260712-offset-loja');
+            promessaAppLoja = carregarScript('app-loja.js?v=20260716-pesquisa-trim');
         }
         return promessaAppLoja;
     }

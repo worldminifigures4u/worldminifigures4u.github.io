@@ -17,7 +17,7 @@
     function garantirAppSku() {
         if (typeof gerarSkuProduto === 'function') return Promise.resolve();
         if (!promessaAppSku) {
-            promessaAppSku = carregarScript('app-sku.js?v=20260711-modular');
+            promessaAppSku = carregarScript('app-sku.js?v=20260716-pesquisa-trim');
         }
         return promessaAppSku;
     }

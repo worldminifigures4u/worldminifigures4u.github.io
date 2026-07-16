@@ -1,6 +1,7 @@
 // Geracao de SKU para gestao.
 function normalizarTextoSku(texto) {
     return String(texto || '')
+        .trim()
         .normalize('NFD')
         .replace(/[\u0300-\u036f]/g, '')
         .toUpperCase();

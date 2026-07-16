@@ -10,7 +10,7 @@ function pesquisarNoCabecalho() {
 
 function aplicarPesquisaUrl() {
     if (obterVistaPagina() !== 'loja') return;
-    const pesquisa = new URLSearchParams(window.location.search).get('q') || '';
+    const pesquisa = (new URLSearchParams(window.location.search).get('q') || '').trim();
     const campo = document.getElementById('campo-pesquisa');
     if (campo && pesquisa) {
         campo.value = pesquisa;
