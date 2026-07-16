@@ -407,56 +407,90 @@ body.clientes-encomenda-modal-aberto{
 }
 @media (min-width: 701px){
     .clientes-formulario{
-        grid-template-columns:240px minmax(0, 1fr);
-        gap:12px 22px;
+        grid-template-columns:minmax(0, 1.15fr) minmax(300px, 0.85fr);
+        gap:12px 28px;
         align-items:start;
     }
 
-    .clientes-formulario .admin-cliente-campo-nome,
-    .clientes-formulario .admin-cliente-campo-morada{
+    .clientes-formulario-dados{
+        grid-column:1;
+        grid-row:1;
+        display:grid;
+        grid-template-columns:240px minmax(0, 1fr);
+        gap:12px 22px;
+        align-content:start;
+        min-width:0;
+    }
+
+    .clientes-formulario-links{
+        grid-column:2;
+        grid-row:1;
+        display:grid;
+        gap:12px;
+        align-content:start;
+        min-width:0;
+    }
+
+    .clientes-formulario-links-titulo{
+        margin:0;
+        padding-top:0;
+        line-height:1.2;
+    }
+
+    .clientes-formulario .admin-cliente-formulario-notas,
+    .clientes-formulario .clientes-restricoes-formulario,
+    .clientes-formulario .clientes-formulario-rodape,
+    .clientes-formulario .clientes-formulario-acoes-topo,
+    .clientes-formulario .clientes-campo-site,
+    .clientes-formulario .clientes-aviso-edicao-site{
         grid-column:1 / -1;
     }
 
-    .clientes-formulario .admin-cliente-campo-cp{
+    .clientes-formulario-dados .admin-cliente-campo-nome,
+    .clientes-formulario-dados .admin-cliente-campo-morada,
+    .clientes-formulario-dados .morada-edicao-linhas,
+    .clientes-formulario-dados .admin-cliente-campo-morada-bloco{
+        grid-column:1 / -1;
+    }
+
+    .clientes-formulario-dados .admin-cliente-campo-cp{
         grid-column:1;
         width:240px;
         max-width:240px;
     }
 
-    .clientes-formulario .admin-cliente-campo-cidade{
+    .clientes-formulario-dados .admin-cliente-campo-cidade{
         grid-column:2;
         min-width:0;
     }
 
-    .clientes-formulario .admin-cliente-campo-pais{
+    .clientes-formulario-dados .admin-cliente-campo-pais{
         grid-column:1;
         width:240px;
         max-width:240px;
     }
 
-    .clientes-formulario .admin-cliente-campo-email{
+    .clientes-formulario-dados .admin-cliente-campo-email{
         grid-column:2;
         max-width:none;
         min-width:0;
     }
 
-    .clientes-formulario .admin-cliente-campo-telefone{
+    .clientes-formulario-dados .admin-cliente-campo-telefone{
         grid-column:1;
         width:240px;
         max-width:240px;
     }
 
-    .clientes-formulario .admin-cliente-campo-perfil_url_1,
-    .clientes-formulario .admin-cliente-campo-perfil_url_3,
-    .clientes-formulario .admin-cliente-campo-perfil_url_5{
-        grid-column:1;
+    .clientes-formulario-links [class*="admin-cliente-campo-perfil_url_"]{
+        grid-column:auto;
         max-width:none;
     }
+}
 
-    .clientes-formulario .admin-cliente-campo-perfil_url_2,
-    .clientes-formulario .admin-cliente-campo-perfil_url_4{
-        grid-column:2;
-    }
+.clientes-formulario-dados,
+.clientes-formulario-links{
+    min-width:0;
 }
 
 .clientes-formulario .admin-cliente-campo-cp input,
@@ -469,12 +503,24 @@ body.clientes-encomenda-modal-aberto{
 }
 
 @media (max-width: 700px){
+    .clientes-formulario{
+        grid-template-columns:1fr;
+    }
+
+    .clientes-formulario-dados,
+    .clientes-formulario-links{
+        display:grid;
+        gap:12px;
+        grid-column:1;
+    }
+
     .clientes-formulario .admin-cliente-campo-cp,
     .clientes-formulario .admin-cliente-campo-cidade,
     .clientes-formulario .admin-cliente-campo-pais,
     .clientes-formulario .admin-cliente-campo-email,
     .clientes-formulario .admin-cliente-campo-telefone{
         max-width:none;
+        width:auto;
     }
 }
 

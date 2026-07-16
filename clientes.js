@@ -435,7 +435,8 @@ function montarFormularioCliente(dados, opcoes = {}) {
         formulario.appendChild(acoesTopo);
     }
 
-    formulario.append(
+    const dadosCliente = criarElementoCliente("div", "clientes-formulario-dados");
+    dadosCliente.append(
         criarInputCliente("Nome", "nome", cliente.nome, "text", true),
         window.MoradaFormato?.criarCampoMoradaEdicao(
             criarElementoCliente,
@@ -447,16 +448,19 @@ function montarFormularioCliente(dados, opcoes = {}) {
         criarInputCliente("E-mail", "email", cliente.email, "email"),
         criarInputCliente("Telem\u00f3vel", "telefone", cliente.telefone)
     );
+    formulario.appendChild(dadosCliente);
 
-    formulario.appendChild(criarElementoCliente("h3", "admin-cliente-formulario-subtitulo", "Links externos"));
+    const linksExternos = criarElementoCliente("div", "clientes-formulario-links");
+    linksExternos.appendChild(criarElementoCliente("h3", "admin-cliente-formulario-subtitulo clientes-formulario-links-titulo", "Links externos"));
     for (let indice = 0; indice < 5; indice += 1) {
-        formulario.appendChild(criarInputCliente(
+        linksExternos.appendChild(criarInputCliente(
             `Link externo ${indice + 1}`,
             `perfil_url_${indice + 1}`,
             perfis[indice]?.url || "",
             "url"
         ));
     }
+    formulario.appendChild(linksExternos);
 
     formulario.appendChild(criarTextareaCliente("Notas internas", "notas", cliente.notas));
     aplicarCamposClienteRegistadoSite(formulario, cliente);
