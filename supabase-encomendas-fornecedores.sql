@@ -305,10 +305,15 @@ begin
         qtd_recebida := greatest(0, coalesce((rececao ->> 'quantidade')::int, 0));
 
         if produto_id_text is not null and qtd_recebida > 0 then
+            -- Se a figura era novidade e estava a 0, ao entrar stock deixa de ser novidade
             update public.produtos
-            set stock = coalesce(stock, 0) + qtd_recebida,
-                ativo = (coalesce(stock, 0) + qtd_recebida) > 0,
-                novidade = false
+            set
+                novidade = case
+                    when coalesce(stock, 0) = 0 then false
+                    else novidade
+                end,
+                stock = coalesce(stock, 0) + qtd_recebida,
+                ativo = (coalesce(stock, 0) + qtd_recebida) > 0
             where id::text = produto_id_text;
         end if;
     end loop;

@@ -3504,6 +3504,18 @@ async function receberPedidoFornecedor(id) {
         });
         if (error) throw error;
 
+        // Atualiza cache local: novidade sai quando o stock passa de 0
+        rececoes.forEach(rececao => {
+            const produto = fornecedorProdutos.find(item => String(item.id) === String(rececao.produto_id));
+            if (!produto) return;
+            const stockAntes = Math.max(0, Number(produto.stock || 0));
+            if (stockAntes === 0 && obterBooleanoProdutoFornecedor(produto.novidade)) {
+                produto.novidade = false;
+            }
+            produto.stock = stockAntes + Math.max(0, Number(rececao.quantidade || 0));
+            if (produto.ativo === false && produto.stock > 0) produto.ativo = true;
+        });
+
         const atualizado = normalizarPedidoFornecedor(data);
         fornecedorPedidos = fornecedorPedidos.map(item => item.id === id ? atualizado : item);
         guardarPedidosFornecedores();
