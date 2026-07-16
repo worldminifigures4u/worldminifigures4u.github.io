@@ -320,7 +320,7 @@ function atualizarBotaoRegistoPlataforma() {
     if (!botao) return;
     botao.textContent = encomendaPlataformaEmEdicao
         ? 'Guardar altera\u00e7\u00f5es'
-        : `Registar encomenda ${obterPlataformaAtual()}`;
+        : 'Registar encomenda';
     botao.disabled = wallapopRegistoConcluido;
 }
 
