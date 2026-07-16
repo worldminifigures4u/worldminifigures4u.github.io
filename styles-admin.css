@@ -5,6 +5,17 @@ body.pagina-com-cabecalho-site > main{
     box-sizing:border-box;
 }
 
+/* Páginas só de administrador: sem rodapé público. */
+body.pagina-clientes-admin .rodape-site,
+body.pagina-encomendas-admin .rodape-site,
+body.pagina-fornecedores-admin .rodape-site,
+body.pagina-mapas-admin .rodape-site,
+body.pagina-estatisticas-admin .rodape-site,
+body.pagina-wallapop .rodape-site,
+body.pagina-gestao .rodape-site{
+    display:none;
+}
+
 body.pagina-clientes-admin > main.clientes-admin{
     width: min(1500px, calc(100% - 32px));
     margin-bottom:0;
