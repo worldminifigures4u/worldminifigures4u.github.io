@@ -676,7 +676,7 @@ async function imprimirPedidoFornecedor(id) {
     const aplicarEstiloCelula = (celula, indice, cabecalho = false) => {
         celula.style.boxSizing = 'border-box';
         celula.style.width = larguras[indice];
-        celula.style.border = '1px solid #000';
+        celula.style.border = '0';
         celula.style.padding = '4px 6px';
         celula.style.margin = '0';
         celula.style.textAlign = 'left';
@@ -685,7 +685,7 @@ async function imprimirPedidoFornecedor(id) {
         celula.style.fontSize = '11px';
         celula.style.lineHeight = '1.25';
         celula.style.fontWeight = cabecalho ? '700' : '400';
-        celula.style.background = cabecalho ? '#f2c200' : '#fff';
+        celula.style.background = 'transparent';
         celula.style.color = '#000';
         celula.style.wordWrap = 'break-word';
         celula.style.overflowWrap = 'break-word';
@@ -698,7 +698,7 @@ async function imprimirPedidoFornecedor(id) {
     doc.title = pedido.codigo || 'Encomenda';
 
     const estiloPagina = doc.createElement('style');
-    estiloPagina.textContent = '@page{size:A4;margin:12mm}html,body{margin:0;padding:0;color:#000;background:#fff;font-family:Arial,Helvetica,sans-serif}table{width:100%;border-collapse:collapse;table-layout:fixed}thead{display:table-header-group}th,td{text-align:left!important}';
+    estiloPagina.textContent = '@page{size:A4;margin:12mm}html,body{margin:0;padding:0;color:#000;background:#fff;font-family:Arial,Helvetica,sans-serif}table{width:100%;border-collapse:collapse;table-layout:fixed;border:0}thead{display:table-header-group}th,td{text-align:left!important;border:0!important;background:transparent!important}tr{background:transparent!important}';
     doc.head.appendChild(estiloPagina);
 
     const titulo = doc.createElement('h1');
