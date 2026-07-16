@@ -348,10 +348,13 @@ body.pagina-fornecedores-admin{ margin:0; padding-left:0; padding-right:0; paddi
         .fornecedor-edicao-grid input,.fornecedor-edicao-grid select,.fornecedor-edicao-produto-campos input{ width:100%; box-sizing:border-box; border:1px solid #444; border-radius:6px; background:#242424; color:#fff; padding:10px 11px; font:inherit; }
         .fornecedor-edicao-produtos{ display:grid; gap:8px; }
         .fornecedor-edicao-produto{ display:grid; grid-template-columns:52px minmax(0,1fr) minmax(460px,.64fr); gap:12px; align-items:center; padding:10px; border:1px solid #333; border-radius:7px; background:#1d1d1d; }
-        .fornecedor-edicao-produto-campos{ display:grid; grid-template-columns:1fr 1fr 1fr 1fr auto; gap:10px; align-items:end; }
+        .fornecedor-edicao-produto-campos{ display:grid; grid-template-columns:1fr 1fr 1fr 1fr auto auto; gap:10px; align-items:end; }
         .fornecedor-edicao-recebido-info{ display:grid; gap:6px; color:#ddd; font-weight:700; }
         .fornecedor-edicao-recebido-info span{ min-height:40px; display:flex; align-items:center; border:1px solid #333; border-radius:6px; background:#1a1a1a; color:#aaa; padding:10px 11px; box-sizing:border-box; }
-        .fornecedor-edicao-remover{ display:flex !important; align-items:center; gap:6px !important; white-space:nowrap; }
+        .fornecedor-edicao-marcar-os,
+        .fornecedor-edicao-remover{ display:flex !important; align-items:center; gap:6px !important; white-space:nowrap; min-height:40px; }
+        .fornecedor-edicao-marcar-os{ color:#f0c36d; }
+        .fornecedor-edicao-marcar-os input,
         .fornecedor-edicao-remover input{ width:auto; }
         .fornecedor-edicao-status{ min-height:20px; }
         body.fornecedor-edicao-modal-aberto{ overflow:hidden; }

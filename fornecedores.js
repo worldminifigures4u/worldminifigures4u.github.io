@@ -409,6 +409,7 @@ function normalizarItemPedidoFornecedor(item) {
         quantidade,
         quantidade_original: quantidadeOriginal,
         falta_os: faltaOs,
+        data_os: item.data_os || null,
         preco_custo: Number.isFinite(precoCusto) ? Math.max(0, precoCusto) : 0,
         estado_fornecedor: item.estado_fornecedor || (faltaOs > 0 ? 'OS' : ''),
         origem_ajuste: item.origem_ajuste || ''
@@ -507,6 +508,7 @@ function serializarItemPedidoFornecedor(item) {
         quantidade: Math.max(0, Math.floor(Number(normalizado.quantidade || 0))),
         quantidade_original: Math.max(0, Math.floor(Number(normalizado.quantidade_original || normalizado.quantidade || 0))),
         falta_os: Math.max(0, Math.floor(Number(normalizado.falta_os || 0))),
+        data_os: normalizado.data_os || null,
         estado_fornecedor: String(normalizado.estado_fornecedor || ''),
         origem_ajuste: String(normalizado.origem_ajuste || ''),
         recebido: Math.max(0, Math.floor(Number(normalizado.recebido || 0))),
@@ -959,14 +961,102 @@ function obterFornecedorPorChaveProduto(produto, chave) {
     return lerValorPorAlias(produto?.fornecedores, [normalizarChaveFornecedor(chave)]);
 }
 
-function classificarValorFornecedor(valor) {
+function formatarDataOsCurtaFornecedor(valor) {
+    if (!valor) return "";
+    const texto = String(valor).trim();
+    const isoDia = texto.match(/^(\d{4})-(\d{2})-(\d{2})/);
+    if (isoDia) return `${isoDia[3]}/${isoDia[2]}/${isoDia[1]}`;
+    const data = new Date(texto);
+    if (Number.isNaN(data.getTime())) return "";
+    return new Intl.DateTimeFormat("pt-PT", {
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric"
+    }).format(data);
+}
+
+function extrairDataOsDeTextoFornecedor(texto) {
+    const valor = String(texto || "").trim();
+    const iso = valor.match(/(\d{4})-(\d{2})-(\d{2})/);
+    if (iso) return `${iso[1]}-${iso[2]}-${iso[3]}`;
+    const pt = valor.match(/(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{4})/);
+    if (pt) {
+        const dia = String(pt[1]).padStart(2, "0");
+        const mes = String(pt[2]).padStart(2, "0");
+        return `${pt[3]}-${mes}-${dia}`;
+    }
+    return null;
+}
+
+function dataOsHojeFornecedor() {
+    return new Date().toISOString().slice(0, 10);
+}
+
+function normalizarMarcacaoFornecedor(valor) {
+    if (valor && typeof valor === "object" && !Array.isArray(valor)) {
+        const estado = String(valor.estado || valor.marcacao || valor.status || "").trim().toUpperCase();
+        const desde = valor.desde || valor.data_os || valor.data || valor.em || null;
+        if (estado === "OS") {
+            return {
+                tipo: "os",
+                estado: "OS",
+                desde,
+                texto: desde ? `OS · ${formatarDataOsCurtaFornecedor(desde)}` : "OS"
+            };
+        }
+        if (estado === "EX") {
+            return { tipo: "ex", estado: "EX", desde: null, texto: "EX" };
+        }
+        const textoObj = String(valor.texto || estado || "").trim();
+        if (textoObj) return { tipo: "info", estado: textoObj, desde, texto: textoObj };
+    }
+
     const texto = String(valor ?? "").trim();
     const maiusculas = texto.toUpperCase();
-    if (!texto) return { tipo: "disponivel", texto: "Disponivel" };
-    if (maiusculas === "OS") return { tipo: "os", texto: "OS" };
-    if (maiusculas === "EX") return { tipo: "ex", texto: "EX" };
-    if (/^-?\d+(?:[,.]\d+)?$/.test(texto)) return { tipo: "encomendado", texto: `Marcado no mapa: ${texto}` };
-    return { tipo: "info", texto };
+    if (!texto) return { tipo: "disponivel", estado: "", desde: null, texto: "Disponivel" };
+    if (maiusculas === "OS" || maiusculas.startsWith("OS ·") || maiusculas.startsWith("OS DESDE") || maiusculas.startsWith("OS ")) {
+        const desde = extrairDataOsDeTextoFornecedor(texto);
+        return {
+            tipo: "os",
+            estado: "OS",
+            desde,
+            texto: desde ? `OS · ${formatarDataOsCurtaFornecedor(desde)}` : "OS"
+        };
+    }
+    if (maiusculas === "EX") return { tipo: "ex", estado: "EX", desde: null, texto: "EX" };
+    if (/^-?\d+(?:[,.]\d+)?$/.test(texto)) {
+        return { tipo: "encomendado", estado: texto, desde: null, texto: `Marcado no mapa: ${texto}` };
+    }
+    return { tipo: "info", estado: texto, desde: null, texto };
+}
+
+function formatarValorFornecedorParaInput(valor) {
+    const marcacao = normalizarMarcacaoFornecedor(valor);
+    if (marcacao.tipo === "disponivel") return "";
+    if (marcacao.tipo === "os") return marcacao.texto;
+    if (marcacao.tipo === "ex") return "EX";
+    if (marcacao.tipo === "encomendado") return String(valor ?? "").trim();
+    return marcacao.texto;
+}
+
+function parseValorMarcacaoFornecedorInput(texto, valorAnterior) {
+    const valor = String(texto || "").trim();
+    if (!valor) return "";
+    const marcacao = normalizarMarcacaoFornecedor(valor);
+    if (marcacao.tipo === "os") {
+        const anterior = normalizarMarcacaoFornecedor(valorAnterior);
+        const desde = marcacao.desde
+            || (anterior.tipo === "os" ? anterior.desde : null)
+            || dataOsHojeFornecedor();
+        return { estado: "OS", desde };
+    }
+    if (marcacao.tipo === "ex") return "EX";
+    return valor;
+}
+
+function classificarValorFornecedor(valor) {
+    const marcacao = normalizarMarcacaoFornecedor(valor);
+    return { tipo: marcacao.tipo, texto: marcacao.texto };
 }
 
 function obterFornecedorMarcacaoFiltro(fornecedorEncomenda) {
@@ -1346,7 +1436,7 @@ function montarLinhaEdicaoProdutoFornecedor(pedido, item, indice) {
     const precoCustoAtual = Number(item.preco_custo ?? item.custo ?? item.preco ?? 0) || 0;
     const linha = document.createElement("div");
     linha.className = "fornecedor-edicao-produto";
-    if (faltaAtual > 0) linha.classList.add("tem-os");
+    if (faltaAtual > 0 || item.estado_fornecedor === "OS") linha.classList.add("tem-os");
     linha.dataset.indice = String(indice);
     linha.dataset.referencia = item.referencia || produtoAtual.referencia || "";
     linha.dataset.sku = item.sku || produtoAtual.sku || "";
@@ -1362,8 +1452,9 @@ function montarLinhaEdicaoProdutoFornecedor(pedido, item, indice) {
     ids.textContent = `Ref. ${item.referencia || produtoAtual.referencia || "-"} | SKU ${item.sku || produtoAtual.sku || "-"}`;
     const ajuste = document.createElement("span");
     ajuste.className = faltaAtual > 0 ? "fornecedor-ajuste-os ativo" : "fornecedor-ajuste-os";
+    const dataOsTexto = item.data_os ? ` | desde ${formatarDataOsCurtaFornecedor(item.data_os)}` : "";
     ajuste.textContent = faltaAtual > 0
-        ? `Inicial: ${quantidadeOriginal} | OS: ${faltaAtual}`
+        ? `Inicial: ${quantidadeOriginal} | OS: ${faltaAtual}${dataOsTexto}`
         : `Inicial: ${quantidadeOriginal}`;
     if (item.origem_ajuste) {
         const textoOrigem = obterTextoOrigemAjustePedidoFornecedor(item.origem_ajuste);
@@ -1416,6 +1507,15 @@ function montarLinhaEdicaoProdutoFornecedor(pedido, item, indice) {
     recebidoValor.textContent = String(recebidoAtual);
     recebido.append(recebidoTitulo, recebidoValor);
 
+    const marcarOs = document.createElement("label");
+    marcarOs.className = "fornecedor-edicao-marcar-os";
+    marcarOs.title = "Marca a figura como OS neste fornecedor e regista a data na ficha do produto";
+    const marcarOsInput = document.createElement("input");
+    marcarOsInput.type = "checkbox";
+    marcarOsInput.dataset.campo = "marcar_os";
+    marcarOsInput.checked = faltaAtual > 0 || item.estado_fornecedor === "OS";
+    marcarOs.append(marcarOsInput, document.createTextNode(" Marcar OS"));
+
     const remover = document.createElement("label");
     remover.className = "fornecedor-edicao-remover";
     const removerInput = document.createElement("input");
@@ -1423,25 +1523,55 @@ function montarLinhaEdicaoProdutoFornecedor(pedido, item, indice) {
     removerInput.dataset.campo = "remover";
     remover.append(removerInput, document.createTextNode(" Remover"));
 
+    const atualizarAjuste = () => {
+        const faltaValor = Math.max(0, Math.floor(Number(faltaInput.value) || 0));
+        ajuste.className = faltaValor > 0 ? "fornecedor-ajuste-os ativo" : "fornecedor-ajuste-os";
+        ajuste.textContent = faltaValor > 0
+            ? `Inicial: ${quantidadeOriginal} | OS: ${faltaValor}`
+            : `Inicial: ${quantidadeOriginal}`;
+        linha.classList.toggle("tem-os", faltaValor > 0 || marcarOsInput.checked);
+    };
+
     const sincronizarFalta = () => {
         const pedidoValor = Math.max(0, Math.floor(Number(quantidadeInput.value) || 0));
         const faltaValor = Math.max(0, quantidadeOriginal - pedidoValor);
         if (faltaValor > 0 && Number(faltaInput.value || 0) === 0) {
             faltaInput.value = String(faltaValor);
         }
+        marcarOsInput.checked = Number(faltaInput.value || 0) > 0;
+        atualizarAjuste();
     };
     const sincronizarQuantidade = () => {
         const faltaValor = Math.max(0, Math.floor(Number(faltaInput.value) || 0));
         if (faltaValor > 0) {
             quantidadeInput.value = String(Math.max(0, quantidadeOriginal - faltaValor));
         }
+        marcarOsInput.checked = faltaValor > 0;
+        atualizarAjuste();
     };
+    marcarOsInput.addEventListener("change", () => {
+        if (marcarOsInput.checked) {
+            const quantidadeAtualLinha = Math.max(0, Math.floor(Number(quantidadeInput.value) || 0));
+            if (quantidadeAtualLinha >= quantidadeOriginal) {
+                faltaInput.value = String(Math.max(1, quantidadeOriginal));
+                quantidadeInput.value = "0";
+            } else {
+                const faltaValor = Math.max(1, quantidadeOriginal - quantidadeAtualLinha, Number(faltaInput.value) || 0);
+                faltaInput.value = String(faltaValor);
+                quantidadeInput.value = String(Math.max(0, quantidadeOriginal - faltaValor));
+            }
+        } else {
+            faltaInput.value = "0";
+            quantidadeInput.value = String(quantidadeOriginal);
+        }
+        atualizarAjuste();
+    });
     quantidadeInput.addEventListener("change", sincronizarFalta);
     quantidadeInput.addEventListener("blur", sincronizarFalta);
     faltaInput.addEventListener("change", sincronizarQuantidade);
     faltaInput.addEventListener("blur", sincronizarQuantidade);
 
-    campos.append(quantidade, falta, precoCusto, recebido, remover);
+    campos.append(quantidade, falta, precoCusto, recebido, marcarOs, remover);
     linha.append(info, campos);
     return linha;
 }
@@ -1841,7 +1971,12 @@ function abrirEdicaoProdutoMapa(produtoId) {
 
     const blocoFornecedores = criarSecaoEdicaoMapa("Fornecedores", "mapas-produto-fornecedores");
     obterCamposProdutoFornecedor().forEach(({ chave, rotulo }) => {
-        criarInputEdicaoMapa(blocoFornecedores, `mapas-editar-fornecedor-${chave}`, rotulo, obterFornecedorPorChaveProduto(produto, chave));
+        criarInputEdicaoMapa(
+            blocoFornecedores,
+            `mapas-editar-fornecedor-${chave}`,
+            rotulo,
+            formatarValorFornecedorParaInput(obterFornecedorPorChaveProduto(produto, chave))
+        );
     });
     campos.appendChild(blocoFornecedores);
 
@@ -1859,9 +1994,15 @@ function fecharEdicaoProdutoMapa() {
 
 function lerProdutoEditadoMapa() {
     const fornecedores = {};
+    const produtoId = document.getElementById("mapas-editar-id")?.value || "";
+    const produtoAtual = obterProdutoAtual(produtoId) || fornecedorProdutos.find(item => String(item.id) === String(produtoId)) || null;
     obterCamposProdutoFornecedor().forEach(({ chave }) => {
         const valor = document.getElementById(`mapas-editar-fornecedor-${chave}`)?.value.trim() || "";
-        if (valor) fornecedores[chave] = valor;
+        if (!valor) return;
+        fornecedores[chave] = parseValorMarcacaoFornecedorInput(
+            valor,
+            obterFornecedorPorChaveProduto(produtoAtual, chave)
+        );
     });
 
     const produto = {
@@ -2785,7 +2926,10 @@ function definirFornecedorOsNoProduto(produto, fornecedorNome) {
     if (!produto || !chaveNormalizada) return null;
     const fornecedores = obterObjetoFornecedoresProduto(produto);
     const chaveExistente = Object.keys(fornecedores).find(chave => normalizarChaveFornecedor(chave) === chaveNormalizada);
-    fornecedores[chaveExistente || fornecedorNome] = 'OS';
+    const chave = chaveExistente || fornecedorNome;
+    const atual = normalizarMarcacaoFornecedor(fornecedores[chave]);
+    const desde = atual.tipo === "os" && atual.desde ? atual.desde : dataOsHojeFornecedor();
+    fornecedores[chave] = { estado: "OS", desde };
     return fornecedores;
 }
 
@@ -3053,19 +3197,26 @@ function lerItensEditadosPedidoFornecedor(pedido, modal) {
         if (remover) return null;
         const quantidade = Math.max(0, Math.floor(Number(linha.querySelector('[data-campo="quantidade"]')?.value || 0)));
         const quantidadeOriginal = Math.max(quantidade, Math.floor(Number(item.quantidade_original ?? item.quantidade ?? quantidade) || quantidade));
-        const faltaOsIndicada = Math.max(0, Math.floor(Number(linha.querySelector('[data-campo="falta_os"]')?.value || 0)));
+        const marcarOs = Boolean(linha.querySelector('[data-campo="marcar_os"]')?.checked);
+        let faltaOsIndicada = Math.max(0, Math.floor(Number(linha.querySelector('[data-campo="falta_os"]')?.value || 0)));
+        if (marcarOs && faltaOsIndicada === 0) {
+            faltaOsIndicada = Math.max(1, quantidadeOriginal - quantidade);
+        }
         const faltaOs = Math.max(faltaOsIndicada, quantidadeOriginal - quantidade);
         const precoCusto = Math.max(0, Number(String(linha.querySelector('[data-campo="preco_custo"]')?.value || '').replace(',', '.')) || 0);
         const recebido = Math.max(0, Math.floor(Number(linha.querySelector('[data-campo="recebido"]')?.dataset.valor || item.recebido || 0)));
+        const estaOs = faltaOs > 0 || marcarOs;
+        const quantidadeFinal = estaOs ? Math.max(0, quantidadeOriginal - faltaOs) : quantidade;
         return {
             ...item,
             quantidade_original: quantidadeOriginal,
-            quantidade,
+            quantidade: quantidadeFinal,
             falta_os: faltaOs,
+            data_os: estaOs ? (item.data_os || dataOsHojeFornecedor()) : null,
             preco_custo: precoCusto,
             preco: precoCusto,
-            estado_fornecedor: faltaOs > 0 ? 'OS' : (item.estado_fornecedor === 'OS' ? '' : item.estado_fornecedor || ''),
-            recebido: Math.min(recebido, quantidade)
+            estado_fornecedor: estaOs ? 'OS' : (item.estado_fornecedor === 'OS' ? '' : item.estado_fornecedor || ''),
+            recebido: Math.min(recebido, quantidadeFinal)
         };
     }).filter(item => item && (Number(item.quantidade || 0) > 0 || Number(item.falta_os || 0) > 0));
 }
@@ -3118,7 +3269,7 @@ async function guardarEdicaoPedidoFornecedor(evento) {
             estado,
             itens
         });
-        status.textContent = 'A marcar OS no mapa do fornecedor...';
+        status.textContent = 'A marcar OS no mapa do fornecedor (com data)...';
         await sincronizarOsProdutosFornecedor(itens, fornecedor);
         status.textContent = 'A atualizar preço compra nos produtos...';
         let produtosComPrecoAtualizado = 0;
