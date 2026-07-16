@@ -7,6 +7,7 @@ body.pagina-com-cabecalho-site > main{
 
 body.pagina-clientes-admin > main.clientes-admin{
     width: min(1500px, calc(100% - 32px));
+    margin-bottom:0;
 }
 
 body.pagina-wallapop > main.wallapop-layout{

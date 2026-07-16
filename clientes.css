@@ -7,10 +7,16 @@
     --fp-fonte-valor:14px;
     --fp-fonte-titulo:20px;
     --fp-fonte-lista:14px;
+    --fp-clientes-altura:calc(100dvh - var(--cabecalho-offset, 128px) - 20px);
     width:100%;
-    margin:0 auto var(--espaco-acima-rodape);
+    margin:0 auto;
     padding:0;
     font-size:var(--fp-fonte-valor);
+    height:var(--fp-clientes-altura);
+    max-height:var(--fp-clientes-altura);
+    display:grid;
+    grid-template-rows:minmax(0, 1fr) auto;
+    overflow:hidden;
 }
 
 .clientes-admin .wallapop-botao{
@@ -67,7 +73,9 @@
     display:grid;
     grid-template-columns:minmax(280px, 340px) minmax(0, 1fr);
     gap:14px;
-    align-items:start;
+    align-items:stretch;
+    min-height:0;
+    height:100%;
 }
 
 .clientes-coluna-lista{
@@ -75,9 +83,10 @@
     grid-template-rows:auto minmax(0, 1fr);
     gap:10px;
     min-width:0;
-    max-height:calc(100vh - 180px);
-    position:sticky;
-    top:12px;
+    min-height:0;
+    height:100%;
+    max-height:100%;
+    position:static;
 }
 
 .clientes-lista,
@@ -94,18 +103,21 @@
     padding:6px;
     overflow:auto;
     min-height:0;
+    height:100%;
     max-height:none;
 }
 
 .clientes-ficha{
     --fp-ficha-gap:12px;
     min-width:0;
-    max-height:calc(100vh - 180px);
+    min-height:0;
+    height:100%;
+    max-height:100%;
     overflow:auto;
-    position:sticky;
-    top:12px;
+    position:static;
     padding:16px;
     display:grid;
+    align-content:start;
     gap:var(--fp-ficha-gap);
 }
 
@@ -568,9 +580,17 @@ body.clientes-encomenda-modal-aberto{
         grid-template-columns:1fr;
     }
 
+    .clientes-admin{
+        height:auto;
+        max-height:none;
+        overflow:visible;
+        display:block;
+    }
+
     .clientes-coluna-lista,
     .clientes-ficha{
         position:static;
+        height:auto;
         max-height:none;
     }
 
