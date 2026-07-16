@@ -404,6 +404,7 @@ body.pagina-wallapop{
         }
 
         .wallapop-preview-wrap{
+            --plataforma-preview-largura:596px;
             overflow:visible;
             padding:0 0 20px;
             display:flex;
@@ -412,7 +413,8 @@ body.pagina-wallapop{
         }
 
         .wallapop-preview-acoes{
-            width:100%;
+            width:var(--plataforma-preview-largura);
+            max-width:100%;
             margin-bottom:16px;
             padding:18px;
             box-sizing:border-box;
@@ -427,11 +429,13 @@ body.pagina-wallapop{
         }
 
         .wallapop-acoes-encomenda{
-            width:min(520px, calc(100% - 32px));
+            width:var(--plataforma-preview-largura);
+            max-width:100%;
             margin:0 auto 12px;
             display:grid;
             grid-template-columns:1fr 1fr;
             gap:8px;
+            box-sizing:border-box;
         }
 
         .wallapop-acoes-encomenda .wallapop-botao{
@@ -440,6 +444,8 @@ body.pagina-wallapop{
             font-size:13px;
             line-height:1.2;
             white-space:nowrap;
+            width:100%;
+            box-sizing:border-box;
         }
 
         .wallapop-botao-registar{
@@ -456,7 +462,6 @@ body.pagina-wallapop{
         @media (max-width:560px){
             .wallapop-acoes-encomenda{
                 grid-template-columns:1fr;
-                width:min(280px, calc(100% - 32px));
             }
             .wallapop-acoes-encomenda .wallapop-botao{
                 white-space:normal;
@@ -466,7 +471,7 @@ body.pagina-wallapop{
         .wallapop-folha-escala{
             --wallapop-preview-page-height:843px;
             --wallapop-preview-gap:18px;
-            width:596px;
+            width:var(--plataforma-preview-largura);
             min-height:120px;
             height:843px;
             flex:0 0 auto;
@@ -844,13 +849,9 @@ body.pagina-wallapop{
                 margin-inline:-16px;
                 overflow:visible;
             }
-            .wallapop-preview-acoes{
-                width:calc(100% - 32px);
-            }
             .wallapop-folha-escala{
                 --wallapop-preview-page-height:843px;
                 --wallapop-preview-gap:18px;
-                width:596px;
                 height:843px;
             }
             .wallapop-folha{
