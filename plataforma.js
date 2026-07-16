@@ -2001,6 +2001,13 @@ function criarTextoInternoPlataforma() {
     return '\ufeff' + linhas.join('\r\n');
 }
 
+function formatarLinhaTxtProdutoPlataforma(item) {
+    const quantidade = Math.max(1, Number(item.quantidade) || 1);
+    const nome = String(item.nome || '').trim();
+    const totalLinha = quantidade * Number(item.preco || 0);
+    return `${quantidade}x ${nome} ${formatarEuroWallapop(totalLinha)} \u20ac`;
+}
+
 function criarTextoClienteOlx() {
     const itens = obterItensParaFicheirosPlataforma();
     const envio = obterEnvioParaFicheirosPlataforma();
@@ -2009,11 +2016,7 @@ function criarTextoClienteOlx() {
     ), 0);
     const linhas = criarCabecalhoCodigoEncomenda().concat(['Produtos:']);
     itens.forEach(item => {
-        linhas.push([
-            `${Math.max(1, Number(item.quantidade) || 1)}x`,
-            String(item.nome || '').trim(),
-            `${formatarEuroWallapop(item.preco)} \u20ac / un.`
-        ].join('\t'));
+        linhas.push(formatarLinhaTxtProdutoPlataforma(item));
     });
     linhas.push(
         '',
