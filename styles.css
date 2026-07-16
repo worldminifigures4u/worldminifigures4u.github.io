@@ -595,6 +595,19 @@ input[type="search"]::-ms-clear{
     height:0;
 }
 
+/* Remover setas dos campos number em todo o site */
+input[type="number"]{
+    -moz-appearance:textfield;
+    appearance:textfield;
+}
+
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button{
+    -webkit-appearance:none;
+    appearance:none;
+    margin:0;
+}
+
 .campo-limpar-botao{
     position:absolute;
     right:3px;
