@@ -103,7 +103,6 @@ function montarVistaConsultaCliente(dados) {
     contentor.appendChild(dadosSecao);
 
     const linksSecao = criarElementoCliente("section", "admin-cliente-secao");
-    linksSecao.appendChild(criarElementoCliente("h3", "", "Links externos"));
     const listaLinks = criarElementoCliente("div", "admin-cliente-perfis");
     const linksValidos = perfis
         .map((perfil, indice) => ({ perfil, indice, url: obterUrlExternoSeguroCliente(perfil?.url) }))
@@ -125,7 +124,6 @@ function montarVistaConsultaCliente(dados) {
     contentor.appendChild(linksSecao);
 
     const notasSecao = criarElementoCliente("section", "admin-cliente-secao");
-    notasSecao.appendChild(criarElementoCliente("h3", "", "Notas internas"));
     const notas = criarElementoCliente("div", "admin-cliente-notas admin-cliente-notas-consulta");
     notas.textContent = String(cliente.notas || "").trim() || "Sem notas internas.";
     notasSecao.appendChild(notas);
@@ -335,7 +333,6 @@ async function abrirCliente(clienteId) {
 
 function criarSecaoResumoCliente(resumo = {}) {
     const secao = criarElementoCliente("section", "admin-cliente-secao clientes-resumo-secao");
-    secao.appendChild(criarElementoCliente("h3", "", "Resumo"));
     const grelha = criarElementoCliente("div", "clientes-resumo-grelha");
     const encomendas = criarCampoCliente("Encomendas", String(resumo.encomendas || 0));
     encomendas.classList.add("clientes-resumo-encomendas");
@@ -350,7 +347,6 @@ function criarSecaoResumoCliente(resumo = {}) {
 
 function criarSecaoHistoricoCliente(historico = []) {
     const historicoSecao = criarElementoCliente("section", "admin-cliente-secao");
-    historicoSecao.appendChild(criarElementoCliente("h3", "", "Histórico de encomendas"));
     const listaHistorico = criarElementoCliente("div", "admin-cliente-historico");
     historico.forEach((item, indice) => {
         const cancelada = String(item.estado || "").trim().toLowerCase() === "cancelado";
