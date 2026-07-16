@@ -1230,11 +1230,13 @@ function promoverUltimaSolicitadaParaEncomendada(valorAnterior, novaData = dataO
         }
     }
     if (indice < 0) return null;
+    const dataOriginal = String(historico[indice].data || "").trim();
     historico[indice] = {
         tipo: "encomendada",
-        data: String(novaData || dataOsAgoraFornecedor())
+        data: dataOriginal || String(novaData || dataOsAgoraFornecedor())
     };
-    return montarMarcacaoComHistorico(historico, "Encomendada");
+    // Histórico fica Encomendada (com data); marcação atual fica vazia (figura volta a "Disponivel")
+    return montarMarcacaoComHistorico(historico, "");
 }
 
 function aplicarMarcacaoAtualAposConfirmar(valorAnterior, estadoMarcacao, novaData = dataOsAgoraFornecedor()) {
