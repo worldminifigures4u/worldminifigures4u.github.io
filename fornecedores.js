@@ -676,10 +676,10 @@ async function imprimirPedidoFornecedor(id) {
         const novidade = obterBooleanoProdutoFornecedor(produtoAtual.novidade ?? item.novidade);
         return `
             <tr>
-                <td>${escaparHtmlFornecedor(produtoAtual.nome || item.nome || '')}</td>
-                <td>${escaparHtmlFornecedor(produtoAtual.tema || item.tema || '')}</td>
-                <td>${escaparHtmlFornecedor(subtemaProduto || subtemaItem || '')}</td>
-                <td>${escaparHtmlFornecedor(produtoAtual.referencia || item.referencia || '')}</td>
+                <td class="col-nome">${escaparHtmlFornecedor(produtoAtual.nome || item.nome || '')}</td>
+                <td class="col-tema">${escaparHtmlFornecedor(produtoAtual.tema || item.tema || '')}</td>
+                <td class="col-subtema">${escaparHtmlFornecedor(subtemaProduto || subtemaItem || '')}</td>
+                <td class="col-referencia">${escaparHtmlFornecedor(produtoAtual.referencia || item.referencia || '')}</td>
                 <td class="quantidade">${escaparHtmlFornecedor(item.quantidade || 0)}</td>
                 <td class="novidade">${novidade ? 'NOVA' : ''}</td>
             </tr>`;
@@ -700,6 +700,12 @@ async function imprimirPedidoFornecedor(id) {
         th, td { border: 1px solid #444; padding: 7px 8px; text-align: left; vertical-align: top; }
         td { word-break: break-word; overflow-wrap: anywhere; }
         th { background: #f2c200; color: #000; font-weight: 700; }
+        th.col-nome, td.col-nome { width: 58mm; }
+        th.col-tema, td.col-tema { width: 25mm; }
+        th.col-subtema, td.col-subtema { width: 30mm; }
+        th.col-referencia, td.col-referencia { width: 30mm; }
+        th.quantidade, td.quantidade { width: 27mm; }
+        th.novidade, td.novidade { width: 20mm; }
         td.quantidade, th.quantidade { text-align: center; }
         td.novidade, th.novidade { text-align: center; font-weight: 700; }
     </style>
@@ -707,20 +713,12 @@ async function imprimirPedidoFornecedor(id) {
 <body>
     <h1>${escaparHtmlFornecedor(pedido.codigo || 'Encomenda')}</h1>
     <table>
-        <colgroup>
-            <col style="width: 30%">
-            <col style="width: 13%">
-            <col style="width: 16%">
-            <col style="width: 15%">
-            <col style="width: 14%">
-            <col style="width: 12%">
-        </colgroup>
         <thead>
             <tr>
-                <th>Nome da figura</th>
-                <th>Tema</th>
-                <th>Subtema</th>
-                <th>Referência</th>
+                <th class="col-nome">Nome da figura</th>
+                <th class="col-tema">Tema</th>
+                <th class="col-subtema">Subtema</th>
+                <th class="col-referencia">Referência</th>
                 <th class="quantidade">Quantidade encomendada</th>
                 <th class="novidade">Nota</th>
             </tr>
