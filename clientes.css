@@ -435,6 +435,12 @@ body.clientes-encomenda-modal-aberto{
         grid-row:1;
         display:grid;
         grid-template-columns:240px minmax(0, 1fr);
+        grid-template-areas:
+            "nome nome"
+            "morada morada"
+            "cp cidade"
+            "pais ."
+            "telefone email";
         gap:12px 22px;
         align-content:start;
         min-width:0;
@@ -458,40 +464,43 @@ body.clientes-encomenda-modal-aberto{
         grid-column:1 / -1;
     }
 
-    .clientes-formulario-dados .admin-cliente-campo-nome,
+    .clientes-formulario-dados .admin-cliente-campo-nome{
+        grid-area:nome;
+    }
+
     .clientes-formulario-dados .admin-cliente-campo-morada,
     .clientes-formulario-dados .morada-edicao-linhas,
     .clientes-formulario-dados .admin-cliente-campo-morada-bloco{
-        grid-column:1 / -1;
+        grid-area:morada;
     }
 
     .clientes-formulario-dados .admin-cliente-campo-cp{
-        grid-column:1;
+        grid-area:cp;
         width:240px;
         max-width:240px;
     }
 
     .clientes-formulario-dados .admin-cliente-campo-cidade{
-        grid-column:2;
+        grid-area:cidade;
         min-width:0;
     }
 
     .clientes-formulario-dados .admin-cliente-campo-pais{
-        grid-column:1;
+        grid-area:pais;
+        width:240px;
+        max-width:240px;
+    }
+
+    .clientes-formulario-dados .admin-cliente-campo-telefone{
+        grid-area:telefone;
         width:240px;
         max-width:240px;
     }
 
     .clientes-formulario-dados .admin-cliente-campo-email{
-        grid-column:2;
+        grid-area:email;
         max-width:none;
         min-width:0;
-    }
-
-    .clientes-formulario-dados .admin-cliente-campo-telefone{
-        grid-column:1;
-        width:240px;
-        max-width:240px;
     }
 
     .clientes-formulario-links [class*="admin-cliente-campo-perfil_url_"]{

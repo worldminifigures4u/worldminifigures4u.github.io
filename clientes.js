@@ -445,8 +445,8 @@ function montarFormularioCliente(dados, opcoes = {}) {
         criarInputCliente("C\u00f3digo postal", "cp", cliente.cp),
         criarInputCliente("Cidade", "cidade", cliente.cidade),
         criarInputCliente("Pa\u00eds", "pais", cliente.pais),
-        criarInputCliente("E-mail", "email", cliente.email, "email"),
-        criarInputCliente("Telem\u00f3vel", "telefone", cliente.telefone)
+        criarInputCliente("Telem\u00f3vel", "telefone", cliente.telefone),
+        criarInputCliente("E-mail", "email", cliente.email, "email")
     );
     formulario.appendChild(dadosCliente);
 
