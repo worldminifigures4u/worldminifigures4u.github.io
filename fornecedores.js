@@ -714,10 +714,7 @@ async function imprimirPedidoFornecedor(id) {
             word-wrap: break-word;
             overflow-wrap: break-word;
         }
-        th { background: #f2c200; color: #000; font-weight: 700; }
-        td.col-ref, th.col-ref,
-        td.col-qtd, th.col-qtd,
-        td.col-nota, th.col-nota { text-align: center; }
+        th { background: #f2c200; color: #000; font-weight: 700; text-align: left; }
         td.col-nota, th.col-nota { font-weight: 700; }
         thead { display: table-header-group; }
         @media print {
