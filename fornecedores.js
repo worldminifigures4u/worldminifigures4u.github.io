@@ -3181,7 +3181,19 @@ async function criarPedidoFornecedor() {
             p_itens: itens
         });
         if (error) throw error;
-        const pedido = normalizarPedidoFornecedor(data);
+        let pedido = normalizarPedidoFornecedor(data);
+        // Código só deve ser o do fornecedor (preenchido depois na edição)
+        if (String(pedido.codigo || "").trim()) {
+            try {
+                pedido = await atualizarPedidoFornecedor(pedido.id, { codigo: null });
+            } catch (erroCodigo) {
+                console.warn("Nao foi possivel limpar o codigo automatico da encomenda.", erroCodigo);
+                pedido = { ...pedido, codigo: "" };
+            }
+        } else {
+            pedido = { ...pedido, codigo: "" };
+        }
+        fornecedorPedidos = fornecedorPedidos.filter((item) => String(item.id) !== String(pedido.id));
         fornecedorPedidos.unshift(pedido);
         guardarPedidosFornecedores();
         try {
@@ -3198,7 +3210,7 @@ async function criarPedidoFornecedor() {
         definirStatusFornecedor(
             pedido.codigo
                 ? `Encomenda ${pedido.codigo} criada.`
-                : "Encomenda criada. Adicione o código de seguimento quando o receber."
+                : 'Encomenda criada (Sem código). Adicione o código do fornecedor ao editar.'
         );
     } catch (error) {
         console.error(error);
