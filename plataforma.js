@@ -2515,56 +2515,59 @@ async function registarEncomendaWallapop() {
         } else {
             renderizarFichaClientePlataforma(null);
         }
-        const encomendaGuardada = {
-            id: data.encomenda?.id || encomendaPlataformaEmEdicao?.id,
+        const nomeEncomendaAutomatico = comporNomeEncomendaPlataforma(codigo, nomeCliente, plataforma);
+        encomendaPlataformaParaFicheiros = {
             codigo_encomenda: codigo,
-            origem: data.encomenda?.origem || plataforma,
-            estado: data.encomenda?.estado || 'A aguardar pagamento',
-            quantidades_originais: obterQuantidadesAtuaisPlataforma()
+            plataforma,
+            nome_cliente: nomeCliente,
+            nome_encomenda: nomeEncomendaAutomatico,
+            envio: { ...envio },
+            cliente: { ...dadosCliente },
+            itens: wallapopItens.map(item => ({
+                ...item,
+                imagens: Array.isArray(item.imagens) ? [...item.imagens] : item.imagens
+            }))
         };
-        if (eraEdicao) {
-            encomendaPlataformaEmEdicao = encomendaGuardada;
-            encomendaPlataformaParaFicheiros = null;
-            document.getElementById('plataforma-tipo').disabled = true;
-            document.getElementById('wallapop-nome-encomenda').value = comporNomeEncomendaPlataforma(codigo, nomeCliente, plataforma);
-            mostrarEdicaoPlataforma(encomendaPlataformaEmEdicao);
-            atualizarBotaoRegistoPlataforma();
-            definirStatusWallapop(`Encomenda ${codigo} guardada. O stock foi atualizado.${avisoPerfil}`);
-        } else {
-            const nomeEncomendaAutomatico = comporNomeEncomendaPlataforma(codigo, nomeCliente, plataforma);
-            encomendaPlataformaParaFicheiros = {
-                codigo_encomenda: codigo,
-                plataforma,
-                nome_cliente: nomeCliente,
-                nome_encomenda: nomeEncomendaAutomatico,
-                envio: { ...envio },
-                cliente: { ...dadosCliente },
-                itens: wallapopItens.map(item => ({
-                    ...item,
-                    imagens: Array.isArray(item.imagens) ? [...item.imagens] : item.imagens
-                }))
-            };
-            encomendaPlataformaEmEdicao = null;
-            wallapopRegistoConcluido = false;
-            wallapopItens = [];
-            stockNegativoConfirmado = new Set();
-            guardarItensWallapop();
-            document.getElementById('plataforma-tipo').disabled = false;
-            document.getElementById('wallapop-nome-encomenda').value = '';
-            document.getElementById('wallapop-nome-cliente').value = '';
-            document.getElementById('plataforma-link-perfil').value = '';
-            limparDadosClientePlataforma();
-            perfilExternoDetetado = null;
-            fichaClientePlataformaAtual = null;
-            atualizarPerfilExternoPlataforma();
-            mostrarEdicaoPlataforma(null);
-            atualizarModoPlataforma();
-            definirStatusWallapop(`Encomenda ${codigo} guardada e lista limpa. Pode guardar os ficheiros da encomenda anterior ou iniciar a seguinte.${avisoPerfil}`);
+        encomendaPlataformaEmEdicao = null;
+        wallapopRegistoConcluido = false;
+        wallapopItens = [];
+        stockNegativoConfirmado = new Set();
+        guardarItensWallapop();
+        document.getElementById('plataforma-tipo').disabled = false;
+        document.getElementById('wallapop-nome-encomenda').value = '';
+        document.getElementById('wallapop-nome-cliente').value = '';
+        document.getElementById('plataforma-link-perfil').value = '';
+        const listaProdutos = document.getElementById('plataforma-lista-produtos');
+        if (listaProdutos) listaProdutos.value = '';
+        const previaLista = document.getElementById('plataforma-lista-previa');
+        if (previaLista) {
+            previaLista.hidden = true;
+            previaLista.textContent = '';
         }
+        limparDadosClientePlataforma();
+        perfilExternoDetetado = null;
+        fichaClientePlataformaAtual = null;
+        atualizarPerfilExternoPlataforma();
+        renderizarFichaClientePlataforma(null);
+        mostrarEdicaoPlataforma(null);
+        atualizarModoPlataforma();
+        atualizarBotaoRegistoPlataforma();
+        definirStatusWallapop(
+            eraEdicao
+                ? `Encomenda ${codigo} guardada e lista limpa. Pode guardar os ficheiros ou iniciar outra encomenda.${avisoPerfil}`
+                : `Encomenda ${codigo} guardada e lista limpa. Pode guardar os ficheiros da encomenda anterior ou iniciar a seguinte.${avisoPerfil}`
+        );
         await carregarCatalogoWallapop();
         renderizarResultadosWallapop();
         renderizarSelecionadosWallapop();
         renderizarFolhaWallapop();
+        if (window.history?.replaceState) {
+            const url = new URL(window.location.href);
+            if (url.searchParams.has('editar')) {
+                url.searchParams.delete('editar');
+                window.history.replaceState({}, '', url.pathname + url.search + url.hash);
+            }
+        }
     } catch (error) {
         console.error(error);
         botao.disabled = false;
