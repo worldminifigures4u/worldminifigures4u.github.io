@@ -7,29 +7,56 @@
 
 .clientes-pesquisa{
     display:grid;
-    grid-template-columns:minmax(260px, 1fr) auto auto;
-    gap:10px;
-    margin-bottom:14px;
+    grid-template-columns:1fr;
+    gap:8px;
+    margin-bottom:0;
     align-items:stretch;
 }
 
 .clientes-pesquisa input{
     min-width:0;
+    width:100%;
+    box-sizing:border-box;
     border:1px solid #555;
     border-radius:6px;
     background:#222;
     color:#fff;
-    padding:12px;
+    padding:10px 12px;
     font:inherit;
+}
+
+.clientes-pesquisa-acoes{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:8px;
+}
+
+.clientes-pesquisa-acoes .wallapop-botao{
+    width:100%;
+    box-sizing:border-box;
+    min-height:34px;
+    padding:8px 10px;
+    font-size:13px;
 }
 
 .clientes-layout{
     display:grid;
-    grid-template-columns:minmax(280px, 325px) minmax(0, 1fr);
+    grid-template-columns:minmax(280px, 340px) minmax(0, 1fr);
     gap:14px;
     align-items:start;
 }
 
+.clientes-coluna-lista{
+    display:grid;
+    grid-template-rows:auto minmax(0, 1fr);
+    gap:10px;
+    min-width:0;
+    max-height:calc(100vh - 180px);
+    position:sticky;
+    top:12px;
+}
+
+.clientes-lista,
 .clientes-lista,
 .clientes-ficha{
     border:1px solid #333;
@@ -43,7 +70,20 @@
     gap:6px;
     padding:6px;
     overflow:auto;
-    max-height:calc(100vh - 280px);
+    min-height:0;
+    max-height:none;
+}
+
+.clientes-ficha{
+    --fp-ficha-gap:12px;
+    min-width:0;
+    max-height:calc(100vh - 180px);
+    overflow:auto;
+    position:sticky;
+    top:12px;
+    padding:16px;
+    display:grid;
+    gap:var(--fp-ficha-gap);
 }
 
 .clientes-lista-item{
@@ -108,13 +148,6 @@
     stroke-width:2;
     stroke-linecap:round;
     stroke-linejoin:round;
-}
-
-.clientes-ficha{
-    --fp-ficha-gap:12px;
-    padding:16px;
-    display:grid;
-    gap:var(--fp-ficha-gap);
 }
 
 .clientes-ficha > .admin-cliente-secao,
@@ -500,8 +533,15 @@ body.clientes-encomenda-modal-aberto{
 
 @media (max-width: 700px){
     .clientes-pesquisa,
-    .clientes-layout{
+    .clientes-layout,
+    .clientes-pesquisa-acoes{
         grid-template-columns:1fr;
+    }
+
+    .clientes-coluna-lista,
+    .clientes-ficha{
+        position:static;
+        max-height:none;
     }
 
     .clientes-ficha-topo{
