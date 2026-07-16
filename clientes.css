@@ -186,6 +186,34 @@
     margin-top:0;
 }
 
+.clientes-ficha-consulta .admin-cliente-grelha{
+    grid-template-columns:repeat(2, minmax(0, 1fr));
+}
+
+.clientes-ficha-consulta .admin-cliente-campo-morada-bloco{
+    grid-column:1;
+    grid-row:1 / span 2;
+}
+
+.clientes-ficha-consulta .admin-cliente-campo-telefone{
+    grid-column:2;
+    grid-row:1;
+}
+
+.clientes-ficha-consulta .admin-cliente-campo-email{
+    grid-column:2;
+    grid-row:2;
+}
+
+@media (max-width: 700px){
+    .clientes-ficha-consulta .admin-cliente-campo-morada-bloco,
+    .clientes-ficha-consulta .admin-cliente-campo-telefone,
+    .clientes-ficha-consulta .admin-cliente-campo-email{
+        grid-column:1;
+        grid-row:auto;
+    }
+}
+
 .clientes-resumo-grelha{
     display:grid;
     grid-template-columns:repeat(3, minmax(0, 1fr));
@@ -444,7 +472,8 @@ body.clientes-encomenda-modal-aberto{
             "morada morada"
             "cp cidade"
             "pais ."
-            "telefone email"
+            "telefone ."
+            "email ."
             "restricoes restricoes";
         gap:12px 22px;
         align-content:start;
@@ -516,7 +545,8 @@ body.clientes-encomenda-modal-aberto{
 
     .clientes-formulario-dados .admin-cliente-campo-email{
         grid-area:email;
-        max-width:none;
+        width:240px;
+        max-width:240px;
         min-width:0;
     }
 

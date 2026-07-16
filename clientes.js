@@ -42,8 +42,8 @@ function formatarDataCliente(valor) {
     }).format(data);
 }
 
-function criarCampoCliente(rotulo, valor) {
-    const campo = criarElementoCliente("div", "admin-cliente-campo");
+function criarCampoCliente(rotulo, valor, classeExtra = "") {
+    const campo = criarElementoCliente("div", `admin-cliente-campo${classeExtra ? ` ${classeExtra}` : ""}`);
     campo.append(
         criarElementoCliente("strong", "", rotulo),
         criarElementoCliente("span", "", valor || "-")
@@ -96,8 +96,8 @@ function montarVistaConsultaCliente(dados) {
     const grelha = criarElementoCliente("div", "admin-cliente-grelha");
     grelha.append(
         criarCampoFichaMoradaCliente(cliente),
-        criarCampoCliente("E-mail", cliente.email),
-        criarCampoCliente("Telem\u00f3vel", cliente.telefone)
+        criarCampoCliente("Telem\u00f3vel", cliente.telefone, "admin-cliente-campo-telefone"),
+        criarCampoCliente("E-mail", cliente.email, "admin-cliente-campo-email")
     );
     dadosSecao.appendChild(grelha);
     contentor.appendChild(dadosSecao);
