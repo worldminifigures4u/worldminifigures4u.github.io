@@ -446,6 +446,9 @@ body.pagina-wallapop{
             border:1px solid #333;
             border-radius:8px;
             background:#111;
+            display:flex;
+            flex-direction:column;
+            gap:14px;
         }
 
         .wallapop-preview-acoes .wallapop-botao{
@@ -454,9 +457,8 @@ body.pagina-wallapop{
         }
 
         .wallapop-acoes-encomenda{
-            width:var(--plataforma-preview-largura);
-            max-width:100%;
-            margin:0 auto 12px;
+            width:100%;
+            margin:0;
             display:grid;
             grid-template-columns:1fr 1fr;
             gap:8px;
