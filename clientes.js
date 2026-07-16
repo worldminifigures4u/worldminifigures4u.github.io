@@ -84,7 +84,7 @@ function obterRotuloPerfilCliente(perfil, indice) {
     }
 }
 
-function montarVistaConsultaCliente(dados) {
+function montarVistaConsultaCliente(dados, resumo = {}) {
     const cliente = dados.cliente || {};
     const perfis = Array.isArray(dados.perfis) ? dados.perfis : [];
     const contentor = criarElementoCliente("div", "clientes-ficha-consulta");
@@ -94,6 +94,9 @@ function montarVistaConsultaCliente(dados) {
 
     const linhaPrincipal = criarElementoCliente("div", "clientes-ficha-consulta-principal");
 
+    const colunaEsquerda = criarElementoCliente("div", "clientes-ficha-consulta-esquerda");
+    colunaEsquerda.appendChild(criarSecaoResumoCliente(resumo));
+
     const dadosSecao = criarElementoCliente("section", "admin-cliente-secao clientes-ficha-consulta-dados");
     const grelha = criarElementoCliente("div", "admin-cliente-grelha");
     grelha.append(
@@ -102,7 +105,8 @@ function montarVistaConsultaCliente(dados) {
         criarCampoCliente("E-mail", cliente.email, "admin-cliente-campo-email")
     );
     dadosSecao.appendChild(grelha);
-    linhaPrincipal.appendChild(dadosSecao);
+    colunaEsquerda.appendChild(dadosSecao);
+    linhaPrincipal.appendChild(colunaEsquerda);
 
     const notasSecao = criarElementoCliente("section", "admin-cliente-secao clientes-ficha-consulta-notas");
     const notas = criarElementoCliente("div", "admin-cliente-notas admin-cliente-notas-consulta");
@@ -715,8 +719,7 @@ function renderizarFichaCliente(dados) {
 
     ficha.append(
         topo,
-        criarSecaoResumoCliente(resumo),
-        montarVistaConsultaCliente(dados),
+        montarVistaConsultaCliente(dados, resumo),
         criarSecaoHistoricoCliente(historico)
     );
 }
