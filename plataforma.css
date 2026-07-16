@@ -845,7 +845,6 @@ body.pagina-wallapop{
 /* Responsivo da Plataforma */
 @media(max-width:1000px){
             .wallapop-layout{
-                width:100%;
                 grid-template-columns:1fr;
             }
             .wallapop-editor{
