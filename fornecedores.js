@@ -669,6 +669,8 @@ async function imprimirPedidoFornecedor(id) {
     }
 
     const produtosImpressao = produtosCompletos.length ? produtosCompletos : fornecedorProdutos;
+    const estiloCelula = 'border:1px solid #000;padding:5px 6px;text-align:left;vertical-align:top;font-family:Arial,Helvetica,sans-serif;font-size:11px;line-height:1.25;font-weight:400;word-wrap:break-word;';
+    const estiloCabecalho = `${estiloCelula}background:#f2c200;font-weight:700;`;
     const linhas = (pedido.itens || []).map(item => {
         const produtoAtual = obterProdutoParaPedidoFornecedor(item, produtosImpressao) || item;
         const subtemaProduto = produtoAtual.subtema && produtoAtual.subtema !== 'semsubtema' ? produtoAtual.subtema : '';
@@ -676,12 +678,12 @@ async function imprimirPedidoFornecedor(id) {
         const novidade = obterBooleanoProdutoFornecedor(produtoAtual.novidade ?? item.novidade);
         return `
             <tr>
-                <td>${escaparHtmlFornecedor(produtoAtual.nome || item.nome || '')}</td>
-                <td>${escaparHtmlFornecedor(produtoAtual.tema || item.tema || '')}</td>
-                <td>${escaparHtmlFornecedor(subtemaProduto || subtemaItem || '')}</td>
-                <td class="col-ref">${escaparHtmlFornecedor(produtoAtual.referencia || item.referencia || '')}</td>
-                <td class="col-qtd">${escaparHtmlFornecedor(item.quantidade || 0)}</td>
-                <td class="col-nota">${novidade ? 'NOVA' : ''}</td>
+                <td style="${estiloCelula}width:32%;">${escaparHtmlFornecedor(produtoAtual.nome || item.nome || '')}</td>
+                <td style="${estiloCelula}width:12%;">${escaparHtmlFornecedor(produtoAtual.tema || item.tema || '')}</td>
+                <td style="${estiloCelula}width:18%;">${escaparHtmlFornecedor(subtemaProduto || subtemaItem || '')}</td>
+                <td style="${estiloCelula}width:16%;">${escaparHtmlFornecedor(produtoAtual.referencia || item.referencia || '')}</td>
+                <td style="${estiloCelula}width:14%;">${escaparHtmlFornecedor(item.quantidade || 0)}</td>
+                <td style="${estiloCelula}width:8%;font-weight:700;">${novidade ? 'NOVA' : ''}</td>
             </tr>`;
     }).join('');
 
@@ -692,60 +694,30 @@ async function imprimirPedidoFornecedor(id) {
     <meta charset="UTF-8">
     <title>${escaparHtmlFornecedor(pedido.codigo || 'Encomenda')}</title>
     <style>
-        @page { size: A4; margin: 14mm; }
+        @page { size: A4; margin: 12mm; }
         * { box-sizing: border-box; }
-        body { margin: 0; color: #111; font-family: Arial, Helvetica, sans-serif; font-size: 11px; line-height: 1.25; }
-        h1 { margin: 0 0 14px; font-size: 20px; line-height: 1.2; }
+        body { margin: 0; color: #000; font-family: Arial, Helvetica, sans-serif; }
+        h1 { margin: 0 0 12px; font-size: 20px; font-family: Arial, Helvetica, sans-serif; text-align: left; }
         table { width: 100%; border-collapse: collapse; table-layout: fixed; }
-        col.col-nome { width: 32%; }
-        col.col-tema { width: 12%; }
-        col.col-subtema { width: 18%; }
-        col.col-ref { width: 16%; }
-        col.col-qtd { width: 14%; }
-        col.col-nota { width: 8%; }
-        th, td {
-            border: 1px solid #444;
-            padding: 6px 7px;
-            text-align: left;
-            vertical-align: top;
-            font-size: 11px;
-            line-height: 1.25;
-            font-weight: 400;
-            word-wrap: break-word;
-            overflow-wrap: break-word;
-        }
-        th { background: #f2c200; color: #000; font-weight: 700; text-align: left; }
-        td.col-nota, th.col-nota { font-weight: 700; }
         thead { display: table-header-group; }
-        @media print {
-            table, thead, tbody, tr, th, td { page-break-inside: avoid; }
-            thead { display: table-header-group; }
-        }
+        th, td { text-align: left !important; }
     </style>
 </head>
 <body>
     <h1>${escaparHtmlFornecedor(pedido.codigo || 'Encomenda')}</h1>
     <table>
-        <colgroup>
-            <col class="col-nome">
-            <col class="col-tema">
-            <col class="col-subtema">
-            <col class="col-ref">
-            <col class="col-qtd">
-            <col class="col-nota">
-        </colgroup>
         <thead>
             <tr>
-                <th>Nome da figura</th>
-                <th>Tema</th>
-                <th>Subtema</th>
-                <th class="col-ref">Referência</th>
-                <th class="col-qtd">Qtd.</th>
-                <th class="col-nota">Nota</th>
+                <th style="${estiloCabecalho}width:32%;">Nome da figura</th>
+                <th style="${estiloCabecalho}width:12%;">Tema</th>
+                <th style="${estiloCabecalho}width:18%;">Subtema</th>
+                <th style="${estiloCabecalho}width:16%;">Referência</th>
+                <th style="${estiloCabecalho}width:14%;">Qtd.</th>
+                <th style="${estiloCabecalho}width:8%;">Nota</th>
             </tr>
         </thead>
         <tbody>
-            ${linhas || '<tr><td colspan="6">Sem produtos.</td></tr>'}
+            ${linhas || `<tr><td colspan="6" style="${estiloCelula}">Sem produtos.</td></tr>`}
         </tbody>
     </table>
 </body>
