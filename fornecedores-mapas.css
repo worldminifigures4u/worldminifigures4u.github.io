@@ -1519,6 +1519,10 @@ body.pagina-fornecedores-admin{ margin:0; padding-left:0; padding-right:0; paddi
     color: #f0c36d;
 }
 
+.fornecedor-historico-item.tipo-solicitada .fornecedor-historico-estado {
+    color: #8ec7ff;
+}
+
 .fornecedor-historico-item.tipo-encomendada .fornecedor-historico-estado {
     color: #7ddea0;
 }

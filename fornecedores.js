@@ -532,6 +532,18 @@ function normalizarEstadoPedidoFornecedor(estado) {
     return normalizarChaveFornecedor(estado || '').replace(/-/g, '_');
 }
 
+function estadoPedidoFornecedorEhAPreparar(estado) {
+    return normalizarEstadoPedidoFornecedor(estado) === "a_preparar";
+}
+
+function estadoPedidoFornecedorEhEncomendada(estado) {
+    return normalizarEstadoPedidoFornecedor(estado) === "encomendada";
+}
+
+function passouParaEncomendadaDesdeAPreparar(estadoAnterior, estadoNovo) {
+    return estadoPedidoFornecedorEhAPreparar(estadoAnterior) && estadoPedidoFornecedorEhEncomendada(estadoNovo);
+}
+
 function pedidoFornecedorPassaFiltroEstado(pedido, filtro) {
     const filtroNormalizado = normalizarEstadoPedidoFornecedor(filtro || 'todos');
     if (!filtroNormalizado || filtroNormalizado === 'todos') return true;
@@ -1004,19 +1016,27 @@ function dataOsAgoraFornecedor() {
 function rotuloHistoricoFornecedor(tipo) {
     const normalizado = String(tipo || "").trim().toLowerCase();
     if (normalizado === "os") return "OS";
+    if (normalizado === "solicitada" || normalizado === "solicitado") return "Solicitada";
     if (normalizado === "encomendada" || normalizado === "encomendado") return "Encomendada";
     if (normalizado === "ex") return "EX";
     return String(tipo || "").trim() || "—";
 }
 
+function normalizarTipoHistoricoFornecedor(tipo) {
+    const normalizado = String(tipo || "").trim().toLowerCase();
+    if (normalizado === "encomendado") return "encomendada";
+    if (normalizado === "solicitado") return "solicitada";
+    return normalizado;
+}
+
 function obterHistoricoFornecedor(valor) {
     const eventos = [];
     const adicionar = (tipo, data) => {
-        const tipoNorm = String(tipo || "").trim().toLowerCase();
+        const tipoNorm = normalizarTipoHistoricoFornecedor(tipo);
         if (!tipoNorm) return;
         const dataNorm = String(data || "").trim() || null;
         eventos.push({
-            tipo: tipoNorm === "encomendado" ? "encomendada" : tipoNorm,
+            tipo: tipoNorm,
             data: dataNorm
         });
     };
@@ -1029,6 +1049,7 @@ function obterHistoricoFornecedor(valor) {
                 if (typeof item === "string") {
                     const maiusculas = item.toUpperCase();
                     if (maiusculas.includes("OS")) adicionar("os", extrairDataOsDeTextoFornecedor(item) || item);
+                    else if (maiusculas.includes("SOLICIT")) adicionar("solicitada", extrairDataOsDeTextoFornecedor(item) || item);
                     else if (maiusculas.includes("ENCOMEND")) adicionar("encomendada", extrairDataOsDeTextoFornecedor(item) || item);
                     return;
                 }
@@ -1036,12 +1057,18 @@ function obterHistoricoFornecedor(valor) {
             });
         } else {
             const datasOs = Array.isArray(valor.datas) ? valor.datas : (Array.isArray(valor.historico_os) ? valor.historico_os : []);
+            const estadoTxt = String(valor.estado || "").trim();
+            const estadoUpper = estadoTxt.toUpperCase();
             if (datasOs.length) datasOs.forEach((data) => adicionar("os", data));
-            else if (String(valor.estado || "").toUpperCase() === "OS") {
+            else if (estadoUpper === "OS") {
                 adicionar("os", valor.desde || valor.data_os || valor.data || null);
-            } else if (String(valor.estado || "").toUpperCase() === "EX") {
+            } else if (estadoUpper === "EX") {
                 adicionar("ex", valor.desde || valor.data || null);
-            } else if (/^-?\d+(?:[,.]\d+)?$/.test(String(valor.estado || "").trim())) {
+            } else if (estadoUpper === "SOLICITADA" || estadoUpper === "SOLICITADO") {
+                adicionar("solicitada", valor.desde || valor.data || null);
+            } else if (estadoUpper === "ENCOMENDADA" || estadoUpper === "ENCOMENDADO") {
+                adicionar("encomendada", valor.desde || valor.data || null);
+            } else if (/^-?\d+(?:[,.]\d+)?$/.test(estadoTxt)) {
                 adicionar("encomendada", valor.desde || valor.data || null);
             }
         }
@@ -1055,6 +1082,10 @@ function obterHistoricoFornecedor(valor) {
             else adicionar("os", extrairDataOsDeTextoFornecedor(texto));
         } else if (maiusculas === "EX") {
             adicionar("ex", null);
+        } else if (maiusculas === "SOLICITADA" || maiusculas === "SOLICITADO") {
+            adicionar("solicitada", null);
+        } else if (maiusculas === "ENCOMENDADA" || maiusculas === "ENCOMENDADO") {
+            adicionar("encomendada", null);
         } else if (/^-?\d+(?:[,.]\d+)?$/.test(texto)) {
             adicionar("encomendada", null);
         }
@@ -1107,13 +1138,14 @@ function normalizarMarcacaoFornecedor(valor) {
     let tipo = "disponivel";
     if (ultimo?.tipo === "os" || estadoUpper === "OS") tipo = "os";
     else if (ultimo?.tipo === "ex" || estadoUpper === "EX") tipo = "ex";
-    else if (ultimo?.tipo === "encomendada" || /^-?\d+(?:[,.]\d+)?$/.test(estado)) tipo = "encomendado";
+    else if (ultimo?.tipo === "solicitada" || estadoUpper === "SOLICITADA" || estadoUpper === "SOLICITADO") tipo = "solicitada";
+    else if (ultimo?.tipo === "encomendada" || estadoUpper === "ENCOMENDADA" || estadoUpper === "ENCOMENDADO" || /^-?\d+(?:[,.]\d+)?$/.test(estado)) tipo = "encomendado";
     else if (estado) tipo = "info";
 
     const datas = historico.filter((item) => item.tipo === "os").map((item) => item.data).filter(Boolean);
     return {
         tipo,
-        estado: tipo === "os" ? "OS" : (tipo === "ex" ? "EX" : estado),
+        estado: tipo === "os" ? "OS" : (tipo === "ex" ? "EX" : (tipo === "solicitada" ? "Solicitada" : estado)),
         desde: historico[0]?.data || null,
         datas,
         historico,
@@ -1126,6 +1158,7 @@ function formatarValorFornecedorParaInput(valor) {
     if (marcacao.tipo === "disponivel") return "";
     if (marcacao.tipo === "os") return "OS";
     if (marcacao.tipo === "ex") return "EX";
+    if (marcacao.tipo === "solicitada") return "Solicitada";
     if (marcacao.tipo === "encomendado") {
         const bruto = valor && typeof valor === "object" ? String(valor.estado || "").trim() : String(valor ?? "").trim();
         return /^-?\d+(?:[,.]\d+)?$/.test(bruto) ? bruto : "Encomendada";
@@ -1136,11 +1169,8 @@ function formatarValorFornecedorParaInput(valor) {
 function acrescentarHistoricoFornecedor(valorAnterior, tipo, novaData = dataOsAgoraFornecedor()) {
     const anterior = normalizarMarcacaoFornecedor(valorAnterior);
     const historico = [...(anterior.historico || [])];
-    const tipoNorm = String(tipo || "").trim().toLowerCase() === "encomendado"
-        ? "encomendada"
-        : String(tipo || "").trim().toLowerCase();
     historico.push({
-        tipo: tipoNorm,
+        tipo: normalizarTipoHistoricoFornecedor(tipo),
         data: String(novaData || dataOsAgoraFornecedor())
     });
     return reconstruirMarcacaoHistoricoFornecedor(historico);
@@ -1155,7 +1185,9 @@ function reconstruirMarcacaoHistoricoFornecedor(historico) {
             ? "OS"
             : (ultimo.tipo === "ex"
                 ? "EX"
-                : (ultimo.tipo === "encomendada" ? "Encomendada" : "")));
+                : (ultimo.tipo === "solicitada"
+                    ? "Solicitada"
+                    : (ultimo.tipo === "encomendada" ? "Encomendada" : ""))));
     return {
         estado,
         desde: lista[0]?.data || null,
@@ -1164,12 +1196,13 @@ function reconstruirMarcacaoHistoricoFornecedor(historico) {
     };
 }
 
-function corrigirUltimaEncomendadaParaOs(valorAnterior, novaData = dataOsAgoraFornecedor()) {
+function corrigirUltimaTentativaParaOs(valorAnterior, novaData = dataOsAgoraFornecedor()) {
     const anterior = normalizarMarcacaoFornecedor(valorAnterior);
     const historico = [...(anterior.historico || [])];
     let indice = -1;
     for (let i = historico.length - 1; i >= 0; i -= 1) {
-        if (historico[i]?.tipo === "encomendada") {
+        const tipo = historico[i]?.tipo;
+        if (tipo === "solicitada" || tipo === "encomendada") {
             indice = i;
             break;
         }
@@ -1184,8 +1217,30 @@ function corrigirUltimaEncomendadaParaOs(valorAnterior, novaData = dataOsAgoraFo
     return reconstruirMarcacaoHistoricoFornecedor(historico);
 }
 
+function promoverUltimaSolicitadaParaEncomendada(valorAnterior, novaData = dataOsAgoraFornecedor()) {
+    const anterior = normalizarMarcacaoFornecedor(valorAnterior);
+    const historico = [...(anterior.historico || [])];
+    let indice = -1;
+    for (let i = historico.length - 1; i >= 0; i -= 1) {
+        if (historico[i]?.tipo === "solicitada") {
+            indice = i;
+            break;
+        }
+    }
+    if (indice < 0) return null;
+    historico[indice] = {
+        tipo: "encomendada",
+        data: String(novaData || dataOsAgoraFornecedor())
+    };
+    return reconstruirMarcacaoHistoricoFornecedor(historico);
+}
+
+function corrigirUltimaEncomendadaParaOs(valorAnterior, novaData = dataOsAgoraFornecedor()) {
+    return corrigirUltimaTentativaParaOs(valorAnterior, novaData);
+}
+
 function criarMarcacaoOsFornecedor(valorAnterior, novaData = dataOsAgoraFornecedor()) {
-    return corrigirUltimaEncomendadaParaOs(valorAnterior, novaData);
+    return corrigirUltimaTentativaParaOs(valorAnterior, novaData);
 }
 
 function parseValorMarcacaoFornecedorInput(texto, valorAnterior) {
@@ -1209,6 +1264,9 @@ function parseValorMarcacaoFornecedorInput(texto, valorAnterior) {
     }
     if (/^-?\d+(?:[,.]\d+)?$/.test(valor)) {
         return { estado: valor, historico, desde: anterior.desde || null, datas: anterior.datas || [] };
+    }
+    if (maiusculas === "SOLICITADA" || maiusculas === "SOLICITADO") {
+        return { estado: "Solicitada", historico, desde: anterior.desde || null, datas: anterior.datas || [] };
     }
     if (maiusculas === "ENCOMENDADA" || maiusculas === "ENCOMENDADO") {
         return { estado: "Encomendada", historico, desde: anterior.desde || null, datas: anterior.datas || [] };
@@ -1263,7 +1321,7 @@ function criarBlocoHistoricoFornecedorFicha(form, id, rotulo, valor) {
     input.name = id;
     input.type = "text";
     input.value = formatarValorFornecedorParaInput(valor);
-    input.placeholder = "OS, EX, Encomendada ou vazio";
+    input.placeholder = "OS, EX, Solicitada, Encomendada ou vazio";
     label.appendChild(input);
     bloco.appendChild(label);
 
@@ -3023,7 +3081,7 @@ async function criarPedidoFornecedor() {
         try {
             await sincronizarHistoricoPedidosFornecedor(itens, fornecedor, { modo: "criar" });
         } catch (erroHistorico) {
-            console.warn("Nao foi possivel registar histórico Encomendada na ficha.", erroHistorico);
+            console.warn("Nao foi possivel registar histórico Solicitada na ficha.", erroHistorico);
         }
         fornecedorSelecao = [];
         guardarSelecaoFornecedor();
@@ -3044,6 +3102,7 @@ async function criarPedidoFornecedor() {
 async function alterarEstadoPedidoFornecedor(id, estado) {
     const pedido = fornecedorPedidos.find(item => item.id === id);
     if (!pedido) return;
+    const estadoAnterior = pedido.estado;
     try {
         const { data, error } = await fornecedoresClient.rpc('alterar_estado_encomenda_fornecedor_admin', {
             p_id: id,
@@ -3053,6 +3112,13 @@ async function alterarEstadoPedidoFornecedor(id, estado) {
         const atualizado = normalizarPedidoFornecedor(data);
         fornecedorPedidos = fornecedorPedidos.map(item => item.id === id ? atualizado : item);
         guardarPedidosFornecedores();
+        if (passouParaEncomendadaDesdeAPreparar(estadoAnterior, atualizado.estado)) {
+            try {
+                await sincronizarHistoricoPedidosFornecedor(atualizado.itens || [], atualizado.fornecedor, { modo: "confirmar" });
+            } catch (erroHistorico) {
+                console.warn("Nao foi possivel promover Solicitada para Encomendada na ficha.", erroHistorico);
+            }
+        }
         renderizarResultadosFornecedor();
         renderizarPedidosFornecedores();
         definirStatusFornecedor(`Estado da encomenda ${atualizado.codigo} atualizado.`);
@@ -3169,7 +3235,8 @@ function itemPedidoEstavaOsFornecedor(item) {
 
 async function sincronizarHistoricoPedidosFornecedor(itens, fornecedorNome, opcoes = {}) {
     if (!fornecedoresClient || !fornecedorNome || fornecedorNome === "Outro") return 0;
-    const modo = String(opcoes.modo || "criar").trim().toLowerCase() === "editar" ? "editar" : "criar";
+    const modoBruto = String(opcoes.modo || "criar").trim().toLowerCase();
+    const modo = modoBruto === "editar" ? "editar" : (modoBruto === "confirmar" ? "confirmar" : "criar");
     const mapaAnterior = new Map(
         (opcoes.itensAnteriores || []).map((item) => [chaveItemHistoricoPedidoFornecedor(item), item])
     );
@@ -3187,28 +3254,41 @@ async function sincronizarHistoricoPedidosFornecedor(itens, fornecedorNome, opco
         const anterior = mapaAnterior.get(chaveItemHistoricoPedidoFornecedor(item));
         const eraOs = itemPedidoEstavaOsFornecedor(anterior);
         const agoraOs = faltaOs > 0 || String(item.estado_fornecedor || "").trim().toUpperCase() === "OS";
-        const registarEncomendada = modo === "criar"
-            ? quantidade > 0
-            : (!anterior && quantidade > 0);
-        const registarOs = modo === "criar"
-            ? agoraOs
-            : (agoraOs && !eraOs);
-
-        if (!registarEncomendada && !registarOs) continue;
 
         let fornecedores = obterObjetoFornecedoresProduto(produtoAtual);
         const chaveNormalizada = normalizarChaveFornecedor(fornecedorNome);
         const chaveExistente = Object.keys(fornecedores).find(chave => normalizarChaveFornecedor(chave) === chaveNormalizada);
         const chave = chaveExistente || fornecedorNome;
         let atual = fornecedores[chave];
+        let alterou = false;
 
-        if (registarOs && modo === "editar" && !registarEncomendada) {
-            atual = corrigirUltimaEncomendadaParaOs(atual, agora);
-        } else if (registarOs) {
-            atual = acrescentarHistoricoFornecedor(atual, "os", agora);
-        } else if (registarEncomendada) {
-            atual = acrescentarHistoricoFornecedor(atual, "encomendada", agora);
+        if (modo === "criar") {
+            if (agoraOs) {
+                atual = acrescentarHistoricoFornecedor(atual, "os", agora);
+                alterou = true;
+            } else if (quantidade > 0) {
+                atual = acrescentarHistoricoFornecedor(atual, "solicitada", agora);
+                alterou = true;
+            }
+        } else if (modo === "editar") {
+            if (agoraOs && !eraOs) {
+                atual = corrigirUltimaTentativaParaOs(atual, agora);
+                alterou = true;
+            } else if (!anterior && quantidade > 0) {
+                atual = acrescentarHistoricoFornecedor(atual, agoraOs ? "os" : "solicitada", agora);
+                alterou = true;
+            }
+        } else if (modo === "confirmar") {
+            // A preparar → Encomendada: Solicitada vira Encomendada; OS mantém-se
+            if (agoraOs) continue;
+            if (quantidade <= 0) continue;
+            const promovido = promoverUltimaSolicitadaParaEncomendada(atual, agora);
+            if (!promovido) continue;
+            atual = promovido;
+            alterou = true;
         }
+
+        if (!alterou) continue;
         fornecedores = { ...fornecedores, [chave]: atual };
 
         const { error } = await fornecedoresClient.rpc("atualizar_fornecedores_produto_admin", {
@@ -3537,6 +3617,7 @@ async function guardarEdicaoPedidoFornecedor(evento) {
         status.textContent = 'A guardar ficha...';
         status.classList.remove('status-erro', 'status-sucesso', 'status-aviso');
         status.classList.add('status-neutro');
+        const estadoAnterior = pedido.estado;
         const atualizado = await atualizarPedidoFornecedor(id, {
             codigo: codigo || null,
             fornecedor,
@@ -3544,11 +3625,14 @@ async function guardarEdicaoPedidoFornecedor(evento) {
             estado,
             itens
         });
-        status.textContent = 'A atualizar histórico OS/Encomendada na ficha do produto...';
+        status.textContent = 'A atualizar histórico na ficha do produto...';
         await sincronizarHistoricoPedidosFornecedor(itens, fornecedor, {
             modo: "editar",
             itensAnteriores: pedido.itens || []
         });
+        if (passouParaEncomendadaDesdeAPreparar(estadoAnterior, estado)) {
+            await sincronizarHistoricoPedidosFornecedor(itens, fornecedor, { modo: "confirmar" });
+        }
         status.textContent = 'A atualizar preço compra nos produtos...';
         let produtosComPrecoAtualizado = 0;
         let avisoPrecoCompra = '';
