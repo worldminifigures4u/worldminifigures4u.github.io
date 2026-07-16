@@ -455,7 +455,25 @@ body.clientes-encomenda-modal-aberto{
         min-width:0;
     }
 
-    .clientes-formulario .admin-cliente-formulario-notas,
+    .clientes-formulario-links .admin-cliente-formulario-notas{
+        grid-column:auto;
+    }
+
+    .clientes-formulario-links .admin-cliente-notas{
+        min-height:180px;
+        width:100%;
+        box-sizing:border-box;
+        resize:vertical;
+    }
+
+    .clientes-formulario-links-extra{
+        grid-column:1 / -1;
+        display:grid;
+        grid-template-columns:repeat(2, minmax(0, 1fr));
+        gap:12px 22px;
+        min-width:0;
+    }
+
     .clientes-formulario .clientes-restricoes-formulario,
     .clientes-formulario .clientes-formulario-rodape,
     .clientes-formulario .clientes-formulario-acoes-topo,
@@ -510,7 +528,8 @@ body.clientes-encomenda-modal-aberto{
 }
 
 .clientes-formulario-dados,
-.clientes-formulario-links{
+.clientes-formulario-links,
+.clientes-formulario-links-extra{
     min-width:0;
 }
 
@@ -529,10 +548,15 @@ body.clientes-encomenda-modal-aberto{
     }
 
     .clientes-formulario-dados,
-    .clientes-formulario-links{
+    .clientes-formulario-links,
+    .clientes-formulario-links-extra{
         display:grid;
         gap:12px;
         grid-column:1;
+    }
+
+    .clientes-formulario-links-extra{
+        grid-template-columns:1fr;
     }
 
     .clientes-formulario .admin-cliente-campo-cp,

@@ -451,17 +451,26 @@ function montarFormularioCliente(dados, opcoes = {}) {
     formulario.appendChild(dadosCliente);
 
     const linksExternos = criarElementoCliente("div", "clientes-formulario-links");
-    for (let indice = 0; indice < 5; indice += 1) {
-        linksExternos.appendChild(criarInputCliente(
+    linksExternos.appendChild(criarInputCliente(
+        "Link principal",
+        "perfil_url_1",
+        perfis[0]?.url || "",
+        "url"
+    ));
+    linksExternos.appendChild(criarTextareaCliente("Notas internas", "notas", cliente.notas, 8));
+    formulario.appendChild(linksExternos);
+
+    const linksExtra = criarElementoCliente("div", "clientes-formulario-links-extra");
+    for (let indice = 1; indice < 5; indice += 1) {
+        linksExtra.appendChild(criarInputCliente(
             `Link externo ${indice + 1}`,
             `perfil_url_${indice + 1}`,
             perfis[indice]?.url || "",
             "url"
         ));
     }
-    formulario.appendChild(linksExternos);
+    formulario.appendChild(linksExtra);
 
-    formulario.appendChild(criarTextareaCliente("Notas internas", "notas", cliente.notas));
     aplicarCamposClienteRegistadoSite(formulario, cliente);
 
     let checkboxAviso = null;
