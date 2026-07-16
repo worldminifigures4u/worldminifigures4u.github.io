@@ -122,17 +122,17 @@ body.pagina-wallapop{
         }
 
         .plataforma-importar-lista{
-            margin:8px 0 22px;
-            padding:12px;
-            border:1px solid #3a3a3a;
-            border-radius:6px;
-            background:#171717;
+            margin:16px 0 22px;
+            padding:0;
+            border:0;
+            border-radius:0;
+            background:transparent;
         }
 
         .plataforma-importar-lista-titulo{
-            margin:0 0 12px;
+            margin:0 0 14px;
             color:#fff;
-            font-size:16px;
+            font-size:18px;
             font-weight:800;
             line-height:1.2;
             text-align:center;
@@ -162,7 +162,7 @@ body.pagina-wallapop{
 
         .plataforma-importar-lista .wallapop-botao{
             width:100%;
-            margin-top:9px;
+            margin-top:10px;
         }
 
         .plataforma-lista-previa,
