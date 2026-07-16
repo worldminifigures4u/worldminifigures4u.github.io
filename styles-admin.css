@@ -13,7 +13,7 @@ body.pagina-mapas-admin .rodape-site,
 body.pagina-estatisticas-admin .rodape-site,
 body.pagina-wallapop .rodape-site,
 body.pagina-gestao .rodape-site{
-    display:none;
+    display:none !important;
 }
 
 body.pagina-clientes-admin > main.clientes-admin{

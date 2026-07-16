@@ -334,7 +334,20 @@
         });
     }
 
+    function paginaEhAdminSemRodape() {
+        const body = document.body;
+        if (!body) return false;
+        return body.classList.contains('pagina-clientes-admin')
+            || body.classList.contains('pagina-encomendas-admin')
+            || body.classList.contains('pagina-fornecedores-admin')
+            || body.classList.contains('pagina-mapas-admin')
+            || body.classList.contains('pagina-estatisticas-admin')
+            || body.classList.contains('pagina-wallapop')
+            || body.classList.contains('pagina-gestao');
+    }
+
     function inserirRodapeSite() {
+        if (paginaEhAdminSemRodape()) return;
         if (document.querySelector('.rodape-site')) return;
 
         const rodape = document.createElement('footer');
@@ -526,7 +539,7 @@
     };
 
     if ('serviceWorker' in navigator && window.location.protocol !== 'file:') {
-        navigator.serviceWorker.register('sw.js?v=20260713-sw-fix').then((registo) => {
+        navigator.serviceWorker.register('sw.js?v=20260716-sem-rodape-admin').then((registo) => {
             registo.addEventListener('updatefound', () => {
                 const novoWorker = registo.installing;
                 if (!novoWorker) return;
