@@ -1143,21 +1143,49 @@ function acrescentarHistoricoFornecedor(valorAnterior, tipo, novaData = dataOsAg
         tipo: tipoNorm,
         data: String(novaData || dataOsAgoraFornecedor())
     });
-    const ultimo = historico[historico.length - 1];
-    const estado = ultimo.tipo === "os"
-        ? "OS"
-        : (ultimo.tipo === "ex" ? "EX" : (ultimo.tipo === "encomendada" ? "Encomendada" : String(anterior.estado || "")));
-    const datasOs = historico.filter((item) => item.tipo === "os").map((item) => item.data).filter(Boolean);
+    return reconstruirMarcacaoHistoricoFornecedor(historico);
+}
+
+function reconstruirMarcacaoHistoricoFornecedor(historico) {
+    const lista = Array.isArray(historico) ? historico : [];
+    const ultimo = lista[lista.length - 1] || null;
+    const estado = !ultimo
+        ? ""
+        : (ultimo.tipo === "os"
+            ? "OS"
+            : (ultimo.tipo === "ex"
+                ? "EX"
+                : (ultimo.tipo === "encomendada" ? "Encomendada" : "")));
     return {
         estado,
-        desde: historico[0]?.data || null,
-        datas: datasOs,
-        historico
+        desde: lista[0]?.data || null,
+        datas: lista.filter((item) => item.tipo === "os").map((item) => item.data).filter(Boolean),
+        historico: lista
     };
 }
 
+function corrigirUltimaEncomendadaParaOs(valorAnterior, novaData = dataOsAgoraFornecedor()) {
+    const anterior = normalizarMarcacaoFornecedor(valorAnterior);
+    const historico = [...(anterior.historico || [])];
+    let indice = -1;
+    for (let i = historico.length - 1; i >= 0; i -= 1) {
+        if (historico[i]?.tipo === "encomendada") {
+            indice = i;
+            break;
+        }
+    }
+    if (indice < 0) {
+        return acrescentarHistoricoFornecedor(valorAnterior, "os", novaData);
+    }
+    historico[indice] = {
+        tipo: "os",
+        data: String(novaData || dataOsAgoraFornecedor())
+    };
+    return reconstruirMarcacaoHistoricoFornecedor(historico);
+}
+
 function criarMarcacaoOsFornecedor(valorAnterior, novaData = dataOsAgoraFornecedor()) {
-    return acrescentarHistoricoFornecedor(valorAnterior, "os", novaData);
+    return corrigirUltimaEncomendadaParaOs(valorAnterior, novaData);
 }
 
 function parseValorMarcacaoFornecedorInput(texto, valorAnterior) {
@@ -3174,11 +3202,13 @@ async function sincronizarHistoricoPedidosFornecedor(itens, fornecedorNome, opco
         const chave = chaveExistente || fornecedorNome;
         let atual = fornecedores[chave];
 
-        if (registarEncomendada) {
-            atual = acrescentarHistoricoFornecedor(atual, "encomendada", agora);
-        }
-        if (registarOs) {
+        if (registarOs && modo === "editar" && !registarEncomendada) {
+            // Mesma tentativa: Encomendada → OS (corrige a última Encomendada)
+            atual = corrigirUltimaEncomendadaParaOs(atual, agora);
+        } else if (registarOs) {
             atual = acrescentarHistoricoFornecedor(atual, "os", agora);
+        } else if (registarEncomendada) {
+            atual = acrescentarHistoricoFornecedor(atual, "encomendada", agora);
         }
         fornecedores = { ...fornecedores, [chave]: atual };
 
