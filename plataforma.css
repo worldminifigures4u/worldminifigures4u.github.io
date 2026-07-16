@@ -464,11 +464,11 @@ body.pagina-wallapop{
         }
 
         .wallapop-folha-escala{
-            --wallapop-preview-page-height:674px;
-            --wallapop-preview-gap:14px;
-            width:476px;
+            --wallapop-preview-page-height:843px;
+            --wallapop-preview-gap:18px;
+            width:596px;
             min-height:120px;
-            height:674px;
+            height:843px;
             flex:0 0 auto;
             overflow:hidden;
         }
@@ -484,7 +484,7 @@ body.pagina-wallapop{
             display:flex;
             flex-direction:column;
             gap:24px;
-            transform:scale(.6);
+            transform:scale(.75);
             transform-origin:top left;
         }
 
