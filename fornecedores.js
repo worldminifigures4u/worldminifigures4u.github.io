@@ -1281,6 +1281,10 @@ function classificarValorFornecedor(valor) {
 
 function criarBlocoHistoricoFornecedorFicha(form, id, rotulo, valor) {
     const marcacao = normalizarMarcacaoFornecedor(valor);
+    let historicoAtual = (marcacao.historico || []).map((item) => ({
+        tipo: item.tipo,
+        data: item.data || null
+    }));
     const bloco = document.createElement("div");
     bloco.className = "mapas-produto-campo mapas-produto-fornecedor-historico";
 
@@ -1295,37 +1299,12 @@ function criarBlocoHistoricoFornecedorFicha(form, id, rotulo, valor) {
     botaoLimpar.type = "button";
     botaoLimpar.className = "mapas-produto-fornecedor-limpar-historico";
     botaoLimpar.textContent = "Limpar histórico";
-    botaoLimpar.disabled = !marcacao.historico.length;
+    botaoLimpar.disabled = !historicoAtual.length;
     cabecalho.appendChild(botaoLimpar);
     bloco.appendChild(cabecalho);
 
     const lista = document.createElement("ul");
     lista.className = "fornecedor-historico-lista";
-
-    const renderizarLista = (historico) => {
-        lista.replaceChildren();
-        if (!historico.length) {
-            const vazio = document.createElement("li");
-            vazio.className = "fornecedor-historico-vazio";
-            vazio.textContent = "Sem histórico de encomendas neste fornecedor.";
-            lista.appendChild(vazio);
-            return;
-        }
-        historico.forEach((item) => {
-            const li = document.createElement("li");
-            li.className = `fornecedor-historico-item tipo-${item.tipo || "info"}`;
-            const data = document.createElement("span");
-            data.className = "fornecedor-historico-data";
-            data.textContent = item.data ? formatarDataOsCurtaFornecedor(item.data) : "sem data";
-            const estado = document.createElement("span");
-            estado.className = "fornecedor-historico-estado";
-            estado.textContent = rotuloHistoricoFornecedor(item.tipo);
-            li.append(data, estado);
-            lista.appendChild(li);
-        });
-    };
-    renderizarLista(marcacao.historico);
-    bloco.appendChild(lista);
 
     const label = document.createElement("label");
     label.setAttribute("for", id);
@@ -1338,17 +1317,67 @@ function criarBlocoHistoricoFornecedorFicha(form, id, rotulo, valor) {
     input.value = formatarValorFornecedorParaInput(valor);
     input.placeholder = "OS, EX, Solicitada, Encomendada ou vazio";
     input.dataset.historicoLimpo = "0";
+    input.dataset.historicoEditado = "0";
+    input.dataset.historicoJson = JSON.stringify(historicoAtual);
     label.appendChild(input);
-    bloco.appendChild(label);
+
+    const sincronizarHistoricoInput = () => {
+        input.dataset.historicoEditado = "1";
+        input.dataset.historicoLimpo = historicoAtual.length ? "0" : "1";
+        input.dataset.historicoJson = JSON.stringify(historicoAtual);
+        botaoLimpar.disabled = !historicoAtual.length;
+        const reconstruido = reconstruirMarcacaoHistoricoFornecedor(historicoAtual);
+        input.value = historicoAtual.length ? String(reconstruido.estado || "") : "";
+    };
+
+    const renderizarLista = () => {
+        lista.replaceChildren();
+        if (!historicoAtual.length) {
+            const vazio = document.createElement("li");
+            vazio.className = "fornecedor-historico-vazio";
+            vazio.textContent = "Sem histórico de encomendas neste fornecedor.";
+            lista.appendChild(vazio);
+            return;
+        }
+        historicoAtual.forEach((item, indice) => {
+            const li = document.createElement("li");
+            li.className = `fornecedor-historico-item tipo-${item.tipo || "info"}`;
+            const data = document.createElement("span");
+            data.className = "fornecedor-historico-data";
+            data.textContent = item.data ? formatarDataOsCurtaFornecedor(item.data) : "sem data";
+            const estado = document.createElement("span");
+            estado.className = "fornecedor-historico-estado";
+            estado.textContent = rotuloHistoricoFornecedor(item.tipo);
+            const apagar = document.createElement("button");
+            apagar.type = "button";
+            apagar.className = "fornecedor-historico-apagar";
+            apagar.setAttribute("aria-label", `Apagar linha ${rotuloHistoricoFornecedor(item.tipo)}`);
+            apagar.title = "Apagar esta linha";
+            apagar.textContent = "×";
+            apagar.addEventListener("click", () => {
+                const rotuloLinha = `${item.data ? formatarDataOsCurtaFornecedor(item.data) : "sem data"} — ${rotuloHistoricoFornecedor(item.tipo)}`;
+                if (!window.confirm(`Apagar esta linha do histórico de ${rotulo}?\n\n${rotuloLinha}\n\nSó fica definitivo ao guardar o produto.`)) {
+                    return;
+                }
+                historicoAtual = historicoAtual.filter((_, i) => i !== indice);
+                sincronizarHistoricoInput();
+                renderizarLista();
+            });
+            li.append(data, estado, apagar);
+            lista.appendChild(li);
+        });
+    };
+
+    renderizarLista();
+    bloco.append(lista, label);
 
     botaoLimpar.addEventListener("click", () => {
         if (!window.confirm(`Limpar o histórico de ${rotulo} nesta ficha?\n\nA marcação atual também fica vazia. Só fica definitivo ao guardar o produto.`)) {
             return;
         }
-        input.value = "";
-        input.dataset.historicoLimpo = "1";
-        botaoLimpar.disabled = true;
-        renderizarLista([]);
+        historicoAtual = [];
+        sincronizarHistoricoInput();
+        renderizarLista();
     });
 
     form.appendChild(bloco);
@@ -2296,17 +2325,39 @@ function lerProdutoEditadoMapa() {
         const input = document.getElementById(`mapas-editar-fornecedor-${chave}`);
         const valor = input?.value.trim() || "";
         const limparHistorico = input?.dataset.historicoLimpo === "1";
+        const historicoEditado = input?.dataset.historicoEditado === "1";
         if (limparHistorico && !valor) return;
-        const anterior = limparHistorico ? "" : obterFornecedorPorChaveProduto(produtoAtual, chave);
+
+        let historicoCustom = null;
+        if (historicoEditado || limparHistorico) {
+            try {
+                historicoCustom = limparHistorico
+                    ? []
+                    : JSON.parse(input?.dataset.historicoJson || "[]");
+                if (!Array.isArray(historicoCustom)) historicoCustom = [];
+            } catch (_) {
+                historicoCustom = [];
+            }
+        }
+
+        const anterior = limparHistorico
+            ? ""
+            : (historicoCustom
+                ? { estado: valor, historico: historicoCustom }
+                : obterFornecedorPorChaveProduto(produtoAtual, chave));
         const parsed = parseValorMarcacaoFornecedorInput(valor, anterior);
         if (parsed === "" || parsed == null) return;
-        if (limparHistorico && typeof parsed === "object") {
+
+        if (historicoCustom) {
+            const reconstruido = reconstruirMarcacaoHistoricoFornecedor(historicoCustom);
+            if (!historicoCustom.length && !valor) return;
             fornecedores[chave] = {
-                estado: String(parsed.estado || "").trim(),
-                historico: [],
-                datas: [],
-                desde: null
+                estado: valor || reconstruido.estado || "",
+                historico: historicoCustom,
+                datas: reconstruido.datas || [],
+                desde: reconstruido.desde || null
             };
+            if (!fornecedores[chave].estado && !fornecedores[chave].historico.length) return;
         } else {
             fornecedores[chave] = parsed;
         }
