@@ -12,7 +12,8 @@ body.pagina-fornecedores-admin .rodape-site,
 body.pagina-mapas-admin .rodape-site,
 body.pagina-estatisticas-admin .rodape-site,
 body.pagina-wallapop .rodape-site,
-body.pagina-gestao .rodape-site{
+body.pagina-gestao .rodape-site,
+body.pagina-conta-admin .rodape-site{
     display:none !important;
 }
 

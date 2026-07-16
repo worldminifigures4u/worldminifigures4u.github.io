@@ -1,4 +1,4 @@
-Ôªø<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="pt">
 <head>
     <meta charset="UTF-8">
@@ -12,11 +12,11 @@
     <meta name="robots" content="noindex, nofollow, noarchive, nosnippet">
     <meta name="googlebot" content="noindex, nofollow, noarchive, nosnippet">
     <meta name="bingbot" content="noindex, nofollow, noarchive, nosnippet">
-    <title>Gest√£o | Figures Planet</title>
+    <title>Gest„o | Figures Planet</title>
     <link rel="icon" type="image/webp" href="favicon-32.webp?v=20260711-leve" sizes="32x32">
 
     <link rel="stylesheet" href="styles.css?v=20260716-sem-cruz-azul">
-    <link rel="stylesheet" href="styles-admin.css?v=20260716-sem-rodape-html">
+    <link rel="stylesheet" href="styles-admin.css?v=20260716-admin-conta">
     <link rel="stylesheet" href="critico-gestao.css?v=20260713-r25">
     <link rel="stylesheet" href="styles-tema.css?v=20260713-r25" media="print" data-async-css>
     <noscript><link rel="stylesheet" href="styles-tema.css?v=20260713-r25"></noscript>
@@ -57,14 +57,15 @@
                 <span class="badge-carrinho" id="contador-carrinho-cabecalho">0</span>
             </a>
         </div>
-            <nav class="navegacao-admin-cabecalho" aria-label="Navega√ß√£o administrativa" hidden>
+            <nav class="navegacao-admin-cabecalho" aria-label="NavegaÁ„o administrativa" hidden>
             <a class="acao-cabecalho acao-clientes-admin" href="clientes.html" aria-label="Gerir clientes" hidden>Clientes</a>
             <a class="acao-cabecalho acao-plataforma-admin" href="plataforma.html" aria-label="Gerir plataformas" hidden>Plataformas</a>
             <a class="acao-cabecalho acao-encomendas-admin" href="encomendas.html" aria-label="Gerir encomendas" hidden>Encomendas</a>
             <a class="acao-cabecalho acao-fornecedores-admin" href="fornecedores.html" aria-label="Gerir fornecedores" hidden>Fornecedores</a>
             <a class="acao-cabecalho acao-mapas-admin" href="mapas.html" aria-label="Gerir mapas" hidden>Mapas</a>
-            <a class="acao-cabecalho acao-gestao-admin ativa" href="gestao.html" aria-label="Abrir gest√£o administrativa" hidden>Gest√£o</a>
-            <a class="acao-cabecalho acao-estatisticas-admin" href="estatisticas.html" aria-label="Ver estat√≠sticas" hidden>Estat√≠sticas</a>
+            <a class="acao-cabecalho acao-gestao-admin ativa" href="gestao.html" aria-label="Abrir gest„o administrativa" hidden>Gest„o</a>
+            <a class="acao-cabecalho acao-estatisticas-admin" href="estatisticas.html" aria-label="Ver estatÌsticas" hidden>EstatÌsticas</a>
+            <a class="acao-cabecalho acao-conta-admin" href="admin-conta.html" aria-label="Abrir conta" hidden>Conta</a>
         </nav>
     </div>
 </header>
@@ -95,15 +96,15 @@
                             <input type="email" id="editar-email" required autocomplete="email" placeholder="email@exemplo.com">
                         </div>
                         <div>
-                            <label for="editar-telemovel">Telem√≥vel:</label>
+                            <label for="editar-telemovel">TelemÛvel:</label>
                             <input type="tel" id="editar-telemovel" placeholder="Ex: 912345678">
                         </div>
                         <div>
                             <label for="editar-morada">Morada:</label>
-                            <input type="text" id="editar-morada" placeholder="Rua, n√∫mero, localidade">
+                            <input type="text" id="editar-morada" placeholder="Rua, n˙mero, localidade">
                         </div>
                         <div>
-                            <label for="editar-cp">C√≥digo postal:</label>
+                            <label for="editar-cp">CÛdigo postal:</label>
                             <input type="text" id="editar-cp" placeholder="Ex: 1000-013">
                         </div>
                         <div>
@@ -127,7 +128,7 @@
                         </div>
                         <div>
                             <label for="conta-nova-password">Nova palavra-passe:</label>
-                            <input type="password" id="conta-nova-password" required minlength="8" autocomplete="new-password" placeholder="M√≠nimo 8 caracteres">
+                            <input type="password" id="conta-nova-password" required minlength="8" autocomplete="new-password" placeholder="MÌnimo 8 caracteres">
                         </div>
                         <div>
                             <label for="conta-confirmar-password">Confirmar nova palavra-passe:</label>
@@ -138,7 +139,7 @@
                     </form>
                     <div class="zona-perigo-conta" id="zona-eliminacao-conta">
                         <h3>Eliminar conta</h3>
-                        <p>Esta a√ß√£o √© irrevers√≠vel. A sua conta e os seus dados pessoais ser√£o eliminados.</p>
+                        <p>Esta aÁ„o È irreversÌvel. A sua conta e os seus dados pessoais ser„o eliminados.</p>
                         <form class="form-cliente form-eliminar-conta">
                             <div>
                                 <label for="eliminar-conta-password">Palavra-passe atual:</label>
@@ -154,7 +155,7 @@
                     </div>
                 </div>
                 <div class="painel-admin" id="painel-admin">
-                    <div class="gestao-tabs" role="tablist" aria-label="Gest√£o de produtos">
+                    <div class="gestao-tabs" role="tablist" aria-label="Gest„o de produtos">
                         <button type="button" class="gestao-tab ativa" data-tab-gestao="lista" role="tab" aria-selected="true">Lista de Produtos</button>
                         <button type="button" class="gestao-tab" data-tab-gestao="novo" role="tab" aria-selected="false">Adicionar Novo Produto</button>
                         <button type="button" class="gestao-tab" data-tab-gestao="importar" role="tab" aria-selected="false">Importar / Exportar</button>
@@ -189,7 +190,7 @@
                                     <input type="text" id="admin-editar-sku" required>
                                 </div>
                                 <div>
-                                    <label for="admin-editar-preco">Pre√ßo:</label>
+                                    <label for="admin-editar-preco">PreÁo:</label>
                                     <input type="number" id="admin-editar-preco" required min="0" step="0.01">
                                 </div>
                                 <div>
@@ -213,15 +214,15 @@
                                 <label for="admin-editar-imagens">URLs das imagens:</label>
                                 <div class="upload-admin-fotos">
                                     <input class="input-upload-admin" type="file" id="admin-editar-upload-imagens" accept="image/jpeg,image/png,image/webp" multiple>
-                                    <p class="ajuda-admin">As fotos s√£o normalizadas automaticamente ao enviar (margens vazias removidas, tamanho m√°ximo 1200 px). Use imagens com a figura bem vis√≠vel.</p>
+                                    <p class="ajuda-admin">As fotos s„o normalizadas automaticamente ao enviar (margens vazias removidas, tamanho m·ximo 1200 px). Use imagens com a figura bem visÌvel.</p>
                                     <div id="status-upload-admin-editar" class="msg-status"></div>
                                 </div>
                                 <textarea id="admin-editar-imagens" placeholder="Um URL por linha"></textarea>
                                 <div id="preview-editar-imagens-admin" class="preview-imagens-admin"></div>
                             </div>
                             <div>
-                                <label for="admin-editar-observacoes">Observa√ß√µes:</label>
-                                <textarea id="admin-editar-observacoes" placeholder="Notas internas sobre estado, acess√≥rios, origem, etc."></textarea>
+                                <label for="admin-editar-observacoes">ObservaÁıes:</label>
+                                <textarea id="admin-editar-observacoes" placeholder="Notas internas sobre estado, acessÛrios, origem, etc."></textarea>
                             </div>
                             <label class="opcao-admin-inline">
                                 <input type="checkbox" id="admin-editar-ativo">
@@ -232,7 +233,7 @@
                                 Novidade
                             </label>
                             <div class="acoes-form-admin">
-                                <button type="submit" class="btn-acao-cliente">Guardar altera√ß√µes</button>
+                                <button type="submit" class="btn-acao-cliente">Guardar alteraÁıes</button>
                                 <button type="button" class="btn-admin-secundario" data-acao-admin="cancelar-edicao-produto">Cancelar</button>
                             </div>
                             <div id="status-admin-editar-produto" class="msg-status"></div>
@@ -256,7 +257,7 @@
                                 <input type="text" id="admin-produto-sku" required placeholder="DV01">
                             </div>
                             <div>
-                                <label for="admin-produto-preco">Pre√ßo:</label>
+                                <label for="admin-produto-preco">PreÁo:</label>
                                 <input type="number" id="admin-produto-preco" required min="0" step="0.01" placeholder="4.95">
                             </div>
                             <div>
@@ -280,15 +281,15 @@
                             <label for="admin-produto-imagens">URLs das imagens:</label>
                             <div class="upload-admin-fotos">
                                 <input class="input-upload-admin" type="file" id="admin-produto-upload-imagens" accept="image/jpeg,image/png,image/webp" multiple>
-                                <p class="ajuda-admin">As fotos s√£o normalizadas automaticamente ao enviar (margens vazias removidas, tamanho m√°ximo 1200 px). Use imagens com a figura bem vis√≠vel.</p>
+                                <p class="ajuda-admin">As fotos s„o normalizadas automaticamente ao enviar (margens vazias removidas, tamanho m·ximo 1200 px). Use imagens com a figura bem visÌvel.</p>
                                 <div id="status-upload-admin-produto" class="msg-status"></div>
                             </div>
                             <textarea id="admin-produto-imagens" placeholder="Um URL por linha"></textarea>
                             <div id="preview-imagens-admin" class="preview-imagens-admin"></div>
                         </div>
                         <div>
-                            <label for="admin-produto-observacoes">Observa√ß√µes:</label>
-                            <textarea id="admin-produto-observacoes" placeholder="Notas internas sobre estado, acess√≥rios, origem, etc."></textarea>
+                            <label for="admin-produto-observacoes">ObservaÁıes:</label>
+                            <textarea id="admin-produto-observacoes" placeholder="Notas internas sobre estado, acessÛrios, origem, etc."></textarea>
                         </div>
                         <label class="opcao-admin-inline">
                             <input type="checkbox" id="admin-produto-ativo" checked>
@@ -309,7 +310,7 @@
                             <h3>Atualizar stock pelo Mapas.ods</h3>
                             <div class="form-admin">
                                 <input class="input-upload-admin" type="file" id="admin-ficheiro-stock" accept=".ods,.xlsx,.xls">
-                                <p class="ajuda-admin">Apenas as colunas SKU e stock s√£o utilizadas. As encomendas aos fornecedores n√£o alteram o stock atual.</p>
+                                <p class="ajuda-admin">Apenas as colunas SKU e stock s„o utilizadas. As encomendas aos fornecedores n„o alteram o stock atual.</p>
                                 <div id="resumo-importacao-stock" class="resumo-importacao-stock oculto"></div>
                                 <div id="detalhes-importacao-stock" class="lista-importacao-stock oculto"></div>
                                 <button type="button" id="btn-confirmar-importacao-stock" class="btn-acao-cliente" disabled>Atualizar stock no Supabase</button>
@@ -318,29 +319,29 @@
                         </div>
 
                             <div class="admin-seccao">
-                            <h3>Atualizar cat√°logo (sem alterar stock)</h3>
+                            <h3>Atualizar cat·logo (sem alterar stock)</h3>
                             <div class="form-admin">
                                 <input class="input-upload-admin" type="file" id="admin-ficheiro-catalogo-sem-stock" accept=".ods,.xlsx,.xls">
-                                <p class="ajuda-admin">Importa nome, pre√ßo, Ref., SKU, tema, subtema, peso e dados dos fornecedores. O stock e o estado ativo dos produtos existentes s√£o preservados. Produtos novos entram com stock 0. Produtos que n√£o constem do ficheiro n√£o s√£o removidos.</p>
+                                <p class="ajuda-admin">Importa nome, preÁo, Ref., SKU, tema, subtema, peso e dados dos fornecedores. O stock e o estado ativo dos produtos existentes s„o preservados. Produtos novos entram com stock 0. Produtos que n„o constem do ficheiro n„o s„o removidos.</p>
                                 <div id="resumo-importacao-catalogo-sem-stock" class="resumo-importacao-stock oculto"></div>
                                 <div id="detalhes-importacao-catalogo-sem-stock" class="lista-importacao-stock oculto"></div>
-                                <button type="button" id="btn-confirmar-importacao-catalogo-sem-stock" class="btn-acao-cliente" disabled>Atualizar cat√°logo no Supabase</button>
+                                <button type="button" id="btn-confirmar-importacao-catalogo-sem-stock" class="btn-acao-cliente" disabled>Atualizar cat·logo no Supabase</button>
                                 <div id="status-importacao-catalogo-sem-stock" class="msg-status"></div>
                             </div>
                         </div>
 
                             <div class="admin-seccao">
-                            <h3>Substituir cat√°logo pelo Mapas.ods</h3>
+                            <h3>Substituir cat·logo pelo Mapas.ods</h3>
                             <div class="form-admin">
                                 <input class="input-upload-admin" type="file" id="admin-ficheiro-catalogo" accept=".ods,.xlsx,.xls">
-                                <p class="ajuda-admin">Importa nome, pre√ßo, Ref., SKU, stock, tema, subtema, peso e dados dos fornecedores. Produtos que n√£o constem do ficheiro ser√£o removidos.</p>
+                                <p class="ajuda-admin">Importa nome, preÁo, Ref., SKU, stock, tema, subtema, peso e dados dos fornecedores. Produtos que n„o constem do ficheiro ser„o removidos.</p>
                                 <div id="resumo-importacao-catalogo" class="resumo-importacao-stock oculto"></div>
                                 <div id="detalhes-importacao-catalogo" class="lista-importacao-stock oculto"></div>
                                 <div>
                                     <label for="confirmacao-substituir-catalogo">Para confirmar, escreva SUBSTITUIR:</label>
                                     <input type="text" id="confirmacao-substituir-catalogo" autocomplete="off">
                                 </div>
-                                <button type="button" id="btn-confirmar-importacao-catalogo" class="btn-logout" disabled>Substituir cat√°logo completo</button>
+                                <button type="button" id="btn-confirmar-importacao-catalogo" class="btn-logout" disabled>Substituir cat·logo completo</button>
                                 <div id="status-importacao-catalogo" class="msg-status"></div>
                             </div>
                         </div>
@@ -349,9 +350,9 @@
                     </section>
                 </div>
                 <div class="historico-encomendas">
-                    <h3>Hist√≥rico de encomendas</h3>
+                    <h3>HistÛrico de encomendas</h3>
                     <div id="lista-historico-encomendas" class="lista-historico">
-                        <p class="historico-vazio">Entre na conta para carregar o hist√≥rico.</p>
+                        <p class="historico-vazio">Entre na conta para carregar o histÛrico.</p>
                     </div>
                 </div>
             </div>
@@ -369,7 +370,7 @@
                     </div>
                     <div>
                         <label for="login-password">Palavra-passe:</label>
-                        <input type="password" id="login-password" required autocomplete="current-password" placeholder="‚Ä¢‚Ä¢‚Ä¢‚Ä¢‚Ä¢‚Ä¢‚Ä¢‚Ä¢">
+                        <input type="password" id="login-password" required autocomplete="current-password" placeholder="ïïïïïïïï">
                     </div>
                     <button type="button" class="btn-link-cliente" data-acao-cliente="recuperar-password">Esqueci-me da palavra-passe</button>
                     <button type="submit" class="btn-acao-cliente">Entrar na Conta</button>
@@ -378,7 +379,7 @@
                 <form class="form-cliente oculto" id="form-registo">
                     <div>
                         <label for="registo-nome">Nome Completo:</label>
-                        <input type="text" id="registo-nome" required placeholder="Ex: F√°bio Lopes">
+                        <input type="text" id="registo-nome" required placeholder="Ex: F·bio Lopes">
                     </div>
                     <div>
                         <label for="registo-email">E-mail:</label>
@@ -386,10 +387,10 @@
                     </div>
                     <div>
                         <label for="registo-password">Palavra-passe:</label>
-                        <input type="password" id="registo-password" required minlength="8" autocomplete="new-password" placeholder="M√≠nimo 8 caracteres">
+                        <input type="password" id="registo-password" required minlength="8" autocomplete="new-password" placeholder="MÌnimo 8 caracteres">
                     </div>
                     <div>
-                        <label for="registo-telemovel">Telem√≥vel:</label>
+                        <label for="registo-telemovel">TelemÛvel:</label>
                         <input type="tel" id="registo-telemovel" required placeholder="962234567">
                     </div>
                     <div>
@@ -397,7 +398,7 @@
                         <input type="text" id="registo-morada" required placeholder="Rua das Patacas 2">
                     </div>
                     <div>
-                        <label for="registo-cp">C√≥digo Postal (CP):</label>
+                        <label for="registo-cp">CÛdigo Postal (CP):</label>
                         <input type="text" id="registo-cp" required placeholder="1000-001">
                     </div>
                     <div>
@@ -414,7 +415,7 @@
                 <form class="form-cliente oculto" id="form-recuperar-password">
                     <div>
                         <label for="nova-password">Nova palavra-passe:</label>
-                        <input type="password" id="nova-password" required minlength="8" autocomplete="new-password" placeholder="M√≠nimo 8 caracteres">
+                        <input type="password" id="nova-password" required minlength="8" autocomplete="new-password" placeholder="MÌnimo 8 caracteres">
                     </div>
                     <div>
                         <label for="confirmar-nova-password">Confirmar nova palavra-passe:</label>

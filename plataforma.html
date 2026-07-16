@@ -1,4 +1,4 @@
-Ôªø<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="pt">
 <head>
     <meta charset="UTF-8">
@@ -16,7 +16,7 @@
     <title>Plataformas | Figures Planet</title>
     <link rel="icon" type="image/webp" href="favicon-32.webp?v=20260711-leve" sizes="32x32">
     <link rel="stylesheet" href="styles.css?v=20260716-sem-cruz-azul">
-    <link rel="stylesheet" href="styles-admin.css?v=20260716-sem-rodape-html">
+    <link rel="stylesheet" href="styles-admin.css?v=20260716-admin-conta">
     <link rel="stylesheet" href="plataforma.css?v=20260714-ficha-cliente">
     <link rel="stylesheet" href="admin-cliente.css?v=20260714-ficha-cliente">
     <link rel="stylesheet" href="morada-formato.css?v=20260714-ficha-cliente">
@@ -31,7 +31,7 @@
                 <img src="figures-planet-logo-transparent.webp?v=20260711-leve" alt="Figures Planet" width="383" height="100" decoding="async" fetchpriority="high">
             </a>
             <form class="cabecalho-pesquisa" action="index.html" method="get">
-                <input type="search" name="q" class="input-pesquisa" placeholder="O que est√°s √† procura?">
+                <input type="search" name="q" class="input-pesquisa" placeholder="O que est·s ‡ procura?">
                 <span class="icone-pesquisa" aria-hidden="true"></span>
             </form>
             <div class="acoes-cabecalho acoes-cabecalho-publicas">
@@ -52,14 +52,15 @@
                     <span class="badge-carrinho" id="contador-carrinho-cabecalho">0</span>
                 </a>
             </div>
-            <nav class="navegacao-admin-cabecalho" aria-label="Navega√ß√£o administrativa" hidden>
+            <nav class="navegacao-admin-cabecalho" aria-label="NavegaÁ„o administrativa" hidden>
                 <a class="acao-cabecalho acao-clientes-admin" href="clientes.html" aria-label="Gerir clientes">Clientes</a>
                 <a class="acao-cabecalho acao-plataforma-admin ativa" href="plataforma.html" aria-label="Gerir plataformas">Plataformas</a>
                 <a class="acao-cabecalho acao-encomendas-admin" href="encomendas.html" aria-label="Gerir encomendas">Encomendas</a>
                 <a class="acao-cabecalho acao-fornecedores-admin" href="fornecedores.html" aria-label="Gerir fornecedores">Fornecedores</a>
                 <a class="acao-cabecalho acao-mapas-admin" href="mapas.html" aria-label="Gerir mapas">Mapas</a>
-                <a class="acao-cabecalho acao-gestao-admin" href="gestao.html" aria-label="Abrir gest√£o administrativa">Gest√£o</a>
-                <a class="acao-cabecalho acao-estatisticas-admin" href="estatisticas.html" aria-label="Ver estat√≠sticas">Estat√≠sticas</a>
+                <a class="acao-cabecalho acao-gestao-admin" href="gestao.html" aria-label="Abrir gest„o administrativa">Gest„o</a>
+                <a class="acao-cabecalho acao-estatisticas-admin" href="estatisticas.html" aria-label="Ver estatÌsticas">EstatÌsticas</a>
+                <a class="acao-cabecalho acao-conta-admin" href="admin-conta.html" aria-label="Abrir conta">Conta</a>
             </nav>
         </div>
     </header>
@@ -77,7 +78,7 @@
             <details class="plataforma-importar-lista">
                 <summary>Colar lista de produtos</summary>
                 <label for="plataforma-lista-produtos">Cole a lista como vier: bloco Wallapop, uma por linha, ou texto livre com pre&ccedil;os (<strong>3,95</strong> ou <strong>1,75 &euro;</strong>), inclusive em espanhol. Para mais unidades use <strong>2x Nome</strong>. Atalho: <strong>Ctrl+Enter</strong>.</label>
-                <textarea id="plataforma-lista-produtos" rows="7" placeholder="Jonathan Byers (Stranger Things) Jonathan Byers (Stranger Things) 1,75 ‚Ç¨&#10;Robin Buckley v1 (Stranger Things) Robin Buckley v1 (Stranger Things) 1,95 ‚Ç¨&#10;3x Clone Trooper"></textarea>
+                <textarea id="plataforma-lista-produtos" rows="7" placeholder="Jonathan Byers (Stranger Things) Jonathan Byers (Stranger Things) 1,75 Ä&#10;Robin Buckley v1 (Stranger Things) Robin Buckley v1 (Stranger Things) 1,95 Ä&#10;3x Clone Trooper"></textarea>
                 <p class="plataforma-lista-previa" id="plataforma-lista-previa" hidden></p>
                 <button class="wallapop-botao wallapop-botao-destaque" type="button" id="btn-analisar-lista-produtos">Analisar lista</button>
             </details>
