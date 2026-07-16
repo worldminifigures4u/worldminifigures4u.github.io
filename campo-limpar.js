@@ -31,7 +31,7 @@
     function ajustarTamanhoBotao(campo, envoltorio) {
         const alturaCampo = campo.offsetHeight;
         if (!alturaCampo) return;
-        const tamanho = Math.max(18, Math.min(24, alturaCampo - 14));
+        const tamanho = Math.max(20, Math.min(36, alturaCampo - 4));
         envoltorio.style.setProperty("--campo-limpar-tamanho", `${tamanho}px`);
     }
 

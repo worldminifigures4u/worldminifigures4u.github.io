@@ -568,7 +568,7 @@ body{
     width:100%;
     max-width:100%;
     min-width:0;
-    --campo-limpar-tamanho:22px;
+    --campo-limpar-tamanho:28px;
 }
 
 .campo-com-limpar > :is(input, textarea){
@@ -597,16 +597,16 @@ input[type="search"]::-ms-clear{
 
 .campo-limpar-botao{
     position:absolute;
-    right:4px;
+    right:3px;
     top:50%;
     transform:translateY(-50%);
     width:var(--campo-limpar-tamanho);
     height:var(--campo-limpar-tamanho);
     border:0;
-    border-radius:5px;
+    border-radius:8px;
     background:#ff4d4d;
     color:#fff;
-    font-size:calc(var(--campo-limpar-tamanho) * 0.72);
+    font-size:calc(var(--campo-limpar-tamanho) * 0.62);
     font-weight:800;
     line-height:1;
     padding:0;
@@ -614,7 +614,6 @@ input[type="search"]::-ms-clear{
     display:inline-flex;
     align-items:center;
     justify-content:center;
-    opacity:.92;
 }
 
 .campo-limpar-botao[hidden]{
@@ -623,8 +622,7 @@ input[type="search"]::-ms-clear{
 
 .campo-limpar-botao:hover,
 .campo-limpar-botao:focus-visible{
-    background:#e04444;
-    opacity:1;
+    background:#e04343;
     outline:none;
 }
 
