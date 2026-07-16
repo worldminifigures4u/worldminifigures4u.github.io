@@ -333,7 +333,7 @@ body.pagina-fornecedores-admin{ margin:0; padding-left:0; padding-right:0; paddi
         .fornecedor-vazio{ margin:0; padding:14px; text-align:center; color:#bbb; background:#1d1d1d; border-radius:6px; }
         .fornecedor-edicao-modal[hidden]{ display:none; }
         .fornecedor-edicao-modal{ position:fixed; inset:0; z-index:10000; display:grid; place-items:center; padding:18px; background:rgba(0,0,0,.74); }
-        .fornecedor-edicao-dialog{ width:min(1180px,calc(100vw - 24px)); max-height:92vh; display:flex; flex-direction:column; overflow:hidden; border:1px solid #444; border-radius:8px; background:#141414; color:#fff; box-shadow:0 20px 60px rgba(0,0,0,.5); }
+        .fornecedor-edicao-dialog{ width:min(1100px,calc(100vw - 24px)); max-height:92vh; display:flex; flex-direction:column; overflow:hidden; border:1px solid #444; border-radius:8px; background:#141414; color:#fff; box-shadow:0 20px 60px rgba(0,0,0,.5); }
         .fornecedor-edicao-topo{ position:sticky; top:0; z-index:2; display:flex; align-items:center; justify-content:space-between; gap:12px; padding:14px 16px; border-bottom:1px solid #333; background:#101010; }
         .fornecedor-edicao-topo h3{ margin:0; color:var(--cor-texto-principal, #fff); }
         .fornecedor-edicao-fechar{ min-width:34px; height:34px; border:0; border-radius:6px; background:#333; color:#fff; font-weight:900; cursor:pointer; }
@@ -343,12 +343,22 @@ body.pagina-fornecedores-admin{ margin:0; padding-left:0; padding-right:0; paddi
         .fornecedor-edicao-aviso-guardar strong{ color:#ffc400; }
         .fornecedor-edicao-acoes{ position:sticky; bottom:0; z-index:2; margin:0; padding:14px 16px; border-top:1px solid #333; background:#101010; }
         .fornecedor-edicao-acoes .wallapop-botao-destaque{ margin-left:auto; }
-        .fornecedor-edicao-grid{ display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:12px; }
+        .fornecedor-edicao-grid{ display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:12px; }
         .fornecedor-edicao-grid label,.fornecedor-edicao-produto-campos label{ display:grid; gap:4px; color:#ddd; font-weight:700; font-size:12px; min-width:0; }
         .fornecedor-edicao-grid input,.fornecedor-edicao-grid select,.fornecedor-edicao-produto-campos input{ width:100%; box-sizing:border-box; border:1px solid #444; border-radius:6px; background:#242424; color:#fff; padding:8px 8px; font:inherit; min-width:0; }
-        .fornecedor-edicao-produtos{ display:grid; gap:8px; min-width:0; overflow-x:hidden; }
-        .fornecedor-edicao-produto{ display:grid; grid-template-columns:48px minmax(0,1fr) minmax(0,1.45fr); gap:10px; align-items:center; padding:10px; border:1px solid #333; border-radius:7px; background:#1d1d1d; min-width:0; }
-        .fornecedor-edicao-produto > .fornecedor-info{ min-width:0; overflow:hidden; }
+        .fornecedor-edicao-produtos{ display:grid; gap:8px; min-width:0; }
+        .fornecedor-edicao-produto{
+            display:grid;
+            grid-template-columns:48px minmax(0,1.1fr) minmax(0,1.6fr);
+            gap:10px;
+            align-items:start;
+            padding:10px;
+            border:1px solid #333;
+            border-radius:7px;
+            background:#1d1d1d;
+            min-width:0;
+        }
+        .fornecedor-edicao-produto > .fornecedor-info{ min-width:0; overflow:hidden; padding-top:2px; }
         .fornecedor-edicao-produto > .fornecedor-info strong,
         .fornecedor-edicao-produto > .fornecedor-info .fornecedor-identificadores,
         .fornecedor-edicao-produto > .fornecedor-info .fornecedor-ajuste-os{
@@ -356,11 +366,25 @@ body.pagina-fornecedores-admin{ margin:0; padding-left:0; padding-right:0; paddi
             text-overflow:ellipsis;
             white-space:nowrap;
         }
-        .fornecedor-edicao-produto-campos{ display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr) minmax(0,1.15fr) minmax(0,.85fr) auto auto; gap:8px; align-items:end; min-width:0; }
+        .fornecedor-edicao-produto-campos{
+            display:grid;
+            grid-template-columns:repeat(4,minmax(0,1fr));
+            gap:8px;
+            align-items:end;
+            min-width:0;
+        }
         .fornecedor-edicao-recebido-info{ display:grid; gap:4px; color:#ddd; font-weight:700; font-size:12px; min-width:0; }
         .fornecedor-edicao-recebido-info span{ min-height:36px; display:flex; align-items:center; border:1px solid #333; border-radius:6px; background:#1a1a1a; color:#aaa; padding:8px; box-sizing:border-box; }
         .fornecedor-edicao-marcar-os,
-        .fornecedor-edicao-remover{ display:flex !important; align-items:center; gap:5px !important; white-space:nowrap; min-height:36px; font-size:12px; }
+        .fornecedor-edicao-remover{
+            display:flex !important;
+            align-items:center;
+            gap:5px !important;
+            white-space:nowrap;
+            min-height:36px;
+            font-size:12px;
+            grid-column:span 2;
+        }
         .fornecedor-edicao-marcar-os{ color:#f0c36d; }
         .fornecedor-edicao-marcar-os input,
         .fornecedor-edicao-remover input{ width:auto; }
