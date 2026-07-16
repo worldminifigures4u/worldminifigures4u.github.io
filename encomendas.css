@@ -56,31 +56,32 @@ body.pagina-encomendas-admin{
         .admin-encomendas-resumo{
             display:grid;
             grid-template-columns:repeat(6, minmax(0, 1fr));
-            gap:8px;
-            margin-bottom:14px;
+            gap:6px;
+            margin-bottom:8px;
         }
 
         .admin-encomendas-resumo div{
-            min-height:58px;
-            padding:9px 12px;
+            min-height:0;
+            padding:5px 10px;
             border:1px solid #333;
             border-radius:6px;
             background:#151515;
             display:flex;
-            flex-direction:column;
-            justify-content:center;
+            flex-direction:row;
+            align-items:baseline;
+            gap:8px;
         }
 
         .admin-encomendas-resumo strong{
             color:var(--cor-texto-principal, #fff);
-            font-size:22px;
-            line-height:1;
+            font-size:16px;
+            line-height:1.1;
         }
 
         .admin-encomendas-resumo span{
-            margin-top:3px;
+            margin-top:0;
             color:#bbb;
-            font-size:12px;
+            font-size:11px;
             line-height:1.15;
         }
 
