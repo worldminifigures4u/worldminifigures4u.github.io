@@ -19,6 +19,22 @@
     overflow:hidden;
 }
 
+.clientes-admin > .wallapop-status{
+    margin:8px 0 0;
+    padding:0 12px;
+    max-width:340px;
+    box-sizing:border-box;
+    min-height:1.2em;
+    color:#bbb;
+    font-size:13px;
+    font-weight:600;
+    text-align:center;
+}
+
+.clientes-admin > .wallapop-status:empty{
+    display:none;
+}
+
 .clientes-admin .wallapop-botao{
     box-sizing:border-box;
     min-height:var(--fp-btn-altura);
