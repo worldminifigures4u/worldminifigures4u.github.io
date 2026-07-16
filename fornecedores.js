@@ -532,25 +532,6 @@ function normalizarEstadoPedidoFornecedor(estado) {
     return normalizarChaveFornecedor(estado || '').replace(/-/g, '_');
 }
 
-function estadoPedidoFornecedorEhAPreparar(estado) {
-    return normalizarEstadoPedidoFornecedor(estado) === "a_preparar";
-}
-
-function estadoPedidoFornecedorEhEncomendada(estado) {
-    return normalizarEstadoPedidoFornecedor(estado) === "encomendada";
-}
-
-function passouParaEncomendadaDesdeAPreparar(estadoAnterior, estadoNovo) {
-    return estadoPedidoFornecedorEhAPreparar(estadoAnterior) && estadoPedidoFornecedorEhEncomendada(estadoNovo);
-}
-
-function pedidoJaEncomendadoAoFornecedor(estado) {
-    const normalizado = normalizarEstadoPedidoFornecedor(estado);
-    return normalizado === "encomendada"
-        || normalizado === "recebida_parcialmente"
-        || normalizado === "recebida";
-}
-
 function pedidoFornecedorPassaFiltroEstado(pedido, filtro) {
     const filtroNormalizado = normalizarEstadoPedidoFornecedor(filtro || 'todos');
     if (!filtroNormalizado || filtroNormalizado === 'todos') return true;
@@ -3039,6 +3020,11 @@ async function criarPedidoFornecedor() {
         const pedido = normalizarPedidoFornecedor(data);
         fornecedorPedidos.unshift(pedido);
         guardarPedidosFornecedores();
+        try {
+            await sincronizarHistoricoPedidosFornecedor(itens, fornecedor, { modo: "criar" });
+        } catch (erroHistorico) {
+            console.warn("Nao foi possivel registar histórico Encomendada na ficha.", erroHistorico);
+        }
         fornecedorSelecao = [];
         guardarSelecaoFornecedor();
         renderizarResultadosFornecedor();
@@ -3047,8 +3033,8 @@ async function criarPedidoFornecedor() {
         exportarTxtPedidoFornecedor(pedido);
         definirStatusFornecedor(
             pedido.codigo
-                ? `Encomenda ${pedido.codigo} criada (A preparar).`
-                : "Encomenda criada (A preparar)."
+                ? `Encomenda ${pedido.codigo} criada.`
+                : "Encomenda criada. Adicione o código de seguimento quando o receber."
         );
     } catch (error) {
         console.error(error);
@@ -3058,7 +3044,6 @@ async function criarPedidoFornecedor() {
 async function alterarEstadoPedidoFornecedor(id, estado) {
     const pedido = fornecedorPedidos.find(item => item.id === id);
     if (!pedido) return;
-    const estadoAnterior = pedido.estado;
     try {
         const { data, error } = await fornecedoresClient.rpc('alterar_estado_encomenda_fornecedor_admin', {
             p_id: id,
@@ -3068,13 +3053,6 @@ async function alterarEstadoPedidoFornecedor(id, estado) {
         const atualizado = normalizarPedidoFornecedor(data);
         fornecedorPedidos = fornecedorPedidos.map(item => item.id === id ? atualizado : item);
         guardarPedidosFornecedores();
-        if (passouParaEncomendadaDesdeAPreparar(estadoAnterior, atualizado.estado)) {
-            try {
-                await sincronizarHistoricoPedidosFornecedor(atualizado.itens || [], atualizado.fornecedor, { modo: "confirmar" });
-            } catch (erroHistorico) {
-                console.warn("Nao foi possivel registar histórico Encomendada na ficha.", erroHistorico);
-            }
-        }
         renderizarResultadosFornecedor();
         renderizarPedidosFornecedores();
         definirStatusFornecedor(`Estado da encomenda ${atualizado.codigo} atualizado.`);
@@ -3191,8 +3169,7 @@ function itemPedidoEstavaOsFornecedor(item) {
 
 async function sincronizarHistoricoPedidosFornecedor(itens, fornecedorNome, opcoes = {}) {
     if (!fornecedoresClient || !fornecedorNome || fornecedorNome === "Outro") return 0;
-    const modoBruto = String(opcoes.modo || "confirmar").trim().toLowerCase();
-    const modo = (modoBruto === "editar") ? "editar" : "confirmar";
+    const modo = String(opcoes.modo || "criar").trim().toLowerCase() === "editar" ? "editar" : "criar";
     const mapaAnterior = new Map(
         (opcoes.itensAnteriores || []).map((item) => [chaveItemHistoricoPedidoFornecedor(item), item])
     );
@@ -3210,10 +3187,10 @@ async function sincronizarHistoricoPedidosFornecedor(itens, fornecedorNome, opco
         const anterior = mapaAnterior.get(chaveItemHistoricoPedidoFornecedor(item));
         const eraOs = itemPedidoEstavaOsFornecedor(anterior);
         const agoraOs = faltaOs > 0 || String(item.estado_fornecedor || "").trim().toUpperCase() === "OS";
-        // confirmar = A preparar → Encomendada: regista tentativa
-        // editar = só corrige Encomendada → OS se o fornecedor não tiver
-        const registarEncomendada = modo === "confirmar" && quantidade > 0 && !agoraOs;
-        const registarOs = modo === "confirmar"
+        const registarEncomendada = modo === "criar"
+            ? quantidade > 0
+            : (!anterior && quantidade > 0);
+        const registarOs = modo === "criar"
             ? agoraOs
             : (agoraOs && !eraOs);
 
@@ -3225,7 +3202,7 @@ async function sincronizarHistoricoPedidosFornecedor(itens, fornecedorNome, opco
         const chave = chaveExistente || fornecedorNome;
         let atual = fornecedores[chave];
 
-        if (registarOs && modo === "editar") {
+        if (registarOs && modo === "editar" && !registarEncomendada) {
             atual = corrigirUltimaEncomendadaParaOs(atual, agora);
         } else if (registarOs) {
             atual = acrescentarHistoricoFornecedor(atual, "os", agora);
@@ -3249,7 +3226,7 @@ async function sincronizarHistoricoPedidosFornecedor(itens, fornecedorNome, opco
 }
 
 async function sincronizarOsProdutosFornecedor(itens, fornecedorNome) {
-    return sincronizarHistoricoPedidosFornecedor(itens, fornecedorNome, { modo: "confirmar" });
+    return sincronizarHistoricoPedidosFornecedor(itens, fornecedorNome, { modo: "criar" });
 }
 
 async function sincronizarPrecoCompraProdutosFornecedor(itens) {
@@ -3567,17 +3544,11 @@ async function guardarEdicaoPedidoFornecedor(evento) {
             estado,
             itens
         });
-        const estadoAnterior = pedido.estado;
-        if (passouParaEncomendadaDesdeAPreparar(estadoAnterior, estado)) {
-            status.textContent = 'A registar Encomendada na ficha do produto...';
-            await sincronizarHistoricoPedidosFornecedor(itens, fornecedor, { modo: "confirmar" });
-        } else if (pedidoJaEncomendadoAoFornecedor(estadoAnterior) || pedidoJaEncomendadoAoFornecedor(estado)) {
-            status.textContent = 'A atualizar histórico OS na ficha do produto...';
-            await sincronizarHistoricoPedidosFornecedor(itens, fornecedor, {
-                modo: "editar",
-                itensAnteriores: pedido.itens || []
-            });
-        }
+        status.textContent = 'A atualizar histórico OS/Encomendada na ficha do produto...';
+        await sincronizarHistoricoPedidosFornecedor(itens, fornecedor, {
+            modo: "editar",
+            itensAnteriores: pedido.itens || []
+        });
         status.textContent = 'A atualizar preço compra nos produtos...';
         let produtosComPrecoAtualizado = 0;
         let avisoPrecoCompra = '';
