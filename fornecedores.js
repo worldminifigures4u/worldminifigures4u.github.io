@@ -669,62 +669,108 @@ async function imprimirPedidoFornecedor(id) {
     }
 
     const produtosImpressao = produtosCompletos.length ? produtosCompletos : fornecedorProdutos;
-    const estiloCelula = 'border:1px solid #000;padding:5px 6px;text-align:left;vertical-align:top;font-family:Arial,Helvetica,sans-serif;font-size:11px;line-height:1.25;font-weight:400;word-wrap:break-word;';
-    const estiloCabecalho = `${estiloCelula}background:#f2c200;font-weight:700;`;
-    const linhas = (pedido.itens || []).map(item => {
-        const produtoAtual = obterProdutoParaPedidoFornecedor(item, produtosImpressao) || item;
-        const subtemaProduto = produtoAtual.subtema && produtoAtual.subtema !== 'semsubtema' ? produtoAtual.subtema : '';
-        const subtemaItem = item.subtema && item.subtema !== 'semsubtema' ? item.subtema : '';
-        const novidade = obterBooleanoProdutoFornecedor(produtoAtual.novidade ?? item.novidade);
-        return `
-            <tr>
-                <td style="${estiloCelula}width:32%;">${escaparHtmlFornecedor(produtoAtual.nome || item.nome || '')}</td>
-                <td style="${estiloCelula}width:12%;">${escaparHtmlFornecedor(produtoAtual.tema || item.tema || '')}</td>
-                <td style="${estiloCelula}width:18%;">${escaparHtmlFornecedor(subtemaProduto || subtemaItem || '')}</td>
-                <td style="${estiloCelula}width:16%;">${escaparHtmlFornecedor(produtoAtual.referencia || item.referencia || '')}</td>
-                <td style="${estiloCelula}width:14%;">${escaparHtmlFornecedor(item.quantidade || 0)}</td>
-                <td style="${estiloCelula}width:8%;font-weight:700;">${novidade ? 'NOVA' : ''}</td>
-            </tr>`;
-    }).join('');
+    const doc = janela.document;
+    const larguras = ['32%', '12%', '18%', '16%', '14%', '8%'];
+    const titulos = ['Nome da figura', 'Tema', 'Subtema', 'Referência', 'Qtd.', 'Nota'];
 
-    janela.document.open();
-    janela.document.write(`<!DOCTYPE html>
-<html lang="pt">
-<head>
-    <meta charset="UTF-8">
-    <title>${escaparHtmlFornecedor(pedido.codigo || 'Encomenda')}</title>
-    <style>
-        @page { size: A4; margin: 12mm; }
-        * { box-sizing: border-box; }
-        body { margin: 0; color: #000; font-family: Arial, Helvetica, sans-serif; }
-        h1 { margin: 0 0 12px; font-size: 20px; font-family: Arial, Helvetica, sans-serif; text-align: left; }
-        table { width: 100%; border-collapse: collapse; table-layout: fixed; }
-        thead { display: table-header-group; }
-        th, td { text-align: left !important; }
-    </style>
-</head>
-<body>
-    <h1>${escaparHtmlFornecedor(pedido.codigo || 'Encomenda')}</h1>
-    <table>
-        <thead>
-            <tr>
-                <th style="${estiloCabecalho}width:32%;">Nome da figura</th>
-                <th style="${estiloCabecalho}width:12%;">Tema</th>
-                <th style="${estiloCabecalho}width:18%;">Subtema</th>
-                <th style="${estiloCabecalho}width:16%;">Referência</th>
-                <th style="${estiloCabecalho}width:14%;">Qtd.</th>
-                <th style="${estiloCabecalho}width:8%;">Nota</th>
-            </tr>
-        </thead>
-        <tbody>
-            ${linhas || `<tr><td colspan="6" style="${estiloCelula}">Sem produtos.</td></tr>`}
-        </tbody>
-    </table>
-</body>
-</html>`);
-    janela.document.close();
+    const aplicarEstiloCelula = (celula, indice, cabecalho = false) => {
+        celula.style.boxSizing = 'border-box';
+        celula.style.width = larguras[indice];
+        celula.style.border = '1px solid #000';
+        celula.style.padding = '4px 6px';
+        celula.style.margin = '0';
+        celula.style.textAlign = 'left';
+        celula.style.verticalAlign = 'top';
+        celula.style.fontFamily = 'Arial, Helvetica, sans-serif';
+        celula.style.fontSize = '11px';
+        celula.style.lineHeight = '1.25';
+        celula.style.fontWeight = cabecalho ? '700' : '400';
+        celula.style.background = cabecalho ? '#f2c200' : '#fff';
+        celula.style.color = '#000';
+        celula.style.wordWrap = 'break-word';
+        celula.style.overflowWrap = 'break-word';
+        celula.style.whiteSpace = 'normal';
+    };
+
+    doc.open();
+    doc.write('<!DOCTYPE html><html lang="pt"><head><meta charset="UTF-8"><title></title></head><body></body></html>');
+    doc.close();
+    doc.title = pedido.codigo || 'Encomenda';
+
+    const estiloPagina = doc.createElement('style');
+    estiloPagina.textContent = '@page{size:A4;margin:12mm}html,body{margin:0;padding:0;color:#000;background:#fff;font-family:Arial,Helvetica,sans-serif}table{width:100%;border-collapse:collapse;table-layout:fixed}thead{display:table-header-group}th,td{text-align:left!important}';
+    doc.head.appendChild(estiloPagina);
+
+    const titulo = doc.createElement('h1');
+    titulo.textContent = pedido.codigo || 'Encomenda';
+    titulo.style.margin = '0 0 12px';
+    titulo.style.fontSize = '20px';
+    titulo.style.fontFamily = 'Arial, Helvetica, sans-serif';
+    titulo.style.textAlign = 'left';
+    doc.body.appendChild(titulo);
+
+    const tabela = doc.createElement('table');
+    const colgroup = doc.createElement('colgroup');
+    larguras.forEach(largura => {
+        const col = doc.createElement('col');
+        col.style.width = largura;
+        colgroup.appendChild(col);
+    });
+    tabela.appendChild(colgroup);
+
+    const thead = doc.createElement('thead');
+    const linhaCabecalho = doc.createElement('tr');
+    titulos.forEach((texto, indice) => {
+        // Usar td (nao th) para evitar o text-align:center por defeito do browser na impressao
+        const celula = doc.createElement('td');
+        celula.textContent = texto;
+        aplicarEstiloCelula(celula, indice, true);
+        linhaCabecalho.appendChild(celula);
+    });
+    thead.appendChild(linhaCabecalho);
+    tabela.appendChild(thead);
+
+    const tbody = doc.createElement('tbody');
+    const itens = pedido.itens || [];
+    if (!itens.length) {
+        const linha = doc.createElement('tr');
+        const celula = doc.createElement('td');
+        celula.colSpan = 6;
+        celula.textContent = 'Sem produtos.';
+        aplicarEstiloCelula(celula, 0, false);
+        celula.style.width = '100%';
+        linha.appendChild(celula);
+        tbody.appendChild(linha);
+    } else {
+        itens.forEach(item => {
+            const produtoAtual = obterProdutoParaPedidoFornecedor(item, produtosImpressao) || item;
+            const subtemaProduto = produtoAtual.subtema && produtoAtual.subtema !== 'semsubtema' ? produtoAtual.subtema : '';
+            const subtemaItem = item.subtema && item.subtema !== 'semsubtema' ? item.subtema : '';
+            const novidade = obterBooleanoProdutoFornecedor(produtoAtual.novidade ?? item.novidade);
+            const valores = [
+                produtoAtual.nome || item.nome || '',
+                produtoAtual.tema || item.tema || '',
+                subtemaProduto || subtemaItem || '',
+                produtoAtual.referencia || item.referencia || '',
+                String(item.quantidade || 0),
+                novidade ? 'NOVA' : ''
+            ];
+            const linha = doc.createElement('tr');
+            valores.forEach((valor, indice) => {
+                const celula = doc.createElement('td');
+                celula.textContent = valor;
+                aplicarEstiloCelula(celula, indice, false);
+                if (indice === 5) celula.style.fontWeight = '700';
+                linha.appendChild(celula);
+            });
+            tbody.appendChild(linha);
+        });
+    }
+    tabela.appendChild(tbody);
+    doc.body.appendChild(tabela);
+
     janela.focus();
-    setTimeout(() => janela.print(), 250);
+    setTimeout(() => janela.print(), 300);
 }
 
 async function carregarPedidosFornecedoresRemotos() {
