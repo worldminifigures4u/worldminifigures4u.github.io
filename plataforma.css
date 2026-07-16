@@ -40,16 +40,36 @@ body.pagina-wallapop{
             display:none !important;
         }
 
-        .wallapop-layout{
+        body.pagina-wallapop.pagina-com-cabecalho-site > main.wallapop-layout{
             --plataforma-preview-largura:596px;
-            width:100%;
-            margin:0 auto var(--espaco-acima-rodape);
-            padding:0 16px;
+            --plataforma-editor-largura:596px;
+            width:fit-content;
+            max-width:calc(100% - 32px);
+            margin-left:auto;
+            margin-right:auto;
+            margin-bottom:var(--espaco-acima-rodape);
+            padding:0;
             box-sizing:border-box;
             display:grid;
-            grid-template-columns:minmax(0, 1fr) minmax(0, 1fr);
+            grid-template-columns:var(--plataforma-editor-largura) var(--plataforma-preview-largura);
             gap:12px;
             align-items:start;
+            justify-content:center;
+        }
+
+        .wallapop-layout{
+            --plataforma-preview-largura:596px;
+            --plataforma-editor-largura:596px;
+            width:fit-content;
+            max-width:calc(100% - 32px);
+            margin:0 auto var(--espaco-acima-rodape);
+            padding:0;
+            box-sizing:border-box;
+            display:grid;
+            grid-template-columns:var(--plataforma-editor-largura) var(--plataforma-preview-largura);
+            gap:12px;
+            align-items:start;
+            justify-content:center;
         }
 
         .wallapop-editor{
@@ -844,7 +864,10 @@ body.pagina-wallapop{
 
 /* Responsivo da Plataforma */
 @media(max-width:1000px){
+            body.pagina-wallapop.pagina-com-cabecalho-site > main.wallapop-layout,
             .wallapop-layout{
+                width:100%;
+                max-width:calc(100% - 32px);
                 grid-template-columns:1fr;
             }
             .wallapop-editor{
