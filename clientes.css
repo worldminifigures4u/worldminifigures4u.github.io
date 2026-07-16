@@ -420,20 +420,20 @@ body.clientes-encomenda-modal-aberto{
     }
 
     .clientes-formulario .admin-cliente-campo-cidade{
-        grid-column:2;
+        grid-column:2 / -1;
     }
 
     .clientes-formulario .admin-cliente-campo-pais{
-        grid-column:3;
+        grid-column:1;
     }
 
     .clientes-formulario .admin-cliente-campo-email{
-        grid-column:1 / span 2;
-        max-width:520px;
+        grid-column:2 / -1;
+        max-width:none;
     }
 
     .clientes-formulario .admin-cliente-campo-telefone{
-        grid-column:3;
+        grid-column:1;
     }
 
     .clientes-formulario .admin-cliente-campo-perfil_url_1,
