@@ -44,7 +44,7 @@ body.pagina-wallapop{
             width:100%;
             margin:0 auto var(--espaco-acima-rodape);
             display:grid;
-            grid-template-columns:minmax(0, 2.4fr) minmax(0, 2.6fr);
+            grid-template-columns:minmax(0, 1fr) minmax(0, 1fr);
             gap:24px;
             align-items:start;
         }
@@ -56,12 +56,15 @@ body.pagina-wallapop{
             border:1px solid #333;
             border-radius:8px;
             background:#111;
+            box-sizing:border-box;
         }
 
         .wallapop-editor h2{
             margin:0 0 14px;
             font-size:18px;
-            color:#ffc107;
+            font-weight:800;
+            line-height:1.2;
+            color:#fff;
         }
 
         .wallapop-pesquisa{
@@ -232,11 +235,21 @@ body.pagina-wallapop{
             min-width:0;
         }
 
+        .wallapop-dados-encomenda > label[for="plataforma-link-perfil"]{
+            display:block;
+            margin:0 0 14px;
+            font-size:18px;
+            font-weight:800;
+            line-height:1.2;
+            color:#fff;
+        }
+
         .wallapop-dados-encomenda label{
             display:block;
             margin-bottom:7px;
-            color:#ffc400;
+            color:#fff;
             font-weight:800;
+            font-size:14px;
         }
 
         .wallapop-dados-encomenda label:not(:first-child){
@@ -395,7 +408,7 @@ body.pagina-wallapop{
         .wallapop-preview-acoes{
             width:100%;
             margin-bottom:16px;
-            padding:16px;
+            padding:18px;
             box-sizing:border-box;
             border:1px solid #333;
             border-radius:8px;
