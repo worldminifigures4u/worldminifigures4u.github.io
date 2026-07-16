@@ -457,7 +457,7 @@ body.pagina-wallapop{
             width:var(--plataforma-preview-largura);
             max-width:100%;
             margin-bottom:16px;
-            padding:12px 12px 0;
+            padding:12px;
             box-sizing:border-box;
             border:1px solid #333;
             border-radius:8px;
@@ -509,15 +509,14 @@ body.pagina-wallapop{
         }
 
         .wallapop-folha-escala{
-            --wallapop-preview-page-height:843px;
+            --wallapop-preview-page-height:809px;
             --wallapop-preview-gap:18px;
-            width:calc(100% + 24px);
-            max-width:none;
-            margin:0 -12px;
+            width:100%;
             min-height:120px;
-            height:843px;
+            height:809px;
             flex:0 0 auto;
             overflow:hidden;
+            border-radius:4px;
         }
 
         .wallapop-folha{
@@ -531,7 +530,7 @@ body.pagina-wallapop{
             display:flex;
             flex-direction:column;
             gap:24px;
-            transform:scale(.75);
+            transform:scale(.7204);
             transform-origin:top left;
         }
 
@@ -895,12 +894,11 @@ body.pagina-wallapop{
                 overflow:visible;
             }
             .wallapop-folha-escala{
-                --wallapop-preview-page-height:843px;
+                --wallapop-preview-page-height:809px;
                 --wallapop-preview-gap:18px;
-                height:843px;
             }
             .wallapop-folha{
-                transform:scale(.75);
+                transform:scale(.7204);
             }
         }
 
