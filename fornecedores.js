@@ -1035,6 +1035,8 @@ function obterHistoricoFornecedor(valor) {
         const tipoNorm = normalizarTipoHistoricoFornecedor(tipo);
         if (!tipoNorm) return;
         const dataNorm = String(data || "").trim() || null;
+        // Marcação atual (ex.: OS no mapa) não é histórico de encomenda — só conta com data real
+        if (tipoNorm === "os" && !dataNorm) return;
         eventos.push({
             tipo: tipoNorm,
             data: dataNorm
@@ -1048,7 +1050,7 @@ function obterHistoricoFornecedor(valor) {
                 if (!item) return;
                 if (typeof item === "string") {
                     const maiusculas = item.toUpperCase();
-                    if (maiusculas.includes("OS")) adicionar("os", extrairDataOsDeTextoFornecedor(item) || item);
+                    if (maiusculas.includes("OS")) adicionar("os", extrairDataOsDeTextoFornecedor(item));
                     else if (maiusculas.includes("SOLICIT")) adicionar("solicitada", extrairDataOsDeTextoFornecedor(item) || item);
                     else if (maiusculas.includes("ENCOMEND")) adicionar("encomendada", extrairDataOsDeTextoFornecedor(item) || item);
                     return;
@@ -1056,21 +1058,9 @@ function obterHistoricoFornecedor(valor) {
                 adicionar(item.tipo || item.estado || item.status, item.data || item.em || item.desde || null);
             });
         } else {
+            // Só datas explícitas de OS antigo — nunca inventar histórico a partir da marcação atual
             const datasOs = Array.isArray(valor.datas) ? valor.datas : (Array.isArray(valor.historico_os) ? valor.historico_os : []);
-            const estadoTxt = String(valor.estado || "").trim();
-            const estadoUpper = estadoTxt.toUpperCase();
             if (datasOs.length) datasOs.forEach((data) => adicionar("os", data));
-            else if (estadoUpper === "OS") {
-                adicionar("os", valor.desde || valor.data_os || valor.data || null);
-            } else if (estadoUpper === "EX") {
-                adicionar("ex", valor.desde || valor.data || null);
-            } else if (estadoUpper === "SOLICITADA" || estadoUpper === "SOLICITADO") {
-                adicionar("solicitada", valor.desde || valor.data || null);
-            } else if (estadoUpper === "ENCOMENDADA" || estadoUpper === "ENCOMENDADO") {
-                adicionar("encomendada", valor.desde || valor.data || null);
-            } else if (/^-?\d+(?:[,.]\d+)?$/.test(estadoTxt)) {
-                adicionar("encomendada", valor.desde || valor.data || null);
-            }
         }
     } else {
         const texto = String(valor ?? "").trim();
@@ -1078,20 +1068,14 @@ function obterHistoricoFornecedor(valor) {
         if (!texto) return [];
         if (maiusculas === "OS" || maiusculas.startsWith("OS")) {
             const matches = texto.match(/\d{1,2}[\/\-.]\d{1,2}[\/\-.]\d{4}|\d{4}-\d{2}-\d{2}/g) || [];
-            if (matches.length) matches.forEach((match) => adicionar("os", extrairDataOsDeTextoFornecedor(match) || match));
-            else adicionar("os", extrairDataOsDeTextoFornecedor(texto));
-        } else if (maiusculas === "EX") {
-            adicionar("ex", null);
-        } else if (maiusculas === "SOLICITADA" || maiusculas === "SOLICITADO") {
-            adicionar("solicitada", null);
-        } else if (maiusculas === "ENCOMENDADA" || maiusculas === "ENCOMENDADO") {
-            adicionar("encomendada", null);
-        } else if (/^-?\d+(?:[,.]\d+)?$/.test(texto)) {
-            adicionar("encomendada", null);
+            matches.forEach((match) => adicionar("os", extrairDataOsDeTextoFornecedor(match) || match));
         }
+        // "OS" / "EX" / "Solicitada" / "Encomendada" sozinhos = marcação, não histórico
     }
 
-    return eventos.sort((a, b) => String(a.data || "").localeCompare(String(b.data || "")));
+    return eventos
+        .filter((item) => !(item.tipo === "os" && !item.data))
+        .sort((a, b) => String(a.data || "").localeCompare(String(b.data || "")));
 }
 
 function formatarTextoHistoricoFornecedor(historico, estadoAtual = "") {
@@ -1306,6 +1290,14 @@ function criarBlocoHistoricoFornecedorFicha(form, id, rotulo, valor) {
         tipo: item.tipo,
         data: item.data || null
     }));
+    const historicoBruto = Array.isArray(valor?.historico) ? valor.historico : [];
+    const tinhaOsSemData = historicoBruto.some((item) => {
+        if (!item || typeof item === "string") {
+            return String(item || "").toUpperCase().includes("OS") && !extrairDataOsDeTextoFornecedor(item);
+        }
+        const tipo = String(item.tipo || item.estado || "").toLowerCase();
+        return tipo === "os" && !String(item.data || item.em || item.desde || "").trim();
+    });
     const bloco = document.createElement("div");
     bloco.className = "mapas-produto-campo mapas-produto-fornecedor-historico";
 
@@ -1338,7 +1330,7 @@ function criarBlocoHistoricoFornecedorFicha(form, id, rotulo, valor) {
     input.value = formatarValorFornecedorParaInput(valor);
     input.placeholder = "OS, EX, Solicitada, Encomendada ou vazio";
     input.dataset.historicoLimpo = "0";
-    input.dataset.historicoEditado = "0";
+    input.dataset.historicoEditado = tinhaOsSemData ? "1" : "0";
     input.dataset.historicoJson = JSON.stringify(historicoAtual);
     label.appendChild(input);
 
