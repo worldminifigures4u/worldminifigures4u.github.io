@@ -529,7 +529,9 @@ function obterEstadosPedidoFornecedor() {
 }
 
 function normalizarEstadoPedidoFornecedor(estado) {
-    return normalizarChaveFornecedor(estado || '').replace(/-/g, '_');
+    return normalizarFornecedor(estado || "")
+        .replace(/[\s-]+/g, "_")
+        .replace(/[^a-z0-9_]/g, "");
 }
 
 function estadoPedidoFornecedorEhAPreparar(estado) {
@@ -3216,9 +3218,21 @@ async function alterarEstadoPedidoFornecedor(id, estado) {
         guardarPedidosFornecedores();
         if (passouParaEncomendadaDesdeAPreparar(estadoAnterior, atualizado.estado)) {
             try {
-                await sincronizarHistoricoPedidosFornecedor(atualizado.itens || [], atualizado.fornecedor, { modo: "confirmar" });
+                const atualizados = await sincronizarHistoricoPedidosFornecedor(atualizado.itens || [], atualizado.fornecedor, { modo: "confirmar" });
+                renderizarResultadosFornecedor();
+                renderizarPedidosFornecedores();
+                definirStatusFornecedor(
+                    atualizados > 0
+                        ? `Estado da encomenda ${atualizado.codigo} atualizado. Histórico promovido para Encomendada em ${atualizados} produto(s).`
+                        : `Estado da encomenda ${atualizado.codigo} atualizado.`
+                );
+                return;
             } catch (erroHistorico) {
                 console.warn("Nao foi possivel promover Solicitada para Encomendada na ficha.", erroHistorico);
+                definirStatusFornecedor(`Estado atualizado, mas falhou a atualização do histórico na ficha: ${erroHistorico.message || "erro"}`, true);
+                renderizarResultadosFornecedor();
+                renderizarPedidosFornecedores();
+                return;
             }
         }
         renderizarResultadosFornecedor();
