@@ -675,14 +675,14 @@ async function imprimirPedidoFornecedor(id) {
         const subtemaItem = item.subtema && item.subtema !== 'semsubtema' ? item.subtema : '';
         const novidade = obterBooleanoProdutoFornecedor(produtoAtual.novidade ?? item.novidade);
         return `
-            <tr>
-                <td class="col-nome">${escaparHtmlFornecedor(produtoAtual.nome || item.nome || '')}</td>
-                <td class="col-tema">${escaparHtmlFornecedor(produtoAtual.tema || item.tema || '')}</td>
-                <td class="col-subtema">${escaparHtmlFornecedor(subtemaProduto || subtemaItem || '')}</td>
-                <td class="col-referencia">${escaparHtmlFornecedor(produtoAtual.referencia || item.referencia || '')}</td>
-                <td class="quantidade">${escaparHtmlFornecedor(item.quantidade || 0)}</td>
-                <td class="novidade">${novidade ? 'NOVA' : ''}</td>
-            </tr>`;
+            <div class="print-grid-row">
+                <div class="col-nome">${escaparHtmlFornecedor(produtoAtual.nome || item.nome || '')}</div>
+                <div class="col-tema">${escaparHtmlFornecedor(produtoAtual.tema || item.tema || '')}</div>
+                <div class="col-subtema">${escaparHtmlFornecedor(subtemaProduto || subtemaItem || '')}</div>
+                <div class="col-referencia">${escaparHtmlFornecedor(produtoAtual.referencia || item.referencia || '')}</div>
+                <div class="col-quantidade">${escaparHtmlFornecedor(item.quantidade || 0)}</div>
+                <div class="col-nota">${novidade ? 'NOVA' : ''}</div>
+            </div>`;
     }).join('');
 
     janela.document.open();
@@ -696,37 +696,52 @@ async function imprimirPedidoFornecedor(id) {
         * { box-sizing: border-box; }
         body { margin: 0; color: #111; font-family: Arial, Helvetica, sans-serif; font-size: 12px; }
         h1 { margin: 0 0 14px; font-size: 22px; }
-        table { width: 100%; border-collapse: collapse; table-layout: fixed; }
-        th, td { border: 1px solid #444; padding: 7px 8px; text-align: left; vertical-align: top; }
-        td { word-break: break-word; overflow-wrap: anywhere; }
-        th { background: #f2c200; color: #000; font-weight: 700; }
-        th.col-nome, td.col-nome { width: 58mm; }
-        th.col-tema, td.col-tema { width: 25mm; }
-        th.col-subtema, td.col-subtema { width: 30mm; }
-        th.col-referencia, td.col-referencia { width: 30mm; }
-        th.quantidade, td.quantidade { width: 27mm; }
-        th.novidade, td.novidade { width: 20mm; }
-        td.quantidade, th.quantidade { text-align: center; }
-        td.novidade, th.novidade { text-align: center; font-weight: 700; }
+        .print-grid {
+            display: grid;
+            grid-template-columns: 58mm 25mm 30mm 30mm 27mm 20mm;
+            width: 100%;
+            border-top: 1px solid #444;
+            border-left: 1px solid #444;
+        }
+        .print-grid-row { display: contents; }
+        .print-grid-row > div {
+            border-right: 1px solid #444;
+            border-bottom: 1px solid #444;
+            padding: 6px 8px;
+            text-align: left;
+            vertical-align: top;
+            word-break: break-word;
+            overflow-wrap: anywhere;
+            font-size: 12px;
+            line-height: 1.2;
+        }
+        .print-grid-cabecalho > div {
+            background: #f2c200;
+            color: #000;
+            font-weight: 700;
+        }
+        .print-grid .col-quantidade,
+        .print-grid .col-nota {
+            text-align: center;
+        }
+        .print-grid .col-nota {
+            font-weight: 700;
+        }
     </style>
 </head>
 <body>
     <h1>${escaparHtmlFornecedor(pedido.codigo || 'Encomenda')}</h1>
-    <table>
-        <thead>
-            <tr>
-                <th class="col-nome">Nome da figura</th>
-                <th class="col-tema">Tema</th>
-                <th class="col-subtema">Subtema</th>
-                <th class="col-referencia">Referência</th>
-                <th class="quantidade">Quantidade encomendada</th>
-                <th class="novidade">Nota</th>
-            </tr>
-        </thead>
-        <tbody>
-            ${linhas || '<tr><td colspan="6">Sem produtos.</td></tr>'}
-        </tbody>
-    </table>
+    <div class="print-grid">
+        <div class="print-grid-row print-grid-cabecalho">
+            <div class="col-nome">Nome da figura</div>
+            <div class="col-tema">Tema</div>
+            <div class="col-subtema">Subtema</div>
+            <div class="col-referencia">Referência</div>
+            <div class="col-quantidade">Quantidade encomendada</div>
+            <div class="col-nota">Nota</div>
+        </div>
+        ${linhas || '<div class="print-grid-row"><div class="col-nome">Sem produtos.</div><div class="col-tema"></div><div class="col-subtema"></div><div class="col-referencia"></div><div class="col-quantidade"></div><div class="col-nota"></div></div>'}
+    </div>
 </body>
 </html>`);
     janela.document.close();
