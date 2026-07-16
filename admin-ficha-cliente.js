@@ -5,6 +5,7 @@
     let formatarEuro = (valor) => String(Number(valor || 0).toFixed(2)).replace('.', ',');
     let formatarData = (valor) => String(valor || '\u2014');
     let eventosConfigurados = false;
+    let aoCriarCliente = null;
 
     function criarElemento(tag, classe, texto) {
         const elemento = document.createElement(tag);
@@ -39,6 +40,9 @@
         document.getElementById('admin-cliente-conteudo')?.replaceChildren();
         definirStatusFichaCliente('');
         document.body.classList.remove('admin-cliente-modal-aberto');
+        const titulo = document.getElementById('admin-cliente-titulo');
+        if (titulo) titulo.textContent = 'Ficha de cliente';
+        aoCriarCliente = null;
     }
 
     function criarCampoFichaCliente(rotulo, valor) {
@@ -170,6 +174,127 @@
 
         secao.replaceChildren(criarElemento('h3', '', 'Editar dados do cliente'), formulario);
         formulario.querySelector('input[name="nome"]')?.focus();
+    }
+
+    function renderizarFormularioCriacaoCliente(opcoes = {}) {
+        const conteudo = document.getElementById('admin-cliente-conteudo');
+        if (!conteudo) return;
+
+        const urlInicial = obterUrlExternoSeguro(opcoes.url || '');
+        const nomeInicial = String(opcoes.nome || '').trim();
+        const formulario = document.createElement('form');
+        formulario.className = 'admin-cliente-formulario';
+        formulario.append(
+            criarCampoEdicaoCliente('Nome', 'nome', nomeInicial, 'text', true),
+            criarCampoEdicaoCliente('E-mail', 'email', '', 'email'),
+            criarCampoEdicaoCliente('Telem\u00f3vel', 'telefone'),
+            global.MoradaFormato?.criarCampoMoradaEdicao(criarElemento, '')
+                || criarCampoEdicaoCliente('Morada', 'morada'),
+            criarCampoEdicaoCliente('C\u00f3digo postal', 'cp'),
+            criarCampoEdicaoCliente('Cidade', 'cidade'),
+            criarCampoEdicaoCliente('Pa\u00eds', 'pais', 'Portugal')
+        );
+        formulario.appendChild(criarElemento('h3', 'admin-cliente-formulario-subtitulo', 'Links externos'));
+        formulario.appendChild(criarCamposPerfisCliente(urlInicial ? [{ url: urlInicial }] : []));
+
+        const notasCampo = document.createElement('label');
+        notasCampo.className = 'admin-cliente-formulario-campo';
+        notasCampo.appendChild(criarElemento('span', '', 'Notas internas'));
+        const notas = document.createElement('textarea');
+        notas.name = 'notas';
+        notas.rows = 4;
+        notas.maxLength = 5000;
+        notas.placeholder = 'Prefer\u00eancias, observa\u00e7\u00f5es ou outra informa\u00e7\u00e3o \u00fatil.';
+        notasCampo.appendChild(notas);
+        formulario.appendChild(notasCampo);
+
+        const acoes = criarElemento('div', 'admin-cliente-formulario-acoes');
+        const cancelar = criarElemento('button', 'wallapop-botao', 'Cancelar');
+        cancelar.type = 'button';
+        cancelar.addEventListener('click', fecharFichaClienteAdmin);
+        const guardar = criarElemento('button', 'wallapop-botao wallapop-botao-destaque', 'Criar ficha');
+        guardar.type = 'submit';
+        acoes.append(cancelar, guardar);
+        formulario.appendChild(acoes);
+
+        formulario.addEventListener('submit', async (evento) => {
+            evento.preventDefault();
+            if (!fichaClient) {
+                definirStatusFichaCliente('Sess\u00e3o indispon\u00edvel para criar a ficha.', true);
+                return;
+            }
+            guardar.disabled = true;
+            cancelar.disabled = true;
+            definirStatusFichaCliente('A criar ficha de cliente...');
+            const campos = new FormData(formulario);
+            const { data, error } = await fichaClient.rpc('criar_cliente_externo_admin', {
+                p_nome: String(campos.get('nome') || ''),
+                p_email: String(campos.get('email') || ''),
+                p_telefone: String(campos.get('telefone') || ''),
+                p_morada: global.MoradaFormato?.obterMoradaFormulario(formulario) || String(campos.get('morada') || ''),
+                p_cp: String(campos.get('cp') || ''),
+                p_cidade: String(campos.get('cidade') || ''),
+                p_pais: String(campos.get('pais') || '')
+            });
+            if (error || data?.sucesso === false) {
+                guardar.disabled = false;
+                cancelar.disabled = false;
+                definirStatusFichaCliente('Erro ao criar ficha: ' + (error?.message || data?.erro || 'sem detalhe'), true);
+                return;
+            }
+            const clienteId = data?.cliente?.id;
+            if (!clienteId) {
+                guardar.disabled = false;
+                cancelar.disabled = false;
+                definirStatusFichaCliente('Cliente criado sem identificador. Atualize a p\u00e1gina.', true);
+                return;
+            }
+            const perfisAtualizados = obterPerfisFormularioCliente(formulario);
+            const resultadoPerfis = await fichaClient.rpc('guardar_perfis_cliente_admin', {
+                p_cliente_id: clienteId,
+                p_perfis: perfisAtualizados
+            });
+            if (resultadoPerfis.error || resultadoPerfis.data?.sucesso === false) {
+                guardar.disabled = false;
+                cancelar.disabled = false;
+                definirStatusFichaCliente('Cliente criado, mas erro nos links: ' + (resultadoPerfis.error?.message || resultadoPerfis.data?.erro || 'sem detalhe'), true);
+                return;
+            }
+            const notasTexto = String(campos.get('notas') || '').trim();
+            if (notasTexto) {
+                await fichaClient.rpc('guardar_notas_cliente_admin', {
+                    p_cliente_id: clienteId,
+                    p_notas: notasTexto
+                });
+            }
+            definirStatusFichaCliente('Ficha criada.');
+            const callback = aoCriarCliente;
+            aoCriarCliente = null;
+            fecharFichaClienteAdmin();
+            if (typeof callback === 'function') {
+                try {
+                    await callback(clienteId, data.cliente);
+                } catch (erroCallback) {
+                    console.error('Callback apos criar ficha falhou:', erroCallback);
+                }
+            }
+        });
+
+        conteudo.replaceChildren(formulario);
+        formulario.querySelector('input[name="nome"]')?.focus();
+    }
+
+    function abrirCriacao(opcoes = {}) {
+        const modal = document.getElementById('admin-cliente-modal');
+        if (!modal || !fichaClient) return false;
+        aoCriarCliente = typeof opcoes.onCriado === 'function' ? opcoes.onCriado : null;
+        const titulo = document.getElementById('admin-cliente-titulo');
+        if (titulo) titulo.textContent = 'Criar ficha de cliente';
+        modal.hidden = false;
+        document.body.classList.add('admin-cliente-modal-aberto');
+        definirStatusFichaCliente('');
+        renderizarFormularioCriacaoCliente(opcoes);
+        return true;
     }
 
     function criarCodigoHistoricoEncomenda(item) {
@@ -355,6 +480,7 @@
         initEventos,
         abrirPorId,
         abrirPorEncomenda,
+        abrirCriacao,
         renderizar: renderizarFichaClienteAdmin,
         fechar: fecharFichaClienteAdmin
     };

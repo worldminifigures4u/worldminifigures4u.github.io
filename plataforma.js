@@ -485,9 +485,19 @@ async function carregarFichaClientePorPerfilPlataforma() {
         limparDadosClientePlataforma();
         atualizarBarraPerfilPlataforma({
             erro: true,
-            texto: `Perfil reconhecido (${perfilExternoDetetado.plataforma}: ${perfilExternoDetetado.utilizador}), mas sem ficha de cliente. Crie/edite a ficha na p\u00e1gina Clientes.`
+            texto: `Perfil reconhecido (${perfilExternoDetetado.plataforma}: ${perfilExternoDetetado.utilizador}), sem ficha de cliente.`
         });
         definirStatusWallapop('');
+        const modalCliente = document.getElementById('admin-cliente-modal');
+        if (!modalCliente || modalCliente.hidden) {
+            window.AdminFichaCliente?.abrirCriacao({
+                url: linkPerfil || perfilExternoDetetado.url || '',
+                utilizador: perfilExternoDetetado.utilizador || '',
+                onCriado: async () => {
+                    await carregarFichaClientePorPerfilPlataforma();
+                }
+            });
+        }
         return null;
     }
     preencherClientePlataformaComFicha(data);
