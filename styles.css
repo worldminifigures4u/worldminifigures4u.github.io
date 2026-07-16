@@ -574,6 +574,8 @@ body{
 .campo-com-limpar > :is(input, textarea){
     box-sizing:border-box;
     width:100%;
+    /* Reserva espaço do X para nao saltar o layout ao escrever */
+    padding-right:calc(var(--campo-limpar-tamanho) + 8px);
 }
 
 .campo-com-limpar > :is(input, textarea).tem-limpar-campo{

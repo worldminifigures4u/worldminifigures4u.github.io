@@ -1877,17 +1877,13 @@ function montarLinhaEdicaoProdutoFornecedor(pedido, item, indice) {
     const sincronizarFalta = () => {
         const pedidoValor = Math.max(0, Math.floor(Number(quantidadeInput.value) || 0));
         const faltaValor = Math.max(0, quantidadeOriginal - pedidoValor);
-        if (faltaValor > 0 && Number(faltaInput.value || 0) === 0) {
-            faltaInput.value = String(faltaValor);
-        }
-        marcarOsInput.checked = Number(faltaInput.value || 0) > 0;
+        faltaInput.value = String(faltaValor);
+        marcarOsInput.checked = faltaValor > 0;
         atualizarAjuste();
     };
     const sincronizarQuantidade = () => {
         const faltaValor = Math.max(0, Math.floor(Number(faltaInput.value) || 0));
-        if (faltaValor > 0) {
-            quantidadeInput.value = String(Math.max(0, quantidadeOriginal - faltaValor));
-        }
+        quantidadeInput.value = String(Math.max(0, quantidadeOriginal - faltaValor));
         marcarOsInput.checked = faltaValor > 0;
         atualizarAjuste();
     };
@@ -1908,10 +1904,23 @@ function montarLinhaEdicaoProdutoFornecedor(pedido, item, indice) {
         }
         atualizarAjuste();
     });
+    // Só sincronizar ao confirmar o valor (change), nao no blur a meio da escrita
     quantidadeInput.addEventListener("change", sincronizarFalta);
-    quantidadeInput.addEventListener("blur", sincronizarFalta);
     faltaInput.addEventListener("change", sincronizarQuantidade);
-    faltaInput.addEventListener("blur", sincronizarQuantidade);
+    [quantidadeInput, faltaInput, precoCustoInput].forEach((inputNumero) => {
+        inputNumero.addEventListener("wheel", (evento) => {
+            // Evita o scroll da pagina alterar o numero e "saltar" o modal
+            if (document.activeElement === inputNumero) {
+                evento.preventDefault();
+            }
+        }, { passive: false });
+        inputNumero.addEventListener("keydown", (evento) => {
+            if (evento.key === "Enter") {
+                evento.preventDefault();
+                inputNumero.blur();
+            }
+        });
+    });
 
     campos.append(quantidade, falta, precoCusto, recebido, marcarOs, remover);
     linha.append(info, campos);
@@ -3628,6 +3637,15 @@ function garantirModalEdicaoFornecedor() {
         if (evento.target === modal) fecharEdicaoPedidoFornecedor();
     });
     modal.querySelector('#fornecedor-edicao-form')?.addEventListener('submit', guardarEdicaoPedidoFornecedor);
+    modal.querySelector('#fornecedor-edicao-form')?.addEventListener('keydown', (evento) => {
+        if (evento.key !== 'Enter') return;
+        const alvo = evento.target;
+        if (!(alvo instanceof HTMLElement)) return;
+        if (alvo.tagName === 'TEXTAREA') return;
+        if (alvo.closest('button[type="submit"], input[type="submit"]')) return;
+        // Evita o Enter nos campos gravar a meio da edição e "saltar" o modal
+        evento.preventDefault();
+    });
     return modal;
 }
 
@@ -3731,12 +3749,14 @@ async function guardarEdicaoPedidoFornecedor(evento) {
         status.textContent = 'Indique o fornecedor.';
         status.classList.remove('status-aviso', 'status-sucesso', 'status-neutro');
         status.classList.add('status-erro');
+        status.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
         return;
     }
     if (!itens.length) {
         status.textContent = 'A encomenda precisa de pelo menos um produto. Cole a lista final e clique em "Aplicar à encomenda", ou desmarque "Remover" nos produtos que quer manter.';
         status.classList.remove('status-aviso', 'status-sucesso', 'status-neutro');
         status.classList.add('status-erro');
+        status.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
         return;
     }
 
