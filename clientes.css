@@ -460,18 +460,10 @@ body.clientes-encomenda-modal-aberto{
     }
 
     .clientes-formulario-links .admin-cliente-notas{
-        min-height:180px;
+        min-height:140px;
         width:100%;
         box-sizing:border-box;
         resize:vertical;
-    }
-
-    .clientes-formulario-links-extra{
-        grid-column:1 / -1;
-        display:grid;
-        grid-template-columns:repeat(2, minmax(0, 1fr));
-        gap:12px 22px;
-        min-width:0;
     }
 
     .clientes-formulario .clientes-restricoes-formulario,
@@ -528,8 +520,7 @@ body.clientes-encomenda-modal-aberto{
 }
 
 .clientes-formulario-dados,
-.clientes-formulario-links,
-.clientes-formulario-links-extra{
+.clientes-formulario-links{
     min-width:0;
 }
 
@@ -548,15 +539,10 @@ body.clientes-encomenda-modal-aberto{
     }
 
     .clientes-formulario-dados,
-    .clientes-formulario-links,
-    .clientes-formulario-links-extra{
+    .clientes-formulario-links{
         display:grid;
         gap:12px;
         grid-column:1;
-    }
-
-    .clientes-formulario-links-extra{
-        grid-template-columns:1fr;
     }
 
     .clientes-formulario .admin-cliente-campo-cp,

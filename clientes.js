@@ -458,18 +458,15 @@ function montarFormularioCliente(dados, opcoes = {}) {
         "url"
     ));
     linksExternos.appendChild(criarTextareaCliente("Notas internas", "notas", cliente.notas, 8));
-    formulario.appendChild(linksExternos);
-
-    const linksExtra = criarElementoCliente("div", "clientes-formulario-links-extra");
     for (let indice = 1; indice < 5; indice += 1) {
-        linksExtra.appendChild(criarInputCliente(
+        linksExternos.appendChild(criarInputCliente(
             `Link externo ${indice + 1}`,
             `perfil_url_${indice + 1}`,
             perfis[indice]?.url || "",
             "url"
         ));
     }
-    formulario.appendChild(linksExtra);
+    formulario.appendChild(linksExternos);
 
     aplicarCamposClienteRegistadoSite(formulario, cliente);
 
