@@ -2634,7 +2634,6 @@ document.getElementById('plataforma-lista-produtos')?.addEventListener('input', 
     window.__plataformaListaPreviaTimer = setTimeout(atualizarPreviaListaProdutosPlataforma, 180);
 });
 document.getElementById('plataforma-lista-produtos')?.addEventListener('paste', () => {
-    document.querySelector('.plataforma-importar-lista')?.setAttribute('open', '');
     clearTimeout(window.__plataformaListaPreviaTimer);
     window.__plataformaListaPreviaTimer = setTimeout(atualizarPreviaListaProdutosPlataforma, 80);
 });

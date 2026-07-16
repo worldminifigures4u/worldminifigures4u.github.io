@@ -105,10 +105,12 @@ body.pagina-wallapop{
             background:#171717;
         }
 
-        .plataforma-importar-lista summary{
-            color:#ffc107;
+        .plataforma-importar-lista-titulo{
+            margin:0 0 12px;
+            color:#fff;
+            font-size:16px;
             font-weight:800;
-            cursor:pointer;
+            line-height:1.2;
         }
 
         .plataforma-importar-lista label{
@@ -121,6 +123,7 @@ body.pagina-wallapop{
 
         .plataforma-importar-lista textarea{
             width:100%;
+            margin-top:0;
             min-height:120px;
             resize:vertical;
             box-sizing:border-box;
