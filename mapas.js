@@ -974,31 +974,52 @@ function criarBadgeLeituraMapa(secao, rotulo, ativo) {
 }
 
 function montarSecaoMediaLeituraMapa(campos, produto) {
-    const secao = criarSecaoEdicaoMapa("Fotos e observações", "mapas-produto-secao-media");
     const imagens = normalizarImagensMapa(produto.imagens);
-    if (imagens.length) {
+    const extras = imagens.slice(1);
+    const observacoes = String(produto.observacoes || "").trim();
+    if (!extras.length && !observacoes) return;
+
+    const secao = criarSecaoEdicaoMapa(
+        extras.length ? "Mais fotos e observações" : "Observações",
+        "mapas-produto-secao-media"
+    );
+    if (extras.length) {
         const preview = document.createElement("div");
         preview.className = "preview-imagens-admin mapas-produto-preview-imagens mapas-produto-preview-leitura";
-        imagens.forEach((url, indice) => {
+        extras.forEach((url, indice) => {
             const figura = document.createElement("figure");
             figura.className = "preview-imagem-admin";
             const img = document.createElement("img");
             img.src = url;
-            img.alt = `Foto ${indice + 1}`;
+            img.alt = `Foto ${indice + 2}`;
             figura.appendChild(img);
             preview.appendChild(figura);
         });
         secao.appendChild(preview);
-    } else {
-        const vazio = document.createElement("p");
-        vazio.className = "mapas-produto-ajuda-media";
-        vazio.textContent = "Sem fotos.";
-        secao.appendChild(vazio);
     }
 
-    const observacoes = String(produto.observacoes || "").trim();
-    criarCampoLeituraMapa(secao, "Observações", observacoes || "—", { largo: true });
+    if (observacoes) {
+        criarCampoLeituraMapa(secao, "Observações", observacoes, { largo: true });
+    }
     campos.appendChild(secao);
+}
+
+function criarFotoPrincipalFichaMapa(produto) {
+    const imagens = normalizarImagensMapa(produto.imagens);
+    const figura = document.createElement("figure");
+    figura.className = "mapas-produto-foto-principal";
+    if (imagens.length) {
+        const img = document.createElement("img");
+        img.src = imagens[0];
+        img.alt = produto.nome || "Foto principal";
+        figura.appendChild(img);
+    } else {
+        const vazio = document.createElement("span");
+        vazio.className = "mapas-produto-foto-principal-vazia";
+        vazio.textContent = "Sem foto";
+        figura.appendChild(vazio);
+    }
+    return figura;
 }
 
 function preencherFichaProdutoMapa(produto) {
@@ -1014,6 +1035,10 @@ function preencherFichaProdutoMapa(produto) {
     modal.dataset.produtoId = String(produto.id || "");
     if (titulo) titulo.textContent = produto.nome || "Ficha do produto";
     atualizarAcoesModalProdutoMapa("ver");
+
+    const topo = document.createElement("div");
+    topo.className = "mapas-produto-ficha-topo";
+    topo.appendChild(criarFotoPrincipalFichaMapa(produto));
 
     const secaoIdentificacao = criarSecaoEdicaoMapa("Identificação", "mapas-produto-secao-identificacao");
     criarCampoLeituraMapa(secaoIdentificacao, "Nome", produto.nome || "", { largo: true });
@@ -1036,7 +1061,8 @@ function preencherFichaProdutoMapa(produto) {
         ["Ativo", produto.ativo !== false]
     ].forEach(([rotulo, ativo]) => criarBadgeLeituraMapa(flagsLista, rotulo, ativo));
     secaoIdentificacao.appendChild(flags);
-    campos.appendChild(secaoIdentificacao);
+    topo.appendChild(secaoIdentificacao);
+    campos.appendChild(topo);
 
     const secaoDetalhes = criarSecaoEdicaoMapa("Detalhes", "mapas-produto-secao-detalhes");
     criarCampoLeituraMapa(secaoDetalhes, "preço compra", `${formatarEuroMapa(produto.preco_compra)} €`);
