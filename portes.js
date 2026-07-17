@@ -9,10 +9,17 @@ let portesLinhas = [];
 let portesZonaAtiva = 'portugal';
 let portesOriginais = new Map();
 
-function formatarPesoPortes(pesoAteG) {
+function formatarGramasPortes(pesoG) {
+    return `${Number(pesoG).toLocaleString('pt-PT')}g`;
+}
+
+function formatarPesoPortes(pesoAteG, pesoAnteriorG = null) {
     const peso = Number(pesoAteG);
-    if (!Number.isFinite(peso) || peso >= 999999) return 'Acima do último escalão';
-    return `Até ${peso.toLocaleString('pt-PT')} g`;
+    const limiteSuperior = (!Number.isFinite(peso) || peso >= 999999) ? 2000 : peso;
+    if (pesoAnteriorG == null || !Number.isFinite(Number(pesoAnteriorG))) {
+        return `Até ${formatarGramasPortes(limiteSuperior)}`;
+    }
+    return `> ${formatarGramasPortes(pesoAnteriorG)} – ${formatarGramasPortes(limiteSuperior)}`;
 }
 
 function formatarPrecoInput(valor) {
@@ -54,12 +61,19 @@ function renderizarTabelaPortes() {
         porPeso.get(chave).push(linha);
     });
 
-    porPeso.forEach((grupo, pesoChave) => {
+    const pesosOrdenados = [...porPeso.keys()]
+        .map((chave) => Number(chave))
+        .sort((a, b) => a - b);
+
+    pesosOrdenados.forEach((pesoNum, indice) => {
+        const pesoChave = String(pesoNum);
+        const grupo = porPeso.get(pesoChave);
+        const pesoAnterior = indice === 0 ? null : pesosOrdenados[indice - 1];
         const secao = document.createElement('section');
         secao.className = 'portes-grupo';
 
         const titulo = document.createElement('h2');
-        titulo.textContent = formatarPesoPortes(pesoChave);
+        titulo.textContent = formatarPesoPortes(pesoNum, pesoAnterior);
         secao.appendChild(titulo);
 
         const tabela = document.createElement('table');
