@@ -1615,6 +1615,35 @@ body.pagina-mapas-admin > main.fornecedores-admin {
     grid-template-columns: 1fr;
 }
 
+.mapas-produto-historico-rececoes {
+    overflow-x: auto;
+}
+
+.mapas-produto-historico-rececoes-tabela {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 560px;
+    font-size: 13px;
+}
+
+.mapas-produto-historico-rececoes-tabela th,
+.mapas-produto-historico-rececoes-tabela td {
+    border-bottom: 1px solid #2c2c2c;
+    padding: 8px 9px;
+    text-align: left;
+    vertical-align: top;
+}
+
+.mapas-produto-historico-rececoes-tabela th {
+    color: #ddd;
+    background: #202020;
+    font-weight: 800;
+}
+
+.mapas-produto-historico-rececoes-tabela td {
+    color: #eee;
+}
+
 .mapas-produto-upload-bloco {
     display: grid;
     gap: 8px;

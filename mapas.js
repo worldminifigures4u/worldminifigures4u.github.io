@@ -28,6 +28,9 @@ let mapasRenderPendente = 0;
 let mapasAtualizacaoPendente = 0;
 let mapasColunasVisiveis = new Set(MAPAS_COLUNAS.map((coluna) => coluna.chave));
 let folhaDinamicaMapas = null;
+let mapasEncomendasFornecedorCache = null;
+let mapasEncomendasFornecedorPromessa = null;
+const MAPAS_FORNECEDORES_STORAGE_KEY = "figures-planet-fornecedores-pedidos";
 
 function definirCssDinamicoMapas(cssTexto) {
     try {
@@ -764,6 +767,188 @@ async function enriquecerMediaProdutoMapa(produto) {
     return atual;
 }
 
+function produtoCorrespondeItemRececaoMapa(produto, item) {
+    if (!produto || !item) return false;
+    const produtoId = String(produto.id || "").trim();
+    const itemId = String(item.id || item.id_produto || item.produto_id || "").trim();
+    const produtoSku = String(produto.sku || "").trim().toUpperCase();
+    const itemSku = String(item.sku || "").trim().toUpperCase();
+    const produtoRef = String(produto.referencia || "").trim().toUpperCase();
+    const itemRef = String(item.referencia || "").trim().toUpperCase();
+    return Boolean(
+        (produtoId && itemId && produtoId === itemId)
+        || (produtoSku && itemSku && produtoSku === itemSku)
+        || (produtoRef && itemRef && produtoRef === itemRef)
+    );
+}
+
+function normalizarPedidoRececaoMapa(pedido) {
+    if (!pedido) return null;
+    let itens = pedido.itens;
+    if (typeof itens === "string") {
+        try { itens = JSON.parse(itens); }
+        catch (_) { itens = []; }
+    }
+    return {
+        id: pedido.id || "",
+        codigo: pedido.codigo || "",
+        fornecedor: pedido.fornecedor || "",
+        referencia: pedido.referencia || "",
+        estado: pedido.estado || "",
+        criado_em: pedido.criado_em || pedido.data || pedido.created_at || "",
+        atualizado_em: pedido.atualizado_em || pedido.updated_at || "",
+        itens: Array.isArray(itens) ? itens : []
+    };
+}
+
+function obterEncomendasFornecedorLocaisMapa() {
+    try {
+        const dados = JSON.parse(localStorage.getItem(MAPAS_FORNECEDORES_STORAGE_KEY) || "[]");
+        return Array.isArray(dados) ? dados.map(normalizarPedidoRececaoMapa).filter(Boolean) : [];
+    } catch (_) {
+        return [];
+    }
+}
+
+async function carregarEncomendasFornecedorMapa(forcar = false) {
+    if (!forcar && Array.isArray(mapasEncomendasFornecedorCache)) {
+        return mapasEncomendasFornecedorCache;
+    }
+    if (!forcar && mapasEncomendasFornecedorPromessa) {
+        return mapasEncomendasFornecedorPromessa;
+    }
+
+    mapasEncomendasFornecedorPromessa = (async () => {
+        try {
+            if (!mapasClient) throw new Error("Supabase indisponível.");
+            const rpc = await mapasClient.rpc("listar_encomendas_fornecedores_admin");
+            if (!rpc.error && Array.isArray(rpc.data)) {
+                mapasEncomendasFornecedorCache = rpc.data.map(normalizarPedidoRececaoMapa).filter(Boolean);
+                return mapasEncomendasFornecedorCache;
+            }
+            const { data, error } = await mapasClient
+                .from("encomendas_fornecedores")
+                .select("id,codigo,fornecedor,referencia,estado,criado_em,atualizado_em,itens")
+                .order("criado_em", { ascending: false })
+                .limit(500);
+            if (error) throw error;
+            mapasEncomendasFornecedorCache = (data || []).map(normalizarPedidoRececaoMapa).filter(Boolean);
+            return mapasEncomendasFornecedorCache;
+        } catch (erro) {
+            console.warn("Não foi possível carregar encomendas a fornecedor; a usar cópia local.", erro);
+            mapasEncomendasFornecedorCache = obterEncomendasFornecedorLocaisMapa();
+            return mapasEncomendasFornecedorCache;
+        } finally {
+            mapasEncomendasFornecedorPromessa = null;
+        }
+    })();
+
+    return mapasEncomendasFornecedorPromessa;
+}
+
+function obterLinhasRececaoProdutoMapa(produto, pedidos) {
+    const linhas = [];
+    (pedidos || []).forEach((pedido) => {
+        (pedido.itens || []).forEach((item) => {
+            if (!produtoCorrespondeItemRececaoMapa(produto, item)) return;
+            const recebido = Math.max(0, Math.floor(Number(item.recebido || 0)));
+            if (recebido <= 0) return;
+            linhas.push({ pedido, item, recebido });
+        });
+    });
+    linhas.sort((a, b) => {
+        const dataA = Date.parse(a.pedido.atualizado_em || a.pedido.criado_em || 0) || 0;
+        const dataB = Date.parse(b.pedido.atualizado_em || b.pedido.criado_em || 0) || 0;
+        return dataB - dataA;
+    });
+    return linhas;
+}
+
+function formatarDataRececaoMapa(pedido) {
+    const bruto = pedido?.atualizado_em || pedido?.criado_em || "";
+    if (!bruto) return "—";
+    const data = new Date(bruto);
+    return Number.isNaN(data.getTime()) ? "—" : data.toLocaleDateString("pt-PT");
+}
+
+function renderizarHistoricoRececoesMapa(conteudo, produto, pedidos) {
+    if (!conteudo) return;
+    const linhas = obterLinhasRececaoProdutoMapa(produto, pedidos);
+    conteudo.replaceChildren();
+
+    if (!linhas.length) {
+        const vazio = document.createElement("p");
+        vazio.className = "mapas-produto-ajuda-media";
+        vazio.textContent = "Ainda não há receções desta figura em encomendas a fornecedores.";
+        conteudo.appendChild(vazio);
+        return;
+    }
+
+    const tabela = document.createElement("table");
+    tabela.className = "mapas-produto-historico-rececoes-tabela";
+    const thead = document.createElement("thead");
+    const linhaCabecalho = document.createElement("tr");
+    ["Data", "Encomenda", "Fornecedor", "Pedido", "Recebido", "Estado"].forEach((rotulo) => {
+        const th = document.createElement("th");
+        th.textContent = rotulo;
+        linhaCabecalho.appendChild(th);
+    });
+    thead.appendChild(linhaCabecalho);
+
+    const tbody = document.createElement("tbody");
+    linhas.forEach(({ pedido, item, recebido }) => {
+        const tr = document.createElement("tr");
+        const pedidoQtd = Math.max(0, Math.floor(Number(
+            item.quantidade_original ?? item.quantidade ?? item.qtd ?? 0
+        )));
+        [
+            formatarDataRececaoMapa(pedido),
+            pedido.codigo || pedido.referencia || "—",
+            pedido.fornecedor || "—",
+            String(pedidoQtd || "—"),
+            String(recebido),
+            pedido.estado || "—"
+        ].forEach((valor) => {
+            const td = document.createElement("td");
+            td.textContent = valor;
+            tr.appendChild(td);
+        });
+        tbody.appendChild(tr);
+    });
+
+    tabela.append(thead, tbody);
+    conteudo.appendChild(tabela);
+
+    const totalRecebido = linhas.reduce((soma, linha) => soma + linha.recebido, 0);
+    const resumo = document.createElement("p");
+    resumo.className = "mapas-produto-ajuda-media";
+    resumo.textContent = `${linhas.length} encomenda(s) · ${totalRecebido} unidade(s) recebida(s)`;
+    conteudo.appendChild(resumo);
+}
+
+function montarSecaoHistoricoRececoesMapa(campos, produto) {
+    const secao = criarSecaoEdicaoMapa("Histórico de receções", "mapas-produto-secao-media mapas-produto-secao-historico");
+    const ajuda = document.createElement("p");
+    ajuda.className = "mapas-produto-ajuda-media";
+    ajuda.textContent = "Encomendas a fornecedores em que esta figura já foi recebida.";
+    const conteudo = document.createElement("div");
+    conteudo.className = "mapas-produto-historico-rececoes";
+    conteudo.id = "mapas-produto-historico-rececoes";
+    conteudo.dataset.produtoId = String(produto.id || "");
+    const loading = document.createElement("p");
+    loading.className = "mapas-produto-ajuda-media";
+    loading.textContent = "A carregar histórico...";
+    conteudo.appendChild(loading);
+    secao.append(ajuda, conteudo);
+    campos.appendChild(secao);
+
+    const produtoId = String(produto.id || "");
+    carregarEncomendasFornecedorMapa().then((pedidos) => {
+        if (conteudo.dataset.produtoId !== produtoId) return;
+        renderizarHistoricoRececoesMapa(conteudo, produto, pedidos);
+    });
+}
+
 function criarCheckboxEdicaoMapa(form, id, rotulo, marcado) {
     const label = document.createElement("label");
     label.className = "mapas-edicao-checkbox";
@@ -885,6 +1070,9 @@ function preencherFormularioProdutoMapa(produto, modo = "editar") {
     campos.appendChild(secaoDetalhes);
 
     montarSecaoMediaEdicaoMapa(campos, produto);
+    if (modo === "editar") {
+        montarSecaoHistoricoRececoesMapa(campos, produto);
+    }
 
     const nomeInput = modal.querySelector("#mapas-editar-nome");
     const skuInput = modal.querySelector("#mapas-editar-sku");
