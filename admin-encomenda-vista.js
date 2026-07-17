@@ -87,24 +87,35 @@ window.AdminEncomendaVista = (function () {
             .trim();
     }
 
-    function envioExigeCodigoSeguimentoCtt(encomenda) {
+    function obterRotuloEnvioRegistado(encomenda) {
+        const nome = String(encomenda?.metodo_envio_nome || "").trim();
+        if (nome) return nome;
         const metodoId = normalizarTextoEnvio(encomenda?.metodo_envio).replace(/\s+/g, "_");
-        if (metodoId === "ctt_registado") return true;
-        const nome = normalizarTextoEnvio(encomenda?.metodo_envio_nome);
-        return nome.includes("ctt") && nome.includes("registado");
+        if (metodoId === "inpost_registado") return "InPost Registado";
+        if (metodoId === "ctt_registado") return "CTT Registado";
+        return "envio registado";
     }
 
-    function pedirCodigoSeguimentoCtt(encomenda) {
+    function envioExigeCodigoSeguimento(encomenda) {
+        const metodoId = normalizarTextoEnvio(encomenda?.metodo_envio).replace(/\s+/g, "_");
+        if (metodoId === "ctt_registado" || metodoId === "inpost_registado") return true;
+        const nome = normalizarTextoEnvio(encomenda?.metodo_envio_nome);
+        if (!nome.includes("registado")) return false;
+        return nome.includes("ctt") || nome.includes("inpost");
+    }
+
+    function pedirCodigoSeguimento(encomenda) {
         const codigoEncomenda = encomenda.codigo_encomenda || encomenda.id || "";
+        const rotuloEnvio = obterRotuloEnvioRegistado(encomenda);
         const atual = String(encomenda.codigo_seguimento || "").trim();
         const resposta = window.prompt(
-            `Encomenda ${codigoEncomenda} · CTT Registado\nIndique o código de envio/seguimento:`,
+            `Encomenda ${codigoEncomenda} · ${rotuloEnvio}\nIndique o código de envio/seguimento:`,
             atual
         );
         if (resposta === null) return null;
         const codigo = String(resposta).trim();
         if (!codigo) {
-            window.alert("O código de envio é obrigatório para CTT Registado.");
+            window.alert(`O código de envio é obrigatório para ${rotuloEnvio}.`);
             return null;
         }
         return codigo;
