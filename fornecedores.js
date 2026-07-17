@@ -1030,6 +1030,9 @@ function rotuloHistoricoFornecedor(tipo) {
     const normalizado = String(tipo || "").trim().toLowerCase();
     if (normalizado === "os") return "OS";
     if (normalizado === "solicitada" || normalizado === "solicitado") return "Solicitada";
+    if (normalizado === "encomendada_os" || normalizado === "encomendada-os" || normalizado === "parcial") {
+        return "Encomendada / OS";
+    }
     if (normalizado === "encomendada" || normalizado === "encomendado") return "Encomendada";
     if (normalizado === "ex") return "EX";
     return String(tipo || "").trim() || "—";
@@ -1039,7 +1042,35 @@ function normalizarTipoHistoricoFornecedor(tipo) {
     const normalizado = String(tipo || "").trim().toLowerCase();
     if (normalizado === "encomendado") return "encomendada";
     if (normalizado === "solicitado") return "solicitada";
+    if (normalizado === "encomendada-os" || normalizado === "parcial") return "encomendada_os";
     return normalizado;
+}
+
+function consolidarHistoricoParcialFornecedor(eventos) {
+    const origem = Array.isArray(eventos) ? eventos : [];
+    const lista = [];
+    for (let i = 0; i < origem.length; i += 1) {
+        const atual = origem[i];
+        const proximo = origem[i + 1];
+        if (atual?.tipo === "encomendada" && proximo?.tipo === "os") {
+            lista.push({
+                tipo: "encomendada_os",
+                data: atual.data || proximo.data || null
+            });
+            i += 1;
+            continue;
+        }
+        if (atual?.tipo === "os" && proximo?.tipo === "encomendada") {
+            lista.push({
+                tipo: "encomendada_os",
+                data: proximo.data || atual.data || null
+            });
+            i += 1;
+            continue;
+        }
+        lista.push(atual);
+    }
+    return lista;
 }
 
 function obterHistoricoFornecedor(valor) {
@@ -1063,9 +1094,12 @@ function obterHistoricoFornecedor(valor) {
                 if (!item) return;
                 if (typeof item === "string") {
                     const maiusculas = item.toUpperCase();
-                    if (maiusculas.includes("OS")) adicionar("os", extrairDataOsDeTextoFornecedor(item));
+                    const temOs = maiusculas.includes("OS");
+                    const temEncomend = maiusculas.includes("ENCOMEND");
+                    if (temOs && temEncomend) adicionar("encomendada_os", extrairDataOsDeTextoFornecedor(item) || item);
+                    else if (temOs) adicionar("os", extrairDataOsDeTextoFornecedor(item));
                     else if (maiusculas.includes("SOLICIT")) adicionar("solicitada", extrairDataOsDeTextoFornecedor(item) || item);
-                    else if (maiusculas.includes("ENCOMEND")) adicionar("encomendada", extrairDataOsDeTextoFornecedor(item) || item);
+                    else if (temEncomend) adicionar("encomendada", extrairDataOsDeTextoFornecedor(item) || item);
                     return;
                 }
                 adicionar(item.tipo || item.estado || item.status, item.data || item.em || item.desde || null);
@@ -1086,9 +1120,11 @@ function obterHistoricoFornecedor(valor) {
         // "OS" / "EX" / "Solicitada" / "Encomendada" sozinhos = marcação, não histórico
     }
 
-    return eventos
-        .filter((item) => !(item.tipo === "os" && !item.data))
-        .sort((a, b) => String(a.data || "").localeCompare(String(b.data || "")));
+    return consolidarHistoricoParcialFornecedor(
+        eventos
+            .filter((item) => !(item.tipo === "os" && !item.data))
+            .sort((a, b) => String(a.data || "").localeCompare(String(b.data || "")))
+    );
 }
 
 function formatarTextoHistoricoFornecedor(historico, estadoAtual = "") {
@@ -1214,7 +1250,7 @@ function corrigirUltimaTentativaParaOs(valorAnterior, novaData = dataOsAgoraForn
     let indice = -1;
     for (let i = historico.length - 1; i >= 0; i -= 1) {
         const tipo = historico[i]?.tipo;
-        if (tipo === "solicitada" || tipo === "encomendada") {
+        if (tipo === "solicitada" || tipo === "encomendada" || tipo === "encomendada_os") {
             indice = i;
             break;
         }
@@ -1254,27 +1290,27 @@ function confirmarTentativaParcialFornecedor(valorAnterior, novaData = dataOsAgo
     const anterior = normalizarMarcacaoFornecedor(valorAnterior);
     const historico = [...(anterior.historico || [])];
     const data = String(novaData || dataOsAgoraFornecedor());
-    let indiceSolicitada = -1;
-    let indiceOs = -1;
+    let indice = -1;
     for (let i = historico.length - 1; i >= 0; i -= 1) {
-        if (indiceSolicitada < 0 && historico[i]?.tipo === "solicitada") indiceSolicitada = i;
-        if (indiceOs < 0 && historico[i]?.tipo === "os") indiceOs = i;
-        if (indiceSolicitada >= 0 && indiceOs >= 0) break;
+        const tipo = historico[i]?.tipo;
+        if (tipo === "solicitada" || tipo === "encomendada" || tipo === "encomendada_os" || tipo === "os") {
+            indice = i;
+            break;
+        }
     }
 
-    if (indiceSolicitada >= 0) {
-        const dataOriginal = String(historico[indiceSolicitada].data || "").trim() || data;
-        historico[indiceSolicitada] = { tipo: "encomendada", data: dataOriginal };
-        if (indiceOs < 0 || indiceOs < indiceSolicitada) {
-            historico.push({ tipo: "os", data });
+    if (indice >= 0) {
+        const dataOriginal = String(historico[indice].data || "").trim() || data;
+        historico[indice] = { tipo: "encomendada_os", data: dataOriginal };
+        // Remove linha OS/Encomendada solta logo a seguir (legado com 2 linhas)
+        while (
+            historico[indice + 1]
+            && (historico[indice + 1].tipo === "os" || historico[indice + 1].tipo === "encomendada")
+        ) {
+            historico.splice(indice + 1, 1);
         }
-    } else if (indiceOs >= 0) {
-        // Já tinha sido convertido só para OS: regista também Encomendada (parcial)
-        const dataOs = String(historico[indiceOs].data || "").trim() || data;
-        historico.splice(indiceOs, 0, { tipo: "encomendada", data: dataOs });
     } else {
-        historico.push({ tipo: "encomendada", data });
-        historico.push({ tipo: "os", data });
+        historico.push({ tipo: "encomendada_os", data });
     }
 
     return montarMarcacaoComHistorico(historico, "OS");
@@ -1375,7 +1411,10 @@ function criarBlocoHistoricoFornecedorFicha(form, id, rotulo, valor) {
     input.value = formatarValorFornecedorParaInput(valor);
     input.placeholder = "OS, EX, Solicitada, Encomendada ou vazio";
     input.dataset.historicoLimpo = "0";
-    input.dataset.historicoEditado = tinhaOsSemData ? "1" : "0";
+    // Persistir limpeza (OS sem data) ou consolidação Encomendada+OS → Encomendada / OS
+    const precisaPersistirHistorico = tinhaOsSemData
+        || (Array.isArray(valor?.historico) && valor.historico.length > historicoAtual.length);
+    input.dataset.historicoEditado = precisaPersistirHistorico ? "1" : "0";
     input.dataset.historicoJson = JSON.stringify(historicoAtual);
     label.appendChild(input);
 
@@ -3451,7 +3490,7 @@ async function sincronizarHistoricoPedidosFornecedor(itens, fornecedorNome, opco
             }
         } else if (modo === "editar") {
             // OS total (nada a receber): atualiza historico já na edição
-            // OS parcial: historico Encomendada+OS só ao confirmar estado Encomendada
+            // OS parcial: historico "Encomendada / OS" só ao confirmar estado Encomendada/Recebida
             if (agoraOs && !eraOs && quantidade <= 0) {
                 atual = corrigirUltimaTentativaParaOs(atual, agora);
                 alterou = true;
@@ -3463,7 +3502,7 @@ async function sincronizarHistoricoPedidosFornecedor(itens, fornecedorNome, opco
             // A preparar → Encomendada
             const parcial = quantidade > 0 && agoraOs;
             if (parcial) {
-                // Histórico: Encomendada + OS | Marcação atual: OS
+                // Histórico: uma linha "Encomendada / OS" | Marcação atual: OS
                 atual = confirmarTentativaParcialFornecedor(atual, agora);
                 alterou = true;
             } else if (agoraOs) {

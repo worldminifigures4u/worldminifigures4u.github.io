@@ -1578,6 +1578,10 @@ body.pagina-fornecedores-admin{ margin:0; padding-left:0; padding-right:0; paddi
     color: #7ddea0;
 }
 
+.fornecedor-historico-item.tipo-encomendada_os .fornecedor-historico-estado {
+    color: #f0c36d;
+}
+
 .fornecedor-historico-vazio {
     color: #888;
     font-size: 13px;
