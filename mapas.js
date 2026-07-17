@@ -267,7 +267,7 @@ function renderizarContadoresMapa(resultados) {
     if (!contador) return;
     contador.querySelectorAll(".mapas-contador-item").forEach(item => item.remove());
     const totalStock = resultados.reduce((acc, produto) => acc + Math.max(0, Number(produto.stock || 0)), 0);
-    const figuras = criarItemContadorMapa(resultados.length === 1 ? "Figura" : "Figuras", resultados.length, true);
+    const figuras = criarItemContadorMapa(resultados.length === 1 ? "Figura" : "Figuras", resultados.length);
     const stock = criarItemContadorMapa("Stock", totalStock);
     const pesquisa = contador.querySelector(".campo-com-limpar, #fornecedor-pesquisa");
     const ancora = pesquisa?.closest?.(".campo-com-limpar") || pesquisa;
