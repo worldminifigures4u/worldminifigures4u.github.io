@@ -1010,8 +1010,8 @@ window.AdminEncomendaVista = (function () {
         }
 
         let codigoSeguimentoPendente = null;
-        if (estado === "Enviado" && estadoAnterior !== "Enviado" && envioExigeCodigoSeguimentoCtt(encomenda)) {
-            codigoSeguimentoPendente = pedirCodigoSeguimentoCtt(encomenda);
+        if (estado === "Enviado" && estadoAnterior !== "Enviado" && envioExigeCodigoSeguimento(encomenda)) {
+            codigoSeguimentoPendente = pedirCodigoSeguimento(encomenda);
             if (!codigoSeguimentoPendente) {
                 select.value = estadoAnterior;
                 return;
@@ -1165,7 +1165,7 @@ window.AdminEncomendaVista = (function () {
                     ? (data?.stock_reduzido ? " Stock reduzido novamente." : " Encomenda recuperada.")
                     : "";
                 const seguimento = codigoSeguimentoPendente
-                    ? ` Seguimento CTT: ${encomenda.codigo_seguimento}.`
+                    ? ` Seguimento: ${encomenda.codigo_seguimento}.`
                     : "";
                 const faturaComErro = mensagemFatura.includes("nao emitida");
                 hooks.definirStatus(

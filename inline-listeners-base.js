@@ -231,37 +231,6 @@
         });
     }
 
-    function ligarPrefetchGestao() {
-        let prefetchFeito = false;
-        const iniciarPrefetch = function () {
-            if (prefetchFeito) return;
-            prefetchFeito = true;
-            [
-                'gestao.html',
-                'gestao-admin-loader.js',
-                'app-admin-gestao-loader.js',
-                'gestao.css',
-                'conta.css',
-                'styles-admin.css',
-                'app-sessao.js',
-                'app-sku.js'
-            ].forEach(function (href) {
-                if (document.querySelector('link[rel="prefetch"][href="' + href + '"]')) return;
-                const link = document.createElement('link');
-                link.rel = 'prefetch';
-                link.href = href;
-                link.as = href.endsWith('.html') ? 'document' : (href.endsWith('.css') ? 'style' : 'script');
-                document.head.appendChild(link);
-            });
-        };
-
-        document.querySelectorAll('.acao-gestao-admin').forEach(function (elemento) {
-            elemento.addEventListener('mouseenter', iniciarPrefetch, { once: true });
-            elemento.addEventListener('focus', iniciarPrefetch, { once: true });
-            elemento.addEventListener('touchstart', iniciarPrefetch, { once: true, passive: true });
-        });
-    }
-
     function ligarPrefetchCarrinho() {
         let prefetchFeito = false;
         const iniciarPrefetch = function () {
@@ -453,7 +422,6 @@
             ligarPrefetchFavoritos();
             ligarPrefetchCarrinho();
             ligarPrefetchConta();
-            ligarPrefetchGestao();
             if (config.rodape) inserirRodapeSite();
             atualizarContadorCarrinhoTopo();
             window.addEventListener('storage', atualizarContadorCarrinhoTopo);
