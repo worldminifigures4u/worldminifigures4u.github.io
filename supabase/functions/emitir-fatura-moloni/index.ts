@@ -32,10 +32,18 @@ type EncomendaRow = {
   total: number | string | null;
   portes: number | string | null;
   metodo_pagamento: string | null;
+  pais_cliente: string | null;
+  regiao_envio: string | null;
   moloni_document_id: number | null;
   moloni_fatura_numero: string | null;
   data_pagamento: string | null;
   created_at: string | null;
+};
+
+type DestinoFatura = {
+  codigo: "PT" | "EST";
+  etiqueta: "Portugal" | "Estrangeiro";
+  pais: string;
 };
 
 type DocumentProductLine = {
@@ -204,6 +212,37 @@ function mensagemErrosMoloni(erros: MoloniError[] | null | undefined): string {
   return erros.map((erro) => `${erro.field || "campo"}: ${erro.msg || "erro"}`).join("; ");
 }
 
+function resolverDestinoFatura(encomenda: EncomendaRow): DestinoFatura {
+  const candidatos = [
+    encomenda.pais_cliente,
+    encomenda.regiao_envio,
+  ]
+    .map((valor) => String(valor || "").trim())
+    .filter(Boolean);
+
+  const paisBruto = candidatos[0] || "Portugal";
+  const paisNormalizado = normalizarTexto(paisBruto);
+  const ePortugal = !paisNormalizado
+    || paisNormalizado === "portugal"
+    || paisNormalizado === "pt"
+    || paisNormalizado.startsWith("portugal");
+
+  return {
+    codigo: ePortugal ? "PT" : "EST",
+    etiqueta: ePortugal ? "Portugal" : "Estrangeiro",
+    pais: paisBruto,
+  };
+}
+
+function construirNotasFatura(encomenda: EncomendaRow, destino: DestinoFatura): string {
+  const partes = [
+    `Destino: ${destino.etiqueta}`,
+    destino.pais && destino.etiqueta === "Estrangeiro" ? `Pais: ${destino.pais}` : "",
+    encomenda.metodo_pagamento ? `Pagamento: ${String(encomenda.metodo_pagamento).trim()}` : "",
+  ].filter(Boolean);
+  return partes.join(" | ");
+}
+
 async function moloniRequest<T>(query: string, variables: Record<string, unknown>): Promise<T> {
   const apiKey = Deno.env.get("MOLONI_API_KEY");
   if (!apiKey) {
@@ -296,6 +335,8 @@ async function criarFaturaReciboMoloni(
   const portesBruto = numero(encomenda.portes);
   const linhas = construirLinhasFatura(totalBruto, portesBruto, productIdLote, productIdPortes);
   const referencia = String(encomenda.codigo_encomenda || encomenda.id).trim();
+  const destino = resolverDestinoFatura(encomenda);
+  const notasFatura = construirNotasFatura(encomenda, destino);
   const notasPagamento = String(encomenda.metodo_pagamento || "").trim();
 
   const query = `
@@ -323,7 +364,8 @@ async function criarFaturaReciboMoloni(
       expirationDate: formatarDataVencimento(vencimento),
       status: invoiceStatus,
       yourReference: referencia,
-      notes: notasPagamento || undefined,
+      ourReference: destino.codigo,
+      notes: notasFatura || undefined,
       products: linhas,
       payments: [
         {
@@ -406,7 +448,7 @@ Deno.serve(async (request) => {
   const supabaseAdmin = createClient(supabaseUrl, serviceRoleKey);
   const { data: encomenda, error: encomendaError } = await supabaseAdmin
     .from("encomendas")
-    .select("id, codigo_encomenda, estado, origem, total, portes, metodo_pagamento, moloni_document_id, moloni_fatura_numero, data_pagamento, created_at")
+    .select("id, codigo_encomenda, estado, origem, total, portes, metodo_pagamento, pais_cliente, regiao_envio, moloni_document_id, moloni_fatura_numero, data_pagamento, created_at")
     .eq("id", encomendaId)
     .maybeSingle();
 
@@ -434,6 +476,7 @@ Deno.serve(async (request) => {
   }
 
   try {
+    const destino = resolverDestinoFatura(encomendaRow);
     const paymentMethodId = resolverPaymentMethodId(encomendaRow.metodo_pagamento, pagamentosMoloni);
     if (!paymentMethodId) {
       throw new Error("Nao foi possivel determinar o metodo de pagamento Moloni para esta encomenda.");
@@ -478,6 +521,8 @@ Deno.serve(async (request) => {
       numero: numeroFatura,
       total: fatura.totalValue,
       status: fatura.status,
+      destino: destino.codigo,
+      destino_etiqueta: destino.etiqueta,
     });
   } catch (error) {
     const mensagem = error instanceof Error ? error.message : "Erro ao emitir fatura.";
