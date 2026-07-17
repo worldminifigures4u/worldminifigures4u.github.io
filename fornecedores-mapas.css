@@ -916,16 +916,17 @@ body.pagina-mapas-admin > main.fornecedores-admin {
 }
 
 .mapas-copiar-lista {
-    border: 0;
-    background: #ffc400;
-    color: #000;
-    padding: 8px 14px;
-    font-weight: 800;
+    border: 1px solid #555;
+    background: #242424;
+    color: #fff;
+    padding: 0 12px;
+    font-weight: 700;
     cursor: pointer;
 }
 
 .mapas-copiar-lista:hover {
-    filter: brightness(1.05);
+    border-color: #ffc400;
+    color: #ffc400;
 }
 
 .mapas-contador-item {
