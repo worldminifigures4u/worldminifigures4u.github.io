@@ -746,10 +746,6 @@ async function iniciarPainelEncomendas() {
 document.getElementById('pesquisa-encomendas-admin').addEventListener('input', renderizarEncomendasAdmin);
 document.getElementById('pesquisa-figura-encomendas-admin').addEventListener('input', renderizarEncomendasAdmin);
 document.getElementById('filtro-estado-encomendas-admin').addEventListener('change', renderizarEncomendasAdmin);
-document.getElementById('btn-atualizar-encomendas').addEventListener('click', async () => {
-    try { await carregarEncomendasAdmin(); }
-    catch (error) { definirStatusEncomendas('Erro ao carregar: ' + (error.message || 'sem detalhe'), true); }
-});
 document.getElementById('admin-imagem-modal-fechar').addEventListener('click', fecharImagemProdutoEncomenda);
 document.getElementById('admin-cliente-fechar').addEventListener('click', fecharFichaClienteAdmin);
 document.getElementById('admin-cliente-modal').addEventListener('click', evento => {
