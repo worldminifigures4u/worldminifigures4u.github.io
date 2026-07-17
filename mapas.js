@@ -50,7 +50,22 @@ function definirCssDinamicoMapas(cssTexto) {
 }
 
 function normalizarMapa(texto) {
-    return String(texto || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
+    return String(texto || "")
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .replace(/[\u200B-\u200D\uFEFF]/g, "")
+        .toLowerCase()
+        .replace(/\s+/g, " ")
+        .trim();
+}
+
+function produtoPassaPesquisaMapa(produto, termo) {
+    if (!termo) return true;
+    const haystack = String(produto.pesquisa || "");
+    if (haystack.includes(termo)) return true;
+    // Pesquisa por palavras: "Doctor Evazan" encontra mesmo com espaços a mais no nome
+    const tokens = termo.split(" ").filter(Boolean);
+    return tokens.length > 0 && tokens.every((token) => haystack.includes(token));
 }
 
 function normalizarSkuMapa(valor) {
@@ -218,11 +233,6 @@ function normalizarProdutoMapa(produto) {
         normalizado.subtema
     ].join(" "));
     return normalizado;
-}
-
-function produtoPassaPesquisaMapa(produto, termo) {
-    if (!termo) return true;
-    return String(produto.pesquisa || "").includes(termo);
 }
 
 function produtoPassaFiltroStockMapa(produto, filtro) {
@@ -1248,6 +1258,7 @@ function preencherFichaProdutoMapa(produto) {
 
     montarSecaoMediaLeituraMapa(campos, produto);
     montarSecaoHistoricoRececoesMapa(campos, produto);
+    montarSecaoHistoricoVendasMapa(campos, produto);
 }
 
 function atualizarAcoesModalProdutoMapa(modo) {
