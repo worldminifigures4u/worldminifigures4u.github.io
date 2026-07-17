@@ -180,6 +180,11 @@ async function iniciarPainelPortes() {
     const bloqueio = document.getElementById('portes-bloqueio');
     const aplicacao = document.getElementById('portes-aplicacao');
 
+    await window.carregarScriptSupabase();
+    if (typeof supabase === 'undefined') {
+        throw new Error('A biblioteca Supabase não carregou.');
+    }
+
     portesClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
     const { data: { user }, error } = await portesClient.auth.getUser();
     if (error || !user || !ADMIN_EMAILS.includes(String(user.email || '').toLowerCase())) {
