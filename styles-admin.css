@@ -64,6 +64,7 @@ body.pagina-encomendas-admin .navegacao-admin-cabecalho,
 body.pagina-fornecedores-admin .navegacao-admin-cabecalho,
 body.pagina-mapas-admin .navegacao-admin-cabecalho,
 body.pagina-estatisticas-admin .navegacao-admin-cabecalho,
+body.pagina-portes-admin .navegacao-admin-cabecalho,
 body.pagina-wallapop .navegacao-admin-cabecalho{
     grid-column:1;
     grid-row:1;
@@ -78,6 +79,7 @@ body.pagina-wallapop .navegacao-admin-cabecalho{
     body.pagina-fornecedores-admin .navegacao-admin-cabecalho,
     body.pagina-mapas-admin .navegacao-admin-cabecalho,
     body.pagina-estatisticas-admin .navegacao-admin-cabecalho,
+    body.pagina-portes-admin .navegacao-admin-cabecalho,
     body.pagina-wallapop .navegacao-admin-cabecalho{
         grid-column:1;
         grid-row:1;
@@ -90,6 +92,7 @@ body.pagina-wallapop .navegacao-admin-cabecalho{
     body.pagina-fornecedores-admin .navegacao-admin-cabecalho,
     body.pagina-mapas-admin .navegacao-admin-cabecalho,
     body.pagina-estatisticas-admin .navegacao-admin-cabecalho,
+    body.pagina-portes-admin .navegacao-admin-cabecalho,
     body.pagina-wallapop .navegacao-admin-cabecalho{
         grid-column:1;
         grid-row:1;

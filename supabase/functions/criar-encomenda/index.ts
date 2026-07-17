@@ -46,66 +46,91 @@ type Cliente = {
 };
 
 const PESO_PADRAO_PRODUTO_GRAMAS = 10;
+const PORTES_PESO_ABERTO_G = 999999;
 type OpcaoEnvio = {
   id: string;
   nome: string;
   valor: number;
 };
 
-const TABELA_PORTES_POR_PESO: Record<string, Array<{ ate: number; opcoes: OpcaoEnvio[] }>> = {
+const TABELA_PORTES_FALLBACK: Record<string, Array<{ ate: number; opcoes: OpcaoEnvio[] }>> = {
   portugal: [
     { ate: 100, opcoes: [
       { id: "entrega_tomar", nome: "Entrega em Tomar (Portugal)", valor: 0 },
-      { id: "ctt_normal", nome: "CTT Normal", valor: 1.75 },
-      { id: "ctt_azul", nome: "CTT Azul", valor: 2.20 },
-      { id: "ctt_registado", nome: "CTT Registado", valor: 4.50 },
-      { id: "inpost_registado", nome: "InPost Registado (com seguro de 25\u20ac)", valor: 4.95 },
+      { id: "ctt_normal", nome: "CTT Normal", valor: 1.94 },
+      { id: "ctt_azul", nome: "CTT Azul", valor: 2.58 },
+      { id: "ctt_registado", nome: "CTT Registado", valor: 5.66 },
+      { id: "inpost_registado", nome: "InPost Registado (com seguro de 25\u20ac)", valor: 5.85 },
     ]},
     { ate: 500, opcoes: [
       { id: "entrega_tomar", nome: "Entrega em Tomar (Portugal)", valor: 0 },
-      { id: "ctt_normal", nome: "CTT Normal", valor: 2.50 },
-      { id: "ctt_azul", nome: "CTT Azul", valor: 3.95 },
-      { id: "ctt_registado", nome: "CTT Registado", valor: 5.30 },
-      { id: "inpost_registado", nome: "InPost Registado (com seguro de 25\u20ac)", valor: 4.95 },
+      { id: "ctt_normal", nome: "CTT Normal", valor: 2.88 },
+      { id: "ctt_azul", nome: "CTT Azul", valor: 4.80 },
+      { id: "ctt_registado", nome: "CTT Registado", valor: 6.64 },
+      { id: "inpost_registado", nome: "InPost Registado (com seguro de 25\u20ac)", valor: 5.85 },
+    ]},
+    { ate: 1000, opcoes: [
+      { id: "entrega_tomar", nome: "Entrega em Tomar (Portugal)", valor: 0 },
+      { id: "ctt_normal", nome: "CTT Normal", valor: 6.83 },
+      { id: "ctt_azul", nome: "CTT Azul", valor: 9.59 },
+      { id: "ctt_registado", nome: "CTT Registado", valor: 10.98 },
+      { id: "inpost_registado", nome: "InPost Registado (com seguro de 25\u20ac)", valor: 6.67 },
     ]},
     { ate: Infinity, opcoes: [
       { id: "entrega_tomar", nome: "Entrega em Tomar (Portugal)", valor: 0 },
-      { id: "ctt_normal", nome: "CTT Normal", valor: 5.75 },
-      { id: "ctt_azul", nome: "CTT Azul", valor: 7.95 },
-      { id: "ctt_registado", nome: "CTT Registado", valor: 8.95 },
-      { id: "inpost_registado", nome: "InPost Registado (com seguro de 25\u20ac)", valor: 5.65 },
+      { id: "ctt_normal", nome: "CTT Normal", valor: 6.83 },
+      { id: "ctt_azul", nome: "CTT Azul", valor: 9.59 },
+      { id: "ctt_registado", nome: "CTT Registado", valor: 10.98 },
+      { id: "inpost_registado", nome: "InPost Registado (com seguro de 25\u20ac)", valor: 7.24 },
     ]},
   ],
   espanha: [
     { ate: 100, opcoes: [
-      { id: "ctt_registado", nome: "CTT Registado", valor: 5.80 },
-      { id: "inpost_registado", nome: "InPost Registado", valor: 5.12 },
+      { id: "ctt_registado", nome: "CTT Registado", valor: 7.13 },
+      { id: "inpost_registado", nome: "InPost Registado", valor: 6.30 },
     ]},
     { ate: 250, opcoes: [
-      { id: "ctt_registado", nome: "CTT Registado", valor: 7.55 },
-      { id: "inpost_registado", nome: "InPost Registado", valor: 5.12 },
+      { id: "ctt_registado", nome: "CTT Registado", valor: 9.29 },
+      { id: "inpost_registado", nome: "InPost Registado", valor: 6.30 },
     ]},
     { ate: 500, opcoes: [
-      { id: "ctt_registado", nome: "CTT Registado", valor: 9.80 },
-      { id: "inpost_registado", nome: "InPost Registado", valor: 5.12 },
+      { id: "ctt_registado", nome: "CTT Registado", valor: 12.05 },
+      { id: "inpost_registado", nome: "InPost Registado", valor: 6.30 },
     ]},
     { ate: 1000, opcoes: [
-      { id: "ctt_registado", nome: "CTT Registado", valor: 13.20 },
-      { id: "inpost_registado", nome: "InPost Registado", valor: 5.81 },
+      { id: "ctt_registado", nome: "CTT Registado", valor: 16.24 },
+      { id: "inpost_registado", nome: "InPost Registado", valor: 6.30 },
     ]},
     { ate: Infinity, opcoes: [
-      { id: "ctt_registado", nome: "CTT Registado", valor: 21.20 },
-      { id: "inpost_registado", nome: "InPost Registado", valor: 6.64 },
+      { id: "ctt_registado", nome: "CTT Registado", valor: 26.08 },
+      { id: "inpost_registado", nome: "InPost Registado", valor: 7.15 },
     ]},
   ],
   europa: [
-    { ate: 100, opcoes: [{ id: "ctt_registado", nome: "CTT Registado", valor: 5.80 }] },
-    { ate: 250, opcoes: [{ id: "ctt_registado", nome: "CTT Registado", valor: 7.55 }] },
-    { ate: 500, opcoes: [{ id: "ctt_registado", nome: "CTT Registado", valor: 9.80 }] },
-    { ate: 1000, opcoes: [{ id: "ctt_registado", nome: "CTT Registado", valor: 13.20 }] },
-    { ate: Infinity, opcoes: [{ id: "ctt_registado", nome: "CTT Registado", valor: 21.20 }] },
+    { ate: 100, opcoes: [
+      { id: "ctt_normal", nome: "CTT Normal", valor: 3.26 },
+      { id: "ctt_registado", nome: "CTT Registado", valor: 7.13 },
+    ]},
+    { ate: 250, opcoes: [
+      { id: "ctt_normal", nome: "CTT Normal", valor: 5.23 },
+      { id: "ctt_registado", nome: "CTT Registado", valor: 9.29 },
+    ]},
+    { ate: 500, opcoes: [
+      { id: "ctt_normal", nome: "CTT Normal", valor: 8.67 },
+      { id: "ctt_registado", nome: "CTT Registado", valor: 12.05 },
+    ]},
+    { ate: 1000, opcoes: [
+      { id: "ctt_normal", nome: "CTT Normal", valor: 13.35 },
+      { id: "ctt_registado", nome: "CTT Registado", valor: 16.24 },
+    ]},
+    { ate: Infinity, opcoes: [
+      { id: "ctt_normal", nome: "CTT Normal", valor: 22.72 },
+      { id: "ctt_registado", nome: "CTT Registado", valor: 26.08 },
+    ]},
   ],
 };
+
+let TABELA_PORTES_POR_PESO = TABELA_PORTES_FALLBACK;
 
 const ZONA_PORTES_POR_PAIS: Record<string, string> = {
   portugal: "portugal",
@@ -139,6 +164,77 @@ const ZONA_PORTES_POR_PAIS: Record<string, string> = {
 
 function obterZonaPortesPorPais(regiao: string) {
   return ZONA_PORTES_POR_PAIS[regiao] || "europa";
+}
+
+type LinhaPortesDb = {
+  zona: string;
+  peso_ate_g: number;
+  metodo_id: string;
+  nome_exibicao: string;
+  preco: number;
+  ativo?: boolean | null;
+  ordem?: number | null;
+};
+
+function montarTabelaPortesDeLinhas(linhas: LinhaPortesDb[]) {
+  const tabela: Record<string, Array<{ ate: number; opcoes: OpcaoEnvio[]; _ordemPeso?: number }>> = {
+    portugal: [],
+    espanha: [],
+    europa: [],
+  };
+  const porZonaPeso = new Map<string, { ate: number; opcoes: Array<OpcaoEnvio & { _ordem?: number }>; _ordemPeso: number }>();
+
+  for (const linha of linhas) {
+    if (!linha || linha.ativo === false) continue;
+    const zona = String(linha.zona || "");
+    if (!tabela[zona]) continue;
+    const pesoNum = Number(linha.peso_ate_g);
+    const pesoAte = !Number.isFinite(pesoNum) || pesoNum >= PORTES_PESO_ABERTO_G ? Infinity : pesoNum;
+    const chave = `${zona}|${linha.peso_ate_g}`;
+    if (!porZonaPeso.has(chave)) {
+      const escalao = { ate: pesoAte, opcoes: [] as Array<OpcaoEnvio & { _ordem?: number }>, _ordemPeso: pesoNum || 0 };
+      porZonaPeso.set(chave, escalao);
+      tabela[zona].push(escalao);
+    }
+    porZonaPeso.get(chave)!.opcoes.push({
+      id: String(linha.metodo_id || ""),
+      nome: String(linha.nome_exibicao || linha.metodo_id || ""),
+      valor: Math.round(Number(linha.preco || 0) * 100) / 100,
+      _ordem: Number(linha.ordem || 0),
+    });
+  }
+
+  for (const zona of Object.keys(tabela)) {
+    tabela[zona].sort((a, b) => (a._ordemPeso || 0) - (b._ordemPeso || 0));
+    for (const escalao of tabela[zona]) {
+      escalao.opcoes.sort((a, b) => (a._ordem || 0) - (b._ordem || 0));
+      for (const opcao of escalao.opcoes) delete opcao._ordem;
+      delete escalao._ordemPeso;
+    }
+  }
+
+  if (!tabela.portugal.length && !tabela.espanha.length && !tabela.europa.length) {
+    return null;
+  }
+  return tabela as typeof TABELA_PORTES_FALLBACK;
+}
+
+async function carregarTabelaPortesRemota(adminClient: ReturnType<typeof createClient>) {
+  const { data, error } = await adminClient
+    .from("portes_tarifas")
+    .select("zona, peso_ate_g, metodo_id, nome_exibicao, preco, ativo, ordem")
+    .eq("ativo", true)
+    .order("zona")
+    .order("peso_ate_g")
+    .order("ordem");
+
+  if (error || !data?.length) {
+    TABELA_PORTES_POR_PESO = TABELA_PORTES_FALLBACK;
+    return;
+  }
+
+  const montada = montarTabelaPortesDeLinhas(data as LinhaPortesDb[]);
+  TABELA_PORTES_POR_PESO = montada || TABELA_PORTES_FALLBACK;
 }
 
 function obterOpcoesEnvio(regiao: string, pesoTotal: number) {
@@ -304,6 +400,7 @@ Deno.serve(async (req) => {
     const metodoPagamento = String(payload.metodo_pagamento || "Nao especificado");
     const produtoIds = [...new Set(itens.map((item) => item.id_produto))];
     const adminClient = createClient(supabaseUrl, serviceRoleKey);
+    await carregarTabelaPortesRemota(adminClient);
 
     const { data: clienteData } = await adminClient
       .from("clientes")

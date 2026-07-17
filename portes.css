@@ -1,0 +1,107 @@
+.pagina-portes-admin .portes-admin{
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 1.25rem 1rem 3rem;
+}
+
+.portes-topo{
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: 1.25rem;
+}
+
+.portes-topo h1{
+    margin: 0 0 0.35rem;
+    font-size: 1.55rem;
+}
+
+.portes-ajuda{
+    margin: 0;
+    max-width: 42rem;
+    color: #555;
+    font-size: 0.95rem;
+    line-height: 1.4;
+}
+
+.portes-acoes{
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+}
+
+.portes-tabs{
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    margin-bottom: 1rem;
+}
+
+.portes-tab{
+    border: 1px solid #cfcfcf;
+    background: #fff;
+    color: #222;
+    padding: 0.45rem 0.9rem;
+    border-radius: 6px;
+    cursor: pointer;
+    font: inherit;
+}
+
+.portes-tab.ativa,
+.portes-tab[aria-selected="true"]{
+    border-color: #1f6feb;
+    background: #eaf2ff;
+    color: #0b3d91;
+    font-weight: 600;
+}
+
+.portes-grupo{
+    margin-bottom: 1.5rem;
+}
+
+.portes-grupo h2{
+    margin: 0 0 0.65rem;
+    font-size: 1.05rem;
+}
+
+.portes-tabela{
+    width: 100%;
+    border-collapse: collapse;
+    background: #fff;
+}
+
+.portes-tabela th,
+.portes-tabela td{
+    border: 1px solid #e2e2e2;
+    padding: 0.55rem 0.65rem;
+    text-align: left;
+    vertical-align: middle;
+}
+
+.portes-tabela th{
+    background: #f6f6f6;
+    font-size: 0.86rem;
+    font-weight: 600;
+}
+
+.portes-tabela input[type="number"]{
+    width: 7.5rem;
+    max-width: 100%;
+    padding: 0.35rem 0.45rem;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font: inherit;
+}
+
+.portes-tabela .portes-alterado{
+    background: #fff8e6;
+}
+
+@media (max-width: 700px){
+    .portes-tabela th:nth-child(2),
+    .portes-tabela td:nth-child(2){
+        display: none;
+    }
+}

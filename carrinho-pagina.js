@@ -15,18 +15,27 @@
     }
 
     function garantirAppPortes() {
-        if (typeof obterZonaPortesPorPais === 'function') return Promise.resolve();
+        if (typeof obterZonaPortesPorPais === 'function' && typeof garantirTabelaPortesCarregada === 'function') {
+            return garantirTabelaPortesCarregada();
+        }
         if (!promessaPortes) {
-            promessaPortes = carregarScript('app-portes.js?v=20260713-r25');
+            promessaPortes = carregarScript('app-portes.js?v=20260717-portes')
+                .then(() => typeof garantirTabelaPortesCarregada === 'function'
+                    ? garantirTabelaPortesCarregada()
+                    : undefined);
         }
         return promessaPortes;
     }
 
     function garantirModulosEnvioCarrinho() {
-        if (typeof atualizarOpcoesEnvio === 'function') return Promise.resolve();
+        if (typeof atualizarOpcoesEnvio === 'function') {
+            return typeof garantirTabelaPortesCarregada === 'function'
+                ? garantirTabelaPortesCarregada().then(() => undefined)
+                : Promise.resolve();
+        }
         if (!promessaEnvio) {
             promessaEnvio = garantirAppPortes()
-                .then(() => carregarScript('carrinho-envio.js?v=20260714-r1'));
+                .then(() => carregarScript('carrinho-envio.js?v=20260717-portes'));
         }
         return promessaEnvio;
     }

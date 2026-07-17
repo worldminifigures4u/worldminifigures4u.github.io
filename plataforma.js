@@ -1,94 +1,7 @@
 
 const WALLAPOP_STORAGE_KEY = "figures-planet-wallapop-itens";
 const PESO_PADRAO_PLATAFORMA = 10;
-const TABELA_PORTES_PLATAFORMA = {
-    portugal: [
-        { ate: 100, opcoes: [
-            { id: 'entrega_tomar', nome: 'Entrega em m\u00e3o em Tomar', valor: 0 },
-            { id: 'ctt_normal', nome: 'CTT Normal', valor: 1.75 },
-            { id: 'ctt_azul', nome: 'CTT Azul', valor: 2.20 },
-            { id: 'ctt_registado', nome: 'CTT Registado', valor: 4.50 },
-            { id: 'inpost_registado', nome: 'InPost Registado (com seguro de 25\u20ac)', valor: 4.95 }
-        ]},
-        { ate: 500, opcoes: [
-            { id: 'entrega_tomar', nome: 'Entrega em m\u00e3o em Tomar', valor: 0 },
-            { id: 'ctt_normal', nome: 'CTT Normal', valor: 2.50 },
-            { id: 'ctt_azul', nome: 'CTT Azul', valor: 3.95 },
-            { id: 'ctt_registado', nome: 'CTT Registado', valor: 5.30 },
-            { id: 'inpost_registado', nome: 'InPost Registado (com seguro de 25\u20ac)', valor: 4.95 }
-        ]},
-        { ate: Infinity, opcoes: [
-            { id: 'entrega_tomar', nome: 'Entrega em m\u00e3o em Tomar', valor: 0 },
-            { id: 'ctt_normal', nome: 'CTT Normal', valor: 5.75 },
-            { id: 'ctt_azul', nome: 'CTT Azul', valor: 7.95 },
-            { id: 'ctt_registado', nome: 'CTT Registado', valor: 8.95 },
-            { id: 'inpost_registado', nome: 'InPost Registado (com seguro de 25\u20ac)', valor: 5.65 }
-        ]}
-    ],
-    espanha: [
-        { ate: 100, opcoes: [
-            { id: 'ctt_registado', nome: 'CTT Registado', valor: 5.80 },
-            { id: 'inpost_registado', nome: 'InPost Registado', valor: 5.12 }
-        ]},
-        { ate: 250, opcoes: [
-            { id: 'ctt_registado', nome: 'CTT Registado', valor: 7.55 },
-            { id: 'inpost_registado', nome: 'InPost Registado', valor: 5.12 }
-        ]},
-        { ate: 500, opcoes: [
-            { id: 'ctt_registado', nome: 'CTT Registado', valor: 9.80 },
-            { id: 'inpost_registado', nome: 'InPost Registado', valor: 5.12 }
-        ]},
-        { ate: 1000, opcoes: [
-            { id: 'ctt_registado', nome: 'CTT Registado', valor: 13.20 },
-            { id: 'inpost_registado', nome: 'InPost Registado', valor: 5.81 }
-        ]},
-        { ate: Infinity, opcoes: [
-            { id: 'ctt_registado', nome: 'CTT Registado', valor: 21.20 },
-            { id: 'inpost_registado', nome: 'InPost Registado', valor: 6.64 }
-        ]}
-    ],
-    europa: [
-        { ate: 100, opcoes: [{ id: 'ctt_registado', nome: 'CTT Registado', valor: 5.80 }] },
-        { ate: 250, opcoes: [{ id: 'ctt_registado', nome: 'CTT Registado', valor: 7.55 }] },
-        { ate: 500, opcoes: [{ id: 'ctt_registado', nome: 'CTT Registado', valor: 9.80 }] },
-        { ate: 1000, opcoes: [{ id: 'ctt_registado', nome: 'CTT Registado', valor: 13.20 }] },
-        { ate: Infinity, opcoes: [{ id: 'ctt_registado', nome: 'CTT Registado', valor: 21.20 }] }
-    ]
-};
 
-const ZONA_PORTES_PLATAFORMA = {
-    portugal: 'portugal',
-    espanha: 'espanha',
-    alemanha: 'europa',
-    austria: 'europa',
-    belgica: 'europa',
-    bulgaria: 'europa',
-    chequia: 'europa',
-    chipre: 'europa',
-    croacia: 'europa',
-    dinamarca: 'europa',
-    eslovaquia: 'europa',
-    eslovenia: 'europa',
-    estonia: 'europa',
-    finlandia: 'europa',
-    franca: 'europa',
-    grecia: 'europa',
-    hungria: 'europa',
-    irlanda: 'europa',
-    italia: 'europa',
-    letonia: 'europa',
-    lituania: 'europa',
-    luxemburgo: 'europa',
-    malta: 'europa',
-    paises_baixos: 'europa',
-    polonia: 'europa',
-    romenia: 'europa',
-    suecia: 'europa'
-};
-
-function obterZonaPortesPlataforma(paisEnvio) {
-    return ZONA_PORTES_PLATAFORMA[paisEnvio] || 'europa';
-}
 const WALLAPOP_SEM_IMAGEM = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(
     '<svg xmlns="http://www.w3.org/2000/svg" width="500" height="500"><rect width="100%" height="100%" fill="#f1f1f1"/><text x="50%" y="50%" text-anchor="middle" dominant-baseline="middle" fill="#777" font-family="Arial" font-size="34">Sem foto</text></svg>'
 );
@@ -523,9 +436,15 @@ function calcularPesoPlataforma() {
 
 function obterOpcoesEnvioPlataforma(regiao, peso) {
     if (peso <= 0) return [];
-    const zonaEnvio = obterZonaPortesPlataforma(regiao);
-    const tabela = TABELA_PORTES_PLATAFORMA[zonaEnvio] || TABELA_PORTES_PLATAFORMA.portugal;
-    return (tabela.find(linha => peso <= linha.ate) || tabela[tabela.length - 1]).opcoes;
+    const zonaEnvio = typeof obterZonaPortesPorPais === 'function'
+        ? obterZonaPortesPorPais(regiao)
+        : (regiao === 'espanha' ? 'espanha' : (regiao === 'portugal' ? 'portugal' : 'europa'));
+    const tabela = (typeof TABELA_PORTES_POR_PESO !== 'undefined' && TABELA_PORTES_POR_PESO)
+        ? TABELA_PORTES_POR_PESO
+        : {};
+    const zona = tabela[zonaEnvio] || tabela.portugal || [];
+    if (!zona.length) return [];
+    return (zona.find(linha => peso <= linha.ate) || zona[zona.length - 1]).opcoes;
 }
 
 function calcularPortesPlataforma(valorBase) {
@@ -2599,6 +2518,9 @@ async function iniciarWallapopAdmin() {
         }
 
         mostrarNavegacaoAdminValidada();
+        if (typeof garantirTabelaPortesCarregada === 'function') {
+            await garantirTabelaPortesCarregada().catch(() => {});
+        }
         window.AdminFichaCliente?.configurar({
             client: wallapopClient,
             formatarEuro: formatarEuroWallapop,
@@ -2612,6 +2534,7 @@ async function iniciarWallapopAdmin() {
         renderizarSelecionadosWallapop();
         renderizarFolhaWallapop();
         atualizarModoPlataforma();
+        atualizarOpcoesEnvioPlataforma();
 
         const codigoEditar = new URLSearchParams(window.location.search).get('editar');
         if (codigoEditar) {

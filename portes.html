@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdn.jsdelivr.net; connect-src 'self' https://cdn.jsdelivr.net https://gksndzxadndrsynvzgzb.supabase.co wss://gksndzxadndrsynvzgzb.supabase.co; img-src 'self' data: blob: https://res.cloudinary.com https://gksndzxadndrsynvzgzb.supabase.co; style-src 'self'; font-src 'self' data:; frame-src 'none'; object-src 'none'; base-uri 'self'; form-action 'self';">
+    <meta name="referrer" content="strict-origin-when-cross-origin">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+    <link rel="preconnect" href="https://gksndzxadndrsynvzgzb.supabase.co" crossorigin>
+
+    <meta name="robots" content="noindex, nofollow, noarchive, nosnippet">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <title>Portes | Figures Planet</title>
+    <link rel="icon" type="image/webp" href="favicon-32.webp?v=20260711-leve" sizes="32x32">
+    <link rel="stylesheet" href="styles.css?v=20260716-sem-setas-number">
+    <link rel="stylesheet" href="styles-admin.css?v=20260717-portes">
+    <link rel="stylesheet" href="portes.css?v=20260717-portes">
+    <link rel="stylesheet" href="styles-tema.css?v=20260713-r25" media="print" data-async-css>
+    <noscript><link rel="stylesheet" href="styles-tema.css?v=20260713-r25"></noscript>
+    <script src="async-css.js?v=20260713-r25"></script>
+</head>
+<body class="pagina-portes-admin cabecalho-com-admin pagina-com-cabecalho-site">
+    <header class="cabecalho-site-admin">
+        <div class="cabecalho-loja">
+            <a class="logo-loja" href="index.html" aria-label="Figures Planet - Produtos">
+                <img src="figures-planet-logo-transparent.webp?v=20260711-leve" alt="Figures Planet" width="383" height="100" decoding="async" fetchpriority="high">
+            </a>
+            <form class="cabecalho-pesquisa" action="index.html" method="get">
+                <input type="search" name="q" class="input-pesquisa" placeholder="O que estás à procura?">
+                <span class="icone-pesquisa" aria-hidden="true"></span>
+            </form>
+            <div class="acoes-cabecalho acoes-cabecalho-publicas">
+                <a class="acao-cabecalho" href="conta.html" aria-label="Abrir area de cliente" data-vista-nav="conta">
+                    <span class="icone-acao" aria-hidden="true"></span>
+                    <span class="texto-acao">
+                        <strong>Conta</strong>
+                        <span class="detalhe-conta-cabecalho" id="nome-login-cabecalho"></span>
+                    </span>
+                </a>
+                <a class="acao-cabecalho acao-favoritos-topo" href="favoritos.html" aria-label="Abrir favoritos" title="Favoritos" data-vista-nav="favoritos">
+                    <svg class="icone-coracao-favorito" viewBox="0 0 100 92" aria-hidden="true" focusable="false">
+                        <path d="M50 84 L14 48 C3 37 3 18 15 9 C27 0 44 4 50 20 C56 4 73 0 85 9 C97 18 97 37 86 48 Z" fill="none" stroke="currentColor" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"></path>
+                    </svg>
+                </a>
+                <a class="acao-cabecalho acao-carrinho" href="carrinho.html" aria-label="Abrir carrinho" data-vista-nav="carrinho">
+                    <span class="icone-acao" aria-hidden="true"></span>
+                    <span class="badge-carrinho" id="contador-carrinho-cabecalho">0</span>
+                </a>
+            </div>
+            <nav class="navegacao-admin-cabecalho" aria-label="Navegação administrativa" hidden>
+                <a class="acao-cabecalho acao-plataforma-admin" href="plataforma.html" aria-label="Gerir plataformas">Plataformas</a>
+                <a class="acao-cabecalho acao-clientes-admin" href="clientes.html" aria-label="Gerir clientes">Clientes</a>
+                <a class="acao-cabecalho acao-encomendas-admin" href="encomendas.html" aria-label="Gerir encomendas">Encomendas</a>
+                <a class="acao-cabecalho acao-fornecedores-admin" href="fornecedores.html" aria-label="Gerir fornecedores">Fornecedores</a>
+                <a class="acao-cabecalho acao-mapas-admin" href="mapas.html" aria-label="Gerir mapas">Mapas</a>
+                <a class="acao-cabecalho acao-estatisticas-admin" href="estatisticas.html" aria-label="Ver estatísticas">Estatísticas</a>
+                <a class="acao-cabecalho acao-portes-admin ativa" href="portes.html" aria-label="Gerir portes de envio">Portes</a>
+                <a class="acao-cabecalho acao-conta-admin" href="conta.html" aria-label="Abrir conta">Conta</a>
+            </nav>
+        </div>
+    </header>
+
+    <div class="wallapop-bloqueio" id="portes-bloqueio">A verificar acesso administrativo...</div>
+
+    <main class="portes-admin" id="portes-aplicacao" hidden>
+        <section class="portes-topo">
+            <div>
+                <h1>Portes de envio</h1>
+                <p class="portes-ajuda">Os preços são os que o cliente paga no site (já com IVA). No Moloni o líquido fica ≈ preço ÷ 1,23.</p>
+            </div>
+            <div class="portes-acoes">
+                <button type="button" class="btn-admin-secundario" id="btn-recarregar-portes">Recarregar</button>
+                <button type="button" class="wallapop-botao wallapop-botao-destaque" id="btn-guardar-portes">Guardar alterações</button>
+            </div>
+        </section>
+
+        <div class="portes-tabs" role="tablist" aria-label="Zonas de envio">
+            <button type="button" class="portes-tab ativa" data-zona="portugal" role="tab" aria-selected="true">Portugal</button>
+            <button type="button" class="portes-tab" data-zona="espanha" role="tab" aria-selected="false">Espanha</button>
+            <button type="button" class="portes-tab" data-zona="europa" role="tab" aria-selected="false">Europa</button>
+        </div>
+
+        <section class="portes-painel" id="portes-painel" aria-label="Tabela de tarifas"></section>
+        <p class="wallapop-status" id="portes-status" aria-live="polite"></p>
+    </main>
+
+    <script src="supabase-cdn.js?v=20260711-leve" defer></script>
+    <script src="app-config.js?v=20260713-r25" defer></script>
+    <script src="app-portes.js?v=20260717-portes" defer></script>
+    <script src="portes.js?v=20260717-portes" defer></script>
+    <script src="campo-limpar.js?v=20260716-x-igual" defer></script>
+    <script src="inline-listeners-base.js?v=20260713-r25" defer></script>
+    <script src="inline-listeners-admin.js?v=20260713-r25" defer></script>
+</body>
+</html>
