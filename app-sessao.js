@@ -209,6 +209,10 @@ async function sincronizarFichaClienteSiteRemota() {
     try {
         const { data: { session } } = await dbClient.auth.getSession();
         if (!session?.user?.email_confirmed_at) return;
+        const email = String(session.user.email || '').trim().toLowerCase();
+        if (typeof ADMIN_EMAILS !== 'undefined' && ADMIN_EMAILS.map((e) => String(e).toLowerCase()).includes(email)) {
+            return;
+        }
         if (typeof window.sincronizarFichaClienteSite === 'function') {
             await window.sincronizarFichaClienteSite();
             return;

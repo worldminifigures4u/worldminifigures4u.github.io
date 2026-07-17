@@ -30,6 +30,10 @@ async function sincronizarFichaClienteSite() {
     try {
         const { data: { session } } = await dbClient.auth.getSession();
         if (!session?.user) return;
+        const email = String(session.user.email || '').trim().toLowerCase();
+        if (typeof ADMIN_EMAILS !== 'undefined' && ADMIN_EMAILS.map((e) => String(e).toLowerCase()).includes(email)) {
+            return;
+        }
         await dbClient.rpc('sincronizar_ficha_cliente_site');
     } catch (erro) {
         console.warn('Ficha cliente site nao sincronizada:', erro);
