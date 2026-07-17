@@ -10,9 +10,9 @@ const MAPAS_COLUNAS = [
     { chave: "lego", rotulo: "lego", classe: "mapas-col-lego" },
     { chave: "sku", rotulo: "sku", classe: "mapas-col-sku" },
     { chave: "top", rotulo: "top", classe: "mapas-col-top" },
-    { chave: "arquivado", rotulo: "arquivado", classe: "mapas-col-arquivado" },
-    { chave: "descontinuado", rotulo: "descontinuado", classe: "mapas-col-descontinuado" },
-    { chave: "novidade", rotulo: "novidade", classe: "mapas-col-novidade" },
+    { chave: "arquivado", rotulo: "arq.", classe: "mapas-col-arquivado", titulo: "arquivado" },
+    { chave: "descontinuado", rotulo: "desc.", classe: "mapas-col-descontinuado", titulo: "descontinuado" },
+    { chave: "novidade", rotulo: "nov.", classe: "mapas-col-novidade", titulo: "novidade" },
     { chave: "peso", rotulo: "peso", classe: "mapas-col-peso", numero: true }
 ];
 
@@ -178,6 +178,7 @@ function criarCabecalhoTabelaMapa() {
     MAPAS_COLUNAS.forEach(coluna => {
         const th = document.createElement("th");
         th.className = coluna.classe || "";
+        th.title = coluna.titulo || coluna.rotulo;
         th.textContent = coluna.rotulo + (mapasOrdenacao.coluna === coluna.chave ? (mapasOrdenacao.direcao === "asc" ? " ▲" : " ▼") : "");
         th.addEventListener("click", () => {
             if (mapasOrdenacao.coluna === coluna.chave) {

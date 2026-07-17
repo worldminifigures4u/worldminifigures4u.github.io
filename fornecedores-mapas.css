@@ -428,9 +428,29 @@ body.pagina-fornecedores-admin{ margin:0; padding-left:0; padding-right:0; paddi
 
 
 /* Mapa de fornecedor em formato de folha de calculo */
+body.pagina-mapas-admin.pagina-fornecedores-admin {
+    overflow-x: auto;
+}
+
+body.pagina-mapas-admin > main.fornecedores-admin {
+    width: calc(100% - 16px);
+    max-width: none;
+    box-sizing: border-box;
+}
+
 .pagina-mapas-admin .fornecedores-admin,
 .pagina-fornecedores-unificada .fornecedores-admin {
     max-width: 1680px;
+}
+
+.pagina-mapas-admin .fornecedores-admin {
+    max-width: none;
+}
+
+.pagina-mapas-admin .fornecedores-painel-mapa {
+    min-width: 0;
+    padding: 12px;
+    overflow: hidden;
 }
 
 .pagina-mapas-admin .fornecedores-grid-mapas {
@@ -879,6 +899,10 @@ body.pagina-fornecedores-admin{ margin:0; padding-left:0; padding-right:0; paddi
     font-size: 14px;
 }
 
+.pagina-mapas-admin .mapas-produtos-tabela {
+    font-size: 13px;
+}
+
 .mapas-produtos-tabela th {
     position: sticky;
     top: 0;
@@ -896,12 +920,28 @@ body.pagina-fornecedores-admin{ margin:0; padding-left:0; padding-right:0; paddi
     box-shadow: inset 0 -1px 0 rgba(255, 255, 255, 0.03);
 }
 
+.pagina-mapas-admin .mapas-produtos-tabela th {
+    padding: 7px 5px;
+    font-size: 11px;
+    letter-spacing: 0.02em;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
 .mapas-produtos-tabela td {
     padding: 7px 8px;
     border: 1px solid #333;
     color: #fff;
     vertical-align: middle;
     background: #111;
+}
+
+.pagina-mapas-admin .mapas-produtos-tabela td {
+    padding: 5px 5px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .mapas-produtos-tabela tbody tr:nth-child(even) td {
@@ -936,6 +976,14 @@ body.pagina-fornecedores-admin{ margin:0; padding-left:0; padding-right:0; paddi
     text-align: left;
 }
 
+.pagina-mapas-admin .mapas-celula-nome {
+    display: block;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
 .mapas-celula-nome:hover {
     color: #ffc400;
 }
@@ -958,6 +1006,22 @@ body.pagina-fornecedores-admin{ margin:0; padding-left:0; padding-right:0; paddi
 .mapas-col-pendente { width: 88px; }
 .mapas-col-previsto { width: 88px; }
 .mapas-col-qtd { width: 82px; }
+
+/* Proporções para caber na viewport sem cortar a última coluna */
+.pagina-mapas-admin .mapas-col-nome { width: 16%; }
+.pagina-mapas-admin .mapas-col-ref { width: 9%; }
+.pagina-mapas-admin .mapas-col-stock { width: 5%; }
+.pagina-mapas-admin .mapas-col-tema { width: 10%; }
+.pagina-mapas-admin .mapas-col-subtema { width: 11%; }
+.pagina-mapas-admin .mapas-col-preco,
+.pagina-mapas-admin .mapas-col-preco-compra { width: 7%; }
+.pagina-mapas-admin .mapas-col-lego,
+.pagina-mapas-admin .mapas-col-sku,
+.pagina-mapas-admin .mapas-col-top,
+.pagina-mapas-admin .mapas-col-peso { width: 5%; }
+.pagina-mapas-admin .mapas-col-arquivado,
+.pagina-mapas-admin .mapas-col-descontinuado,
+.pagina-mapas-admin .mapas-col-novidade { width: 7%; }
 
 .mapas-col-lego,
 .mapas-col-preco-compra,
