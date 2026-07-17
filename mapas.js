@@ -267,10 +267,18 @@ function renderizarContadoresMapa(resultados) {
     if (!contador) return;
     contador.querySelectorAll(".mapas-contador-item").forEach(item => item.remove());
     const totalStock = resultados.reduce((acc, produto) => acc + Math.max(0, Number(produto.stock || 0)), 0);
-    contador.append(
-        criarItemContadorMapa(resultados.length === 1 ? "figura" : "figuras", resultados.length, true),
-        criarItemContadorMapa("stock", totalStock)
-    );
+    const figuras = criarItemContadorMapa(resultados.length === 1 ? "Figura" : "Figuras", resultados.length, true);
+    const stock = criarItemContadorMapa("Stock", totalStock);
+    const pesquisa = contador.querySelector(".campo-com-limpar, #fornecedor-pesquisa");
+    const ancora = pesquisa?.closest?.(".campo-com-limpar") || pesquisa;
+    if (ancora?.nextSibling) {
+        contador.insertBefore(figuras, ancora.nextSibling);
+        contador.insertBefore(stock, figuras.nextSibling);
+    } else if (ancora) {
+        ancora.after(figuras, stock);
+    } else {
+        contador.prepend(figuras, stock);
+    }
 }
 
 function criarCabecalhoTabelaMapa() {
