@@ -732,7 +732,7 @@ function garantirScriptImportacaoGestao() {
 
     promessaScriptImportacaoGestao = new Promise((resolve, reject) => {
         const script = document.createElement('script');
-        script.src = 'gestao-importacao.js?v=20260715-catalogo-sem-stock';
+        script.src = 'gestao-importacao.js?v=20260717-catalogo-ativo-auto';
         script.defer = true;
         script.onload = () => {
             scriptImportacaoGestaoCarregado = true;

@@ -1,5 +1,6 @@
--- Importação de catálogo que preserva stock e ativo dos produtos existentes.
--- Correr no Supabase SQL Editor antes de usar a opção "Atualizar catálogo (sem alterar stock)".
+-- Importação de catálogo que preserva stock dos produtos existentes.
+-- Ativo fica automático: stock > 0 → ativo; stock = 0 → inativo.
+-- Correr no Supabase SQL Editor.
 
 create or replace function public.importar_produtos_sem_stock_admin(p_produtos jsonb)
 returns jsonb
@@ -10,6 +11,7 @@ as $$
 declare
   v_produto jsonb;
   v_importados integer := 0;
+  v_stock integer;
 begin
   if lower(coalesce(auth.jwt() ->> 'email', '')) <>
      'worldminifigures4u@gmail.com' then
@@ -22,6 +24,8 @@ begin
 
   for v_produto in select value from jsonb_array_elements(p_produtos)
   loop
+    v_stock := greatest(coalesce((v_produto->>'stock')::integer, 0), 0);
+
     insert into public.produtos (
       sku,
       referencia,
@@ -53,12 +57,12 @@ begin
         when lower(trim(coalesce(v_produto->>'novidade', ''))) in ('1', 'true', 't', 'yes', 'y', 'sim', 's', 'x', 'verdadeiro') then true
         else false
       end,
-      coalesce((v_produto->>'stock')::integer, 0),
+      v_stock,
       trim(v_produto->>'tema'),
       coalesce(nullif(trim(v_produto->>'subtema'), ''), 'semsubtema'),
       (v_produto->>'peso')::numeric,
       coalesce(v_produto->'fornecedores', '{}'::jsonb),
-      coalesce((v_produto->>'ativo')::boolean, false)
+      v_stock > 0
     )
     on conflict (sku) do update set
       referencia = excluded.referencia,
@@ -73,7 +77,8 @@ begin
       tema = excluded.tema,
       subtema = excluded.subtema,
       peso = excluded.peso,
-      fornecedores = excluded.fornecedores;
+      fornecedores = excluded.fornecedores,
+      ativo = (public.produtos.stock > 0);
 
     v_importados := v_importados + 1;
   end loop;

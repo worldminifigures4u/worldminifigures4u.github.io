@@ -751,7 +751,7 @@ async function confirmarImportacaoCatalogoSemStockAdmin() {
 
         botao.disabled = true;
         descarregarBackupCatalogoAdmin();
-        mostrarMensagem(status, 'Backup criado. A atualizar o catálogo (stock preservado)...');
+        mostrarMensagem(status, 'Backup criado. A atualizar o catálogo (stock preservado, ativo conforme stock)...');
 
         const stockAntes = somarStockProdutos(todosOsProdutos);
         const tamanhoLote = 100;
