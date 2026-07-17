@@ -1839,30 +1839,30 @@ function montarLinhaEdicaoProdutoFornecedor(pedido, item, indice) {
     const quantidade = document.createElement("label");
     quantidade.textContent = "A receber";
     const quantidadeInput = document.createElement("input");
-    quantidadeInput.type = "number";
-    quantidadeInput.min = "0";
-    quantidadeInput.step = "1";
-    quantidadeInput.value = quantidadeAtual;
+    quantidadeInput.type = "text";
+    quantidadeInput.inputMode = "numeric";
+    quantidadeInput.autocomplete = "off";
+    quantidadeInput.value = String(quantidadeAtual);
     quantidadeInput.dataset.campo = "quantidade";
     quantidade.appendChild(quantidadeInput);
 
     const falta = document.createElement("label");
     falta.textContent = "OS/Falta";
     const faltaInput = document.createElement("input");
-    faltaInput.type = "number";
-    faltaInput.min = "0";
-    faltaInput.step = "1";
-    faltaInput.value = faltaAtual;
+    faltaInput.type = "text";
+    faltaInput.inputMode = "numeric";
+    faltaInput.autocomplete = "off";
+    faltaInput.value = String(faltaAtual);
     faltaInput.dataset.campo = "falta_os";
     falta.appendChild(faltaInput);
 
     const precoCusto = document.createElement("label");
     precoCusto.textContent = "preço compra";
     const precoCustoInput = document.createElement("input");
-    precoCustoInput.type = "number";
-    precoCustoInput.min = "0";
-    precoCustoInput.step = "0.01";
-    precoCustoInput.value = precoCustoAtual.toFixed(2);
+    precoCustoInput.type = "text";
+    precoCustoInput.inputMode = "decimal";
+    precoCustoInput.autocomplete = "off";
+    precoCustoInput.value = precoCustoAtual.toFixed(2).replace(".", ",");
     precoCustoInput.dataset.campo = "preco_custo";
     precoCusto.appendChild(precoCustoInput);
 
@@ -1895,8 +1895,15 @@ function montarLinhaEdicaoProdutoFornecedor(pedido, item, indice) {
     removerInput.dataset.campo = "remover";
     remover.append(removerInput, document.createTextNode(" Remover"));
 
+    const lerNumeroCampo = (input, casas = 0) => {
+        const bruto = String(input?.value || "").trim().replace(",", ".");
+        const numero = Number(bruto);
+        if (!Number.isFinite(numero) || numero < 0) return 0;
+        if (casas <= 0) return Math.floor(numero);
+        return Math.round(numero * (10 ** casas)) / (10 ** casas);
+    };
     const atualizarAjuste = () => {
-        const faltaValor = Math.max(0, Math.floor(Number(faltaInput.value) || 0));
+        const faltaValor = lerNumeroCampo(faltaInput);
         ajuste.className = faltaValor > 0 ? "fornecedor-ajuste-os ativo" : "fornecedor-ajuste-os";
         ajuste.textContent = faltaValor > 0
             ? `Inicial: ${quantidadeOriginal} | OS: ${faltaValor}`
@@ -1905,26 +1912,32 @@ function montarLinhaEdicaoProdutoFornecedor(pedido, item, indice) {
     };
 
     const sincronizarFalta = () => {
-        const pedidoValor = Math.max(0, Math.floor(Number(quantidadeInput.value) || 0));
+        const pedidoValor = lerNumeroCampo(quantidadeInput);
+        quantidadeInput.value = String(pedidoValor);
         const faltaValor = Math.max(0, quantidadeOriginal - pedidoValor);
         faltaInput.value = String(faltaValor);
         marcarOsInput.checked = faltaValor > 0;
         atualizarAjuste();
     };
     const sincronizarQuantidade = () => {
-        const faltaValor = Math.max(0, Math.floor(Number(faltaInput.value) || 0));
+        const faltaValor = lerNumeroCampo(faltaInput);
+        faltaInput.value = String(faltaValor);
         quantidadeInput.value = String(Math.max(0, quantidadeOriginal - faltaValor));
         marcarOsInput.checked = faltaValor > 0;
         atualizarAjuste();
     };
+    const confirmarPreco = () => {
+        const preco = lerNumeroCampo(precoCustoInput, 2);
+        precoCustoInput.value = preco.toFixed(2).replace(".", ",");
+    };
     marcarOsInput.addEventListener("change", () => {
         if (marcarOsInput.checked) {
-            const quantidadeAtualLinha = Math.max(0, Math.floor(Number(quantidadeInput.value) || 0));
+            const quantidadeAtualLinha = lerNumeroCampo(quantidadeInput);
             if (quantidadeAtualLinha >= quantidadeOriginal) {
                 faltaInput.value = String(Math.max(1, quantidadeOriginal));
                 quantidadeInput.value = "0";
             } else {
-                const faltaValor = Math.max(1, quantidadeOriginal - quantidadeAtualLinha, Number(faltaInput.value) || 0);
+                const faltaValor = Math.max(1, quantidadeOriginal - quantidadeAtualLinha, lerNumeroCampo(faltaInput));
                 faltaInput.value = String(faltaValor);
                 quantidadeInput.value = String(Math.max(0, quantidadeOriginal - faltaValor));
             }
@@ -1934,16 +1947,14 @@ function montarLinhaEdicaoProdutoFornecedor(pedido, item, indice) {
         }
         atualizarAjuste();
     });
-    // Só sincronizar ao confirmar o valor (change), nao no blur a meio da escrita
+    // Aceitar valor ao sair da célula (clicar fora) ou ao pressionar Enter
     quantidadeInput.addEventListener("change", sincronizarFalta);
+    quantidadeInput.addEventListener("blur", sincronizarFalta);
     faltaInput.addEventListener("change", sincronizarQuantidade);
+    faltaInput.addEventListener("blur", sincronizarQuantidade);
+    precoCustoInput.addEventListener("change", confirmarPreco);
+    precoCustoInput.addEventListener("blur", confirmarPreco);
     [quantidadeInput, faltaInput, precoCustoInput].forEach((inputNumero) => {
-        inputNumero.addEventListener("wheel", (evento) => {
-            // Evita o scroll da pagina alterar o numero e "saltar" o modal
-            if (document.activeElement === inputNumero) {
-                evento.preventDefault();
-            }
-        }, { passive: false });
         inputNumero.addEventListener("keydown", (evento) => {
             if (evento.key === "Enter") {
                 evento.preventDefault();
