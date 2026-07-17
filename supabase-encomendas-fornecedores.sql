@@ -278,14 +278,19 @@ as $$
 declare
     encomenda public.encomendas_fornecedores;
     item jsonb;
-    rececao jsonb;
     novos_itens jsonb := '[]'::jsonb;
+    aplicado jsonb := '[]'::jsonb;
     produto_id_text text;
-    qtd_recebida int;
+    qtd_pedida int;
+    qtd_ja_recebida int;
+    qtd_solicitada int;
+    qtd_aplicar int;
+    qtd_pendente int;
     novo_recebido int;
     algum_recebido boolean := false;
     tudo_recebido boolean := true;
     atualizada public.encomendas_fornecedores;
+    v_stock_atual int;
 begin
     if not public.admin_fornecedores_autorizado() then
         raise exception 'Acesso reservado ao administrador.';
@@ -300,53 +305,79 @@ begin
         raise exception 'Encomenda de fornecedor nao encontrada.';
     end if;
 
-    for rececao in select value from jsonb_array_elements(coalesce(p_recebidos, '[]'::jsonb)) loop
-        produto_id_text := coalesce(rececao ->> 'produto_id', rececao ->> 'id');
-        qtd_recebida := greatest(0, coalesce((rececao ->> 'quantidade')::int, 0));
-
-        if produto_id_text is not null and qtd_recebida > 0 then
-            -- Se a figura era novidade e estava a 0, ao entrar stock deixa de ser novidade
-            update public.produtos
-            set
-                novidade = case
-                    when coalesce(stock, 0) = 0 then false
-                    else novidade
-                end,
-                stock = coalesce(stock, 0) + qtd_recebida,
-                ativo = (coalesce(stock, 0) + qtd_recebida) > 0
-            where id::text = produto_id_text;
-        end if;
-    end loop;
-
-    for item in select value from jsonb_array_elements(encomenda.itens) loop
+    for item in select value from jsonb_array_elements(coalesce(encomenda.itens, '[]'::jsonb)) loop
         produto_id_text := item ->> 'id';
+        qtd_pedida := greatest(0, coalesce((item ->> 'quantidade')::int, 0));
+        qtd_ja_recebida := greatest(0, coalesce((item ->> 'recebido')::int, 0));
+        qtd_pendente := greatest(0, qtd_pedida - qtd_ja_recebida);
+
         select coalesce(sum(greatest(0, coalesce((r.value ->> 'quantidade')::int, 0))), 0)
-        into qtd_recebida
+        into qtd_solicitada
         from jsonb_array_elements(coalesce(p_recebidos, '[]'::jsonb)) as r(value)
         where coalesce(r.value ->> 'produto_id', r.value ->> 'id') = produto_id_text;
 
-        novo_recebido := coalesce((item ->> 'recebido')::int, 0) + qtd_recebida;
+        qtd_aplicar := least(qtd_solicitada, qtd_pendente);
+
+        if produto_id_text is not null and qtd_aplicar > 0 then
+            select coalesce(stock, 0)
+            into v_stock_atual
+            from public.produtos
+            where id::text = produto_id_text
+            for update;
+
+            if not found then
+                raise exception 'Produto % nao encontrado no catalogo.', produto_id_text;
+            end if;
+
+            update public.produtos
+            set
+                novidade = case
+                    when v_stock_atual = 0 then false
+                    else novidade
+                end,
+                stock = v_stock_atual + qtd_aplicar,
+                ativo = (v_stock_atual + qtd_aplicar) > 0
+            where id::text = produto_id_text;
+
+            aplicado := aplicado || jsonb_build_array(jsonb_build_object(
+                'produto_id', produto_id_text,
+                'quantidade', qtd_aplicar,
+                'solicitada', qtd_solicitada,
+                'pendente_antes', qtd_pendente
+            ));
+        end if;
+
+        novo_recebido := qtd_ja_recebida + qtd_aplicar;
         if novo_recebido > 0 then
             algum_recebido := true;
         end if;
-        if novo_recebido < coalesce((item ->> 'quantidade')::int, 0) then
+        if novo_recebido < qtd_pedida then
             tudo_recebido := false;
         end if;
 
         novos_itens := novos_itens || jsonb_set(item, '{recebido}', to_jsonb(novo_recebido), true);
     end loop;
 
+    if jsonb_array_length(novos_itens) = 0 then
+        tudo_recebido := false;
+        algum_recebido := false;
+    end if;
+
     update public.encomendas_fornecedores
     set itens = novos_itens,
         estado = case
-            when tudo_recebido then 'Recebida'
+            when tudo_recebido and jsonb_array_length(novos_itens) > 0 then 'Recebida'
             when algum_recebido then 'Recebida parcialmente'
             else estado
         end
     where id = encomenda.id
     returning * into atualizada;
 
-    return to_jsonb(atualizada);
+    return jsonb_build_object(
+        'sucesso', true,
+        'encomenda', to_jsonb(atualizada),
+        'recebido_aplicado', aplicado
+    );
 end;
 $$;
 

@@ -4014,6 +4014,7 @@ function renderizarPedidoFornecedorProdutosTabela(caixa, pedido) {
         const input = document.createElement("input");
         input.type = "number";
         input.min = "0";
+        input.max = String(restante);
         input.step = "1";
         input.value = restante > 0 ? restante : 0;
         input.className = "mapa-quantidade-input fornecedor-recebido-input";
@@ -4122,6 +4123,7 @@ function renderizarPedidosFornecedores() {
                 const input = document.createElement("input");
                 input.type = "number";
                 input.min = "0";
+                input.max = String(restante);
                 input.step = "1";
                 input.value = restante > 0 ? restante : 0;
                 input.className = "fornecedor-recebido-input";
@@ -4186,12 +4188,15 @@ async function receberPedidoFornecedor(id) {
     const pedido = fornecedorPedidos.find(item => item.id === id);
     if (!pedido) return;
     const linhas = Array.from(document.querySelectorAll(`.fornecedor-recebido-input[data-pedido="${CSS.escape(id)}"]`));
-    const rececoes = linhas.map(input => ({
-        produto_id: input.dataset.produto,
-        quantidade: Math.max(0, Math.floor(Number(input.value) || 0))
-    })).filter(item => item.quantidade > 0);
+    const rececoes = linhas.map(input => {
+        const produtoId = input.dataset.produto;
+        const itemPedido = (pedido.itens || []).find(item => String(item.id) === String(produtoId));
+        const pendente = Math.max(0, Number(itemPedido?.quantidade || 0) - Number(itemPedido?.recebido || 0));
+        const quantidade = Math.min(pendente, Math.max(0, Math.floor(Number(input.value) || 0)));
+        return { produto_id: produtoId, quantidade };
+    }).filter(item => item.quantidade > 0);
     if (!rececoes.length) {
-        definirStatusFornecedor('Indique pelo menos uma quantidade recebida.', true);
+        definirStatusFornecedor('Indique pelo menos uma quantidade recebida (dentro do pendente).', true);
         return;
     }
     if (!window.confirm(`Atualizar stock de ${rececoes.length} produto(s) da encomenda ${obterTextoCodigoPedidoFornecedor(pedido)}?`)) return;
@@ -4202,26 +4207,36 @@ async function receberPedidoFornecedor(id) {
             p_recebidos: rececoes
         });
         if (error) throw error;
+        if (data?.sucesso === false) {
+            throw new Error(data?.erro || 'Nao foi possivel receber stock.');
+        }
 
-        // Atualiza cache local: novidade sai quando o stock passa de 0
-        rececoes.forEach(rececao => {
-            const produto = fornecedorProdutos.find(item => String(item.id) === String(rececao.produto_id));
-            if (!produto) return;
+        const aplicado = Array.isArray(data?.recebido_aplicado) ? data.recebido_aplicado : rececoes;
+        aplicado.forEach(rececao => {
+            const produtoId = rececao.produto_id || rececao.id;
+            const qtd = Math.max(0, Number(rececao.quantidade || 0));
+            const produto = fornecedorProdutos.find(item => String(item.id) === String(produtoId));
+            if (!produto || qtd <= 0) return;
             const stockAntes = Math.max(0, Number(produto.stock || 0));
             if (stockAntes === 0 && obterBooleanoProdutoFornecedor(produto.novidade)) {
                 produto.novidade = false;
             }
-            produto.stock = stockAntes + Math.max(0, Number(rececao.quantidade || 0));
+            produto.stock = stockAntes + qtd;
             if (produto.ativo === false && produto.stock > 0) produto.ativo = true;
         });
 
-        const atualizado = normalizarPedidoFornecedor(data);
+        const encomendaAtualizada = data?.encomenda || data;
+        const atualizado = normalizarPedidoFornecedor(encomendaAtualizada);
         fornecedorPedidos = fornecedorPedidos.map(item => item.id === id ? atualizado : item);
         guardarPedidosFornecedores();
         await carregarCatalogoFornecedores();
         renderizarResultadosFornecedor();
         renderizarPedidosFornecedores();
-        definirStatusFornecedor(`Stock atualizado para a encomenda ${atualizado.codigo}.`);
+        const unidades = aplicado.reduce((soma, item) => soma + Math.max(0, Number(item.quantidade || 0)), 0);
+        const avisoTeto = aplicado.some(item => Number(item.solicitada || 0) > Number(item.quantidade || 0))
+            ? ' Quantidades acima do pendente foram ignoradas.'
+            : '';
+        definirStatusFornecedor(`Stock atualizado (+${unidades} un.) para a encomenda ${atualizado.codigo || ''}.${avisoTeto}`);
     } catch (error) {
         console.error(error);
         definirStatusFornecedor('Erro ao receber stock: ' + (error.message || 'erro desconhecido'), true);
