@@ -807,6 +807,29 @@ body.pagina-mapas-admin > main.fornecedores-admin {
     background: #121212;
 }
 
+.pagina-mapas-admin .mapas-contador-filtros {
+    flex-wrap: nowrap;
+    gap: 8px;
+    min-width: 0;
+}
+
+.pagina-mapas-admin .mapas-contador-filtros > .campo-com-limpar {
+    display: block;
+    flex: 1 1 auto;
+    width: auto;
+    min-width: 160px;
+    max-width: none;
+}
+
+.pagina-mapas-admin .mapas-contador-filtros .fornecedor-pesquisa-compacta {
+    width: 100%;
+    min-width: 0;
+}
+
+.pagina-mapas-admin .mapas-contador-filtros > :not(.campo-com-limpar) {
+    flex: 0 0 auto;
+}
+
 .mapas-filtro-stock,
 .mapas-copiar-lista {
     min-height: 36px;
