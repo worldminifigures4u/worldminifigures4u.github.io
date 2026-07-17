@@ -178,9 +178,74 @@ function arredondarEuro(valor: number): number {
   return Math.round(valor * 100) / 100;
 }
 
+function arredondarPrecisao(valor: number, casas: number): number {
+  const fator = 10 ** casas;
+  return Math.round(valor * fator) / fator;
+}
+
 function precoLiquido(valorBruto: number): number {
   if (valorBruto <= 0) return 0;
   return arredondarEuro(valorBruto / IVA_FATOR);
+}
+
+/** Total com IVA como o Moloni apura no método "ao documento": round(líquido × 1.23, 2). */
+function totalComIvaDocumento(somaLiquida: number): number {
+  return arredondarEuro(somaLiquida * IVA_FATOR);
+}
+
+/**
+ * Converte totais brutos (com IVA) em preços líquidos enviados ao Moloni.
+ * Com arredondamento ao documento, alguns totais (ex.: 41,90€) são impossíveis
+ * com líquidos a 2 casas — nesses casos usamos mais precisão para o total bater.
+ */
+function precosLiquidosParaTotalBruto(valoresBrutos: number[], totalBrutoAlvo: number): number[] {
+  const brutos = valoresBrutos.map((valor) => arredondarEuro(Math.max(0, valor)));
+  if (!brutos.length) return [];
+
+  let liquidos = brutos.map((valor) => precoLiquido(valor));
+  const soma = (valores: number[]) => valores.reduce((acc, valor) => acc + valor, 0);
+
+  if (totalComIvaDocumento(soma(liquidos)) === totalBrutoAlvo) {
+    return liquidos;
+  }
+
+  const indiceAjuste = liquidos.reduce(
+    (melhor, valor, indice, lista) => (valor >= lista[melhor] ? indice : melhor),
+    0,
+  );
+
+  for (const delta of [-0.01, 0.01, -0.02, 0.02, -0.03, 0.03]) {
+    const tentativa = liquidos.map((valor, indice) =>
+      indice === indiceAjuste ? arredondarEuro(valor + delta) : valor
+    );
+    if (tentativa[indiceAjuste] <= 0) continue;
+    if (totalComIvaDocumento(soma(tentativa)) === totalBrutoAlvo) {
+      return tentativa;
+    }
+  }
+
+  // Fallback: repartir o líquido exacto (total/1.23) com 6 casas para o IVA ao documento fechar.
+  const liquidoExacto = totalBrutoAlvo / IVA_FATOR;
+  const somaBrutos = soma(brutos);
+  if (somaBrutos <= 0) return liquidos;
+
+  const precisos: number[] = [];
+  let acumulado = 0;
+  for (let indice = 0; indice < brutos.length; indice += 1) {
+    if (indice === brutos.length - 1) {
+      precisos.push(arredondarPrecisao(liquidoExacto - acumulado, 6));
+      break;
+    }
+    const parcela = arredondarPrecisao((brutos[indice] / somaBrutos) * liquidoExacto, 6);
+    precisos.push(parcela);
+    acumulado = arredondarPrecisao(acumulado + parcela, 6);
+  }
+
+  if (totalComIvaDocumento(soma(precisos)) === totalBrutoAlvo) {
+    return precisos;
+  }
+
+  return liquidos;
 }
 
 function formatarDataIso(data: Date): string {
@@ -256,37 +321,33 @@ function construirLinhasFatura(
 ): DocumentProductLine[] {
   const valorProdutosBruto = arredondarEuro(Math.max(0, totalBruto - portesBruto));
   const valorPortesBruto = arredondarEuro(Math.max(0, portesBruto));
-  const linhas: DocumentProductLine[] = [];
-  let ordem = 1;
+  const totalBrutoAlvo = arredondarEuro(totalBruto);
+
+  const brutos: number[] = [];
+  const metadados: Array<{ productId: number; name: string }> = [];
 
   if (valorProdutosBruto > 0) {
-    const preco = precoLiquido(valorProdutosBruto);
-    linhas.push({
-      productId: productIdLote,
-      qty: 1,
-      ordering: ordem,
-      price: preco,
-      name: LOTE_DESCRICAO,
-    });
-    ordem += 1;
+    brutos.push(valorProdutosBruto);
+    metadados.push({ productId: productIdLote, name: LOTE_DESCRICAO });
   }
-
   if (valorPortesBruto > 0) {
-    const preco = precoLiquido(valorPortesBruto);
-    linhas.push({
-      productId: productIdPortes,
-      qty: 1,
-      ordering: ordem,
-      price: preco,
-      name: PORTES_DESCRICAO,
-    });
+    brutos.push(valorPortesBruto);
+    metadados.push({ productId: productIdPortes, name: PORTES_DESCRICAO });
   }
 
-  if (!linhas.length) {
+  if (!brutos.length) {
     throw new Error("A encomenda nao tem valor faturavel.");
   }
 
-  return linhas;
+  const precos = precosLiquidosParaTotalBruto(brutos, totalBrutoAlvo);
+
+  return metadados.map((meta, indice) => ({
+    productId: meta.productId,
+    qty: 1,
+    ordering: indice + 1,
+    price: precos[indice],
+    name: meta.name,
+  }));
 }
 
 function parseDataPagamento(valor: string | null | undefined): Date {
@@ -358,6 +419,13 @@ async function criarFaturaReciboMoloni(
   }
   if (!resultado?.data?.documentId) {
     throw new Error("Moloni nao devolveu documentId.");
+  }
+
+  const totalEmitido = numero(resultado.data.totalValue);
+  if (totalEmitido > 0 && arredondarEuro(totalEmitido) !== arredondarEuro(totalBruto)) {
+    console.warn(
+      `Fatura Moloni ${resultado.data.documentId}: total emitido ${totalEmitido} != total encomenda ${totalBruto}`,
+    );
   }
 
   return { ...resultado.data, destino };
