@@ -75,25 +75,21 @@ insert into public.portes_tarifas (zona, peso_ate_g, metodo_id, nome_exibicao, p
 select v.zona, v.peso_ate_g, v.metodo_id, v.nome_exibicao, v.preco, v.ordem
 from (values
   -- Portugal <= 100g
-  ('portugal', 100, 'entrega_tomar', 'Entrega em mão em Tomar', 0.00, 0),
   ('portugal', 100, 'ctt_normal', 'CTT Normal', 1.94, 1),
   ('portugal', 100, 'ctt_azul', 'CTT Azul', 2.58, 2),
   ('portugal', 100, 'ctt_registado', 'CTT Registado', 5.66, 3),
   ('portugal', 100, 'inpost_registado', 'InPost Registado (com seguro de 25€)', 5.85, 4),
   -- Portugal <= 500g
-  ('portugal', 500, 'entrega_tomar', 'Entrega em mão em Tomar', 0.00, 0),
   ('portugal', 500, 'ctt_normal', 'CTT Normal', 2.88, 1),
   ('portugal', 500, 'ctt_azul', 'CTT Azul', 4.80, 2),
   ('portugal', 500, 'ctt_registado', 'CTT Registado', 6.64, 3),
   ('portugal', 500, 'inpost_registado', 'InPost Registado (com seguro de 25€)', 5.85, 4),
   -- Portugal <= 1000g
-  ('portugal', 1000, 'entrega_tomar', 'Entrega em mão em Tomar', 0.00, 0),
   ('portugal', 1000, 'ctt_normal', 'CTT Normal', 6.83, 1),
   ('portugal', 1000, 'ctt_azul', 'CTT Azul', 9.59, 2),
   ('portugal', 1000, 'ctt_registado', 'CTT Registado', 10.98, 3),
   ('portugal', 1000, 'inpost_registado', 'InPost Registado (com seguro de 25€)', 6.67, 4),
   -- Portugal > 1000g
-  ('portugal', 999999, 'entrega_tomar', 'Entrega em mão em Tomar', 0.00, 0),
   ('portugal', 999999, 'ctt_normal', 'CTT Normal', 6.83, 1),
   ('portugal', 999999, 'ctt_azul', 'CTT Azul', 9.59, 2),
   ('portugal', 999999, 'ctt_registado', 'CTT Registado', 10.98, 3),
@@ -122,3 +118,6 @@ from (values
   ('europa', 999999, 'ctt_registado', 'CTT Registado', 26.08, 1)
 ) as v(zona, peso_ate_g, metodo_id, nome_exibicao, preco, ordem)
 where not exists (select 1 from public.portes_tarifas limit 1);
+
+-- Remover entrega em mao (sempre 0) se ainda existir.
+delete from public.portes_tarifas where metodo_id = 'entrega_tomar';

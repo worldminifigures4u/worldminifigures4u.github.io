@@ -19,7 +19,7 @@
             return garantirTabelaPortesCarregada();
         }
         if (!promessaPortes) {
-            promessaPortes = carregarScript('app-portes.js?v=20260717-portes')
+            promessaPortes = carregarScript('app-portes.js?v=20260717-portes4')
                 .then(() => typeof garantirTabelaPortesCarregada === 'function'
                     ? garantirTabelaPortesCarregada()
                     : undefined);
@@ -35,7 +35,7 @@
         }
         if (!promessaEnvio) {
             promessaEnvio = garantirAppPortes()
-                .then(() => carregarScript('carrinho-envio.js?v=20260717-portes'));
+                .then(() => carregarScript('carrinho-envio.js?v=20260717-portes4'));
         }
         return promessaEnvio;
     }

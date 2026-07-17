@@ -1,33 +1,29 @@
 // Tabelas de portes usadas pelo carrinho (fallback local + carga remota com cache).
-const PORTES_CACHE_KEY = 'figures-planet-portes-tarifas-v1';
+const PORTES_CACHE_KEY = 'figures-planet-portes-tarifas-v2';
 const PORTES_CACHE_TTL_MS = 6 * 60 * 60 * 1000;
 const PORTES_PESO_ABERTO_G = 999999;
 
 const TABELA_PORTES_FALLBACK = {
     portugal: [
         { ate: 100, opcoes: [
-            { id: 'entrega_tomar', nome: 'Entrega em m\u00e3o em Tomar', valor: 0 },
             { id: 'ctt_normal', nome: 'CTT Normal', valor: 1.94 },
             { id: 'ctt_azul', nome: 'CTT Azul', valor: 2.58 },
             { id: 'ctt_registado', nome: 'CTT Registado', valor: 5.66 },
             { id: 'inpost_registado', nome: 'InPost Registado (com seguro de 25\u20ac)', valor: 5.85 }
         ]},
         { ate: 500, opcoes: [
-            { id: 'entrega_tomar', nome: 'Entrega em m\u00e3o em Tomar', valor: 0 },
             { id: 'ctt_normal', nome: 'CTT Normal', valor: 2.88 },
             { id: 'ctt_azul', nome: 'CTT Azul', valor: 4.80 },
             { id: 'ctt_registado', nome: 'CTT Registado', valor: 6.64 },
             { id: 'inpost_registado', nome: 'InPost Registado (com seguro de 25\u20ac)', valor: 5.85 }
         ]},
         { ate: 1000, opcoes: [
-            { id: 'entrega_tomar', nome: 'Entrega em m\u00e3o em Tomar', valor: 0 },
             { id: 'ctt_normal', nome: 'CTT Normal', valor: 6.83 },
             { id: 'ctt_azul', nome: 'CTT Azul', valor: 9.59 },
             { id: 'ctt_registado', nome: 'CTT Registado', valor: 10.98 },
             { id: 'inpost_registado', nome: 'InPost Registado (com seguro de 25\u20ac)', valor: 6.67 }
         ]},
         { ate: Infinity, opcoes: [
-            { id: 'entrega_tomar', nome: 'Entrega em m\u00e3o em Tomar', valor: 0 },
             { id: 'ctt_normal', nome: 'CTT Normal', valor: 6.83 },
             { id: 'ctt_azul', nome: 'CTT Azul', valor: 9.59 },
             { id: 'ctt_registado', nome: 'CTT Registado', valor: 10.98 },
@@ -134,6 +130,7 @@ function montarTabelaPortesDeLinhas(linhas) {
 
     (linhas || []).forEach((linha) => {
         if (!linha || linha.ativo === false) return;
+        if (String(linha.metodo_id || '') === 'entrega_tomar') return;
         const zona = String(linha.zona || '');
         if (!tabela[zona]) return;
         const pesoAte = pesoAteParaJs(linha.peso_ate_g);

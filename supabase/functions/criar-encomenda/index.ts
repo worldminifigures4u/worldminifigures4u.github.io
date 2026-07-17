@@ -56,28 +56,24 @@ type OpcaoEnvio = {
 const TABELA_PORTES_FALLBACK: Record<string, Array<{ ate: number; opcoes: OpcaoEnvio[] }>> = {
   portugal: [
     { ate: 100, opcoes: [
-      { id: "entrega_tomar", nome: "Entrega em Tomar (Portugal)", valor: 0 },
       { id: "ctt_normal", nome: "CTT Normal", valor: 1.94 },
       { id: "ctt_azul", nome: "CTT Azul", valor: 2.58 },
       { id: "ctt_registado", nome: "CTT Registado", valor: 5.66 },
       { id: "inpost_registado", nome: "InPost Registado (com seguro de 25\u20ac)", valor: 5.85 },
     ]},
     { ate: 500, opcoes: [
-      { id: "entrega_tomar", nome: "Entrega em Tomar (Portugal)", valor: 0 },
       { id: "ctt_normal", nome: "CTT Normal", valor: 2.88 },
       { id: "ctt_azul", nome: "CTT Azul", valor: 4.80 },
       { id: "ctt_registado", nome: "CTT Registado", valor: 6.64 },
       { id: "inpost_registado", nome: "InPost Registado (com seguro de 25\u20ac)", valor: 5.85 },
     ]},
     { ate: 1000, opcoes: [
-      { id: "entrega_tomar", nome: "Entrega em Tomar (Portugal)", valor: 0 },
       { id: "ctt_normal", nome: "CTT Normal", valor: 6.83 },
       { id: "ctt_azul", nome: "CTT Azul", valor: 9.59 },
       { id: "ctt_registado", nome: "CTT Registado", valor: 10.98 },
       { id: "inpost_registado", nome: "InPost Registado (com seguro de 25\u20ac)", valor: 6.67 },
     ]},
     { ate: Infinity, opcoes: [
-      { id: "entrega_tomar", nome: "Entrega em Tomar (Portugal)", valor: 0 },
       { id: "ctt_normal", nome: "CTT Normal", valor: 6.83 },
       { id: "ctt_azul", nome: "CTT Azul", valor: 9.59 },
       { id: "ctt_registado", nome: "CTT Registado", valor: 10.98 },
@@ -186,6 +182,7 @@ function montarTabelaPortesDeLinhas(linhas: LinhaPortesDb[]) {
 
   for (const linha of linhas) {
     if (!linha || linha.ativo === false) continue;
+    if (String(linha.metodo_id || "") === "entrega_tomar") continue;
     const zona = String(linha.zona || "");
     if (!tabela[zona]) continue;
     const pesoNum = Number(linha.peso_ate_g);

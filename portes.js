@@ -133,7 +133,9 @@ async function carregarPortesAdmin() {
         return;
     }
 
-    portesLinhas = (data || []).map((linha) => ({
+    portesLinhas = (data || [])
+        .filter((linha) => String(linha.metodo_id || '') !== 'entrega_tomar')
+        .map((linha) => ({
         ...linha,
         preco: Math.round(Number(linha.preco || 0) * 100) / 100
     }));
