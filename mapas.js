@@ -30,6 +30,8 @@ let mapasColunasVisiveis = new Set(MAPAS_COLUNAS.map((coluna) => coluna.chave));
 let folhaDinamicaMapas = null;
 let mapasEncomendasFornecedorCache = null;
 let mapasEncomendasFornecedorPromessa = null;
+let mapasVendasClienteCache = null;
+let mapasVendasClientePromessa = null;
 const MAPAS_FORNECEDORES_STORAGE_KEY = "figures-planet-fornecedores-pedidos";
 
 function definirCssDinamicoMapas(cssTexto) {
@@ -946,6 +948,172 @@ function montarSecaoHistoricoRececoesMapa(campos, produto) {
     carregarEncomendasFornecedorMapa().then((pedidos) => {
         if (conteudo.dataset.produtoId !== produtoId) return;
         renderizarHistoricoRececoesMapa(conteudo, produto, pedidos);
+    });
+}
+
+function obterProdutosEncomendaClienteMapa(encomenda) {
+    let produtos = encomenda?.produtos || encomenda?.artigos || [];
+    if (typeof produtos === "string") {
+        try { produtos = JSON.parse(produtos); }
+        catch (_) { produtos = []; }
+    }
+    return Array.isArray(produtos) ? produtos : [];
+}
+
+function obterQuantidadeItemVendaMapa(item) {
+    return Math.max(1, Math.floor(Number(item?.quantidade ?? item?.qtd ?? 1) || 1));
+}
+
+function obterPrecoItemVendaMapa(item) {
+    return Number(item?.preco_unitario ?? item?.preco ?? item?.valor_unitario ?? 0) || 0;
+}
+
+function normalizarEncomendaClienteMapa(encomenda) {
+    if (!encomenda) return null;
+    return {
+        id: encomenda.id || "",
+        codigo: encomenda.codigo_encomenda || encomenda.codigo || "",
+        cliente: encomenda.nome_cliente || "",
+        origem: encomenda.origem || "Site",
+        estado: encomenda.estado || "",
+        criado_em: encomenda.created_at || encomenda.criado_em || "",
+        produtos: obterProdutosEncomendaClienteMapa(encomenda)
+    };
+}
+
+async function carregarVendasClienteMapa(forcar = false) {
+    if (!forcar && Array.isArray(mapasVendasClienteCache)) {
+        return mapasVendasClienteCache;
+    }
+    if (!forcar && mapasVendasClientePromessa) {
+        return mapasVendasClientePromessa;
+    }
+
+    mapasVendasClientePromessa = (async () => {
+        try {
+            if (!mapasClient) throw new Error("Supabase indisponível.");
+            const { data, error } = await mapasClient
+                .from("encomendas")
+                .select("id,codigo_encomenda,nome_cliente,origem,estado,created_at,produtos")
+                .order("created_at", { ascending: false })
+                .limit(1000);
+            if (error) throw error;
+            mapasVendasClienteCache = (data || []).map(normalizarEncomendaClienteMapa).filter(Boolean);
+            return mapasVendasClienteCache;
+        } catch (erro) {
+            console.warn("Não foi possível carregar histórico de vendas.", erro);
+            mapasVendasClienteCache = [];
+            return mapasVendasClienteCache;
+        } finally {
+            mapasVendasClientePromessa = null;
+        }
+    })();
+
+    return mapasVendasClientePromessa;
+}
+
+function obterLinhasVendaProdutoMapa(produto, encomendas) {
+    const linhas = [];
+    (encomendas || []).forEach((encomenda) => {
+        const itens = (encomenda.produtos || []).filter((item) =>
+            produtoCorrespondeItemRececaoMapa(produto, item)
+        );
+        if (!itens.length) return;
+        const quantidade = itens.reduce((total, item) => total + obterQuantidadeItemVendaMapa(item), 0);
+        const subtotal = itens.reduce(
+            (total, item) => total + (obterQuantidadeItemVendaMapa(item) * obterPrecoItemVendaMapa(item)),
+            0
+        );
+        linhas.push({ encomenda, itens, quantidade, subtotal });
+    });
+    linhas.sort((a, b) => {
+        const dataA = Date.parse(a.encomenda.criado_em || 0) || 0;
+        const dataB = Date.parse(b.encomenda.criado_em || 0) || 0;
+        return dataB - dataA;
+    });
+    return linhas;
+}
+
+function formatarDataVendaMapa(encomenda) {
+    const bruto = encomenda?.criado_em || "";
+    if (!bruto) return "—";
+    const data = new Date(bruto);
+    return Number.isNaN(data.getTime()) ? "—" : data.toLocaleDateString("pt-PT");
+}
+
+function renderizarHistoricoVendasMapa(conteudo, produto, encomendas) {
+    if (!conteudo) return;
+    const linhas = obterLinhasVendaProdutoMapa(produto, encomendas);
+    conteudo.replaceChildren();
+
+    if (!linhas.length) {
+        const vazio = document.createElement("p");
+        vazio.className = "mapas-produto-ajuda-media";
+        vazio.textContent = "Ainda não há vendas desta figura em encomendas de clientes.";
+        conteudo.appendChild(vazio);
+        return;
+    }
+
+    const tabela = document.createElement("table");
+    tabela.className = "mapas-produto-historico-rececoes-tabela";
+    const thead = document.createElement("thead");
+    const linhaCabecalho = document.createElement("tr");
+    ["Data", "Encomenda", "Cliente", "Origem", "Qtd.", "Total", "Estado"].forEach((rotulo) => {
+        const th = document.createElement("th");
+        th.textContent = rotulo;
+        linhaCabecalho.appendChild(th);
+    });
+    thead.appendChild(linhaCabecalho);
+
+    const tbody = document.createElement("tbody");
+    linhas.forEach(({ encomenda, quantidade, subtotal }) => {
+        const tr = document.createElement("tr");
+        [
+            formatarDataVendaMapa(encomenda),
+            encomenda.codigo || (encomenda.id ? `#${encomenda.id}` : "—"),
+            encomenda.cliente || "—",
+            encomenda.origem || "Site",
+            String(quantidade),
+            `${formatarEuroMapa(subtotal)} €`,
+            encomenda.estado || "—"
+        ].forEach((valor) => {
+            const td = document.createElement("td");
+            td.textContent = valor;
+            tr.appendChild(td);
+        });
+        tbody.appendChild(tr);
+    });
+
+    tabela.append(thead, tbody);
+    conteudo.appendChild(tabela);
+
+    const totalUnidades = linhas.reduce((soma, linha) => soma + linha.quantidade, 0);
+    const resumo = document.createElement("p");
+    resumo.className = "mapas-produto-ajuda-media";
+    resumo.textContent = `${linhas.length} encomenda(s) · ${totalUnidades} unidade(s) vendida(s)`;
+    conteudo.appendChild(resumo);
+}
+
+function montarSecaoHistoricoVendasMapa(campos, produto) {
+    const secao = criarSecaoEdicaoMapa("Histórico de vendas", "mapas-produto-secao-media mapas-produto-secao-historico");
+    const ajuda = document.createElement("p");
+    ajuda.className = "mapas-produto-ajuda-media";
+    ajuda.textContent = "Encomendas de clientes em que esta figura saiu.";
+    const conteudo = document.createElement("div");
+    conteudo.className = "mapas-produto-historico-vendas";
+    conteudo.id = "mapas-produto-historico-vendas";
+    conteudo.dataset.produtoId = String(produto.id || "");
+    const loading = document.createElement("p");
+    loading.className = "mapas-produto-ajuda-media";
+    loading.textContent = "A carregar histórico...";
+    conteudo.appendChild(loading);
+    secao.append(ajuda, conteudo);
+    campos.appendChild(secao);
+
+    const produtoId = String(produto.id || "");
+    carregarVendasClienteMapa().then((encomendas) => {
+        if (conteudo.dataset.produtoId !== produtoId) return;
+        renderizarHistoricoVendasMapa(conteudo, produto, encomendas);
     });
 }
 
