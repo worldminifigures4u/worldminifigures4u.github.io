@@ -542,8 +542,19 @@ function estadoPedidoFornecedorEhEncomendada(estado) {
     return normalizarEstadoPedidoFornecedor(estado) === "encomendada";
 }
 
+function estadoPedidoFornecedorEhRecebida(estado) {
+    const normalizado = normalizarEstadoPedidoFornecedor(estado);
+    return normalizado === "recebida" || normalizado === "recebida_parcialmente";
+}
+
+function deveConfirmarHistoricoPedidoFornecedor(estadoAnterior, estadoNovo) {
+    // Confirma historico ao sair de "A preparar" para Encomendada ou Recebida*
+    if (!estadoPedidoFornecedorEhAPreparar(estadoAnterior)) return false;
+    return estadoPedidoFornecedorEhEncomendada(estadoNovo) || estadoPedidoFornecedorEhRecebida(estadoNovo);
+}
+
 function passouParaEncomendadaDesdeAPreparar(estadoAnterior, estadoNovo) {
-    return estadoPedidoFornecedorEhAPreparar(estadoAnterior) && estadoPedidoFornecedorEhEncomendada(estadoNovo);
+    return deveConfirmarHistoricoPedidoFornecedor(estadoAnterior, estadoNovo);
 }
 
 function pedidoFornecedorPassaFiltroEstado(pedido, filtro) {
@@ -3268,19 +3279,19 @@ async function alterarEstadoPedidoFornecedor(id, estado) {
         const atualizado = normalizarPedidoFornecedor(data);
         fornecedorPedidos = fornecedorPedidos.map(item => item.id === id ? atualizado : item);
         guardarPedidosFornecedores();
-        if (passouParaEncomendadaDesdeAPreparar(estadoAnterior, atualizado.estado)) {
+        if (deveConfirmarHistoricoPedidoFornecedor(estadoAnterior, atualizado.estado)) {
             try {
                 const atualizados = await sincronizarHistoricoPedidosFornecedor(atualizado.itens || [], atualizado.fornecedor, { modo: "confirmar" });
                 renderizarResultadosFornecedor();
                 renderizarPedidosFornecedores();
                 definirStatusFornecedor(
                     atualizados > 0
-                        ? `Estado da encomenda ${atualizado.codigo} atualizado. Histórico promovido para Encomendada em ${atualizados} produto(s).`
+                        ? `Estado da encomenda ${atualizado.codigo} atualizado. Histórico atualizado em ${atualizados} produto(s).`
                         : `Estado da encomenda ${atualizado.codigo} atualizado.`
                 );
                 return;
             } catch (erroHistorico) {
-                console.warn("Nao foi possivel promover Solicitada para Encomendada na ficha.", erroHistorico);
+                console.warn("Nao foi possivel atualizar o histórico na ficha.", erroHistorico);
                 definirStatusFornecedor(`Estado atualizado, mas falhou a atualização do histórico na ficha: ${erroHistorico.message || "erro"}`, true);
                 renderizarResultadosFornecedor();
                 renderizarPedidosFornecedores();
@@ -3827,7 +3838,7 @@ async function guardarEdicaoPedidoFornecedor(evento) {
             modo: "editar",
             itensAnteriores: pedido.itens || []
         });
-        if (passouParaEncomendadaDesdeAPreparar(estadoAnterior, estado)) {
+        if (deveConfirmarHistoricoPedidoFornecedor(estadoAnterior, estado)) {
             await sincronizarHistoricoPedidosFornecedor(itens, fornecedor, { modo: "confirmar" });
         }
         status.textContent = 'A atualizar preço compra nos produtos...';
