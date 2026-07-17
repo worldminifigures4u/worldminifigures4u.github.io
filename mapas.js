@@ -324,8 +324,8 @@ function criarLinhaProdutoMapa(produto) {
             botao.type = "button";
             botao.className = "mapas-celula-nome";
             botao.textContent = produto.nome || "";
-            botao.title = "Editar produto";
-            botao.addEventListener("click", () => abrirEdicaoProdutoMapa(produto.id));
+            botao.title = "Abrir ficha do produto";
+            botao.addEventListener("click", () => abrirFichaProdutoMapa(produto.id));
             td.appendChild(botao);
         } else {
             td.textContent = valorCelulaMapa(produto, coluna);
@@ -949,6 +949,122 @@ function montarSecaoHistoricoRececoesMapa(campos, produto) {
     });
 }
 
+function criarCampoLeituraMapa(secao, rotulo, valor, opcoes = {}) {
+    const bloco = document.createElement("div");
+    bloco.className = `mapas-produto-campo mapas-produto-leitura${opcoes.largo ? " mapas-produto-campo-largo" : ""}`;
+    const etiqueta = document.createElement("span");
+    etiqueta.className = "mapas-produto-leitura-rotulo";
+    etiqueta.textContent = rotulo;
+    const texto = document.createElement("strong");
+    texto.className = "mapas-produto-leitura-valor";
+    const conteudo = valor === null || valor === undefined || String(valor).trim() === "" ? "—" : String(valor);
+    texto.textContent = conteudo;
+    if (opcoes.classeValor) texto.classList.add(opcoes.classeValor);
+    bloco.append(etiqueta, texto);
+    secao.appendChild(bloco);
+    return bloco;
+}
+
+function criarBadgeLeituraMapa(secao, rotulo, ativo) {
+    const badge = document.createElement("span");
+    badge.className = `mapas-produto-leitura-badge${ativo ? " ativo" : ""}`;
+    badge.textContent = rotulo;
+    secao.appendChild(badge);
+    return badge;
+}
+
+function montarSecaoMediaLeituraMapa(campos, produto) {
+    const secao = criarSecaoEdicaoMapa("Fotos e observações", "mapas-produto-secao-media");
+    const imagens = normalizarImagensMapa(produto.imagens);
+    if (imagens.length) {
+        const preview = document.createElement("div");
+        preview.className = "preview-imagens-admin mapas-produto-preview-imagens mapas-produto-preview-leitura";
+        imagens.forEach((url, indice) => {
+            const figura = document.createElement("figure");
+            figura.className = "preview-imagem-admin";
+            const img = document.createElement("img");
+            img.src = url;
+            img.alt = `Foto ${indice + 1}`;
+            figura.appendChild(img);
+            preview.appendChild(figura);
+        });
+        secao.appendChild(preview);
+    } else {
+        const vazio = document.createElement("p");
+        vazio.className = "mapas-produto-ajuda-media";
+        vazio.textContent = "Sem fotos.";
+        secao.appendChild(vazio);
+    }
+
+    const observacoes = String(produto.observacoes || "").trim();
+    criarCampoLeituraMapa(secao, "Observações", observacoes || "—", { largo: true });
+    campos.appendChild(secao);
+}
+
+function preencherFichaProdutoMapa(produto) {
+    const modal = garantirModalEdicaoProdutoMapa();
+    const campos = modal.querySelector("#mapas-produto-form-campos");
+    const status = modal.querySelector("#mapas-produto-status");
+    const titulo = modal.querySelector("#mapas-produto-modal-titulo");
+    campos.replaceChildren();
+    if (status) status.textContent = "";
+    modal.querySelector("#mapas-produto-modo").value = "ver";
+    modal.querySelector("#mapas-editar-id").value = String(produto.id || "");
+    modal.querySelector("#mapas-editar-sku-original").value = String(produto.sku || "");
+    modal.dataset.produtoId = String(produto.id || "");
+    if (titulo) titulo.textContent = produto.nome || "Ficha do produto";
+    atualizarAcoesModalProdutoMapa("ver");
+
+    const secaoIdentificacao = criarSecaoEdicaoMapa("Identificação", "mapas-produto-secao-identificacao");
+    criarCampoLeituraMapa(secaoIdentificacao, "Nome", produto.nome || "", { largo: true });
+    criarCampoLeituraMapa(secaoIdentificacao, "Ref.", produto.referencia || "");
+    criarCampoLeituraMapa(secaoIdentificacao, "SKU", produto.sku || "");
+    criarCampoLeituraMapa(secaoIdentificacao, "Lego", textoLegoMapa(produto.lego) || "por verificar");
+    const flags = document.createElement("div");
+    flags.className = "mapas-produto-campo mapas-produto-campo-largo mapas-produto-leitura-flags";
+    const flagsRotulo = document.createElement("span");
+    flagsRotulo.className = "mapas-produto-leitura-rotulo";
+    flagsRotulo.textContent = "Marcas";
+    const flagsLista = document.createElement("div");
+    flagsLista.className = "mapas-produto-leitura-badges";
+    flags.append(flagsRotulo, flagsLista);
+    [
+        ["Top", Boolean(String(produto.top || "").trim())],
+        ["Arquivado", Boolean(produto.arquivado)],
+        ["Descontinuado", Boolean(produto.descontinuado)],
+        ["Novidade", Boolean(produto.novidade)],
+        ["Ativo", produto.ativo !== false]
+    ].forEach(([rotulo, ativo]) => criarBadgeLeituraMapa(flagsLista, rotulo, ativo));
+    secaoIdentificacao.appendChild(flags);
+    campos.appendChild(secaoIdentificacao);
+
+    const secaoDetalhes = criarSecaoEdicaoMapa("Detalhes", "mapas-produto-secao-detalhes");
+    criarCampoLeituraMapa(secaoDetalhes, "preço compra", `${formatarEuroMapa(produto.preco_compra)} €`);
+    criarCampoLeituraMapa(secaoDetalhes, "preço venda", `${formatarEuroMapa(produto.preco)} €`);
+    criarCampoLeituraMapa(secaoDetalhes, "Peso (g)", Number(produto.peso || PESO_PADRAO_PRODUTO_GRAMAS || 10));
+    criarCampoLeituraMapa(
+        secaoDetalhes,
+        "Stock",
+        Number(produto.stock || 0),
+        { classeValor: Number(produto.stock || 0) <= 0 ? "sem-stock" : "" }
+    );
+    criarCampoLeituraMapa(secaoDetalhes, "Tema", produto.tema || "");
+    criarCampoLeituraMapa(secaoDetalhes, "Subtema", produto.subtema === "semsubtema" ? "" : (produto.subtema || ""));
+    campos.appendChild(secaoDetalhes);
+
+    montarSecaoMediaLeituraMapa(campos, produto);
+    montarSecaoHistoricoRececoesMapa(campos, produto);
+}
+
+function atualizarAcoesModalProdutoMapa(modo) {
+    const acoesEdicao = document.getElementById("mapas-produto-acoes-edicao");
+    const acoesVer = document.getElementById("mapas-produto-acoes-ver");
+    const form = document.getElementById("mapas-produto-form");
+    if (acoesEdicao) acoesEdicao.hidden = modo === "ver";
+    if (acoesVer) acoesVer.hidden = modo !== "ver";
+    if (form) form.classList.toggle("mapas-produto-form-leitura", modo === "ver");
+}
+
 function criarCheckboxEdicaoMapa(form, id, rotulo, marcado) {
     const label = document.createElement("label");
     label.className = "mapas-edicao-checkbox";
@@ -995,7 +1111,7 @@ function criarSecaoEdicaoMapa(titulo, classe = "") {
 
 function garantirModalEdicaoProdutoMapa() {
     let modal = document.getElementById("mapas-produto-modal");
-    if (modal && !modal.querySelector("#mapas-produto-modo")) {
+    if (modal && !modal.querySelector("#mapas-produto-acoes-ver")) {
         modal.remove();
         modal = null;
     }
@@ -1007,16 +1123,20 @@ function garantirModalEdicaoProdutoMapa() {
     modal.innerHTML = `
         <div class="mapas-produto-modal-dialog" role="dialog" aria-modal="true" aria-labelledby="mapas-produto-modal-titulo">
             <div class="mapas-produto-modal-topo">
-                <h3 id="mapas-produto-modal-titulo">Editar produto</h3>
+                <h3 id="mapas-produto-modal-titulo">Ficha do produto</h3>
                 <button type="button" class="mapas-produto-modal-fechar" aria-label="Fechar">x</button>
             </div>
             <form id="mapas-produto-form" class="mapas-produto-form">
-                <input type="hidden" id="mapas-produto-modo" value="editar">
+                <input type="hidden" id="mapas-produto-modo" value="ver">
                 <input type="hidden" id="mapas-editar-id">
                 <input type="hidden" id="mapas-editar-sku-original">
                 <div class="mapas-produto-form-grid" id="mapas-produto-form-campos"></div>
                 <p class="fornecedores-status mapas-produto-status" id="mapas-produto-status" role="status"></p>
-                <div class="fornecedores-acoes">
+                <div class="fornecedores-acoes" id="mapas-produto-acoes-ver">
+                    <button type="button" id="mapas-produto-fechar-ficha">Fechar</button>
+                    <button type="button" id="mapas-produto-passar-editar" class="wallapop-botao wallapop-botao-destaque">Editar produto</button>
+                </div>
+                <div class="fornecedores-acoes" id="mapas-produto-acoes-edicao" hidden>
                     <button type="button" id="mapas-produto-cancelar">Cancelar</button>
                     <button type="submit" id="mapas-produto-guardar">Guardar produto</button>
                 </div>
@@ -1024,7 +1144,20 @@ function garantirModalEdicaoProdutoMapa() {
         </div>`;
     document.body.appendChild(modal);
     modal.querySelector(".mapas-produto-modal-fechar")?.addEventListener("click", fecharEdicaoProdutoMapa);
-    modal.querySelector("#mapas-produto-cancelar")?.addEventListener("click", fecharEdicaoProdutoMapa);
+    modal.querySelector("#mapas-produto-fechar-ficha")?.addEventListener("click", fecharEdicaoProdutoMapa);
+    modal.querySelector("#mapas-produto-cancelar")?.addEventListener("click", () => {
+        const id = modal.dataset.produtoId || document.getElementById("mapas-editar-id")?.value;
+        const modo = document.getElementById("mapas-produto-modo")?.value;
+        if (modo === "criar" || !id) {
+            fecharEdicaoProdutoMapa();
+            return;
+        }
+        abrirFichaProdutoMapa(id);
+    });
+    modal.querySelector("#mapas-produto-passar-editar")?.addEventListener("click", () => {
+        const id = modal.dataset.produtoId || document.getElementById("mapas-editar-id")?.value;
+        if (id) abrirEdicaoProdutoMapa(id);
+    });
     modal.addEventListener("click", evento => { if (evento.target === modal) fecharEdicaoProdutoMapa(); });
     modal.querySelector("#mapas-produto-form")?.addEventListener("submit", guardarEdicaoProdutoMapa);
     return modal;
@@ -1041,8 +1174,11 @@ function preencherFormularioProdutoMapa(produto, modo = "editar") {
     modal.querySelector("#mapas-produto-modo").value = modo;
     modal.querySelector("#mapas-editar-id").value = String(produto.id || "");
     modal.querySelector("#mapas-editar-sku-original").value = String(produto.sku || "");
+    if (produto.id) modal.dataset.produtoId = String(produto.id);
+    else delete modal.dataset.produtoId;
     if (titulo) titulo.textContent = modo === "criar" ? "Novo produto" : "Editar produto";
     if (botaoGuardar) botaoGuardar.textContent = modo === "criar" ? "Criar produto" : "Guardar produto";
+    atualizarAcoesModalProdutoMapa(modo);
 
     const secaoIdentificacao = criarSecaoEdicaoMapa("Identificação", "mapas-produto-secao-identificacao");
     criarInputEdicaoMapa(secaoIdentificacao, "mapas-editar-nome", "Nome", produto.nome || "", "text", { required: true, largo: true });
@@ -1070,9 +1206,6 @@ function preencherFormularioProdutoMapa(produto, modo = "editar") {
     campos.appendChild(secaoDetalhes);
 
     montarSecaoMediaEdicaoMapa(campos, produto);
-    if (modo === "editar") {
-        montarSecaoHistoricoRececoesMapa(campos, produto);
-    }
 
     const nomeInput = modal.querySelector("#mapas-editar-nome");
     const skuInput = modal.querySelector("#mapas-editar-sku");
@@ -1087,22 +1220,54 @@ function preencherFormularioProdutoMapa(produto, modo = "editar") {
     nomeInput?.focus();
 }
 
-async function abrirEdicaoProdutoMapa(produtoId) {
+async function abrirFichaProdutoMapa(produtoId) {
     const produtoBase = mapasProdutos.find(item => String(item.id) === String(produtoId));
     if (!produtoBase) return;
     const modal = garantirModalEdicaoProdutoMapa();
     const status = modal.querySelector("#mapas-produto-status");
     const campos = modal.querySelector("#mapas-produto-form-campos");
+    const token = `ver:${produtoId}:${Date.now()}`;
+    modal.dataset.vistaToken = token;
+    modal.dataset.produtoId = String(produtoId);
     campos.replaceChildren();
     if (status) {
         status.textContent = "A carregar ficha...";
         status.classList.remove("status-erro", "status-sucesso");
         status.classList.add("status-aviso");
     }
+    atualizarAcoesModalProdutoMapa("ver");
     modal.hidden = false;
     document.body.classList.add("mapas-produto-modal-aberto");
 
     const produto = await enriquecerMediaProdutoMapa(produtoBase);
+    if (modal.dataset.vistaToken !== token) return;
+    mapasProdutos = mapasProdutos.map((item) =>
+        String(item.id) === String(produto.id) ? { ...item, imagens: produto.imagens, observacoes: produto.observacoes } : item
+    );
+    preencherFichaProdutoMapa(produto);
+}
+
+async function abrirEdicaoProdutoMapa(produtoId) {
+    const produtoBase = mapasProdutos.find(item => String(item.id) === String(produtoId));
+    if (!produtoBase) return;
+    const modal = garantirModalEdicaoProdutoMapa();
+    const status = modal.querySelector("#mapas-produto-status");
+    const campos = modal.querySelector("#mapas-produto-form-campos");
+    const token = `editar:${produtoId}:${Date.now()}`;
+    modal.dataset.vistaToken = token;
+    modal.dataset.produtoId = String(produtoId);
+    campos.replaceChildren();
+    if (status) {
+        status.textContent = "A carregar edição...";
+        status.classList.remove("status-erro", "status-sucesso");
+        status.classList.add("status-aviso");
+    }
+    atualizarAcoesModalProdutoMapa("editar");
+    modal.hidden = false;
+    document.body.classList.add("mapas-produto-modal-aberto");
+
+    const produto = await enriquecerMediaProdutoMapa(produtoBase);
+    if (modal.dataset.vistaToken !== token) return;
     mapasProdutos = mapasProdutos.map((item) =>
         String(item.id) === String(produto.id) ? { ...item, imagens: produto.imagens, observacoes: produto.observacoes } : item
     );
@@ -1202,6 +1367,7 @@ async function guardarEdicaoProdutoMapa(evento) {
     const botao = document.getElementById("mapas-produto-guardar");
     const status = document.getElementById("mapas-produto-status");
     const modo = document.getElementById("mapas-produto-modo")?.value || "editar";
+    if (modo === "ver") return;
     try {
         botao.disabled = true;
         if (status) {
@@ -1222,7 +1388,6 @@ async function guardarEdicaoProdutoMapa(evento) {
         if (modo === "criar") {
             ({ data, error } = await mapasClient.rpc("criar_produto_admin", { p_produto: produto }));
             if (error) throw error;
-            // criar_produto_admin não grava top/arquivado/descontinuado — completar via edição se necessário
             const precisaExtras = Boolean(produto.top) || produto.arquivado || produto.descontinuado;
             if (precisaExtras && data?.id) {
                 const extra = await editarProdutoMapaRpc(data.id, data.sku || produto.sku, {
@@ -1240,9 +1405,9 @@ async function guardarEdicaoProdutoMapa(evento) {
             });
             mapasProdutos = [criado, ...mapasProdutos.filter(item => String(item.id) !== String(criado.id))];
             sincronizarEstadoImportacaoMapa();
-            fecharEdicaoProdutoMapa();
             atualizarResultadosMapa();
             definirStatusMapa("Produto criado.");
+            await abrirFichaProdutoMapa(criado.id);
             return;
         }
 
@@ -1256,9 +1421,9 @@ async function guardarEdicaoProdutoMapa(evento) {
         });
         mapasProdutos = mapasProdutos.map(item => String(item.id) === String(atualizado.id) ? atualizado : item);
         sincronizarEstadoImportacaoMapa();
-        fecharEdicaoProdutoMapa();
         atualizarResultadosMapa();
         definirStatusMapa("Produto guardado.");
+        await abrirFichaProdutoMapa(atualizado.id);
     } catch (erro) {
         console.error(erro);
         if (status) {
