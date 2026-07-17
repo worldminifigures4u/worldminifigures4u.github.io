@@ -79,6 +79,55 @@ window.AdminEncomendaVista = (function () {
             : (estado || "A aguardar pagamento");
     }
 
+    function normalizarTextoEnvio(valor) {
+        return String(valor || "")
+            .normalize("NFD")
+            .replace(/[\u0300-\u036f]/g, "")
+            .toLowerCase()
+            .trim();
+    }
+
+    function envioExigeCodigoSeguimentoCtt(encomenda) {
+        const metodoId = normalizarTextoEnvio(encomenda?.metodo_envio).replace(/\s+/g, "_");
+        if (metodoId === "ctt_registado") return true;
+        const nome = normalizarTextoEnvio(encomenda?.metodo_envio_nome);
+        return nome.includes("ctt") && nome.includes("registado");
+    }
+
+    function pedirCodigoSeguimentoCtt(encomenda) {
+        const codigoEncomenda = encomenda.codigo_encomenda || encomenda.id || "";
+        const atual = String(encomenda.codigo_seguimento || "").trim();
+        const resposta = window.prompt(
+            `Encomenda ${codigoEncomenda} · CTT Registado\nIndique o código de envio/seguimento:`,
+            atual
+        );
+        if (resposta === null) return null;
+        const codigo = String(resposta).trim();
+        if (!codigo) {
+            window.alert("O código de envio é obrigatório para CTT Registado.");
+            return null;
+        }
+        return codigo;
+    }
+
+    async function guardarCodigoSeguimento(encomenda, codigo) {
+        const codigoLimpo = String(codigo || "").trim();
+        if (!codigoLimpo) throw new Error("Código de seguimento em falta.");
+        const { data, error } = await obterClient()
+            .from("encomendas")
+            .update({ codigo_seguimento: codigoLimpo })
+            .eq("id", String(encomenda.id))
+            .select("id, codigo_seguimento")
+            .single();
+        if (error) {
+            throw new Error(
+                detalheErro(error)
+                + " Execute supabase-codigo-seguimento-encomendas.sql no Supabase se a coluna ainda não existir."
+            );
+        }
+        return data;
+    }
+
     function detalheErro(error) {
         if (!error) return "sem detalhe";
         const partes = [
@@ -633,6 +682,7 @@ window.AdminEncomendaVista = (function () {
             morada,
             "",
             `Envio: ${encomenda.metodo_envio_nome || encomenda.metodo_envio || ""}`,
+            encomenda.codigo_seguimento ? `Seguimento: ${encomenda.codigo_seguimento}` : "",
             `Portes: ${formatarEuro(encomenda.portes)}`,
             `Pagamento: ${encomenda.metodo_pagamento || ""}`,
             "",
@@ -948,6 +998,15 @@ window.AdminEncomendaVista = (function () {
             }
         }
 
+        let codigoSeguimentoPendente = null;
+        if (estado === "Enviado" && estadoAnterior !== "Enviado" && envioExigeCodigoSeguimentoCtt(encomenda)) {
+            codigoSeguimentoPendente = pedirCodigoSeguimentoCtt(encomenda);
+            if (!codigoSeguimentoPendente) {
+                select.value = estadoAnterior;
+                return;
+            }
+        }
+
         select.disabled = true;
         hooks.definirStatus("A atualizar o estado...");
         try {
@@ -1019,6 +1078,12 @@ window.AdminEncomendaVista = (function () {
             }
             if (error) throw error;
             if (data?.sucesso === false) throw new Error(data.erro || "Não foi possível atualizar.");
+
+            if (codigoSeguimentoPendente) {
+                const guardado = await guardarCodigoSeguimento(encomenda, codigoSeguimentoPendente);
+                encomenda.codigo_seguimento = guardado?.codigo_seguimento || codigoSeguimentoPendente;
+            }
+
             encomenda.estado = estado;
             if (data?.created_at) encomenda.created_at = data.created_at;
             if (data?.data_pagamento) encomenda.data_pagamento = data.data_pagamento;
@@ -1029,7 +1094,8 @@ window.AdminEncomendaVista = (function () {
                 estado,
                 created_at: encomenda.created_at,
                 data_pagamento: encomenda.data_pagamento,
-                stock_reposto: encomenda.stock_reposto
+                stock_reposto: encomenda.stock_reposto,
+                codigo_seguimento: encomenda.codigo_seguimento
             });
             let anexosEliminados = 0;
             let erroAnexos = null;
@@ -1087,9 +1153,12 @@ window.AdminEncomendaVista = (function () {
                 const recuperacao = estadoAnterior === "Cancelado" && estado !== "Cancelado"
                     ? (data?.stock_reduzido ? " Stock reduzido novamente." : " Encomenda recuperada.")
                     : "";
+                const seguimento = codigoSeguimentoPendente
+                    ? ` Seguimento CTT: ${encomenda.codigo_seguimento}.`
+                    : "";
                 const faturaComErro = mensagemFatura.includes("nao emitida");
                 hooks.definirStatus(
-                    `Estado da encomenda ${encomenda.codigo_encomenda || ""} atualizado.${limpeza}${reposicao}${recuperacao}${mensagemFatura}`,
+                    `Estado da encomenda ${encomenda.codigo_encomenda || ""} atualizado.${limpeza}${reposicao}${recuperacao}${seguimento}${mensagemFatura}`,
                     faturaComErro
                 );
             }
@@ -1341,9 +1410,12 @@ window.AdminEncomendaVista = (function () {
             criarLinhaDetalhe("E-mail", encomenda.email_cliente),
             criarLinhaDetalhe("Telemóvel", encomenda.telefone_cliente),
             criarLinhaDetalhe("Envio", encomenda.metodo_envio_nome || encomenda.metodo_envio),
+            encomenda.codigo_seguimento
+                ? criarLinhaDetalhe("Seguimento", encomenda.codigo_seguimento)
+                : null,
             criarLinhaDetalhe("Portes", formatarEuro(encomenda.portes)),
             criarLinhaDetalhe("Pagamento", encomenda.metodo_pagamento)
-        );
+        ].filter(Boolean);
 
         if (encomenda.referencia_externa) {
             colunaContacto.appendChild(criarLinhaDetalhe("Referência externa", encomenda.referencia_externa));
