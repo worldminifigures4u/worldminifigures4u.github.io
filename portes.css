@@ -1,10 +1,15 @@
-.pagina-portes-admin .portes-admin{
-    max-width: 1100px;
-    margin: 0 auto;
-    padding: 1.25rem 1rem 3rem;
+.pagina-portes-admin {
+    background: #050505;
+    color: #f7f7f7;
 }
 
-.portes-topo{
+.pagina-portes-admin .portes-admin {
+    width: min(1100px, calc(100% - 32px));
+    margin: 0 auto var(--espaco-acima-rodape, 48px);
+    padding: 0 0 2rem;
+}
+
+.portes-topo {
     display: flex;
     flex-wrap: wrap;
     gap: 1rem;
@@ -13,95 +18,155 @@
     margin-bottom: 1.25rem;
 }
 
-.portes-topo h1{
-    margin: 0 0 0.35rem;
+.portes-topo h1 {
+    margin: 0 0 0.4rem;
     font-size: 1.55rem;
+    color: #fff;
 }
 
-.portes-ajuda{
+.portes-ajuda {
     margin: 0;
     max-width: 42rem;
-    color: #555;
+    color: #aaa;
     font-size: 0.95rem;
-    line-height: 1.4;
+    line-height: 1.45;
 }
 
-.portes-acoes{
+.portes-acoes {
     display: flex;
     flex-wrap: wrap;
     gap: 0.6rem;
 }
 
-.portes-tabs{
+.portes-tabs {
     display: flex;
     flex-wrap: wrap;
-    gap: 0.4rem;
-    margin-bottom: 1rem;
+    gap: 0.45rem;
+    margin-bottom: 1.1rem;
 }
 
-.portes-tab{
-    border: 1px solid #cfcfcf;
-    background: #fff;
-    color: #222;
-    padding: 0.45rem 0.9rem;
+.portes-tab {
+    border: 1px solid #343434;
+    background: #111;
+    color: #ddd;
+    padding: 0.5rem 0.95rem;
     border-radius: 6px;
     cursor: pointer;
     font: inherit;
+    font-weight: 600;
+}
+
+.portes-tab:hover,
+.portes-tab:focus-visible {
+    border-color: #ffc107;
+    color: #ffc107;
+    outline: none;
 }
 
 .portes-tab.ativa,
-.portes-tab[aria-selected="true"]{
-    border-color: #1f6feb;
-    background: #eaf2ff;
-    color: #0b3d91;
-    font-weight: 600;
+.portes-tab[aria-selected="true"] {
+    border-color: #ffc107;
+    background: #ffc107;
+    color: #000;
 }
 
-.portes-grupo{
-    margin-bottom: 1.5rem;
+.portes-grupo {
+    margin-bottom: 1.15rem;
+    border: 1px solid #252525;
+    background: #111;
+    border-radius: 8px;
+    padding: 0.9rem 1rem 1rem;
+    box-shadow: 0 10px 28px rgba(0, 0, 0, 0.25);
 }
 
-.portes-grupo h2{
-    margin: 0 0 0.65rem;
-    font-size: 1.05rem;
+.portes-grupo h2 {
+    margin: 0 0 0.75rem;
+    font-size: 0.95rem;
+    font-weight: 800;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+    color: #cfcfcf;
 }
 
-.portes-tabela{
+.portes-tabela {
     width: 100%;
     border-collapse: collapse;
-    background: #fff;
+    background: transparent;
+    color: #f0f0f0;
 }
 
 .portes-tabela th,
-.portes-tabela td{
-    border: 1px solid #e2e2e2;
-    padding: 0.55rem 0.65rem;
+.portes-tabela td {
+    border-bottom: 1px solid #2a2a2a;
+    padding: 0.65rem 0.55rem;
     text-align: left;
     vertical-align: middle;
+    color: #f0f0f0;
 }
 
-.portes-tabela th{
-    background: #f6f6f6;
+.portes-tabela th {
+    background: transparent;
+    color: #aaa;
+    font-size: 0.78rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+}
+
+.portes-tabela tbody tr:last-child td {
+    border-bottom: 0;
+}
+
+.portes-tabela .portes-metodo {
+    font-family: ui-monospace, Consolas, monospace;
     font-size: 0.86rem;
+    color: #bdbdbd;
+    white-space: nowrap;
+}
+
+.portes-tabela .portes-nome {
+    color: #fff;
     font-weight: 600;
 }
 
-.portes-tabela input[type="number"]{
+.portes-tabela input[type="number"] {
     width: 7.5rem;
     max-width: 100%;
-    padding: 0.35rem 0.45rem;
-    border: 1px solid #ccc;
-    border-radius: 4px;
+    height: 38px;
+    padding: 0 0.55rem;
+    border: 1px solid #343434;
+    border-radius: 6px;
+    background: #050505;
+    color: #fff;
     font: inherit;
+    box-sizing: border-box;
 }
 
-.portes-tabela .portes-alterado{
-    background: #fff8e6;
+.portes-tabela input[type="number"]:focus {
+    outline: none;
+    border-color: #ffc107;
 }
 
-@media (max-width: 700px){
-    .portes-tabela th:nth-child(2),
-    .portes-tabela td:nth-child(2){
+.portes-tabela .portes-alterado {
+    background: rgba(255, 193, 7, 0.12);
+}
+
+.portes-tabela .portes-alterado td {
+    color: #ffe9a8;
+}
+
+#portes-status {
+    margin-top: 0.85rem;
+    color: #cfcfcf;
+}
+
+@media (max-width: 700px) {
+    .pagina-portes-admin .portes-admin {
+        width: calc(100% - 20px);
+    }
+
+    .portes-tabela th:nth-child(1),
+    .portes-tabela td:nth-child(1) {
         display: none;
     }
 }

@@ -74,10 +74,12 @@ function renderizarTabelaPortes() {
             if (alterado) tr.classList.add('portes-alterado');
 
             const tdMetodo = document.createElement('td');
+            tdMetodo.className = 'portes-metodo';
             tdMetodo.textContent = linha.metodo_id;
             tr.appendChild(tdMetodo);
 
             const tdNome = document.createElement('td');
+            tdNome.className = 'portes-nome';
             tdNome.textContent = linha.nome_exibicao || '';
             tr.appendChild(tdNome);
 
