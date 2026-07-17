@@ -332,12 +332,14 @@ function renderizarTabelaMapa() {
     caixa.replaceChildren();
 
     renderizarContadoresMapa(mapasResultados);
-    const resumo = document.createElement("p");
-    resumo.className = "fornecedor-contagem-lista mapas-tabela-resumo";
-    resumo.textContent = mapasResultados.length ? `${mapasResultados.length} produto(s) no mapa` : "Nenhum produto encontrado.";
-    caixa.appendChild(resumo);
 
-    if (!mapasResultados.length) return;
+    if (!mapasResultados.length) {
+        const vazio = document.createElement("p");
+        vazio.className = "fornecedor-contagem-lista mapas-tabela-resumo";
+        vazio.textContent = "Nenhum produto encontrado.";
+        caixa.appendChild(vazio);
+        return;
+    }
 
     const colunasVisiveis = obterColunasVisiveisMapa();
     const wrapper = document.createElement("div");
