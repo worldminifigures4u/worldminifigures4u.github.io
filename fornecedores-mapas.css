@@ -1611,7 +1611,97 @@ body.pagina-mapas-admin > main.fornecedores-admin {
 }
 
 .mapas-produto-secao-media {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: 1fr;
+}
+
+.mapas-produto-upload-bloco {
+    display: grid;
+    gap: 8px;
+}
+
+.mapas-produto-ajuda-media {
+    margin: 0;
+    color: #aaa;
+    font-size: 12px;
+    font-weight: 500;
+    line-height: 1.4;
+}
+
+.mapas-produto-upload-status {
+    min-height: 18px;
+    margin: 0;
+    font-size: 12px;
+}
+
+.mapas-produto-preview-imagens,
+.preview-imagens-admin {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(72px, 1fr));
+    gap: 8px;
+}
+
+.preview-imagens-admin img {
+    width: 100%;
+    aspect-ratio: 1;
+    object-fit: contain;
+    background: #222;
+    display: block;
+    pointer-events: none;
+}
+
+.item-preview-imagem-admin {
+    position: relative;
+    overflow: hidden;
+    background: #222;
+    border: 1px solid #333;
+    border-radius: 8px;
+    cursor: grab;
+    user-select: none;
+    touch-action: none;
+}
+
+.item-preview-imagem-admin:hover {
+    border-color: #ffc107;
+}
+
+.item-preview-imagem-admin.arrastando {
+    opacity: 0.55;
+}
+
+.item-preview-imagem-admin.destino-arrasto {
+    border-color: #35c7ff;
+    box-shadow: 0 0 0 2px rgba(53, 199, 255, 0.28);
+}
+
+.etiqueta-imagem-principal {
+    position: absolute;
+    left: 4px;
+    bottom: 4px;
+    padding: 3px 5px;
+    border-radius: 4px;
+    background: #ffc107;
+    color: #000;
+    font-size: 10px;
+    font-weight: 800;
+}
+
+.input-upload-admin {
+    width: 100%;
+    box-sizing: border-box;
+    color: #ddd;
+    font: inherit;
+}
+
+.input-upload-admin::file-selector-button {
+    margin-right: 10px;
+    border: 1px solid #555;
+    border-radius: 6px;
+    background: #242424;
+    color: #fff;
+    padding: 8px 12px;
+    font: inherit;
+    font-weight: 700;
+    cursor: pointer;
 }
 
 .mapas-produto-secao legend {

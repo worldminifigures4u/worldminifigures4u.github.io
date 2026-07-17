@@ -151,6 +151,38 @@ function montarPainelColunasMapa() {
     });
 }
 
+function normalizarImagensMapa(imagens) {
+    let lista = imagens;
+    if (typeof lista === "string") {
+        try {
+            lista = JSON.parse(lista);
+        } catch (_erro) {
+            lista = String(lista).split(/[\n,]+/);
+        }
+    }
+    if (!Array.isArray(lista)) return [];
+    return lista
+        .map((item) => {
+            if (typeof item === "string") {
+                const texto = item.trim();
+                if (!texto) return "";
+                if ((texto.startsWith('"') && texto.endsWith('"')) || (texto.startsWith("'") && texto.endsWith("'"))) {
+                    try {
+                        return String(JSON.parse(texto) || "").trim();
+                    } catch (_erro) {
+                        return texto.slice(1, -1).trim();
+                    }
+                }
+                return texto;
+            }
+            if (item && typeof item === "object") {
+                return String(item.url || item.secure_url || item.src || "").trim();
+            }
+            return String(item || "").trim();
+        })
+        .filter(Boolean);
+}
+
 function normalizarProdutoMapa(produto) {
     const normalizado = {
         id: produto.id,
@@ -169,7 +201,7 @@ function normalizarProdutoMapa(produto) {
         subtema: produto.subtema || "",
         stock: Math.max(0, Number(produto.stock || 0)),
         ativo: produto.ativo !== false,
-        imagens: Array.isArray(produto.imagens) ? produto.imagens : [],
+        imagens: normalizarImagensMapa(produto.imagens),
         observacoes: produto.observacoes || "",
         fornecedores: produto.fornecedores || {}
     };
@@ -459,6 +491,271 @@ function criarInputEdicaoMapa(form, id, rotulo, valor, tipo = "text", opcoes = {
     return input;
 }
 
+function criarTextareaEdicaoMapa(form, id, rotulo, valor, opcoes = {}) {
+    const label = document.createElement("label");
+    label.setAttribute("for", id);
+    label.className = opcoes.largo ? "mapas-produto-campo mapas-produto-campo-largo" : "mapas-produto-campo";
+    label.textContent = rotulo;
+    const area = document.createElement("textarea");
+    area.id = id;
+    area.name = id;
+    area.rows = opcoes.rows || 4;
+    area.placeholder = opcoes.placeholder || "";
+    area.value = valor ?? "";
+    label.appendChild(area);
+    form.appendChild(label);
+    return area;
+}
+
+const MAPAS_UPLOAD_IMAGEM_MAX_BYTES = 8 * 1024 * 1024;
+const MAPAS_UPLOAD_IMAGEM_TIPOS = new Set(["image/jpeg", "image/png", "image/webp"]);
+
+function obterUrlsImagensEdicaoMapa() {
+    const textarea = document.getElementById("mapas-editar-imagens");
+    if (!textarea) return [];
+    return textarea.value
+        .split(/[\n,]+/)
+        .map((url) => url.trim())
+        .filter(Boolean);
+}
+
+function reordenarUrlsImagensMapa(origem, destino) {
+    const textarea = document.getElementById("mapas-editar-imagens");
+    if (!textarea || origem === destino || origem < 0 || destino < 0) return;
+    const urls = obterUrlsImagensEdicaoMapa();
+    if (origem >= urls.length || destino >= urls.length) return;
+    const [movido] = urls.splice(origem, 1);
+    urls.splice(destino, 0, movido);
+    textarea.value = urls.join("\n");
+    atualizarPreviewImagensEdicaoMapa();
+}
+
+function atualizarPreviewImagensEdicaoMapa() {
+    const preview = document.getElementById("mapas-editar-preview-imagens");
+    if (!preview) return;
+    const urls = obterUrlsImagensEdicaoMapa();
+    preview.replaceChildren();
+    const otimizar = typeof otimizarImagemCloudinary === "function"
+        ? otimizarImagemCloudinary
+        : (url) => url;
+
+    urls.slice(0, 12).forEach((url, index) => {
+        const item = document.createElement("div");
+        item.className = "item-preview-imagem-admin";
+        item.draggable = true;
+        item.dataset.indiceImagem = String(index);
+        item.title = "Arraste para alterar a ordem";
+
+        const imagem = document.createElement("img");
+        imagem.src = otimizar(url, 240);
+        imagem.alt = `Imagem ${index + 1}`;
+        imagem.loading = "lazy";
+        imagem.onerror = () => item.classList.add("oculto");
+        item.appendChild(imagem);
+
+        if (index === 0) {
+            const etiqueta = document.createElement("span");
+            etiqueta.className = "etiqueta-imagem-principal";
+            etiqueta.textContent = "Principal";
+            item.appendChild(etiqueta);
+        }
+
+        item.addEventListener("dragstart", (evento) => {
+            item.classList.add("arrastando");
+            evento.dataTransfer.effectAllowed = "move";
+            evento.dataTransfer.setData("text/plain", String(index));
+        });
+        item.addEventListener("dragend", () => {
+            preview.querySelectorAll(".item-preview-imagem-admin").forEach((elemento) => {
+                elemento.classList.remove("arrastando", "destino-arrasto");
+            });
+        });
+        item.addEventListener("dragover", (evento) => {
+            evento.preventDefault();
+            evento.dataTransfer.dropEffect = "move";
+            preview.querySelectorAll(".destino-arrasto").forEach((elemento) => elemento.classList.remove("destino-arrasto"));
+            item.classList.add("destino-arrasto");
+        });
+        item.addEventListener("drop", (evento) => {
+            evento.preventDefault();
+            const origem = Number(evento.dataTransfer.getData("text/plain"));
+            reordenarUrlsImagensMapa(origem, index);
+        });
+
+        preview.appendChild(item);
+    });
+}
+
+function adicionarUrlsImagensEdicaoMapa(urls) {
+    const textarea = document.getElementById("mapas-editar-imagens");
+    if (!textarea || !urls.length) return;
+    const atuais = obterUrlsImagensEdicaoMapa();
+    urls.forEach((url) => {
+        if (!atuais.includes(url)) atuais.push(url);
+    });
+    textarea.value = atuais.join("\n");
+    atualizarPreviewImagensEdicaoMapa();
+}
+
+async function obterAssinaturaCloudinaryMapa() {
+    const { data: { session }, error: sessionError } = await mapasClient.auth.getSession();
+    if (sessionError || !session?.access_token) {
+        throw new Error("Sessão de administrador obrigatória para enviar fotos.");
+    }
+    const resposta = await fetch(`${SUPABASE_URL}/functions/v1/cloudinary-sign-upload`, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${session.access_token}`,
+            apikey: SUPABASE_KEY
+        },
+        body: JSON.stringify({ origem: "mapas-produtos" })
+    });
+    const dados = await resposta.json().catch(() => ({}));
+    if (!resposta.ok) throw new Error(dados?.error || "Não foi possível obter assinatura segura do Cloudinary.");
+    if (!dados?.cloudName || !dados?.apiKey || !dados?.timestamp || !dados?.signature) {
+        throw new Error("Assinatura Cloudinary incompleta.");
+    }
+    return dados;
+}
+
+async function enviarFicheiroCloudinaryMapa(ficheiro) {
+    const assinatura = await obterAssinaturaCloudinaryMapa();
+    const formData = new FormData();
+    formData.append("file", ficheiro);
+    formData.append("api_key", assinatura.apiKey);
+    formData.append("timestamp", String(assinatura.timestamp));
+    formData.append("signature", assinatura.signature);
+    if (assinatura.folder) formData.append("folder", assinatura.folder);
+    if (assinatura.eager) formData.append("eager", assinatura.eager);
+
+    const resposta = await fetch(`https://api.cloudinary.com/v1_1/${assinatura.cloudName}/image/upload`, {
+        method: "POST",
+        body: formData
+    });
+    const resultado = await resposta.json().catch(() => ({}));
+    if (!resposta.ok) throw new Error(resultado?.error?.message || "Falha no upload assinado para o Cloudinary.");
+    if (!resultado?.secure_url) throw new Error("O Cloudinary não devolveu URL seguro da imagem.");
+    return resultado.eager?.[0]?.secure_url || resultado.secure_url;
+}
+
+async function enviarFotosCloudinaryMapa(input) {
+    const status = document.getElementById("mapas-editar-upload-status");
+    const ficheiros = Array.from(input.files || []);
+    if (!ficheiros.length) return;
+    try {
+        const { data: { user }, error: authError } = await mapasClient.auth.getUser();
+        if (authError || !user || !ADMIN_EMAILS.includes(String(user.email || "").toLowerCase())) {
+            throw new Error("Apenas o administrador pode enviar fotos.");
+        }
+        if (status) {
+            status.textContent = `A enviar ${ficheiros.length} foto(s)...`;
+            status.classList.remove("status-erro", "status-sucesso");
+            status.classList.add("status-aviso");
+        }
+        const urls = [];
+        for (const ficheiro of ficheiros) {
+            if (!MAPAS_UPLOAD_IMAGEM_TIPOS.has(ficheiro.type)) {
+                throw new Error("Só pode enviar imagens JPG, PNG ou WebP.");
+            }
+            if (ficheiro.size > MAPAS_UPLOAD_IMAGEM_MAX_BYTES) {
+                throw new Error("Cada imagem pode ter no máximo 8 MB.");
+            }
+            urls.push(await enviarFicheiroCloudinaryMapa(ficheiro));
+            if (status) status.textContent = `Enviadas ${urls.length}/${ficheiros.length} foto(s)...`;
+        }
+        adicionarUrlsImagensEdicaoMapa(urls);
+        input.value = "";
+        if (status) {
+            status.textContent = `${urls.length} foto(s) adicionada(s). Guarde o produto para confirmar.`;
+            status.classList.remove("status-aviso", "status-erro");
+            status.classList.add("status-sucesso");
+        }
+    } catch (erro) {
+        console.error(erro);
+        if (status) {
+            status.textContent = "Erro: " + (erro.message || "Não foi possível enviar as fotos.");
+            status.classList.remove("status-aviso", "status-sucesso");
+            status.classList.add("status-erro");
+        }
+    }
+}
+
+function montarSecaoMediaEdicaoMapa(campos, produto) {
+    const secao = criarSecaoEdicaoMapa("Fotos e observações", "mapas-produto-secao-media");
+
+    const blocoUpload = document.createElement("div");
+    blocoUpload.className = "mapas-produto-campo mapas-produto-campo-largo mapas-produto-upload-bloco";
+    const tituloUpload = document.createElement("strong");
+    tituloUpload.textContent = "Fotos do artigo";
+    const ajuda = document.createElement("p");
+    ajuda.className = "mapas-produto-ajuda-media";
+    ajuda.textContent = "Envie JPG, PNG ou WebP. Arraste as miniaturas para definir a foto principal.";
+    const inputUpload = document.createElement("input");
+    inputUpload.className = "input-upload-admin";
+    inputUpload.type = "file";
+    inputUpload.id = "mapas-editar-upload-imagens";
+    inputUpload.accept = "image/jpeg,image/png,image/webp";
+    inputUpload.multiple = true;
+    inputUpload.addEventListener("change", () => enviarFotosCloudinaryMapa(inputUpload));
+    const statusUpload = document.createElement("p");
+    statusUpload.id = "mapas-editar-upload-status";
+    statusUpload.className = "mapas-produto-upload-status";
+    statusUpload.setAttribute("role", "status");
+    blocoUpload.append(tituloUpload, ajuda, inputUpload, statusUpload);
+    secao.appendChild(blocoUpload);
+
+    criarTextareaEdicaoMapa(
+        secao,
+        "mapas-editar-imagens",
+        "URLs das imagens",
+        normalizarImagensMapa(produto.imagens).join("\n"),
+        { largo: true, rows: 4, placeholder: "Um URL por linha" }
+    );
+    document.getElementById("mapas-editar-imagens")?.addEventListener("input", atualizarPreviewImagensEdicaoMapa);
+
+    const preview = document.createElement("div");
+    preview.id = "mapas-editar-preview-imagens";
+    preview.className = "preview-imagens-admin mapas-produto-preview-imagens";
+    secao.appendChild(preview);
+
+    criarTextareaEdicaoMapa(
+        secao,
+        "mapas-editar-observacoes",
+        "Observações",
+        produto.observacoes || "",
+        { largo: true, rows: 3, placeholder: "Notas internas sobre estado, acessórios, origem, etc." }
+    );
+
+    campos.appendChild(secao);
+    atualizarPreviewImagensEdicaoMapa();
+}
+
+async function enriquecerMediaProdutoMapa(produto) {
+    const atual = {
+        ...produto,
+        imagens: normalizarImagensMapa(produto.imagens),
+        observacoes: String(produto.observacoes || "")
+    };
+    if (atual.imagens.length) return atual;
+
+    try {
+        const { data, error } = await mapasClient.rpc("obter_imagens_produtos_encomendas_admin", {
+            p_ids: [String(produto.id)]
+        });
+        if (error) return atual;
+        const lista = Array.isArray(data) ? data : [];
+        const entrada = lista.find((item) =>
+            String(item.id) === String(produto.id)
+            || String(item.sku || "").toUpperCase() === String(produto.sku || "").toUpperCase()
+        ) || lista[0];
+        if (entrada?.imagens) atual.imagens = normalizarImagensMapa(entrada.imagens);
+    } catch (_erro) {
+        // Mantém o que já temos se o RPC falhar
+    }
+    return atual;
+}
+
 function criarCheckboxEdicaoMapa(form, id, rotulo, marcado) {
     const label = document.createElement("label");
     label.className = "mapas-edicao-checkbox";
@@ -535,16 +832,31 @@ function garantirModalEdicaoProdutoMapa() {
     return modal;
 }
 
-function abrirEdicaoProdutoMapa(produtoId) {
-    const produto = mapasProdutos.find(item => String(item.id) === String(produtoId));
-    if (!produto) return;
+async function abrirEdicaoProdutoMapa(produtoId) {
+    const produtoBase = mapasProdutos.find(item => String(item.id) === String(produtoId));
+    if (!produtoBase) return;
     const modal = garantirModalEdicaoProdutoMapa();
     const campos = modal.querySelector("#mapas-produto-form-campos");
     const status = modal.querySelector("#mapas-produto-status");
     campos.replaceChildren();
+    if (status) {
+        status.textContent = "A carregar ficha...";
+        status.classList.remove("status-erro", "status-sucesso");
+        status.classList.add("status-aviso");
+    }
+    modal.querySelector("#mapas-editar-id").value = String(produtoBase.id || "");
+    modal.querySelector("#mapas-editar-sku-original").value = String(produtoBase.sku || "");
+    modal.hidden = false;
+    document.body.classList.add("mapas-produto-modal-aberto");
+
+    const produto = await enriquecerMediaProdutoMapa(produtoBase);
+    // Atualiza cache local com media enriquecida
+    mapasProdutos = mapasProdutos.map((item) =>
+        String(item.id) === String(produto.id) ? { ...item, imagens: produto.imagens, observacoes: produto.observacoes } : item
+    );
+
+    campos.replaceChildren();
     if (status) status.textContent = "";
-    modal.querySelector("#mapas-editar-id").value = String(produto.id || "");
-    modal.querySelector("#mapas-editar-sku-original").value = String(produto.sku || "");
 
     const secaoIdentificacao = criarSecaoEdicaoMapa("Identificação", "mapas-produto-secao-identificacao");
     criarInputEdicaoMapa(secaoIdentificacao, "mapas-editar-nome", "Nome", produto.nome || "", "text", { required: true, largo: true });
@@ -571,8 +883,7 @@ function abrirEdicaoProdutoMapa(produtoId) {
     criarCheckboxEdicaoMapa(secaoDetalhes, "mapas-editar-ativo", "Produto ativo", produto.ativo !== false);
     campos.appendChild(secaoDetalhes);
 
-    modal.hidden = false;
-    document.body.classList.add("mapas-produto-modal-aberto");
+    montarSecaoMediaEdicaoMapa(campos, produto);
     modal.querySelector("#mapas-editar-nome")?.focus();
 }
 
@@ -585,6 +896,8 @@ function fecharEdicaoProdutoMapa() {
 
 function lerProdutoEditadoMapa() {
     const produtoAtual = mapasProdutos.find(item => String(item.id) === String(document.getElementById("mapas-editar-id").value));
+    const observacoesCampo = document.getElementById("mapas-editar-observacoes");
+    const imagensCampo = document.getElementById("mapas-editar-imagens");
     const produto = {
         nome: document.getElementById("mapas-editar-nome").value.trim(),
         referencia: document.getElementById("mapas-editar-referencia").value.trim(),
@@ -600,8 +913,12 @@ function lerProdutoEditadoMapa() {
         stock: Math.max(0, Math.floor(Number(document.getElementById("mapas-editar-stock").value || 0))),
         tema: document.getElementById("mapas-editar-tema").value.trim(),
         subtema: document.getElementById("mapas-editar-subtema").value.trim() || "semsubtema",
-        observacoes: produtoAtual?.observacoes || "",
-        imagens: Array.isArray(produtoAtual?.imagens) ? produtoAtual.imagens : [],
+        observacoes: observacoesCampo
+            ? observacoesCampo.value.trim()
+            : (produtoAtual?.observacoes || ""),
+        imagens: imagensCampo
+            ? obterUrlsImagensEdicaoMapa()
+            : normalizarImagensMapa(produtoAtual?.imagens),
         fornecedores: produtoAtual?.fornecedores || {},
         ativo: document.getElementById("mapas-editar-ativo").checked
     };
@@ -632,12 +949,29 @@ async function guardarEdicaoProdutoMapa(evento) {
             && String(item.sku || "").trim().toUpperCase() === produto.sku
         );
         if (skuDuplicado) throw new Error("Este SKU já existe noutro produto.");
-        const { data, error } = await mapasClient.rpc("editar_produto_mapa_admin", { p_id: id, p_sku_original: skuOriginal, p_produto: produto });
-        if (error && /editar_produto_mapa_admin/i.test(String(error.message || ""))) {
-            throw new Error("Execute primeiro o SQL atualizado do Mapas no Supabase para editar produtos nesta página.");
+
+        let data = null;
+        let error = null;
+        // Preferir RPC da Gestão (já grava imagens/observações); Mapas como reforço após SQL novo
+        ({ data, error } = await mapasClient.rpc("editar_produto_admin_v2", {
+            p_id: id,
+            p_sku_original: skuOriginal,
+            p_produto: produto
+        }));
+        if (error) {
+            ({ data, error } = await mapasClient.rpc("editar_produto_mapa_admin", {
+                p_id: id,
+                p_sku_original: skuOriginal,
+                p_produto: produto
+            }));
         }
         if (error) throw error;
-        const atualizado = normalizarProdutoMapa({ ...data, imagens: produto.imagens, observacoes: produto.observacoes, fornecedores: produto.fornecedores });
+        const atualizado = normalizarProdutoMapa({
+            ...data,
+            imagens: data?.imagens ?? produto.imagens,
+            observacoes: data?.observacoes ?? produto.observacoes,
+            fornecedores: data?.fornecedores ?? produto.fornecedores
+        });
         mapasProdutos = mapasProdutos.map(item => String(item.id) === String(atualizado.id) ? atualizado : item);
         fecharEdicaoProdutoMapa();
         atualizarResultadosMapa();
@@ -666,6 +1000,11 @@ async function carregarProdutosMapa() {
             break;
         }
         const pagina = Array.isArray(resposta.data) ? resposta.data : [];
+        // RPC antiga sem imagens/observacoes → usar listagem completa da Gestão
+        if (inicio === 0 && pagina.length && !Object.prototype.hasOwnProperty.call(pagina[0], "imagens")) {
+            usarFallback = true;
+            break;
+        }
         produtos.push(...pagina);
         if (pagina.length < tamanhoPagina) break;
         inicio += tamanhoPagina;

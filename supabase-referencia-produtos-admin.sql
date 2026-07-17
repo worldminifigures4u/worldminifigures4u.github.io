@@ -501,7 +501,10 @@ begin
       'tema', coalesce(produto.tema, ''),
       'subtema', coalesce(produto.subtema, ''),
       'stock', coalesce(produto.stock, 0),
-      'ativo', coalesce(produto.ativo, true)
+      'ativo', coalesce(produto.ativo, true),
+      'observacoes', coalesce(produto.observacoes, ''),
+      'imagens', coalesce(to_jsonb(produto.imagens), '[]'::jsonb),
+      'fornecedores', coalesce(produto.fornecedores, '{}'::jsonb)
     ) order by produto.nome)
     from (
       select *
@@ -531,6 +534,7 @@ set search_path = public
 as $$
 declare
   v_produto public.produtos%rowtype;
+  v_imagens json[];
   v_sku text;
 begin
   if lower(coalesce(auth.jwt() ->> 'email', '')) <>
@@ -547,6 +551,11 @@ begin
     raise exception 'SKU invalido.';
   end if;
 
+  select coalesce(array_agg(to_json(trim(valor))), array[]::json[])
+  into v_imagens
+  from jsonb_array_elements_text(coalesce(p_produto->'imagens', '[]'::jsonb)) as imagens(valor)
+  where trim(valor) <> '';
+
   update public.produtos as produto
   set
     sku = v_sku,
@@ -562,8 +571,11 @@ begin
     top = nullif(trim(coalesce(p_produto->>'top', '')), ''),
     arquivado = coalesce((p_produto->>'arquivado')::boolean, false),
     descontinuado = coalesce((p_produto->>'descontinuado')::boolean, false),
+    observacoes = nullif(trim(coalesce(p_produto->>'observacoes', '')), ''),
     ativo = coalesce((p_produto->>'ativo')::boolean, true),
-    novidade = coalesce((p_produto->>'novidade')::boolean, false)
+    novidade = coalesce((p_produto->>'novidade')::boolean, false),
+    imagens = v_imagens,
+    fornecedores = coalesce(p_produto->'fornecedores', produto.fornecedores, '{}'::jsonb)
   where nullif(trim(coalesce(p_id, '')), '') is not null
     and produto.id::text = trim(p_id)
   returning produto.*
@@ -583,10 +595,13 @@ begin
       peso = (p_produto->>'peso')::numeric,
       stock = (p_produto->>'stock')::integer,
       top = nullif(trim(coalesce(p_produto->>'top', '')), ''),
-    arquivado = coalesce((p_produto->>'arquivado')::boolean, false),
-    descontinuado = coalesce((p_produto->>'descontinuado')::boolean, false),
+      arquivado = coalesce((p_produto->>'arquivado')::boolean, false),
+      descontinuado = coalesce((p_produto->>'descontinuado')::boolean, false),
+      observacoes = nullif(trim(coalesce(p_produto->>'observacoes', '')), ''),
       ativo = coalesce((p_produto->>'ativo')::boolean, true),
-      novidade = coalesce((p_produto->>'novidade')::boolean, false)
+      novidade = coalesce((p_produto->>'novidade')::boolean, false),
+      imagens = v_imagens,
+      fornecedores = coalesce(p_produto->'fornecedores', produto.fornecedores, '{}'::jsonb)
     where upper(produto.sku) = upper(trim(coalesce(p_sku_original, '')))
     returning produto.*
     into v_produto;
@@ -605,14 +620,17 @@ begin
     'preco', coalesce(v_produto.preco, 0),
     'preco_compra', coalesce(v_produto.preco_compra, 0),
     'top', coalesce(v_produto.top, ''),
-      'arquivado', coalesce(v_produto.arquivado, false),
-      'descontinuado', coalesce(v_produto.descontinuado, false),
+    'arquivado', coalesce(v_produto.arquivado, false),
+    'descontinuado', coalesce(v_produto.descontinuado, false),
     'novidade', coalesce(v_produto.novidade, false),
     'peso', coalesce(v_produto.peso, 10),
     'tema', coalesce(v_produto.tema, ''),
     'subtema', coalesce(v_produto.subtema, ''),
     'stock', coalesce(v_produto.stock, 0),
-    'ativo', coalesce(v_produto.ativo, true)
+    'ativo', coalesce(v_produto.ativo, true),
+    'observacoes', coalesce(v_produto.observacoes, ''),
+    'imagens', coalesce(to_jsonb(v_produto.imagens), '[]'::jsonb),
+    'fornecedores', coalesce(v_produto.fornecedores, '{}'::jsonb)
   );
 end;
 $$;
