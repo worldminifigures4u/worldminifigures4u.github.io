@@ -814,6 +814,77 @@ body.pagina-mapas-admin > main.fornecedores-admin {
     font: inherit;
 }
 
+.mapas-colunas-painel {
+    position: relative;
+    min-height: 36px;
+}
+
+.mapas-colunas-painel > summary {
+    list-style: none;
+    display: inline-flex;
+    align-items: center;
+    min-height: 36px;
+    box-sizing: border-box;
+    padding: 0 12px;
+    border: 1px solid #555;
+    border-radius: 6px;
+    background: #242424;
+    color: #fff;
+    font: inherit;
+    font-weight: 700;
+    cursor: pointer;
+    user-select: none;
+}
+
+.mapas-colunas-painel > summary::-webkit-details-marker {
+    display: none;
+}
+
+.mapas-colunas-painel[open] > summary {
+    border-color: #ffc400;
+    color: #ffc400;
+}
+
+.mapas-colunas-opcoes {
+    position: absolute;
+    top: calc(100% + 6px);
+    right: 0;
+    z-index: 20;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(140px, 1fr));
+    gap: 6px 14px;
+    min-width: 320px;
+    max-width: min(420px, calc(100vw - 24px));
+    padding: 12px;
+    border: 1px solid #444;
+    border-radius: 8px;
+    background: #1a1a1a;
+    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.45);
+}
+
+.mapas-coluna-opcao {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #ddd;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    user-select: none;
+}
+
+.mapas-coluna-opcao input {
+    width: 16px;
+    height: 16px;
+    accent-color: #ffc400;
+    cursor: pointer;
+}
+
+.mapas-coluna-opcao:has(input:disabled) {
+    opacity: 0.72;
+    cursor: default;
+}
+
 .mapas-filtro-stock {
     border: 1px solid #555;
     background: #242424;

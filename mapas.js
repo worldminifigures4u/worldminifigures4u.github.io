@@ -1,6 +1,6 @@
 
 const MAPAS_COLUNAS = [
-    { chave: "nome", rotulo: "nome", classe: "mapas-col-nome" },
+    { chave: "nome", rotulo: "nome", classe: "mapas-col-nome", obrigatorio: true },
     { chave: "referencia", rotulo: "referência", classe: "mapas-col-ref" },
     { chave: "stock", rotulo: "stock", classe: "mapas-col-stock", numero: true },
     { chave: "tema", rotulo: "tema", classe: "mapas-col-tema" },
@@ -16,6 +16,8 @@ const MAPAS_COLUNAS = [
     { chave: "peso", rotulo: "peso", classe: "mapas-col-peso", numero: true }
 ];
 
+const MAPAS_COLUNAS_STORAGE = "fp-mapas-colunas-visiveis";
+
 let mapasClient = null;
 let mapasProdutos = [];
 let mapasResultados = [];
@@ -24,6 +26,7 @@ let mapasOrdenacao = { coluna: "nome", direcao: "asc" };
 let mapasLinhaAltura = 39;
 let mapasRenderPendente = 0;
 let mapasAtualizacaoPendente = 0;
+let mapasColunasVisiveis = new Set(MAPAS_COLUNAS.map((coluna) => coluna.chave));
 let folhaDinamicaMapas = null;
 
 function definirCssDinamicoMapas(cssTexto) {
@@ -80,6 +83,72 @@ function definirStatusMapa(texto, erro = false) {
 
 function obterTopMapa(produto) {
     return produto?.top || "";
+}
+
+function carregarPreferenciasColunasMapa() {
+    const todas = MAPAS_COLUNAS.map((coluna) => coluna.chave);
+    try {
+        const bruto = localStorage.getItem(MAPAS_COLUNAS_STORAGE);
+        if (!bruto) {
+            mapasColunasVisiveis = new Set(todas);
+            return;
+        }
+        const lista = JSON.parse(bruto);
+        const validas = Array.isArray(lista)
+            ? lista.map((item) => String(item || "").trim()).filter((chave) => todas.includes(chave))
+            : [];
+        mapasColunasVisiveis = new Set(validas.length ? validas : todas);
+    } catch (_erro) {
+        mapasColunasVisiveis = new Set(todas);
+    }
+    // Nome fica sempre visível
+    mapasColunasVisiveis.add("nome");
+}
+
+function guardarPreferenciasColunasMapa() {
+    try {
+        localStorage.setItem(MAPAS_COLUNAS_STORAGE, JSON.stringify([...mapasColunasVisiveis]));
+    } catch (_erro) {
+        // ignore quota / private mode
+    }
+}
+
+function obterColunasVisiveisMapa() {
+    const visiveis = MAPAS_COLUNAS.filter((coluna) => mapasColunasVisiveis.has(coluna.chave));
+    return visiveis.length ? visiveis : MAPAS_COLUNAS.filter((coluna) => coluna.chave === "nome");
+}
+
+function rotuloColunaMapa(coluna) {
+    return coluna.titulo || coluna.rotulo;
+}
+
+function montarPainelColunasMapa() {
+    const caixa = document.getElementById("mapas-colunas-opcoes");
+    if (!caixa) return;
+    caixa.replaceChildren();
+
+    MAPAS_COLUNAS.forEach((coluna) => {
+        const label = document.createElement("label");
+        label.className = "mapas-coluna-opcao";
+        const input = document.createElement("input");
+        input.type = "checkbox";
+        input.value = coluna.chave;
+        input.checked = mapasColunasVisiveis.has(coluna.chave);
+        input.disabled = Boolean(coluna.obrigatorio);
+        input.addEventListener("change", () => {
+            if (coluna.obrigatorio) {
+                input.checked = true;
+                return;
+            }
+            if (input.checked) mapasColunasVisiveis.add(coluna.chave);
+            else mapasColunasVisiveis.delete(coluna.chave);
+            mapasColunasVisiveis.add("nome");
+            guardarPreferenciasColunasMapa();
+            renderizarTabelaMapa();
+        });
+        label.append(input, document.createTextNode(` ${rotuloColunaMapa(coluna)}`));
+        caixa.appendChild(label);
+    });
 }
 
 function normalizarProdutoMapa(produto) {
@@ -175,7 +244,7 @@ function renderizarContadoresMapa(resultados) {
 function criarCabecalhoTabelaMapa() {
     const thead = document.createElement("thead");
     const tr = document.createElement("tr");
-    MAPAS_COLUNAS.forEach(coluna => {
+    obterColunasVisiveisMapa().forEach(coluna => {
         const th = document.createElement("th");
         th.className = coluna.classe || "";
         th.title = coluna.titulo || coluna.rotulo;
@@ -204,7 +273,7 @@ function valorCelulaMapa(produto, coluna) {
 
 function criarLinhaProdutoMapa(produto) {
     const tr = document.createElement("tr");
-    MAPAS_COLUNAS.forEach(coluna => {
+    obterColunasVisiveisMapa().forEach(coluna => {
         const td = document.createElement("td");
         if (coluna.classe) td.className = coluna.classe;
         if (coluna.chave === "nome") {
@@ -270,6 +339,7 @@ function renderizarTabelaMapa() {
 
     if (!mapasResultados.length) return;
 
+    const colunasVisiveis = obterColunasVisiveisMapa();
     const wrapper = document.createElement("div");
     wrapper.id = "mapas-tabela-wrapper";
     wrapper.className = "mapas-tabela-wrapper mapas-tabela-virtual";
@@ -283,13 +353,13 @@ function renderizarTabelaMapa() {
     spacerTopo.id = "mapas-spacer-topo";
     spacerTopo.className = "mapas-spacer-virtual";
     const spacerTopoCelula = document.createElement("td");
-    spacerTopoCelula.colSpan = MAPAS_COLUNAS.length;
+    spacerTopoCelula.colSpan = colunasVisiveis.length;
     spacerTopo.appendChild(spacerTopoCelula);
     const spacerFundo = document.createElement("tr");
     spacerFundo.id = "mapas-spacer-fundo";
     spacerFundo.className = "mapas-spacer-virtual";
     const spacerFundoCelula = document.createElement("td");
-    spacerFundoCelula.colSpan = MAPAS_COLUNAS.length;
+    spacerFundoCelula.colSpan = colunasVisiveis.length;
     spacerFundo.appendChild(spacerFundoCelula);
     tbody.append(spacerTopo, spacerFundo);
     tabela.appendChild(tbody);
@@ -601,6 +671,8 @@ async function iniciarMapas() {
         mostrarNavegacaoAdminValidada();
         document.getElementById("fornecedores-bloqueio").hidden = true;
         document.getElementById("fornecedores-aplicacao").hidden = false;
+        carregarPreferenciasColunasMapa();
+        montarPainelColunasMapa();
         definirStatusMapa("A carregar mapas...");
         await carregarProdutosMapa();
         atualizarResultadosMapa();
@@ -614,6 +686,12 @@ async function iniciarMapas() {
 document.getElementById("fornecedor-pesquisa")?.addEventListener("input", agendarAtualizacaoResultadosMapa);
 document.getElementById("mapas-filtro-stock")?.addEventListener("change", atualizarResultadosMapa);
 document.getElementById("mapas-copiar-lista")?.addEventListener("click", copiarListaMapaVisivel);
+document.addEventListener("click", (evento) => {
+    const painel = document.getElementById("mapas-colunas-painel");
+    if (!painel?.open) return;
+    if (painel.contains(evento.target)) return;
+    painel.open = false;
+});
 window.addEventListener("scroll", agendarRenderVirtualMapa, { passive: true });
 window.addEventListener("resize", agendarRenderVirtualMapa);
 document.addEventListener("keydown", evento => {
