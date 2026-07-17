@@ -22,6 +22,20 @@ function formatarPesoPortes(pesoAteG, pesoAnteriorG = null) {
     return `> ${formatarGramasPortes(pesoAnteriorG)} – ${formatarGramasPortes(limiteSuperior)}`;
 }
 
+function estadoOriginalPortes(linha) {
+    return {
+        preco: Math.round(Number(linha.preco || 0) * 100) / 100,
+        ativo: linha.ativo !== false
+    };
+}
+
+function linhaPortesAlterada(linha) {
+    const original = portesOriginais.get(linha.id);
+    if (!original) return false;
+    return Number(original.preco) !== Number(linha.preco)
+        || Boolean(original.ativo) !== (linha.ativo !== false);
+}
+
 function formatarPrecoInput(valor) {
     return (Math.round(Number(valor || 0) * 100) / 100).toFixed(2);
 }
@@ -78,14 +92,27 @@ function renderizarTabelaPortes() {
 
         const tabela = document.createElement('table');
         tabela.className = 'portes-tabela';
-        tabela.innerHTML = '<thead><tr><th>Método</th><th>Nome no site</th><th>Preço site (€)</th></tr></thead>';
+        tabela.innerHTML = '<thead><tr><th>Ativo</th><th>Método</th><th>Nome no site</th><th>Preço site (€)</th></tr></thead>';
         const tbody = document.createElement('tbody');
 
         grupo.forEach((linha) => {
             const tr = document.createElement('tr');
-            const original = portesOriginais.get(linha.id);
-            const alterado = original !== undefined && Number(original) !== Number(linha.preco);
-            if (alterado) tr.classList.add('portes-alterado');
+            const ativo = linha.ativo !== false;
+            if (linhaPortesAlterada(linha)) tr.classList.add('portes-alterado');
+            if (!ativo) tr.classList.add('portes-inativo');
+
+            const tdAtivo = document.createElement('td');
+            tdAtivo.className = 'portes-ativo';
+            const check = document.createElement('input');
+            check.type = 'checkbox';
+            check.checked = ativo;
+            check.setAttribute('aria-label', `Ativar ${linha.nome_exibicao || linha.metodo_id} para o cliente`);
+            check.addEventListener('change', () => {
+                linha.ativo = check.checked;
+                renderizarTabelaPortes();
+            });
+            tdAtivo.appendChild(check);
+            tr.appendChild(tdAtivo);
 
             const tdMetodo = document.createElement('td');
             tdMetodo.className = 'portes-metodo';
@@ -150,10 +177,11 @@ async function carregarPortesAdmin() {
     portesLinhas = (data || [])
         .filter((linha) => String(linha.metodo_id || '') !== 'entrega_tomar')
         .map((linha) => ({
-        ...linha,
-        preco: Math.round(Number(linha.preco || 0) * 100) / 100
-    }));
-    portesOriginais = new Map(portesLinhas.map((linha) => [linha.id, linha.preco]));
+            ...linha,
+            preco: Math.round(Number(linha.preco || 0) * 100) / 100,
+            ativo: linha.ativo !== false
+        }));
+    portesOriginais = new Map(portesLinhas.map((linha) => [linha.id, estadoOriginalPortes(linha)]));
     renderizarTabelaPortes();
     definirStatusPortes(portesLinhas.length
         ? `${portesLinhas.length} tarifas carregadas.`
@@ -162,7 +190,7 @@ async function carregarPortesAdmin() {
 
 async function guardarPortesAdmin() {
     const alteradas = portesLinhas
-        .filter((linha) => portesOriginais.get(linha.id) !== linha.preco)
+        .filter((linha) => linhaPortesAlterada(linha))
         .map((linha) => ({
             id: linha.id,
             preco: linha.preco,
@@ -191,7 +219,7 @@ async function guardarPortesAdmin() {
 
     await carregarPortesAdmin();
     const atualizados = data && data.atualizados != null ? data.atualizados : alteradas.length;
-    definirStatusPortes(`Guardado. ${atualizados} tarifas atualizadas. O carrinho usa cache até 6h (ou limpa ao guardar nesta página).`);
+    definirStatusPortes(`Guardado. ${atualizados} tarifas atualizadas. Opções desativadas deixam de aparecer ao cliente.`);
 }
 
 async function iniciarPainelPortes() {

@@ -25,7 +25,10 @@ drop policy if exists "Leitura publica portes ativos" on public.portes_tarifas;
 create policy "Leitura publica portes ativos"
 on public.portes_tarifas for select
 to anon, authenticated
-using (ativo = true);
+using (
+  ativo = true
+  or lower(coalesce(auth.jwt() ->> 'email', '')) = 'worldminifigures4u@gmail.com'
+);
 
 revoke insert, update, delete on public.portes_tarifas from public, anon, authenticated;
 grant select on public.portes_tarifas to anon, authenticated;

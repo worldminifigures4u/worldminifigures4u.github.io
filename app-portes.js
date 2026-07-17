@@ -1,5 +1,5 @@
 // Tabelas de portes usadas pelo carrinho (fallback local + carga remota com cache).
-const PORTES_CACHE_KEY = 'figures-planet-portes-tarifas-v4';
+const PORTES_CACHE_KEY = 'figures-planet-portes-tarifas-v5';
 const PORTES_CACHE_TTL_MS = 6 * 60 * 60 * 1000;
 const PORTES_PESO_ABERTO_G = 999999;
 
