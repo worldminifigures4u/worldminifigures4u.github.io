@@ -306,8 +306,9 @@ async function criarFaturaReciboMoloni(
   paymentMethodId: number,
   invoiceStatus: number,
 ) {
-  const dataDocumento = parseDataPagamento(encomenda.data_pagamento || encomenda.created_at);
-  const vencimento = adicionarDias(dataDocumento, 30);
+  const dataEmissao = new Date();
+  const dataPagamento = parseDataPagamento(encomenda.data_pagamento || encomenda.created_at);
+  const vencimento = adicionarDias(dataEmissao, 30);
   const totalBruto = numero(encomenda.total);
   const portesBruto = numero(encomenda.portes);
   const linhas = construirLinhasFatura(totalBruto, portesBruto, productIdLote, productIdPortes);
@@ -335,7 +336,7 @@ async function criarFaturaReciboMoloni(
     data: {
       documentSetId,
       customerId,
-      date: formatarDataIso(dataDocumento),
+      date: formatarDataIso(dataEmissao),
       expirationDate: formatarDataVencimento(vencimento),
       status: invoiceStatus,
       yourReference: referencia,
@@ -345,7 +346,7 @@ async function criarFaturaReciboMoloni(
         {
           paymentMethodId,
           value: totalBruto,
-          date: formatarDataIso(dataDocumento),
+          date: formatarDataIso(dataPagamento),
         },
       ],
     },

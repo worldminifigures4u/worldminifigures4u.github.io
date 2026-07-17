@@ -904,8 +904,8 @@ window.AdminEncomendaVista = (function () {
             let avisoFatura = "";
             if (podeEmitirFaturaMoloni(encomenda)) {
                 avisoFatura = encomendaOrigemOlx(encomenda)
-                    ? "\n\nDepois pode escolher se emite fatura-recibo no Moloni (com a data do pagamento)."
-                    : "\n\nSerá emitida automaticamente uma fatura-recibo no Moloni (com a data do pagamento).";
+                    ? "\n\nDepois pode escolher se emite fatura-recibo no Moloni (data de emissão de hoje; pagamento com data real)."
+                    : "\n\nSerá emitida automaticamente uma fatura-recibo no Moloni (data de emissão de hoje; pagamento com data real).";
             }
             const confirmado = window.confirm(
                 `Ao concluir a encomenda ${codigo}, todos os anexos serão eliminados definitivamente. As notas internas serão mantidas.${avisoFatura}\n\nContinuar?`
