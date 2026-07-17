@@ -1410,12 +1410,12 @@ window.AdminEncomendaVista = (function () {
             criarLinhaDetalhe("E-mail", encomenda.email_cliente),
             criarLinhaDetalhe("Telemóvel", encomenda.telefone_cliente),
             criarLinhaDetalhe("Envio", encomenda.metodo_envio_nome || encomenda.metodo_envio),
-            encomenda.codigo_seguimento
-                ? criarLinhaDetalhe("Seguimento", encomenda.codigo_seguimento)
-                : null,
+            ...(encomenda.codigo_seguimento
+                ? [criarLinhaDetalhe("Seguimento", encomenda.codigo_seguimento)]
+                : []),
             criarLinhaDetalhe("Portes", formatarEuro(encomenda.portes)),
             criarLinhaDetalhe("Pagamento", encomenda.metodo_pagamento)
-        ].filter(Boolean);
+        );
 
         if (encomenda.referencia_externa) {
             colunaContacto.appendChild(criarLinhaDetalhe("Referência externa", encomenda.referencia_externa));
