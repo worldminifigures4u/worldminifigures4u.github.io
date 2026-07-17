@@ -132,6 +132,9 @@ as $$
 declare
   v_encomenda public.encomendas%rowtype;
   v_item record;
+  v_produto public.produtos%rowtype;
+  v_quantidade integer;
+  v_stock_atual integer;
   v_repostou_agora boolean := false;
 begin
   if coalesce(auth.jwt() ->> 'email', '') <> 'worldminifigures4u@gmail.com' then
@@ -166,12 +169,25 @@ begin
       group by 1
     loop
       if v_item.id_produto is null then
-        continue;
+        raise exception 'Produto da encomenda sem id para repor stock';
       end if;
 
+      v_quantidade := greatest(coalesce(v_item.quantidade, 1), 1);
+
+      select * into v_produto
+      from public.produtos
+      where id::text = v_item.id_produto
+      for update;
+
+      if not found then
+        raise exception 'Produto % da encomenda nao encontrado para repor stock', v_item.id_produto;
+      end if;
+
+      v_stock_atual := coalesce(v_produto.stock, 0);
+
       update public.produtos
-      set stock = coalesce(stock, 0) + greatest(coalesce(v_item.quantidade, 1), 1),
-          ativo = (coalesce(stock, 0) + greatest(coalesce(v_item.quantidade, 1), 1)) > 0
+      set stock = v_stock_atual + v_quantidade,
+          ativo = (v_stock_atual + v_quantidade) > 0
       where id::text = v_item.id_produto;
     end loop;
     v_encomenda.stock_reposto := true;
