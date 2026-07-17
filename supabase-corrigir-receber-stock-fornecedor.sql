@@ -4,6 +4,7 @@
 -- - teto = quantidade pedida - já recebida (evita re-submit / excesso)
 -- - FOR UPDATE no produto
 -- - devolve recebido_aplicado para a UI
+-- - se stock saía de 0 (primeira receção), ativa o produto automaticamente
 
 create or replace function public.receber_stock_fornecedor_admin(
     p_encomenda_id text,
@@ -30,6 +31,7 @@ declare
     tudo_recebido boolean := true;
     atualizada public.encomendas_fornecedores;
     v_stock_atual int;
+    v_stock_novo int;
 begin
     if not public.admin_fornecedores_autorizado() then
         raise exception 'Acesso reservado ao administrador.';
@@ -68,21 +70,27 @@ begin
                 raise exception 'Produto % nao encontrado no catalogo.', produto_id_text;
             end if;
 
+            v_stock_novo := v_stock_atual + qtd_aplicar;
+
             update public.produtos
             set
                 novidade = case
                     when v_stock_atual = 0 then false
                     else novidade
                 end,
-                stock = v_stock_atual + qtd_aplicar,
-                ativo = (v_stock_atual + qtd_aplicar) > 0
+                stock = v_stock_novo,
+                -- Primeira receção (stock 0 → >0) ou qualquer stock positivo: ativo
+                ativo = v_stock_novo > 0
             where id::text = produto_id_text;
 
             aplicado := aplicado || jsonb_build_array(jsonb_build_object(
                 'produto_id', produto_id_text,
                 'quantidade', qtd_aplicar,
                 'solicitada', qtd_solicitada,
-                'pendente_antes', qtd_pendente
+                'pendente_antes', qtd_pendente,
+                'stock_antes', v_stock_atual,
+                'stock_depois', v_stock_novo,
+                'ativado', (v_stock_atual = 0 and v_stock_novo > 0)
             ));
         end if;
 

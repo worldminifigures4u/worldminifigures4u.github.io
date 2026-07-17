@@ -4439,6 +4439,7 @@ async function receberPedidoFornecedor(id) {
         }
 
         const aplicado = Array.isArray(data?.recebido_aplicado) ? data.recebido_aplicado : rececoes;
+        const ativarPorPrimeiraRececao = [];
         aplicado.forEach(rececao => {
             const produtoId = rececao.produto_id || rececao.id;
             const qtd = Math.max(0, Number(rececao.quantidade || 0));
@@ -4449,7 +4450,16 @@ async function receberPedidoFornecedor(id) {
                 produto.novidade = false;
             }
             produto.stock = stockAntes + qtd;
-            if (produto.ativo === false && produto.stock > 0) produto.ativo = true;
+            // Primeira entrada em stock (0 → >0): ativar automaticamente no catálogo
+            if (stockAntes === 0 && produto.stock > 0) {
+                produto.ativo = true;
+                ativarPorPrimeiraRececao.push({
+                    id: String(produto.id),
+                    sku: String(produto.sku || "").trim()
+                });
+            } else if (produto.ativo === false && produto.stock > 0) {
+                produto.ativo = true;
+            }
         });
 
         const encomendaAtualizada = data?.encomenda || data;
@@ -4457,13 +4467,37 @@ async function receberPedidoFornecedor(id) {
         fornecedorPedidos = fornecedorPedidos.map(item => item.id === id ? atualizado : item);
         guardarPedidosFornecedores();
         await carregarCatalogoFornecedores();
+
+        // Garantir ativo=true na nuvem se o stock saiu de 0 (RPC antiga pode não ativar)
+        for (const item of ativarPorPrimeiraRececao) {
+            const produto = fornecedorProdutos.find(p =>
+                String(p.id) === item.id || String(p.sku || "").trim().toUpperCase() === item.sku.toUpperCase()
+            );
+            if (!produto || Number(produto.stock || 0) <= 0) continue;
+            if (produto.ativo !== false) {
+                produto.ativo = true;
+                continue;
+            }
+            if (!item.sku) continue;
+            const { error: erroAtivo } = await fornecedoresClient.rpc("atualizar_stock_produto_admin", {
+                p_sku: item.sku,
+                p_stock: Math.max(0, Math.floor(Number(produto.stock || 0))),
+                p_ativo: true
+            });
+            if (!erroAtivo) produto.ativo = true;
+            else console.warn("Não foi possível ativar após receber:", item.sku, erroAtivo);
+        }
+
         renderizarResultadosFornecedor();
         renderizarPedidosFornecedores();
         const unidades = aplicado.reduce((soma, item) => soma + Math.max(0, Number(item.quantidade || 0)), 0);
         const avisoTeto = aplicado.some(item => Number(item.solicitada || 0) > Number(item.quantidade || 0))
             ? ' Quantidades acima do pendente foram ignoradas.'
             : '';
-        definirStatusFornecedor(`Stock atualizado (+${unidades} un.) para a encomenda ${atualizado.codigo || ''}.${avisoTeto}`);
+        const avisoAtivo = ativarPorPrimeiraRececao.length
+            ? ` ${ativarPorPrimeiraRececao.length} produto(s) ativado(s) (stock saiu de 0).`
+            : '';
+        definirStatusFornecedor(`Stock atualizado (+${unidades} un.) para a encomenda ${atualizado.codigo || ''}.${avisoTeto}${avisoAtivo}`);
     } catch (error) {
         console.error(error);
         definirStatusFornecedor('Erro ao receber stock: ' + (error.message || 'erro desconhecido'), true);

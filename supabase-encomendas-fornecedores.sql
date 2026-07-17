@@ -336,6 +336,7 @@ begin
                     else novidade
                 end,
                 stock = v_stock_atual + qtd_aplicar,
+                -- Stock saiu de 0 (ou ficou > 0): ativar no catálogo
                 ativo = (v_stock_atual + qtd_aplicar) > 0
             where id::text = produto_id_text;
 
@@ -343,7 +344,8 @@ begin
                 'produto_id', produto_id_text,
                 'quantidade', qtd_aplicar,
                 'solicitada', qtd_solicitada,
-                'pendente_antes', qtd_pendente
+                'pendente_antes', qtd_pendente,
+                'ativado', (v_stock_atual = 0 and (v_stock_atual + qtd_aplicar) > 0)
             ));
         end if;
 
