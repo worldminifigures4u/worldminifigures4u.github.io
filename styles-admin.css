@@ -11,6 +11,7 @@ body.pagina-encomendas-admin .rodape-site,
 body.pagina-fornecedores-admin .rodape-site,
 body.pagina-mapas-admin .rodape-site,
 body.pagina-estatisticas-admin .rodape-site,
+body.pagina-portes-admin .rodape-site,
 body.pagina-wallapop .rodape-site{
     display:none !important;
 }
@@ -21,6 +22,7 @@ body.pagina-encomendas-admin,
 body.pagina-fornecedores-admin,
 body.pagina-mapas-admin,
 body.pagina-estatisticas-admin,
+body.pagina-portes-admin,
 body.pagina-wallapop{
     --cabecalho-offset:56px;
 }
@@ -30,18 +32,21 @@ body.pagina-encomendas-admin .logo-loja,
 body.pagina-fornecedores-admin .logo-loja,
 body.pagina-mapas-admin .logo-loja,
 body.pagina-estatisticas-admin .logo-loja,
+body.pagina-portes-admin .logo-loja,
 body.pagina-wallapop .logo-loja,
 body.pagina-clientes-admin .cabecalho-pesquisa,
 body.pagina-encomendas-admin .cabecalho-pesquisa,
 body.pagina-fornecedores-admin .cabecalho-pesquisa,
 body.pagina-mapas-admin .cabecalho-pesquisa,
 body.pagina-estatisticas-admin .cabecalho-pesquisa,
+body.pagina-portes-admin .cabecalho-pesquisa,
 body.pagina-wallapop .cabecalho-pesquisa,
 body.pagina-clientes-admin .acoes-cabecalho-publicas,
 body.pagina-encomendas-admin .acoes-cabecalho-publicas,
 body.pagina-fornecedores-admin .acoes-cabecalho-publicas,
 body.pagina-mapas-admin .acoes-cabecalho-publicas,
 body.pagina-estatisticas-admin .acoes-cabecalho-publicas,
+body.pagina-portes-admin .acoes-cabecalho-publicas,
 body.pagina-wallapop .acoes-cabecalho-publicas{
     display:none !important;
 }
@@ -51,6 +56,7 @@ body.pagina-encomendas-admin .cabecalho-loja,
 body.pagina-fornecedores-admin .cabecalho-loja,
 body.pagina-mapas-admin .cabecalho-loja,
 body.pagina-estatisticas-admin .cabecalho-loja,
+body.pagina-portes-admin .cabecalho-loja,
 body.pagina-wallapop .cabecalho-loja{
     grid-template-columns:1fr;
     grid-template-rows:auto;
