@@ -52,8 +52,7 @@
             || body.classList.contains('pagina-fornecedores-admin')
             || body.classList.contains('pagina-mapas-admin')
             || body.classList.contains('pagina-estatisticas-admin')
-            || body.classList.contains('pagina-wallapop')
-            || body.classList.contains('pagina-gestao');
+            || body.classList.contains('pagina-wallapop');
     }
 
     function inserirRodapeSite() {

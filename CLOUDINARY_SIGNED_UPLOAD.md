@@ -34,12 +34,12 @@ Cada upload de produto passa a ser normalizado no Cloudinary com:
 
 Isto remove margens vazias e limita o tamanho máximo sem cortar a figura. O URL guardado no produto é já a versão normalizada.
 
-Produtos com fotos antigas (enviadas antes desta alteração) devem voltar a ter as fotos enviadas em Gestão para ficarem normalizadas.
+Produtos com fotos antigas (enviadas antes desta alteração) devem voltar a ter as fotos enviadas em Mapas para ficarem normalizadas.
 
 ## Cloudinary
 
 Quando o upload assinado estiver confirmado no site:
 
 1. Desativar ou apagar o upload preset unsigned `worldminifigures4u_unsigned`.
-2. Manter uploads de produto apenas via Gestão autenticada.
+2. Manter uploads de produto apenas via Mapas autenticado.
 3. Confirmar que fotos JPG/PNG/WebP continuam a entrar na pasta `worldminifigures4u`.

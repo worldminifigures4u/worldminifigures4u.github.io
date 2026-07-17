@@ -1,4 +1,4 @@
-const CACHE_ESTATICO = 'figures-planet-estatico-v24';
+const CACHE_ESTATICO = 'figures-planet-estatico-v25';
 
 const RECURSOS_PRECARGA = [
     'app-config.js',
@@ -8,24 +8,19 @@ const RECURSOS_PRECARGA = [
     'admin-encomenda-loader.js',
     'encomendas-pagina.js',
     'critico-loja.css',
-    'critico-gestao.css',
-    'app-admin-gestao-loader.js',
     'loja.css',
     'conta.css',
-    'gestao.css',
     'carrinho.css',
     'favoritos.css',
     'institucional.css',
     'app-sessao.js',
     'app-carrinho.js',
     'app-favoritos-loader.js',
-    'gestao-admin-loader.js',
     'carrinho-core.js',
     'carrinho-pagina.js',
     'conta-cliente-loader.js',
     'conta-pagina.js',
     'favoritos-pagina.js',
-    'gestao-pagina.js',
     'loja-pagina.js',
     'supabase-cdn.js',
     'cart-mini.js',

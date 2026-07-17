@@ -175,33 +175,6 @@ function atualizarVisibilidadeAdmin(user) {
     if (typeof window.sincronizarEspacamentoCabecalho === 'function') {
         requestAnimationFrame(() => window.sincronizarEspacamentoCabecalho());
     }
-    const bloqueioGestao = document.getElementById('gestao-bloqueio');
-    if (bloqueioGestao) {
-        if (adminAtivo) {
-            bloqueioGestao.hidden = true;
-            bloqueioGestao.textContent = '';
-        } else if (!user) {
-            bloqueioGestao.hidden = true;
-            mostrarContaAnonimaSeExistir();
-        } else {
-            bloqueioGestao.hidden = false;
-            bloqueioGestao.textContent = 'Acesso reservado ao administrador.';
-        }
-    }
-    if (!document.body.classList.contains('pagina-gestao')) return;
-
-    const aplicarPainel = () => {
-        if (typeof window.aplicarPainelGestaoAdmin === 'function') {
-            window.aplicarPainelGestaoAdmin(user);
-        }
-    };
-
-    if (adminAtivo && typeof window.garantirAdminGestao === 'function') {
-        window.garantirAdminGestao().then(aplicarPainel).catch(console.error);
-        return;
-    }
-
-    aplicarPainel();
 }
 
 async function sincronizarFichaClienteSiteRemota() {

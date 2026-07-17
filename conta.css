@@ -1,4 +1,4 @@
-/* Estilos da área Conta, usados em conta.html e gestao.html. */
+/* Estilos da área Conta, usados em conta.html. */
 .vista-conta.ativa{
             max-width:760px;
             margin:0 auto;
@@ -17,13 +17,13 @@
         .vista-conta .area-cliente{
             margin:0 auto;
         }
-body[data-page="conta"]:not(.pagina-gestao) .vista-conta.ativa{
+body[data-page="conta"] .vista-conta.ativa{
             width:min(960px, calc(100% - 32px));
             max-width:none;
             margin:0 auto;
         }
 
-body[data-page="conta"]:not(.pagina-gestao) .container{
+body[data-page="conta"] .container{
             padding:0 16px;
             margin-bottom:var(--espaco-acima-rodape);
         }
@@ -67,7 +67,7 @@ body[data-page="conta"]:not(.pagina-gestao) .container{
     outline:none;
 }
 
-body[data-page="conta"]:not(.pagina-gestao) #conteudo-cliente-autenticado:not(.oculto) ~ #conteudo-cliente-anonimo{
+body[data-page="conta"] #conteudo-cliente-autenticado:not(.oculto) ~ #conteudo-cliente-anonimo{
             display:none !important;
         }
 
@@ -443,7 +443,7 @@ body[data-page="conta"]:not(.pagina-gestao) #conteudo-cliente-autenticado:not(.o
     font-size:12px;
 }
 
-body[data-page="conta"]:not(.pagina-gestao) #conteudo-cliente-autenticado:not(.oculto){
+body[data-page="conta"] #conteudo-cliente-autenticado:not(.oculto){
     display:grid;
     grid-template-columns:minmax(180px, 220px) minmax(0, 1fr);
     gap:18px;
@@ -510,13 +510,13 @@ body[data-page="conta"]:not(.pagina-gestao) #conteudo-cliente-autenticado:not(.o
     padding-bottom:10px;
 }
 
-body[data-page="conta"]:not(.pagina-gestao) #conteudo-cliente-anonimo{
+body[data-page="conta"] #conteudo-cliente-anonimo{
     max-width:760px;
     margin:0 auto;
 }
 
 @media(max-width:900px){
-    body[data-page="conta"]:not(.pagina-gestao) #conteudo-cliente-autenticado:not(.oculto){
+    body[data-page="conta"] #conteudo-cliente-autenticado:not(.oculto){
         grid-template-columns:1fr;
     }
 
@@ -555,19 +555,19 @@ body[data-page="conta"]:not(.pagina-gestao) #conteudo-cliente-anonimo{
     }
 }
 /* conta-botoes-compactos */
-body[data-page="conta"]:not(.pagina-gestao) .conta-menu-lateral{
+body[data-page="conta"] .conta-menu-lateral{
     align-items:flex-start;
 }
 
-body[data-page="conta"]:not(.pagina-gestao) .conta-menu-item{
+body[data-page="conta"] .conta-menu-item{
     width:220px;
     min-width:220px;
     white-space:nowrap;
 }
 
-body[data-page="conta"]:not(.pagina-gestao) .conta-conteudo-dinamico .btn-acao-cliente,
-body[data-page="conta"]:not(.pagina-gestao) .conta-conteudo-dinamico .btn-logout,
-body[data-page="conta"]:not(.pagina-gestao) .conta-conteudo-dinamico .btn-solicitar-eliminacao{
+body[data-page="conta"] .conta-conteudo-dinamico .btn-acao-cliente,
+body[data-page="conta"] .conta-conteudo-dinamico .btn-logout,
+body[data-page="conta"] .conta-conteudo-dinamico .btn-solicitar-eliminacao{
     width:auto;
     min-width:190px;
     align-self:flex-start;
@@ -576,10 +576,10 @@ body[data-page="conta"]:not(.pagina-gestao) .conta-conteudo-dinamico .btn-solici
 }
 
 @media(max-width:560px){
-    body[data-page="conta"]:not(.pagina-gestao) .conta-menu-item,
-    body[data-page="conta"]:not(.pagina-gestao) .conta-conteudo-dinamico .btn-acao-cliente,
-    body[data-page="conta"]:not(.pagina-gestao) .conta-conteudo-dinamico .btn-logout,
-    body[data-page="conta"]:not(.pagina-gestao) .conta-conteudo-dinamico .btn-solicitar-eliminacao{
+    body[data-page="conta"] .conta-menu-item,
+    body[data-page="conta"] .conta-conteudo-dinamico .btn-acao-cliente,
+    body[data-page="conta"] .conta-conteudo-dinamico .btn-logout,
+    body[data-page="conta"] .conta-conteudo-dinamico .btn-solicitar-eliminacao{
         width:100%;
         min-width:0;
         white-space:normal;
@@ -587,20 +587,20 @@ body[data-page="conta"]:not(.pagina-gestao) .conta-conteudo-dinamico .btn-solici
 }
 
 /* conta-eliminacao-compacta */
-body[data-page="conta"]:not(.pagina-gestao) .zona-perigo-conta,
-body[data-page="conta"]:not(.pagina-gestao) .form-eliminar-conta{
+body[data-page="conta"] .zona-perigo-conta,
+body[data-page="conta"] .form-eliminar-conta{
     max-width:460px;
 }
 /* conta-formularios-compactos */
-body[data-page="conta"]:not(.pagina-gestao) #form-editar-dados-cliente{
+body[data-page="conta"] #form-editar-dados-cliente{
     max-width:520px;
 }
 
-body[data-page="conta"]:not(.pagina-gestao) #form-alterar-password{
+body[data-page="conta"] #form-alterar-password{
     max-width:460px;
 }
 
-body[data-page="conta"]:not(.pagina-gestao) #form-editar-dados-cliente,
-body[data-page="conta"]:not(.pagina-gestao) #form-alterar-password{
+body[data-page="conta"] #form-editar-dados-cliente,
+body[data-page="conta"] #form-alterar-password{
     width:100%;
 }

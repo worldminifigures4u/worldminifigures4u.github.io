@@ -1653,7 +1653,7 @@ async function carregarProdutosMapa() {
             break;
         }
         const pagina = Array.isArray(resposta.data) ? resposta.data : [];
-        // RPC antiga sem imagens/observacoes → usar listagem completa da Gestão
+        // RPC antiga sem imagens/observacoes → usar listagem completa admin
         if (inicio === 0 && pagina.length && !Object.prototype.hasOwnProperty.call(pagina[0], "imagens")) {
             usarFallback = true;
             break;

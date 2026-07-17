@@ -160,12 +160,6 @@ async function fazerLogin(event) {
                 mostrarMensagem(statusDiv, MENSAGEM_CONTA_SUSPENSA, "msg-erro");
                 return;
             }
-            if (document.body.classList.contains('pagina-gestao') && typeof atualizarVisibilidadeAdmin === 'function') {
-                if (typeof window.garantirAdminGestao === 'function') {
-                    await window.garantirAdminGestao();
-                }
-                atualizarVisibilidadeAdmin(data.user);
-            }
             statusDiv.innerText = "";
         }
     } catch (erro) {
