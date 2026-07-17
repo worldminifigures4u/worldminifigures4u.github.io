@@ -1022,6 +1022,105 @@ async function carregarProdutosMapa() {
         }
     }
     mapasProdutos = produtos.map(normalizarProdutoMapa);
+    sincronizarEstadoImportacaoMapa();
+}
+
+function sincronizarEstadoImportacaoMapa() {
+    window.dbClient = mapasClient;
+    window.todosOsProdutos = mapasProdutos;
+}
+
+async function carregarProdutosAdminDaNuvem() {
+    await carregarProdutosMapa();
+    sincronizarEstadoImportacaoMapa();
+    atualizarResultadosMapa();
+}
+window.carregarProdutosAdminDaNuvem = carregarProdutosAdminDaNuvem;
+
+let scriptImportacaoMapasCarregado = false;
+let promessaScriptImportacaoMapas = null;
+
+function garantirScriptImportacaoMapas() {
+    if (typeof analisarFicheiroCatalogoAdmin === "function") {
+        scriptImportacaoMapasCarregado = true;
+        return Promise.resolve();
+    }
+    if (promessaScriptImportacaoMapas) return promessaScriptImportacaoMapas;
+
+    promessaScriptImportacaoMapas = new Promise((resolve, reject) => {
+        const script = document.createElement("script");
+        script.src = "gestao-importacao.js?v=20260715-catalogo-sem-stock";
+        script.onload = () => {
+            scriptImportacaoMapasCarregado = true;
+            resolve();
+        };
+        script.onerror = () => reject(new Error("Falha ao carregar importação administrativa."));
+        document.body.appendChild(script);
+    });
+    return promessaScriptImportacaoMapas;
+}
+
+function prefetchBibliotecaSheetJsMapas() {
+    const url = "https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js";
+    if (document.querySelector(`link[rel="prefetch"][href="${url}"]`)) return;
+    const link = document.createElement("link");
+    link.rel = "prefetch";
+    link.href = url;
+    link.as = "script";
+    document.head.appendChild(link);
+}
+
+function ligarElementoImportacaoMapa(id, evento, handler) {
+    const elemento = document.getElementById(id);
+    if (elemento) elemento.addEventListener(evento, handler);
+}
+
+function ligarImportacaoMapas() {
+    ligarElementoImportacaoMapa("admin-ficheiro-stock", "change", function () {
+        sincronizarEstadoImportacaoMapa();
+        garantirScriptImportacaoMapas().then(() => {
+            if (typeof analisarFicheiroStockAdmin === "function") analisarFicheiroStockAdmin(this);
+        }).catch(console.error);
+    });
+    ligarElementoImportacaoMapa("btn-confirmar-importacao-stock", "click", () => {
+        sincronizarEstadoImportacaoMapa();
+        garantirScriptImportacaoMapas().then(() => {
+            if (typeof confirmarImportacaoStockAdmin === "function") confirmarImportacaoStockAdmin();
+        }).catch(console.error);
+    });
+    ligarElementoImportacaoMapa("admin-ficheiro-catalogo-sem-stock", "change", function () {
+        sincronizarEstadoImportacaoMapa();
+        garantirScriptImportacaoMapas().then(() => {
+            if (typeof analisarFicheiroCatalogoSemStockAdmin === "function") analisarFicheiroCatalogoSemStockAdmin(this);
+        }).catch(console.error);
+    });
+    ligarElementoImportacaoMapa("btn-confirmar-importacao-catalogo-sem-stock", "click", () => {
+        sincronizarEstadoImportacaoMapa();
+        garantirScriptImportacaoMapas().then(() => {
+            if (typeof confirmarImportacaoCatalogoSemStockAdmin === "function") confirmarImportacaoCatalogoSemStockAdmin();
+        }).catch(console.error);
+    });
+    ligarElementoImportacaoMapa("admin-ficheiro-catalogo", "change", function () {
+        sincronizarEstadoImportacaoMapa();
+        garantirScriptImportacaoMapas().then(() => {
+            if (typeof analisarFicheiroCatalogoAdmin === "function") analisarFicheiroCatalogoAdmin(this);
+        }).catch(console.error);
+    });
+    ligarElementoImportacaoMapa("confirmacao-substituir-catalogo", "input", () => {
+        garantirScriptImportacaoMapas().then(() => {
+            if (typeof atualizarConfirmacaoCatalogoAdmin === "function") atualizarConfirmacaoCatalogoAdmin();
+        }).catch(console.error);
+    });
+    ligarElementoImportacaoMapa("btn-confirmar-importacao-catalogo", "click", () => {
+        sincronizarEstadoImportacaoMapa();
+        garantirScriptImportacaoMapas().then(() => {
+            if (typeof confirmarImportacaoCatalogoAdmin === "function") confirmarImportacaoCatalogoAdmin();
+        }).catch(console.error);
+    });
+
+    document.getElementById("mapas-painel-importacao")?.addEventListener("toggle", (evento) => {
+        if (evento.target.open) prefetchBibliotecaSheetJsMapas();
+    });
 }
 
 async function iniciarMapas() {
@@ -1039,6 +1138,8 @@ async function iniciarMapas() {
         document.getElementById("fornecedores-aplicacao").hidden = false;
         carregarPreferenciasColunasMapa();
         montarPainelColunasMapa();
+        ligarImportacaoMapas();
+        sincronizarEstadoImportacaoMapa();
         definirStatusMapa("A carregar mapas...");
         await carregarProdutosMapa();
         atualizarResultadosMapa();
