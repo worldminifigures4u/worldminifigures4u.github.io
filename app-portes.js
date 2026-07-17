@@ -1,5 +1,5 @@
 // Tabelas de portes usadas pelo carrinho (fallback local + carga remota com cache).
-const PORTES_CACHE_KEY = 'figures-planet-portes-tarifas-v2';
+const PORTES_CACHE_KEY = 'figures-planet-portes-tarifas-v3';
 const PORTES_CACHE_TTL_MS = 6 * 60 * 60 * 1000;
 const PORTES_PESO_ABERTO_G = 999999;
 
@@ -32,22 +32,27 @@ const TABELA_PORTES_FALLBACK = {
     ],
     espanha: [
         { ate: 100, opcoes: [
+            { id: 'ctt_normal', nome: 'CTT Normal', valor: 3.26 },
             { id: 'ctt_registado', nome: 'CTT Registado', valor: 7.13 },
             { id: 'inpost_registado', nome: 'InPost Registado', valor: 6.30 }
         ]},
         { ate: 250, opcoes: [
+            { id: 'ctt_normal', nome: 'CTT Normal', valor: 5.23 },
             { id: 'ctt_registado', nome: 'CTT Registado', valor: 9.29 },
             { id: 'inpost_registado', nome: 'InPost Registado', valor: 6.30 }
         ]},
         { ate: 500, opcoes: [
+            { id: 'ctt_normal', nome: 'CTT Normal', valor: 8.67 },
             { id: 'ctt_registado', nome: 'CTT Registado', valor: 12.05 },
             { id: 'inpost_registado', nome: 'InPost Registado', valor: 6.30 }
         ]},
         { ate: 1000, opcoes: [
+            { id: 'ctt_normal', nome: 'CTT Normal', valor: 13.35 },
             { id: 'ctt_registado', nome: 'CTT Registado', valor: 16.24 },
             { id: 'inpost_registado', nome: 'InPost Registado', valor: 6.30 }
         ]},
         { ate: Infinity, opcoes: [
+            { id: 'ctt_normal', nome: 'CTT Normal', valor: 22.72 },
             { id: 'ctt_registado', nome: 'CTT Registado', valor: 26.08 },
             { id: 'inpost_registado', nome: 'InPost Registado', valor: 7.15 }
         ]}
