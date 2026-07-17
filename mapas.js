@@ -810,6 +810,10 @@ function criarSecaoEdicaoMapa(titulo, classe = "") {
 
 function garantirModalEdicaoProdutoMapa() {
     let modal = document.getElementById("mapas-produto-modal");
+    if (modal && !modal.querySelector("#mapas-produto-modo")) {
+        modal.remove();
+        modal = null;
+    }
     if (modal) return modal;
     modal = document.createElement("div");
     modal.id = "mapas-produto-modal";
@@ -822,6 +826,7 @@ function garantirModalEdicaoProdutoMapa() {
                 <button type="button" class="mapas-produto-modal-fechar" aria-label="Fechar">x</button>
             </div>
             <form id="mapas-produto-form" class="mapas-produto-form">
+                <input type="hidden" id="mapas-produto-modo" value="editar">
                 <input type="hidden" id="mapas-editar-id">
                 <input type="hidden" id="mapas-editar-sku-original">
                 <div class="mapas-produto-form-grid" id="mapas-produto-form-campos"></div>
@@ -840,31 +845,19 @@ function garantirModalEdicaoProdutoMapa() {
     return modal;
 }
 
-async function abrirEdicaoProdutoMapa(produtoId) {
-    const produtoBase = mapasProdutos.find(item => String(item.id) === String(produtoId));
-    if (!produtoBase) return;
+function preencherFormularioProdutoMapa(produto, modo = "editar") {
     const modal = garantirModalEdicaoProdutoMapa();
     const campos = modal.querySelector("#mapas-produto-form-campos");
     const status = modal.querySelector("#mapas-produto-status");
-    campos.replaceChildren();
-    if (status) {
-        status.textContent = "A carregar ficha...";
-        status.classList.remove("status-erro", "status-sucesso");
-        status.classList.add("status-aviso");
-    }
-    modal.querySelector("#mapas-editar-id").value = String(produtoBase.id || "");
-    modal.querySelector("#mapas-editar-sku-original").value = String(produtoBase.sku || "");
-    modal.hidden = false;
-    document.body.classList.add("mapas-produto-modal-aberto");
-
-    const produto = await enriquecerMediaProdutoMapa(produtoBase);
-    // Atualiza cache local com media enriquecida
-    mapasProdutos = mapasProdutos.map((item) =>
-        String(item.id) === String(produto.id) ? { ...item, imagens: produto.imagens, observacoes: produto.observacoes } : item
-    );
-
+    const titulo = modal.querySelector("#mapas-produto-modal-titulo");
+    const botaoGuardar = modal.querySelector("#mapas-produto-guardar");
     campos.replaceChildren();
     if (status) status.textContent = "";
+    modal.querySelector("#mapas-produto-modo").value = modo;
+    modal.querySelector("#mapas-editar-id").value = String(produto.id || "");
+    modal.querySelector("#mapas-editar-sku-original").value = String(produto.sku || "");
+    if (titulo) titulo.textContent = modo === "criar" ? "Novo produto" : "Editar produto";
+    if (botaoGuardar) botaoGuardar.textContent = modo === "criar" ? "Criar produto" : "Guardar produto";
 
     const secaoIdentificacao = criarSecaoEdicaoMapa("Identificação", "mapas-produto-secao-identificacao");
     criarInputEdicaoMapa(secaoIdentificacao, "mapas-editar-nome", "Nome", produto.nome || "", "text", { required: true, largo: true });
@@ -876,15 +869,15 @@ async function abrirEdicaoProdutoMapa(produtoId) {
         { valor: "não", texto: "não" }
     ]);
     criarCheckboxEdicaoMapa(secaoIdentificacao, "mapas-editar-top", "Top", Boolean(String(produto.top || "").trim()));
-    criarCheckboxEdicaoMapa(secaoIdentificacao, "mapas-editar-arquivado", "Arquivado", produto.arquivado);
-    criarCheckboxEdicaoMapa(secaoIdentificacao, "mapas-editar-descontinuado", "Descontinuado", produto.descontinuado);
-    criarCheckboxEdicaoMapa(secaoIdentificacao, "mapas-editar-novidade", "Novidade", produto.novidade);
+    criarCheckboxEdicaoMapa(secaoIdentificacao, "mapas-editar-arquivado", "Arquivado", Boolean(produto.arquivado));
+    criarCheckboxEdicaoMapa(secaoIdentificacao, "mapas-editar-descontinuado", "Descontinuado", Boolean(produto.descontinuado));
+    criarCheckboxEdicaoMapa(secaoIdentificacao, "mapas-editar-novidade", "Novidade", modo === "criar" ? true : Boolean(produto.novidade));
     campos.appendChild(secaoIdentificacao);
 
     const secaoDetalhes = criarSecaoEdicaoMapa("Detalhes", "mapas-produto-secao-detalhes");
     criarInputEdicaoMapa(secaoDetalhes, "mapas-editar-preco-compra", "preço compra", Number(produto.preco_compra || 0).toFixed(2), "number", { min: 0, step: "0.01" });
     criarInputEdicaoMapa(secaoDetalhes, "mapas-editar-preco", "preço venda", Number(produto.preco || 0).toFixed(2), "number", { required: true, min: 0, step: "0.01" });
-    criarInputEdicaoMapa(secaoDetalhes, "mapas-editar-peso", "Peso (g)", Number(produto.peso || 10), "number", { required: true, min: 1, step: 1 });
+    criarInputEdicaoMapa(secaoDetalhes, "mapas-editar-peso", "Peso (g)", Number(produto.peso || PESO_PADRAO_PRODUTO_GRAMAS || 10), "number", { required: true, min: 1, step: 1 });
     criarInputEdicaoMapa(secaoDetalhes, "mapas-editar-stock", "Stock", Number(produto.stock || 0), "number", { required: true, min: 0, step: 1 });
     criarInputEdicaoMapa(secaoDetalhes, "mapas-editar-tema", "Tema", produto.tema || "", "text", { required: true });
     criarInputEdicaoMapa(secaoDetalhes, "mapas-editar-subtema", "Subtema", produto.subtema === "semsubtema" ? "" : (produto.subtema || ""));
@@ -892,7 +885,67 @@ async function abrirEdicaoProdutoMapa(produtoId) {
     campos.appendChild(secaoDetalhes);
 
     montarSecaoMediaEdicaoMapa(campos, produto);
-    modal.querySelector("#mapas-editar-nome")?.focus();
+
+    const nomeInput = modal.querySelector("#mapas-editar-nome");
+    const skuInput = modal.querySelector("#mapas-editar-sku");
+    if (modo === "criar" && nomeInput && skuInput) {
+        nomeInput.addEventListener("blur", () => {
+            if (String(skuInput.value || "").trim()) return;
+            if (typeof gerarSkuProduto === "function") {
+                skuInput.value = gerarSkuProduto(nomeInput.value, mapasProdutos);
+            }
+        });
+    }
+    nomeInput?.focus();
+}
+
+async function abrirEdicaoProdutoMapa(produtoId) {
+    const produtoBase = mapasProdutos.find(item => String(item.id) === String(produtoId));
+    if (!produtoBase) return;
+    const modal = garantirModalEdicaoProdutoMapa();
+    const status = modal.querySelector("#mapas-produto-status");
+    const campos = modal.querySelector("#mapas-produto-form-campos");
+    campos.replaceChildren();
+    if (status) {
+        status.textContent = "A carregar ficha...";
+        status.classList.remove("status-erro", "status-sucesso");
+        status.classList.add("status-aviso");
+    }
+    modal.hidden = false;
+    document.body.classList.add("mapas-produto-modal-aberto");
+
+    const produto = await enriquecerMediaProdutoMapa(produtoBase);
+    mapasProdutos = mapasProdutos.map((item) =>
+        String(item.id) === String(produto.id) ? { ...item, imagens: produto.imagens, observacoes: produto.observacoes } : item
+    );
+    preencherFormularioProdutoMapa(produto, "editar");
+}
+
+function abrirCriacaoProdutoMapa() {
+    const modal = garantirModalEdicaoProdutoMapa();
+    modal.hidden = false;
+    document.body.classList.add("mapas-produto-modal-aberto");
+    preencherFormularioProdutoMapa({
+        id: "",
+        sku: "",
+        nome: "",
+        referencia: "",
+        lego: "",
+        top: "",
+        arquivado: false,
+        descontinuado: false,
+        novidade: true,
+        preco_compra: 0,
+        preco: 0,
+        peso: typeof PESO_PADRAO_PRODUTO_GRAMAS === "number" ? PESO_PADRAO_PRODUTO_GRAMAS : 10,
+        stock: 0,
+        tema: "",
+        subtema: "",
+        ativo: true,
+        imagens: [],
+        observacoes: "",
+        fornecedores: {}
+    }, "criar");
 }
 
 function fecharEdicaoProdutoMapa() {
@@ -940,16 +993,33 @@ function lerProdutoEditadoMapa() {
     };
 }
 
+async function editarProdutoMapaRpc(id, skuOriginal, produto) {
+    let { data, error } = await mapasClient.rpc("editar_produto_admin_v2", {
+        p_id: id,
+        p_sku_original: skuOriginal,
+        p_produto: produto
+    });
+    if (error) {
+        ({ data, error } = await mapasClient.rpc("editar_produto_mapa_admin", {
+            p_id: id,
+            p_sku_original: skuOriginal,
+            p_produto: produto
+        }));
+    }
+    return { data, error };
+}
+
 async function guardarEdicaoProdutoMapa(evento) {
     evento.preventDefault();
     const botao = document.getElementById("mapas-produto-guardar");
     const status = document.getElementById("mapas-produto-status");
+    const modo = document.getElementById("mapas-produto-modo")?.value || "editar";
     try {
         botao.disabled = true;
         if (status) {
-            status.textContent = "A guardar...";
-            status.classList.remove('status-erro', 'status-sucesso', 'status-neutro');
-            status.classList.add('status-aviso');
+            status.textContent = modo === "criar" ? "A criar..." : "A guardar...";
+            status.classList.remove("status-erro", "status-sucesso", "status-neutro");
+            status.classList.add("status-aviso");
         }
         const { id, skuOriginal, produto } = lerProdutoEditadoMapa();
         const skuDuplicado = mapasProdutos.some(item =>
@@ -960,19 +1030,35 @@ async function guardarEdicaoProdutoMapa(evento) {
 
         let data = null;
         let error = null;
-        // Preferir RPC da Gestão (já grava imagens/observações); Mapas como reforço após SQL novo
-        ({ data, error } = await mapasClient.rpc("editar_produto_admin_v2", {
-            p_id: id,
-            p_sku_original: skuOriginal,
-            p_produto: produto
-        }));
-        if (error) {
-            ({ data, error } = await mapasClient.rpc("editar_produto_mapa_admin", {
-                p_id: id,
-                p_sku_original: skuOriginal,
-                p_produto: produto
-            }));
+
+        if (modo === "criar") {
+            ({ data, error } = await mapasClient.rpc("criar_produto_admin", { p_produto: produto }));
+            if (error) throw error;
+            // criar_produto_admin não grava top/arquivado/descontinuado — completar via edição se necessário
+            const precisaExtras = Boolean(produto.top) || produto.arquivado || produto.descontinuado;
+            if (precisaExtras && data?.id) {
+                const extra = await editarProdutoMapaRpc(data.id, data.sku || produto.sku, {
+                    ...produto,
+                    fornecedores: data.fornecedores || {}
+                });
+                if (!extra.error && extra.data) data = extra.data;
+            }
+            const criado = normalizarProdutoMapa({
+                ...produto,
+                ...data,
+                imagens: data?.imagens ?? produto.imagens,
+                observacoes: data?.observacoes ?? produto.observacoes,
+                fornecedores: data?.fornecedores ?? produto.fornecedores
+            });
+            mapasProdutos = [criado, ...mapasProdutos.filter(item => String(item.id) !== String(criado.id))];
+            sincronizarEstadoImportacaoMapa();
+            fecharEdicaoProdutoMapa();
+            atualizarResultadosMapa();
+            definirStatusMapa("Produto criado.");
+            return;
         }
+
+        ({ data, error } = await editarProdutoMapaRpc(id, skuOriginal, produto));
         if (error) throw error;
         const atualizado = normalizarProdutoMapa({
             ...data,
@@ -981,6 +1067,7 @@ async function guardarEdicaoProdutoMapa(evento) {
             fornecedores: data?.fornecedores ?? produto.fornecedores
         });
         mapasProdutos = mapasProdutos.map(item => String(item.id) === String(atualizado.id) ? atualizado : item);
+        sincronizarEstadoImportacaoMapa();
         fecharEdicaoProdutoMapa();
         atualizarResultadosMapa();
         definirStatusMapa("Produto guardado.");
@@ -988,8 +1075,8 @@ async function guardarEdicaoProdutoMapa(evento) {
         console.error(erro);
         if (status) {
             status.textContent = "Erro: " + (erro.message || "Não foi possível guardar.");
-            status.classList.remove('status-aviso', 'status-sucesso', 'status-neutro');
-            status.classList.add('status-erro');
+            status.classList.remove("status-aviso", "status-sucesso", "status-neutro");
+            status.classList.add("status-erro");
         }
     } finally {
         if (botao) botao.disabled = false;
@@ -1160,6 +1247,7 @@ async function iniciarMapas() {
 
 document.getElementById("fornecedor-pesquisa")?.addEventListener("input", agendarAtualizacaoResultadosMapa);
 document.getElementById("mapas-filtro-stock")?.addEventListener("change", atualizarResultadosMapa);
+document.getElementById("mapas-criar-produto")?.addEventListener("click", abrirCriacaoProdutoMapa);
 document.getElementById("mapas-copiar-lista")?.addEventListener("click", copiarListaMapaVisivel);
 document.addEventListener("click", (evento) => {
     ["mapas-colunas-painel", "mapas-painel-importacao"].forEach((id) => {
