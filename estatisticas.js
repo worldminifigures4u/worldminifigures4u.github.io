@@ -7,6 +7,16 @@ const ESTATISTICAS_PRECO_FAIXAS = [
     { rotulo: "20 €+", min: 20, max: Infinity }
 ];
 
+const ESTATISTICAS_DIAS_SEMANA = [
+    { chave: 1, rotulo: "Segunda-feira" },
+    { chave: 2, rotulo: "Terça-feira" },
+    { chave: 3, rotulo: "Quarta-feira" },
+    { chave: 4, rotulo: "Quinta-feira" },
+    { chave: 5, rotulo: "Sexta-feira" },
+    { chave: 6, rotulo: "Sábado" },
+    { chave: 7, rotulo: "Domingo" }
+];
+
 let estatisticasClient = null;
 let estatisticasEncomendas = [];
 
@@ -72,6 +82,17 @@ function obterChaveMes(encomenda) {
 function obterAnoEncomenda(encomenda) {
     const data = obterDataEncomenda(encomenda);
     return data ? String(data.getFullYear()) : 'Sem data';
+}
+
+function obterChaveDiaSemana(encomenda) {
+    const data = obterDataEncomenda(encomenda);
+    if (!data) return null;
+    const diaJs = data.getDay();
+    return diaJs === 0 ? 7 : diaJs;
+}
+
+function formatarDiaSemanaEstatisticas(chave) {
+    return ESTATISTICAS_DIAS_SEMANA.find(dia => dia.chave === Number(chave))?.rotulo || 'Sem data';
 }
 
 function obterPlataformaEncomenda(encomenda) {
@@ -193,7 +214,11 @@ function ordenarPorQuantidade(lista) {
 function renderizarBarras(id, itens, opcoes = {}) {
     const container = document.getElementById(id);
     container.replaceChildren();
-    const lista = [...itens].filter(item => item && (item.receita || item.quantidade || item.encomendas));
+    const lista = [...itens].filter(item => {
+        if (!item) return false;
+        if (opcoes.manterZeros) return true;
+        return item.receita || item.quantidade || item.encomendas;
+    });
     if (!lista.length) {
         container.appendChild(criarElementoEstatisticas('p', 'estatisticas-vazio', 'Sem dados para apresentar.'));
         return;
@@ -244,6 +269,7 @@ function renderizarTabela(id, itens, opcoes = {}) {
 
 function calcularEstatisticas(encomendas) {
     const dias = new Map();
+    const diasSemana = new Map(ESTATISTICAS_DIAS_SEMANA.map(dia => [dia.chave, { chave: dia.chave, receita: 0, quantidade: 0, encomendas: 0 }]));
     const meses = new Map();
     const anos = new Map();
     const plataformas = new Map();
@@ -261,10 +287,12 @@ function calcularEstatisticas(encomendas) {
         const quantidadeEncomenda = produtos.reduce((soma, item) => soma + obterQuantidadeItem(item), 0);
         const plataforma = obterPlataformaEncomenda(encomenda);
         const estado = obterEstadoEncomenda(encomenda);
+        const diaSemana = obterChaveDiaSemana(encomenda);
         totalVendido += total;
         unidadesVendidas += quantidadeEncomenda;
 
         adicionarGrupo(dias, obterChaveDia(encomenda), total, quantidadeEncomenda, 1);
+        if (diaSemana != null) adicionarGrupo(diasSemana, diaSemana, total, quantidadeEncomenda, 1);
         adicionarGrupo(meses, obterChaveMes(encomenda), total, quantidadeEncomenda, 1);
         adicionarGrupo(anos, obterAnoEncomenda(encomenda), total, quantidadeEncomenda, 1);
         adicionarGrupo(plataformas, plataforma, total, quantidadeEncomenda, 1);
@@ -286,6 +314,7 @@ function calcularEstatisticas(encomendas) {
         numeroEncomendas: encomendas.length,
         precoMedioFigura: unidadesVendidas ? somaPrecoFiguras / unidadesVendidas : 0,
         dias: ordenarPorReceita([...dias.values()]).sort((a, b) => String(a.chave).localeCompare(String(b.chave))),
+        diasSemana: ESTATISTICAS_DIAS_SEMANA.map(dia => diasSemana.get(dia.chave)),
         meses: ordenarPorReceita([...meses.values()]).sort((a, b) => String(a.chave).localeCompare(String(b.chave))),
         anos: ordenarPorReceita([...anos.values()]).sort((a, b) => String(a.chave).localeCompare(String(b.chave))),
         plataformas: ordenarPorReceita([...plataformas.values()]),
@@ -309,6 +338,7 @@ function renderizarEstatisticas() {
     document.getElementById('estatisticas-preco-medio-figura').textContent = formatarEuroEstatisticas(dados.precoMedioFigura);
 
     renderizarBarras('estatisticas-dias', dados.dias, { formatarLabel: formatarDiaEstatisticas, mostrarEncomendas: true, limite: 31 });
+    renderizarBarras('estatisticas-dias-semana', dados.diasSemana, { formatarLabel: formatarDiaSemanaEstatisticas, mostrarEncomendas: true, limite: 7, manterZeros: true });
     renderizarBarras('estatisticas-meses', dados.meses, { formatarLabel: formatarMesEstatisticas, mostrarEncomendas: true, limite: 18 });
     renderizarBarras('estatisticas-anos', dados.anos, { mostrarEncomendas: true, limite: 10 });
     renderizarBarras('estatisticas-plataformas', dados.plataformas, { mostrarEncomendas: true, limite: 10 });
