@@ -19,17 +19,33 @@
 }
 
 .portes-topo h1 {
-    margin: 0 0 0.4rem;
+    margin: 0;
     font-size: 1.55rem;
     color: #fff;
 }
 
-.portes-ajuda {
-    margin: 0;
-    max-width: 42rem;
-    color: #aaa;
-    font-size: 0.95rem;
-    line-height: 1.45;
+.portes-aviso {
+    margin: 0 0 1.15rem;
+    padding: 0.9rem 1rem;
+    border: 1px solid #ffc107;
+    border-radius: 8px;
+    background: rgba(255, 193, 7, 0.12);
+    color: #ffe9a8;
+}
+
+.portes-aviso strong {
+    color: #ffc107;
+}
+
+.portes-aviso ul {
+    margin: 0.55rem 0 0;
+    padding-left: 1.2rem;
+}
+
+.portes-aviso li {
+    margin: 0.25rem 0;
+    line-height: 1.4;
+    color: #f7f7f7;
 }
 
 .portes-acoes {

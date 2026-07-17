@@ -16,7 +16,7 @@
     <link rel="icon" type="image/webp" href="favicon-32.webp?v=20260711-leve" sizes="32x32">
     <link rel="stylesheet" href="styles.css?v=20260716-sem-setas-number">
     <link rel="stylesheet" href="styles-admin.css?v=20260717-portes-cab">
-    <link rel="stylesheet" href="portes.css?v=20260717-portes8b">
+    <link rel="stylesheet" href="portes.css?v=20260717-aviso">
     <link rel="stylesheet" href="styles-tema.css?v=20260713-r25" media="print" data-async-css>
     <noscript><link rel="stylesheet" href="styles-tema.css?v=20260713-r25"></noscript>
     <script src="async-css.js?v=20260713-r25"></script>
@@ -67,15 +67,20 @@
         <section class="portes-topo">
             <div>
                 <h1>Portes de envio</h1>
-                <p class="portes-ajuda">Os valores abaixo são os que o cliente paga no site.<br>
-                <strong>CTT</strong> (Normal, Azul, Registado): meter preço de tabela × 1,23 (IVA).<br>
-                <strong>InPost</strong>: meter o preço de tabela / total da fatura InPost — já inclui IVA, não multiplicar por 1,23.</p>
             </div>
             <div class="portes-acoes">
                 <button type="button" class="btn-admin-secundario" id="btn-recarregar-portes">Recarregar</button>
                 <button type="button" class="wallapop-botao wallapop-botao-destaque" id="btn-guardar-portes">Guardar alterações</button>
             </div>
         </section>
+
+        <aside class="portes-aviso" aria-label="Como preencher os preços">
+            <strong>Como meter os preços</strong>
+            <ul>
+                <li><strong>CTT</strong> (Normal, Azul, Registado): preço de tabela × <strong>1,23</strong></li>
+                <li><strong>InPost</strong>: preço de tabela (total da fatura InPost) — <strong>sem</strong> × 1,23</li>
+            </ul>
+        </aside>
 
         <div class="portes-tabs" role="tablist" aria-label="Zonas de envio">
             <button type="button" class="portes-tab ativa" data-zona="portugal" role="tab" aria-selected="true">Portugal</button>
