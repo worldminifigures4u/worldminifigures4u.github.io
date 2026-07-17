@@ -385,21 +385,46 @@ function agendarAtualizacaoResultadosMapa() {
     mapasAtualizacaoPendente = setTimeout(atualizarResultadosMapa, 90);
 }
 
+function valorCelulaCopiaMapa(produto, coluna) {
+    if (coluna.chave === "preco" || coluna.chave === "preco_compra") {
+        return `${formatarEuroMapa(produto[coluna.chave])} €`;
+    }
+    return String(valorCelulaMapa(produto, coluna) ?? "").trim();
+}
+
 function copiarListaMapaVisivel() {
     const produtos = mapasProdutosVisiveis || [];
     if (!produtos.length) {
         definirStatusMapa("Não há produtos visíveis para copiar.", true);
         return;
     }
-    const linhasProdutos = produtos.map(produto => `${String(produto.nome || "").trim()}\t${formatarEuroMapa(produto.preco)} €`);
-    const total = produtos.reduce((soma, produto) => soma + Number(produto.preco || 0), 0);
-    const texto = [
-        ...linhasProdutos,
-        "",
-        `Total\t${formatarEuroMapa(total)} €`,
-        "",
-        "Acresce as despesas com portes de envio e manuseamento para pacote postal de acordo com a sua escolha."
-    ].join("\n");
+
+    const colunas = obterColunasVisiveisMapa();
+    const temPrecoVenda = colunas.some((coluna) => coluna.chave === "preco");
+    const linhasProdutos = produtos.map((produto) =>
+        colunas.map((coluna) => valorCelulaCopiaMapa(produto, coluna)).join("\t")
+    );
+
+    let texto = linhasProdutos.join("\n");
+    if (temPrecoVenda) {
+        const total = produtos.reduce((soma, produto) => soma + Number(produto.preco || 0), 0);
+        const indicePreco = colunas.findIndex((coluna) => coluna.chave === "preco");
+        const linhaTotal = colunas
+            .map((_, indice) => {
+                if (indice === 0) return "Total";
+                if (indice === indicePreco) return `${formatarEuroMapa(total)} €`;
+                return "";
+            })
+            .join("\t");
+        texto = [
+            ...linhasProdutos,
+            "",
+            linhaTotal,
+            "",
+            "Acresce as despesas com portes de envio e manuseamento para pacote postal de acordo com a sua escolha."
+        ].join("\n");
+    }
+
     navigator.clipboard?.writeText(texto)
         .then(() => definirStatusMapa(`${produtos.length} produto(s) copiado(s).`))
         .catch(() => {
