@@ -495,7 +495,18 @@ body.pagina-fornecedores-admin{ margin:0; padding-left:0; padding-right:0; paddi
     color: var(--fp-texto-campo);
 }
 
-.pagina-fornecedores-unificada .fornecedor-filtro-estado-select,
+.pagina-fornecedores-unificada .fornecedor-filtro-estado-select {
+    min-height: 42px;
+    padding: 10px 32px 10px 14px;
+    font: inherit;
+    font-size: 15px;
+    font-weight: 600;
+    border: var(--fp-borda-ui);
+    border-radius: var(--fp-raio-ui);
+    background: var(--fp-fundo-campo);
+    color: var(--fp-texto-campo);
+}
+
 .pagina-fornecedores-unificada .fornecedor-pedido-acoes .fornecedor-status-select {
     min-height: 34px;
     padding: 7px 24px 7px 10px;
