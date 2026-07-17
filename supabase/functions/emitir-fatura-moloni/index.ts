@@ -32,6 +32,8 @@ type EncomendaRow = {
   total: number | string | null;
   portes: number | string | null;
   metodo_pagamento: string | null;
+  pais_cliente: string | null;
+  regiao_envio: string | null;
   moloni_document_id: number | null;
   moloni_fatura_numero: string | null;
   data_pagamento: string | null;
@@ -203,6 +205,23 @@ function mensagemErrosMoloni(erros: MoloniError[] | null | undefined): string {
   return erros.map((erro) => `${erro.field || "campo"}: ${erro.msg || "erro"}`).join("; ");
 }
 
+function resolverDestinoFatura(encomenda: EncomendaRow): "PT" | "EST" {
+  const candidatos = [
+    encomenda.pais_cliente,
+    encomenda.regiao_envio,
+  ]
+    .map((valor) => String(valor || "").trim())
+    .filter(Boolean);
+
+  const paisNormalizado = normalizarTexto(candidatos[0] || "portugal");
+  const ePortugal = !paisNormalizado
+    || paisNormalizado === "portugal"
+    || paisNormalizado === "pt"
+    || paisNormalizado.startsWith("portugal");
+
+  return ePortugal ? "PT" : "EST";
+}
+
 async function moloniRequest<T>(query: string, variables: Record<string, unknown>): Promise<T> {
   const apiKey = Deno.env.get("MOLONI_API_KEY");
   if (!apiKey) {
@@ -293,6 +312,7 @@ async function criarFaturaReciboMoloni(
   const portesBruto = numero(encomenda.portes);
   const linhas = construirLinhasFatura(totalBruto, portesBruto, productIdLote, productIdPortes);
   const referencia = String(encomenda.codigo_encomenda || encomenda.id).trim();
+  const destino = resolverDestinoFatura(encomenda);
 
   const query = `
     mutation EmitirFaturaReciboMoloni($companyId: Int!, $data: InvoiceReceiptInsert!) {
@@ -319,6 +339,7 @@ async function criarFaturaReciboMoloni(
       expirationDate: formatarDataVencimento(vencimento),
       status: invoiceStatus,
       yourReference: referencia,
+      ourReference: destino,
       products: linhas,
       payments: [
         {
@@ -338,7 +359,7 @@ async function criarFaturaReciboMoloni(
     throw new Error("Moloni nao devolveu documentId.");
   }
 
-  return resultado.data;
+  return { ...resultado.data, destino };
 }
 
 Deno.serve(async (request) => {
@@ -400,7 +421,7 @@ Deno.serve(async (request) => {
   const supabaseAdmin = createClient(supabaseUrl, serviceRoleKey);
   const { data: encomenda, error: encomendaError } = await supabaseAdmin
     .from("encomendas")
-    .select("id, codigo_encomenda, estado, origem, total, portes, metodo_pagamento, moloni_document_id, moloni_fatura_numero, data_pagamento, created_at")
+    .select("id, codigo_encomenda, estado, origem, total, portes, metodo_pagamento, pais_cliente, regiao_envio, moloni_document_id, moloni_fatura_numero, data_pagamento, created_at")
     .eq("id", encomendaId)
     .maybeSingle();
 
