@@ -17,7 +17,7 @@
     <link rel="icon" type="image/webp" href="favicon-32.webp?v=20260711-leve" sizes="32x32">
     <link rel="stylesheet" href="styles.css?v=20260716-sem-setas-number">
     <link rel="stylesheet" href="styles-admin.css?v=20260716-menu-10pct">
-    <link rel="stylesheet" href="fornecedores-mapas.css?v=20260717-mapas-importacao">
+    <link rel="stylesheet" href="fornecedores-mapas.css?v=20260717-importar-topo">
     <link rel="stylesheet" href="styles-tema.css?v=20260713-r25" media="print" data-async-css>
     <noscript><link rel="stylesheet" href="styles-tema.css?v=20260713-r25"></noscript>
     <script src="async-css.js?v=20260713-r25"></script>
@@ -90,52 +90,52 @@
                         <summary>Colunas</summary>
                         <div class="mapas-colunas-opcoes" id="mapas-colunas-opcoes" role="group" aria-label="Colunas visíveis"></div>
                     </details>
+                    <details class="mapas-colunas-painel mapas-importacao-painel" id="mapas-painel-importacao">
+                        <summary>Importar</summary>
+                        <div class="mapas-importacao-corpo" role="group" aria-label="Opções de importação">
+                            <section class="admin-seccao mapas-importacao-bloco" aria-label="Atualizar stock">
+                                <h3>Atualizar stock</h3>
+                                <div class="form-admin">
+                                    <input class="input-upload-admin" type="file" id="admin-ficheiro-stock" accept=".ods,.xlsx,.xls">
+                                    <p class="ajuda-admin">Só SKU e stock. Encomendas a fornecedores não alteram o stock.</p>
+                                    <div id="resumo-importacao-stock" class="resumo-importacao-stock oculto"></div>
+                                    <div id="detalhes-importacao-stock" class="lista-importacao-stock oculto"></div>
+                                    <button type="button" id="btn-confirmar-importacao-stock" class="btn-acao-cliente" disabled>Atualizar stock</button>
+                                    <div id="status-importacao-stock" class="msg-status"></div>
+                                </div>
+                            </section>
+
+                            <section class="admin-seccao mapas-importacao-bloco" aria-label="Atualizar catálogo sem stock">
+                                <h3>Atualizar catálogo</h3>
+                                <div class="form-admin">
+                                    <input class="input-upload-admin" type="file" id="admin-ficheiro-catalogo-sem-stock" accept=".ods,.xlsx,.xls">
+                                    <p class="ajuda-admin">Sem alterar stock/ativo. Novos entram com stock 0. Não remove produtos em falta.</p>
+                                    <div id="resumo-importacao-catalogo-sem-stock" class="resumo-importacao-stock oculto"></div>
+                                    <div id="detalhes-importacao-catalogo-sem-stock" class="lista-importacao-stock oculto"></div>
+                                    <button type="button" id="btn-confirmar-importacao-catalogo-sem-stock" class="btn-acao-cliente" disabled>Atualizar catálogo</button>
+                                    <div id="status-importacao-catalogo-sem-stock" class="msg-status"></div>
+                                </div>
+                            </section>
+
+                            <section class="admin-seccao mapas-importacao-bloco" aria-label="Substituir catálogo">
+                                <h3>Substituir catálogo</h3>
+                                <div class="form-admin">
+                                    <input class="input-upload-admin" type="file" id="admin-ficheiro-catalogo" accept=".ods,.xlsx,.xls">
+                                    <p class="ajuda-admin">Substitui o catálogo. Produtos em falta no ficheiro são removidos.</p>
+                                    <div id="resumo-importacao-catalogo" class="resumo-importacao-stock oculto"></div>
+                                    <div id="detalhes-importacao-catalogo" class="lista-importacao-stock oculto"></div>
+                                    <div>
+                                        <label for="confirmacao-substituir-catalogo">Escreva SUBSTITUIR:</label>
+                                        <input type="text" id="confirmacao-substituir-catalogo" autocomplete="off">
+                                    </div>
+                                    <button type="button" id="btn-confirmar-importacao-catalogo" class="btn-logout" disabled>Substituir catálogo</button>
+                                    <div id="status-importacao-catalogo" class="msg-status"></div>
+                                </div>
+                            </section>
+                        </div>
+                    </details>
                 </div>
                 <div id="fornecedor-resultados" class="fornecedor-resultados"></div>
-                <details class="mapas-importacao-painel" id="mapas-painel-importacao">
-                    <summary>Importar / Exportar</summary>
-                    <div class="mapas-importacao-corpo">
-                        <section class="admin-seccao mapas-importacao-bloco" aria-label="Atualizar stock">
-                            <h3>Atualizar stock pelo Mapas.ods</h3>
-                            <div class="form-admin">
-                                <input class="input-upload-admin" type="file" id="admin-ficheiro-stock" accept=".ods,.xlsx,.xls">
-                                <p class="ajuda-admin">Apenas as colunas SKU e stock são utilizadas. As encomendas aos fornecedores não alteram o stock atual.</p>
-                                <div id="resumo-importacao-stock" class="resumo-importacao-stock oculto"></div>
-                                <div id="detalhes-importacao-stock" class="lista-importacao-stock oculto"></div>
-                                <button type="button" id="btn-confirmar-importacao-stock" class="btn-acao-cliente" disabled>Atualizar stock no Supabase</button>
-                                <div id="status-importacao-stock" class="msg-status"></div>
-                            </div>
-                        </section>
-
-                        <section class="admin-seccao mapas-importacao-bloco" aria-label="Atualizar catálogo sem stock">
-                            <h3>Atualizar catálogo (sem alterar stock)</h3>
-                            <div class="form-admin">
-                                <input class="input-upload-admin" type="file" id="admin-ficheiro-catalogo-sem-stock" accept=".ods,.xlsx,.xls">
-                                <p class="ajuda-admin">Importa nome, preço, Ref., SKU, tema, subtema, peso e dados dos fornecedores. O stock e o estado ativo dos produtos existentes são preservados. Produtos novos entram com stock 0. Produtos que não constem do ficheiro não são removidos.</p>
-                                <div id="resumo-importacao-catalogo-sem-stock" class="resumo-importacao-stock oculto"></div>
-                                <div id="detalhes-importacao-catalogo-sem-stock" class="lista-importacao-stock oculto"></div>
-                                <button type="button" id="btn-confirmar-importacao-catalogo-sem-stock" class="btn-acao-cliente" disabled>Atualizar catálogo no Supabase</button>
-                                <div id="status-importacao-catalogo-sem-stock" class="msg-status"></div>
-                            </div>
-                        </section>
-
-                        <section class="admin-seccao mapas-importacao-bloco" aria-label="Substituir catálogo">
-                            <h3>Substituir catálogo pelo Mapas.ods</h3>
-                            <div class="form-admin">
-                                <input class="input-upload-admin" type="file" id="admin-ficheiro-catalogo" accept=".ods,.xlsx,.xls">
-                                <p class="ajuda-admin">Importa nome, preço, Ref., SKU, stock, tema, subtema, peso e dados dos fornecedores. Produtos que não constem do ficheiro serão removidos.</p>
-                                <div id="resumo-importacao-catalogo" class="resumo-importacao-stock oculto"></div>
-                                <div id="detalhes-importacao-catalogo" class="lista-importacao-stock oculto"></div>
-                                <div>
-                                    <label for="confirmacao-substituir-catalogo">Para confirmar, escreva SUBSTITUIR:</label>
-                                    <input type="text" id="confirmacao-substituir-catalogo" autocomplete="off">
-                                </div>
-                                <button type="button" id="btn-confirmar-importacao-catalogo" class="btn-logout" disabled>Substituir catálogo completo</button>
-                                <div id="status-importacao-catalogo" class="msg-status"></div>
-                            </div>
-                        </section>
-                    </div>
-                </details>
             </section>
         </section>
         <p class="fornecedores-status" id="fornecedores-status" role="status"></p>
@@ -144,7 +144,7 @@
 <script src="app-config.js?v=20260713-r25" defer></script>
 <script src="app-util.js?v=20260713-r25" defer></script>
 <script src="app-sku.js?v=20260713-r25" defer></script>
-    <script src="mapas.js?v=20260717-mapas-importacao" defer></script>
+    <script src="mapas.js?v=20260717-importar-topo" defer></script>
 <script src="campo-limpar.js?v=20260716-x-igual" defer></script>
 <script src="inline-listeners-base.js?v=20260713-r25" defer></script>
 <script src="inline-listeners-admin.js?v=20260713-r25" defer></script>

@@ -1705,40 +1705,31 @@ body.pagina-mapas-admin > main.fornecedores-admin {
 }
 
 .mapas-importacao-painel {
-    margin-top: 14px;
-    border: 1px solid #333;
-    border-radius: 8px;
-    background: #121212;
-}
-
-.mapas-importacao-painel > summary {
-    list-style: none;
-    cursor: pointer;
-    user-select: none;
-    padding: 12px 14px;
-    font-weight: 800;
-    color: #ffc400;
-}
-
-.mapas-importacao-painel > summary::-webkit-details-marker {
-    display: none;
-}
-
-.mapas-importacao-painel[open] > summary {
-    border-bottom: 1px solid #333;
+    position: relative;
 }
 
 .mapas-importacao-corpo {
+    position: absolute;
+    top: calc(100% + 6px);
+    right: 0;
+    z-index: 25;
     display: grid;
-    gap: 16px;
-    padding: 14px;
+    gap: 12px;
+    width: min(440px, calc(100vw - 24px));
+    max-height: min(70vh, 640px);
+    overflow: auto;
+    padding: 12px;
+    border: 1px solid #444;
+    border-radius: 8px;
+    background: #1a1a1a;
+    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.45);
 }
 
 .mapas-importacao-bloco {
     display: grid;
-    gap: 10px;
+    gap: 8px;
     margin: 0;
-    padding: 12px;
+    padding: 10px;
     border: 1px solid #333;
     border-radius: 8px;
     background: #101010;
@@ -1747,13 +1738,13 @@ body.pagina-mapas-admin > main.fornecedores-admin {
 .mapas-importacao-bloco h3 {
     margin: 0;
     color: #fff;
-    font-size: 16px;
+    font-size: 14px;
 }
 
 .mapas-importacao-painel .form-admin {
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    gap: 8px;
 }
 
 .mapas-importacao-painel .form-admin label {
@@ -1761,7 +1752,7 @@ body.pagina-mapas-admin > main.fornecedores-admin {
     gap: 6px;
     color: #ddd;
     font-weight: 700;
-    font-size: 13px;
+    font-size: 12px;
 }
 
 .mapas-importacao-painel .form-admin input[type="text"] {
@@ -1771,15 +1762,15 @@ body.pagina-mapas-admin > main.fornecedores-admin {
     border-radius: 6px;
     background: #242424;
     color: #fff;
-    padding: 10px 11px;
+    padding: 8px 10px;
     font: inherit;
 }
 
 .mapas-importacao-painel .ajuda-admin {
     margin: 0;
     color: #aaa;
-    font-size: 12px;
-    line-height: 1.4;
+    font-size: 11px;
+    line-height: 1.35;
 }
 
 .mapas-importacao-painel .btn-acao-cliente,
@@ -1787,7 +1778,7 @@ body.pagina-mapas-admin > main.fornecedores-admin {
     width: fit-content;
     border: 0;
     border-radius: 6px;
-    padding: 10px 14px;
+    padding: 8px 12px;
     font: inherit;
     font-weight: 800;
     cursor: pointer;

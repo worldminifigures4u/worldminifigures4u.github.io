@@ -1154,10 +1154,12 @@ document.getElementById("fornecedor-pesquisa")?.addEventListener("input", agenda
 document.getElementById("mapas-filtro-stock")?.addEventListener("change", atualizarResultadosMapa);
 document.getElementById("mapas-copiar-lista")?.addEventListener("click", copiarListaMapaVisivel);
 document.addEventListener("click", (evento) => {
-    const painel = document.getElementById("mapas-colunas-painel");
-    if (!painel?.open) return;
-    if (painel.contains(evento.target)) return;
-    painel.open = false;
+    ["mapas-colunas-painel", "mapas-painel-importacao"].forEach((id) => {
+        const painel = document.getElementById(id);
+        if (!painel?.open) return;
+        if (painel.contains(evento.target)) return;
+        painel.open = false;
+    });
 });
 window.addEventListener("scroll", agendarRenderVirtualMapa, { passive: true });
 window.addEventListener("resize", agendarRenderVirtualMapa);
