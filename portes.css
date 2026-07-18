@@ -124,6 +124,29 @@
     font: inherit;
 }
 
+.portes-metodo-acoes {
+    width: 2.5rem;
+    text-align: center;
+}
+
+.portes-metodo-apagar {
+    width: 2rem;
+    height: 2rem;
+    padding: 0;
+    border: 0;
+    border-radius: 4px;
+    background: #7a1f1f;
+    color: #fff;
+    font-size: 1.35rem;
+    line-height: 1;
+    cursor: pointer;
+}
+
+.portes-metodo-apagar:hover,
+.portes-metodo-apagar:focus-visible {
+    background: #a52828;
+}
+
 .portes-acoes {
     display: flex;
     flex-wrap: wrap;

@@ -257,7 +257,7 @@ function renderizarMetodosPortes() {
 
     const tabela = document.createElement('table');
     tabela.className = 'portes-tabela portes-metodos-tabela';
-    tabela.innerHTML = '<thead><tr><th>Ativo</th><th>ID</th><th>Nome no site</th><th>Registado</th></tr></thead>';
+    tabela.innerHTML = '<thead><tr><th>Ativo</th><th>ID</th><th>Nome no site</th><th>Registado</th><th></th></tr></thead>';
     const tbody = document.createElement('tbody');
 
     portesMetodos
@@ -289,6 +289,7 @@ function renderizarMetodosPortes() {
             const inputNome = document.createElement('input');
             inputNome.type = 'text';
             inputNome.value = metodo.nome_exibicao || '';
+            inputNome.dataset.semLimparCampo = '1';
             inputNome.addEventListener('change', () => {
                 metodo.nome_exibicao = String(inputNome.value || '').trim() || metodo.id;
                 inputNome.value = metodo.nome_exibicao;
@@ -309,6 +310,20 @@ function renderizarMetodosPortes() {
             });
             tdReg.appendChild(checkReg);
             tr.appendChild(tdReg);
+
+            const tdAcoes = document.createElement('td');
+            tdAcoes.className = 'portes-metodo-acoes';
+            const btnApagar = document.createElement('button');
+            btnApagar.type = 'button';
+            btnApagar.className = 'portes-metodo-apagar';
+            btnApagar.setAttribute('aria-label', `Apagar método ${metodo.id}`);
+            btnApagar.title = 'Apagar método e tarifas';
+            btnApagar.textContent = '×';
+            btnApagar.addEventListener('click', () => {
+                apagarMetodoPortesAdmin(metodo).catch(console.error);
+            });
+            tdAcoes.appendChild(btnApagar);
+            tr.appendChild(tdAcoes);
 
             tbody.appendChild(tr);
         });
@@ -365,6 +380,32 @@ async function guardarMetodosPortesAdmin() {
     });
     if (error) throw error;
     return data?.atualizados != null ? data.atualizados : alterados.length;
+}
+
+async function apagarMetodoPortesAdmin(metodo) {
+    const id = String(metodo?.id || '').trim();
+    if (!id) return;
+
+    const ok = window.confirm(
+        `Apagar o método "${metodo.nome_exibicao || id}" (${id})?\n\n`
+        + 'Isto remove também todas as tarifas desse método em Portugal, Espanha e Europa.'
+    );
+    if (!ok) return;
+
+    definirStatusPortes(`A apagar método ${id}...`);
+    const { data, error } = await portesClient.rpc('remover_portes_metodo_admin', { p_id: id });
+    if (error) {
+        definirStatusPortes('Erro ao apagar método: ' + (error.message || 'desconhecido')
+            + ' (executa supabase-portes-remover-metodo.sql)');
+        return;
+    }
+
+    if (typeof window.limparCachePortes === 'function') window.limparCachePortes();
+    await carregarMetodosPortesAdmin();
+    await carregarPortesAdmin();
+    definirStatusPortes(
+        `Método "${id}" apagado. Tarifas removidas: ${data?.tarifas_removidas || 0}.`
+    );
 }
 
 async function criarMetodoPortesAdmin(evento) {
