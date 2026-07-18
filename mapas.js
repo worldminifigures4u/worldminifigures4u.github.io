@@ -705,6 +705,16 @@ async function enviarFotosCloudinaryMapa(input) {
 }
 
 function montarSecaoMediaEdicaoMapa(campos, produto) {
+    const secaoObs = criarSecaoEdicaoMapa("Observações", "mapas-produto-secao-media mapas-produto-secao-observacoes");
+    criarTextareaEdicaoMapa(
+        secaoObs,
+        "mapas-editar-observacoes",
+        "",
+        produto.observacoes || "",
+        { largo: true, rows: 3, placeholder: "Notas internas sobre estado, acessórios, origem, etc." }
+    );
+    campos.appendChild(secaoObs);
+
     const secaoFotos = criarSecaoEdicaoMapa("Fotos", "mapas-produto-secao-media mapas-produto-secao-fotos");
 
     const blocoUpload = document.createElement("div");
@@ -740,16 +750,6 @@ function montarSecaoMediaEdicaoMapa(campos, produto) {
     preview.className = "preview-imagens-admin mapas-produto-preview-imagens";
     secaoFotos.appendChild(preview);
     campos.appendChild(secaoFotos);
-
-    const secaoObs = criarSecaoEdicaoMapa("Observações", "mapas-produto-secao-media mapas-produto-secao-observacoes");
-    criarTextareaEdicaoMapa(
-        secaoObs,
-        "mapas-editar-observacoes",
-        "",
-        produto.observacoes || "",
-        { largo: true, rows: 3, placeholder: "Notas internas sobre estado, acessórios, origem, etc." }
-    );
-    campos.appendChild(secaoObs);
 
     atualizarPreviewImagensEdicaoMapa();
 }
