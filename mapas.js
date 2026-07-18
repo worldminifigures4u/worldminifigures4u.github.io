@@ -1219,7 +1219,6 @@ function preencherFichaProdutoMapa(produto) {
     topo.appendChild(criarFotoPrincipalFichaMapa(produto));
 
     const secaoIdentificacao = criarSecaoEdicaoMapa("Identificação", "mapas-produto-secao-identificacao");
-    criarCampoLeituraMapa(secaoIdentificacao, "Nome", produto.nome || "", { largo: true });
     criarCampoLeituraMapa(secaoIdentificacao, "Ref.", produto.referencia || "");
     criarCampoLeituraMapa(secaoIdentificacao, "SKU", produto.sku || "");
     criarCampoLeituraMapa(secaoIdentificacao, "Tema", produto.tema || "");
