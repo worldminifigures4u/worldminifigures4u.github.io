@@ -1,6 +1,6 @@
 
 const MAPAS_COLUNAS = [
-    { chave: "foto", rotulo: "foto", classe: "mapas-col-foto", obrigatorio: true, semOrdenacao: true },
+    { chave: "foto", rotulo: "foto", classe: "mapas-col-foto", semOrdenacao: true },
     { chave: "nome", rotulo: "nome", classe: "mapas-col-nome", obrigatorio: true },
     { chave: "referencia", rotulo: "referência", classe: "mapas-col-ref" },
     { chave: "stock", rotulo: "stock", classe: "mapas-col-stock", numero: true },
@@ -122,8 +122,7 @@ function carregarPreferenciasColunasMapa() {
     } catch (_erro) {
         mapasColunasVisiveis = new Set(todas);
     }
-    // Foto e nome ficam sempre visíveis
-    mapasColunasVisiveis.add("foto");
+    // Nome fica sempre visível
     mapasColunasVisiveis.add("nome");
 }
 
@@ -164,7 +163,6 @@ function montarPainelColunasMapa() {
             }
             if (input.checked) mapasColunasVisiveis.add(coluna.chave);
             else mapasColunasVisiveis.delete(coluna.chave);
-            mapasColunasVisiveis.add("foto");
             mapasColunasVisiveis.add("nome");
             guardarPreferenciasColunasMapa();
             renderizarTabelaMapa();
