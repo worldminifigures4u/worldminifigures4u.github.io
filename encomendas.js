@@ -336,10 +336,10 @@ function renderizarFichaClienteAdmin(dados) {
         const estado = criarElementoEncomenda('span', cancelada ? 'clientes-historico-estado-cancelada' : '', item.estado || '');
         linha.append(
             criarCodigoHistoricoEncomenda(item, indice, historico),
-            criarElementoEncomenda('span', '', item.origem || 'Site'),
+            criarElementoEncomenda('span', 'clientes-historico-origem', item.origem || 'Site'),
             estado,
-            criarElementoEncomenda('span', '', formatarDataEncomenda(item.data)),
-            criarElementoEncomenda('strong', '', formatarEuroEncomenda(item.total))
+            criarElementoEncomenda('span', 'clientes-historico-data', formatarDataEncomenda(item.data)),
+            criarElementoEncomenda('strong', 'clientes-historico-total', formatarEuroEncomenda(item.total))
         );
         listaHistorico.appendChild(linha);
     });

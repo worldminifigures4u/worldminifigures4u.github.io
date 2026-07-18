@@ -363,10 +363,10 @@ function criarSecaoHistoricoCliente(historico = []) {
         const estado = criarElementoCliente("span", cancelada ? "clientes-historico-estado-cancelada" : "", item.estado || "");
         linha.append(
             criarCodigoHistoricoCliente(item, indice, historico),
-            criarElementoCliente("span", "", item.origem || "Site"),
+            criarElementoCliente("span", "clientes-historico-origem", item.origem || "Site"),
             estado,
-            criarElementoCliente("span", "", formatarDataCliente(item.data)),
-            criarElementoCliente("strong", "", formatarEuroCliente(item.total))
+            criarElementoCliente("span", "clientes-historico-data", formatarDataCliente(item.data)),
+            criarElementoCliente("strong", "clientes-historico-total", formatarEuroCliente(item.total))
         );
         listaHistorico.appendChild(linha);
     });

@@ -445,10 +445,10 @@
             const estado = criarElemento('span', cancelada ? 'clientes-historico-estado-cancelada' : '', item.estado || '');
             linha.append(
                 criarCodigoHistoricoEncomenda(item),
-                criarElemento('span', '', item.origem || 'Site'),
+                criarElemento('span', 'clientes-historico-origem', item.origem || 'Site'),
                 estado,
-                criarElemento('span', '', formatarData(item.data)),
-                criarElemento('strong', '', `${formatarEuro(item.total)} \u20ac`)
+                criarElemento('span', 'clientes-historico-data', formatarData(item.data)),
+                criarElemento('strong', 'clientes-historico-total', `${formatarEuro(item.total)} \u20ac`)
             );
             listaHistorico.appendChild(linha);
         });
