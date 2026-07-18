@@ -381,9 +381,10 @@
             padding:8px 11px;
             border-bottom:1px solid #292929;
             display:grid;
-            grid-template-columns:6.5rem 7.5rem 11.5rem minmax(9.5rem, 1fr) 5.75rem;
-            gap:8px 12px;
+            grid-template-columns:5.75rem 6.25rem 6.5rem 10.25rem 5.5rem;
+            gap:8px 14px;
             align-items:center;
+            justify-content:start;
             font-size:13px;
         }
 
@@ -410,7 +411,7 @@
             color:#29b6f6;
             font-weight:700;
             text-align:right;
-            justify-self:stretch;
+            justify-self:end;
             white-space:nowrap;
             font-variant-numeric:tabular-nums;
         }
