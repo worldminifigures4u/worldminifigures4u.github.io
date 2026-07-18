@@ -58,17 +58,25 @@
 }
 
 .portes-metodos-topo p {
-    margin: 0 0 0.9rem;
+    margin: 0 0 0.5rem;
     color: #aaa;
     font-size: 0.92rem;
 }
 
 .portes-metodos-criar {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.55rem;
+    margin-bottom: 0.85rem;
+}
+
+.portes-metodos-criar-campos {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
     gap: 0.7rem;
     align-items: end;
-    margin-bottom: 1rem;
+    width: 100%;
 }
 
 .portes-metodos-criar label {
@@ -108,15 +116,15 @@
     accent-color: #ffc107;
 }
 
-.portes-metodos-botoes {
-    display: grid;
-    gap: 0.55rem;
-    align-content: end;
+.portes-metodos-criar-campos > .wallapop-botao,
+.portes-btn-guardar {
+    min-height: 38px;
+    width: 100%;
+    max-width: 14rem;
 }
 
-.portes-metodos-botoes .wallapop-botao {
-    width: 100%;
-    min-height: 38px;
+.portes-btn-guardar {
+    margin: 0;
 }
 
 .portes-metodos-lista .portes-tabela input[type="text"] {
