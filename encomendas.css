@@ -1146,6 +1146,25 @@ body.pagina-encomendas-admin{
             margin-left:auto;
         }
 
+        .admin-encomenda-portes-grupo{
+            display:flex;
+            align-items:baseline;
+            gap:6px;
+            margin-right:10px;
+            color:#b0bec5;
+            font-size:14px;
+            white-space:nowrap;
+        }
+
+        .admin-encomenda-portes-rotulo{
+            font-weight:600;
+        }
+
+        .admin-encomenda-portes-valor{
+            color:#cfd8dc;
+            font-weight:700;
+        }
+
         .admin-encomenda-total-rotulo{
             color:#29b6f6;
             font-size:18px;

@@ -849,6 +849,12 @@ window.AdminEncomendaVista = (function () {
         linha.appendChild(criarResumoPecasProdutos(encomenda));
 
         const totalGrupo = criarElemento("div", "admin-encomenda-total-grupo");
+        const portesGrupo = criarElemento("div", "admin-encomenda-portes-grupo");
+        portesGrupo.append(
+            criarElemento("span", "admin-encomenda-portes-rotulo", "Portes:"),
+            criarElemento("strong", "admin-encomenda-portes-valor", formatarEuro(encomenda.portes))
+        );
+        totalGrupo.appendChild(portesGrupo);
         totalGrupo.appendChild(criarElemento("span", "admin-encomenda-total-rotulo", "Total:"));
         const input = document.createElement("input");
         input.type = "text";
@@ -1479,7 +1485,6 @@ window.AdminEncomendaVista = (function () {
         controloSeguimento = criarLinhaSeguimentoEditavel(encomenda);
         colunaContacto.append(
             controloSeguimento.elemento,
-            criarLinhaDetalhe("Portes", formatarEuro(encomenda.portes)),
             criarLinhaDetalhe("Pagamento", encomenda.metodo_pagamento)
         );
 
