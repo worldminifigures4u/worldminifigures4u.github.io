@@ -44,44 +44,45 @@
 }
 
 .portes-metodos-topo h2 {
-    margin: 0 0 0.35rem;
+    margin: 0 0 0.25rem;
     font-size: 1.05rem;
     color: #fff;
 }
 
 .portes-metodos-topo p {
-    margin: 0 0 0.7rem;
+    margin: 0 0 0.35rem;
     color: #aaa;
     font-size: 0.92rem;
 }
 
 .portes-metodos-criar {
-    display: flex;
-    align-items: flex-end;
-    gap: 0.75rem;
-    margin: 0 0 0.55rem;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr)) minmax(12rem, 14rem);
+    grid-template-rows: auto auto;
+    column-gap: 0.7rem;
+    row-gap: 0.35rem;
+    align-items: center;
+    margin: 0 0 0.45rem;
     padding: 0;
 }
 
-.portes-metodos-criar-campos {
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 0.7rem;
-    align-items: end;
-    flex: 1;
-    min-width: 0;
+.portes-campo {
+    display: contents;
 }
 
-.portes-metodos-criar label {
-    display: grid;
-    gap: 0.35rem;
+.portes-campo > span {
     color: #cfcfcf;
     font-size: 0.78rem;
     font-weight: 700;
     text-transform: uppercase;
+    grid-row: 1;
 }
 
-.portes-metodos-criar input[type="text"] {
+.portes-campo-id > span { grid-column: 1; }
+.portes-campo-nome > span { grid-column: 2; }
+
+.portes-campo > input[type="text"] {
+    grid-row: 2;
     height: 38px;
     padding: 0 0.55rem;
     border: 1px solid #343434;
@@ -89,9 +90,13 @@
     background: #050505;
     color: #fff;
     font: inherit;
-    text-transform: none;
     font-weight: 500;
+    width: 100%;
+    box-sizing: border-box;
 }
+
+.portes-campo-id > input { grid-column: 1; }
+.portes-campo-nome > input { grid-column: 2; }
 
 .portes-metodos-check {
     display: flex !important;
@@ -101,6 +106,8 @@
     font-weight: 600 !important;
     color: #ddd !important;
     min-height: 38px;
+    grid-column: 3;
+    grid-row: 2;
 }
 
 .portes-metodos-check input {
@@ -109,20 +116,16 @@
     accent-color: #ffc107;
 }
 
-.portes-metodos-botoes {
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-end;
-    gap: 0.45rem;
-    width: 14rem;
-    flex-shrink: 0;
-}
-
-.portes-metodos-botoes .wallapop-botao {
+.portes-btn-criar,
+.portes-btn-guardar {
     width: 100%;
     min-height: 38px;
     box-sizing: border-box;
+    grid-column: 4;
 }
+
+.portes-btn-criar { grid-row: 1; }
+.portes-btn-guardar { grid-row: 2; }
 
 .portes-metodos-lista {
     margin-top: 0;
@@ -130,15 +133,26 @@
 
 @media (max-width: 900px) {
     .portes-metodos-criar {
-        flex-direction: column;
-        align-items: stretch;
-    }
-
-    .portes-metodos-criar-campos {
         grid-template-columns: 1fr;
+        grid-template-rows: none;
     }
 
-    .portes-metodos-botoes {
+    .portes-campo {
+        display: grid;
+        gap: 0.35rem;
+    }
+
+    .portes-campo > span,
+    .portes-campo > input,
+    .portes-metodos-check,
+    .portes-btn-criar,
+    .portes-btn-guardar {
+        grid-column: 1;
+        grid-row: auto;
+    }
+
+    .portes-btn-criar,
+    .portes-btn-guardar {
         width: min(100%, 14rem);
     }
 }
