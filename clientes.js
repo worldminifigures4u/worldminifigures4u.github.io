@@ -354,7 +354,8 @@ function criarSecaoResumoCliente(resumo = {}) {
 }
 
 function criarSecaoHistoricoCliente(historico = []) {
-    const historicoSecao = criarElementoCliente("section", "admin-cliente-secao");
+    const historicoSecao = criarElementoCliente("section", "admin-cliente-secao clientes-ficha-historico");
+    historicoSecao.appendChild(criarElementoCliente("h3", "", "Hist\u00f3rico de encomendas"));
     const listaHistorico = criarElementoCliente("div", "admin-cliente-historico");
     historico.forEach((item, indice) => {
         const cancelada = String(item.estado || "").trim().toLowerCase() === "cancelado";
@@ -627,6 +628,7 @@ function renderizarFormularioCliente(dados, modo = "novo") {
 function renderizarEdicaoCliente(dados) {
     const ficha = document.getElementById("clientes-ficha");
     const cliente = dados.cliente || {};
+    const historico = Array.isArray(dados.historico) ? dados.historico : [];
     clienteAbertoId = String(cliente.id || "");
     renderizarClientesLista();
     ficha.replaceChildren();
@@ -644,7 +646,7 @@ function renderizarEdicaoCliente(dados) {
     acoesTopo.append(cancelar, guardar);
     topo.appendChild(acoesTopo);
 
-    ficha.append(topo, formulario);
+    ficha.append(topo, formulario, criarSecaoHistoricoCliente(historico));
 }
 
 function criarClienteNovo() {
