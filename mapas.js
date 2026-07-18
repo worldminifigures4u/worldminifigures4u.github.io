@@ -705,12 +705,10 @@ async function enviarFotosCloudinaryMapa(input) {
 }
 
 function montarSecaoMediaEdicaoMapa(campos, produto) {
-    const secao = criarSecaoEdicaoMapa("Fotos e observações", "mapas-produto-secao-media");
+    const secaoFotos = criarSecaoEdicaoMapa("Fotos", "mapas-produto-secao-media mapas-produto-secao-fotos");
 
     const blocoUpload = document.createElement("div");
     blocoUpload.className = "mapas-produto-campo mapas-produto-campo-largo mapas-produto-upload-bloco";
-    const tituloUpload = document.createElement("strong");
-    tituloUpload.textContent = "Fotos do artigo";
     const ajuda = document.createElement("p");
     ajuda.className = "mapas-produto-ajuda-media";
     ajuda.textContent = "Envie JPG, PNG ou WebP. Arraste as miniaturas para definir a foto principal.";
@@ -725,11 +723,11 @@ function montarSecaoMediaEdicaoMapa(campos, produto) {
     statusUpload.id = "mapas-editar-upload-status";
     statusUpload.className = "mapas-produto-upload-status";
     statusUpload.setAttribute("role", "status");
-    blocoUpload.append(tituloUpload, ajuda, inputUpload, statusUpload);
-    secao.appendChild(blocoUpload);
+    blocoUpload.append(ajuda, inputUpload, statusUpload);
+    secaoFotos.appendChild(blocoUpload);
 
     criarTextareaEdicaoMapa(
-        secao,
+        secaoFotos,
         "mapas-editar-imagens",
         "URLs das imagens",
         normalizarImagensMapa(produto.imagens).join("\n"),
@@ -740,17 +738,19 @@ function montarSecaoMediaEdicaoMapa(campos, produto) {
     const preview = document.createElement("div");
     preview.id = "mapas-editar-preview-imagens";
     preview.className = "preview-imagens-admin mapas-produto-preview-imagens";
-    secao.appendChild(preview);
+    secaoFotos.appendChild(preview);
+    campos.appendChild(secaoFotos);
 
+    const secaoObs = criarSecaoEdicaoMapa("Observações", "mapas-produto-secao-media mapas-produto-secao-observacoes");
     criarTextareaEdicaoMapa(
-        secao,
+        secaoObs,
         "mapas-editar-observacoes",
-        "Observações",
+        "",
         produto.observacoes || "",
         { largo: true, rows: 3, placeholder: "Notas internas sobre estado, acessórios, origem, etc." }
     );
+    campos.appendChild(secaoObs);
 
-    campos.appendChild(secao);
     atualizarPreviewImagensEdicaoMapa();
 }
 
