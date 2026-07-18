@@ -628,7 +628,6 @@ function renderizarFormularioCliente(dados, modo = "novo") {
 function renderizarEdicaoCliente(dados) {
     const ficha = document.getElementById("clientes-ficha");
     const cliente = dados.cliente || {};
-    const historico = Array.isArray(dados.historico) ? dados.historico : [];
     clienteAbertoId = String(cliente.id || "");
     renderizarClientesLista();
     ficha.replaceChildren();
@@ -646,7 +645,7 @@ function renderizarEdicaoCliente(dados) {
     acoesTopo.append(cancelar, guardar);
     topo.appendChild(acoesTopo);
 
-    ficha.append(topo, formulario, criarSecaoHistoricoCliente(historico));
+    ficha.append(topo, formulario);
 }
 
 function criarClienteNovo() {
