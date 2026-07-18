@@ -1224,22 +1224,6 @@ function preencherFichaProdutoMapa(produto) {
     criarCampoLeituraMapa(secaoIdentificacao, "SKU", produto.sku || "");
     criarCampoLeituraMapa(secaoIdentificacao, "Tema", produto.tema || "");
     criarCampoLeituraMapa(secaoIdentificacao, "Subtema", produto.subtema === "semsubtema" ? "" : (produto.subtema || ""));
-    const flags = document.createElement("div");
-    flags.className = "mapas-produto-campo mapas-produto-campo-largo mapas-produto-leitura-flags";
-    const flagsRotulo = document.createElement("span");
-    flagsRotulo.className = "mapas-produto-leitura-rotulo";
-    flagsRotulo.textContent = "Marcas";
-    const flagsLista = document.createElement("div");
-    flagsLista.className = "mapas-produto-leitura-badges";
-    flags.append(flagsRotulo, flagsLista);
-    [
-        ["Top", Boolean(String(produto.top || "").trim())],
-        ["Arquivado", Boolean(produto.arquivado)],
-        ["Descontinuado", Boolean(produto.descontinuado)],
-        ["Novidade", Boolean(produto.novidade)],
-        ["Ativo", produto.ativo !== false]
-    ].forEach(([rotulo, ativo]) => criarBadgeLeituraMapa(flagsLista, rotulo, ativo));
-    secaoIdentificacao.appendChild(flags);
     topo.appendChild(secaoIdentificacao);
 
     const secaoDetalhes = criarSecaoEdicaoMapa("Detalhes", "mapas-produto-secao-detalhes");
@@ -1254,6 +1238,19 @@ function preencherFichaProdutoMapa(produto) {
     );
     criarCampoLeituraMapa(secaoDetalhes, "Lego", textoLegoMapa(produto.lego) || "por verificar");
     topo.appendChild(secaoDetalhes);
+
+    const secaoMarcas = criarSecaoEdicaoMapa("Marcas", "mapas-produto-secao-marcas");
+    const flagsLista = document.createElement("div");
+    flagsLista.className = "mapas-produto-leitura-badges mapas-produto-leitura-badges-vertical";
+    secaoMarcas.appendChild(flagsLista);
+    [
+        ["Top", Boolean(String(produto.top || "").trim())],
+        ["Arquivado", Boolean(produto.arquivado)],
+        ["Descontinuado", Boolean(produto.descontinuado)],
+        ["Novidade", Boolean(produto.novidade)],
+        ["Ativo", produto.ativo !== false]
+    ].forEach(([rotulo, ativo]) => criarBadgeLeituraMapa(flagsLista, rotulo, ativo));
+    topo.appendChild(secaoMarcas);
     campos.appendChild(topo);
 
     montarSecaoMediaLeituraMapa(campos, produto);

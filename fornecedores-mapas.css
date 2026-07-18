@@ -1653,7 +1653,7 @@ body.pagina-mapas-admin > main.fornecedores-admin {
 
 .mapas-produto-ficha-topo {
     display: grid;
-    grid-template-columns: 180px minmax(0, 1.1fr) minmax(0, 1fr);
+    grid-template-columns: 180px minmax(0, 1.15fr) minmax(0, 1fr) minmax(118px, 140px);
     gap: 14px;
     align-items: stretch;
 }
@@ -1687,8 +1687,29 @@ body.pagina-mapas-admin > main.fornecedores-admin {
 }
 
 .mapas-produto-ficha-topo .mapas-produto-secao-identificacao,
-.mapas-produto-ficha-topo .mapas-produto-secao-detalhes {
+.mapas-produto-ficha-topo .mapas-produto-secao-detalhes,
+.mapas-produto-ficha-topo .mapas-produto-secao-marcas {
     margin: 0;
+}
+
+.mapas-produto-secao-marcas {
+    grid-template-columns: 1fr;
+    align-content: start;
+}
+
+.mapas-produto-leitura-badges-vertical {
+    display: flex;
+    flex-direction: column;
+    flex-wrap: nowrap;
+    gap: 8px;
+}
+
+.mapas-produto-leitura-badges-vertical .mapas-produto-leitura-badge {
+    justify-content: center;
+    width: 100%;
+    box-sizing: border-box;
+    border-radius: 8px;
+    padding: 7px 8px;
 }
 
 .mapas-produto-leitura {
