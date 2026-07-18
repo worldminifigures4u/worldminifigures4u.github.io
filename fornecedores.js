@@ -1282,8 +1282,31 @@ function promoverUltimaSolicitadaParaEncomendada(valorAnterior, novaData = dataO
         tipo: "encomendada",
         data: dataOriginal || String(novaData || dataOsAgoraFornecedor())
     };
-    // Histórico fica Encomendada (com data); marcação atual fica vazia (figura volta a "Disponivel")
-    return montarMarcacaoComHistorico(historico, "");
+    // Histórico Encomendada + marcação atual Encomendada (stock disponível na encomenda)
+    return montarMarcacaoComHistorico(historico, "Encomendada");
+}
+
+function garantirMarcacaoEncomendadaFornecedor(valorAnterior, novaData = dataOsAgoraFornecedor()) {
+    const anterior = normalizarMarcacaoFornecedor(valorAnterior);
+    const historico = [...(anterior.historico || [])];
+    const data = String(novaData || dataOsAgoraFornecedor());
+    let indice = -1;
+    for (let i = historico.length - 1; i >= 0; i -= 1) {
+        const tipo = historico[i]?.tipo;
+        if (tipo === "solicitada" || tipo === "encomendada" || tipo === "encomendada_os") {
+            indice = i;
+            break;
+        }
+    }
+    if (indice >= 0) {
+        if (historico[indice].tipo === "solicitada") {
+            const dataOriginal = String(historico[indice].data || "").trim() || data;
+            historico[indice] = { tipo: "encomendada", data: dataOriginal };
+        }
+    } else {
+        historico.push({ tipo: "encomendada", data });
+    }
+    return montarMarcacaoComHistorico(historico, "Encomendada");
 }
 
 function confirmarTentativaParcialFornecedor(valorAnterior, novaData = dataOsAgoraFornecedor()) {
@@ -3664,10 +3687,9 @@ async function sincronizarHistoricoPedidosFornecedor(itens, fornecedorNome, opco
                 atual = aplicarMarcacaoAtualAposConfirmar(base, "OS", agora);
                 alterou = true;
             } else if (quantidade > 0) {
-                // Tudo disponível: Encomendada no historico, marcação vazia
+                // Tudo disponível: Encomendada no histórico e na marcação atual
                 const promovido = promoverUltimaSolicitadaParaEncomendada(atual, agora);
-                if (!promovido) continue;
-                atual = promovido;
+                atual = promovido || garantirMarcacaoEncomendadaFornecedor(atual, agora);
                 alterou = true;
             }
         }
