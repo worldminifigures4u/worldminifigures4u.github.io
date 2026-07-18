@@ -1,5 +1,6 @@
 
 const MAPAS_COLUNAS = [
+    { chave: "foto", rotulo: "foto", classe: "mapas-col-foto", obrigatorio: true, semOrdenacao: true },
     { chave: "nome", rotulo: "nome", classe: "mapas-col-nome", obrigatorio: true },
     { chave: "referencia", rotulo: "referência", classe: "mapas-col-ref" },
     { chave: "stock", rotulo: "stock", classe: "mapas-col-stock", numero: true },
@@ -23,7 +24,7 @@ let mapasProdutos = [];
 let mapasResultados = [];
 let mapasProdutosVisiveis = [];
 let mapasOrdenacao = { coluna: "nome", direcao: "asc" };
-let mapasLinhaAltura = 39;
+let mapasLinhaAltura = 46;
 let mapasRenderPendente = 0;
 let mapasAtualizacaoPendente = 0;
 let mapasColunasVisiveis = new Set(MAPAS_COLUNAS.map((coluna) => coluna.chave));
@@ -121,7 +122,8 @@ function carregarPreferenciasColunasMapa() {
     } catch (_erro) {
         mapasColunasVisiveis = new Set(todas);
     }
-    // Nome fica sempre visível
+    // Foto e nome ficam sempre visíveis
+    mapasColunasVisiveis.add("foto");
     mapasColunasVisiveis.add("nome");
 }
 
@@ -162,6 +164,7 @@ function montarPainelColunasMapa() {
             }
             if (input.checked) mapasColunasVisiveis.add(coluna.chave);
             else mapasColunasVisiveis.delete(coluna.chave);
+            mapasColunasVisiveis.add("foto");
             mapasColunasVisiveis.add("nome");
             guardarPreferenciasColunasMapa();
             renderizarTabelaMapa();
@@ -303,19 +306,56 @@ function criarCabecalhoTabelaMapa() {
         const th = document.createElement("th");
         th.className = coluna.classe || "";
         th.title = coluna.titulo || coluna.rotulo;
-        th.textContent = coluna.rotulo + (mapasOrdenacao.coluna === coluna.chave ? (mapasOrdenacao.direcao === "asc" ? " ▲" : " ▼") : "");
-        th.addEventListener("click", () => {
-            if (mapasOrdenacao.coluna === coluna.chave) {
-                mapasOrdenacao.direcao = mapasOrdenacao.direcao === "asc" ? "desc" : "asc";
-            } else {
-                mapasOrdenacao = { coluna: coluna.chave, direcao: "asc" };
-            }
-            atualizarResultadosMapa();
-        });
+        if (coluna.semOrdenacao) {
+            th.classList.add("mapas-th-sem-ordenacao");
+            th.textContent = coluna.rotulo;
+        } else {
+            th.textContent = coluna.rotulo + (mapasOrdenacao.coluna === coluna.chave ? (mapasOrdenacao.direcao === "asc" ? " ▲" : " ▼") : "");
+            th.addEventListener("click", () => {
+                if (mapasOrdenacao.coluna === coluna.chave) {
+                    mapasOrdenacao.direcao = mapasOrdenacao.direcao === "asc" ? "desc" : "asc";
+                } else {
+                    mapasOrdenacao = { coluna: coluna.chave, direcao: "asc" };
+                }
+                atualizarResultadosMapa();
+            });
+        }
         tr.appendChild(th);
     });
     thead.appendChild(tr);
     return thead;
+}
+
+function criarMiniaturaProdutoMapa(produto) {
+    const urlOriginal = typeof obterImagemPrincipalProduto === "function"
+        ? obterImagemPrincipalProduto(produto)
+        : (normalizarImagensMapa(produto?.imagens)[0] || "");
+    const url = typeof otimizarImagemCloudinary === "function"
+        ? otimizarImagemCloudinary(urlOriginal, 72)
+        : urlOriginal;
+
+    if (!url) {
+        const vazio = document.createElement("span");
+        vazio.className = "mapas-produto-foto-vazia";
+        vazio.setAttribute("aria-hidden", "true");
+        return vazio;
+    }
+
+    const img = document.createElement("img");
+    img.className = "mapas-produto-foto";
+    img.src = url;
+    img.alt = "";
+    img.loading = "lazy";
+    img.decoding = "async";
+    img.width = 36;
+    img.height = 36;
+    img.onerror = () => {
+        const vazio = document.createElement("span");
+        vazio.className = "mapas-produto-foto-vazia";
+        vazio.setAttribute("aria-hidden", "true");
+        img.replaceWith(vazio);
+    };
+    return img;
 }
 
 function valorCelulaMapa(produto, coluna) {
@@ -331,7 +371,9 @@ function criarLinhaProdutoMapa(produto) {
     obterColunasVisiveisMapa().forEach(coluna => {
         const td = document.createElement("td");
         if (coluna.classe) td.className = coluna.classe;
-        if (coluna.chave === "nome") {
+        if (coluna.chave === "foto") {
+            td.appendChild(criarMiniaturaProdutoMapa(produto));
+        } else if (coluna.chave === "nome") {
             const botao = document.createElement("button");
             botao.type = "button";
             botao.className = "mapas-celula-nome";
@@ -443,6 +485,7 @@ function agendarAtualizacaoResultadosMapa() {
 }
 
 function valorCelulaCopiaMapa(produto, coluna) {
+    if (coluna.chave === "foto") return "";
     if (coluna.chave === "preco" || coluna.chave === "preco_compra") {
         return `${formatarEuroMapa(produto[coluna.chave])} €`;
     }
@@ -467,8 +510,8 @@ function copiarListaMapaVisivel() {
         const total = produtos.reduce((soma, produto) => soma + Number(produto.preco || 0), 0);
         const indicePreco = colunas.findIndex((coluna) => coluna.chave === "preco");
         const linhaTotal = colunas
-            .map((_, indice) => {
-                if (indice === 0) return "Total";
+            .map((coluna, indice) => {
+                if (coluna.chave === "nome") return "Total";
                 if (indice === indicePreco) return `${formatarEuroMapa(total)} €`;
                 return "";
             })

@@ -1107,6 +1107,33 @@ body.pagina-mapas-admin > main.fornecedores-admin {
 .mapas-col-previsto { width: 88px; }
 .mapas-col-qtd { width: 82px; }
 
+.pagina-mapas-admin .mapas-col-foto {
+    width: 48px;
+    padding: 4px;
+    text-align: center;
+    vertical-align: middle;
+}
+
+.pagina-mapas-admin .mapas-produto-foto {
+    display: block;
+    width: 36px;
+    height: 36px;
+    margin: 0 auto;
+    object-fit: contain;
+    background: #1a1a1a;
+    border-radius: 4px;
+}
+
+.pagina-mapas-admin .mapas-produto-foto-vazia {
+    display: block;
+    width: 36px;
+    height: 36px;
+    margin: 0 auto;
+    border-radius: 4px;
+    background: #222;
+    border: 1px solid #333;
+}
+
 /* Larguras naturais no Mapas: colunas juntas e centradas */
 .pagina-mapas-admin .mapas-col-nome {
     width: auto;
