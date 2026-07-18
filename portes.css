@@ -58,20 +58,26 @@
 }
 
 .portes-metodos-topo p {
-    margin: 0 0 0.5rem;
+    margin: 0 0 0.7rem;
     color: #aaa;
     font-size: 0.92rem;
 }
 
 .portes-metodos-criar {
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr)) minmax(12rem, 14rem);
-    grid-template-rows: auto auto;
-    column-gap: 0.7rem;
-    row-gap: 0.45rem;
-    align-items: end;
-    margin: 0 0 0.45rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin: 0 0 0.55rem;
     padding: 0;
+}
+
+.portes-metodos-criar-campos {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.7rem;
+    align-items: end;
+    flex: 1;
+    min-width: 0;
 }
 
 .portes-metodos-criar label {
@@ -81,7 +87,6 @@
     font-size: 0.78rem;
     font-weight: 700;
     text-transform: uppercase;
-    grid-row: 1;
 }
 
 .portes-metodos-criar input[type="text"] {
@@ -113,21 +118,18 @@
 }
 
 .portes-metodos-botoes {
-    display: contents;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 0.45rem;
+    width: 14rem;
+    flex-shrink: 0;
 }
 
 .portes-metodos-botoes .wallapop-botao {
     width: 100%;
     min-height: 38px;
-    grid-column: 4;
-}
-
-.portes-metodos-botoes .wallapop-botao:first-child {
-    grid-row: 1;
-}
-
-.portes-metodos-botoes .wallapop-botao:last-child {
-    grid-row: 2;
+    box-sizing: border-box;
 }
 
 .portes-metodos-lista {
@@ -136,19 +138,15 @@
 
 @media (max-width: 900px) {
     .portes-metodos-criar {
-        grid-template-columns: 1fr;
-        grid-template-rows: none;
+        flex-direction: column;
+        align-items: stretch;
     }
 
-    .portes-metodos-criar label,
-    .portes-metodos-botoes .wallapop-botao {
-        grid-column: 1;
-        grid-row: auto;
+    .portes-metodos-criar-campos {
+        grid-template-columns: 1fr;
     }
 
     .portes-metodos-botoes {
-        display: grid;
-        gap: 0.45rem;
         width: min(100%, 14rem);
     }
 }

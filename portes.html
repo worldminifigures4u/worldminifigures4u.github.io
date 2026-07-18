@@ -16,7 +16,7 @@
     <link rel="icon" type="image/webp" href="favicon-32.webp?v=20260711-leve" sizes="32x32">
     <link rel="stylesheet" href="styles.css?v=20260716-sem-setas-number">
     <link rel="stylesheet" href="styles-admin.css?v=20260717-portes-cab">
-    <link rel="stylesheet" href="portes.css?v=20260718-espaco-baixo">
+    <link rel="stylesheet" href="portes.css?v=20260718-como-mockup">
     <link rel="stylesheet" href="styles-tema.css?v=20260713-r25" media="print" data-async-css>
     <noscript><link rel="stylesheet" href="styles-tema.css?v=20260713-r25"></noscript>
     <script src="async-css.js?v=20260713-r25"></script>
@@ -84,18 +84,20 @@
                 <p>Define se o método é registado (com rastreamento). Isso controla a info no carrinho.</p>
             </div>
             <form class="portes-metodos-criar" id="form-criar-metodo-portes">
-                <label>
-                    <span>ID (ex.: ctt_verde)</span>
-                    <input type="text" id="novo-metodo-id" required pattern="[a-z0-9_]+" placeholder="meu_metodo" autocomplete="off">
-                </label>
-                <label>
-                    <span>Nome no site</span>
-                    <input type="text" id="novo-metodo-nome" required placeholder="CTT Verde" autocomplete="off">
-                </label>
-                <label class="portes-metodos-check">
-                    <input type="checkbox" id="novo-metodo-registado">
-                    <span>Registado (com rastreamento)</span>
-                </label>
+                <div class="portes-metodos-criar-campos">
+                    <label>
+                        <span>ID (ex.: ctt_verde)</span>
+                        <input type="text" id="novo-metodo-id" required pattern="[a-z0-9_]+" placeholder="meu_metodo" autocomplete="off">
+                    </label>
+                    <label>
+                        <span>Nome no site</span>
+                        <input type="text" id="novo-metodo-nome" required placeholder="CTT Verde" autocomplete="off">
+                    </label>
+                    <label class="portes-metodos-check">
+                        <input type="checkbox" id="novo-metodo-registado">
+                        <span>Registado (com rastreamento)</span>
+                    </label>
+                </div>
                 <div class="portes-metodos-botoes">
                     <button type="submit" class="wallapop-botao">Criar método</button>
                     <button type="button" class="wallapop-botao wallapop-botao-destaque" id="btn-guardar-portes">Guardar alterações</button>
