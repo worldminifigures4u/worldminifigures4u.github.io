@@ -10,11 +10,6 @@
 }
 
 .portes-topo {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 1rem;
-    align-items: flex-start;
-    justify-content: space-between;
     margin-bottom: 1.25rem;
 }
 
@@ -113,6 +108,17 @@
     accent-color: #ffc107;
 }
 
+.portes-metodos-botoes {
+    display: grid;
+    gap: 0.55rem;
+    align-content: end;
+}
+
+.portes-metodos-botoes .wallapop-botao {
+    width: 100%;
+    min-height: 38px;
+}
+
 .portes-metodos-lista .portes-tabela input[type="text"] {
     width: min(100%, 18rem);
     height: 38px;
@@ -145,12 +151,6 @@
 .portes-metodo-apagar:hover,
 .portes-metodo-apagar:focus-visible {
     background: #a52828;
-}
-
-.portes-acoes {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.6rem;
 }
 
 .portes-tabs {

@@ -505,9 +505,6 @@ async function iniciarPainelPortes() {
     document.querySelectorAll('.portes-tab').forEach((botao) => {
         botao.addEventListener('click', () => ativarTabPortes(botao.dataset.zona));
     });
-    document.getElementById('btn-recarregar-portes')?.addEventListener('click', () => {
-        Promise.all([carregarMetodosPortesAdmin(), carregarPortesAdmin()]).catch(console.error);
-    });
     document.getElementById('btn-guardar-portes')?.addEventListener('click', () => {
         guardarTudoPortesAdmin().catch(console.error);
     });
