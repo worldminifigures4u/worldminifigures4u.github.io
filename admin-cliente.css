@@ -4,20 +4,22 @@
             position:fixed;
             z-index:10001;
             inset:0;
-            padding:24px;
+            padding:10px;
             display:flex;
-            align-items:center;
+            align-items:flex-start;
             justify-content:center;
+            overflow:auto;
             background:rgba(0,0,0,.84);
         }
 
         .admin-cliente-dialogo{
             position:relative;
             width:min(1100px, 100%);
-            max-height:92vh;
+            max-height:calc(100dvh - 20px);
+            margin:auto;
             overflow:auto;
             box-sizing:border-box;
-            padding:24px;
+            padding:14px 16px 12px;
             border:1px solid #444;
             border-radius:8px;
             background:#111;
@@ -30,7 +32,7 @@
             margin-top:0;
             grid-template-columns:minmax(0, 1.15fr) minmax(280px, 0.85fr);
             column-gap:0;
-            row-gap:12px;
+            row-gap:8px;
             align-items:start;
             width:100%;
             max-width:none;
@@ -41,37 +43,36 @@
             grid-row:1;
             display:flex;
             justify-content:flex-end;
-            gap:10px;
-            margin-bottom:2px;
+            gap:8px;
+            margin-bottom:0;
         }
 
         .admin-cliente-dialogo .clientes-formulario-dados{
             grid-column:1;
             grid-row:2;
             display:grid;
-            grid-template-columns:240px minmax(0, 1fr);
+            grid-template-columns:minmax(160px, 220px) minmax(0, 1fr);
             grid-template-areas:
                 "nome nome"
                 "morada morada"
                 "cp cidade"
-                "pais ."
-                "telefone ."
-                "email ."
+                "pais telefone"
+                "email email"
                 "restricoes restricoes";
-            gap:12px 22px;
+            gap:8px 14px;
             align-content:start;
             min-width:0;
-            padding-right:24px;
+            padding-right:18px;
         }
 
         .admin-cliente-dialogo .clientes-formulario-links{
             grid-column:2;
             grid-row:2;
             display:grid;
-            gap:12px;
+            gap:8px;
             align-content:start;
             min-width:0;
-            padding-left:24px;
+            padding-left:18px;
             border-left:1px solid #2e2e2e;
         }
 
@@ -81,8 +82,8 @@
         .admin-cliente-dialogo .clientes-formulario-dados .admin-cliente-campo-morada-bloco{ grid-area:morada; }
         .admin-cliente-dialogo .clientes-formulario-dados .admin-cliente-campo-cp{
             grid-area:cp;
-            width:240px;
-            max-width:240px;
+            width:auto;
+            max-width:none;
         }
         .admin-cliente-dialogo .clientes-formulario-dados .admin-cliente-campo-cidade{
             grid-area:cidade;
@@ -90,31 +91,56 @@
         }
         .admin-cliente-dialogo .clientes-formulario-dados .admin-cliente-campo-pais{
             grid-area:pais;
-            width:240px;
-            max-width:240px;
+            width:auto;
+            max-width:none;
         }
         .admin-cliente-dialogo .clientes-formulario-dados .admin-cliente-campo-telefone{
             grid-area:telefone;
-            width:240px;
-            max-width:240px;
+            width:auto;
+            max-width:none;
+            min-width:0;
         }
         .admin-cliente-dialogo .clientes-formulario-dados .admin-cliente-campo-email{
             grid-area:email;
-            width:240px;
-            max-width:240px;
+            width:auto;
+            max-width:none;
             min-width:0;
         }
         .admin-cliente-dialogo .clientes-formulario-dados .clientes-restricoes-formulario{
             grid-area:restricoes;
-            margin-top:4px;
-            padding-top:12px;
+            margin-top:2px;
+            padding-top:8px;
             border-top:1px solid #2a2a2a;
+            gap:6px;
         }
         .admin-cliente-dialogo .clientes-formulario-links .admin-cliente-notas{
-            min-height:140px;
+            min-height:72px;
+            max-height:120px;
             width:100%;
             box-sizing:border-box;
             resize:vertical;
+        }
+        .admin-cliente-dialogo .admin-cliente-formulario-campo{
+            gap:4px;
+        }
+        .admin-cliente-dialogo .admin-cliente-formulario-campo input:not([type="checkbox"]),
+        .admin-cliente-dialogo .admin-cliente-formulario-campo textarea,
+        .admin-cliente-dialogo .admin-cliente-notas{
+            padding:7px 9px;
+            font-size:13px;
+        }
+        .admin-cliente-dialogo .admin-cliente-formulario-subtitulo{
+            margin:0;
+            font-size:13px;
+        }
+        .admin-cliente-dialogo .clientes-restricoes-ajuda{
+            margin:0;
+            font-size:12px;
+            line-height:1.35;
+        }
+        .admin-cliente-dialogo .morada-edicao-linhas{
+            display:grid;
+            gap:8px;
         }
         .admin-cliente-dialogo .clientes-formulario .admin-cliente-campo-cp input,
         .admin-cliente-dialogo .clientes-formulario .admin-cliente-campo-cidade input,
@@ -155,21 +181,23 @@
         }
 
         .admin-cliente-dialogo > h2{
-            margin:0 52px 18px 0;
+            margin:0 48px 10px 0;
             color:var(--cor-texto-principal, #fff);
+            font-size:18px;
+            line-height:1.2;
         }
 
         .admin-cliente-fechar{
             position:absolute;
-            top:14px;
-            right:14px;
-            width:38px;
-            height:38px;
+            top:10px;
+            right:10px;
+            width:34px;
+            height:34px;
             border:0;
             border-radius:5px;
             background:#ff4d4d;
             color:#fff;
-            font-size:26px;
+            font-size:24px;
             cursor:pointer;
         }
 
@@ -390,7 +418,7 @@
 
         @media(max-width:700px){
             .admin-cliente-modal{ padding:8px; }
-            .admin-cliente-dialogo{ padding:18px 14px; max-height:96vh; }
+            .admin-cliente-dialogo{ padding:14px 12px; max-height:calc(100dvh - 16px); }
             .admin-cliente-grelha,
             .admin-cliente-resumo,
             .admin-cliente-formulario{ grid-template-columns:1fr; }
