@@ -1207,15 +1207,15 @@ function preencherFichaProdutoMapa(produto) {
     topo.appendChild(secaoIdentificacao);
 
     const secaoDetalhes = criarSecaoEdicaoMapa("Detalhes", "mapas-produto-secao-detalhes");
-    criarCampoLeituraMapa(secaoDetalhes, "preço compra", `${formatarEuroMapa(produto.preco_compra)} €`);
-    criarCampoLeituraMapa(secaoDetalhes, "preço venda", `${formatarEuroMapa(produto.preco)} €`);
-    criarCampoLeituraMapa(secaoDetalhes, "Peso (g)", Number(produto.peso || PESO_PADRAO_PRODUTO_GRAMAS || 10));
     criarCampoLeituraMapa(
         secaoDetalhes,
         "Stock",
         Number(produto.stock || 0),
         { classeValor: Number(produto.stock || 0) <= 0 ? "sem-stock" : "" }
     );
+    criarCampoLeituraMapa(secaoDetalhes, "preço compra", `${formatarEuroMapa(produto.preco_compra)} €`);
+    criarCampoLeituraMapa(secaoDetalhes, "preço venda", `${formatarEuroMapa(produto.preco)} €`);
+    criarCampoLeituraMapa(secaoDetalhes, "Peso (g)", Number(produto.peso || PESO_PADRAO_PRODUTO_GRAMAS || 10));
     criarCampoLeituraMapa(secaoDetalhes, "Lego", textoLegoMapa(produto.lego) || "por verificar");
     topo.appendChild(secaoDetalhes);
 
@@ -1374,10 +1374,10 @@ function preencherFormularioProdutoMapa(produto, modo = "editar") {
     campos.appendChild(secaoIdentificacao);
 
     const secaoDetalhes = criarSecaoEdicaoMapa("Detalhes", "mapas-produto-secao-detalhes");
+    criarInputEdicaoMapa(secaoDetalhes, "mapas-editar-stock", "Stock", Number(produto.stock || 0), "number", { required: true, min: 0, step: 1 });
     criarInputEdicaoMapa(secaoDetalhes, "mapas-editar-preco-compra", "preço compra", Number(produto.preco_compra || 0).toFixed(2), "number", { min: 0, step: "0.01" });
     criarInputEdicaoMapa(secaoDetalhes, "mapas-editar-preco", "preço venda", Number(produto.preco || 0).toFixed(2), "number", { required: true, min: 0, step: "0.01" });
     criarInputEdicaoMapa(secaoDetalhes, "mapas-editar-peso", "Peso (g)", Number(produto.peso || PESO_PADRAO_PRODUTO_GRAMAS || 10), "number", { required: true, min: 1, step: 1 });
-    criarInputEdicaoMapa(secaoDetalhes, "mapas-editar-stock", "Stock", Number(produto.stock || 0), "number", { required: true, min: 0, step: 1 });
     criarSelectEdicaoMapa(secaoDetalhes, "mapas-editar-lego", "Lego", textoLegoMapa(produto.lego), [
         { valor: "", texto: "por verificar" },
         { valor: "sim", texto: "sim" },
