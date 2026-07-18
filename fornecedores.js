@@ -548,9 +548,15 @@ function estadoPedidoFornecedorEhRecebida(estado) {
 }
 
 function deveConfirmarHistoricoPedidoFornecedor(estadoAnterior, estadoNovo) {
-    // Confirma historico ao sair de "A preparar" para Encomendada ou Recebida*
-    if (!estadoPedidoFornecedorEhAPreparar(estadoAnterior)) return false;
-    return estadoPedidoFornecedorEhEncomendada(estadoNovo) || estadoPedidoFornecedorEhRecebida(estadoNovo);
+    // Sempre sincroniza marcações ao passar para Encomendada / Recebida
+    // (inclui reaplicar depois de A preparar → Encomendada outra vez)
+    if (!(estadoPedidoFornecedorEhEncomendada(estadoNovo) || estadoPedidoFornecedorEhRecebida(estadoNovo))) {
+        return false;
+    }
+    if (normalizarEstadoPedidoFornecedor(estadoAnterior) === normalizarEstadoPedidoFornecedor(estadoNovo)) {
+        return false;
+    }
+    return true;
 }
 
 function passouParaEncomendadaDesdeAPreparar(estadoAnterior, estadoNovo) {
@@ -1143,14 +1149,17 @@ function formatarTextoHistoricoFornecedor(historico, estadoAtual = "") {
 
 function formatarResumoHistoricoFornecedor(historico, estadoAtual = "") {
     const lista = Array.isArray(historico) ? historico : [];
-    if (!lista.length) {
-        const estado = String(estadoAtual || "").trim().toUpperCase();
-        if (!estado) return "Disponivel";
-        if (estado === "OS") return "OS";
-        if (estado === "EX") return "EX";
+    const estado = String(estadoAtual || "").trim();
+    if (estado) {
+        const upper = estado.toUpperCase();
+        if (upper === "OS") return "OS";
+        if (upper === "EX") return "EX";
+        if (upper === "SOLICITADA" || upper === "SOLICITADO") return "Solicitada";
+        if (upper === "ENCOMENDADA" || upper === "ENCOMENDADO") return "Encomendada";
         if (/^-?\d+(?:[,.]\d+)?$/.test(estado)) return `Marcado no mapa: ${estado}`;
         return estado;
     }
+    if (!lista.length) return "Disponivel";
     const ultimo = lista[lista.length - 1];
     const rotulo = rotuloHistoricoFornecedor(ultimo.tipo);
     if (lista.length === 1) {
@@ -1189,16 +1198,26 @@ function normalizarMarcacaoFornecedor(valor) {
 function formatarValorFornecedorParaInput(valor) {
     if (valor && typeof valor === "object" && !Array.isArray(valor)) {
         const estado = String(valor.estado || "").trim();
-        if (!estado) return "";
-        const upper = estado.toUpperCase();
-        if (upper === "OS") return "OS";
-        if (upper === "EX") return "EX";
-        if (upper === "SOLICITADA" || upper === "SOLICITADO") return "Solicitada";
-        if (upper === "ENCOMENDADA" || upper === "ENCOMENDADO") return "Encomendada";
-        return estado;
+        if (estado) {
+            const upper = estado.toUpperCase();
+            if (upper === "OS") return "OS";
+            if (upper === "EX") return "EX";
+            if (upper === "SOLICITADA" || upper === "SOLICITADO") return "Solicitada";
+            if (upper === "ENCOMENDADA" || upper === "ENCOMENDADO") return "Encomendada";
+            return estado;
+        }
+        // Estado vazio: mostrar o último evento do histórico (encomendas antigas sem marcação atual)
+        const historico = obterHistoricoFornecedor(valor);
+        const ultimo = historico[historico.length - 1];
+        if (ultimo?.tipo) return rotuloHistoricoFornecedor(ultimo.tipo);
+        return "";
     }
     const marcacao = normalizarMarcacaoFornecedor(valor);
-    if (marcacao.tipo === "disponivel") return "";
+    if (marcacao.tipo === "disponivel") {
+        const ultimo = marcacao.historico[marcacao.historico.length - 1];
+        if (ultimo?.tipo) return rotuloHistoricoFornecedor(ultimo.tipo);
+        return "";
+    }
     if (marcacao.tipo === "os") return "OS";
     if (marcacao.tipo === "ex") return "EX";
     if (marcacao.tipo === "solicitada") return "Solicitada";
@@ -3492,12 +3511,17 @@ async function alterarEstadoPedidoFornecedor(id, estado) {
         if (deveConfirmarHistoricoPedidoFornecedor(estadoAnterior, atualizado.estado)) {
             try {
                 const atualizados = await sincronizarHistoricoPedidosFornecedor(atualizado.itens || [], atualizado.fornecedor, { modo: "confirmar" });
+                try {
+                    await carregarCatalogoFornecedores();
+                } catch (erroCatalogo) {
+                    console.warn("Catalogo nao recarregado apos sincronizar marcacoes.", erroCatalogo);
+                }
                 renderizarResultadosFornecedor();
                 renderizarPedidosFornecedores();
                 definirStatusFornecedor(
                     atualizados > 0
-                        ? `Estado da encomenda ${atualizado.codigo} atualizado. Histórico atualizado em ${atualizados} produto(s).`
-                        : `Estado da encomenda ${atualizado.codigo} atualizado.`
+                        ? `Estado da encomenda ${atualizado.codigo} atualizado. Marcação atualizada em ${atualizados} produto(s).`
+                        : `Estado da encomenda ${atualizado.codigo} atualizado, mas nenhuma marcação de produto foi alterada. Confirma se os itens têm quantidade/OS e existem no catálogo.`
                 );
                 return;
             } catch (erroHistorico) {
@@ -3631,14 +3655,23 @@ async function sincronizarHistoricoPedidosFornecedor(itens, fornecedorNome, opco
     );
     const agora = dataOsAgoraFornecedor();
     let atualizados = 0;
+    let semProduto = 0;
 
     for (const item of (itens || [])) {
         const quantidade = Math.max(0, Number(item?.quantidade || 0));
         const faltaOs = Math.max(0, Number(item?.falta_os || 0));
-        if (quantidade <= 0 && faltaOs <= 0) continue;
+        if (quantidade <= 0 && faltaOs <= 0 && String(item?.estado_fornecedor || "").trim().toUpperCase() !== "OS") {
+            continue;
+        }
 
-        const produtoAtual = obterProdutoParaPedidoFornecedor(item);
-        if (!produtoAtual?.id) continue;
+        let produtoAtual = obterProdutoParaPedidoFornecedor(item);
+        if (!produtoAtual?.id) {
+            semProduto += 1;
+            continue;
+        }
+
+        // Relê fornecedores frescos da memória (após updates anteriores neste loop)
+        produtoAtual = obterProdutoParaPedidoFornecedor(item) || produtoAtual;
 
         const anterior = mapaAnterior.get(chaveItemHistoricoPedidoFornecedor(item));
         const eraOs = itemPedidoEstavaOsFornecedor(anterior);
@@ -3698,7 +3731,7 @@ async function sincronizarHistoricoPedidosFornecedor(itens, fornecedorNome, opco
         fornecedores = { ...fornecedores, [chave]: atual };
 
         const { error } = await fornecedoresClient.rpc("atualizar_fornecedores_produto_admin", {
-            p_id: produtoAtual.id,
+            p_id: String(produtoAtual.id),
             p_fornecedores: fornecedores
         });
         if (error) throw error;
@@ -3706,6 +3739,10 @@ async function sincronizarHistoricoPedidosFornecedor(itens, fornecedorNome, opco
             String(produto.id) === String(produtoAtual.id) ? { ...produto, fornecedores } : produto
         );
         atualizados += 1;
+    }
+
+    if (semProduto > 0) {
+        console.warn(`Sincronização de marcações: ${semProduto} item(ns) sem produto no catálogo.`);
     }
 
     return atualizados;
