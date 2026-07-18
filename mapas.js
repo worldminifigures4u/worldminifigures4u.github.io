@@ -1240,7 +1240,6 @@ function preencherFichaProdutoMapa(produto) {
     ].forEach(([rotulo, ativo]) => criarBadgeLeituraMapa(flagsLista, rotulo, ativo));
     secaoIdentificacao.appendChild(flags);
     topo.appendChild(secaoIdentificacao);
-    campos.appendChild(topo);
 
     const secaoDetalhes = criarSecaoEdicaoMapa("Detalhes", "mapas-produto-secao-detalhes");
     criarCampoLeituraMapa(secaoDetalhes, "preço compra", `${formatarEuroMapa(produto.preco_compra)} €`);
@@ -1254,7 +1253,8 @@ function preencherFichaProdutoMapa(produto) {
     );
     criarCampoLeituraMapa(secaoDetalhes, "Tema", produto.tema || "");
     criarCampoLeituraMapa(secaoDetalhes, "Subtema", produto.subtema === "semsubtema" ? "" : (produto.subtema || ""));
-    campos.appendChild(secaoDetalhes);
+    topo.appendChild(secaoDetalhes);
+    campos.appendChild(topo);
 
     montarSecaoMediaLeituraMapa(campos, produto);
     montarSecaoHistoricoRececoesMapa(campos, produto);

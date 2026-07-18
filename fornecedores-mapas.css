@@ -1649,7 +1649,7 @@ body.pagina-mapas-admin > main.fornecedores-admin {
 
 .mapas-produto-ficha-topo {
     display: grid;
-    grid-template-columns: 180px minmax(0, 1fr);
+    grid-template-columns: 180px minmax(0, 1.1fr) minmax(0, 1fr);
     gap: 14px;
     align-items: stretch;
 }
@@ -1682,7 +1682,8 @@ body.pagina-mapas-admin > main.fornecedores-admin {
     text-align: center;
 }
 
-.mapas-produto-ficha-topo .mapas-produto-secao-identificacao {
+.mapas-produto-ficha-topo .mapas-produto-secao-identificacao,
+.mapas-produto-ficha-topo .mapas-produto-secao-detalhes {
     margin: 0;
 }
 
