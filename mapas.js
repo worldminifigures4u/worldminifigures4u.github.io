@@ -1293,7 +1293,10 @@ function criarSecaoEdicaoMapa(titulo, classe = "") {
 
 function garantirModalEdicaoProdutoMapa() {
     let modal = document.getElementById("mapas-produto-modal");
-    if (modal && !modal.querySelector(".mapas-produto-acoes")) {
+    if (modal && (
+        modal.querySelector(".mapas-produto-modal-fechar")
+        || !modal.querySelector(".mapas-produto-modal-topo #mapas-produto-acoes-ver")
+    )) {
         modal.remove();
         modal = null;
     }
@@ -1306,7 +1309,14 @@ function garantirModalEdicaoProdutoMapa() {
         <div class="mapas-produto-modal-dialog" role="dialog" aria-modal="true" aria-labelledby="mapas-produto-modal-titulo">
             <div class="mapas-produto-modal-topo">
                 <h3 id="mapas-produto-modal-titulo">Ficha do produto</h3>
-                <button type="button" class="mapas-produto-modal-fechar" aria-label="Fechar">×</button>
+                <div class="mapas-produto-acoes mapas-produto-acoes-topo" id="mapas-produto-acoes-ver">
+                    <button type="button" id="mapas-produto-fechar-ficha" class="wallapop-botao">Fechar</button>
+                    <button type="button" id="mapas-produto-passar-editar" class="wallapop-botao wallapop-botao-destaque">Editar produto</button>
+                </div>
+                <div class="mapas-produto-acoes mapas-produto-acoes-topo" id="mapas-produto-acoes-edicao" hidden>
+                    <button type="button" id="mapas-produto-cancelar" class="wallapop-botao">Cancelar</button>
+                    <button type="submit" form="mapas-produto-form" id="mapas-produto-guardar" class="wallapop-botao wallapop-botao-destaque">Guardar produto</button>
+                </div>
             </div>
             <form id="mapas-produto-form" class="mapas-produto-form">
                 <input type="hidden" id="mapas-produto-modo" value="ver">
@@ -1314,18 +1324,9 @@ function garantirModalEdicaoProdutoMapa() {
                 <input type="hidden" id="mapas-editar-sku-original">
                 <div class="mapas-produto-form-grid" id="mapas-produto-form-campos"></div>
                 <p class="fornecedores-status mapas-produto-status" id="mapas-produto-status" role="status"></p>
-                <div class="fornecedores-acoes mapas-produto-acoes" id="mapas-produto-acoes-ver">
-                    <button type="button" id="mapas-produto-fechar-ficha" class="wallapop-botao">Fechar</button>
-                    <button type="button" id="mapas-produto-passar-editar" class="wallapop-botao wallapop-botao-destaque">Editar produto</button>
-                </div>
-                <div class="fornecedores-acoes mapas-produto-acoes" id="mapas-produto-acoes-edicao" hidden>
-                    <button type="button" id="mapas-produto-cancelar" class="wallapop-botao">Cancelar</button>
-                    <button type="submit" id="mapas-produto-guardar" class="wallapop-botao wallapop-botao-destaque">Guardar produto</button>
-                </div>
             </form>
         </div>`;
     document.body.appendChild(modal);
-    modal.querySelector(".mapas-produto-modal-fechar")?.addEventListener("click", fecharEdicaoProdutoMapa);
     modal.querySelector("#mapas-produto-fechar-ficha")?.addEventListener("click", fecharEdicaoProdutoMapa);
     modal.querySelector("#mapas-produto-cancelar")?.addEventListener("click", () => {
         const id = modal.dataset.produtoId || document.getElementById("mapas-editar-id")?.value;

@@ -1578,30 +1578,8 @@ body.pagina-mapas-admin > main.fornecedores-admin {
 .mapas-produto-modal-topo h3 {
     margin: 0;
     color: #ffc400;
-}
-
-.mapas-produto-modal-fechar {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 34px;
-    min-width: 34px;
-    height: 34px;
-    padding: 0;
-    border: 0;
-    border-radius: 8px;
-    background: #ff4d4d;
-    color: #fff;
-    font-size: 22px;
-    font-weight: 800;
-    line-height: 1;
-    cursor: pointer;
-}
-
-.mapas-produto-modal-fechar:hover,
-.mapas-produto-modal-fechar:focus-visible {
-    background: #e04343;
-    outline: none;
+    min-width: 0;
+    flex: 1 1 auto;
 }
 
 .mapas-produto-acoes {
@@ -1613,6 +1591,11 @@ body.pagina-mapas-admin > main.fornecedores-admin {
     margin-top: 16px;
 }
 
+.mapas-produto-acoes-topo {
+    margin-top: 0;
+    flex: 0 0 auto;
+}
+
 .mapas-produto-acoes[hidden] {
     display: none !important;
 }
@@ -1621,6 +1604,13 @@ body.pagina-mapas-admin > main.fornecedores-admin {
     flex: 1 1 140px;
     min-height: 42px;
     margin: 0;
+}
+
+.mapas-produto-acoes-topo .wallapop-botao {
+    flex: 0 0 auto;
+    min-width: 7.5rem;
+    min-height: 38px;
+    white-space: nowrap;
 }
 
 .mapas-produto-form {
