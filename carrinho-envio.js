@@ -42,10 +42,14 @@ function calcularSubtotalCarrinho() {
 }
 
 function metodoEnvioSemRastreamento(id) {
+    const meta = typeof obterMetaMetodoEnvio === 'function' ? obterMetaMetodoEnvio(id) : null;
+    if (meta) return meta.registado !== true;
     return METODOS_ENVIO_SEM_RASTREAMENTO.has(id);
 }
 
 function metodoEnvioRegistado(id) {
+    const meta = typeof obterMetaMetodoEnvio === 'function' ? obterMetaMetodoEnvio(id) : null;
+    if (meta) return meta.registado === true;
     return METODOS_ENVIO_REGISTADOS.has(id);
 }
 
@@ -60,7 +64,7 @@ function metodoEnvioEmMao(id) {
 
 function obterAvisoMetodoEnvioSelecionado(metodoId) {
     if (metodoEnvioSemRastreamento(metodoId)) {
-        return 'Este método não inclui rastreamento. Para maior segurança, recomendamos CTT Registado ou InPost Registado.';
+        return 'Este método não inclui rastreamento. Para maior segurança, recomendamos um envio registado.';
     }
     if (metodoEnvioRegistado(metodoId)) {
         return 'Este método inclui rastreamento da encomenda.';
@@ -77,24 +81,19 @@ function mostrarBadgeRecomendadoEnvio(opcoes) {
 
 function obterRotuloOpcaoEnvio(opcao, opcoesVisiveis) {
     const preco = formatarEuro(valorPortesComIva(opcao.valor)) + ' €';
-    const recomendado = mostrarBadgeRecomendadoEnvio(opcoesVisiveis) && metodoEnvioRegistado(opcao.id);
+    const registado = opcao.registado === true || metodoEnvioRegistado(opcao.id);
+    const recomendado = mostrarBadgeRecomendadoEnvio(opcoesVisiveis) && registado;
+    const nome = opcao.nome
+        || (typeof obterMetaMetodoEnvio === 'function' ? obterMetaMetodoEnvio(opcao.id)?.nome_exibicao : '')
+        || opcao.id;
 
-    if (opcao.id === 'entrega_tomar') {
-        return { nome: 'Entrega em mão em Tomar', preco };
+    if (metodoEnvioEmMao(opcao.id)) {
+        return { nome: nome || 'Entrega em mão em Tomar', preco };
     }
-    if (opcao.id === 'ctt_normal') {
-        return { nome: 'CTT Normal', preco, subtitulo: 'Sem rastreamento' };
+    if (registado) {
+        return { nome, preco, badge: recomendado ? 'Recomendado' : '' };
     }
-    if (opcao.id === 'ctt_azul') {
-        return { nome: 'CTT Azul', preco, subtitulo: 'Sem rastreamento' };
-    }
-    if (opcao.id === 'ctt_registado') {
-        return { nome: 'CTT Registado', preco, badge: recomendado ? 'Recomendado' : '' };
-    }
-    if (opcao.id === 'inpost_registado') {
-        return { nome: 'InPost Registado', preco, badge: recomendado ? 'Recomendado' : '' };
-    }
-    return { nome: opcao.nome, preco };
+    return { nome, preco, subtitulo: 'Sem rastreamento' };
 }
 
 function criarOpcaoEnvioCheckout(opcao, selecionado, opcoesVisiveis) {

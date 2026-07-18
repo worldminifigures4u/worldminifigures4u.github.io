@@ -222,6 +222,222 @@ async function guardarPortesAdmin() {
     definirStatusPortes(`Guardado. ${atualizados} tarifas atualizadas. Opções desativadas deixam de aparecer ao cliente.`);
 }
 
+let portesMetodos = [];
+let portesMetodosOriginais = new Map();
+
+function slugifyMetodoId(valor) {
+    return String(valor || '')
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .toLowerCase()
+        .trim()
+        .replace(/[^a-z0-9]+/g, '_')
+        .replace(/^_+|_+$/g, '');
+}
+
+function metodoPortesAlterado(metodo) {
+    const original = portesMetodosOriginais.get(metodo.id);
+    if (!original) return false;
+    return original.nome_exibicao !== metodo.nome_exibicao
+        || Boolean(original.registado) !== Boolean(metodo.registado)
+        || Boolean(original.ativo) !== Boolean(metodo.ativo);
+}
+
+function renderizarMetodosPortes() {
+    const lista = document.getElementById('portes-metodos-lista');
+    if (!lista) return;
+    lista.replaceChildren();
+
+    if (!portesMetodos.length) {
+        const vazio = document.createElement('p');
+        vazio.textContent = 'Sem métodos. Executa supabase-portes-metodos.sql no Supabase.';
+        lista.appendChild(vazio);
+        return;
+    }
+
+    const tabela = document.createElement('table');
+    tabela.className = 'portes-tabela portes-metodos-tabela';
+    tabela.innerHTML = '<thead><tr><th>Ativo</th><th>ID</th><th>Nome no site</th><th>Registado</th></tr></thead>';
+    const tbody = document.createElement('tbody');
+
+    portesMetodos
+        .slice()
+        .sort((a, b) => (a.ordem || 0) - (b.ordem || 0) || String(a.id).localeCompare(String(b.id)))
+        .forEach((metodo) => {
+            const tr = document.createElement('tr');
+            if (metodoPortesAlterado(metodo)) tr.classList.add('portes-alterado');
+            if (!metodo.ativo) tr.classList.add('portes-inativo');
+
+            const tdAtivo = document.createElement('td');
+            tdAtivo.className = 'portes-ativo';
+            const checkAtivo = document.createElement('input');
+            checkAtivo.type = 'checkbox';
+            checkAtivo.checked = metodo.ativo !== false;
+            checkAtivo.addEventListener('change', () => {
+                metodo.ativo = checkAtivo.checked;
+                renderizarMetodosPortes();
+            });
+            tdAtivo.appendChild(checkAtivo);
+            tr.appendChild(tdAtivo);
+
+            const tdId = document.createElement('td');
+            tdId.className = 'portes-metodo';
+            tdId.textContent = metodo.id;
+            tr.appendChild(tdId);
+
+            const tdNome = document.createElement('td');
+            const inputNome = document.createElement('input');
+            inputNome.type = 'text';
+            inputNome.value = metodo.nome_exibicao || '';
+            inputNome.addEventListener('change', () => {
+                metodo.nome_exibicao = String(inputNome.value || '').trim() || metodo.id;
+                inputNome.value = metodo.nome_exibicao;
+                renderizarMetodosPortes();
+            });
+            tdNome.appendChild(inputNome);
+            tr.appendChild(tdNome);
+
+            const tdReg = document.createElement('td');
+            tdReg.className = 'portes-ativo';
+            const checkReg = document.createElement('input');
+            checkReg.type = 'checkbox';
+            checkReg.checked = metodo.registado === true;
+            checkReg.title = 'Com rastreamento no carrinho';
+            checkReg.addEventListener('change', () => {
+                metodo.registado = checkReg.checked;
+                renderizarMetodosPortes();
+            });
+            tdReg.appendChild(checkReg);
+            tr.appendChild(tdReg);
+
+            tbody.appendChild(tr);
+        });
+
+    tabela.appendChild(tbody);
+    lista.appendChild(tabela);
+}
+
+async function carregarMetodosPortesAdmin() {
+    const { data, error } = await portesClient
+        .from('portes_metodos')
+        .select('id, nome_exibicao, registado, ativo, ordem, updated_at')
+        .order('ordem');
+
+    if (error) {
+        definirStatusPortes('Erro ao carregar métodos: ' + (error.message || 'desconhecido')
+            + ' (executa supabase-portes-metodos.sql)');
+        portesMetodos = [];
+        renderizarMetodosPortes();
+        return;
+    }
+
+    portesMetodos = (data || []).map((metodo) => ({
+        ...metodo,
+        registado: metodo.registado === true,
+        ativo: metodo.ativo !== false
+    }));
+    portesMetodosOriginais = new Map(portesMetodos.map((metodo) => [metodo.id, {
+        nome_exibicao: metodo.nome_exibicao,
+        registado: metodo.registado,
+        ativo: metodo.ativo
+    }]));
+    if (typeof aplicarCatalogoMetodosEnvio === 'function') {
+        aplicarCatalogoMetodosEnvio(portesMetodos.filter((metodo) => metodo.ativo));
+    }
+    renderizarMetodosPortes();
+}
+
+async function guardarMetodosPortesAdmin() {
+    const alterados = portesMetodos
+        .filter((metodo) => metodoPortesAlterado(metodo))
+        .map((metodo) => ({
+            id: metodo.id,
+            nome_exibicao: metodo.nome_exibicao,
+            registado: metodo.registado === true,
+            ativo: metodo.ativo !== false,
+            ordem: metodo.ordem
+        }));
+
+    if (!alterados.length) return 0;
+
+    const { data, error } = await portesClient.rpc('guardar_portes_metodos_admin', {
+        p_linhas: alterados
+    });
+    if (error) throw error;
+    return data?.atualizados != null ? data.atualizados : alterados.length;
+}
+
+async function criarMetodoPortesAdmin(evento) {
+    evento.preventDefault();
+    const idInput = document.getElementById('novo-metodo-id');
+    const nomeInput = document.getElementById('novo-metodo-nome');
+    const registadoInput = document.getElementById('novo-metodo-registado');
+    const id = slugifyMetodoId(idInput?.value || '');
+    const nome = String(nomeInput?.value || '').trim();
+    const registado = registadoInput?.checked === true;
+
+    if (!id || !nome) {
+        definirStatusPortes('Indica ID e nome do método.');
+        return;
+    }
+
+    definirStatusPortes('A criar método...');
+    const { data, error } = await portesClient.rpc('criar_portes_metodo_admin', {
+        p_id: id,
+        p_nome_exibicao: nome,
+        p_registado: registado,
+        p_preco_inicial: 0
+    });
+    if (error) {
+        definirStatusPortes('Erro ao criar método: ' + (error.message || 'desconhecido'));
+        return;
+    }
+
+    if (idInput) idInput.value = '';
+    if (nomeInput) nomeInput.value = '';
+    if (registadoInput) registadoInput.checked = false;
+    if (typeof window.limparCachePortes === 'function') window.limparCachePortes();
+    await carregarMetodosPortesAdmin();
+    await carregarPortesAdmin();
+    definirStatusPortes(`Método "${nome}" criado. Tarifas criadas: ${data?.tarifas_criadas || 0} (inativas — ativa e define preços).`);
+}
+
+async function guardarTudoPortesAdmin() {
+    definirStatusPortes('A guardar...');
+    try {
+        const metodos = await guardarMetodosPortesAdmin();
+        const alteradas = portesLinhas
+            .filter((linha) => linhaPortesAlterada(linha))
+            .map((linha) => ({
+                id: linha.id,
+                preco: linha.preco,
+                nome_exibicao: linha.nome_exibicao,
+                ativo: linha.ativo !== false
+            }));
+
+        let tarifas = 0;
+        if (alteradas.length) {
+            const { data, error } = await portesClient.rpc('guardar_portes_tarifas_admin', {
+                p_linhas: alteradas
+            });
+            if (error) throw error;
+            tarifas = data?.atualizados != null ? data.atualizados : alteradas.length;
+        }
+
+        if (!metodos && !tarifas) {
+            definirStatusPortes('Não há alterações para guardar.');
+            return;
+        }
+
+        if (typeof window.limparCachePortes === 'function') window.limparCachePortes();
+        await carregarMetodosPortesAdmin();
+        await carregarPortesAdmin();
+        definirStatusPortes(`Guardado. Métodos: ${metodos || 0}. Tarifas: ${tarifas || 0}.`);
+    } catch (erro) {
+        definirStatusPortes('Erro ao guardar: ' + (erro.message || 'desconhecido'));
+    }
+}
+
 async function iniciarPainelPortes() {
     const bloqueio = document.getElementById('portes-bloqueio');
     const aplicacao = document.getElementById('portes-aplicacao');
@@ -249,12 +465,22 @@ async function iniciarPainelPortes() {
         botao.addEventListener('click', () => ativarTabPortes(botao.dataset.zona));
     });
     document.getElementById('btn-recarregar-portes')?.addEventListener('click', () => {
-        carregarPortesAdmin().catch(console.error);
+        Promise.all([carregarMetodosPortesAdmin(), carregarPortesAdmin()]).catch(console.error);
     });
     document.getElementById('btn-guardar-portes')?.addEventListener('click', () => {
-        guardarPortesAdmin().catch(console.error);
+        guardarTudoPortesAdmin().catch(console.error);
+    });
+    document.getElementById('form-criar-metodo-portes')?.addEventListener('submit', (evento) => {
+        criarMetodoPortesAdmin(evento).catch(console.error);
+    });
+    document.getElementById('novo-metodo-nome')?.addEventListener('blur', () => {
+        const idInput = document.getElementById('novo-metodo-id');
+        if (idInput && !idInput.value.trim()) {
+            idInput.value = slugifyMetodoId(document.getElementById('novo-metodo-nome')?.value || '');
+        }
     });
 
+    await carregarMetodosPortesAdmin();
     await carregarPortesAdmin();
 }
 

@@ -1,7 +1,16 @@
 // Tabelas de portes usadas pelo carrinho (fallback local + carga remota com cache).
-const PORTES_CACHE_KEY = 'figures-planet-portes-tarifas-v5';
+const PORTES_CACHE_KEY = 'figures-planet-portes-tarifas-v6';
 const PORTES_CACHE_TTL_MS = 6 * 60 * 60 * 1000;
 const PORTES_PESO_ABERTO_G = 999999;
+
+const METODOS_ENVIO_FALLBACK = [
+    { id: 'ctt_normal', nome_exibicao: 'CTT Normal', registado: false, ordem: 1 },
+    { id: 'ctt_azul', nome_exibicao: 'CTT Azul', registado: false, ordem: 2 },
+    { id: 'ctt_registado', nome_exibicao: 'CTT Registado', registado: true, ordem: 3 },
+    { id: 'inpost_registado', nome_exibicao: 'InPost Registado', registado: true, ordem: 4 }
+];
+
+let PORTES_METODOS = METODOS_ENVIO_FALLBACK.slice();
 
 const TABELA_PORTES_FALLBACK = {
     portugal: [
@@ -114,10 +123,34 @@ const ZONA_PORTES_POR_PAIS = {
 };
 
 const LIMITE_SUBTOTAL_ENVIO_SEM_RASTREAMENTO = 15;
-const METODOS_ENVIO_SEM_RASTREAMENTO = new Set(['ctt_normal', 'ctt_azul']);
-const METODOS_ENVIO_REGISTADOS = new Set(['ctt_registado', 'inpost_registado']);
+let METODOS_ENVIO_SEM_RASTREAMENTO = new Set(['ctt_normal', 'ctt_azul']);
+let METODOS_ENVIO_REGISTADOS = new Set(['ctt_registado', 'inpost_registado']);
 
 let promessaPortesRemotos = null;
+
+function aplicarCatalogoMetodosEnvio(metodos) {
+    const lista = (metodos && metodos.length) ? metodos : METODOS_ENVIO_FALLBACK;
+    PORTES_METODOS = lista.map((metodo) => ({
+        id: String(metodo.id || ''),
+        nome_exibicao: String(metodo.nome_exibicao || metodo.id || ''),
+        registado: metodo.registado === true,
+        ativo: metodo.ativo !== false,
+        ordem: Number(metodo.ordem || 0)
+    })).filter((metodo) => metodo.id);
+
+    METODOS_ENVIO_REGISTADOS = new Set(
+        PORTES_METODOS.filter((metodo) => metodo.registado).map((metodo) => metodo.id)
+    );
+    METODOS_ENVIO_SEM_RASTREAMENTO = new Set(
+        PORTES_METODOS.filter((metodo) => !metodo.registado).map((metodo) => metodo.id)
+    );
+}
+
+aplicarCatalogoMetodosEnvio(METODOS_ENVIO_FALLBACK);
+
+function obterMetaMetodoEnvio(metodoId) {
+    return PORTES_METODOS.find((metodo) => metodo.id === metodoId) || null;
+}
 
 function obterZonaPortesPorPais(paisEnvio) {
     return ZONA_PORTES_POR_PAIS[paisEnvio] || 'europa';
@@ -149,6 +182,8 @@ function montarTabelaPortesDeLinhas(linhas) {
             id: String(linha.metodo_id || ''),
             nome: String(linha.nome_exibicao || linha.metodo_id || ''),
             valor: Math.round(Number(linha.preco || 0) * 100) / 100,
+            registado: obterMetaMetodoEnvio(String(linha.metodo_id || ''))?.registado === true
+                || METODOS_ENVIO_REGISTADOS.has(String(linha.metodo_id || '')),
             _ordem: Number(linha.ordem || 0)
         });
     });
@@ -177,17 +212,19 @@ function lerCachePortes() {
         const dados = JSON.parse(bruto);
         if (!dados || !dados.tabela || !dados.guardadoEm) return null;
         if (Date.now() - Number(dados.guardadoEm) > PORTES_CACHE_TTL_MS) return null;
+        if (dados.metodos) aplicarCatalogoMetodosEnvio(dados.metodos);
         return dados.tabela;
     } catch (_) {
         return null;
     }
 }
 
-function guardarCachePortes(tabela) {
+function guardarCachePortes(tabela, metodos) {
     try {
         localStorage.setItem(PORTES_CACHE_KEY, JSON.stringify({
             guardadoEm: Date.now(),
-            tabela
+            tabela,
+            metodos: metodos || PORTES_METODOS
         }));
     } catch (_) {
         /* ignore quota */
@@ -229,21 +266,32 @@ async function carregarTabelaPortesRemota(forcar = false) {
     const client = await obterClienteSupabasePortes();
     if (!client) return TABELA_PORTES_POR_PESO;
 
-    const { data, error } = await client
-        .from('portes_tarifas')
-        .select('id, zona, peso_ate_g, metodo_id, nome_exibicao, preco, ativo, ordem, updated_at')
-        .eq('ativo', true)
-        .order('zona')
-        .order('peso_ate_g')
-        .order('ordem');
+    const [tarifasResposta, metodosResposta] = await Promise.all([
+        client
+            .from('portes_tarifas')
+            .select('id, zona, peso_ate_g, metodo_id, nome_exibicao, preco, ativo, ordem, updated_at')
+            .eq('ativo', true)
+            .order('zona')
+            .order('peso_ate_g')
+            .order('ordem'),
+        client
+            .from('portes_metodos')
+            .select('id, nome_exibicao, registado, ativo, ordem')
+            .eq('ativo', true)
+            .order('ordem')
+    ]);
 
-    if (error || !data || !data.length) {
+    if (!metodosResposta.error && metodosResposta.data?.length) {
+        aplicarCatalogoMetodosEnvio(metodosResposta.data);
+    }
+
+    if (tarifasResposta.error || !tarifasResposta.data || !tarifasResposta.data.length) {
         return TABELA_PORTES_POR_PESO;
     }
 
-    const montada = montarTabelaPortesDeLinhas(data);
+    const montada = montarTabelaPortesDeLinhas(tarifasResposta.data);
     if (montada && aplicarTabelaPortes(montada)) {
-        guardarCachePortes(montada);
+        guardarCachePortes(montada, PORTES_METODOS);
     }
     return TABELA_PORTES_POR_PESO;
 }
@@ -261,3 +309,5 @@ function garantirTabelaPortesCarregada(forcar = false) {
 window.limparCachePortes = limparCachePortes;
 window.garantirTabelaPortesCarregada = garantirTabelaPortesCarregada;
 window.montarTabelaPortesDeLinhas = montarTabelaPortesDeLinhas;
+window.aplicarCatalogoMetodosEnvio = aplicarCatalogoMetodosEnvio;
+window.obterMetaMetodoEnvio = obterMetaMetodoEnvio;

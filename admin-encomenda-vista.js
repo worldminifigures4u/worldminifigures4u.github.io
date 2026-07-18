@@ -98,10 +98,14 @@ window.AdminEncomendaVista = (function () {
 
     function envioExigeCodigoSeguimento(encomenda) {
         const metodoId = normalizarTextoEnvio(encomenda?.metodo_envio).replace(/\s+/g, "_");
+        if (typeof obterMetaMetodoEnvio === "function") {
+            const meta = obterMetaMetodoEnvio(metodoId);
+            if (meta) return meta.registado === true;
+        }
         if (metodoId === "ctt_registado" || metodoId === "inpost_registado") return true;
+        if (metodoId.includes("registado")) return true;
         const nome = normalizarTextoEnvio(encomenda?.metodo_envio_nome);
-        if (!nome.includes("registado")) return false;
-        return nome.includes("ctt") || nome.includes("inpost");
+        return nome.includes("registado");
     }
 
     function pedirCodigoSeguimento(encomenda) {

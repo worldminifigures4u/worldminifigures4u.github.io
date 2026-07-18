@@ -48,6 +48,82 @@
     color: #f7f7f7;
 }
 
+.portes-metodos {
+    margin: 0 0 1.25rem;
+    padding: 1rem;
+    border: 1px solid #252525;
+    border-radius: 8px;
+    background: #111;
+}
+
+.portes-metodos-topo h2 {
+    margin: 0 0 0.35rem;
+    font-size: 1.05rem;
+    color: #fff;
+}
+
+.portes-metodos-topo p {
+    margin: 0 0 0.9rem;
+    color: #aaa;
+    font-size: 0.92rem;
+}
+
+.portes-metodos-criar {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 0.7rem;
+    align-items: end;
+    margin-bottom: 1rem;
+}
+
+.portes-metodos-criar label {
+    display: grid;
+    gap: 0.35rem;
+    color: #cfcfcf;
+    font-size: 0.78rem;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+.portes-metodos-criar input[type="text"] {
+    height: 38px;
+    padding: 0 0.55rem;
+    border: 1px solid #343434;
+    border-radius: 6px;
+    background: #050505;
+    color: #fff;
+    font: inherit;
+    text-transform: none;
+    font-weight: 500;
+}
+
+.portes-metodos-check {
+    display: flex !important;
+    align-items: center;
+    gap: 0.5rem;
+    text-transform: none !important;
+    font-weight: 600 !important;
+    color: #ddd !important;
+    min-height: 38px;
+}
+
+.portes-metodos-check input {
+    width: 1.1rem;
+    height: 1.1rem;
+    accent-color: #ffc107;
+}
+
+.portes-metodos-lista .portes-tabela input[type="text"] {
+    width: min(100%, 18rem);
+    height: 38px;
+    padding: 0 0.55rem;
+    border: 1px solid #343434;
+    border-radius: 6px;
+    background: #050505;
+    color: #fff;
+    font: inherit;
+}
+
 .portes-acoes {
     display: flex;
     flex-wrap: wrap;
