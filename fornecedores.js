@@ -1535,6 +1535,12 @@ function produtoPassaFiltroFornecedor(produto, fornecedorMarcacao, filtro) {
     const valor = obterValorFornecedorProduto(produto, fornecedorMarcacao);
     const estado = classificarValorFornecedor(valor);
     if (filtro === "os-ou-ex") return estado.tipo === "os" || estado.tipo === "ex";
+    // Disponivel = sem OS/EX (inclui vazio, Encomendada e Solicitada)
+    if (filtro === "disponivel") {
+        return estado.tipo === "disponivel"
+            || estado.tipo === "encomendado"
+            || estado.tipo === "solicitada";
+    }
     return estado.tipo === filtro;
 }
 
