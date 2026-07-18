@@ -1224,11 +1224,11 @@ function preencherFichaProdutoMapa(produto) {
     flagsLista.className = "mapas-produto-leitura-badges mapas-produto-leitura-badges-vertical";
     secaoMarcas.appendChild(flagsLista);
     [
+        ["Ativo", produto.ativo !== false],
         ["Top", Boolean(String(produto.top || "").trim())],
         ["Arquivado", Boolean(produto.arquivado)],
         ["Descontinuado", Boolean(produto.descontinuado)],
-        ["Novidade", Boolean(produto.novidade)],
-        ["Ativo", produto.ativo !== false]
+        ["Novidade", Boolean(produto.novidade)]
     ].forEach(([rotulo, ativo]) => criarBadgeLeituraMapa(flagsLista, rotulo, ativo));
     topo.appendChild(secaoMarcas);
     campos.appendChild(topo);
