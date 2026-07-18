@@ -1222,7 +1222,8 @@ function preencherFichaProdutoMapa(produto) {
     criarCampoLeituraMapa(secaoIdentificacao, "Nome", produto.nome || "", { largo: true });
     criarCampoLeituraMapa(secaoIdentificacao, "Ref.", produto.referencia || "");
     criarCampoLeituraMapa(secaoIdentificacao, "SKU", produto.sku || "");
-    criarCampoLeituraMapa(secaoIdentificacao, "Lego", textoLegoMapa(produto.lego) || "por verificar");
+    criarCampoLeituraMapa(secaoIdentificacao, "Tema", produto.tema || "");
+    criarCampoLeituraMapa(secaoIdentificacao, "Subtema", produto.subtema === "semsubtema" ? "" : (produto.subtema || ""));
     const flags = document.createElement("div");
     flags.className = "mapas-produto-campo mapas-produto-campo-largo mapas-produto-leitura-flags";
     const flagsRotulo = document.createElement("span");
@@ -1251,8 +1252,7 @@ function preencherFichaProdutoMapa(produto) {
         Number(produto.stock || 0),
         { classeValor: Number(produto.stock || 0) <= 0 ? "sem-stock" : "" }
     );
-    criarCampoLeituraMapa(secaoDetalhes, "Tema", produto.tema || "");
-    criarCampoLeituraMapa(secaoDetalhes, "Subtema", produto.subtema === "semsubtema" ? "" : (produto.subtema || ""));
+    criarCampoLeituraMapa(secaoDetalhes, "Lego", textoLegoMapa(produto.lego) || "por verificar");
     topo.appendChild(secaoDetalhes);
     campos.appendChild(topo);
 
@@ -1389,11 +1389,8 @@ function preencherFormularioProdutoMapa(produto, modo = "editar") {
     criarInputEdicaoMapa(secaoIdentificacao, "mapas-editar-nome", "Nome", produto.nome || "", "text", { required: true, largo: true });
     criarInputEdicaoMapa(secaoIdentificacao, "mapas-editar-referencia", "Ref.", produto.referencia || "");
     criarInputEdicaoMapa(secaoIdentificacao, "mapas-editar-sku", "SKU", produto.sku || "", "text", { required: true });
-    criarSelectEdicaoMapa(secaoIdentificacao, "mapas-editar-lego", "Lego", textoLegoMapa(produto.lego), [
-        { valor: "", texto: "por verificar" },
-        { valor: "sim", texto: "sim" },
-        { valor: "não", texto: "não" }
-    ]);
+    criarInputEdicaoMapa(secaoIdentificacao, "mapas-editar-tema", "Tema", produto.tema || "", "text", { required: true });
+    criarInputEdicaoMapa(secaoIdentificacao, "mapas-editar-subtema", "Subtema", produto.subtema === "semsubtema" ? "" : (produto.subtema || ""));
     criarCheckboxEdicaoMapa(secaoIdentificacao, "mapas-editar-top", "Top", Boolean(String(produto.top || "").trim()));
     criarCheckboxEdicaoMapa(secaoIdentificacao, "mapas-editar-arquivado", "Arquivado", Boolean(produto.arquivado));
     criarCheckboxEdicaoMapa(secaoIdentificacao, "mapas-editar-descontinuado", "Descontinuado", Boolean(produto.descontinuado));
@@ -1405,8 +1402,11 @@ function preencherFormularioProdutoMapa(produto, modo = "editar") {
     criarInputEdicaoMapa(secaoDetalhes, "mapas-editar-preco", "preço venda", Number(produto.preco || 0).toFixed(2), "number", { required: true, min: 0, step: "0.01" });
     criarInputEdicaoMapa(secaoDetalhes, "mapas-editar-peso", "Peso (g)", Number(produto.peso || PESO_PADRAO_PRODUTO_GRAMAS || 10), "number", { required: true, min: 1, step: 1 });
     criarInputEdicaoMapa(secaoDetalhes, "mapas-editar-stock", "Stock", Number(produto.stock || 0), "number", { required: true, min: 0, step: 1 });
-    criarInputEdicaoMapa(secaoDetalhes, "mapas-editar-tema", "Tema", produto.tema || "", "text", { required: true });
-    criarInputEdicaoMapa(secaoDetalhes, "mapas-editar-subtema", "Subtema", produto.subtema === "semsubtema" ? "" : (produto.subtema || ""));
+    criarSelectEdicaoMapa(secaoDetalhes, "mapas-editar-lego", "Lego", textoLegoMapa(produto.lego), [
+        { valor: "", texto: "por verificar" },
+        { valor: "sim", texto: "sim" },
+        { valor: "não", texto: "não" }
+    ]);
     criarCheckboxEdicaoMapa(secaoDetalhes, "mapas-editar-ativo", "Produto ativo", produto.ativo !== false);
     campos.appendChild(secaoDetalhes);
 
