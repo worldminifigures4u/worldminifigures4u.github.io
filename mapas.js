@@ -1152,33 +1152,14 @@ function criarBadgeLeituraMapa(secao, rotulo, ativo) {
 }
 
 function montarSecaoMediaLeituraMapa(campos, produto) {
-    const imagens = normalizarImagensMapa(produto.imagens);
-    const extras = imagens.slice(1);
     const observacoes = String(produto.observacoes || "").trim();
-    if (!extras.length && !observacoes) return;
+    if (!observacoes) return;
 
-    const secao = criarSecaoEdicaoMapa(
-        extras.length ? "Mais fotos e observações" : "Observações",
-        "mapas-produto-secao-media"
-    );
-    if (extras.length) {
-        const preview = document.createElement("div");
-        preview.className = "preview-imagens-admin mapas-produto-preview-imagens mapas-produto-preview-leitura";
-        extras.forEach((url, indice) => {
-            const figura = document.createElement("figure");
-            figura.className = "preview-imagem-admin";
-            const img = document.createElement("img");
-            img.src = url;
-            img.alt = `Foto ${indice + 2}`;
-            figura.appendChild(img);
-            preview.appendChild(figura);
-        });
-        secao.appendChild(preview);
-    }
-
-    if (observacoes) {
-        criarCampoLeituraMapa(secao, "Observações", observacoes, { largo: true });
-    }
+    const secao = criarSecaoEdicaoMapa("Observações", "mapas-produto-secao-media");
+    const texto = document.createElement("p");
+    texto.className = "mapas-produto-observacoes-leitura";
+    texto.textContent = observacoes;
+    secao.appendChild(texto);
     campos.appendChild(secao);
 }
 
