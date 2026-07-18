@@ -1172,6 +1172,25 @@ body.pagina-encomendas-admin{
             box-shadow:0 0 0 2px rgba(41, 182, 246, 0.2);
         }
 
+        .admin-encomenda-seguimento-input{
+            width:100%;
+            max-width:220px;
+            padding:4px 8px;
+            border:1px solid #3a4a55;
+            border-radius:6px;
+            background:#151515;
+            color:#e8e8e8;
+            font-size:14px;
+            font:inherit;
+            box-sizing:border-box;
+        }
+
+        .admin-encomenda-seguimento-input:focus{
+            outline:none;
+            border-color:#ffc400;
+            box-shadow:0 0 0 2px rgba(255, 196, 0, 0.18);
+        }
+
         .admin-encomenda-total-input:disabled{
             opacity:.7;
         }

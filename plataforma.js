@@ -2249,6 +2249,8 @@ async function carregarEncomendaPlataformaPorCodigo(codigo) {
         atualizarOpcoesEnvioPlataforma();
         document.getElementById('plataforma-metodo-envio').value = encomenda.metodo_envio || '';
     }
+    const campoSeguimento = document.getElementById('plataforma-codigo-seguimento');
+    if (campoSeguimento) campoSeguimento.value = encomenda.codigo_seguimento || '';
 
     guardarItensWallapop();
     mostrarEdicaoPlataforma(encomendaPlataformaEmEdicao);
@@ -2297,6 +2299,8 @@ function novaEncomendaPlataforma() {
     document.getElementById('wallapop-nome-cliente').value = '';
     document.getElementById('plataforma-link-perfil').value = '';
     limparDadosClientePlataforma();
+    const campoSeguimento = document.getElementById('plataforma-codigo-seguimento');
+    if (campoSeguimento) campoSeguimento.value = '';
     perfilExternoDetetado = null;
     fichaClientePlataformaAtual = null;
     atualizarPerfilExternoPlataforma();
@@ -2418,6 +2422,20 @@ async function registarEncomendaWallapop() {
         wallapopRegistoConcluido = true;
         const codigo = data.encomenda?.codigo_encomenda || obterCodigoEncomendaAtual();
         let avisoPerfil = '';
+
+        const encomendaId = String(data.encomenda?.id || encomendaPlataformaEmEdicao?.id || '');
+        const codigoSeguimento = document.getElementById('plataforma-codigo-seguimento')?.value.trim() || '';
+        if (encomendaId) {
+            const { error: erroSeguimento } = await wallapopClient
+                .from('encomendas')
+                .update({ codigo_seguimento: codigoSeguimento || null })
+                .eq('id', encomendaId);
+            if (erroSeguimento) {
+                console.error('Erro ao guardar código de seguimento:', erroSeguimento);
+                avisoPerfil += ' A encomenda foi guardada, mas o código de envio não ficou atualizado.';
+            }
+        }
+
         if (linkPerfil) {
             const associacao = await wallapopClient.rpc('associar_perfil_encomenda_admin', {
                 p_encomenda_id: String(data.encomenda?.id || encomendaPlataformaEmEdicao?.id),
@@ -2456,6 +2474,8 @@ async function registarEncomendaWallapop() {
         document.getElementById('wallapop-nome-encomenda').value = '';
         document.getElementById('wallapop-nome-cliente').value = '';
         document.getElementById('plataforma-link-perfil').value = '';
+        const campoSeguimentoLimpar = document.getElementById('plataforma-codigo-seguimento');
+        if (campoSeguimentoLimpar) campoSeguimentoLimpar.value = '';
         const listaProdutos = document.getElementById('plataforma-lista-produtos');
         if (listaProdutos) listaProdutos.value = '';
         const previaLista = document.getElementById('plataforma-lista-previa');

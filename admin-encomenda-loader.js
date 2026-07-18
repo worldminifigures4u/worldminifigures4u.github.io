@@ -21,7 +21,7 @@
         if (!promessaVista) {
             promessaVista = carregarScript('morada-formato.js?v=20260713-morada-formatada')
                 .then(function () {
-                    return carregarScript('admin-encomenda-vista.js?v=20260717-inpost-seguimento');
+                    return carregarScript('admin-encomenda-vista.js?v=20260719-seguimento-edit');
                 });
         }
         return promessaVista;

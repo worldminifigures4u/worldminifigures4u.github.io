@@ -127,10 +127,9 @@ window.AdminEncomendaVista = (function () {
 
     async function guardarCodigoSeguimento(encomenda, codigo) {
         const codigoLimpo = String(codigo || "").trim();
-        if (!codigoLimpo) throw new Error("Código de seguimento em falta.");
         const { data, error } = await obterClient()
             .from("encomendas")
-            .update({ codigo_seguimento: codigoLimpo })
+            .update({ codigo_seguimento: codigoLimpo || null })
             .eq("id", String(encomenda.id))
             .select("id, codigo_seguimento")
             .single();
@@ -141,6 +140,51 @@ window.AdminEncomendaVista = (function () {
             );
         }
         return data;
+    }
+
+    function criarLinhaSeguimentoEditavel(encomenda) {
+        const linha = criarElemento("div", "admin-encomenda-detalhe-linha admin-encomenda-detalhe-linha-seguimento");
+        linha.appendChild(criarElemento("strong", "", "Seguimento"));
+        const input = document.createElement("input");
+        input.type = "text";
+        input.className = "admin-encomenda-seguimento-input";
+        input.autocomplete = "off";
+        input.spellcheck = false;
+        input.placeholder = "Código de envio";
+        input.title = "Código de envio / seguimento";
+        let valorGuardado = String(encomenda.codigo_seguimento || "").trim();
+        input.value = valorGuardado;
+        input.addEventListener("click", evento => evento.stopPropagation());
+        input.addEventListener("keydown", evento => evento.stopPropagation());
+
+        function temAlteracao() {
+            return String(input.value || "").trim() !== valorGuardado;
+        }
+
+        function reverter() {
+            input.value = valorGuardado;
+        }
+
+        async function guardar() {
+            const codigo = String(input.value || "").trim();
+            if (codigo === valorGuardado) return true;
+            try {
+                const guardado = await guardarCodigoSeguimento(encomenda, codigo);
+                const novo = String(guardado?.codigo_seguimento || "").trim();
+                valorGuardado = novo;
+                input.value = novo;
+                sincronizarEncomendaNaLista(encomenda, { codigo_seguimento: novo || null });
+                hooks.definirStatus(novo ? `Código de envio atualizado: ${novo}.` : "Código de envio removido.");
+                return true;
+            } catch (error) {
+                reverter();
+                hooks.definirStatus("Erro ao guardar o código de envio: " + detalheErro(error), true);
+                return false;
+            }
+        }
+
+        linha.appendChild(input);
+        return { elemento: linha, temAlteracao, reverter, guardar };
     }
 
     function detalheErro(error) {
@@ -1347,12 +1391,14 @@ window.AdminEncomendaVista = (function () {
         detalhes.hidden = false;
         let gestaoEncomenda = null;
         let controloNotas = null;
+        let controloSeguimento = null;
         let controloTotal = null;
         let gravarTudo = null;
 
         function temAlteracoesPendentes() {
             return Boolean(
                 controloNotas?.temAlteracoesPendentes?.()
+                || controloSeguimento?.temAlteracao?.()
                 || gestaoEncomenda?.temAnexosPendentes?.()
                 || controloTotal?.temAlteracao?.()
             );
@@ -1360,6 +1406,7 @@ window.AdminEncomendaVista = (function () {
 
         function reverterAlteracoesPendentes() {
             gestaoEncomenda?.reverterAnexos?.();
+            controloSeguimento?.reverter?.();
             controloTotal?.reverter?.();
         }
 
@@ -1370,6 +1417,9 @@ window.AdminEncomendaVista = (function () {
 
             if (controloNotas?.temAlteracoesPendentes?.()) {
                 ok = (await controloNotas.guardar()) && ok;
+            }
+            if (ok && controloSeguimento?.temAlteracao?.()) {
+                ok = (await controloSeguimento.guardar()) && ok;
             }
             if (ok && gestaoEncomenda?.temAnexosPendentes?.()) {
                 ok = (await gestaoEncomenda.enviarAnexosPendentes()) && ok;
@@ -1424,10 +1474,11 @@ window.AdminEncomendaVista = (function () {
         colunaContacto.append(
             criarLinhaDetalhe("E-mail", encomenda.email_cliente),
             criarLinhaDetalhe("Telemóvel", encomenda.telefone_cliente),
-            criarLinhaDetalhe("Envio", encomenda.metodo_envio_nome || encomenda.metodo_envio),
-            ...(encomenda.codigo_seguimento
-                ? [criarLinhaDetalhe("Seguimento", encomenda.codigo_seguimento)]
-                : []),
+            criarLinhaDetalhe("Envio", encomenda.metodo_envio_nome || encomenda.metodo_envio)
+        );
+        controloSeguimento = criarLinhaSeguimentoEditavel(encomenda);
+        colunaContacto.append(
+            controloSeguimento.elemento,
             criarLinhaDetalhe("Portes", formatarEuro(encomenda.portes)),
             criarLinhaDetalhe("Pagamento", encomenda.metodo_pagamento)
         );
