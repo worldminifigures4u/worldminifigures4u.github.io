@@ -1643,6 +1643,10 @@ body.pagina-mapas-admin > main.fornecedores-admin {
     background: #101010;
 }
 
+.mapas-produto-secao-identificacao {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
 .mapas-produto-secao-media {
     grid-template-columns: 1fr;
 }
