@@ -748,9 +748,22 @@ document.getElementById('pesquisa-figura-encomendas-admin').addEventListener('in
 document.getElementById('filtro-estado-encomendas-admin').addEventListener('change', renderizarEncomendasAdmin);
 document.getElementById('admin-imagem-modal-fechar').addEventListener('click', fecharImagemProdutoEncomenda);
 document.getElementById('admin-cliente-fechar').addEventListener('click', fecharFichaClienteAdmin);
-document.getElementById('admin-cliente-modal').addEventListener('click', evento => {
-    if (evento.target === evento.currentTarget) fecharFichaClienteAdmin();
-});
+(function ligarFechoFundoFichaCliente() {
+    const modal = document.getElementById('admin-cliente-modal');
+    if (!modal) return;
+    let pointerDownNoFundo = false;
+    modal.addEventListener('pointerdown', (evento) => {
+        pointerDownNoFundo = evento.target === modal;
+    });
+    modal.addEventListener('pointercancel', () => {
+        pointerDownNoFundo = false;
+    });
+    modal.addEventListener('click', (evento) => {
+        if (evento.target === modal && pointerDownNoFundo) fecharFichaClienteAdmin();
+        pointerDownNoFundo = false;
+    });
+    modal.querySelector('.admin-cliente-dialogo')?.addEventListener('click', (evento) => evento.stopPropagation());
+})();
 document.getElementById('admin-imagem-modal').addEventListener('click', evento => {
     if (evento.target === evento.currentTarget) fecharImagemProdutoEncomenda();
 });

@@ -531,15 +531,29 @@
         if (typeof opcoes.formatarData === 'function') formatarData = opcoes.formatarData;
     }
 
+    function ligarFechoPorFundoModal(modal, fechar) {
+        let pointerDownNoFundo = false;
+        modal.addEventListener('pointerdown', (evento) => {
+            pointerDownNoFundo = evento.target === modal;
+        });
+        modal.addEventListener('pointercancel', () => {
+            pointerDownNoFundo = false;
+        });
+        modal.addEventListener('click', (evento) => {
+            if (evento.target === modal && pointerDownNoFundo) fechar();
+            pointerDownNoFundo = false;
+        });
+        const dialogo = modal.querySelector('.admin-cliente-dialogo');
+        dialogo?.addEventListener('click', (evento) => evento.stopPropagation());
+    }
+
     function initEventos() {
         if (eventosConfigurados) return;
         const modal = document.getElementById('admin-cliente-modal');
         const fechar = document.getElementById('admin-cliente-fechar');
         if (!modal || !fechar) return;
         fechar.addEventListener('click', fecharFichaClienteAdmin);
-        modal.addEventListener('click', (evento) => {
-            if (evento.target === evento.currentTarget) fecharFichaClienteAdmin();
-        });
+        ligarFechoPorFundoModal(modal, fecharFichaClienteAdmin);
         document.addEventListener('keydown', (evento) => {
             if (evento.key === 'Escape' && !modal.hidden) fecharFichaClienteAdmin();
         });
