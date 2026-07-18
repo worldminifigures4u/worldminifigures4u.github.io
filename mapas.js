@@ -1293,10 +1293,7 @@ function criarSecaoEdicaoMapa(titulo, classe = "") {
 
 function garantirModalEdicaoProdutoMapa() {
     let modal = document.getElementById("mapas-produto-modal");
-    if (modal && (
-        modal.querySelector(".mapas-produto-modal-fechar")
-        || !modal.querySelector(".mapas-produto-modal-topo #mapas-produto-acoes-ver")
-    )) {
+    if (modal && modal.dataset.acoesLayout !== "editar-fechar-topo") {
         modal.remove();
         modal = null;
     }
@@ -1304,14 +1301,15 @@ function garantirModalEdicaoProdutoMapa() {
     modal = document.createElement("div");
     modal.id = "mapas-produto-modal";
     modal.className = "mapas-produto-modal";
+    modal.dataset.acoesLayout = "editar-fechar-topo";
     modal.hidden = true;
     modal.innerHTML = `
         <div class="mapas-produto-modal-dialog" role="dialog" aria-modal="true" aria-labelledby="mapas-produto-modal-titulo">
             <div class="mapas-produto-modal-topo">
                 <h3 id="mapas-produto-modal-titulo">Ficha do produto</h3>
                 <div class="mapas-produto-acoes mapas-produto-acoes-topo" id="mapas-produto-acoes-ver">
-                    <button type="button" id="mapas-produto-fechar-ficha" class="wallapop-botao">Fechar</button>
                     <button type="button" id="mapas-produto-passar-editar" class="wallapop-botao wallapop-botao-destaque">Editar produto</button>
+                    <button type="button" id="mapas-produto-fechar-ficha" class="wallapop-botao">Fechar</button>
                 </div>
                 <div class="mapas-produto-acoes mapas-produto-acoes-topo" id="mapas-produto-acoes-edicao" hidden>
                     <button type="button" id="mapas-produto-cancelar" class="wallapop-botao">Cancelar</button>
