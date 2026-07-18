@@ -21,26 +21,28 @@
 
 .portes-aviso {
     margin: 0 0 1.15rem;
-    padding: 0.9rem 1rem;
-    border: 1px solid #ffc107;
+    padding: 0.75rem 0.9rem;
+    border: 1px solid #2a2a2a;
     border-radius: 8px;
-    background: rgba(255, 193, 7, 0.12);
-    color: #ffe9a8;
+    background: #111;
+    color: #aaa;
+    font-size: 0.9rem;
 }
 
 .portes-aviso strong {
-    color: #ffc107;
+    color: #ddd;
+    font-weight: 700;
 }
 
 .portes-aviso ul {
-    margin: 0.55rem 0 0;
-    padding-left: 1.2rem;
+    margin: 0.45rem 0 0;
+    padding-left: 1.15rem;
 }
 
 .portes-aviso li {
-    margin: 0.25rem 0;
+    margin: 0.2rem 0;
     line-height: 1.4;
-    color: #f7f7f7;
+    color: #b8b8b8;
 }
 
 .portes-metodos {
