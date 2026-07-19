@@ -1,12 +1,12 @@
 /* Estilos específicos da página Carrinho. */
 .vista-carrinho.ativa{
-    max-width:760px;
+    max-width:960px;
     margin:0 auto;
 }
 
 .vista-carrinho .carrinho{
     width:100%;
-    max-width:860px;
+    max-width:960px;
     margin:0 auto;
     box-sizing:border-box;
 }
@@ -31,16 +31,20 @@
             display:flex;
             justify-content:space-between;
             align-items:center;
-            gap:12px;
+            gap:18px;
             border-bottom:1px solid #333;
             padding-bottom:10px;
-            margin-bottom:12px;
+            margin-bottom:18px;
         }
 
         .carrinho-topo h2{
             margin:0;
             border-bottom:0;
             padding-bottom:0;
+            color:var(--cor-texto-principal, #fff);
+            font-size:30px;
+            line-height:1.1;
+            font-weight:700;
         }
 
         .btn-continuar-comprar{
@@ -48,7 +52,7 @@
             color:#000;
             border:0;
             border-radius:8px;
-            padding:10px 12px;
+            padding:9px 12px;
             font-weight:900;
             text-decoration:none;
             white-space:nowrap;
@@ -64,7 +68,7 @@
             overflow-y:auto;
             display:flex;
             flex-direction:column;
-            gap:10px;
+            gap:8px;
         }
 
         .lista-carrinho--preparar{
@@ -103,27 +107,37 @@
         }
 
         .linha-carrinho{
-            background:#181818;
-            border:1px solid #303030;
+            background:#111;
+            border:1px solid #333;
             border-radius:10px;
-            padding:10px;
+            padding:8px 10px;
             display:flex;
             justify-content:space-between;
             align-items:center;
-            gap:10px;
+            gap:8px;
+            min-width:0;
+        }
+
+        .linha-carrinho:hover{
+            border-color:#ffc107;
         }
 
         .imagem-carrinho{
-            width:74px;
-            height:74px;
-            flex:0 0 74px;
+            width:58px;
+            height:58px;
+            flex:0 0 58px;
             object-fit:contain;
             background:#222;
-            border:1px solid #333;
+            border:0;
             border-radius:8px;
         }
 
-        .linha-carrinho strong{ color:#ffc107; }
+        .linha-carrinho strong{
+            color:#fff;
+            font-size:16px;
+            line-height:1.25;
+            font-weight:700;
+        }
 
         .info-carrinho{
             min-width:0;
