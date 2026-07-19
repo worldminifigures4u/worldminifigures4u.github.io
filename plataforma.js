@@ -516,6 +516,8 @@ function atualizarModoPlataforma() {
     document.getElementById('label-cliente-plataforma').textContent = 'Nome de utilizador';
     document.getElementById('wallapop-nome-cliente').placeholder = `Nome ou utilizador no ${plataforma}`;
     document.getElementById('plataforma-envio').hidden = !olx;
+    const blocoSeguimento = document.getElementById('plataforma-seguimento-bloco');
+    if (blocoSeguimento) blocoSeguimento.hidden = wallapop;
     document.getElementById('wallapop-folha-escala').hidden = !wallapop;
     document.getElementById('plataforma-resumo').hidden = true;
     document.getElementById('plataforma-resumo-titulo').textContent = plataforma === 'OLX'
@@ -2424,8 +2426,8 @@ async function registarEncomendaWallapop() {
         let avisoPerfil = '';
 
         const encomendaId = String(data.encomenda?.id || encomendaPlataformaEmEdicao?.id || '');
-        const codigoSeguimento = document.getElementById('plataforma-codigo-seguimento')?.value.trim() || '';
-        if (encomendaId) {
+        if (encomendaId && obterPlataformaAtual() !== 'Wallapop') {
+            const codigoSeguimento = document.getElementById('plataforma-codigo-seguimento')?.value.trim() || '';
             const { error: erroSeguimento } = await wallapopClient
                 .from('encomendas')
                 .update({ codigo_seguimento: codigoSeguimento || null })

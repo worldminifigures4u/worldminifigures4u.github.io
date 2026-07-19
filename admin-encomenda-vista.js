@@ -97,6 +97,7 @@ window.AdminEncomendaVista = (function () {
     }
 
     function envioExigeCodigoSeguimento(encomenda) {
+        if (origemEncomenda(encomenda) === "wallapop") return false;
         const metodoId = normalizarTextoEnvio(encomenda?.metodo_envio).replace(/\s+/g, "_");
         if (typeof obterMetaMetodoEnvio === "function") {
             const meta = obterMetaMetodoEnvio(metodoId);
@@ -106,6 +107,10 @@ window.AdminEncomendaVista = (function () {
         if (metodoId.includes("registado")) return true;
         const nome = normalizarTextoEnvio(encomenda?.metodo_envio_nome);
         return nome.includes("registado");
+    }
+
+    function mostrarCampoSeguimento(encomenda) {
+        return origemEncomenda(encomenda) !== "wallapop";
     }
 
     function pedirCodigoSeguimento(encomenda) {
@@ -1510,11 +1515,11 @@ window.AdminEncomendaVista = (function () {
             criarLinhaDetalhe("Telemóvel", encomenda.telefone_cliente),
             criarLinhaDetalhe("Envio", encomenda.metodo_envio_nome || encomenda.metodo_envio)
         );
-        controloSeguimento = criarLinhaSeguimentoEditavel(encomenda);
-        colunaContacto.append(
-            controloSeguimento.elemento,
-            criarLinhaDetalhe("Pagamento", encomenda.metodo_pagamento)
-        );
+        if (mostrarCampoSeguimento(encomenda)) {
+            controloSeguimento = criarLinhaSeguimentoEditavel(encomenda);
+            colunaContacto.appendChild(controloSeguimento.elemento);
+        }
+        colunaContacto.appendChild(criarLinhaDetalhe("Pagamento", encomenda.metodo_pagamento));
 
         if (encomenda.referencia_externa) {
             colunaContacto.appendChild(criarLinhaDetalhe("Referência externa", encomenda.referencia_externa));
