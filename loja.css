@@ -329,7 +329,7 @@
             border:none;
             border-radius:12px;
             padding:10px 12px;
-            margin-bottom:6px;
+            margin:0;
             text-align:left;
             cursor:pointer;
             font-weight:bold;
@@ -339,6 +339,12 @@
             background:var(--cor-acao-principal, #ffc107);
             color:#000;
             font-weight:700;
+        }
+
+        .lista-temas{
+            display:flex;
+            flex-direction:column;
+            gap:6px;
         }
 
         .grupo-subtemas{
@@ -392,7 +398,10 @@
         }
 
         .linha-tema{
-            margin-bottom:6px;
+            display:flex;
+            flex-direction:column;
+            gap:6px;
+            margin:0;
         }
 
         .btn-tema-com-subtemas{
@@ -413,7 +422,9 @@
         }
 
         .grupo-subtemas.aberto{
-            display:block;
+            display:flex;
+            flex-direction:column;
+            gap:6px;
         }
 
         .estado-vitrine{
