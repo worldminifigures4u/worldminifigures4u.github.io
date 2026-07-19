@@ -1003,7 +1003,7 @@ body.pagina-mapas-admin > main.fornecedores-admin {
     max-width: 100%;
     margin: 0 auto;
     table-layout: auto;
-    font-size: 13px;
+    font-size: 14.3px;
 }
 
 .mapas-produtos-tabela th {
@@ -1024,8 +1024,8 @@ body.pagina-mapas-admin > main.fornecedores-admin {
 }
 
 .pagina-mapas-admin .mapas-produtos-tabela th {
-    padding: 7px 10px;
-    font-size: 11px;
+    padding: 8px 11px;
+    font-size: 12.1px;
     letter-spacing: 0.02em;
     white-space: nowrap;
 }
@@ -1039,7 +1039,7 @@ body.pagina-mapas-admin > main.fornecedores-admin {
 }
 
 .pagina-mapas-admin .mapas-produtos-tabela td {
-    padding: 5px 10px;
+    padding: 6px 11px;
     white-space: nowrap;
 }
 
@@ -1077,7 +1077,7 @@ body.pagina-mapas-admin > main.fornecedores-admin {
 
 .pagina-mapas-admin .mapas-celula-nome {
     display: inline-block;
-    max-width: 280px;
+    max-width: 308px;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -1108,7 +1108,7 @@ body.pagina-mapas-admin > main.fornecedores-admin {
 .mapas-col-qtd { width: 82px; }
 
 .pagina-mapas-admin .mapas-col-foto {
-    width: 48px;
+    width: 53px;
     padding: 4px;
     text-align: center;
     vertical-align: middle;
@@ -1116,8 +1116,8 @@ body.pagina-mapas-admin > main.fornecedores-admin {
 
 .pagina-mapas-admin .mapas-produto-foto {
     display: block;
-    width: 36px;
-    height: 36px;
+    width: 40px;
+    height: 40px;
     margin: 0 auto;
     object-fit: contain;
     background: #1a1a1a;
@@ -1126,8 +1126,8 @@ body.pagina-mapas-admin > main.fornecedores-admin {
 
 .pagina-mapas-admin .mapas-produto-foto-vazia {
     display: block;
-    width: 36px;
-    height: 36px;
+    width: 40px;
+    height: 40px;
     margin: 0 auto;
     border-radius: 4px;
     background: #222;
@@ -1137,12 +1137,12 @@ body.pagina-mapas-admin > main.fornecedores-admin {
 /* Larguras naturais no Mapas: colunas juntas e centradas */
 .pagina-mapas-admin .mapas-col-nome {
     width: auto;
-    min-width: 180px;
-    max-width: 300px;
+    min-width: 198px;
+    max-width: 330px;
 }
 .pagina-mapas-admin .mapas-col-ref {
     width: auto;
-    min-width: 88px;
+    min-width: 97px;
 }
 .pagina-mapas-admin .mapas-col-stock,
 .pagina-mapas-admin .mapas-col-lego,
@@ -1160,7 +1160,7 @@ body.pagina-mapas-admin > main.fornecedores-admin {
 .pagina-mapas-admin .mapas-col-tema,
 .pagina-mapas-admin .mapas-col-subtema {
     width: auto;
-    max-width: 180px;
+    max-width: 198px;
     overflow: hidden;
     text-overflow: ellipsis;
 }
