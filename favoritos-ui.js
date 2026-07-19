@@ -13,7 +13,7 @@ function definirFavoritosVazio(mensagem) {
 
     const figura = document.createElement('img');
     figura.className = 'favoritos-vazio-figura';
-    figura.src = 'img/sem-imagem.png?v=20260719-silhueta';
+    figura.src = 'img/sem-imagem.png?v=20260719-sem-texto';
     figura.alt = '';
     figura.width = 120;
     figura.height = 120;
@@ -122,7 +122,7 @@ function criarCardFavoritoCliente(produto) {
     imagem.alt = produto.nome || 'Produto favorito';
     imagem.loading = 'eager';
     imagem.decoding = 'sync';
-    imagem.onerror = () => { imagem.src = 'img/sem-imagem.png?v=20260719-silhueta'; };
+    imagem.onerror = () => { imagem.src = 'img/sem-imagem.png?v=20260719-sem-texto'; };
 
     const nome = document.createElement('strong');
     nome.textContent = produto.nome || 'Produto';

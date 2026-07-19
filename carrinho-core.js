@@ -152,8 +152,8 @@ function atualizarCarrinho(opcoes = {}) {
         imagem.src = otimizarImagemCloudinary(imagemSrc, 180);
         imagem.alt = item.nome;
         imagem.onerror = () => {
-            if (imagem.src.indexOf('img/sem-imagem.png?v=20260719-silhueta') === -1) {
-                imagem.src = 'img/sem-imagem.png?v=20260719-silhueta';
+            if (imagem.src.indexOf('img/sem-imagem.png?v=20260719-sem-texto') === -1) {
+                imagem.src = 'img/sem-imagem.png?v=20260719-sem-texto';
             }
         };
 
