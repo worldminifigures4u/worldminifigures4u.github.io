@@ -1,12 +1,12 @@
 /* Estilos específicos da página Carrinho. */
 .vista-carrinho.ativa{
-    max-width:960px;
+    max-width:720px;
     margin:0 auto;
 }
 
 .vista-carrinho .carrinho{
     width:100%;
-    max-width:960px;
+    max-width:720px;
     margin:0 auto;
     box-sizing:border-box;
 }
