@@ -183,8 +183,35 @@ window.AdminEncomendaVista = (function () {
             }
         }
 
+        let ignorarBlur = false;
+        let promessaGravacao = null;
+
+        async function gravarAoSair() {
+            if (!temAlteracao()) return true;
+            if (promessaGravacao) return promessaGravacao;
+            promessaGravacao = guardar().finally(() => {
+                promessaGravacao = null;
+            });
+            return promessaGravacao;
+        }
+
+        function ignorarProximoBlur() {
+            ignorarBlur = true;
+        }
+
+        input.addEventListener("blur", () => {
+            window.setTimeout(async () => {
+                if (ignorarBlur) {
+                    ignorarBlur = false;
+                    return;
+                }
+                if (linha.contains(document.activeElement)) return;
+                await gravarAoSair();
+            }, 0);
+        });
+
         linha.appendChild(input);
-        return { elemento: linha, temAlteracao, reverter, guardar };
+        return { elemento: linha, temAlteracao, reverter, guardar, gravarAoSair, ignorarProximoBlur };
     }
 
     function detalheErro(error) {
@@ -1441,6 +1468,7 @@ window.AdminEncomendaVista = (function () {
 
         async function prepararSaidaEncomenda() {
             await controloNotas?.gravarAoSair?.();
+            await controloSeguimento?.gravarAoSair?.();
             reverterAlteracoesPendentes();
         }
 
@@ -1508,6 +1536,7 @@ window.AdminEncomendaVista = (function () {
         gravarTudo.type = "button";
         gravarTudo.addEventListener("mousedown", () => {
             controloNotas?.ignorarProximoBlur?.();
+            controloSeguimento?.ignorarProximoBlur?.();
         });
         gravarTudo.addEventListener("click", evento => {
             evento.stopPropagation();
