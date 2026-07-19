@@ -99,6 +99,7 @@ window.AdminEncomendaVista = (function () {
     function envioExigeCodigoSeguimento(encomenda) {
         if (origemEncomenda(encomenda) === "wallapop") return false;
         const metodoId = normalizarTextoEnvio(encomenda?.metodo_envio).replace(/\s+/g, "_");
+        if (metodoId === "entrega_tomar") return false;
         if (typeof obterMetaMetodoEnvio === "function") {
             const meta = obterMetaMetodoEnvio(metodoId);
             if (meta) return meta.registado === true;
@@ -106,11 +107,17 @@ window.AdminEncomendaVista = (function () {
         if (metodoId === "ctt_registado" || metodoId === "inpost_registado") return true;
         if (metodoId.includes("registado")) return true;
         const nome = normalizarTextoEnvio(encomenda?.metodo_envio_nome);
+        if (nome.includes("entrega em mao")) return false;
         return nome.includes("registado");
     }
 
     function mostrarCampoSeguimento(encomenda) {
-        return origemEncomenda(encomenda) !== "wallapop";
+        if (origemEncomenda(encomenda) === "wallapop") return false;
+        const metodoId = normalizarTextoEnvio(encomenda?.metodo_envio).replace(/\s+/g, "_");
+        if (metodoId === "entrega_tomar") return false;
+        const nome = normalizarTextoEnvio(encomenda?.metodo_envio_nome);
+        if (nome.includes("entrega em mao") || nome.includes("entrega em mão")) return false;
+        return true;
     }
 
     function pedirCodigoSeguimento(encomenda) {

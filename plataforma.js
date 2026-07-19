@@ -434,8 +434,28 @@ function calcularPesoPlataforma() {
     ), 0);
 }
 
+const ENTREGA_MAO_PLATAFORMA = {
+    id: 'entrega_tomar',
+    nome: 'Entrega em mão em Tomar',
+    valor: 0
+};
+
+function metodoEnvioEntregaMaoPlataforma(id) {
+    return String(id || '').trim().toLowerCase().replace(/\s+/g, '_') === 'entrega_tomar';
+}
+
+function obterOpcaoEnvioPadraoPlataforma(plataforma) {
+    if (plataforma === 'Wallapop') return { id: 'wallapop', nome: 'Wallapop', valor: 0 };
+    if (plataforma === 'Todocoleccion') return { id: 'todocoleccion', nome: 'Todocoleccion', valor: 0 };
+    return null;
+}
+
 function obterOpcoesEnvioPlataforma(regiao, peso) {
-    if (peso <= 0) return [];
+    const plataforma = obterPlataformaAtual();
+    const padrao = obterOpcaoEnvioPadraoPlataforma(plataforma);
+    if (padrao) return [padrao, { ...ENTREGA_MAO_PLATAFORMA }];
+
+    if (peso <= 0) return [{ ...ENTREGA_MAO_PLATAFORMA }];
     const zonaEnvio = typeof obterZonaPortesPorPais === 'function'
         ? obterZonaPortesPorPais(regiao)
         : (regiao === 'espanha' ? 'espanha' : (regiao === 'portugal' ? 'portugal' : 'europa'));
@@ -443,8 +463,9 @@ function obterOpcoesEnvioPlataforma(regiao, peso) {
         ? TABELA_PORTES_POR_PESO
         : {};
     const zona = tabela[zonaEnvio] || tabela.portugal || [];
-    if (!zona.length) return [];
-    return (zona.find(linha => peso <= linha.ate) || zona[zona.length - 1]).opcoes;
+    if (!zona.length) return [{ ...ENTREGA_MAO_PLATAFORMA }];
+    const opcoes = (zona.find(linha => peso <= linha.ate) || zona[zona.length - 1]).opcoes || [];
+    return [...opcoes, { ...ENTREGA_MAO_PLATAFORMA }];
 }
 
 function calcularPortesPlataforma(valorBase) {
@@ -460,10 +481,19 @@ function obterEnvioPlataforma() {
     return { regiao, peso, ...opcao, portes: calcularPortesPlataforma(opcao.valor) };
 }
 
+function atualizarVisibilidadeSeguimentoPlataforma() {
+    const blocoSeguimento = document.getElementById('plataforma-seguimento-bloco');
+    if (!blocoSeguimento) return;
+    const plataforma = obterPlataformaAtual();
+    const metodo = document.getElementById('plataforma-metodo-envio')?.value || '';
+    blocoSeguimento.hidden = plataforma === 'Wallapop' || metodoEnvioEntregaMaoPlataforma(metodo);
+}
+
 function atualizarOpcoesEnvioPlataforma() {
     const select = document.getElementById('plataforma-metodo-envio');
     if (!select) return;
     const anterior = select.value;
+    const plataforma = obterPlataformaAtual();
     const regiao = document.getElementById('plataforma-pais-envio')?.value || 'portugal';
     const opcoes = obterOpcoesEnvioPlataforma(regiao, calcularPesoPlataforma());
     select.replaceChildren();
@@ -473,8 +503,14 @@ function atualizarOpcoesEnvioPlataforma() {
         option.textContent = `${opcao.nome} - ${formatarEuroWallapop(calcularPortesPlataforma(opcao.valor))} \u20ac`;
         select.appendChild(option);
     });
-    const registado = opcoes.find(opcao => opcao.id === 'ctt_registado');
-    select.value = opcoes.some(opcao => opcao.id === anterior) ? anterior : (registado?.id || opcoes[0]?.id || '');
+    let preferido = '';
+    if (plataforma === 'OLX') {
+        preferido = opcoes.find(opcao => opcao.id === 'ctt_registado')?.id || '';
+    } else {
+        preferido = obterOpcaoEnvioPadraoPlataforma(plataforma)?.id || '';
+    }
+    select.value = opcoes.some(opcao => opcao.id === anterior) ? anterior : (preferido || opcoes[0]?.id || '');
+    atualizarVisibilidadeSeguimentoPlataforma();
     atualizarResumoPlataforma();
 }
 
@@ -500,7 +536,7 @@ function atualizarContagemFigurasPlataforma() {
 function atualizarResumoPlataforma() {
     const subtotal = calcularSubtotalPlataforma();
     const envio = obterEnvioPlataforma();
-    const portes = obterPlataformaAtual() === 'OLX' ? envio.portes : 0;
+    const portes = envio.portes;
     const peso = document.getElementById('plataforma-peso');
     if (peso) peso.textContent = `Peso estimado: ${envio.peso}g`;
     document.getElementById('plataforma-subtotal').textContent = `${formatarEuroWallapop(subtotal)} \u20ac`;
@@ -515,9 +551,7 @@ function atualizarModoPlataforma() {
     const olx = plataforma === 'OLX';
     document.getElementById('label-cliente-plataforma').textContent = 'Nome de utilizador';
     document.getElementById('wallapop-nome-cliente').placeholder = `Nome ou utilizador no ${plataforma}`;
-    document.getElementById('plataforma-envio').hidden = !olx;
-    const blocoSeguimento = document.getElementById('plataforma-seguimento-bloco');
-    if (blocoSeguimento) blocoSeguimento.hidden = wallapop;
+    document.getElementById('plataforma-envio').hidden = false;
     document.getElementById('wallapop-folha-escala').hidden = !wallapop;
     document.getElementById('plataforma-resumo').hidden = true;
     document.getElementById('plataforma-resumo-titulo').textContent = plataforma === 'OLX'
@@ -534,8 +568,7 @@ function atualizarModoPlataforma() {
         ? 'Ao guardar, ser\u00e3o criados o PNG e o TXT dentro da pasta da encomenda.'
         : 'Ao guardar, escolhe a pasta de destino. Dentro dela ser\u00e1 criada uma pasta com o nome da encomenda.';
     marcarWallapopPorRegistar();
-    if (olx) atualizarOpcoesEnvioPlataforma();
-    atualizarResumoPlataforma();
+    atualizarOpcoesEnvioPlataforma();
 }
 
 function normalizarTextoWallapop(valor) {
@@ -1440,8 +1473,7 @@ function renderizarSelecionadosWallapop() {
         vazio.textContent = 'A lista está vazia.';
         contentor.appendChild(vazio);
     }
-    if (obterPlataformaAtual() === 'OLX') atualizarOpcoesEnvioPlataforma();
-    else atualizarResumoPlataforma();
+    atualizarOpcoesEnvioPlataforma();
     atualizarContagemFigurasPlataforma();
 }
 
@@ -2248,9 +2280,17 @@ async function carregarEncomendaPlataformaPorCodigo(codigo) {
 
     if (encomenda.origem === 'OLX') {
         document.getElementById('plataforma-pais-envio').value = encomenda.regiao_envio || 'portugal';
-        atualizarOpcoesEnvioPlataforma();
-        document.getElementById('plataforma-metodo-envio').value = encomenda.metodo_envio || '';
     }
+    atualizarOpcoesEnvioPlataforma();
+    const metodoGuardado = encomenda.metodo_envio
+        || (encomenda.origem === 'Wallapop' ? 'wallapop'
+            : (encomenda.origem === 'Todocoleccion' ? 'todocoleccion' : ''));
+    const selectMetodo = document.getElementById('plataforma-metodo-envio');
+    if (selectMetodo && metodoGuardado && [...selectMetodo.options].some(opcao => opcao.value === metodoGuardado)) {
+        selectMetodo.value = metodoGuardado;
+    }
+    atualizarVisibilidadeSeguimentoPlataforma();
+    atualizarResumoPlataforma();
     const campoSeguimento = document.getElementById('plataforma-codigo-seguimento');
     if (campoSeguimento) campoSeguimento.value = encomenda.codigo_seguimento || '';
 
@@ -2365,7 +2405,7 @@ async function registarEncomendaWallapop() {
         return;
     }
 
-    const envio = plataforma === 'OLX' ? obterEnvioPlataforma() : { regiao: '', id: '', nome: '', portes: 0 };
+    const envio = obterEnvioPlataforma();
     const dadosCliente = obterDadosClientePlataforma();
     const total = calcularSubtotalPlataforma() + envio.portes;
     const naoReporStock = encomendaPlataformaEmEdicao
@@ -2426,7 +2466,8 @@ async function registarEncomendaWallapop() {
         let avisoPerfil = '';
 
         const encomendaId = String(data.encomenda?.id || encomendaPlataformaEmEdicao?.id || '');
-        if (encomendaId && obterPlataformaAtual() !== 'Wallapop') {
+        const metodoEnvio = obterEnvioPlataforma().id;
+        if (encomendaId && obterPlataformaAtual() !== 'Wallapop' && !metodoEnvioEntregaMaoPlataforma(metodoEnvio)) {
             const codigoSeguimento = document.getElementById('plataforma-codigo-seguimento')?.value.trim() || '';
             const { error: erroSeguimento } = await wallapopClient
                 .from('encomendas')
@@ -2620,6 +2661,7 @@ document.getElementById('plataforma-link-perfil').addEventListener('input', () =
 document.getElementById('plataforma-pais-envio').addEventListener('change', atualizarOpcoesEnvioPlataforma);
 document.getElementById('plataforma-metodo-envio').addEventListener('change', () => {
     marcarWallapopPorRegistar();
+    atualizarVisibilidadeSeguimentoPlataforma();
     atualizarResumoPlataforma();
 });
 window.addEventListener('load', iniciarWallapopAdmin);
