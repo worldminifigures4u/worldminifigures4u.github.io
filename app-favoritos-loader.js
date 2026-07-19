@@ -8,7 +8,7 @@
 
         promessaAppFavoritos = new Promise((resolve, reject) => {
             const script = document.createElement('script');
-            script.src = 'app-favoritos.js?v=20260711-favoritos-unico';
+            script.src = 'app-favoritos.js?v=20260719-favoritos-persist';
             script.defer = true;
             script.onload = () => resolve();
             script.onerror = () => reject(new Error('Falha ao carregar app-favoritos.js'));

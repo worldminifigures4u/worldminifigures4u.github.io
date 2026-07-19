@@ -108,6 +108,24 @@ function obterChaveRenderFavoritos(ids = obterFavoritosIds()) {
     return ids.map(String).filter(Boolean).sort().join('|');
 }
 
+function limparFavoritosAnonimosLocais() {
+    const chaveAnonima = obterChaveFavoritos();
+    localStorage.removeItem(chaveAnonima);
+    localStorage.removeItem(obterChaveCacheFavoritos(chaveAnonima));
+}
+
+function removerFavoritoDaChaveLocal(chaveStorage, id) {
+    const chave = normalizarIdFavorito(id);
+    if (!chave || !chaveStorage) return;
+    const restantes = carregarFavoritosLocal(chaveStorage).filter(item => item !== chave);
+    localStorage.setItem(chaveStorage, JSON.stringify(restantes));
+    const cache = carregarCacheFavoritos(chaveStorage);
+    if (cache[chave]) {
+        delete cache[chave];
+        guardarCacheFavoritos(cache, chaveStorage);
+    }
+}
+
 function carregarFavoritosUtilizador(userId = '') {
     const chaveAnterior = favoritosChaveAtual;
     const idsAnteriores = obterChaveRenderFavoritos(obterFavoritosIds());
@@ -118,6 +136,8 @@ function carregarFavoritosUtilizador(userId = '') {
     if (userId && favoritosAnonimos.length) {
         guardarFavoritosLocal();
         mesclarCacheFavoritosAnonimos(userId);
+        // Evita que favoritos anónimos voltem a aparecer após remoção na conta.
+        limparFavoritosAnonimosLocais();
     }
     atualizarBotoesFavoritos();
 
@@ -159,6 +179,9 @@ function alternarFavoritoProduto(produto) {
     if (ativo) {
         favoritosProdutos.delete(id);
         removerCacheFavoritoProduto(id);
+        if (favoritosChaveAtual !== obterChaveFavoritos()) {
+            removerFavoritoDaChaveLocal(obterChaveFavoritos(), id);
+        }
     } else {
         favoritosProdutos.add(id);
         atualizarCacheFavoritoProduto(produto);
@@ -181,6 +204,9 @@ function removerFavoritoProduto(id) {
     favoritosProdutos.delete(chave);
     guardarFavoritosLocal();
     removerCacheFavoritoProduto(chave);
+    if (favoritosChaveAtual !== obterChaveFavoritos()) {
+        removerFavoritoDaChaveLocal(obterChaveFavoritos(), chave);
+    }
     atualizarBotoesFavoritos();
     if (typeof removerCardFavoritoCliente === 'function' && document.getElementById('lista-favoritos-cliente')) {
         removerCardFavoritoCliente(chave);
