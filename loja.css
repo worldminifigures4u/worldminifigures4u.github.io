@@ -264,16 +264,21 @@
         }
 
         .categoria{
-            width:92%;
-            margin:0 auto 8px;
-            color:#b8c0cc;
-            font-size:11px;
-            font-weight:700;
+            display:inline-block;
+            width:auto;
+            max-width:88%;
+            box-sizing:border-box;
+            margin:0 0 8px 4%;
+            padding:4px 10px;
+            border-radius:999px;
+            border:1px solid rgba(255, 193, 7, 0.42);
+            background:rgba(255, 193, 7, 0.12);
+            color:#ffc107;
+            font-size:10px;
+            font-weight:800;
             text-transform:uppercase;
-            letter-spacing:0.4px;
-            background:none;
-            border:none;
-            padding:0;
+            letter-spacing:0.55px;
+            line-height:1.2;
         }
 
         .subcategoria{
