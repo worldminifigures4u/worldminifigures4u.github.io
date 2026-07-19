@@ -111,7 +111,7 @@ function criarCardFavoritoCliente(produto) {
     imagem.alt = produto.nome || 'Produto favorito';
     imagem.loading = 'eager';
     imagem.decoding = 'sync';
-    imagem.onerror = () => { imagem.src = 'img/sem-imagem.png'; };
+    imagem.onerror = () => { imagem.src = 'img/sem-imagem.svg?v=20260719'; };
 
     const nome = document.createElement('strong');
     nome.textContent = produto.nome || 'Produto';

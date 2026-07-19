@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Sem imagem">
+  <rect width="512" height="512" fill="#1a1a1a"/>
+  <g fill="#ffc107" transform="translate(176 118)">
+    <rect x="58" y="0" width="44" height="18" rx="6"/>
+    <circle cx="80" cy="78" r="58"/>
+    <path d="M28 148h104c18 0 32 14 32 32v78H-4v-78c0-18 14-32 32-32z"/>
+    <rect x="-28" y="168" width="36" height="58" rx="16"/>
+    <rect x="152" y="168" width="36" height="58" rx="16"/>
+    <path d="M20 258h52v78c0 14-10 26-24 26h-4c-14 0-24-12-24-26v-78z"/>
+    <path d="M88 258h52v78c0 14-10 26-24 26h-4c-14 0-24-12-24-26v-78z"/>
+  </g>
+  <text x="256" y="430" text-anchor="middle" fill="#ffffff" font-family="Arial, Helvetica, sans-serif" font-size="28" font-weight="700">Sem imagem</text>
+</svg>

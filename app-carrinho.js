@@ -15,11 +15,11 @@ function obterImagemAtualCarrinho(item, produtoCompleto) {
         ? obterImagemPrincipalProduto(produtoCompleto)
         : '';
 
-    if (imagemAtual && imagemAtual !== 'img/sem-imagem.png') {
+    if (imagemAtual && imagemAtual !== 'img/sem-imagem.svg?v=20260719') {
         return imagemAtual;
     }
 
-    return item?.imagem || 'img/sem-imagem.png';
+    return item?.imagem || 'img/sem-imagem.svg?v=20260719';
 }
 
 async function garantirProdutosCarrinhoNoCatalogo() {
