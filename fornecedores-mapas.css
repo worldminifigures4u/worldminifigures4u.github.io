@@ -1095,6 +1095,7 @@ body.pagina-mapas-admin > main.fornecedores-admin {
 .mapas-col-preco { width: 70px; }
 .mapas-col-sku { width: 70px; }
 .mapas-col-top { width: 64px; }
+.mapas-col-ativo { width: 70px; }
 .mapas-col-arquivado { width: 96px; }
 .mapas-col-descontinuado { width: 112px; }
 .mapas-col-novidade { width: 90px; }
@@ -1149,6 +1150,7 @@ body.pagina-mapas-admin > main.fornecedores-admin {
 .pagina-mapas-admin .mapas-col-sku,
 .pagina-mapas-admin .mapas-col-top,
 .pagina-mapas-admin .mapas-col-peso,
+.pagina-mapas-admin .mapas-col-ativo,
 .pagina-mapas-admin .mapas-col-arquivado,
 .pagina-mapas-admin .mapas-col-descontinuado,
 .pagina-mapas-admin .mapas-col-novidade,
@@ -1170,6 +1172,7 @@ body.pagina-mapas-admin > main.fornecedores-admin {
 .mapas-col-preco,
 .mapas-col-sku,
 .mapas-col-top,
+.mapas-col-ativo,
 .mapas-col-arquivado,
 .mapas-col-descontinuado,
 .mapas-col-novidade,

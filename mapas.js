@@ -11,6 +11,7 @@ const MAPAS_COLUNAS = [
     { chave: "lego", rotulo: "lego", classe: "mapas-col-lego" },
     { chave: "sku", rotulo: "sku", classe: "mapas-col-sku" },
     { chave: "top", rotulo: "top", classe: "mapas-col-top" },
+    { chave: "ativo", rotulo: "ativo", classe: "mapas-col-ativo" },
     { chave: "arquivado", rotulo: "arq.", classe: "mapas-col-arquivado", titulo: "arquivado" },
     { chave: "descontinuado", rotulo: "desc.", classe: "mapas-col-descontinuado", titulo: "descontinuado" },
     { chave: "novidade", rotulo: "nov.", classe: "mapas-col-novidade", titulo: "novidade" },
@@ -247,6 +248,7 @@ function produtoPassaFiltroStockMapa(produto, filtro) {
 
 function valorOrdenacaoMapa(produto, coluna) {
     if (coluna === "preco" || coluna === "preco_compra" || coluna === "stock" || coluna === "peso") return Number(produto[coluna] || 0);
+    if (coluna === "ativo") return produto.ativo !== false ? 1 : 0;
     if (coluna === "arquivado" || coluna === "descontinuado" || coluna === "novidade") return valorBooleanoMapa(produto[coluna]) ? 1 : 0;
     return String(produto[coluna] || "");
 }
@@ -358,6 +360,7 @@ function criarMiniaturaProdutoMapa(produto) {
 
 function valorCelulaMapa(produto, coluna) {
     if (coluna.chave === "preco" || coluna.chave === "preco_compra") return formatarEuroMapa(produto[coluna.chave]);
+    if (coluna.chave === "ativo") return produto.ativo !== false ? "sim" : "";
     if (coluna.chave === "arquivado" || coluna.chave === "descontinuado" || coluna.chave === "novidade") return textoBooleanoMapa(produto[coluna.chave]);
     if (coluna.chave === "lego") return textoLegoMapa(produto.lego);
     if (coluna.chave === "subtema") return produto.subtema === "semsubtema" ? "" : produto.subtema;
