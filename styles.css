@@ -26,6 +26,31 @@ body{
             padding-top:var(--cabecalho-offset, 112px);
         }
 
+        @font-face{
+            font-family:"Nunito";
+            font-style:normal;
+            font-weight:700;
+            font-display:swap;
+            src:url("fonts/nunito-700.woff2") format("woff2");
+        }
+
+        @font-face{
+            font-family:"Nunito";
+            font-style:normal;
+            font-weight:800;
+            font-display:swap;
+            src:url("fonts/nunito-800.woff2") format("woff2");
+        }
+
+        /* Tipografia arredondada nos nomes de produto (cliente) */
+        body[data-page="loja"] .produto-card h3,
+        body[data-page="favoritos"] .favorito-detalhes strong,
+        body[data-page="carrinho"] .linha-carrinho strong{
+            font-family:"Nunito", Arial, Helvetica, sans-serif;
+            font-weight:800;
+            letter-spacing:-0.01em;
+        }
+
         /* Atmosfera suave só nas páginas de cliente */
         body[data-page="loja"],
         body[data-page="favoritos"],
