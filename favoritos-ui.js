@@ -7,9 +7,28 @@ function definirFavoritosVazio(mensagem) {
     if (!lista) return;
     lista.classList.remove('favoritos-lista--preparar');
     lista.replaceChildren();
-    const vazio = document.createElement('p');
+
+    const vazio = document.createElement('div');
     vazio.className = 'favoritos-vazio';
-    vazio.textContent = mensagem;
+
+    const figura = document.createElement('img');
+    figura.className = 'favoritos-vazio-figura';
+    figura.src = 'img/sem-imagem.png?v=20260719-silhueta';
+    figura.alt = '';
+    figura.width = 120;
+    figura.height = 120;
+    figura.decoding = 'async';
+
+    const texto = document.createElement('p');
+    texto.className = 'favoritos-vazio-texto';
+    texto.textContent = mensagem || 'Ainda não tens favoritos guardados.';
+
+    const dica = document.createElement('p');
+    dica.className = 'favoritos-vazio-dica';
+    dica.textContent = 'Guarda as minifiguras que queres acompanhar.';
+
+    vazio.append(figura, texto, dica);
+
     const acoes = document.createElement('div');
     acoes.className = 'favoritos-vazio-acoes';
     const continuar = document.createElement('a');
