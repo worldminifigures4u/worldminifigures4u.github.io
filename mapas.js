@@ -614,7 +614,7 @@ function atualizarPreviewImagensEdicaoMapa() {
         item.title = "Arraste para alterar a ordem";
 
         const imagem = document.createElement("img");
-        imagem.src = otimizar(url, 240);
+        imagem.src = otimizar(url, 360);
         imagem.alt = `Imagem ${index + 1}`;
         imagem.loading = "lazy";
         imagem.onerror = () => item.classList.add("oculto");
