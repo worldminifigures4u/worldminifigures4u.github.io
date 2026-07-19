@@ -118,9 +118,27 @@ function atualizarCarrinho(opcoes = {}) {
     carrinhoDiv.replaceChildren();
 
     if (carrinho.length === 0) {
-        const vazio = document.createElement('p');
+        const vazio = document.createElement('div');
         vazio.id = 'carrinho-vazio';
-        vazio.textContent = 'Nenhum produto adicionado.';
+        vazio.className = 'carrinho-vazio';
+
+        const figura = document.createElement('img');
+        figura.className = 'carrinho-vazio-figura';
+        figura.src = 'img/sem-imagem.png?v=20260719-sem-texto';
+        figura.alt = '';
+        figura.width = 120;
+        figura.height = 120;
+        figura.decoding = 'async';
+
+        const texto = document.createElement('p');
+        texto.className = 'carrinho-vazio-texto';
+        texto.textContent = 'Nenhum produto adicionado.';
+
+        const dica = document.createElement('p');
+        dica.className = 'carrinho-vazio-dica';
+        dica.textContent = 'Escolhe as minifiguras que queres levar.';
+
+        vazio.append(figura, texto, dica);
         carrinhoDiv.appendChild(vazio);
         solicitarAtualizacaoEnvio();
         finalizarRenderCarrinho();
