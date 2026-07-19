@@ -114,10 +114,6 @@
     color:var(--cor-texto-secundario, #b8b8b8) !important;
 }
 
-.produto-card .categoria{
-    color:#ffc107 !important;
-}
-
 .contador-produtos strong{
     color:var(--cor-texto-principal, #fff) !important;
 }
