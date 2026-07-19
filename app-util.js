@@ -112,7 +112,7 @@ function obterImagemPrincipalProduto(prod = {}) {
         }
     }
     listaImagens = listaImagens.filter(url => url && typeof url === 'string' && url.trim() !== '');
-    return listaImagens.length > 0 ? listaImagens[0] : 'img/sem-imagem.svg?v=20260719';
+    return listaImagens.length > 0 ? listaImagens[0] : 'img/sem-imagem.png?v=20260719-silhueta';
 }
 
 function utilizadorAdmin(user) {

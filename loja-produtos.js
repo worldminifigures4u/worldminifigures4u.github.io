@@ -379,7 +379,7 @@ function criarCardProduto(prod) {
     }
 
     listaImagens = listaImagens.filter(url => url && typeof url === 'string' && url.trim() !== '');
-    const imagemFallback = 'img/sem-imagem.svg?v=20260719';
+    const imagemFallback = 'img/sem-imagem.png?v=20260719-silhueta';
     const imagensOtimizadas = listaImagens.map(url => otimizarImagemCloudinary(url, 520));
     const urlPrincipal = listaImagens[0] || imagemFallback;
     const imagemResponsiva = otimizarImagemCloudinarySrcset(urlPrincipal);
