@@ -28,15 +28,7 @@ function definirFavoritosVazio(mensagem) {
     dica.textContent = 'Guarda as minifiguras que queres acompanhar.';
 
     vazio.append(figura, texto, dica);
-
-    const acoes = document.createElement('div');
-    acoes.className = 'favoritos-vazio-acoes';
-    const continuar = document.createElement('a');
-    continuar.className = 'favoritos-continuar';
-    continuar.href = 'index.html';
-    continuar.textContent = 'Ver produtos';
-    acoes.appendChild(continuar);
-    lista.append(vazio, acoes);
+    lista.appendChild(vazio);
     favoritosRenderizadosChave = '';
     atualizarResumoFavoritos(0);
 }
@@ -247,7 +239,7 @@ function adicionarCardFavoritoCliente(produto) {
     if (!lista || !produto) return;
 
     const id = normalizarIdFavorito(produto.id);
-    if (lista.querySelector('.favoritos-vazio-acoes')) lista.replaceChildren();
+    if (lista.querySelector('.favoritos-vazio')) lista.replaceChildren();
     if (lista.querySelector(`[data-favorito-produto-id="${CSS.escape(id)}"]`)) return;
 
     lista.classList.remove('favoritos-lista--preparar');
