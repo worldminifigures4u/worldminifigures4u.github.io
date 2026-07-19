@@ -23,11 +23,7 @@ function definirFavoritosVazio(mensagem) {
     texto.className = 'favoritos-vazio-texto';
     texto.textContent = mensagem || 'Ainda não tens favoritos guardados.';
 
-    const dica = document.createElement('p');
-    dica.className = 'favoritos-vazio-dica';
-    dica.textContent = 'Guarda as minifiguras que queres acompanhar.';
-
-    vazio.append(figura, texto, dica);
+    vazio.append(figura, texto);
     lista.appendChild(vazio);
     favoritosRenderizadosChave = '';
     atualizarResumoFavoritos(0);

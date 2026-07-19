@@ -28,7 +28,7 @@
 
         promessaFavoritosUi = new Promise((resolve, reject) => {
             const script = document.createElement('script');
-            script.src = 'favoritos-ui.js?v=20260719-sem-texto';
+            script.src = 'favoritos-ui.js?v=20260719-vazio-sem-dica';
             script.defer = true;
             script.onload = () => resolve();
             script.onerror = () => reject(new Error('Falha ao carregar favoritos-ui.js'));
