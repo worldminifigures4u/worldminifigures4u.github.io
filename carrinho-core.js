@@ -134,11 +134,7 @@ function atualizarCarrinho(opcoes = {}) {
         texto.className = 'carrinho-vazio-texto';
         texto.textContent = 'Nenhum produto adicionado.';
 
-        const dica = document.createElement('p');
-        dica.className = 'carrinho-vazio-dica';
-        dica.textContent = 'Escolhe as minifiguras que queres levar.';
-
-        vazio.append(figura, texto, dica);
+        vazio.append(figura, texto);
         carrinhoDiv.appendChild(vazio);
         solicitarAtualizacaoEnvio();
         finalizarRenderCarrinho();
