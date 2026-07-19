@@ -26,6 +26,23 @@ body{
             padding-top:var(--cabecalho-offset, 112px);
         }
 
+        /* Atmosfera suave só nas páginas de cliente */
+        body[data-page="loja"],
+        body[data-page="favoritos"],
+        body[data-page="carrinho"],
+        body[data-page="conta"],
+        body[data-page="sobre"],
+        body[data-page="contactos"],
+        body[data-page="politicas"]{
+            background-color:#000;
+            background-image:
+                radial-gradient(ellipse 110% 65% at 50% -8%, rgba(255, 193, 7, 0.07), transparent 58%),
+                radial-gradient(ellipse 70% 55% at 100% 30%, rgba(18, 42, 72, 0.32), transparent 52%),
+                radial-gradient(ellipse 65% 50% at 0% 85%, rgba(24, 36, 58, 0.28), transparent 48%),
+                linear-gradient(180deg, #06080e 0%, #000000 42%, #04060a 100%);
+            background-attachment:fixed;
+        }
+
         header{
             position:fixed;
             top:0;
