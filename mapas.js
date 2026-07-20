@@ -397,7 +397,11 @@ function criarLinhaProdutoMapa(produto) {
             botao.addEventListener("click", () => abrirFichaProdutoMapa(produto.id));
             td.appendChild(botao);
         } else {
-            td.textContent = valorCelulaMapa(produto, coluna);
+            const texto = valorCelulaMapa(produto, coluna);
+            td.textContent = texto;
+            if ((coluna.chave === "tema" || coluna.chave === "subtema" || coluna.chave === "referencia") && texto) {
+                td.title = String(texto);
+            }
         }
         if (coluna.chave === "stock" && Number(produto.stock || 0) <= 0) td.classList.add("sem-stock");
         tr.appendChild(td);

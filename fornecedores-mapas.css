@@ -1086,7 +1086,9 @@ body.pagina-mapas-admin > main.fornecedores-admin {
     line-height: 1.25;
 }
 
-.pagina-mapas-admin .mapas-produtos-tabela.mapas-com-foto .mapas-col-nome {
+.pagina-mapas-admin .mapas-produtos-tabela.mapas-com-foto .mapas-col-nome,
+.pagina-mapas-admin .mapas-produtos-tabela.mapas-com-foto .mapas-col-tema,
+.pagina-mapas-admin .mapas-produtos-tabela.mapas-com-foto .mapas-col-subtema {
     white-space: normal;
     vertical-align: middle;
 }
@@ -1102,9 +1104,30 @@ body.pagina-mapas-admin > main.fornecedores-admin {
     max-height: calc(1.25em * 2);
 }
 
+.pagina-mapas-admin .mapas-produtos-tabela.mapas-com-foto .mapas-col-tema,
+.pagina-mapas-admin .mapas-produtos-tabela.mapas-com-foto .mapas-col-subtema {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-height: calc(1.25em * 2);
+    line-height: 1.25;
+}
+
 .pagina-mapas-admin .mapas-produtos-tabela.mapas-sem-foto .mapas-celula-nome {
     display: block;
     white-space: nowrap;
+    text-overflow: ellipsis;
+    -webkit-line-clamp: unset;
+    line-clamp: unset;
+}
+
+.pagina-mapas-admin .mapas-produtos-tabela.mapas-sem-foto .mapas-col-tema,
+.pagina-mapas-admin .mapas-produtos-tabela.mapas-sem-foto .mapas-col-subtema {
+    white-space: nowrap;
+    overflow: hidden;
     text-overflow: ellipsis;
     -webkit-line-clamp: unset;
     line-clamp: unset;
