@@ -51,6 +51,22 @@ function obterBooleanoProdutoFornecedor(valor) {
     return ['1', 'sim', 's', 'x', 'yes', 'y', 'true', 'verdadeiro'].includes(texto);
 }
 
+function itemPedidoEhNovaNotaFornecedor(item, produtoAtual = null) {
+    if (obterBooleanoProdutoFornecedor(item?.novidade)) return true;
+    if (obterBooleanoProdutoFornecedor(produtoAtual?.novidade)) return true;
+    // Stock 0/negativo no momento da encomenda = primeira entrada → NOVA
+    if (item?.stock_no_momento !== null && item?.stock_no_momento !== undefined) {
+        const stockMomento = Number(item.stock_no_momento);
+        if (Number.isFinite(stockMomento) && stockMomento <= 0) return true;
+    }
+    return false;
+}
+
+function obterNovidadeParaItemPedidoFornecedor(produtoOuItem) {
+    const stock = Number(produtoOuItem?.stock ?? produtoOuItem?.stock_no_momento ?? 0);
+    return obterBooleanoProdutoFornecedor(produtoOuItem?.novidade) || (Number.isFinite(stock) && stock <= 0);
+}
+
 function definirStatusFornecedor(texto, erro = false) {
     const el = document.getElementById('fornecedores-status');
     if (!el) return;
@@ -512,8 +528,15 @@ function serializarItemPedidoFornecedor(item) {
         estado_fornecedor: String(normalizado.estado_fornecedor || ''),
         origem_ajuste: String(normalizado.origem_ajuste || ''),
         recebido: Math.max(0, Math.floor(Number(normalizado.recebido || 0))),
-        novidade: Boolean(normalizado.novidade),
-        stock_no_momento: Math.max(0, Math.floor(Number(normalizado.stock_no_momento || 0))),
+        novidade: obterBooleanoProdutoFornecedor(normalizado.novidade),
+        stock_no_momento: (() => {
+            if (Object.prototype.hasOwnProperty.call(normalizado, "stock_no_momento")) {
+                const valor = Number(normalizado.stock_no_momento);
+                return Number.isFinite(valor) ? Math.floor(valor) : 0;
+            }
+            // Sem campo gravado: não forçar 0 (evita NOVA falsa em encomendas antigas)
+            return null;
+        })(),
         preco_custo: precoCusto,
         preco: precoCusto,
         imagens
@@ -779,7 +802,7 @@ async function imprimirPedidoFornecedor(id) {
             const produtoAtual = obterProdutoParaPedidoFornecedor(item, produtosImpressao) || item;
             const subtemaProduto = produtoAtual.subtema && produtoAtual.subtema !== 'semsubtema' ? produtoAtual.subtema : '';
             const subtemaItem = item.subtema && item.subtema !== 'semsubtema' ? item.subtema : '';
-            const novidade = obterBooleanoProdutoFornecedor(produtoAtual.novidade ?? item.novidade);
+            const novidade = itemPedidoEhNovaNotaFornecedor(item, produtoAtual);
             const valores = [
                 produtoAtual.nome || item.nome || '',
                 produtoAtual.tema || item.tema || '',
@@ -3462,7 +3485,7 @@ async function criarPedidoFornecedor() {
         estado_fornecedor: '',
         origem_ajuste: '',
         recebido: 0,
-        novidade: obterBooleanoProdutoFornecedor(item.novidade),
+        novidade: obterNovidadeParaItemPedidoFornecedor(item),
         stock_no_momento: Number(item.stock || 0),
         preco_custo: Number(item.preco_custo ?? item.custo ?? 0) || 0,
         preco: Number(item.preco_custo ?? item.custo ?? 0) || 0,
@@ -3601,7 +3624,7 @@ function criarItemFornecedorAPartirSelecao(item, origemAjuste = '') {
         estado_fornecedor: '',
         origem_ajuste: origemAjuste,
         recebido: 0,
-        novidade: obterBooleanoProdutoFornecedor(item.novidade),
+        novidade: obterNovidadeParaItemPedidoFornecedor(item),
         stock_no_momento: Number(item.stock || 0),
         preco_custo: Number(item.preco_custo ?? item.custo ?? 0) || 0,
         preco: Number(item.preco_custo ?? item.custo ?? 0) || 0,
