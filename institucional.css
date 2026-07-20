@@ -68,21 +68,12 @@
     .bloco-institucional{ padding:17px; }
 }
 
-/* Painel partilhado: Sobre, Contactos e Políticas */
+/* Títulos institucionais alinhados à marca */
 body[data-page="sobre"] .pagina-institucional,
 body[data-page="contactos"] .pagina-institucional,
 body[data-page="politicas"] .pagina-institucional{
     width:min(720px, 100%);
     max-width:720px;
-}
-
-.institucional-painel{
-    background:#111;
-    border:1px solid #333;
-    border-radius:12px;
-    padding:28px 22px 22px;
-    box-shadow:0 12px 30px rgba(0,0,0,0.25);
-    box-sizing:border-box;
 }
 
 body[data-page="sobre"] .pagina-institucional h1,
@@ -92,7 +83,7 @@ body[data-page="politicas"] .pagina-institucional h1{
     font-weight:800;
     font-size:30px;
     line-height:1.1;
-    text-align:center;
+    text-align:left;
     margin:0 0 22px;
 }
 

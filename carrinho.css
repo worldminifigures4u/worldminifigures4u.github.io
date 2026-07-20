@@ -13,18 +13,15 @@
     box-sizing:border-box;
     min-width:0;
     overflow:hidden;
-    background:#111;
-    border-radius:12px;
-    padding:15px;
-    border:1px solid #333;
-    height:fit-content;
-    box-shadow:0 12px 30px rgba(0,0,0,0.25);
+    background:transparent;
+    border:0;
+    border-radius:0;
+    padding:0;
+    box-shadow:none;
 }
 
         .carrinho h2{
             margin-top:0;
-            border-bottom:1px solid #333;
-            padding-bottom:10px;
         }
 
         .carrinho-topo{
@@ -32,8 +29,6 @@
             justify-content:space-between;
             align-items:center;
             gap:18px;
-            border-bottom:1px solid #333;
-            padding-bottom:10px;
             margin-bottom:18px;
         }
 

@@ -5,13 +5,14 @@
         }
 
         .area-cliente{
-            background:#111;
-            border-radius:12px;
-            padding:15px 15px 28px;
-            border:1px solid #333;
+            background:transparent;
+            border-radius:0;
+            padding:0;
+            border:0;
             height:fit-content;
             width: 100%;
             box-sizing: border-box;
+            box-shadow:none;
         }
 
         .vista-conta .area-cliente{
@@ -73,8 +74,6 @@ body[data-page="conta"] #conteudo-cliente-autenticado:not(.oculto) ~ #conteudo-c
 
         .area-cliente h2{
             margin-top:0;
-            border-bottom:1px solid #333;
-            padding-bottom:10px;
         }
 
         .abas-cliente {
