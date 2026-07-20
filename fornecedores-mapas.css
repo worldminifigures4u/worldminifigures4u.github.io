@@ -983,11 +983,38 @@ body.pagina-mapas-admin > main.fornecedores-admin {
     overflow: auto;
 }
 
+.pagina-mapas-admin .mapas-tabela-bloco {
+    width: 100%;
+}
+
+.pagina-mapas-admin .mapas-tabela-scroll-topo {
+    overflow-x: auto;
+    overflow-y: hidden;
+    width: 100%;
+    height: 14px;
+    margin-bottom: 2px;
+    scrollbar-width: thin;
+    scrollbar-color: #666 #1a1a1a;
+}
+
+.pagina-mapas-admin .mapas-tabela-scroll-topo.mapas-scroll-topo-oculto {
+    display: none;
+}
+
+.pagina-mapas-admin .mapas-tabela-scroll-topo-inner {
+    height: 1px;
+}
+
 .pagina-mapas-admin .mapas-tabela-wrapper {
     display: block;
     width: 100%;
     overflow-x: auto;
     overflow-y: visible;
+    scrollbar-width: none;
+}
+
+.pagina-mapas-admin .mapas-tabela-wrapper::-webkit-scrollbar {
+    height: 0;
 }
 
 .pagina-mapas-admin .mapas-tabela-wrapper > .mapas-produtos-tabela {

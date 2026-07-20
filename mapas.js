@@ -313,6 +313,38 @@ function larguraTabelaMapaVisivel() {
     return obterColunasVisiveisMapa().reduce((soma, coluna) => soma + (Number(coluna.largura) || 100), 0);
 }
 
+function atualizarScrollHorizontalTopoMapa() {
+    const topo = document.getElementById("mapas-tabela-scroll-topo");
+    const inner = document.getElementById("mapas-tabela-scroll-topo-inner");
+    const wrapper = document.getElementById("mapas-tabela-wrapper");
+    if (!topo || !inner || !wrapper) return;
+
+    const largura = larguraTabelaMapaVisivel();
+    inner.style.width = `${largura}px`;
+    const precisaScroll = largura > wrapper.clientWidth + 1;
+    topo.classList.toggle("mapas-scroll-topo-oculto", !precisaScroll);
+    if (precisaScroll) topo.scrollLeft = wrapper.scrollLeft;
+}
+
+function ligarScrollHorizontalTopoMapa() {
+    const topo = document.getElementById("mapas-tabela-scroll-topo");
+    const wrapper = document.getElementById("mapas-tabela-wrapper");
+    if (!topo || !wrapper) return;
+
+    let aSincronizar = false;
+    const sincronizar = (origem, destino) => {
+        if (aSincronizar) return;
+        aSincronizar = true;
+        destino.scrollLeft = origem.scrollLeft;
+        requestAnimationFrame(() => {
+            aSincronizar = false;
+        });
+    };
+
+    topo.addEventListener("scroll", () => sincronizar(topo, wrapper), { passive: true });
+    wrapper.addEventListener("scroll", () => sincronizar(wrapper, topo), { passive: true });
+}
+
 function criarCabecalhoTabelaMapa() {
     const thead = document.createElement("thead");
     const tr = document.createElement("tr");
@@ -466,6 +498,19 @@ function renderizarTabelaMapa() {
     const colunasVisiveis = obterColunasVisiveisMapa();
     const comFoto = colunasVisiveis.some((coluna) => coluna.chave === "foto");
     mapasLinhaAltura = comFoto ? 56 : 42;
+
+    const bloco = document.createElement("div");
+    bloco.className = "mapas-tabela-bloco";
+
+    const scrollTopo = document.createElement("div");
+    scrollTopo.id = "mapas-tabela-scroll-topo";
+    scrollTopo.className = "mapas-tabela-scroll-topo";
+    scrollTopo.setAttribute("aria-hidden", "true");
+    const scrollTopoInner = document.createElement("div");
+    scrollTopoInner.id = "mapas-tabela-scroll-topo-inner";
+    scrollTopoInner.className = "mapas-tabela-scroll-topo-inner";
+    scrollTopo.appendChild(scrollTopoInner);
+
     const wrapper = document.createElement("div");
     wrapper.id = "mapas-tabela-wrapper";
     wrapper.className = "mapas-tabela-wrapper mapas-tabela-virtual";
@@ -492,9 +537,12 @@ function renderizarTabelaMapa() {
     tbody.append(spacerTopo, spacerFundo);
     tabela.appendChild(tbody);
     wrapper.appendChild(tabela);
-    caixa.appendChild(wrapper);
+    bloco.append(scrollTopo, wrapper);
+    caixa.appendChild(bloco);
 
     renderizarJanelaVirtualMapa();
+    ligarScrollHorizontalTopoMapa();
+    requestAnimationFrame(atualizarScrollHorizontalTopoMapa);
 }
 
 function atualizarResultadosMapa() {
@@ -1864,7 +1912,10 @@ document.addEventListener("click", (evento) => {
     });
 });
 window.addEventListener("scroll", agendarRenderVirtualMapa, { passive: true });
-window.addEventListener("resize", agendarRenderVirtualMapa);
+window.addEventListener("resize", () => {
+    agendarRenderVirtualMapa();
+    atualizarScrollHorizontalTopoMapa();
+});
 document.addEventListener("keydown", evento => {
     if (evento.key === "Escape") fecharEdicaoProdutoMapa();
 });
