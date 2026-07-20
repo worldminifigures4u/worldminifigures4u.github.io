@@ -176,8 +176,7 @@
         .produto-galeria{
             position:relative;
             touch-action:pan-y;
-            background:
-                radial-gradient(circle at 50% 42%, #2a2a2a 0%, #1c1c1c 58%, #161616 100%);
+            background:#202020;
             border-radius:14px;
             overflow:hidden;
             margin-bottom:12px;
