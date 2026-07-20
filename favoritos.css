@@ -140,7 +140,6 @@
 }
 
 .btn-favorito-adicionar,
-.btn-favorito-remover,
 .favoritos-continuar{
     border:0;
     border-radius:8px;
@@ -167,16 +166,16 @@
 }
 
 .btn-favorito-remover{
-    background:#222;
-    color:#ff8a8a;
-}
-
-.btn-favorito-remover-icone{
-    display:none;
-}
-
-.btn-favorito-remover-texto{
-    display:inline;
+    border:0;
+    border-radius:8px;
+    min-width:30px;
+    height:30px;
+    padding:0;
+    font-weight:bold;
+    cursor:pointer;
+    text-align:center;
+    background:#ff4d4d;
+    color:#fff;
 }
 
 .btn-favorito-adicionar:disabled{
@@ -313,17 +312,9 @@
         background:#ff4d4d;
         color:#fff;
         border-radius:8px;
-    }
-
-    .btn-favorito-remover-icone{
-        display:inline;
         font-size:16px;
         font-weight:900;
         line-height:1;
-    }
-
-    .btn-favorito-remover-texto{
-        display:none;
     }
 }
 
@@ -388,9 +379,6 @@
         height:44px;
         min-width:44px;
         min-height:44px;
-    }
-
-    .btn-favorito-remover-icone{
         font-size:18px;
     }
 
