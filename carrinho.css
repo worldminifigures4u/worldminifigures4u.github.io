@@ -164,7 +164,17 @@
         }
 
         .carrinho-tema{
-            display:none;
+            display:block;
+            margin-top:4px;
+            color:#8a929c;
+            font-size:10px;
+            font-weight:700;
+            text-transform:uppercase;
+            letter-spacing:0.4px;
+            line-height:1.2;
+            overflow:hidden;
+            text-overflow:ellipsis;
+            white-space:nowrap;
         }
 
         .preco-carrinho{
@@ -511,9 +521,12 @@
         display:block;
         grid-area:tema;
         align-self:start;
-        color:#aaa;
-        font-size:13px;
+        margin-top:0;
+        color:#8a929c;
+        font-size:10px;
         font-weight:700;
+        text-transform:uppercase;
+        letter-spacing:0.4px;
         line-height:1.1;
         overflow:hidden;
         text-overflow:ellipsis;
@@ -573,7 +586,7 @@
     }
 
     .carrinho-tema{
-        font-size:14px;
+        font-size:10px;
     }
 
     .preco-carrinho{

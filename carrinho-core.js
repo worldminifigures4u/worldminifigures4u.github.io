@@ -190,7 +190,7 @@ function atualizarCarrinho(opcoes = {}) {
             .map(valor => String(valor || '').trim())
             .filter(valor => valor && !/^sem\s*subtema$/i.test(valor));
         tema.textContent = temaDetalhe.length
-            ? [...new Set(temaDetalhe)].join(' - ')
+            ? [...new Set(temaDetalhe)].join(' · ')
             : 'Sem tema';
 
         linhaPrincipal.append(nome, preco);
