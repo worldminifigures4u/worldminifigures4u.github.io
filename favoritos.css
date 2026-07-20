@@ -136,7 +136,7 @@
     display:flex;
     gap:8px;
     justify-content:flex-end;
-    align-items:stretch;
+    align-items:center;
 }
 
 .btn-favorito-adicionar,
@@ -163,15 +163,22 @@
     align-items:center;
     justify-content:center;
     gap:8px;
+    box-sizing:border-box;
+    height:40px;
+    min-height:40px;
+    padding-top:0;
+    padding-bottom:0;
 }
 
 .btn-favorito-remover{
     border:0;
     border-radius:8px;
-    aspect-ratio:1 / 1;
-    height:auto;
-    width:auto;
-    min-width:0;
+    box-sizing:border-box;
+    width:40px;
+    height:40px;
+    min-width:40px;
+    min-height:40px;
+    flex:0 0 40px;
     padding:0;
     font-size:18px;
     font-weight:900;
@@ -183,8 +190,6 @@
     display:inline-flex;
     align-items:center;
     justify-content:center;
-    align-self:stretch;
-    flex:0 0 auto;
 }
 
 .btn-favorito-remover-texto{
