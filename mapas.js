@@ -398,9 +398,15 @@ function criarLinhaProdutoMapa(produto) {
             td.appendChild(botao);
         } else {
             const texto = valorCelulaMapa(produto, coluna);
-            td.textContent = texto;
-            if ((coluna.chave === "tema" || coluna.chave === "subtema" || coluna.chave === "referencia") && texto) {
-                td.title = String(texto);
+            if (coluna.chave === "tema" || coluna.chave === "subtema") {
+                const span = document.createElement("span");
+                span.className = "mapas-celula-texto-2linhas";
+                span.textContent = texto;
+                if (texto) span.title = String(texto);
+                td.appendChild(span);
+            } else {
+                td.textContent = texto;
+                if (coluna.chave === "referencia" && texto) td.title = String(texto);
             }
         }
         if (coluna.chave === "stock" && Number(produto.stock || 0) <= 0) td.classList.add("sem-stock");

@@ -1093,23 +1093,13 @@ body.pagina-mapas-admin > main.fornecedores-admin {
     vertical-align: middle;
 }
 
-.pagina-mapas-admin .mapas-produtos-tabela.mapas-com-foto .mapas-celula-nome {
+.pagina-mapas-admin .mapas-produtos-tabela.mapas-com-foto .mapas-celula-nome,
+.pagina-mapas-admin .mapas-produtos-tabela.mapas-com-foto .mapas-celula-texto-2linhas {
     display: -webkit-box;
     -webkit-box-orient: vertical;
     -webkit-line-clamp: 2;
     line-clamp: 2;
     white-space: normal;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    max-height: calc(1.25em * 2);
-}
-
-.pagina-mapas-admin .mapas-produtos-tabela.mapas-com-foto .mapas-col-tema,
-.pagina-mapas-admin .mapas-produtos-tabela.mapas-com-foto .mapas-col-subtema {
-    display: -webkit-box;
-    -webkit-box-orient: vertical;
-    -webkit-line-clamp: 2;
-    line-clamp: 2;
     overflow: hidden;
     text-overflow: ellipsis;
     max-height: calc(1.25em * 2);
@@ -1129,8 +1119,13 @@ body.pagina-mapas-admin > main.fornecedores-admin {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    -webkit-line-clamp: unset;
-    line-clamp: unset;
+}
+
+.pagina-mapas-admin .mapas-produtos-tabela.mapas-sem-foto .mapas-celula-texto-2linhas {
+    display: block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .mapas-celula-nome:hover {
