@@ -135,9 +135,9 @@
 
         .linha-carrinho strong{
             color:#fff;
-            font-size:16px;
+            font-size:17px;
             line-height:1.25;
-            font-weight:700;
+            font-weight:800;
         }
 
         .info-carrinho{
@@ -179,7 +179,8 @@
 
         .preco-carrinho{
             color:#fff;
-            font-weight:bold;
+            font-size:15px;
+            font-weight:800;
         }
 
         .controlos-carrinho{
@@ -507,7 +508,8 @@
     .linha-carrinho strong{
         grid-area:nome;
         align-self:end;
-        font-size:15px;
+        font-size:16px;
+        font-weight:800;
         line-height:1.1;
         white-space:normal;
         display:-webkit-box;
@@ -537,7 +539,8 @@
     .preco-carrinho{
         grid-area:preco;
         margin-top:4px;
-        font-size:17px;
+        font-size:14px;
+        font-weight:800;
         line-height:1.1;
         white-space:nowrap;
         justify-self:center;
@@ -582,7 +585,7 @@
     }
 
     .linha-carrinho strong{
-        font-size:16px;
+        font-size:17px;
     }
 
     .carrinho-tema{
@@ -590,7 +593,7 @@
     }
 
     .preco-carrinho{
-        font-size:18px;
+        font-size:15px;
         width:80px;
     }
 
