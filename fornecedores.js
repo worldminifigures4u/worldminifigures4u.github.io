@@ -51,20 +51,13 @@ function obterBooleanoProdutoFornecedor(valor) {
     return ['1', 'sim', 's', 'x', 'yes', 'y', 'true', 'verdadeiro'].includes(texto);
 }
 
-function itemPedidoEhNovaNotaFornecedor(item, produtoAtual = null) {
-    if (obterBooleanoProdutoFornecedor(item?.novidade)) return true;
-    if (obterBooleanoProdutoFornecedor(produtoAtual?.novidade)) return true;
-    // Stock 0/negativo no momento da encomenda = primeira entrada → NOVA
-    if (item?.stock_no_momento !== null && item?.stock_no_momento !== undefined) {
-        const stockMomento = Number(item.stock_no_momento);
-        if (Number.isFinite(stockMomento) && stockMomento <= 0) return true;
-    }
-    return false;
+function itemPedidoEhNovaNotaFornecedor(item) {
+    // Só a flag novidade gravada na encomenda (snapshot); não usa stock.
+    return obterBooleanoProdutoFornecedor(item?.novidade);
 }
 
 function obterNovidadeParaItemPedidoFornecedor(produtoOuItem) {
-    const stock = Number(produtoOuItem?.stock ?? produtoOuItem?.stock_no_momento ?? 0);
-    return obterBooleanoProdutoFornecedor(produtoOuItem?.novidade) || (Number.isFinite(stock) && stock <= 0);
+    return obterBooleanoProdutoFornecedor(produtoOuItem?.novidade);
 }
 
 function definirStatusFornecedor(texto, erro = false) {
@@ -530,12 +523,13 @@ function serializarItemPedidoFornecedor(item) {
         recebido: Math.max(0, Math.floor(Number(normalizado.recebido || 0))),
         novidade: obterBooleanoProdutoFornecedor(normalizado.novidade),
         stock_no_momento: (() => {
-            if (Object.prototype.hasOwnProperty.call(normalizado, "stock_no_momento")) {
+            if (Object.prototype.hasOwnProperty.call(normalizado, "stock_no_momento")
+                && normalizado.stock_no_momento !== null
+                && normalizado.stock_no_momento !== undefined) {
                 const valor = Number(normalizado.stock_no_momento);
                 return Number.isFinite(valor) ? Math.floor(valor) : 0;
             }
-            // Sem campo gravado: não forçar 0 (evita NOVA falsa em encomendas antigas)
-            return null;
+            return 0;
         })(),
         preco_custo: precoCusto,
         preco: precoCusto,
@@ -802,7 +796,7 @@ async function imprimirPedidoFornecedor(id) {
             const produtoAtual = obterProdutoParaPedidoFornecedor(item, produtosImpressao) || item;
             const subtemaProduto = produtoAtual.subtema && produtoAtual.subtema !== 'semsubtema' ? produtoAtual.subtema : '';
             const subtemaItem = item.subtema && item.subtema !== 'semsubtema' ? item.subtema : '';
-            const novidade = itemPedidoEhNovaNotaFornecedor(item, produtoAtual);
+            const novidade = itemPedidoEhNovaNotaFornecedor(item);
             const valores = [
                 produtoAtual.nome || item.nome || '',
                 produtoAtual.tema || item.tema || '',
@@ -4528,6 +4522,7 @@ async function receberPedidoFornecedor(id) {
 
         const aplicado = Array.isArray(data?.recebido_aplicado) ? data.recebido_aplicado : rececoes;
         const ativarPorPrimeiraRececao = [];
+        const limparNovidadeAposReceber = [];
         aplicado.forEach(rececao => {
             const produtoId = rececao.produto_id || rececao.id;
             const qtd = Math.max(0, Number(rececao.quantidade || 0));
@@ -4541,6 +4536,10 @@ async function receberPedidoFornecedor(id) {
                 : stockAntes + qtd;
             if (stockAntes <= 0 && stockDepois > 0 && obterBooleanoProdutoFornecedor(produto.novidade)) {
                 produto.novidade = false;
+                limparNovidadeAposReceber.push({
+                    id: String(produto.id),
+                    sku: String(produto.sku || "").trim()
+                });
             }
             produto.stock = stockDepois;
             // Saída de stock <=0 para >0 (inclui stock negativo pré-encomenda): ativar
@@ -4562,7 +4561,31 @@ async function receberPedidoFornecedor(id) {
         guardarPedidosFornecedores();
         await carregarCatalogoFornecedores();
 
-        // Garantir ativo=true na nuvem se o stock saiu de <=0 (RPC antiga pode não ativar)
+        // Se a RPC nao limpou novidade na 1.ª receção, gravar no catálogo
+        for (const item of limparNovidadeAposReceber) {
+            const produto = fornecedorProdutos.find(p =>
+                String(p.id) === item.id || String(p.sku || "").trim().toUpperCase() === item.sku.toUpperCase()
+            );
+            if (!produto || !obterBooleanoProdutoFornecedor(produto.novidade)) continue;
+            try {
+                const { data: editado, error: erroNovidade } = await fornecedoresClient.rpc("editar_produto_admin_v2", {
+                    p_id: String(produto.id),
+                    p_sku_original: String(produto.sku || item.sku),
+                    p_produto: {
+                        ...produto,
+                        novidade: false,
+                        imagens: Array.isArray(produto.imagens) ? produto.imagens : []
+                    }
+                });
+                if (!erroNovidade && editado?.id) {
+                    produto.novidade = false;
+                } else if (erroNovidade) {
+                    console.warn("Não foi possível limpar novidade após receber:", item.sku, erroNovidade);
+                }
+            } catch (erroNovidade) {
+                console.warn("Não foi possível limpar novidade após receber:", item.sku, erroNovidade);
+            }
+        }
         for (const item of ativarPorPrimeiraRececao) {
             const produto = fornecedorProdutos.find(p =>
                 String(p.id) === item.id || String(p.sku || "").trim().toUpperCase() === item.sku.toUpperCase()

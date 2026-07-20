@@ -555,7 +555,8 @@ async function extrairProdutosCatalogoDoFicheiro(conteudo, { preservarStock = fa
     return {
         produtosPorSku,
         invalidos,
-        totalStockLinhasFicheiro
+        totalStockLinhasFicheiro,
+        novidadeColunaPresente: colunas.novidade >= 0
     };
 }
 
@@ -581,7 +582,7 @@ async function analisarFicheiroCatalogoComum(input, opcoes) {
             : 'A analisar o catálogo completo...');
 
         const conteudo = await ficheiro.arrayBuffer();
-        const { produtosPorSku, invalidos, totalStockLinhasFicheiro } = await extrairProdutosCatalogoDoFicheiro(conteudo, { preservarStock });
+        const { produtosPorSku, invalidos, totalStockLinhasFicheiro, novidadeColunaPresente } = await extrairProdutosCatalogoDoFicheiro(conteudo, { preservarStock });
 
         if(produtosPorSku.size === 0) {
             throw new Error('O ficheiro não contém produtos válidos.');
@@ -594,6 +595,11 @@ async function analisarFicheiroCatalogoComum(input, opcoes) {
         const produtos = [...produtosPorSku.values()];
         const novos = produtos.filter(produto => !atuaisPorSku.has(produto.sku));
         const existentes = produtos.filter(produto => atuaisPorSku.has(produto.sku));
+        if (!novidadeColunaPresente) {
+            novos.forEach(produto => {
+                produto.novidade = true;
+            });
+        }
         const remover = preservarStock
             ? []
             : todosOsProdutos.filter(produto => !produtosPorSku.has(String(produto.sku || '').trim().toUpperCase()));
