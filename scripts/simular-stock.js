@@ -333,6 +333,16 @@ cenario("12. Editar: trocar produto A→B com repor", () => {
   expectStock(db, "B", 4, "B descontado");
 });
 
+cenario("12b. Stock negativo + receber fornecedor: -1 + 5 = 4", () => {
+  const db = criarDb({ A: 0 });
+  criarPlataforma(db, "e1", [{ id_produto: "A", quantidade: 1 }], true);
+  expectStock(db, "A", -1, "encomenda com stock negativo");
+  db.fornecedores.f1 = { id: "f1", itens: [{ id: "A", quantidade: 5, recebido: 0 }] };
+  receberFornecedor(db, "f1", [{ produto_id: "A", quantidade: 5 }]);
+  expectStock(db, "A", 4, "-1 + 5 = 4");
+  assert(db.produtos.A.ativo === true, "ativo apos receber");
+});
+
 cenario("13. BUG: receber fornecedor acima do pedido (sem teto + re-submit)", () => {
   const db = criarDb({ A: 1 });
   db.fornecedores.f1 = { id: "f1", itens: [{ id: "A", quantidade: 5, recebido: 0 }] };

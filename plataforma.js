@@ -1357,11 +1357,18 @@ function obterStockDisponivelPlataforma(produto) {
 function confirmarStockNegativoPlataforma(produto, quantidadePretendida) {
     const disponivel = obterStockDisponivelPlataforma(produto);
     if (disponivel === null || quantidadePretendida <= disponivel) return true;
+    const stockAtual = Number(produto.stock);
+    const reserved = obterQuantidadeOriginalPlataforma(produto.id);
+    const stockResultante = Number.isFinite(stockAtual)
+        ? stockAtual - (quantidadePretendida - reserved)
+        : null;
     const confirmado = window.confirm(
         `O produto "${produto.nome}" nao tem stock suficiente registado.\n\n` +
-        `Stock disponivel: ${Math.max(disponivel, 0)}\n` +
-        `Quantidade pretendida: ${quantidadePretendida}\n\n` +
-        'Confirmas que queres adicionar mesmo assim? O stock ficara negativo.'
+        `Stock registado: ${Number.isFinite(stockAtual) ? stockAtual : '?'}\n` +
+        `Quantidade pretendida: ${quantidadePretendida}\n` +
+        (stockResultante !== null ? `Stock apos encomenda: ${stockResultante}\n\n` : '\n') +
+        'Confirmas que queres adicionar mesmo assim? O stock pode ficar negativo.\n' +
+        'Quando receberes a encomenda do fornecedor, o stock soma a esse valor (ex.: -1 + 5 = 4).'
     );
     if (confirmado) stockNegativoConfirmado.add(String(produto.id));
     return confirmado;

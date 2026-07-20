@@ -332,11 +332,11 @@ begin
             update public.produtos
             set
                 novidade = case
-                    when v_stock_atual = 0 then false
+                    when v_stock_atual <= 0 and (v_stock_atual + qtd_aplicar) > 0 then false
                     else novidade
                 end,
                 stock = v_stock_atual + qtd_aplicar,
-                -- Stock saiu de 0 (ou ficou > 0): ativar no catálogo
+                -- Stock saiu de <=0 (inclui negativo) para >0: ativar no catálogo
                 ativo = (v_stock_atual + qtd_aplicar) > 0
             where id::text = produto_id_text;
 
@@ -345,7 +345,9 @@ begin
                 'quantidade', qtd_aplicar,
                 'solicitada', qtd_solicitada,
                 'pendente_antes', qtd_pendente,
-                'ativado', (v_stock_atual = 0 and (v_stock_atual + qtd_aplicar) > 0)
+                'stock_antes', v_stock_atual,
+                'stock_depois', v_stock_atual + qtd_aplicar,
+                'ativado', (v_stock_atual <= 0 and (v_stock_atual + qtd_aplicar) > 0)
             ));
         end if;
 

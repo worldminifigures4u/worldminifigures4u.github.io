@@ -221,7 +221,7 @@ function normalizarProdutoMapa(produto) {
         peso: Number(produto.peso || 10),
         tema: produto.tema || "",
         subtema: produto.subtema || "",
-        stock: Math.max(0, Number(produto.stock || 0)),
+        stock: Number.isFinite(Number(produto.stock)) ? Math.floor(Number(produto.stock)) : 0,
         ativo: produto.ativo !== false,
         imagens: normalizarImagensMapa(produto.imagens),
         observacoes: produto.observacoes || "",
@@ -284,7 +284,7 @@ function renderizarContadoresMapa(resultados) {
     const contador = document.getElementById("fornecedor-contador-barra");
     if (!contador) return;
     contador.querySelectorAll(".mapas-contador-item").forEach(item => item.remove());
-    const totalStock = resultados.reduce((acc, produto) => acc + Math.max(0, Number(produto.stock || 0)), 0);
+    const totalStock = resultados.reduce((acc, produto) => acc + Number(produto.stock || 0), 0);
     const figuras = criarItemContadorMapa(resultados.length === 1 ? "Figura" : "Figuras", resultados.length);
     const stock = criarItemContadorMapa("Stock", totalStock);
     const pesquisa = contador.querySelector(".campo-com-limpar, #fornecedor-pesquisa");
@@ -1494,7 +1494,7 @@ function preencherFormularioProdutoMapa(produto, modo = "editar") {
     campos.appendChild(secaoIdentificacao);
 
     const secaoDetalhes = criarSecaoEdicaoMapa("Detalhes", "mapas-produto-secao-detalhes");
-    criarInputEdicaoMapa(secaoDetalhes, "mapas-editar-stock", "Stock", Number(produto.stock || 0), "number", { required: true, min: 0, step: 1 });
+    criarInputEdicaoMapa(secaoDetalhes, "mapas-editar-stock", "Stock", Number(produto.stock || 0), "number", { required: true, step: 1 });
     criarInputEdicaoMapa(secaoDetalhes, "mapas-editar-preco-compra", "preço compra", Number(produto.preco_compra || 0).toFixed(2), "number", { min: 0, step: "0.01" });
     criarInputEdicaoMapa(secaoDetalhes, "mapas-editar-preco", "preço venda", Number(produto.preco || 0).toFixed(2), "number", { required: true, min: 0, step: "0.01" });
     criarInputEdicaoMapa(secaoDetalhes, "mapas-editar-peso", "Peso (g)", Number(produto.peso || PESO_PADRAO_PRODUTO_GRAMAS || 10), "number", { required: true, min: 1, step: 1 });
@@ -1625,7 +1625,7 @@ function lerProdutoEditadoMapa() {
         preco_compra: Number(document.getElementById("mapas-editar-preco-compra").value || 0),
         preco: Number(document.getElementById("mapas-editar-preco").value),
         peso: Number(document.getElementById("mapas-editar-peso").value || 10),
-        stock: Math.max(0, Math.floor(Number(document.getElementById("mapas-editar-stock").value || 0))),
+        stock: Math.floor(Number(document.getElementById("mapas-editar-stock").value || 0)),
         tema: document.getElementById("mapas-editar-tema").value.trim(),
         subtema: document.getElementById("mapas-editar-subtema").value.trim() || "semsubtema",
         observacoes: observacoesCampo
@@ -1637,8 +1637,8 @@ function lerProdutoEditadoMapa() {
         fornecedores: produtoAtual?.fornecedores || {},
         ativo: document.getElementById("mapas-editar-ativo").checked
     };
-    if (!produto.nome || !produto.sku || !produto.tema || !Number.isFinite(produto.preco) || produto.preco < 0 || !Number.isFinite(produto.preco_compra) || produto.preco_compra < 0 || !Number.isFinite(produto.peso) || produto.peso < 1) {
-        throw new Error("Preencha nome, SKU, tema, preço venda, preço compra e peso corretamente.");
+    if (!produto.nome || !produto.sku || !produto.tema || !Number.isFinite(produto.preco) || produto.preco < 0 || !Number.isFinite(produto.preco_compra) || produto.preco_compra < 0 || !Number.isFinite(produto.peso) || produto.peso < 1 || !Number.isFinite(produto.stock)) {
+        throw new Error("Preencha nome, SKU, tema, preço venda, preço compra, stock e peso corretamente.");
     }
     return {
         id: document.getElementById("mapas-editar-id").value,

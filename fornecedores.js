@@ -2688,7 +2688,7 @@ function lerProdutoEditadoMapa() {
         preco: Number(document.getElementById("mapas-editar-preco").value),
         preco_compra: Number(document.getElementById("mapas-editar-preco-compra").value || 0),
         peso: Number(document.getElementById("mapas-editar-peso").value || 10),
-        stock: Math.max(0, Math.floor(Number(document.getElementById("mapas-editar-stock").value || 0))),
+        stock: Math.floor(Number(document.getElementById("mapas-editar-stock").value || 0)),
         tema: document.getElementById("mapas-editar-tema").value.trim(),
         subtema: document.getElementById("mapas-editar-subtema").value.trim() || "semsubtema",
         imagens: textoParaImagensProdutoFornecedor(document.getElementById("mapas-editar-imagens").value),
@@ -2697,8 +2697,8 @@ function lerProdutoEditadoMapa() {
         ativo: document.getElementById("mapas-editar-ativo").checked
     };
 
-    if (!produto.nome || !produto.sku || !produto.tema || !Number.isFinite(produto.preco) || produto.preco < 0 || !Number.isFinite(produto.preco_compra) || produto.preco_compra < 0 || !Number.isFinite(produto.peso) || produto.peso < 1) {
-        throw new Error("Preencha nome, SKU, tema, preço venda, preço compra e peso corretamente.");
+    if (!produto.nome || !produto.sku || !produto.tema || !Number.isFinite(produto.preco) || produto.preco < 0 || !Number.isFinite(produto.preco_compra) || produto.preco_compra < 0 || !Number.isFinite(produto.peso) || produto.peso < 1 || !Number.isFinite(produto.stock)) {
+        throw new Error("Preencha nome, SKU, tema, preço venda, preço compra, stock e peso corretamente.");
     }
 
     return {
@@ -4167,7 +4167,7 @@ function obterValorOrdenacaoItemPedidoFornecedor(item, coluna) {
         const recebido = Math.max(0, Number(item?.recebido || 0));
         return Math.max(0, Number(item?.quantidade || 0) - recebido);
     }
-    if (coluna === "stock") return Math.max(0, Number(produtoAtual?.stock || 0));
+    if (coluna === "stock") return Number(produtoAtual?.stock || 0);
     return item?.nome || "";
 }
 
@@ -4510,19 +4510,25 @@ async function receberPedidoFornecedor(id) {
             const qtd = Math.max(0, Number(rececao.quantidade || 0));
             const produto = fornecedorProdutos.find(item => String(item.id) === String(produtoId));
             if (!produto || qtd <= 0) return;
-            const stockAntes = Math.max(0, Number(produto.stock || 0));
-            if (stockAntes === 0 && obterBooleanoProdutoFornecedor(produto.novidade)) {
+            const stockAntes = Number.isFinite(Number(rececao.stock_antes))
+                ? Number(rececao.stock_antes)
+                : Number(produto.stock || 0);
+            const stockDepois = Number.isFinite(Number(rececao.stock_depois))
+                ? Number(rececao.stock_depois)
+                : stockAntes + qtd;
+            if (stockAntes <= 0 && stockDepois > 0 && obterBooleanoProdutoFornecedor(produto.novidade)) {
                 produto.novidade = false;
             }
-            produto.stock = stockAntes + qtd;
-            // Primeira entrada em stock (0 → >0): ativar automaticamente no catálogo
-            if (stockAntes === 0 && produto.stock > 0) {
+            produto.stock = stockDepois;
+            // Saída de stock <=0 para >0 (inclui stock negativo pré-encomenda): ativar
+            if (stockAntes <= 0 && stockDepois > 0) {
                 produto.ativo = true;
                 ativarPorPrimeiraRececao.push({
                     id: String(produto.id),
-                    sku: String(produto.sku || "").trim()
+                    sku: String(produto.sku || "").trim(),
+                    stock: stockDepois
                 });
-            } else if (produto.ativo === false && produto.stock > 0) {
+            } else if (produto.ativo === false && stockDepois > 0) {
                 produto.ativo = true;
             }
         });
@@ -4533,7 +4539,7 @@ async function receberPedidoFornecedor(id) {
         guardarPedidosFornecedores();
         await carregarCatalogoFornecedores();
 
-        // Garantir ativo=true na nuvem se o stock saiu de 0 (RPC antiga pode não ativar)
+        // Garantir ativo=true na nuvem se o stock saiu de <=0 (RPC antiga pode não ativar)
         for (const item of ativarPorPrimeiraRececao) {
             const produto = fornecedorProdutos.find(p =>
                 String(p.id) === item.id || String(p.sku || "").trim().toUpperCase() === item.sku.toUpperCase()
@@ -4544,9 +4550,12 @@ async function receberPedidoFornecedor(id) {
                 continue;
             }
             if (!item.sku) continue;
+            const stockReal = Number.isFinite(Number(produto.stock))
+                ? Math.floor(Number(produto.stock))
+                : Math.floor(Number(item.stock || 0));
             const { error: erroAtivo } = await fornecedoresClient.rpc("atualizar_stock_produto_admin", {
                 p_sku: item.sku,
-                p_stock: Math.max(0, Math.floor(Number(produto.stock || 0))),
+                p_stock: Math.max(0, stockReal),
                 p_ativo: true
             });
             if (!erroAtivo) produto.ativo = true;
@@ -4560,7 +4569,7 @@ async function receberPedidoFornecedor(id) {
             ? ' Quantidades acima do pendente foram ignoradas.'
             : '';
         const avisoAtivo = ativarPorPrimeiraRececao.length
-            ? ` ${ativarPorPrimeiraRececao.length} produto(s) ativado(s) (stock saiu de 0).`
+            ? ` ${ativarPorPrimeiraRececao.length} produto(s) ativado(s) (stock saiu de zero/negativo).`
             : '';
         definirStatusFornecedor(`Stock atualizado (+${unidades} un.) para a encomenda ${atualizado.codigo || ''}.${avisoTeto}${avisoAtivo}`);
     } catch (error) {

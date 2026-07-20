@@ -1,10 +1,8 @@
 -- Executar no SQL Editor do Supabase.
--- Corrige receber stock de fornecedor:
--- - só produtos do pedido
--- - teto = quantidade pedida - já recebida (evita re-submit / excesso)
--- - FOR UPDATE no produto
--- - devolve recebido_aplicado para a UI
--- - se stock saía de 0 (primeira receção), ativa o produto automaticamente
+-- Stock negativo (encomendas plataforma com aviso) + receber fornecedor:
+-- - criar/atualizar encomenda já permitem stock negativo com permitir_stock_negativo
+-- - receber soma ao stock atual (ex.: -1 + 5 = 4)
+-- - ativa o produto quando o stock passa de <=0 para >0
 
 create or replace function public.receber_stock_fornecedor_admin(
     p_encomenda_id text,
@@ -79,7 +77,6 @@ begin
                     else novidade
                 end,
                 stock = v_stock_novo,
-                -- Saída de stock <=0 (inclui negativo) para >0: ativar
                 ativo = v_stock_novo > 0
             where id::text = produto_id_text;
 
