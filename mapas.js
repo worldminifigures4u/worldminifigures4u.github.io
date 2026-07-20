@@ -393,7 +393,7 @@ function criarLinhaProdutoMapa(produto) {
             botao.type = "button";
             botao.className = "mapas-celula-nome";
             botao.textContent = produto.nome || "";
-            botao.title = "Abrir ficha do produto";
+            botao.title = produto.nome || "Abrir ficha do produto";
             botao.addEventListener("click", () => abrirFichaProdutoMapa(produto.id));
             td.appendChild(botao);
         } else {
@@ -454,12 +454,14 @@ function renderizarTabelaMapa() {
     }
 
     const colunasVisiveis = obterColunasVisiveisMapa();
+    const comFoto = colunasVisiveis.some((coluna) => coluna.chave === "foto");
+    mapasLinhaAltura = comFoto ? 56 : 42;
     const wrapper = document.createElement("div");
     wrapper.id = "mapas-tabela-wrapper";
     wrapper.className = "mapas-tabela-wrapper mapas-tabela-virtual";
 
     const tabela = document.createElement("table");
-    tabela.className = "mapas-produtos-tabela";
+    tabela.className = `mapas-produtos-tabela${comFoto ? " mapas-com-foto" : " mapas-sem-foto"}`;
     tabela.style.width = `${larguraTabelaMapaVisivel()}px`;
     tabela.appendChild(criarColgroupTabelaMapa());
     tabela.appendChild(criarCabecalhoTabelaMapa());

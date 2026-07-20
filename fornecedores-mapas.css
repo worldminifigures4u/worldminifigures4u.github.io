@@ -1082,6 +1082,32 @@ body.pagina-mapas-admin > main.fornecedores-admin {
     text-overflow: ellipsis;
     white-space: nowrap;
     vertical-align: middle;
+    text-align: left;
+    line-height: 1.25;
+}
+
+.pagina-mapas-admin .mapas-produtos-tabela.mapas-com-foto .mapas-col-nome {
+    white-space: normal;
+    vertical-align: middle;
+}
+
+.pagina-mapas-admin .mapas-produtos-tabela.mapas-com-foto .mapas-celula-nome {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    white-space: normal;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-height: calc(1.25em * 2);
+}
+
+.pagina-mapas-admin .mapas-produtos-tabela.mapas-sem-foto .mapas-celula-nome {
+    display: block;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    -webkit-line-clamp: unset;
+    line-clamp: unset;
 }
 
 .mapas-celula-nome:hover {
