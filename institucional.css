@@ -68,13 +68,15 @@
     .bloco-institucional{ padding:17px; }
 }
 
-/* Painel da página Sobre (só cliente / marca) */
-body[data-page="sobre"] .pagina-institucional{
+/* Painel partilhado: Sobre, Contactos e Políticas */
+body[data-page="sobre"] .pagina-institucional,
+body[data-page="contactos"] .pagina-institucional,
+body[data-page="politicas"] .pagina-institucional{
     width:min(720px, 100%);
     max-width:720px;
 }
 
-body[data-page="sobre"] .sobre-painel{
+.institucional-painel{
     background:#111;
     border:1px solid #333;
     border-radius:12px;
@@ -83,7 +85,9 @@ body[data-page="sobre"] .sobre-painel{
     box-sizing:border-box;
 }
 
-body[data-page="sobre"] .pagina-institucional h1{
+body[data-page="sobre"] .pagina-institucional h1,
+body[data-page="contactos"] .pagina-institucional h1,
+body[data-page="politicas"] .pagina-institucional h1{
     font-family:"Nunito", Arial, Helvetica, sans-serif;
     font-weight:800;
     font-size:30px;
@@ -92,7 +96,9 @@ body[data-page="sobre"] .pagina-institucional h1{
     margin:0 0 22px;
 }
 
-body[data-page="sobre"] .bloco-institucional{
+body[data-page="sobre"] .bloco-institucional,
+body[data-page="contactos"] .bloco-institucional,
+body[data-page="politicas"] .bloco-institucional{
     border-radius:10px;
     background:#151515;
 }
