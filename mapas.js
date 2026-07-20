@@ -1798,7 +1798,7 @@ function garantirScriptImportacaoMapas() {
 
     promessaScriptImportacaoMapas = new Promise((resolve, reject) => {
         const script = document.createElement("script");
-        script.src = "gestao-importacao.js?v=20260717-catalogo-ativo-auto";
+        script.src = "gestao-importacao.js?v=20260720-novidade-novos";
         script.onload = () => {
             scriptImportacaoMapasCarregado = true;
             resolve();
