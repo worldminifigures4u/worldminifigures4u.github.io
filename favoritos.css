@@ -115,6 +115,14 @@
     min-width:0;
 }
 
+.favorito-tema{
+    color:#8a929c;
+    font-size:10px;
+    font-weight:700;
+    text-transform:uppercase;
+    letter-spacing:0.4px;
+}
+
 .favorito-preco{
     color:#fff !important;
     font-size:15px !important;
@@ -298,6 +306,11 @@
         line-height:1.1;
     }
 
+    .favorito-tema{
+        font-size:10px;
+        line-height:1.1;
+    }
+
     .favorito-preco{
         font-size:14px !important;
         font-weight:800 !important;
@@ -415,6 +428,10 @@
 
     .favorito-linha-secundaria span:not(.favorito-preco){
         font-size:14px;
+    }
+
+    .favorito-tema{
+        font-size:10px;
     }
 
     .favorito-preco{

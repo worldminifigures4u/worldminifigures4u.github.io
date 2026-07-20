@@ -124,10 +124,11 @@ function criarCardFavoritoCliente(produto) {
     nome.textContent = produto.nome || 'Produto';
 
     const detalhe = document.createElement('span');
+    detalhe.className = 'favorito-tema';
     const temaDetalhe = [produto.tema, produto.subtema]
         .map(valor => String(valor || '').trim())
         .filter(valor => valor && !/^sem\s*subtema$/i.test(valor));
-    detalhe.textContent = temaDetalhe.join(' - ') || 'Sem tema';
+    detalhe.textContent = temaDetalhe.join(' · ') || 'Sem tema';
 
     const preco = document.createElement('span');
     preco.className = 'favorito-preco';
