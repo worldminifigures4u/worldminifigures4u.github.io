@@ -193,7 +193,20 @@ function definirEstadoVitrine(mensagem, tipo = '') {
     vitrine.replaceChildren();
     const estado = document.createElement('div');
     estado.className = `estado-vitrine ${tipo}`.trim();
-    estado.textContent = mensagem;
+
+    const figura = document.createElement('img');
+    figura.className = 'estado-vitrine-figura';
+    figura.src = 'img/sem-imagem.png?v=20260719-sem-texto';
+    figura.alt = '';
+    figura.width = 120;
+    figura.height = 120;
+    figura.decoding = 'async';
+
+    const texto = document.createElement('p');
+    texto.className = 'estado-vitrine-texto';
+    texto.textContent = mensagem;
+
+    estado.append(figura, texto);
     vitrine.appendChild(estado);
 }
 

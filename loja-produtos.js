@@ -623,9 +623,22 @@ async function reiniciarVitrinePaginada() {
         const erroDiv = document.createElement('div');
         erroDiv.id = 'aviso-pesquisa-vazia';
         erroDiv.className = 'estado-vitrine erro';
-        erroDiv.innerText = pesquisaAtiva || filtroTemaAtual !== 'todos'
+
+        const figura = document.createElement('img');
+        figura.className = 'estado-vitrine-figura';
+        figura.src = 'img/sem-imagem.png?v=20260719-sem-texto';
+        figura.alt = '';
+        figura.width = 120;
+        figura.height = 120;
+        figura.decoding = 'async';
+
+        const texto = document.createElement('p');
+        texto.className = 'estado-vitrine-texto';
+        texto.textContent = pesquisaAtiva || filtroTemaAtual !== 'todos'
             ? 'Nenhuma minifigura encontrada com esse filtro.'
             : 'Nenhum produto encontrado.';
+
+        erroDiv.append(figura, texto);
         vitrine.appendChild(erroDiv);
     } else {
         renderizarMaisProdutosVitrine();
