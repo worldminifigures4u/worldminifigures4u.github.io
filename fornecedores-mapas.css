@@ -1000,9 +1000,9 @@ body.pagina-mapas-admin > main.fornecedores-admin {
 
 .pagina-mapas-admin .mapas-produtos-tabela {
     width: max-content;
-    max-width: 100%;
+    max-width: none;
     margin: 0 auto;
-    table-layout: auto;
+    table-layout: fixed;
     font-size: 14.3px;
 }
 
@@ -1076,8 +1076,8 @@ body.pagina-mapas-admin > main.fornecedores-admin {
 }
 
 .pagina-mapas-admin .mapas-celula-nome {
-    display: inline-block;
-    max-width: 308px;
+    display: block;
+    max-width: 100%;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -1135,16 +1135,15 @@ body.pagina-mapas-admin > main.fornecedores-admin {
     border: 1px solid #333;
 }
 
-/* Larguras naturais no Mapas: colunas juntas e centradas */
-.pagina-mapas-admin .mapas-col-nome {
-    width: auto;
-    min-width: 198px;
-    max-width: 330px;
+/* Larguras fixas no Mapas: não redimensionam com o scroll virtual */
+.pagina-mapas-admin .mapas-col-nome,
+.pagina-mapas-admin .mapas-col-ref,
+.pagina-mapas-admin .mapas-col-tema,
+.pagina-mapas-admin .mapas-col-subtema {
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
-.pagina-mapas-admin .mapas-col-ref {
-    width: auto;
-    min-width: 97px;
-}
+
 .pagina-mapas-admin .mapas-col-stock,
 .pagina-mapas-admin .mapas-col-lego,
 .pagina-mapas-admin .mapas-col-sku,
@@ -1156,15 +1155,7 @@ body.pagina-mapas-admin > main.fornecedores-admin {
 .pagina-mapas-admin .mapas-col-novidade,
 .pagina-mapas-admin .mapas-col-preco,
 .pagina-mapas-admin .mapas-col-preco-compra {
-    width: 1%;
     white-space: nowrap;
-}
-.pagina-mapas-admin .mapas-col-tema,
-.pagina-mapas-admin .mapas-col-subtema {
-    width: auto;
-    max-width: 198px;
-    overflow: hidden;
-    text-overflow: ellipsis;
 }
 
 .mapas-col-lego,

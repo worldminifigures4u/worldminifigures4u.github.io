@@ -1,21 +1,21 @@
 
 const MAPAS_COLUNAS = [
-    { chave: "foto", rotulo: "foto", classe: "mapas-col-foto", semOrdenacao: true },
-    { chave: "nome", rotulo: "nome", classe: "mapas-col-nome", obrigatorio: true },
-    { chave: "referencia", rotulo: "referência", classe: "mapas-col-ref" },
-    { chave: "stock", rotulo: "stock", classe: "mapas-col-stock", numero: true },
-    { chave: "tema", rotulo: "tema", classe: "mapas-col-tema" },
-    { chave: "subtema", rotulo: "subtema", classe: "mapas-col-subtema" },
-    { chave: "preco_compra", rotulo: "preço compra", classe: "mapas-col-preco", numero: true, dinheiro: true },
-    { chave: "preco", rotulo: "preço venda", classe: "mapas-col-preco", numero: true, dinheiro: true },
-    { chave: "lego", rotulo: "lego", classe: "mapas-col-lego" },
-    { chave: "sku", rotulo: "sku", classe: "mapas-col-sku" },
-    { chave: "top", rotulo: "top", classe: "mapas-col-top" },
-    { chave: "ativo", rotulo: "ativo", classe: "mapas-col-ativo" },
-    { chave: "arquivado", rotulo: "arq.", classe: "mapas-col-arquivado", titulo: "arquivado" },
-    { chave: "descontinuado", rotulo: "desc.", classe: "mapas-col-descontinuado", titulo: "descontinuado" },
-    { chave: "novidade", rotulo: "nov.", classe: "mapas-col-novidade", titulo: "novidade" },
-    { chave: "peso", rotulo: "peso", classe: "mapas-col-peso", numero: true }
+    { chave: "foto", rotulo: "foto", classe: "mapas-col-foto", semOrdenacao: true, largura: 53 },
+    { chave: "nome", rotulo: "nome", classe: "mapas-col-nome", obrigatorio: true, largura: 280 },
+    { chave: "referencia", rotulo: "referência", classe: "mapas-col-ref", largura: 110 },
+    { chave: "stock", rotulo: "stock", classe: "mapas-col-stock", numero: true, largura: 72 },
+    { chave: "tema", rotulo: "tema", classe: "mapas-col-tema", largura: 150 },
+    { chave: "subtema", rotulo: "subtema", classe: "mapas-col-subtema", largura: 170 },
+    { chave: "preco_compra", rotulo: "preço compra", classe: "mapas-col-preco", numero: true, dinheiro: true, largura: 110 },
+    { chave: "preco", rotulo: "preço venda", classe: "mapas-col-preco", numero: true, dinheiro: true, largura: 100 },
+    { chave: "lego", rotulo: "lego", classe: "mapas-col-lego", largura: 72 },
+    { chave: "sku", rotulo: "sku", classe: "mapas-col-sku", largura: 80 },
+    { chave: "top", rotulo: "top", classe: "mapas-col-top", largura: 64 },
+    { chave: "ativo", rotulo: "ativo", classe: "mapas-col-ativo", largura: 70 },
+    { chave: "arquivado", rotulo: "arq.", classe: "mapas-col-arquivado", titulo: "arquivado", largura: 70 },
+    { chave: "descontinuado", rotulo: "desc.", classe: "mapas-col-descontinuado", titulo: "descontinuado", largura: 70 },
+    { chave: "novidade", rotulo: "nov.", classe: "mapas-col-novidade", titulo: "novidade", largura: 70 },
+    { chave: "peso", rotulo: "peso", classe: "mapas-col-peso", numero: true, largura: 70 }
 ];
 
 const MAPAS_COLUNAS_STORAGE = "fp-mapas-colunas-visiveis";
@@ -299,6 +299,20 @@ function renderizarContadoresMapa(resultados) {
     }
 }
 
+function criarColgroupTabelaMapa() {
+    const colgroup = document.createElement("colgroup");
+    obterColunasVisiveisMapa().forEach((coluna) => {
+        const col = document.createElement("col");
+        col.style.width = `${Number(coluna.largura) || 100}px`;
+        colgroup.appendChild(col);
+    });
+    return colgroup;
+}
+
+function larguraTabelaMapaVisivel() {
+    return obterColunasVisiveisMapa().reduce((soma, coluna) => soma + (Number(coluna.largura) || 100), 0);
+}
+
 function criarCabecalhoTabelaMapa() {
     const thead = document.createElement("thead");
     const tr = document.createElement("tr");
@@ -446,6 +460,8 @@ function renderizarTabelaMapa() {
 
     const tabela = document.createElement("table");
     tabela.className = "mapas-produtos-tabela";
+    tabela.style.width = `${larguraTabelaMapaVisivel()}px`;
+    tabela.appendChild(criarColgroupTabelaMapa());
     tabela.appendChild(criarCabecalhoTabelaMapa());
     const tbody = document.createElement("tbody");
     tbody.id = "mapas-tabela-corpo";
