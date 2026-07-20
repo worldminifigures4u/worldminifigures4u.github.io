@@ -312,13 +312,20 @@
             color:#000;
             border:none;
             border-radius:14px;
-            font-size:13px;
+            font-size:14px;
             font-weight:800;
-            text-align:center;
-            line-height:40px;
-            padding:0;
+            display:inline-flex;
+            align-items:center;
+            justify-content:center;
+            gap:8px;
+            padding:0 12px;
             cursor:pointer;
             transition:0.2s;
+        }
+
+        .btn-adicionar .icone-carrinho{
+            width:18px;
+            height:18px;
         }
 
         .btn-adicionar:hover{

@@ -526,7 +526,14 @@ function criarCardProduto(prod) {
 
     const btn = document.createElement('button');
     btn.className = 'btn-adicionar';
-    btn.innerText = 'Adicionar ao Carrinho';
+    btn.type = 'button';
+    btn.setAttribute('aria-label', 'Adicionar ao carrinho');
+    const textoAdicionar = document.createElement('span');
+    textoAdicionar.textContent = 'Adicionar';
+    const iconeCarrinho = document.createElement('span');
+    iconeCarrinho.className = 'icone-carrinho';
+    iconeCarrinho.setAttribute('aria-hidden', 'true');
+    btn.append(textoAdicionar, iconeCarrinho);
     btn.onclick = function () { adicionarAoCarrinho(prod); };
     card.appendChild(btn);
 
