@@ -45,7 +45,7 @@
         .bloco-institucional{
             padding:22px;
             border:1px solid #333;
-            border-radius:8px;
+            border-radius:14px;
             background:#151515;
             margin-bottom:18px;
         }
@@ -90,6 +90,6 @@ body[data-page="politicas"] .pagina-institucional h1{
 body[data-page="sobre"] .bloco-institucional,
 body[data-page="contactos"] .bloco-institucional,
 body[data-page="politicas"] .bloco-institucional{
-    border-radius:10px;
+    border-radius:14px;
     background:#151515;
 }
