@@ -136,7 +136,7 @@
     display:flex;
     gap:8px;
     justify-content:flex-end;
-    align-items:center;
+    align-items:stretch;
 }
 
 .btn-favorito-adicionar,
@@ -168,9 +168,10 @@
 .btn-favorito-remover{
     border:0;
     border-radius:8px;
-    min-width:30px;
-    width:30px;
-    height:30px;
+    aspect-ratio:1 / 1;
+    height:auto;
+    width:auto;
+    min-width:0;
     padding:0;
     font-size:18px;
     font-weight:900;
@@ -182,6 +183,7 @@
     display:inline-flex;
     align-items:center;
     justify-content:center;
+    align-self:stretch;
     flex:0 0 auto;
 }
 
