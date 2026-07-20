@@ -15,6 +15,8 @@ let encomendaPlataformaParaFicheiros = null;
 let perfilExternoDetetado = null;
 let fichaClientePlataformaAtual = null;
 let stockNegativoConfirmado = new Set();
+let plataformaFigurasRepetidasUltimaAnalise = [];
+let plataformaFigurasRepetidasEncomenda = [];
 const PLATAFORMA_LISTA_MAX_CARACTERES = 30000;
 const PLATAFORMA_LISTA_MAX_LINHAS = 500;
 
@@ -682,7 +684,6 @@ function obterChaveTextoListaPlataforma(texto) {
 
 function preprocessarLinhasListaProdutosPlataforma(linhas) {
     const resultado = [];
-    let anteriorNormalizado = '';
 
     linhas.forEach(bruta => {
         let linha = String(bruta || '').trim();
@@ -692,10 +693,6 @@ function preprocessarLinhasListaProdutosPlataforma(linhas) {
         linha = removerPrecoFinalLinhaListaPlataforma(linha);
         if (!linha || linhaParecePrecoListaPlataforma(linha)) return;
 
-        const normalizado = normalizarTextoWallapop(linha);
-        if (normalizado && normalizado === anteriorNormalizado) return;
-
-        anteriorNormalizado = normalizado;
         resultado.push(linha);
     });
 
@@ -808,15 +805,84 @@ function resumirAnaliseListaPlataforma(linhas) {
     return { figuras, exatas, sugeridas, rever, produtos: linhas.length };
 }
 
+function obterChaveLinhaListaPlataforma(linha) {
+    const chaveTexto = obterChaveTextoListaPlataforma(linha.original);
+    return linha.produtoId
+        ? `id:${linha.produtoId}`
+        : (chaveTexto ? `txt:${chaveTexto}` : `linha:${linha.indice}`);
+}
+
+function obterNomeLinhaListaPlataforma(linha) {
+    if (linha.produtoId) {
+        const produto = wallapopProdutos.find(item => String(item.id) === String(linha.produtoId));
+        if (produto?.nome) return String(produto.nome).trim();
+        const candidato = linha.candidatos?.find(item => String(item.produto?.id) === String(linha.produtoId));
+        if (candidato?.produto?.nome) return String(candidato.produto.nome).trim();
+    }
+    return String(linha.original || '').trim();
+}
+
+function coletarFigurasRepetidasListaPlataforma(linhas) {
+    const contagens = new Map();
+    (linhas || []).forEach(linha => {
+        const chave = obterChaveLinhaListaPlataforma(linha);
+        const atual = contagens.get(chave) || { nome: '', vezes: 0 };
+        atual.vezes += 1;
+        const nome = obterNomeLinhaListaPlataforma(linha);
+        if (nome) atual.nome = nome;
+        contagens.set(chave, atual);
+    });
+    return [...contagens.values()]
+        .filter(item => item.vezes > 1 && item.nome)
+        .map(item => item.nome);
+}
+
+function acumularFigurasRepetidasListaPlataforma(nomes) {
+    (nomes || []).forEach(nome => {
+        const limpo = String(nome || '').trim();
+        if (!limpo) return;
+        if (!plataformaFigurasRepetidasEncomenda.some(item => normalizarTextoWallapop(item) === normalizarTextoWallapop(limpo))) {
+            plataformaFigurasRepetidasEncomenda.push(limpo);
+        }
+    });
+}
+
+function limparFigurasRepetidasListaPlataforma() {
+    plataformaFigurasRepetidasUltimaAnalise = [];
+    plataformaFigurasRepetidasEncomenda = [];
+}
+
+function obterFigurasRepetidasParaFicheirosPlataforma() {
+    const guardadas = encomendaPlataformaParaFicheiros?.figuras_repetidas;
+    if (Array.isArray(guardadas) && guardadas.length) {
+        return guardadas.map(nome => String(nome || '').trim()).filter(Boolean);
+    }
+    return [...plataformaFigurasRepetidasEncomenda];
+}
+
+function formatarLinhaFigurasRepetidasTxtPlataforma() {
+    const nomes = obterFigurasRepetidasParaFicheirosPlataforma();
+    if (!nomes.length) return '';
+    return `Figuras repetidas (contabilizadas 1 unidade): ${nomes.join('; ')}`;
+}
+
+function anexarFigurasRepetidasAoTextoPlataforma(linhas) {
+    const nota = formatarLinhaFigurasRepetidasTxtPlataforma();
+    if (!nota) return linhas;
+    const resultado = [...linhas];
+    if (resultado.length && String(resultado[resultado.length - 1] || '').trim()) {
+        resultado.push('');
+    }
+    resultado.push(nota);
+    return resultado;
+}
+
 function deduplicarLinhasListaPlataforma(linhas) {
     const mapa = new Map();
     const ordem = [];
 
     linhas.forEach(linha => {
-        const chaveTexto = obterChaveTextoListaPlataforma(linha.original);
-        const chave = linha.produtoId
-            ? `id:${linha.produtoId}`
-            : (chaveTexto ? `txt:${chaveTexto}` : `linha:${linha.indice}`);
+        const chave = obterChaveLinhaListaPlataforma(linha);
         if (mapa.has(chave)) return;
         mapa.set(chave, linha);
         ordem.push(chave);
@@ -908,6 +974,7 @@ function analisarListaProdutosPlataforma(texto) {
         };
     });
 
+    plataformaFigurasRepetidasUltimaAnalise = coletarFigurasRepetidasListaPlataforma(linhasAnalisadas);
     return deduplicarLinhasListaPlataforma(linhasAnalisadas);
 }
 
@@ -981,6 +1048,7 @@ function aplicarSelecoesListaProdutosPlataforma(selecoes) {
     });
 
     if (!adicionados) return 0;
+    acumularFigurasRepetidasListaPlataforma(plataformaFigurasRepetidasUltimaAnalise);
     guardarItensWallapop();
     marcarWallapopPorRegistar();
     renderizarSelecionadosWallapop();
@@ -1928,7 +1996,7 @@ function criarTextoEncomendaWallapop() {
         return soma + (Math.max(1, Number(item.quantidade) || 1) * Number(item.preco || 0));
     }, 0);
     linhas.push('', `Total:\t${formatarEuroWallapop(total)} €`);
-    return '\ufeff' + linhas.join('\r\n');
+    return '\ufeff' + anexarFigurasRepetidasAoTextoPlataforma(linhas).join('\r\n');
 }
 
 function criarLinhasDadosClienteOlx() {
@@ -1961,7 +2029,7 @@ function criarTextoInternoPlataforma() {
             ...criarLinhasDadosClienteOlx()
         );
     }
-    return '\ufeff' + linhas.join('\r\n');
+    return '\ufeff' + anexarFigurasRepetidasAoTextoPlataforma(linhas).join('\r\n');
 }
 
 function formatarLinhaTxtProdutoPlataforma(item) {
@@ -2334,6 +2402,7 @@ function novaEncomendaPlataforma() {
     stockNegativoConfirmado = new Set();
     wallapopRegistoConcluido = false;
     wallapopItens = [];
+    limparFigurasRepetidasListaPlataforma();
     guardarItensWallapop();
     const seletor = document.getElementById('plataforma-tipo');
     seletor.disabled = false;
@@ -2503,6 +2572,7 @@ async function registarEncomendaWallapop() {
             nome_encomenda: nomeEncomendaAutomatico,
             envio: { ...envio },
             cliente: { ...dadosCliente },
+            figuras_repetidas: [...plataformaFigurasRepetidasEncomenda],
             itens: wallapopItens.map(item => ({
                 ...item,
                 imagens: Array.isArray(item.imagens) ? [...item.imagens] : item.imagens
@@ -2511,6 +2581,7 @@ async function registarEncomendaWallapop() {
         encomendaPlataformaEmEdicao = null;
         wallapopRegistoConcluido = false;
         wallapopItens = [];
+        limparFigurasRepetidasListaPlataforma();
         stockNegativoConfirmado = new Set();
         guardarItensWallapop();
         document.getElementById('plataforma-tipo').disabled = false;
@@ -2560,6 +2631,7 @@ async function registarEncomendaWallapop() {
 function limparListaWallapop() {
     if (!wallapopItens.length || !window.confirm('Limpar todos os produtos desta imagem?')) return;
     wallapopItens = [];
+    limparFigurasRepetidasListaPlataforma();
     guardarItensWallapop();
     marcarWallapopPorRegistar();
     renderizarSelecionadosWallapop();
