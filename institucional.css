@@ -67,3 +67,42 @@
     }
     .bloco-institucional{ padding:17px; }
 }
+
+/* Painel da página Sobre (só cliente / marca) */
+body[data-page="sobre"] .pagina-institucional{
+    width:min(720px, 100%);
+    max-width:720px;
+}
+
+body[data-page="sobre"] .sobre-painel{
+    background:#111;
+    border:1px solid #333;
+    border-radius:12px;
+    padding:28px 22px 22px;
+    box-shadow:0 12px 30px rgba(0,0,0,0.25);
+    box-sizing:border-box;
+}
+
+body[data-page="sobre"] .sobre-figura{
+    display:block;
+    width:120px;
+    height:120px;
+    margin:0 auto 16px;
+    object-fit:contain;
+    border-radius:16px;
+    background:#1a1a1a;
+}
+
+body[data-page="sobre"] .pagina-institucional h1{
+    font-family:"Nunito", Arial, Helvetica, sans-serif;
+    font-weight:800;
+    font-size:30px;
+    line-height:1.1;
+    text-align:center;
+    margin:0 0 22px;
+}
+
+body[data-page="sobre"] .bloco-institucional{
+    border-radius:10px;
+    background:#151515;
+}
