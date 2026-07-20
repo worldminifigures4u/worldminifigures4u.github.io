@@ -486,17 +486,18 @@ body[data-page="conta"] #conteudo-cliente-autenticado:not(.oculto){
 
 .conta-menu-item:hover,
 .conta-menu-item:focus-visible{
-    border-color:#ffc107;
+    border-color:rgba(255, 193, 7, 0.55);
     color:#ffc107;
+    background:var(--cor-menu-fundo, #222222);
     outline:none;
 }
 
-.conta-menu-item.ativa,
-.conta-menu-item.ativa:hover,
-.conta-menu-item.ativa:focus-visible{
-    border-color:#ffc400;
-    background:var(--cor-ativo-fundo, #ffc107);
-    color:var(--cor-ativo-texto, #000);
+body[data-page="conta"] .conta-menu-item.ativa,
+body[data-page="conta"] .conta-menu-item.ativa:hover,
+body[data-page="conta"] .conta-menu-item.ativa:focus-visible{
+    border-color:#ffc107;
+    background:var(--cor-menu-fundo, #222222);
+    color:#ffc107;
 }
 
 .conta-conteudo-dinamico{
