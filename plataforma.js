@@ -2331,6 +2331,7 @@ async function carregarEncomendaPlataformaPorCodigo(codigo) {
         ]))
     };
     encomendaPlataformaParaFicheiros = null;
+    limparFigurasRepetidasListaPlataforma();
     wallapopRegistoConcluido = true;
 
     const seletor = document.getElementById('plataforma-tipo');
