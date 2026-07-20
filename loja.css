@@ -349,19 +349,37 @@
 
         .btn-tema, .btn-subtema{
             width:100%;
-            border:none;
+            border:1px solid transparent;
             border-radius:12px;
             padding:10px 12px;
             margin:0;
             text-align:left;
             cursor:pointer;
             font-weight:bold;
+            transition:background 0.18s ease, border-color 0.18s ease, color 0.18s ease;
         }
 
-        .btn-tema:hover, .btn-subtema:hover, .btn-tema.ativo, .btn-subtema.ativo{
-            background:var(--cor-acao-principal, #ffc107);
-            color:#000;
+        body[data-page="loja"] .btn-tema:hover,
+        body[data-page="loja"] .btn-subtema:hover{
+            background:rgba(255, 193, 7, 0.14);
+            color:#fff;
+            border-color:rgba(255, 193, 7, 0.28);
             font-weight:700;
+        }
+
+        body[data-page="loja"] .btn-tema.ativo,
+        body[data-page="loja"] .btn-subtema.ativo{
+            background:rgba(255, 193, 7, 0.22);
+            color:#ffc107;
+            border-color:rgba(255, 193, 7, 0.45);
+            font-weight:700;
+        }
+
+        body[data-page="loja"] .btn-tema.ativo:hover,
+        body[data-page="loja"] .btn-subtema.ativo:hover{
+            background:rgba(255, 193, 7, 0.28);
+            color:#ffc107;
+            border-color:rgba(255, 193, 7, 0.55);
         }
 
         .lista-temas{
@@ -441,7 +459,7 @@
 
         .btn-tema.ativo .indicador-tema,
         .btn-tema:hover .indicador-tema{
-            color:#000;
+            color:#ffc107;
         }
 
         .grupo-subtemas.aberto{
