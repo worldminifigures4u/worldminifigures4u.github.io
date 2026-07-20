@@ -52,7 +52,7 @@
 .favorito-card{
     background:#111;
     border:1px solid #333;
-    border-radius:10px;
+    border-radius:14px;
     padding:8px 10px;
     display:grid;
     grid-template-columns:58px minmax(0, 1fr) auto;
