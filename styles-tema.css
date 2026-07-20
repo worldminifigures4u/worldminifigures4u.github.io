@@ -65,11 +65,7 @@
 
 .selected,
 .active,
-.acao-cabecalho.ativa,
-.tab-btn.ativa,
-.conta-menu-item.ativa,
-.btn-tema.ativo,
-.btn-subtema.ativo{
+.tab-btn.ativa{
     background:var(--cor-ativo-fundo, #ffc107);
     color:var(--cor-ativo-texto, #000000);
     font-weight:700;
