@@ -361,25 +361,25 @@
 
         body[data-page="loja"] .btn-tema:hover,
         body[data-page="loja"] .btn-subtema:hover{
-            background:rgba(255, 193, 7, 0.14);
-            color:#fff;
-            border-color:rgba(255, 193, 7, 0.28);
+            background:var(--cor-menu-fundo, #222222);
+            color:#ffc107;
+            border-color:rgba(255, 193, 7, 0.55);
             font-weight:700;
         }
 
         body[data-page="loja"] .btn-tema.ativo,
         body[data-page="loja"] .btn-subtema.ativo{
-            background:rgba(255, 193, 7, 0.22);
+            background:var(--cor-menu-fundo, #222222);
             color:#ffc107;
-            border-color:rgba(255, 193, 7, 0.45);
+            border-color:#ffc107;
             font-weight:700;
         }
 
         body[data-page="loja"] .btn-tema.ativo:hover,
         body[data-page="loja"] .btn-subtema.ativo:hover{
-            background:rgba(255, 193, 7, 0.28);
+            background:var(--cor-menu-fundo, #222222);
             color:#ffc107;
-            border-color:rgba(255, 193, 7, 0.55);
+            border-color:#ffc107;
         }
 
         .lista-temas{
