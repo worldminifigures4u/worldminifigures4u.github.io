@@ -169,13 +169,24 @@
     border:0;
     border-radius:8px;
     min-width:30px;
+    width:30px;
     height:30px;
     padding:0;
-    font-weight:bold;
+    font-size:18px;
+    font-weight:900;
+    line-height:1;
     cursor:pointer;
     text-align:center;
     background:#ff4d4d;
     color:#fff;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    flex:0 0 auto;
+}
+
+.btn-favorito-remover-texto{
+    display:none !important;
 }
 
 .btn-favorito-adicionar:disabled{
