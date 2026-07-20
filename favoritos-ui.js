@@ -156,8 +156,9 @@ function criarCardFavoritoCliente(produto) {
     const adicionar = document.createElement('button');
     adicionar.type = 'button';
     adicionar.className = 'btn-favorito-adicionar';
+    adicionar.setAttribute('aria-label', 'Adicionar ao carrinho');
     const textoAdicionar = document.createElement('span');
-    textoAdicionar.textContent = 'Adicionar ao carrinho';
+    textoAdicionar.textContent = 'Adicionar';
     const iconeCarrinho = document.createElement('span');
     iconeCarrinho.className = 'icone-carrinho';
     iconeCarrinho.setAttribute('aria-hidden', 'true');
