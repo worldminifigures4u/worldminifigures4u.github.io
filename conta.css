@@ -56,7 +56,7 @@ body[data-page="conta"] .container{
     height:34px;
     min-height:34px;
     border:0;
-    border-radius:8px;
+    border-radius:14px;
     padding:0 14px;
     font-size:14px;
     font-weight:900;
@@ -313,7 +313,7 @@ body[data-page="conta"] #conteudo-cliente-autenticado:not(.oculto) ~ #conteudo-c
         .btn-favorito-adicionar,
         .btn-favorito-remover{
             border:0;
-            border-radius:6px;
+            border-radius:14px;
             padding:8px 10px;
             font-weight:800;
             cursor:pointer;
