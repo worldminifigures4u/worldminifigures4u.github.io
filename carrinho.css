@@ -43,11 +43,18 @@
         }
 
         .btn-continuar-comprar{
+            display:inline-flex;
+            align-items:center;
+            justify-content:center;
+            box-sizing:border-box;
+            height:34px;
+            min-height:34px;
             background:var(--cor-acao-principal, #ffc107);
             color:#000;
             border:0;
             border-radius:8px;
-            padding:9px 12px;
+            padding:0 14px;
+            font-size:14px;
             font-weight:900;
             text-decoration:none;
             white-space:nowrap;

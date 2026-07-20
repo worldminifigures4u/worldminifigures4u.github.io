@@ -49,9 +49,16 @@ body[data-page="conta"] .container{
 }
 
 .conta-ver-produtos{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    box-sizing:border-box;
+    height:34px;
+    min-height:34px;
     border:0;
     border-radius:8px;
-    padding:9px 12px;
+    padding:0 14px;
+    font-size:14px;
     font-weight:900;
     cursor:pointer;
     text-align:center;
@@ -549,7 +556,9 @@ body[data-page="conta"] #conteudo-cliente-anonimo{
 
     .conta-ver-produtos{
         flex:0 0 auto;
-        padding:8px 14px;
+        height:34px;
+        min-height:34px;
+        padding:0 14px;
         font-size:13px;
     }
 
