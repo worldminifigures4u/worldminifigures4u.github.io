@@ -503,6 +503,10 @@ function criarCardProduto(prod) {
 
     card.appendChild(galeria);
 
+    const titulo = document.createElement('h3');
+    titulo.innerText = prod.nome || '';
+    card.appendChild(titulo);
+
     const category = document.createElement('div');
     category.className = 'categoria';
     category.innerText = prod.tema || 'Outros';
@@ -514,10 +518,6 @@ function criarCardProduto(prod) {
         subcategoria.innerText = prod.subtema;
         card.appendChild(subcategoria);
     }
-
-    const titulo = document.createElement('h3');
-    titulo.innerText = prod.nome || '';
-    card.appendChild(titulo);
 
     const preco = document.createElement('div');
     preco.className = 'preco';
