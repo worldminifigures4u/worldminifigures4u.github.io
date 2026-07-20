@@ -1,6 +1,6 @@
 
 const MAPAS_COLUNAS = [
-    { chave: "foto", rotulo: "foto", classe: "mapas-col-foto", semOrdenacao: true, largura: 53 },
+    { chave: "foto", rotulo: "foto", classe: "mapas-col-foto", semOrdenacao: true, largura: 64 },
     { chave: "nome", rotulo: "nome", classe: "mapas-col-nome", obrigatorio: true, largura: 280 },
     { chave: "referencia", rotulo: "referência", classe: "mapas-col-ref", largura: 110 },
     { chave: "stock", rotulo: "stock", classe: "mapas-col-stock", numero: true, largura: 72 },

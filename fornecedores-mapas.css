@@ -984,11 +984,15 @@ body.pagina-mapas-admin > main.fornecedores-admin {
 }
 
 .pagina-mapas-admin .mapas-tabela-wrapper {
-    display: flex;
-    justify-content: center;
+    display: block;
     width: 100%;
     overflow-x: auto;
     overflow-y: visible;
+}
+
+.pagina-mapas-admin .mapas-tabela-wrapper > .mapas-produtos-tabela {
+    margin-left: auto;
+    margin-right: auto;
 }
 
 .mapas-produtos-tabela {
@@ -1004,6 +1008,30 @@ body.pagina-mapas-admin > main.fornecedores-admin {
     margin: 0 auto;
     table-layout: fixed;
     font-size: 14.3px;
+}
+
+.pagina-mapas-admin .mapas-produtos-tabela.mapas-com-foto .mapas-col-foto {
+    position: sticky;
+    left: 0;
+    z-index: 3;
+    background: #181818;
+    box-shadow: 2px 0 0 rgba(0, 0, 0, 0.35);
+}
+
+.pagina-mapas-admin .mapas-produtos-tabela.mapas-com-foto thead .mapas-col-foto {
+    z-index: 4;
+}
+
+.pagina-mapas-admin .mapas-produtos-tabela.mapas-com-foto tbody tr:nth-child(even) .mapas-col-foto {
+    background: #171717;
+}
+
+.pagina-mapas-admin .mapas-produtos-tabela.mapas-com-foto tbody tr:nth-child(odd) .mapas-col-foto {
+    background: #111;
+}
+
+.pagina-mapas-admin .mapas-produtos-tabela.mapas-com-foto tbody tr.mapa-linha-quantidade-ativa .mapas-col-foto {
+    background: #2a2410 !important;
 }
 
 .mapas-produtos-tabela th {
@@ -1153,7 +1181,8 @@ body.pagina-mapas-admin > main.fornecedores-admin {
 .mapas-col-qtd { width: 82px; }
 
 .pagina-mapas-admin .mapas-col-foto {
-    width: 53px;
+    width: 64px;
+    min-width: 64px;
     padding: 4px;
     text-align: center;
     vertical-align: middle;
