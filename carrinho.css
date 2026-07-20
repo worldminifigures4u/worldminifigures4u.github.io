@@ -181,12 +181,16 @@
 
         .btn-quantidade,
         .btn-remover{
-            min-width:30px;
-            height:30px;
+            box-sizing:border-box;
+            width:34px;
+            height:34px;
+            min-width:34px;
+            min-height:34px;
+            flex:0 0 34px;
             border:none;
             border-radius:8px;
             cursor:pointer;
-            font-size:18px;
+            font-size:16px;
             font-weight:900;
             line-height:1;
             display:inline-flex;
@@ -538,7 +542,11 @@
     .btn-quantidade,
     .btn-remover{
         flex:1 1 0;
+        width:auto;
+        min-width:0;
         min-height:40px;
+        height:40px;
+        flex-basis:0;
     }
 
     .quantidade-carrinho{
