@@ -22,6 +22,7 @@
     function campoAceitaLimpar(campo) {
         if (!campo || !(campo instanceof HTMLElement)) return false;
         if (campo.closest("#fornecedor-selecionados")) return false;
+        if (campo.closest(".cabecalho-pesquisa")) return false;
         if (campo.closest(".campo-com-limpar")) return false;
         if (campo.matches(SELETOR_EXCLUIR)) return false;
         if (campo.dataset.semLimparCampo === "1" || campo.closest("[data-sem-limpar-campo]")) return false;
