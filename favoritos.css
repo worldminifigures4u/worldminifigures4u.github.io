@@ -66,7 +66,7 @@
 }
 
 .favorito-card:hover{
-    border-color:#ffc107;
+    border-color:rgba(255, 193, 7, 0.35);
 }
 
 .favorito-imagem{
