@@ -19,8 +19,13 @@
         '.fornecedor-lista-final-box textarea',
     ].join(', ');
 
+    function paginaVisivelAoCliente() {
+        return Boolean(document.body && document.body.dataset.page);
+    }
+
     function campoAceitaLimpar(campo) {
         if (!campo || !(campo instanceof HTMLElement)) return false;
+        if (paginaVisivelAoCliente()) return false;
         if (campo.closest("#fornecedor-selecionados")) return false;
         if (campo.closest(".cabecalho-pesquisa")) return false;
         if (campo.closest(".campo-com-limpar")) return false;
@@ -103,6 +108,8 @@
     }
 
     function iniciar() {
+        if (paginaVisivelAoCliente()) return;
+
         processarRaiz(document.body);
 
         const observador = new MutationObserver((mutacoes) => {
