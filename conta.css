@@ -120,12 +120,13 @@ body[data-page="conta"] #conteudo-cliente-autenticado:not(.oculto) ~ #conteudo-c
 
         .form-cliente input {
             width: 100%;
-            padding: 8px;
-            border-radius: 6px;
+            padding: 10px 12px;
+            border-radius: 14px;
             border: 1px solid #2a2a2a;
             background: #222;
             color: white;
             box-sizing: border-box;
+            font-size: 15px;
         }
 
         .form-cliente input:focus {
@@ -136,9 +137,11 @@ body[data-page="conta"] #conteudo-cliente-autenticado:not(.oculto) ~ #conteudo-c
         .btn-acao-cliente {
             background: var(--cor-acao-principal, #ffc107);
             border: none;
-            border-radius: 6px;
-            padding: 10px;
-            font-weight: bold;
+            border-radius: 14px;
+            padding: 10px 14px;
+            min-height: 34px;
+            font-weight: 800;
+            font-size: 14px;
             cursor: pointer;
             transition: 0.2s;
             margin-top: 5px;
