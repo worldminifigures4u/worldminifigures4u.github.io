@@ -409,7 +409,7 @@
             background:var(--cor-menu-fundo, #222222);
             color:#ffc107;
             border-color:rgba(255, 193, 7, 0.55);
-            font-weight:700;
+            font-weight:800;
         }
 
         body[data-page="loja"] .btn-tema.ativo,
@@ -417,7 +417,7 @@
             background:var(--cor-menu-fundo, #222222);
             color:#ffc107;
             border-color:#ffc107;
-            font-weight:700;
+            font-weight:800;
         }
 
         body[data-page="loja"] .btn-tema.ativo:hover,
