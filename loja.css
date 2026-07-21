@@ -374,7 +374,7 @@
             margin:0;
             text-align:left;
             cursor:pointer;
-            font-weight:bold;
+            font-weight:800;
             transition:background 0.18s ease, border-color 0.18s ease, color 0.18s ease;
         }
 
