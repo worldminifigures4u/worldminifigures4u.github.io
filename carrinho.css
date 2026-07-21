@@ -385,10 +385,10 @@
         }
         .total-box{
             margin-top:20px;
-            background:#181818;
+            background:#151515;
             border:1px solid #2a2a2a;
             border-radius:14px;
-            padding:12px;
+            padding:18px 16px;
             margin-bottom: 15px;
         }
 
@@ -396,15 +396,19 @@
             display:flex;
             justify-content:space-between;
             margin-bottom:10px;
+            color:#bbb;
+            font-size:14px;
+            font-weight:600;
         }
 
         .valor-final{
             color:#fff;
-            font-size:24px;
-            font-weight:bold;
-            border-top:1px dashed #444;
-            padding-top:10px;
-            margin-top:8px;
+            font-family:"Nunito", Arial, Helvetica, sans-serif;
+            font-size:18px;
+            font-weight:800;
+            border-top:1px dashed #2a2a2a;
+            padding-top:12px;
+            margin-top:10px;
         }
 
         .seccao-pagamento {
