@@ -209,7 +209,7 @@ body[data-page="conta"] #conteudo-cliente-autenticado:not(.oculto) ~ #conteudo-c
 
         .zona-perigo-conta p{
             margin:0 0 14px;
-            color:#bbb;
+            color:#777;
             font-size:13px;
             line-height:1.5;
         }
