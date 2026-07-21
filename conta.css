@@ -426,7 +426,7 @@ body[data-page="conta"] #conteudo-cliente-autenticado:not(.oculto) ~ #conteudo-c
         }
 
         .historico-vazio{
-            color:#999;
+            color:#777;
             font-size:13px;
             line-height:1.4;
         }
