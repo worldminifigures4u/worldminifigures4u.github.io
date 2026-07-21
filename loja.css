@@ -381,6 +381,27 @@
             transition:background 0.18s ease, border-color 0.18s ease, color 0.18s ease;
         }
 
+        .conteudo-tema{
+            display:inline-flex;
+            align-items:center;
+            gap:8px;
+            min-width:0;
+        }
+
+        .icone-tema{
+            width:16px;
+            height:16px;
+            flex:0 0 16px;
+            opacity:0.9;
+        }
+
+        .nome-tema{
+            min-width:0;
+            overflow:hidden;
+            text-overflow:ellipsis;
+            white-space:nowrap;
+        }
+
         body[data-page="loja"] .btn-tema:hover,
         body[data-page="loja"] .btn-subtema:hover{
             background:var(--cor-menu-fundo, #222222);
@@ -631,6 +652,12 @@
         padding:12px 14px;
         min-height:44px;
         line-height:1.25;
+    }
+
+    .icone-tema{
+        width:18px;
+        height:18px;
+        flex-basis:18px;
     }
 
     .indicador-tema{

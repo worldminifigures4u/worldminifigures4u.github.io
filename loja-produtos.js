@@ -7,6 +7,7 @@ const TAMANHO_PAGINA_METADADOS = 1000;
 const CACHE_TEMAS_LOJA_CHAVE = 'figures-planet-loja-temas-v2';
 const CACHE_TEMAS_LOJA_TTL_MS = 30 * 60 * 1000;
 const CAMPOS_PRODUTO_LOJA = 'id, sku, nome, preco, peso, tema, subtema, imagens, ativo, descontinuado';
+const ICONE_TEMA_PADRAO = 'brick';
 
 let produtosVitrineAtual = [];
 let produtosFiltradosAtual = [];
@@ -23,6 +24,69 @@ const mapaTemasLoja = new Map();
 
 function slugificarTemaLoja(texto) {
     return String(texto || '').toLowerCase().replace(/\s+/g, '-');
+}
+
+function criarSvgTema(pathD) {
+    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    svg.setAttribute('viewBox', '0 0 24 24');
+    svg.setAttribute('aria-hidden', 'true');
+    svg.setAttribute('focusable', 'false');
+    svg.setAttribute('fill', 'none');
+    svg.setAttribute('stroke', 'currentColor');
+    svg.setAttribute('stroke-width', '2');
+    svg.setAttribute('stroke-linecap', 'round');
+    svg.setAttribute('stroke-linejoin', 'round');
+
+    const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    path.setAttribute('d', pathD);
+    svg.appendChild(path);
+    return svg;
+}
+
+function obterChaveIconeTema(tema = '') {
+    const valor = String(tema).toLowerCase();
+    if (!valor || valor === 'todos') return 'todos';
+    if (valor.includes('star') || valor.includes('wars')) return 'sabre';
+    if (valor.includes('harry') || valor.includes('wizard')) return 'magic';
+    if (valor.includes('marvel')) return 'shield';
+    if (valor.includes('dc')) return 'bolt';
+    if (valor.includes('disney') || valor.includes('princess')) return 'crown';
+    if (valor.includes('car') || valor.includes('vehicle') || valor.includes('speed')) return 'car';
+    if (valor.includes('technic') || valor.includes('ninjago') || valor.includes('city')) return 'brick';
+    if (valor.includes('animal') || valor.includes('dinoss')) return 'paw';
+    return ICONE_TEMA_PADRAO;
+}
+
+function criarIconeTema(tema = '') {
+    const paths = {
+        todos: 'M12 3l2.8 5.7 6.2.9-4.5 4.4 1.1 6.2L12 17.3 6.4 20.2l1.1-6.2L3 9.6l6.2-.9z',
+        sabre: 'M8 16l8-8M6 18l2-2M10 14l2-2M14 10l2-2M16 16l2 2M6 6l12 12',
+        magic: 'M4 20L20 4M14 4h6v6M4 14v6h6',
+        shield: 'M12 3l7 3v6c0 5-3.4 8.5-7 9-3.6-.5-7-4-7-9V6z',
+        bolt: 'M13 2L4 14h6l-1 8 9-12h-6z',
+        crown: 'M3 18h18l-1.5-9-5 4-2.5-6-2.5 6-5-4z',
+        car: 'M5 16h14l-1.5-5h-11zM7 16a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3zm10 0a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3z',
+        paw: 'M12 15c2.2 0 4 1.4 4 3s-1.8 3-4 3-4-1.4-4-3 1.8-3 4-3zM7.5 10.5a1.5 2 0 1 0 0-4 1.5 2 0 0 0 0 4zm4.5-2a1.5 2 0 1 0 0-4 1.5 2 0 0 0 0 4zm4.5 2a1.5 2 0 1 0 0-4 1.5 2 0 0 0 0 4zM4 14a1.5 2 0 1 0 0-4 1.5 2 0 0 0 0 4z',
+        brick: 'M3 9h18v10H3zM8 9V6h3v3m2 0V6h3v3M6 14h3m2 0h3m2 0h3'
+    };
+    const chave = obterChaveIconeTema(tema);
+    return criarSvgTema(paths[chave] || paths[ICONE_TEMA_PADRAO]);
+}
+
+function criarRotuloTema(temaTexto) {
+    const conteudo = document.createElement('span');
+    conteudo.className = 'conteudo-tema';
+
+    const icone = criarIconeTema(temaTexto);
+    icone.classList.add('icone-tema');
+
+    const nomeTema = document.createElement('span');
+    nomeTema.className = 'nome-tema';
+    nomeTema.textContent = temaTexto;
+
+    conteudo.appendChild(icone);
+    conteudo.appendChild(nomeTema);
+    return conteudo;
 }
 
 function obterClienteProdutosLoja() {
@@ -271,7 +335,7 @@ function gerarMenus(listaProdutos){
 
     const todosBtn = document.createElement('button');
     todosBtn.className = 'btn-tema ativo';
-    todosBtn.textContent = 'Todos';
+    todosBtn.appendChild(criarRotuloTema('Todos'));
     todosBtn.onclick = function(){ filtrarTema('todos', this); };
     listaTemas.appendChild(todosBtn);
 
@@ -291,9 +355,7 @@ function gerarMenus(listaProdutos){
         const btnTema = document.createElement('button');
         btnTema.className = 'btn-tema';
 
-        const nomeTema = document.createElement('span');
-        nomeTema.textContent = tema;
-        btnTema.appendChild(nomeTema);
+        btnTema.appendChild(criarRotuloTema(tema));
 
         if(mapa[tema].length > 0){
             btnTema.classList.add('btn-tema-com-subtemas');
