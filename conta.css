@@ -44,8 +44,10 @@ body[data-page="conta"] .container{
 .conta-topo h1{
     margin:0;
     color:var(--cor-texto-principal, #fff);
+    font-family:"Nunito", Arial, Helvetica, sans-serif;
     font-size:30px;
     line-height:1.1;
+    font-weight:800;
 }
 
 .conta-ver-produtos{
