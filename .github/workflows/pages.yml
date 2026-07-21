@@ -56,6 +56,9 @@ jobs:
             --exclude='favicon.png' \
             --exclude='logo antigo.png' \
             --exclude='fundo escuro.png' \
+            --exclude='wallapop-etiqueta-pdf.user.js' \
+            --exclude='anuncio.html' \
+            --exclude='anuncio.js' \
             ./ _site/
 
       - name: Minify CSS and JS

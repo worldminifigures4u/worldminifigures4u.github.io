@@ -456,40 +456,9 @@
         if (primeiroNome) atualizarNomeContaCabecalho(primeiroNome);
     }
 
-    async function atualizarNomeContaCabecalhoRemoto() {
-        try {
-            await window.carregarScriptSupabase();
-            if (typeof supabase === 'undefined') return;
-
-            const client = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-            const { data: { user } } = await client.auth.getUser();
-            if (!user) {
-                atualizarNomeContaCabecalho('');
-                return;
-            }
-
-            const { data } = await client
-                .from('clientes')
-                .select('nome')
-                .eq('id', user.id)
-                .single();
-
-            atualizarNomeContaCabecalho(data?.nome || user?.user_metadata?.nome || '');
-        } catch (erro) {
-            console.warn('Nome da conta indisponivel:', erro);
-        }
-    }
-
     function agendarNomeContaCabecalhoLeve() {
+        // Paginas institucionais: so cache local, sem carregar o Supabase (~200 KB).
         mostrarNomeContaEmCache();
-        const atualizar = function () {
-            atualizarNomeContaCabecalhoRemoto();
-        };
-        if ('requestIdleCallback' in window) {
-            window.requestIdleCallback(atualizar, { timeout: 2000 });
-        } else {
-            window.setTimeout(atualizar, 0);
-        }
     }
 
     window.FiguresPlanetListeners = {
@@ -506,16 +475,18 @@
     };
 
     if ('serviceWorker' in navigator && window.location.protocol !== 'file:') {
-        navigator.serviceWorker.register('sw.js?v=20260716-sem-rodape-admin').then((registo) => {
-            registo.addEventListener('updatefound', () => {
-                const novoWorker = registo.installing;
-                if (!novoWorker) return;
-                novoWorker.addEventListener('statechange', () => {
-                    if (novoWorker.state === 'activated' && navigator.serviceWorker.controller) {
-                        window.location.reload();
-                    }
+        window.addEventListener('load', () => {
+            navigator.serviceWorker.register('sw.js?v=20260721-leve-r28').then((registo) => {
+                registo.addEventListener('updatefound', () => {
+                    const novoWorker = registo.installing;
+                    if (!novoWorker) return;
+                    novoWorker.addEventListener('statechange', () => {
+                        if (novoWorker.state === 'activated' && navigator.serviceWorker.controller) {
+                            window.location.reload();
+                        }
+                    });
                 });
-            });
-        }).catch(() => {});
+            }).catch(() => {});
+        });
     }
 })();
