@@ -209,7 +209,7 @@ async function carregarPaginaProdutosLoja({ reiniciar = false } = {}) {
 }
 
 async function carregarProdutosDaNuvem(){
-    definirEstadoVitrine('A carregar minifiguras extraordinárias...');
+    definirEstadoVitrine('A carregar produtos...');
     try{
         todosOsProdutos = [];
         catalogoAdminCarregado = false;
@@ -602,8 +602,8 @@ function atualizarBarraCarregarMaisVitrine() {
     const detalhe = sentinelaCarregarMais.querySelector('.vitrine-carregar-mais-detalhe');
     if (texto) {
         texto.textContent = carregandoProdutosRemotos
-            ? 'A carregar mais figuras…'
-            : 'Há mais figuras abaixo';
+            ? 'A carregar mais produtos…'
+            : 'Há mais produtos abaixo';
     }
     if (detalhe) {
         const total = Math.max(totalProdutosRemotos, produtosFiltradosAtual.length);
