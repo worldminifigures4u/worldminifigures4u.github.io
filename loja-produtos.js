@@ -7,8 +7,6 @@ const TAMANHO_PAGINA_METADADOS = 1000;
 const CACHE_TEMAS_LOJA_CHAVE = 'figures-planet-loja-temas-v2';
 const CACHE_TEMAS_LOJA_TTL_MS = 30 * 60 * 1000;
 const CAMPOS_PRODUTO_LOJA = 'id, sku, nome, preco, peso, tema, subtema, imagens, ativo, descontinuado';
-const ICONE_TEMA_PADRAO = 'brick';
-
 let produtosVitrineAtual = [];
 let produtosFiltradosAtual = [];
 let indiceRenderizado = 0;
@@ -26,65 +24,275 @@ function slugificarTemaLoja(texto) {
     return String(texto || '').toLowerCase().replace(/\s+/g, '-');
 }
 
-function criarSvgTema(pathD) {
+function criarSvgTema(partes = []) {
     const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
     svg.setAttribute('viewBox', '0 0 24 24');
     svg.setAttribute('aria-hidden', 'true');
     svg.setAttribute('focusable', 'false');
     svg.setAttribute('fill', 'none');
     svg.setAttribute('stroke', 'currentColor');
-    svg.setAttribute('stroke-width', '2');
+    svg.setAttribute('stroke-width', '1.75');
     svg.setAttribute('stroke-linecap', 'round');
     svg.setAttribute('stroke-linejoin', 'round');
 
-    const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-    path.setAttribute('d', pathD);
-    svg.appendChild(path);
+    partes.forEach((parte) => {
+        const el = document.createElementNS('http://www.w3.org/2000/svg', parte.tag || 'path');
+        Object.keys(parte.attrs || {}).forEach((chave) => {
+            el.setAttribute(chave, parte.attrs[chave]);
+        });
+        svg.appendChild(el);
+    });
+
     return svg;
 }
 
+function path(d) {
+    return { tag: 'path', attrs: { d } };
+}
+
+function circle(cx, cy, r) {
+    return { tag: 'circle', attrs: { cx: String(cx), cy: String(cy), r: String(r) } };
+}
+
+/* Ícones no estilo do mockup DEPOIS (line-art Lucide/Heroicons). */
 const MAPA_ICONES_TEMAS = {
-    'Todos':                    'M12 3l2.8 5.7 6.2.9-4.5 4.4 1.1 6.2L12 17.3 6.4 20.2l1.1-6.2L3 9.6l6.2-.9z',
-    'Animais':                  'M10 5.5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3zm4 0a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3zm-7 3a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3zm10 0a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3zM12 21c-3.3 0-6-2.2-6-5 0-2 1.5-3.6 3.5-4.4L12 10l2.5 1.6c2 .8 3.5 2.4 3.5 4.4 0 2.8-2.7 5-6 5z',
-    'Bluey':                    'M9 5.5C9 4.1 10.1 3 11.5 3S14 4.1 14 5.5v.5h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h1v-.5zM10 10h4M10 14h4',
-    'Bonecos':                  'M12 2a3 3 0 1 0 0 6 3 3 0 0 0 0-6zm0 8c-3.3 0-6 1.3-6 3v1h12v-1c0-1.7-2.7-3-6-3zM7 18h10v2a1 1 0 0 1-1 1H8a1 1 0 0 1-1-1v-2z',
-    'Cidade':                   'M3 21V9l6-6 6 6v12H3zm6-10v4m3-4v4M3 21h18M15 21v-6h6v6',
-    'DC Comics':                'M13 2L4 14h6l-1 8 9-12h-6z',
-    'Dinossauros':              'M4 14c0-4.4 3.6-8 8-8s8 3.6 8 8M8 14c.5-2.2 2.2-4 4-4s3.5 1.8 4 4m-8 0v4h8v-4M9 18v2m6-2v2',
-    'Disney':                   'M12 3C8.1 3 5 6.1 5 10c0 2.4 1.2 4.6 3 5.9V20h8v-4.1c1.8-1.3 3-3.5 3-5.9 0-3.9-3.1-7-7-7zm-2 9a1 1 0 1 1 0-2 1 1 0 0 1 0 2zm4 0a1 1 0 1 1 0-2 1 1 0 0 1 0 2z',
-    'Diversos':                 'M4 6h16M4 12h16M4 18h16',
-    'Dragon Ball':              'M12 2a10 10 0 1 0 0 20A10 10 0 0 0 12 2zm0 4a6 6 0 1 1 0 12A6 6 0 0 1 12 6zm0 2a4 4 0 1 0 0 8 4 4 0 0 0 0-8zm0 1.5a2.5 2.5 0 1 1 0 5 2.5 2.5 0 0 1 0-5z',
-    'Famosos':                  'M12 2a5 5 0 1 0 0 10A5 5 0 0 0 12 2zm0 12c-5.3 0-8 2.7-8 4v2h16v-2c0-1.3-2.7-4-8-4z',
-    'Faroeste':                 'M4 18h16M7 18V8l5-4 5 4v10M10 18v-5h4v5',
-    'Filmes e Séries':          'M15 10l4.6-2.7A1 1 0 0 1 21 8.3v7.4a1 1 0 0 1-1.4.9L15 14v-4zm-13 5V9a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v6a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2z',
-    'Futebol':                  'M12 2a10 10 0 1 0 0 20A10 10 0 0 0 12 2zm0 3l2.4 1.7-.9 2.8H10.5l-.9-2.8L12 5zm-5.7 4.1l2.4 1.7-.9 2.8H5.3l-.3-1a8 8 0 0 1 1.3-3.5zm11.4 0c.6.9 1 2.1 1.3 3.5l-.3 1h-2.5l-.9-2.8 2.4-1.7zM8.4 16l-.9-2.8H5l.7 2.3A8 8 0 0 0 8.4 16zm7.2 0a8 8 0 0 0 2.7-.5l.7-2.3h-2.5L15.6 16zm-3.6 3a8 8 0 0 1-3.1-.9l-.7-2.1h7.6l-.7 2.1A8 8 0 0 1 12 19z',
-    'Ghostbusters':             'M12 2a7 7 0 0 1 7 7c0 2.2-.9 4.1-2.3 5.5L18 22H6l1.3-7.5C5.9 13.1 5 11.2 5 9a7 7 0 0 1 7-7zm-2 9a1 1 0 1 0 0 2 1 1 0 0 0 0-2zm4 0a1 1 0 1 0 0 2 1 1 0 0 0 0-2z',
-    'Harry Potter':             'M6 20L12 4l6 16M8.5 14h7',
-    'Image Comics':             'M12 3l7 3v6c0 5-3.4 8.5-7 9-3.6-.5-7-4-7-9V6z',
-    'Jogos':                    'M6 11h4m-2-2v4m7-2h.01M16 9h.01M21 6H3a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h18a1 1 0 0 0 1-1V7a1 1 0 0 0-1-1z',
-    'Looney Tunes':             'M8 3c0 0-4 2-4 7s3 6 4 9h8c1-3 4-4 4-9s-4-7-4-7H8zm4 3a2 2 0 1 1 0 4 2 2 0 0 1 0-4z',
-    'Marvel':                   'M12 3l7 3v6c0 5-3.4 8.5-7 9-3.6-.5-7-4-7-9V6z',
-    'Masters of the Universe':  'M12 2l9 7-3 12H6L3 9z',
-    'Medieval':                 'M12 2l3 3h2l1 3-4 3-4-3 1-3h2zM7 12h10v8H7zM9 16h2v4H9zm4 0h2v4h-2z',
-    'Militar':                  'M12 3l7 3v5c0 4.7-3 8.2-7 9-4-0.8-7-4.3-7-9V6z',
-    'NBA':                      'M12 2a10 10 0 1 0 0 20A10 10 0 0 0 12 2zM7 7c1.4 1 2.5 3 3 5H4.5A8 8 0 0 1 7 7zm-2.5 7h5.5c-.5 2-1.6 4-3 5a8 8 0 0 1-2.5-5zm5.5 5c1.4-1 2.5-3 3-5h5.5a8 8 0 0 1-8.5 5zm9-7h-5.5c.5-2 1.6-4 3-5a8 8 0 0 1 2.5 5z',
-    'Ninjago':                  'M12 2l4 4-4 4-4-4 4-4zm0 12l4 4-4 4-4-4 4-4zm-6-6l4 4-4 4-4-4 4-4zm12 0l4 4-4 4-4-4 4-4z',
-    'O Senhor dos Anéis':       'M12 12m-9 0a9 9 0 1 0 18 0 9 9 0 1 0-18 0M12 12m-5 0a5 5 0 1 0 10 0 5 5 0 1 0-10 0',
-    'One Piece':                'M12 4a4 4 0 0 1 4 4c0 1.5-.6 2.8-1.6 3.7L16 20H8l1.6-8.3C8.6 10.8 8 9.5 8 8a4 4 0 0 1 4-4z',
-    'Os Simpsons':              'M7 9h10v6a5 5 0 0 1-10 0V9zm5-5a4 4 0 0 1 4 4H8a4 4 0 0 1 4-4zM9.5 12a1 1 0 1 0 0 2 1 1 0 0 0 0-2zm5 0a1 1 0 1 0 0 2 1 1 0 0 0 0-2zm-3 3h1',
-    'Piratas das Caraíbas':     'M12 2L2 7l4 9h12l4-9L12 2zm0 5v6m-3-3h6',
-    'Rua Sésamo':               'M6.5 8a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5zm11 0a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5zM4 22v-8a3 3 0 0 1 3-3h2l3 4 3-4h2a3 3 0 0 1 3 3v8',
-    'Star Wars':                'M12 2l1 4h4l-3 3 1 4-3-2-3 2 1-4-3-3h4zM6 16c0 0-2 2-2 4h16c0-2-2-4-2-4',
-    'Stranger Things':          'M3.3 7A9 9 0 0 1 12 3a9 9 0 1 1 0 18 9 9 0 0 1-8.7-6.5M3 12h9m0 0l-3-3m3 3-3 3',
-    'Tartarugas Ninja':         'M12 3a9 9 0 1 0 0 18A9 9 0 0 0 12 3zm0 3a6 6 0 1 1 0 12A6 6 0 0 1 12 6zm-2 5h4m-2-2v4',
-    'Tempos Antigos':           'M3 18l5-10 4 6 3-4 6 8H3z',
-    'Thundercats':              'M12 2L4 8l2 12h12l2-12L12 2zm0 4l5 4-1 7H8l-1-7 5-4z',
-    'Toy Story':                'M12 3a4 4 0 0 1 4 4v1h1a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-9a2 2 0 0 1 2-2h1V7a4 4 0 0 1 4-4zm0 2a2 2 0 0 0-2 2v1h4V7a2 2 0 0 0-2-2zm-2 8a1 1 0 1 0 0 2 1 1 0 0 0 0-2zm4 0a1 1 0 1 0 0 2 1 1 0 0 0 0-2z',
+    'Todos': [
+        circle(12, 12, 9),
+        path('M3 12h18'),
+        path('M12 3a14 14 0 0 1 0 18'),
+        path('M12 3a14 14 0 0 0 0 18')
+    ],
+    'Animais': [
+        path('M11 11.5c-1.8-1.1-2.8-2.8-2.2-4.2.5-1.2 1.9-1.8 3.2-1.3'),
+        path('M13 11.5c1.8-1.1 2.8-2.8 2.2-4.2-.5-1.2-1.9-1.8-3.2-1.3'),
+        path('M7.5 13.2c-1.5-.2-2.7-1.3-2.8-2.7-.1-1.3 1-2.5 2.4-2.6'),
+        path('M16.5 13.2c1.5-.2 2.7-1.3 2.8-2.7.1-1.3-1-2.5-2.4-2.6'),
+        path('M8.8 15.8c-1 .8-1.5 2-1.2 3.1.4 1.4 2.1 2.1 3.6 1.6'),
+        path('M15.2 15.8c1 .8 1.5 2 1.2 3.1-.4 1.4-2.1 2.1-3.6 1.6'),
+        path('M12 13.5c1.6 0 2.8 1.1 2.8 2.5S13.6 18.5 12 18.5 9.2 17.4 9.2 16s1.2-2.5 2.8-2.5z')
+    ],
+    'Bluey': [
+        path('M7.5 9.5c0-2.5 1.8-4.5 4.5-4.5s4.5 2 4.5 4.5v1.2c1.4.3 2.5 1.5 2.5 3V17a2.5 2.5 0 0 1-2.5 2.5h-9A2.5 2.5 0 0 1 5 17v-3.3c0-1.5 1.1-2.7 2.5-3z'),
+        path('M9 7.2c.3-.9 1-1.5 1.8-1.5'),
+        path('M15 7.2c-.3-.9-1-1.5-1.8-1.5'),
+        circle(9.8, 12.2, 0.7),
+        circle(14.2, 12.2, 0.7),
+        path('M11 14.2h2')
+    ],
+    'Bonecos': [
+        circle(12, 7, 3.2),
+        path('M6.5 20v-1.2c0-2.6 2.5-4.8 5.5-4.8s5.5 2.2 5.5 4.8V20'),
+        path('M9 20v-1.5'),
+        path('M15 20v-1.5')
+    ],
+    'Cidade': [
+        path('M3 21h18'),
+        path('M5 21V10l5-5 4 4v12'),
+        path('M14 21V9h5v12'),
+        path('M8 13h2'),
+        path('M8 16h2'),
+        path('M16 12h1.5'),
+        path('M16 15h1.5')
+    ],
+    'DC Comics': [
+        path('M12 5c-2.2 1.1-4.6 1.6-7.2 1.5.4 3.4 2.1 6.1 5 8.1C11 15.4 11.6 16 12 16.5c.4-.5 1-1.1 2.2-1.9 2.9-2 4.6-4.7 5-8.1C16.6 6.6 14.2 6.1 12 5z'),
+        path('M8.5 9.5c1.2.3 2.3.4 3.5.4s2.3-.1 3.5-.4')
+    ],
+    'Dinossauros': [
+        path('M4 17c1.2-1.2 2.4-2 4-2.2 1-.1 1.8-.8 2.1-1.7.4-1.2 1.5-2.1 2.8-2.1h1.4c1.2 0 2.2-.8 2.5-1.9.2-.7.8-1.2 1.5-1.3L20 7.5'),
+        path('M8 17v3'),
+        path('M12.5 17v3'),
+        path('M9.5 14.8c.8.5 1.8.8 2.8.8 1.4 0 2.7-.5 3.7-1.4'),
+        path('M18.5 8.2l1.2-.8')
+    ],
+    'Disney': [
+        path('M4 21h16'),
+        path('M6 21V11l3-2.5V8l1.5-1.2L12 5l1.5 1.8L15 8v.5L18 11v10'),
+        path('M9.5 21v-4h5v4'),
+        path('M11 8.5h2'),
+        path('M10 12h1.5'),
+        path('M12.5 12H14'),
+        path('M10 15h1.5'),
+        path('M12.5 15H14')
+    ],
+    'Diversos': [
+        path('M10.2 4.5a2.2 2.2 0 0 1 3.6 0l.4.6a1.2 1.2 0 0 0 1.4.5l.7-.3a2.2 2.2 0 0 1 2.9 2.9l-.3.7a1.2 1.2 0 0 0 .5 1.4l.6.4a2.2 2.2 0 0 1 0 3.6l-.6.4a1.2 1.2 0 0 0-.5 1.4l.3.7a2.2 2.2 0 0 1-2.9 2.9l-.7-.3a1.2 1.2 0 0 0-1.4.5l-.4.6a2.2 2.2 0 0 1-3.6 0l-.4-.6a1.2 1.2 0 0 0-1.4-.5l-.7.3a2.2 2.2 0 0 1-2.9-2.9l.3-.7a1.2 1.2 0 0 0-.5-1.4l-.6-.4a2.2 2.2 0 0 1 0-3.6l.6-.4a1.2 1.2 0 0 0 .5-1.4l-.3-.7a2.2 2.2 0 0 1 2.9-2.9l.7.3a1.2 1.2 0 0 0 1.4-.5z'),
+        circle(12, 12, 2)
+    ],
+    'Dragon Ball': [
+        circle(12, 12, 9),
+        path('M12 7.2l1.1 2.2 2.4.4-1.7 1.7.4 2.4L12 12.8l-2.2 1.1.4-2.4-1.7-1.7 2.4-.4z')
+    ],
+    'Famosos': [
+        circle(12, 8, 3.5),
+        path('M5 20v-.8c0-2.9 3.1-5.2 7-5.2s7 2.3 7 5.2V20'),
+        path('M9 4.5l1.2 1.2'),
+        path('M15 4.5l-1.2 1.2')
+    ],
+    'Faroeste': [
+        path('M4 20h16'),
+        path('M6 20V10l6-5 6 5v10'),
+        path('M10 20v-5h4v5'),
+        path('M9 12h2'),
+        path('M13 12h2')
+    ],
+    'Filmes e Séries': [
+        path('M3 7.5A1.5 1.5 0 0 1 4.5 6h9A1.5 1.5 0 0 1 15 7.5v9a1.5 1.5 0 0 1-1.5 1.5h-9A1.5 1.5 0 0 1 3 16.5z'),
+        path('M15 10.2l5.2-3a.8.8 0 0 1 1.2.7v8.2a.8.8 0 0 1-1.2.7l-5.2-3z')
+    ],
+    'Futebol': [
+        circle(12, 12, 9),
+        path('M12 7.2l2.2 1.6-.8 2.6H10.6l-.8-2.6z'),
+        path('M7.2 10.5l2.2 1.6-.8 2.6H5.8l.2-1.4z'),
+        path('M16.8 10.5l-2.2 1.6.8 2.6h2.8l-.2-1.4z'),
+        path('M8.8 16.8l.8-2.6h4.8l.8 2.6')
+    ],
+    'Ghostbusters': [
+        circle(12, 12, 9),
+        path('M9 9.5c0-1.7 1.3-3 3-3s3 1.3 3 3c0 2.2-3 4.5-3 4.5S9 11.7 9 9.5z'),
+        path('M6 18l12-12')
+    ],
+    'Harry Potter': [
+        path('M5 19L16.5 7.5'),
+        path('M16 7l2.5-2.5'),
+        path('M17.5 5.5l1.2-.2'),
+        path('M17.5 5.5l.2-1.2'),
+        path('M17.5 5.5l1 .8'),
+        path('M7.5 16.5h2.8')
+    ],
+    'Image Comics': [
+        path('M4 8.5c2.5-1.2 4.8-1.8 8-1.8s5.5.6 8 1.8'),
+        path('M4 12c2.5-1 4.8-1.5 8-1.5s5.5.5 8 1.5'),
+        path('M4 15.5c2.5-.8 4.8-1.2 8-1.2s5.5.4 8 1.2')
+    ],
+    'Jogos': [
+        path('M6.5 8.5h11A2.5 2.5 0 0 1 20 11v3.5A2.5 2.5 0 0 1 17.5 17h-11A2.5 2.5 0 0 1 4 14.5V11a2.5 2.5 0 0 1 2.5-2.5z'),
+        path('M8 11v3'),
+        path('M6.5 12.5h3'),
+        circle(15.2, 11.3, 0.7),
+        circle(16.8, 13.3, 0.7)
+    ],
+    'Looney Tunes': [
+        path('M8 6.5c0-1.5 1.3-2.5 3-2.5h2c1.7 0 3 1 3 2.5 0 1.2-.5 1.8-1 2.5 1.8.8 3 2.5 3 4.5 0 3.2-2.7 5-5 5H11c-2.3 0-5-1.8-5-5 0-2 1.2-3.7 3-4.5-.5-.7-1-1.3-1-2.5z'),
+        circle(10, 12.5, 0.8),
+        circle(14, 12.5, 0.8),
+        path('M11 15h2')
+    ],
+    'Marvel': [
+        circle(12, 12, 9),
+        circle(12, 12, 5.5),
+        path('M12 7.2l1.2 2.4 2.6.4-1.9 1.8.5 2.6L12 13.2l-2.4 1.2.5-2.6-1.9-1.8 2.6-.4z')
+    ],
+    'Masters of the Universe': [
+        path('M12 3l2.2 4.4 4.8.7-3.5 3.4.8 4.8L12 14.2 7.7 16.3l.8-4.8L5 8.1l4.8-.7z'),
+        circle(12, 10.5, 2)
+    ],
+    'Medieval': [
+        path('M4 21h16'),
+        path('M6 21V9l3-3v2l3-3 3 3v-2l3 3v12'),
+        path('M10 21v-5h4v5'),
+        path('M9 12h1.5'),
+        path('M13.5 12H15')
+    ],
+    'Militar': [
+        path('M12 3l8 3.2v5.6c0 4.8-3.2 8.4-8 9.7-4.8-1.3-8-4.9-8-9.7V6.2z'),
+        path('M9 12.5h6'),
+        path('M12 9.5v6')
+    ],
+    'NBA': [
+        circle(12, 12, 9),
+        path('M4.8 8.5c2.5 1.4 5.2 2.2 7.2 2.2s4.7-.8 7.2-2.2'),
+        path('M4.8 15.5c2.5-1.4 5.2-2.2 7.2-2.2s4.7.8 7.2 2.2'),
+        path('M12 3c2.2 2.8 3.3 5.8 3.3 9S14.2 18.2 12 21'),
+        path('M12 3c-2.2 2.8-3.3 5.8-3.3 9S9.8 18.2 12 21')
+    ],
+    'Ninjago': [
+        path('M5.5 7.5l5 5-1.8 5.2L4 17z'),
+        path('M18.5 7.5l-5 5 1.8 5.2L20 17z'),
+        path('M9.2 14.8l5.6-5.6'),
+        path('M5.5 7.5l1.5-2'),
+        path('M18.5 7.5l-1.5-2')
+    ],
+    'O Senhor dos Anéis': [
+        circle(12, 12, 8),
+        circle(12, 12, 4.5)
+    ],
+    'One Piece': [
+        path('M7 10.5c0-2.8 2.2-5 5-5s5 2.2 5 5c0 1.6-.7 3-1.8 4L16.5 20h-9L8.8 14.5A5 5 0 0 1 7 10.5z'),
+        path('M9.5 8.2c.6-.5 1.5-.8 2.5-.8'),
+        path('M10 12h4')
+    ],
+    'Os Simpsons': [
+        path('M8 9.5c0-2.5 1.8-4.5 4-4.5s4 2 4 4.5v5.5c0 2.5-1.8 4.5-4 4.5s-4-2-4-4.5z'),
+        circle(10.2, 11, 0.7),
+        circle(13.8, 11, 0.7),
+        path('M11.2 13.5h1.6'),
+        path('M9.5 6.2c1-.8 2.2-1.2 3.5-1')
+    ],
+    'Piratas das Caraíbas': [
+        circle(12, 9.5, 4.2),
+        path('M9.2 9.2h.01'),
+        path('M14.8 9.2h.01'),
+        path('M10 11.5c.6.5 1.3.8 2 .8s1.4-.3 2-.8'),
+        path('M7.5 14.5l-2.5 4.5'),
+        path('M16.5 14.5l2.5 4.5'),
+        path('M9 15.5l-3.5 3'),
+        path('M15 15.5l3.5 3')
+    ],
+    'Rua Sésamo': [
+        circle(8.5, 9, 3.2),
+        circle(15.5, 9, 3.2),
+        path('M5.5 20v-4.5c0-1.4 1.1-2.5 2.5-2.5h1'),
+        path('M18.5 20v-4.5c0-1.4-1.1-2.5-2.5-2.5h-1'),
+        path('M10.5 13.5l1.5 1.5 1.5-1.5')
+    ],
+    'Star Wars': [
+        path('M8 8.5c0-2.5 1.8-4.5 4-4.5s4 2 4 4.5v1.5H8z'),
+        path('M7.5 10h9v2.5c0 1.2-.5 2.2-1.3 2.9L16.5 20H7.5l1.3-4.6C8 14.7 7.5 13.7 7.5 12.5z'),
+        path('M9.5 13.5h5'),
+        path('M10 16.5h4')
+    ],
+    'Stranger Things': [
+        path('M5 7.5c1.5-2.2 4-3.5 7-3.5s5.5 1.3 7 3.5'),
+        path('M4 12h9'),
+        path('M10 9l3 3-3 3'),
+        path('M5 16.5c1.5 2.2 4 3.5 7 3.5s5.5-1.3 7-3.5')
+    ],
+    'Tartarugas Ninja': [
+        path('M8 8.5c0-2 1.8-3.5 4-3.5s4 1.5 4 3.5v1c1.7.4 3 1.9 3 3.7 0 2.6-2.2 4.3-4.5 4.3h-5C7.2 17.5 5 15.8 5 13.2c0-1.8 1.3-3.3 3-3.7z'),
+        path('M9.5 11.5h.01'),
+        path('M14.5 11.5h.01'),
+        path('M10.5 14h3'),
+        path('M7 9.5l-1.5-1'),
+        path('M17 9.5l1.5-1')
+    ],
+    'Tempos Antigos': [
+        path('M3 19h18'),
+        path('M5 19l4-8 3 5 3-4 4 7'),
+        path('M16 9.5l1.5-1.5'),
+        path('M17.5 8l1.2.3'),
+        path('M17.5 8l.3-1.2')
+    ],
+    'Thundercats': [
+        path('M6 10.5c0-2.8 2.7-5 6-5s6 2.2 6 5c0 1.5-.6 2.8-1.6 3.7L18 20H6l1.6-5.8A5.4 5.4 0 0 1 6 10.5z'),
+        path('M9 8.5c.7-.7 1.7-1.1 2.8-1'),
+        path('M15 8.5c-.7-.7-1.7-1.1-2.8-1'),
+        path('M10 12h.01'),
+        path('M14 12h.01'),
+        path('M11 14.5h2')
+    ],
+    'Toy Story': [
+        path('M8 9.5V8a4 4 0 0 1 8 0v1.5'),
+        path('M7 9.5h10A2 2 0 0 1 19 11.5v7A2 2 0 0 1 17 20.5H7A2 2 0 0 1 5 18.5v-7A2 2 0 0 1 7 9.5z'),
+        path('M9.5 13.5h.01'),
+        path('M14.5 13.5h.01'),
+        path('M10.5 16.5h3')
+    ]
 };
 
 function criarIconeTema(tema = '') {
-    const d = MAPA_ICONES_TEMAS[tema] || MAPA_ICONES_TEMAS['Diversos'];
-    return criarSvgTema(d);
+    const partes = MAPA_ICONES_TEMAS[tema] || MAPA_ICONES_TEMAS['Diversos'];
+    return criarSvgTema(partes);
 }
 
 function criarRotuloTema(temaTexto) {

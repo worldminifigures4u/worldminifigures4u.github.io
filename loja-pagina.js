@@ -37,7 +37,7 @@
         if (typeof carregarProdutosDaNuvem === 'function') return Promise.resolve();
         if (!promessaLojaProdutos) {
             promessaLojaProdutos = garantirCartMiniLoja()
-                .then(() => carregarScript('loja-produtos.js?v=20260721-temas-mapeados'));
+                .then(() => carregarScript('loja-produtos.js?v=20260721-temas-mockup'));
         }
         return promessaLojaProdutos;
     }
@@ -197,7 +197,7 @@
 
     function agendarPrefetchModulosLoja() {
         const iniciar = function () {
-            ['loja-produtos.js?v=20260721-temas-mapeados', 'cart-mini.js?v=20260711-leve'].forEach(function (href) {
+            ['loja-produtos.js?v=20260721-temas-mockup', 'cart-mini.js?v=20260711-leve'].forEach(function (href) {
                 if (document.querySelector('link[rel="prefetch"][href="' + href + '"]')) return;
                 const link = document.createElement('link');
                 link.rel = 'prefetch';
