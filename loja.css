@@ -350,7 +350,7 @@
         .btn-tema, .btn-subtema{
             width:100%;
             border:1px solid transparent;
-            border-radius:12px;
+            border-radius:10px;
             padding:10px 12px;
             margin:0;
             text-align:left;
