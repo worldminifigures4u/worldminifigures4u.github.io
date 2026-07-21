@@ -156,9 +156,11 @@ body[data-page="conta"] #conteudo-cliente-autenticado:not(.oculto) ~ #conteudo-c
         .btn-logout {
             background: #ff4d4d;
             border: none;
-            border-radius: 6px;
-            padding: 8px;
-            font-weight: bold;
+            border-radius: 14px;
+            padding: 8px 14px;
+            min-height: 34px;
+            font-weight: 800;
+            font-size: 14px;
             cursor: pointer;
             color: white;
             margin-top: 15px;
@@ -212,11 +214,13 @@ body[data-page="conta"] #conteudo-cliente-autenticado:not(.oculto) ~ #conteudo-c
         .btn-solicitar-eliminacao{
             width:100%;
             padding:11px 14px;
+            min-height:34px;
             border:1px solid #ff4d55;
-            border-radius:6px;
+            border-radius:14px;
             background:transparent;
             color:#ff6b72;
             font-weight:800;
+            font-size:14px;
             cursor:pointer;
         }
 
