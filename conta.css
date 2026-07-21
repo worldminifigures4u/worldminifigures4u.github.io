@@ -298,7 +298,7 @@ body[data-page="conta"] #conteudo-cliente-autenticado:not(.oculto) ~ #conteudo-c
 
         .encomenda-produtos-resumo{
             margin-top:6px;
-            color:#f5f5f5;
+            color:#ccc;
             overflow-wrap:anywhere;
         }
 
