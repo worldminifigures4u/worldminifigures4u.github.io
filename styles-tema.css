@@ -104,7 +104,6 @@
 .favorito-detalhes .favorito-linha-secundaria span:not(.favorito-preco),
 .carrinho-tema,
 .contador-produtos,
-.form-cliente label,
 .sessao-conta-titulo,
 .sessao-conta-email{
     color:var(--cor-texto-secundario, #b8b8b8) !important;

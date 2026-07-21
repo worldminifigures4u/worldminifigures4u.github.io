@@ -122,7 +122,7 @@ body[data-page="conta"] #conteudo-cliente-autenticado:not(.oculto) ~ #conteudo-c
 
         .form-cliente label {
             font-size: 13px;
-            color: #aaa;
+            color: #777;
         }
 
         .form-cliente input {
