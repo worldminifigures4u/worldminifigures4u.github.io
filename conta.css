@@ -94,7 +94,7 @@ body[data-page="conta"] #conteudo-cliente-autenticado:not(.oculto) ~ #conteudo-c
             padding: 8px 12px;
             min-height: 34px;
             cursor: pointer;
-            border-radius: 14px;
+            border-radius: 10px;
             font-weight: 800;
             font-size: 14px;
         }
