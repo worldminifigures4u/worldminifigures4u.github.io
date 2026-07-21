@@ -401,8 +401,8 @@ body[data-page="conta"] #conteudo-cliente-autenticado:not(.oculto) ~ #conteudo-c
             margin-top:8px;
             background:#222;
             color:#ffc107;
-            border:1px solid #444;
-            border-radius:6px;
+            border:1px solid #2a2a2a;
+            border-radius:10px;
             padding:6px 8px;
             cursor:pointer;
             font-size:12px;
