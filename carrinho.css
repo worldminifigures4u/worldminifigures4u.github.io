@@ -427,14 +427,14 @@
             align-items: center;
             background: #1c1c1c;
             padding: 10px;
-            border-radius: 8px;
+            border-radius: 14px;
             margin-bottom: 8px;
             cursor: pointer;
-            border: 1px solid #222;
+            border: 1px solid #2a2a2a;
             transition: 0.2s;
         }
         .opcao-pagamento:hover {
-            border-color: #444;
+            border-color: rgba(255, 193, 7, 0.35);
         }
 
         .opcao-pagamento:has(input:checked){
