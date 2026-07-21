@@ -537,7 +537,7 @@
             width:120px;
             height:120px;
             object-fit:contain;
-            border-radius:12px;
+            border-radius:10px;
             background:#1a1a1a;
             display:block;
         }
