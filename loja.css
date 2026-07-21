@@ -395,6 +395,11 @@
             opacity:0.9;
         }
 
+        .icone-tema-marca{
+            opacity:1;
+            overflow:visible;
+        }
+
         .nome-tema{
             min-width:0;
             overflow:hidden;

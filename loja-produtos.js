@@ -24,16 +24,22 @@ function slugificarTemaLoja(texto) {
     return String(texto || '').toLowerCase().replace(/\s+/g, '-');
 }
 
-function criarSvgTema(partes = []) {
+function criarSvgTema(partes = [], opcoes = {}) {
     const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
     svg.setAttribute('viewBox', '0 0 24 24');
     svg.setAttribute('aria-hidden', 'true');
     svg.setAttribute('focusable', 'false');
-    svg.setAttribute('fill', 'none');
-    svg.setAttribute('stroke', 'currentColor');
-    svg.setAttribute('stroke-width', '1.75');
-    svg.setAttribute('stroke-linecap', 'round');
-    svg.setAttribute('stroke-linejoin', 'round');
+
+    if (opcoes.preenchido) {
+        svg.setAttribute('fill', 'currentColor');
+        svg.setAttribute('stroke', 'none');
+    } else {
+        svg.setAttribute('fill', 'none');
+        svg.setAttribute('stroke', 'currentColor');
+        svg.setAttribute('stroke-width', '1.75');
+        svg.setAttribute('stroke-linecap', 'round');
+        svg.setAttribute('stroke-linejoin', 'round');
+    }
 
     partes.forEach((parte) => {
         const el = document.createElementNS('http://www.w3.org/2000/svg', parte.tag || 'path');
@@ -46,12 +52,16 @@ function criarSvgTema(partes = []) {
     return svg;
 }
 
-function path(d) {
-    return { tag: 'path', attrs: { d } };
+function path(d, attrs = {}) {
+    return { tag: 'path', attrs: { d, ...attrs } };
 }
 
-function circle(cx, cy, r) {
-    return { tag: 'circle', attrs: { cx: String(cx), cy: String(cy), r: String(r) } };
+function circle(cx, cy, r, attrs = {}) {
+    return { tag: 'circle', attrs: { cx: String(cx), cy: String(cy), r: String(r), ...attrs } };
+}
+
+function ellipse(cx, cy, rx, ry, attrs = {}) {
+    return { tag: 'ellipse', attrs: { cx: String(cx), cy: String(cy), rx: String(rx), ry: String(ry), ...attrs } };
 }
 
 /* Ícones no estilo do mockup DEPOIS (line-art Lucide/Heroicons). */
@@ -95,8 +105,11 @@ const MAPA_ICONES_TEMAS = {
         path('M16 15h1.5')
     ],
     'DC Comics': [
-        path('M12 5c-2.2 1.1-4.6 1.6-7.2 1.5.4 3.4 2.1 6.1 5 8.1C11 15.4 11.6 16 12 16.5c.4-.5 1-1.1 2.2-1.9 2.9-2 4.6-4.7 5-8.1C16.6 6.6 14.2 6.1 12 5z'),
-        path('M8.5 9.5c1.2.3 2.3.4 3.5.4s2.3-.1 3.5-.4')
+        ellipse(12, 12, 11, 6.8, { fill: '#ffc107' }),
+        path(
+            'M2.6 10.4c.4-1.3 1.9-1.7 4.3-2.1 1.4-.9 2.8-2 3.9-2.6.3.8.6 1.4.8 1.7.2-.3.5-.9.8-1.7 1.1.6 2.5 1.7 3.9 2.6 2.4.4 3.9.8 4.3 2.1.3 1-.8 2.4-2.6 3.5-1.3.8-2.7 1-3.6.5-.6-.3-1.1-.1-1.4.4-.4.8-.7 1.7-.9 2.1-.1.2-.2.3-.5.3s-.4-.1-.5-.3c-.2-.4-.5-1.3-.9-2.1-.3-.5-.8-.7-1.4-.4-.9.5-2.3.3-3.6-.5C3.4 12.8 2.3 11.4 2.6 10.4z',
+            { fill: '#111' }
+        )
     ],
     'Dinossauros': [
         path('M4 17c1.2-1.2 2.4-2 4-2.2 1-.1 1.8-.8 2.1-1.7.4-1.2 1.5-2.1 2.8-2.1h1.4c1.2 0 2.2-.8 2.5-1.9.2-.7.8-1.2 1.5-1.3L20 7.5'),
