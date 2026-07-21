@@ -580,12 +580,6 @@ function obterPesquisaAtivaVitrine() {
 }
 
 function atualizarIndicadoresProgressoVitrine() {
-    const pesquisaAtiva = obterPesquisaAtivaVitrine();
-    atualizarContadorProdutos(
-        indiceRenderizado,
-        totalProdutosRemotos,
-        pesquisaAtiva
-    );
     atualizarBarraCarregarMaisVitrine();
 }
 
