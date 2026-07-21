@@ -318,7 +318,7 @@ body[data-page="conta"] #conteudo-cliente-autenticado:not(.oculto) ~ #conteudo-c
             display:none;
             margin:8px 0 0;
             padding-left:18px;
-            color:#ddd;
+            color:#ccc;
         }
 
         .lista-artigos-encomenda.aberta{
