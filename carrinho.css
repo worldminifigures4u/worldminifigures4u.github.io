@@ -449,11 +449,11 @@
 
         .confirm-order-btn {
             width: 100%;
-            height: 44px;
-            border-radius: 8px;
+            height: 34px;
+            border-radius: 14px;
             background: #25a943;
             color: #ffffff;
-            font-size: 16px;
+            font-size: 14px;
             font-weight: 800;
             border: none;
             cursor: pointer;
