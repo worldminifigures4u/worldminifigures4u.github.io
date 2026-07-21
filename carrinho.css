@@ -333,7 +333,7 @@
             display:inline-flex;
             align-items:center;
             padding:3px 8px;
-            border-radius:999px;
+            border-radius:10px;
             background:rgba(46, 204, 113, 0.14);
             border:1px solid rgba(46, 204, 113, 0.45);
             color:#3ddc84;
