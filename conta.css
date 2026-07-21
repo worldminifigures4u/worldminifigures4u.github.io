@@ -62,11 +62,19 @@ body[data-page="conta"] .container{
     padding:0 14px;
     font-size:14px;
     font-weight:800;
+    cursor:pointer;
+    text-align:center;
+    text-decoration:none;
+    white-space:nowrap;
+    background:var(--cor-acao-principal, #ffc107);
+    color:#000;
+}
 
 .conta-ver-produtos:hover,
 .conta-ver-produtos:focus-visible{
     background:var(--cor-acao-principal-hover, #e0a800);
     color:#000;
+    text-decoration:none;
     outline:none;
 }
 

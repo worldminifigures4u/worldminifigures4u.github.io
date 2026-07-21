@@ -122,6 +122,7 @@
     border:0 !important;
     background:var(--cor-acao-principal, #ffc107) !important;
     color:#000 !important;
+    text-decoration:none !important;
 }
 
 .btn-acao-cliente:hover,
@@ -132,6 +133,7 @@
 .conta-ver-produtos:hover{
     background:var(--cor-acao-principal-hover, #e0a800) !important;
     color:#000 !important;
+    text-decoration:none !important;
 }
 
 .btn-logout{
