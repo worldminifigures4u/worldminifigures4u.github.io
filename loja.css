@@ -311,8 +311,14 @@
         .subcategoria{
             width:92%;
             margin:0 auto 8px;
-            color:#aaa;
-            font-size:12px;
+            color:#8a929c !important;
+            font-size:10px;
+            font-weight:700;
+            text-transform:uppercase;
+            letter-spacing:0.4px;
+            background:none;
+            border:none;
+            padding:0;
         }
 
         .produto-card h3{
