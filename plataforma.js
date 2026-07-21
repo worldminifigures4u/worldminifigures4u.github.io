@@ -308,13 +308,56 @@ function criarBotaoAbrirFichaClientePlataforma() {
     return botao;
 }
 
+function carregarScriptAdmin(src) {
+    return new Promise(function (resolve, reject) {
+        const existente = document.querySelector('script[data-admin-chunk="' + src + '"]');
+        if (existente) {
+            if (existente.dataset.loaded === '1') return resolve();
+            existente.addEventListener('load', function () { resolve(); });
+            existente.addEventListener('error', function () { reject(new Error('Falha ao carregar ' + src)); });
+            return;
+        }
+        const script = document.createElement('script');
+        script.src = src;
+        script.dataset.adminChunk = src;
+        script.onload = function () {
+            script.dataset.loaded = '1';
+            resolve();
+        };
+        script.onerror = function () { reject(new Error('Falha ao carregar ' + src)); };
+        document.body.appendChild(script);
+    });
+}
+
+var __plataformaFichaPromessa = null;
+function garantirFichaClientePlataforma() {
+    if (window.AdminFichaCliente) return Promise.resolve();
+    if (!__plataformaFichaPromessa) {
+        __plataformaFichaPromessa = carregarScriptAdmin('morada-formato.js?v=20260721-split')
+            .then(function () {
+                return carregarScriptAdmin('admin-ficha-cliente.js?v=20260721-split');
+            })
+            .then(function () {
+                window.AdminFichaCliente?.configurar({
+                    client: wallapopClient,
+                    formatarEuro: formatarEuroWallapop,
+                    formatarData: formatarDataPlataforma
+                });
+                window.AdminFichaCliente?.initEventos();
+            });
+    }
+    return __plataformaFichaPromessa;
+}
+
 function abrirFichaClientePlataformaModal() {
     const clienteId = fichaClientePlataformaAtual?.cliente?.id;
     if (!clienteId) {
         definirStatusWallapop('Sem ficha de cliente para abrir.', true);
         return;
     }
-    window.AdminFichaCliente?.abrirPorId(clienteId);
+    garantirFichaClientePlataforma().then(function () {
+        window.AdminFichaCliente?.abrirPorId(clienteId);
+    }).catch(console.error);
 }
 
 function renderizarFichaClientePlataforma(dados) {
@@ -405,13 +448,15 @@ async function carregarFichaClientePorPerfilPlataforma() {
         definirStatusWallapop('');
         const modalCliente = document.getElementById('admin-cliente-modal');
         if (!modalCliente || modalCliente.hidden) {
-            window.AdminFichaCliente?.abrirCriacao({
-                url: linkPerfil || perfilExternoDetetado.url || '',
-                utilizador: perfilExternoDetetado.utilizador || '',
-                onCriado: async () => {
-                    await carregarFichaClientePorPerfilPlataforma();
-                }
-            });
+            garantirFichaClientePlataforma().then(function () {
+                window.AdminFichaCliente?.abrirCriacao({
+                    url: linkPerfil || perfilExternoDetetado.url || '',
+                    utilizador: perfilExternoDetetado.utilizador || '',
+                    onCriado: async () => {
+                        await carregarFichaClientePorPerfilPlataforma();
+                    }
+                });
+            }).catch(console.error);
         }
         return null;
     }
@@ -2657,12 +2702,7 @@ async function iniciarWallapopAdmin() {
         if (typeof garantirTabelaPortesCarregada === 'function') {
             await garantirTabelaPortesCarregada().catch(() => {});
         }
-        window.AdminFichaCliente?.configurar({
-            client: wallapopClient,
-            formatarEuro: formatarEuroWallapop,
-            formatarData: formatarDataPlataforma
-        });
-        window.AdminFichaCliente?.initEventos();
+        // Ficha de cliente carrega sob pedido (abrir ficha / criar a partir do perfil).
         await carregarCatalogoWallapop();
         bloqueio.hidden = true;
         document.getElementById('wallapop-aplicacao').hidden = false;
