@@ -157,6 +157,7 @@ async function carregarPaginaProdutosLoja({ reiniciar = false } = {}) {
 
     promessaCargaProdutosEmCurso = (async () => {
         carregandoProdutosRemotos = true;
+        atualizarBarraCarregarMaisVitrine();
 
         try {
             const cliente = obterClienteProdutosLoja();
@@ -200,6 +201,7 @@ async function carregarPaginaProdutosLoja({ reiniciar = false } = {}) {
         } finally {
             carregandoProdutosRemotos = false;
             promessaCargaProdutosEmCurso = null;
+            atualizarIndicadoresProgressoVitrine();
         }
     })();
 
@@ -570,6 +572,78 @@ function removerSentinelaCarregarMais() {
     }
 }
 
+function obterPesquisaAtivaVitrine() {
+    const campoPesquisa = document.getElementById('campo-pesquisa');
+    const inputRaw = campoPesquisa?.value || '';
+    const textoPesquisa = inputRaw.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
+    return textoPesquisa.length > 0 || filtroTemaAtual !== 'todos';
+}
+
+function atualizarIndicadoresProgressoVitrine() {
+    const pesquisaAtiva = obterPesquisaAtivaVitrine();
+    atualizarContadorProdutos(
+        indiceRenderizado,
+        totalProdutosRemotos,
+        pesquisaAtiva
+    );
+    atualizarBarraCarregarMaisVitrine();
+}
+
+function atualizarBarraCarregarMaisVitrine() {
+    if (!sentinelaCarregarMais) return;
+    const aindaHaMais = indiceRenderizado < produtosFiltradosAtual.length || haMaisProdutosRemotos;
+    if (!aindaHaMais) {
+        removerSentinelaCarregarMais();
+        return;
+    }
+
+    sentinelaCarregarMais.classList.toggle('esta-carregando', Boolean(carregandoProdutosRemotos));
+    const texto = sentinelaCarregarMais.querySelector('.vitrine-carregar-mais-texto');
+    const detalhe = sentinelaCarregarMais.querySelector('.vitrine-carregar-mais-detalhe');
+    if (texto) {
+        texto.textContent = carregandoProdutosRemotos
+            ? 'A carregar mais figuras…'
+            : 'Há mais figuras abaixo';
+    }
+    if (detalhe) {
+        const total = Math.max(totalProdutosRemotos, produtosFiltradosAtual.length);
+        detalhe.textContent = total > 0
+            ? `A mostrar ${indiceRenderizado.toLocaleString('pt-PT')} de ${total.toLocaleString('pt-PT')}`
+            : '';
+        detalhe.hidden = total <= 0;
+    }
+}
+
+function criarBarraCarregarMaisVitrine() {
+    const barra = document.createElement('div');
+    barra.className = 'vitrine-carregar-mais';
+    barra.setAttribute('role', 'status');
+    barra.setAttribute('aria-live', 'polite');
+
+    const texto = document.createElement('p');
+    texto.className = 'vitrine-carregar-mais-texto';
+    const detalhe = document.createElement('p');
+    detalhe.className = 'vitrine-carregar-mais-detalhe';
+    barra.append(texto, detalhe);
+    return barra;
+}
+
+function agendarPrefetchProdutosLoja() {
+    if (!haMaisProdutosRemotos || carregandoProdutosRemotos) return;
+    const porRenderizar = produtosFiltradosAtual.length - indiceRenderizado;
+    if (porRenderizar >= PRODUTOS_POR_LOTE * 2) return;
+
+    carregarPaginaProdutosLoja()
+        .then(() => {
+            atualizarIndicadoresProgressoVitrine();
+            agendarPrefetchProdutosLoja();
+        })
+        .catch((erro) => {
+            console.error('Erro ao pré-carregar produtos:', erro);
+            atualizarIndicadoresProgressoVitrine();
+        });
+}
+
 function renderizarMaisProdutosVitrine() {
     const vitrine = document.getElementById('vitrine-produtos');
     if (!vitrine) return;
@@ -587,26 +661,25 @@ function renderizarMaisProdutosVitrine() {
         }
         indiceRenderizado = fim;
         atualizarBotoesFavoritos();
+        atualizarIndicadoresProgressoVitrine();
 
         if (indiceRenderizado < produtosFiltradosAtual.length || haMaisProdutosRemotos) {
-            sentinelaCarregarMais = document.createElement('div');
-            sentinelaCarregarMais.className = 'vitrine-sentinel';
-            sentinelaCarregarMais.setAttribute('aria-hidden', 'true');
-            if (carregandoProdutosRemotos) {
-                sentinelaCarregarMais.classList.add('vitrine-sentinel-carregando');
-            }
+            sentinelaCarregarMais = criarBarraCarregarMaisVitrine();
+            atualizarBarraCarregarMaisVitrine();
             vitrine.appendChild(sentinelaCarregarMais);
             observadorCarregarMais = new IntersectionObserver(entries => {
                 if (entries.some(entry => entry.isIntersecting)) {
                     renderizarMaisProdutosVitrine();
                 }
-            }, { rootMargin: '500px' });
+            }, { rootMargin: '700px' });
             observadorCarregarMais.observe(sentinelaCarregarMais);
+            agendarPrefetchProdutosLoja();
         }
     };
 
     renderizar().catch(erro => {
         console.error('Erro ao renderizar produtos:', erro);
+        atualizarIndicadoresProgressoVitrine();
     });
 }
 
@@ -655,7 +728,7 @@ async function reiniciarVitrinePaginada() {
     }
 
     atualizarContadorProdutos(
-        totalProdutosRemotos,
+        indiceRenderizado,
         totalProdutosRemotos,
         pesquisaAtiva || filtroTemaAtual !== 'todos'
     );
@@ -732,15 +805,31 @@ function atualizarContadorProdutos(totalVisiveis, totalProdutos, pesquisaAtiva) 
     const contador = document.getElementById('contador-produtos');
     if(!contador) return;
 
-    const numero = pesquisaAtiva || filtroTemaAtual !== 'todos' ? totalVisiveis : totalProdutos;
+    const mostrados = Math.max(0, Number(totalVisiveis || 0));
+    const total = Math.max(mostrados, Number(totalProdutos || 0));
+    const incompleto = mostrados < total || haMaisProdutosRemotos || carregandoProdutosRemotos;
+
+    contador.replaceChildren();
+    const destaque = document.createElement('strong');
+
+    if (incompleto && total > 0) {
+        destaque.textContent = `${mostrados.toLocaleString('pt-PT')} de ${total.toLocaleString('pt-PT')}`;
+        const legenda = carregandoProdutosRemotos
+            ? 'produtos · a carregar mais…'
+            : (pesquisaAtiva
+                ? 'produtos · há mais abaixo'
+                : 'produtos na loja · há mais abaixo');
+        contador.append(destaque, document.createTextNode(' ' + legenda));
+        return;
+    }
+
+    const numero = pesquisaAtiva || filtroTemaAtual !== 'todos' ? mostrados : total;
     const legenda = pesquisaAtiva
         ? (numero === 1 ? 'produto encontrado' : 'produtos encontrados')
         : filtroTemaAtual !== 'todos'
             ? (numero === 1 ? 'produto neste filtro' : 'produtos neste filtro')
             : (numero === 1 ? 'produto na loja' : 'produtos na loja');
 
-    contador.replaceChildren();
-    const destaque = document.createElement('strong');
     destaque.textContent = Number(numero || 0).toLocaleString('pt-PT');
     contador.append(destaque, document.createTextNode(' ' + legenda));
 }

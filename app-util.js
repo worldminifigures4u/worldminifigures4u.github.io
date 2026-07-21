@@ -233,6 +233,8 @@ function definirEstadoVitrine(mensagem, tipo = '') {
     const vitrine = document.getElementById('vitrine-produtos');
     if (!vitrine) return;
     vitrine.replaceChildren();
+    const contador = document.getElementById('contador-produtos');
+    if (contador) contador.replaceChildren();
     const estado = document.createElement('div');
     estado.className = `estado-vitrine ${tipo}`.trim();
 
