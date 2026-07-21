@@ -245,7 +245,7 @@
 .favoritos-vazio{
     background:#111;
     border:1px solid #333;
-    border-radius:18px;
+    border-radius:14px;
     padding:36px 28px 28px;
     color:#aaa;
     text-align:center;
@@ -260,7 +260,7 @@
     width:120px;
     height:120px;
     object-fit:contain;
-    border-radius:16px;
+    border-radius:12px;
     background:#1a1a1a;
     display:block;
 }

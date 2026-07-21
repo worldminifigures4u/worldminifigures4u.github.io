@@ -25,7 +25,7 @@
     background: #111;
     border: 1px solid #333;
     padding: 36px 28px 28px;
-    border-radius: 18px;
+    border-radius: 14px;
     text-align: center;
     grid-column: 1 / -1;
     display: flex;
@@ -40,7 +40,7 @@
     width: 120px;
     height: 120px;
     object-fit: contain;
-    border-radius: 16px;
+    border-radius: 12px;
     background: #1a1a1a;
     display: block;
 }
