@@ -30,7 +30,10 @@ async function criarNovaEncomenda() {
   const { error: bloqueioErro } = await dbClient.rpc('assert_cliente_pode_comprar_site');
   if (bloqueioErro) {
     statusDiv.className = "msg-status msg-erro";
-    statusDiv.innerText = bloqueioErro.message || "Nao e possivel concluir compras com esta conta.";
+    statusDiv.innerText = obterMensagemErroCliente(
+      bloqueioErro,
+      "Não é possível concluir compras com esta conta."
+    );
     return;
   }
 
@@ -94,8 +97,11 @@ async function criarNovaEncomenda() {
     if(typeof carregarHistoricoEncomendas === 'function') carregarHistoricoEncomendas(user.id);
 
   } catch (err) {
-    console.error("Erro ao gravar encomenda:", err.message);
+    console.error("Erro ao gravar encomenda:", err);
     statusDiv.className = "msg-status msg-erro";
-    statusDiv.innerText = "Erro ao guardar: " + err.message;
+    const mensagemStock = String(err?.message || '');
+    statusDiv.innerText = mensagemStock.startsWith('Stock insuficiente')
+      ? mensagemStock
+      : obterMensagemErroCliente(err, "Não foi possível concluir a encomenda. Tente novamente.");
   }
 }

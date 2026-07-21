@@ -86,7 +86,7 @@ async function pedirRecuperacaoPassword() {
         console.error('Erro ao pedir recuperação de password:', error);
         mostrarMensagem(
             statusDiv,
-            'Erro: ' + (error.message || 'Não foi possível enviar o email de recuperação.'),
+            obterMensagemErroCliente(error, 'Não foi possível enviar o email de recuperação. Tente novamente.'),
             'msg-erro'
         );
     }
@@ -116,7 +116,7 @@ async function fazerLogin(event) {
     }
 
     if(!dbClient && !window.dbClient){
-        mostrarMensagem(statusDiv, "Erro: ligação ao Supabase indisponível. Verifique a internet e recarregue a página.", "msg-erro");
+        mostrarMensagem(statusDiv, MENSAGEM_LIGACAO_INDISPONIVEL, "msg-erro");
         return;
     }
 
@@ -216,8 +216,11 @@ async function registarCliente(event) {
         }
     } catch (erro) {
         console.error("Erro completo:", erro);
-        statusDiv.className = "msg-status msg-erro";
-        statusDiv.innerText = "Erro ao registar: " + (erro.message || "Verifique os dados informados.");
+        mostrarMensagem(
+            statusDiv,
+            obterMensagemErroAuth(erro, 'registo'),
+            'msg-erro'
+        );
     }
 }
 
@@ -252,7 +255,11 @@ async function atualizarPasswordRecuperacao(event) {
         setTimeout(() => { mudarAba('login'); }, 1500);
     } catch(error) {
         console.error('Erro ao atualizar password:', error);
-        mostrarMensagem(statusDiv, 'Erro: ' + (error.message || 'Não foi possível atualizar a password.'), 'msg-erro');
+        mostrarMensagem(
+            statusDiv,
+            obterMensagemErroCliente(error, 'Não foi possível atualizar a password. Tente novamente.'),
+            'msg-erro'
+        );
     }
 }
 
@@ -299,7 +306,11 @@ async function alterarPasswordConta(event) {
         mostrarMensagem(statusDiv, 'Password atualizada com sucesso.', 'msg-sucesso');
     } catch(error) {
         console.error('Erro ao alterar password:', error);
-        mostrarMensagem(statusDiv, 'Erro: ' + (error.message || 'Não foi possível atualizar a password.'), 'msg-erro');
+        mostrarMensagem(
+            statusDiv,
+            obterMensagemErroCliente(error, 'Não foi possível atualizar a password. Tente novamente.'),
+            'msg-erro'
+        );
     }
 }
 
@@ -357,8 +368,8 @@ async function eliminarContaUtilizador(event) {
         console.error('Erro ao eliminar conta:', error);
         const mensagem = error?.name === 'AbortError'
             ? 'A eliminação demorou demasiado. Tente novamente.'
-            : (error.message || 'Não foi possível eliminar a conta.');
-        mostrarMensagem(statusDiv, 'Erro: ' + mensagem, 'msg-erro');
+            : obterMensagemErroCliente(error, 'Não foi possível eliminar a conta. Tente novamente.');
+        mostrarMensagem(statusDiv, mensagem, 'msg-erro');
     } finally {
         if (submitButton) submitButton.disabled = false;
     }
@@ -465,13 +476,17 @@ async function guardarDadosCliente(event) {
         mostrarMensagem(
             statusDiv,
             emailAlterado
-                ? 'Dados guardados. Confirme o novo e-mail através do link enviado pelo Supabase.'
+                ? 'Dados guardados. Confirme o novo e-mail através do link que enviámos para a nova morada.'
                 : 'Dados guardados com sucesso.',
             'msg-sucesso'
         );
     } catch(error) {
         console.error('Erro ao guardar dados do cliente:', error);
-        mostrarMensagem(statusDiv, 'Erro: ' + (error.message || 'Não foi possível guardar os dados.'), 'msg-erro');
+        mostrarMensagem(
+            statusDiv,
+            obterMensagemErroCliente(error, 'Não foi possível guardar os dados. Tente novamente.'),
+            'msg-erro'
+        );
     }
 }
 

@@ -30,7 +30,7 @@ async function prepararRecuperacaoPassword() {
         if (error) {
             mostrarMensagem(
                 document.getElementById('status-cliente'),
-                'Erro ao validar o link de recuperação. Peça um novo link no Supabase.',
+                'Não foi possível validar o link de recuperação. Peça um novo link a partir da página de conta.',
                 'msg-erro'
             );
             console.error('Erro recovery code:', error);

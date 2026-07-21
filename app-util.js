@@ -14,25 +14,47 @@ function formatarEuro(valor) {
 }
 
 const MENSAGEM_CONTA_SUSPENSA = 'Esta conta foi suspensa e nao pode iniciar sessao.';
+const MENSAGEM_ERRO_GENERICA_CLIENTE = 'Não foi possível concluir o pedido. Tenta novamente dentro de momentos.';
+const MENSAGEM_LIGACAO_INDISPONIVEL = 'Não foi possível ligar ao serviço. Verifique a internet e recarregue a página.';
 
-function obterMensagemErroAuth(erro, contexto = 'login') {
-    if (!erro) {
-        return contexto === 'login'
-            ? 'E-mail ou palavra-passe invalidos.'
-            : 'Ocorreu um erro. Tente novamente.';
-    }
+function mensagemErroPareceTecnica(mensagem) {
+    const texto = String(mensagem || '').toLowerCase();
+    if (!texto) return true;
+    return /supabase|postgres|postgrest|pgrst|jwt|rpc\b|cdn|sql\b|policy|row-level|rls|permission denied|violates|constraint|undefined|null is not|failed to fetch|networkerror|typeerror|syntaxerror|stack|at\s+\w+\s+\(|function public\.|schema cache/i.test(texto);
+}
 
-    const codigo = String(erro.code || erro.error || '').toLowerCase();
-    let mensagem = erro.message || erro.error_description || erro.msg || '';
+function extrairTextoErro(erro) {
+    if (!erro) return '';
+    let mensagem = erro.message || erro.error_description || erro.msg || erro.error || '';
     if (mensagem && typeof mensagem === 'object') {
         mensagem = mensagem.message || mensagem.error_description || '';
     }
     mensagem = String(mensagem || '').trim();
+    if (!mensagem || mensagem === '{}' || mensagem === '[object Object]') return '';
+    return mensagem;
+}
+
+function obterMensagemErroCliente(erro, fallback = MENSAGEM_ERRO_GENERICA_CLIENTE) {
+    const mensagem = extrairTextoErro(erro);
+    if (!mensagem || mensagemErroPareceTecnica(mensagem)) {
+        return fallback;
+    }
+    return mensagem;
+}
+
+function obterMensagemErroAuth(erro, contexto = 'login') {
+    const fallback = contexto === 'login'
+        ? 'E-mail ou palavra-passe inválidos.'
+        : MENSAGEM_ERRO_GENERICA_CLIENTE;
+
+    if (!erro) return fallback;
+
+    const codigo = String(erro.code || erro.error || '').toLowerCase();
+    const mensagem = extrairTextoErro(erro);
     const texto = `${codigo} ${mensagem}`.toLowerCase();
 
     if (
         codigo === 'user_banned'
-        || mensagem === '{}'
         || texto.includes('banned')
         || texto.includes('banido')
         || texto.includes('suspens')
@@ -41,13 +63,33 @@ function obterMensagemErroAuth(erro, contexto = 'login') {
         return MENSAGEM_CONTA_SUSPENSA;
     }
 
-    if (mensagem && mensagem !== '[object Object]') {
-        return mensagem;
+    if (
+        texto.includes('invalid login')
+        || texto.includes('invalid credentials')
+        || texto.includes('invalid_grant')
+        || texto.includes('email not confirmed')
+        || texto.includes('email_not_confirmed')
+    ) {
+        if (texto.includes('email not confirmed') || texto.includes('email_not_confirmed')) {
+            return 'E-mail não confirmado. Verifique a caixa de correio e clique no link de validação.';
+        }
+        return 'E-mail ou palavra-passe inválidos.';
     }
 
-    return contexto === 'login'
-        ? 'E-mail ou palavra-passe invalidos.'
-        : 'Ocorreu um erro. Tente novamente.';
+    if (
+        texto.includes('rate limit')
+        || texto.includes('too many')
+        || texto.includes('demorou')
+        || texto.includes('timeout')
+    ) {
+        return 'O pedido demorou demasiado. Tente novamente dentro de momentos.';
+    }
+
+    if (mensagemErroPareceTecnica(mensagem) || !mensagem) {
+        return fallback;
+    }
+
+    return mensagem;
 }
 
 function mostrarMensagem(elemento, mensagem, tipo = '') {
