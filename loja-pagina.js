@@ -37,7 +37,7 @@
         if (typeof carregarProdutosDaNuvem === 'function') return Promise.resolve();
         if (!promessaLojaProdutos) {
             promessaLojaProdutos = garantirCartMiniLoja()
-                .then(() => carregarScript('loja-produtos.js?v=20260720-adicionar-icone'));
+                .then(() => carregarScript('loja-produtos.js?v=20260721-erro-generico'));
         }
         return promessaLojaProdutos;
     }
@@ -148,9 +148,12 @@
         try {
             await aguardarSessaoSupabase();
         } catch (erro) {
-            console.error(erro);
+            console.error('Erro ao iniciar sessão da loja:', erro);
             if (typeof definirEstadoVitrine === 'function') {
-                definirEstadoVitrine('Erro: biblioteca Supabase não carregou. Verifique a ligação à internet.', 'erro');
+                definirEstadoVitrine(
+                    'Não foi possível carregar os produtos. Tenta novamente dentro de momentos.',
+                    'erro'
+                );
             }
             return;
         }
@@ -194,7 +197,7 @@
 
     function agendarPrefetchModulosLoja() {
         const iniciar = function () {
-            ['loja-produtos.js?v=20260720-adicionar-icone', 'cart-mini.js?v=20260711-leve'].forEach(function (href) {
+            ['loja-produtos.js?v=20260721-erro-generico', 'cart-mini.js?v=20260711-leve'].forEach(function (href) {
                 if (document.querySelector('link[rel="prefetch"][href="' + href + '"]')) return;
                 const link = document.createElement('link');
                 link.rel = 'prefetch';

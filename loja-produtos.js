@@ -225,8 +225,11 @@ async function carregarProdutosDaNuvem(){
         await reiniciarVitrinePaginada();
         atualizarCarrinhoSeDisponivel();
     }catch(erro){
-        console.error(erro);
-        definirEstadoVitrine('Erro ao carregar produtos do Supabase: ' + (erro.message || 'sem detalhe disponível'), 'erro');
+        console.error('Erro ao carregar produtos da loja:', erro);
+        definirEstadoVitrine(
+            'Não foi possível carregar os produtos. Tenta novamente dentro de momentos.',
+            'erro'
+        );
     }
 }
 
