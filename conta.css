@@ -459,7 +459,7 @@ body[data-page="conta"] #conteudo-cliente-autenticado:not(.oculto) ~ #conteudo-c
 }
 
 .perfil-email-logado{
-    color:#888;
+    color:#777;
     font-size:12px;
     margin-top:5px;
 }
