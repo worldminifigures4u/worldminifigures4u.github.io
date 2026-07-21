@@ -46,17 +46,28 @@
         }
 
         .contador-produtos{
-            color:#bbb;
-            font-size:14px;
-            font-weight:bold;
+            color:#777;
+            font-size:13px;
+            font-weight:600;
             line-height:1.3;
             padding:4px 2px 0;
             text-align:right;
         }
 
         .contador-produtos strong{
-            color:var(--cor-texto-principal, #fff);
-            font-size:18px;
+            color:#aaa;
+            font-size:14px;
+            font-weight:700;
+        }
+
+        body[data-page="loja"] .contador-produtos{
+            color:#777 !important;
+        }
+
+        body[data-page="loja"] .contador-produtos strong{
+            color:#aaa !important;
+            font-size:14px;
+            font-weight:700;
         }
 
         .barra-pesquisa-container {
