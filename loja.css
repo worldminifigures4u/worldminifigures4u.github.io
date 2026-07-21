@@ -84,7 +84,7 @@
             display:grid;
             grid-template-columns:repeat(auto-fill, minmax(230px, 280px));
             gap:20px;
-            justify-content:start;
+            justify-content:center;
         }
 
         .produto-card{
