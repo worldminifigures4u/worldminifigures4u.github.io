@@ -195,6 +195,9 @@
             background:
                 radial-gradient(circle at 50% 42%, #2a2a2a 0%, #1c1c1c 58%, #161616 100%);
             border-radius:10px;
+            overflow:hidden;
+            margin-bottom:16px;
+            aspect-ratio:1 / 1;
             display:flex;
             align-items:center;
             justify-content:center;
@@ -213,6 +216,7 @@
             display:block;
             pointer-events:none;
             transition:transform 0.22s ease;
+            border-radius:6px;
         }
 
         .produto-galeria-seta{
