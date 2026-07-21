@@ -349,7 +349,7 @@ body[data-page="conta"] #conteudo-cliente-autenticado:not(.oculto) ~ #conteudo-c
 }
 
 .perfil-cp-logado{
-    color:#aaa;
+    color:#777;
     font-size:12px;
 }
 
