@@ -43,34 +43,48 @@ function criarSvgTema(pathD) {
     return svg;
 }
 
-function obterChaveIconeTema(tema = '') {
-    const valor = String(tema).toLowerCase();
-    if (!valor || valor === 'todos') return 'todos';
-    if (valor.includes('star') || valor.includes('wars')) return 'sabre';
-    if (valor.includes('harry') || valor.includes('wizard')) return 'magic';
-    if (valor.includes('marvel')) return 'shield';
-    if (valor.includes('dc')) return 'bolt';
-    if (valor.includes('disney') || valor.includes('princess')) return 'crown';
-    if (valor.includes('car') || valor.includes('vehicle') || valor.includes('speed')) return 'car';
-    if (valor.includes('technic') || valor.includes('ninjago') || valor.includes('city')) return 'brick';
-    if (valor.includes('animal') || valor.includes('dinoss')) return 'paw';
-    return ICONE_TEMA_PADRAO;
-}
+const MAPA_ICONES_TEMAS = {
+    'Todos':                    'M12 3l2.8 5.7 6.2.9-4.5 4.4 1.1 6.2L12 17.3 6.4 20.2l1.1-6.2L3 9.6l6.2-.9z',
+    'Animais':                  'M10 5.5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3zm4 0a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3zm-7 3a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3zm10 0a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3zM12 21c-3.3 0-6-2.2-6-5 0-2 1.5-3.6 3.5-4.4L12 10l2.5 1.6c2 .8 3.5 2.4 3.5 4.4 0 2.8-2.7 5-6 5z',
+    'Bluey':                    'M9 5.5C9 4.1 10.1 3 11.5 3S14 4.1 14 5.5v.5h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h1v-.5zM10 10h4M10 14h4',
+    'Bonecos':                  'M12 2a3 3 0 1 0 0 6 3 3 0 0 0 0-6zm0 8c-3.3 0-6 1.3-6 3v1h12v-1c0-1.7-2.7-3-6-3zM7 18h10v2a1 1 0 0 1-1 1H8a1 1 0 0 1-1-1v-2z',
+    'Cidade':                   'M3 21V9l6-6 6 6v12H3zm6-10v4m3-4v4M3 21h18M15 21v-6h6v6',
+    'DC Comics':                'M13 2L4 14h6l-1 8 9-12h-6z',
+    'Dinossauros':              'M4 14c0-4.4 3.6-8 8-8s8 3.6 8 8M8 14c.5-2.2 2.2-4 4-4s3.5 1.8 4 4m-8 0v4h8v-4M9 18v2m6-2v2',
+    'Disney':                   'M12 3C8.1 3 5 6.1 5 10c0 2.4 1.2 4.6 3 5.9V20h8v-4.1c1.8-1.3 3-3.5 3-5.9 0-3.9-3.1-7-7-7zm-2 9a1 1 0 1 1 0-2 1 1 0 0 1 0 2zm4 0a1 1 0 1 1 0-2 1 1 0 0 1 0 2z',
+    'Diversos':                 'M4 6h16M4 12h16M4 18h16',
+    'Dragon Ball':              'M12 2a10 10 0 1 0 0 20A10 10 0 0 0 12 2zm0 4a6 6 0 1 1 0 12A6 6 0 0 1 12 6zm0 2a4 4 0 1 0 0 8 4 4 0 0 0 0-8zm0 1.5a2.5 2.5 0 1 1 0 5 2.5 2.5 0 0 1 0-5z',
+    'Famosos':                  'M12 2a5 5 0 1 0 0 10A5 5 0 0 0 12 2zm0 12c-5.3 0-8 2.7-8 4v2h16v-2c0-1.3-2.7-4-8-4z',
+    'Faroeste':                 'M4 18h16M7 18V8l5-4 5 4v10M10 18v-5h4v5',
+    'Filmes e Séries':          'M15 10l4.6-2.7A1 1 0 0 1 21 8.3v7.4a1 1 0 0 1-1.4.9L15 14v-4zm-13 5V9a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v6a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2z',
+    'Futebol':                  'M12 2a10 10 0 1 0 0 20A10 10 0 0 0 12 2zm0 3l2.4 1.7-.9 2.8H10.5l-.9-2.8L12 5zm-5.7 4.1l2.4 1.7-.9 2.8H5.3l-.3-1a8 8 0 0 1 1.3-3.5zm11.4 0c.6.9 1 2.1 1.3 3.5l-.3 1h-2.5l-.9-2.8 2.4-1.7zM8.4 16l-.9-2.8H5l.7 2.3A8 8 0 0 0 8.4 16zm7.2 0a8 8 0 0 0 2.7-.5l.7-2.3h-2.5L15.6 16zm-3.6 3a8 8 0 0 1-3.1-.9l-.7-2.1h7.6l-.7 2.1A8 8 0 0 1 12 19z',
+    'Ghostbusters':             'M12 2a7 7 0 0 1 7 7c0 2.2-.9 4.1-2.3 5.5L18 22H6l1.3-7.5C5.9 13.1 5 11.2 5 9a7 7 0 0 1 7-7zm-2 9a1 1 0 1 0 0 2 1 1 0 0 0 0-2zm4 0a1 1 0 1 0 0 2 1 1 0 0 0 0-2z',
+    'Harry Potter':             'M6 20L12 4l6 16M8.5 14h7',
+    'Image Comics':             'M12 3l7 3v6c0 5-3.4 8.5-7 9-3.6-.5-7-4-7-9V6z',
+    'Jogos':                    'M6 11h4m-2-2v4m7-2h.01M16 9h.01M21 6H3a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h18a1 1 0 0 0 1-1V7a1 1 0 0 0-1-1z',
+    'Looney Tunes':             'M8 3c0 0-4 2-4 7s3 6 4 9h8c1-3 4-4 4-9s-4-7-4-7H8zm4 3a2 2 0 1 1 0 4 2 2 0 0 1 0-4z',
+    'Marvel':                   'M12 3l7 3v6c0 5-3.4 8.5-7 9-3.6-.5-7-4-7-9V6z',
+    'Masters of the Universe':  'M12 2l9 7-3 12H6L3 9z',
+    'Medieval':                 'M12 2l3 3h2l1 3-4 3-4-3 1-3h2zM7 12h10v8H7zM9 16h2v4H9zm4 0h2v4h-2z',
+    'Militar':                  'M12 3l7 3v5c0 4.7-3 8.2-7 9-4-0.8-7-4.3-7-9V6z',
+    'NBA':                      'M12 2a10 10 0 1 0 0 20A10 10 0 0 0 12 2zM7 7c1.4 1 2.5 3 3 5H4.5A8 8 0 0 1 7 7zm-2.5 7h5.5c-.5 2-1.6 4-3 5a8 8 0 0 1-2.5-5zm5.5 5c1.4-1 2.5-3 3-5h5.5a8 8 0 0 1-8.5 5zm9-7h-5.5c.5-2 1.6-4 3-5a8 8 0 0 1 2.5 5z',
+    'Ninjago':                  'M12 2l4 4-4 4-4-4 4-4zm0 12l4 4-4 4-4-4 4-4zm-6-6l4 4-4 4-4-4 4-4zm12 0l4 4-4 4-4-4 4-4z',
+    'O Senhor dos Anéis':       'M12 12m-9 0a9 9 0 1 0 18 0 9 9 0 1 0-18 0M12 12m-5 0a5 5 0 1 0 10 0 5 5 0 1 0-10 0',
+    'One Piece':                'M12 4a4 4 0 0 1 4 4c0 1.5-.6 2.8-1.6 3.7L16 20H8l1.6-8.3C8.6 10.8 8 9.5 8 8a4 4 0 0 1 4-4z',
+    'Os Simpsons':              'M7 9h10v6a5 5 0 0 1-10 0V9zm5-5a4 4 0 0 1 4 4H8a4 4 0 0 1 4-4zM9.5 12a1 1 0 1 0 0 2 1 1 0 0 0 0-2zm5 0a1 1 0 1 0 0 2 1 1 0 0 0 0-2zm-3 3h1',
+    'Piratas das Caraíbas':     'M12 2L2 7l4 9h12l4-9L12 2zm0 5v6m-3-3h6',
+    'Rua Sésamo':               'M6.5 8a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5zm11 0a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5zM4 22v-8a3 3 0 0 1 3-3h2l3 4 3-4h2a3 3 0 0 1 3 3v8',
+    'Star Wars':                'M12 2l1 4h4l-3 3 1 4-3-2-3 2 1-4-3-3h4zM6 16c0 0-2 2-2 4h16c0-2-2-4-2-4',
+    'Stranger Things':          'M3.3 7A9 9 0 0 1 12 3a9 9 0 1 1 0 18 9 9 0 0 1-8.7-6.5M3 12h9m0 0l-3-3m3 3-3 3',
+    'Tartarugas Ninja':         'M12 3a9 9 0 1 0 0 18A9 9 0 0 0 12 3zm0 3a6 6 0 1 1 0 12A6 6 0 0 1 12 6zm-2 5h4m-2-2v4',
+    'Tempos Antigos':           'M3 18l5-10 4 6 3-4 6 8H3z',
+    'Thundercats':              'M12 2L4 8l2 12h12l2-12L12 2zm0 4l5 4-1 7H8l-1-7 5-4z',
+    'Toy Story':                'M12 3a4 4 0 0 1 4 4v1h1a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-9a2 2 0 0 1 2-2h1V7a4 4 0 0 1 4-4zm0 2a2 2 0 0 0-2 2v1h4V7a2 2 0 0 0-2-2zm-2 8a1 1 0 1 0 0 2 1 1 0 0 0 0-2zm4 0a1 1 0 1 0 0 2 1 1 0 0 0 0-2z',
+};
 
 function criarIconeTema(tema = '') {
-    const paths = {
-        todos: 'M12 3l2.8 5.7 6.2.9-4.5 4.4 1.1 6.2L12 17.3 6.4 20.2l1.1-6.2L3 9.6l6.2-.9z',
-        sabre: 'M8 16l8-8M6 18l2-2M10 14l2-2M14 10l2-2M16 16l2 2M6 6l12 12',
-        magic: 'M4 20L20 4M14 4h6v6M4 14v6h6',
-        shield: 'M12 3l7 3v6c0 5-3.4 8.5-7 9-3.6-.5-7-4-7-9V6z',
-        bolt: 'M13 2L4 14h6l-1 8 9-12h-6z',
-        crown: 'M3 18h18l-1.5-9-5 4-2.5-6-2.5 6-5-4z',
-        car: 'M5 16h14l-1.5-5h-11zM7 16a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3zm10 0a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3z',
-        paw: 'M12 15c2.2 0 4 1.4 4 3s-1.8 3-4 3-4-1.4-4-3 1.8-3 4-3zM7.5 10.5a1.5 2 0 1 0 0-4 1.5 2 0 0 0 0 4zm4.5-2a1.5 2 0 1 0 0-4 1.5 2 0 0 0 0 4zm4.5 2a1.5 2 0 1 0 0-4 1.5 2 0 0 0 0 4zM4 14a1.5 2 0 1 0 0-4 1.5 2 0 0 0 0 4z',
-        brick: 'M3 9h18v10H3zM8 9V6h3v3m2 0V6h3v3M6 14h3m2 0h3m2 0h3'
-    };
-    const chave = obterChaveIconeTema(tema);
-    return criarSvgTema(paths[chave] || paths[ICONE_TEMA_PADRAO]);
+    const d = MAPA_ICONES_TEMAS[tema] || MAPA_ICONES_TEMAS['Diversos'];
+    return criarSvgTema(d);
 }
 
 function criarRotuloTema(temaTexto) {
