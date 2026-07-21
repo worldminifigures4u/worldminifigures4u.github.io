@@ -271,7 +271,7 @@ function gerarMenus(listaProdutos){
 
     const todosBtn = document.createElement('button');
     todosBtn.className = 'btn-tema ativo';
-    todosBtn.textContent = 'Todos os Temas';
+    todosBtn.textContent = 'Todos';
     todosBtn.onclick = function(){ filtrarTema('todos', this); };
     listaTemas.appendChild(todosBtn);
 
