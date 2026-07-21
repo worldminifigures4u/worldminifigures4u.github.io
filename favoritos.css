@@ -204,7 +204,7 @@
 
 .btn-favorito-remover{
     border:0;
-    border-radius:8px;
+    border-radius:10px;
     box-sizing:border-box;
     width:34px;
     height:34px;
@@ -368,7 +368,7 @@
         padding:0;
         background:#ff4d4d;
         color:#fff;
-        border-radius:8px;
+        border-radius:10px;
         font-size:16px;
         font-weight:900;
         line-height:1;
