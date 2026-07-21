@@ -305,7 +305,10 @@ const MAPA_ICONES_TEMAS = {
 
 function criarIconeTema(tema = '') {
     const partes = MAPA_ICONES_TEMAS[tema] || MAPA_ICONES_TEMAS['Diversos'];
-    return criarSvgTema(partes);
+    const preenchido = tema === 'DC Comics';
+    const svg = criarSvgTema(partes, { preenchido });
+    if (preenchido) svg.classList.add('icone-tema-marca');
+    return svg;
 }
 
 function criarRotuloTema(temaTexto) {
