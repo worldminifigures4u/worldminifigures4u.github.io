@@ -279,7 +279,7 @@ body[data-page="conta"] #conteudo-cliente-autenticado:not(.oculto) ~ #conteudo-c
 
         .encomenda-id{
             color:#ffc107;
-            font-weight:bold;
+            font-weight:800;
         }
 
         .encomenda-estado{
@@ -293,7 +293,7 @@ body[data-page="conta"] #conteudo-cliente-autenticado:not(.oculto) ~ #conteudo-c
 
         .encomenda-total{
             color:#fff;
-            font-weight:bold;
+            font-weight:800;
         }
 
         .encomenda-produtos-resumo{
@@ -311,7 +311,7 @@ body[data-page="conta"] #conteudo-cliente-autenticado:not(.oculto) ~ #conteudo-c
             padding:6px 8px;
             cursor:pointer;
             font-size:12px;
-            font-weight:bold;
+            font-weight:800;
         }
 
         .lista-artigos-encomenda{
