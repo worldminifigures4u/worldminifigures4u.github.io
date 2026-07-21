@@ -505,7 +505,7 @@ body{
                 max-width:none;
                 justify-content:center;
                 padding:0;
-                border-radius:8px;
+                border-radius:10px;
             }
             [data-vista-nav="conta"]{
                 width:auto;
