@@ -56,6 +56,8 @@
     border:1px solid #2a2a2a;
     border-radius:14px;
     padding:10px 12px;
+    display:grid;
+    grid-template-columns:58px minmax(0, 1fr) auto;
     gap:8px;
     justify-content:start;
     align-items:center;
