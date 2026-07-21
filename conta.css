@@ -61,14 +61,7 @@ body[data-page="conta"] .container{
     border-radius:14px;
     padding:0 14px;
     font-size:14px;
-    font-weight:900;
-    cursor:pointer;
-    text-align:center;
-    text-decoration:none;
-    white-space:nowrap;
-    background:var(--cor-acao-principal, #ffc107);
-    color:#000;
-}
+    font-weight:800;
 
 .conta-ver-produtos:hover,
 .conta-ver-produtos:focus-visible{
