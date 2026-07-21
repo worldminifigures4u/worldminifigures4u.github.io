@@ -46,6 +46,16 @@
 
         .pagina-institucional a{
             color:#ffc107;
+            text-decoration:none;
+            transition:color 0.18s ease, text-decoration-color 0.18s ease;
+        }
+
+        .pagina-institucional a:hover,
+        .pagina-institucional a:focus-visible{
+            color:#e6b000;
+            text-decoration:underline;
+            text-underline-offset:3px;
+            outline:none;
         }
 
         .bloco-institucional{
