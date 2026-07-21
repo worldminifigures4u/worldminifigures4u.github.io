@@ -563,23 +563,25 @@ body{
         }
 
         .rodape-frase{
-            color:#888;
-            font-weight:700;
+            color:#777;
+            font-weight:600;
             line-height:1.4;
             flex:1 1 auto;
+            font-size:13px;
         }
 
         .rodape-links{
             display:flex;
             flex-wrap:wrap;
             justify-content:flex-end;
-            gap:8px 18px;
+            gap:10px 28px;
         }
 
         .rodape-links a{
-            color:#ddd;
+            color:#888;
             text-decoration:none;
-            font-weight:700;
+            font-weight:600;
+            font-size:13px;
         }
 
         .rodape-links a:hover,
