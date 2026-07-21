@@ -245,7 +245,7 @@
             display:block;
             width:100%;
             padding:10px;
-            border-radius:8px;
+            border-radius:14px;
             border:1px solid #2a2a2a;
             background:#222;
             color:white;
@@ -274,14 +274,14 @@
             gap:10px;
             background:#1c1c1c;
             padding:12px;
-            border-radius:8px;
+            border-radius:14px;
             cursor:pointer;
             border:1px solid #2a2a2a;
             transition:border-color 0.18s ease, background 0.18s ease;
         }
 
         .opcao-envio:hover{
-            border-color:#444;
+            border-color:rgba(255, 193, 7, 0.35);
         }
 
         .opcao-envio:has(input:checked){
@@ -473,7 +473,7 @@
         #status-encomenda{
             background:#181818;
             border:1px solid #2a2a2a;
-            border-radius:8px;
+            border-radius:14px;
             padding:10px;
             min-height:18px;
         }
