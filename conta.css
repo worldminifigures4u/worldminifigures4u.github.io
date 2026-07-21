@@ -380,7 +380,7 @@ body[data-page="conta"] #conteudo-cliente-autenticado:not(.oculto) ~ #conteudo-c
         .encomenda-estado{
             background:#222;
             color:#fff;
-            border-radius:999px;
+            border-radius:10px;
             padding:3px 8px;
             font-size:11px;
             white-space:nowrap;
