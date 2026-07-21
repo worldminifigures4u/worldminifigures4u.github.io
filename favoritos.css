@@ -55,9 +55,7 @@
     background:#111;
     border:1px solid #2a2a2a;
     border-radius:14px;
-    padding:8px 10px;
-    display:grid;
-    grid-template-columns:58px minmax(0, 1fr) auto;
+    padding:10px 12px;
     gap:8px;
     justify-content:start;
     align-items:center;
