@@ -1124,13 +1124,6 @@ function abrirRevisaoListaProdutosPlataforma() {
     }
 
     const resumo = resumirAnaliseListaPlataforma(linhas);
-    if (!resumo.rever) {
-        const adicionados = adicionarListaAnalisadaPlataforma(linhas);
-        if (adicionados > 0) {
-            definirStatusWallapop(`${resumo.figuras} figura(s) adicionada(s) (${resumo.produtos} produtos reconhecidos).`);
-            return;
-        }
-    }
 
     fecharRevisaoListaProdutosPlataforma();
     const modal = document.createElement('div');
@@ -1151,7 +1144,7 @@ function abrirRevisaoListaProdutosPlataforma() {
     topo.append(titulo, fechar);
 
     const explicacao = document.createElement('p');
-    explicacao.textContent = 'Confirma as correspond\u00eancias. As corre\u00e7\u00f5es prov\u00e1veis j\u00e1 est\u00e3o selecionadas; os casos duvidosos ficam por escolher.';
+    explicacao.textContent = 'Confirma sempre as correspond\u00eancias antes de adicionar. Nada entra na encomenda at\u00e9 confirmares.';
     const resumoEl = document.createElement('p');
     resumoEl.className = 'plataforma-lista-resumo';
     resumoEl.textContent = formatarPreviaListaPlataforma(resumo);
