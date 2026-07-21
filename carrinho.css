@@ -82,7 +82,7 @@
 
         .carrinho-vazio{
             background:#111;
-            border:1px solid #333;
+            border:1px solid #2a2a2a;
             border-radius:14px;
             padding:36px 28px 28px;
             color:#aaa;
@@ -113,7 +113,7 @@
 
         .linha-carrinho{
             background:#111;
-            border:1px solid #333;
+            border:1px solid #2a2a2a;
             border-radius:14px;
             padding:8px 10px;
             display:flex;
@@ -245,7 +245,7 @@
             width:100%;
             padding:10px;
             border-radius:8px;
-            border:1px solid #333;
+            border:1px solid #2a2a2a;
             background:#222;
             color:white;
             margin:8px 0 14px;
@@ -275,7 +275,7 @@
             padding:12px;
             border-radius:8px;
             cursor:pointer;
-            border:1px solid #2b2b2b;
+            border:1px solid #2a2a2a;
             transition:border-color 0.18s ease, background 0.18s ease;
         }
 
@@ -385,7 +385,7 @@
         .total-box{
             margin-top:20px;
             background:#181818;
-            border:1px solid #333;
+            border:1px solid #2a2a2a;
             border-radius:14px;
             padding:12px;
             margin-bottom: 15px;
@@ -408,7 +408,7 @@
 
         .seccao-pagamento {
             margin-top: 15px;
-            border-top: 1px dashed #333;
+            border-top: 1px dashed #2a2a2a;
             padding-top: 15px;
         }
         .seccao-pagamento h3 {
@@ -467,7 +467,7 @@
 
         #status-encomenda{
             background:#181818;
-            border:1px solid #333;
+            border:1px solid #2a2a2a;
             border-radius:8px;
             padding:10px;
             min-height:18px;

@@ -120,7 +120,7 @@ body[data-page="conta"] #conteudo-cliente-autenticado:not(.oculto) ~ #conteudo-c
             width: 100%;
             padding: 8px;
             border-radius: 6px;
-            border: 1px solid #333;
+            border: 1px solid #2a2a2a;
             background: #222;
             color: white;
             box-sizing: border-box;
@@ -185,7 +185,7 @@ body[data-page="conta"] #conteudo-cliente-autenticado:not(.oculto) ~ #conteudo-c
         .zona-perigo-conta{
             margin-top:22px;
             padding-top:20px;
-            border-top:1px solid #333;
+            border-top:1px solid #2a2a2a;
         }
 
         .zona-perigo-conta h3{
@@ -229,7 +229,7 @@ body[data-page="conta"] #conteudo-cliente-autenticado:not(.oculto) ~ #conteudo-c
         .historico-encomendas{
             margin-top:18px;
             padding-top:15px;
-            border-top:1px solid #333;
+            border-top:1px solid #2a2a2a;
         }
 
         .historico-encomendas h3{
@@ -256,7 +256,7 @@ body[data-page="conta"] #conteudo-cliente-autenticado:not(.oculto) ~ #conteudo-c
             gap:10px;
             align-items:center;
             background:#181818;
-            border:1px solid #333;
+            border:1px solid #2a2a2a;
             border-radius:8px;
             padding:10px;
         }
@@ -341,7 +341,7 @@ body[data-page="conta"] #conteudo-cliente-autenticado:not(.oculto) ~ #conteudo-c
 
         .encomenda-card{
             background:#181818;
-            border:1px solid #333;
+            border:1px solid #2a2a2a;
             border-radius:8px;
             padding:10px;
             font-size:13px;
@@ -472,7 +472,7 @@ body[data-page="conta"] #conteudo-cliente-autenticado:not(.oculto){
     width:100%;
     min-height:36px;
     padding:6px 10px;
-    border:1px solid #333;
+    border:1px solid #2a2a2a;
     border-radius:999px;
     font:inherit;
     font-weight:800;
@@ -517,7 +517,7 @@ body[data-page="conta"] .conta-menu-item.ativa:focus-visible{
 
 .conta-seccao h2{
     margin-top:0;
-    border-bottom:1px solid #333;
+    border-bottom:1px solid #2a2a2a;
     padding-bottom:10px;
 }
 
