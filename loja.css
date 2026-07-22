@@ -48,7 +48,7 @@
         .loja-banner-cgi{
             position:relative;
             width:100%;
-            aspect-ratio:2880 / 742;
+            aspect-ratio:2880 / 894;
             height:auto;
             border-radius:14px;
             overflow:hidden;
@@ -655,7 +655,7 @@
 
 @media(max-width:560px){
     .loja-banner-cgi{
-        aspect-ratio:2880 / 742;
+        aspect-ratio:2880 / 894;
     }
 
     .produtos{
