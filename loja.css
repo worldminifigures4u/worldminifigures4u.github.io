@@ -46,6 +46,7 @@
         }
 
         .loja-banner-cgi{
+            position:relative;
             width:100%;
             /* Altura = 67.5% da proporcao nativa 1024x268 (268 * 0.75 * 0.9 ≈ 181) */
             aspect-ratio:1024 / 181;
@@ -62,6 +63,15 @@
             height:100%;
             object-fit:cover;
             object-position:center center;
+            position:absolute;
+            inset:0;
+            opacity:0;
+            transition:opacity 0.7s ease;
+            pointer-events:none;
+        }
+
+        .loja-banner-cgi-img.is-ativo{
+            opacity:1;
         }
 
         .contador-produtos{
