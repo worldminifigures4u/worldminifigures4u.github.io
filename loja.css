@@ -45,6 +45,24 @@
             gap: 16px;
         }
 
+        .loja-banner-cgi{
+            width:100%;
+            border-radius:14px;
+            overflow:hidden;
+            border:1px solid #2a2a2a;
+            background:#0a0a0a;
+            line-height:0;
+        }
+
+        .loja-banner-cgi-img{
+            display:block;
+            width:100%;
+            height:auto;
+            max-height:280px;
+            object-fit:cover;
+            object-position:center;
+        }
+
         .contador-produtos{
             color:#777;
             font-size:13px;
@@ -634,6 +652,10 @@
 }
 
 @media(max-width:560px){
+    .loja-banner-cgi-img{
+        max-height:180px;
+    }
+
     .produtos{
         grid-template-columns:minmax(0, 1fr);
         gap:14px;
