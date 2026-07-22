@@ -46,21 +46,32 @@
         }
 
         .loja-banner-cgi{
+            position:relative;
             width:100%;
             border-radius:14px;
             overflow:hidden;
             border:1px solid #2a2a2a;
             background:#0a0a0a;
             line-height:0;
+            aspect-ratio:16 / 9;
+            max-height:280px;
         }
 
         .loja-banner-cgi-img{
             display:block;
             width:100%;
-            height:auto;
-            max-height:280px;
+            height:100%;
             object-fit:cover;
             object-position:center;
+            position:absolute;
+            inset:0;
+            opacity:0;
+            transition:opacity 0.7s ease;
+            pointer-events:none;
+        }
+
+        .loja-banner-cgi-img.is-ativo{
+            opacity:1;
         }
 
         .contador-produtos{
@@ -652,7 +663,7 @@
 }
 
 @media(max-width:560px){
-    .loja-banner-cgi-img{
+    .loja-banner-cgi{
         max-height:180px;
     }
 
