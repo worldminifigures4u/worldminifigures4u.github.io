@@ -298,6 +298,18 @@ function produtoCorrespondeItemRececaoMapa(produto, item) {
     );
 }
 
+/** Vendas: só ID (preferência) ou SKU. Nunca referência (ex. "Personalizado" partilhada). */
+function produtoCorrespondeItemVendaMapa(produto, item) {
+    if (!produto || !item) return false;
+    const produtoId = String(produto.id || "").trim();
+    const itemId = String(item.id_produto || item.produto_id || item.id || "").trim();
+    if (produtoId && itemId && produtoId === itemId) return true;
+
+    const produtoSku = String(produto.sku || "").trim().toUpperCase();
+    const itemSku = String(item.sku || "").trim().toUpperCase();
+    return Boolean(produtoSku && itemSku && produtoSku === itemSku);
+}
+
 function normalizarPedidoRececaoMapa(pedido) {
     if (!pedido) return null;
     let itens = pedido.itens;
@@ -530,7 +542,7 @@ function obterLinhasVendaProdutoMapa(produto, encomendas) {
     const linhas = [];
     (encomendas || []).forEach((encomenda) => {
         const itens = (encomenda.produtos || []).filter((item) =>
-            produtoCorrespondeItemRececaoMapa(produto, item)
+            produtoCorrespondeItemVendaMapa(produto, item)
         );
         if (!itens.length) return;
         const quantidade = itens.reduce((total, item) => total + obterQuantidadeItemVendaMapa(item), 0);
