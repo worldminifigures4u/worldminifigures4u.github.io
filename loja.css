@@ -47,8 +47,8 @@
 
         .loja-banner-cgi{
             width:100%;
-            /* Altura = 75% da proporcao nativa 1024x268 (268 * 0.75 = 201) */
-            aspect-ratio:1024 / 201;
+            /* Altura = 67.5% da proporcao nativa 1024x268 (268 * 0.75 * 0.9 ≈ 181) */
+            aspect-ratio:1024 / 181;
             border-radius:14px;
             overflow:hidden;
             border:1px solid #2a2a2a;
