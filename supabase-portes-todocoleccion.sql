@@ -7,6 +7,9 @@ drop function if exists public.criar_encomenda_plataforma_admin(
 drop function if exists public.criar_encomenda_plataforma_admin(
   text, jsonb, text, text, text, text, text, numeric, text, text, text, text, text
 );
+drop function if exists public.criar_encomenda_plataforma_admin(
+  text, jsonb, text, text, text, text, text, numeric, text, text, text, text, text, numeric
+);
 
 create or replace function public.criar_encomenda_plataforma_admin(
   p_plataforma text,
@@ -208,9 +211,6 @@ end;
 $$;
 
 revoke execute on function public.criar_encomenda_plataforma_admin(
-  text, jsonb, text, text, text, text, text, numeric, text, text, text, text, text
-) from public, anon;
-revoke execute on function public.criar_encomenda_plataforma_admin(
   text, jsonb, text, text, text, text, text, numeric, text, text, text, text, text, numeric
 ) from public, anon;
 
@@ -226,6 +226,9 @@ drop function if exists public.atualizar_encomenda_plataforma_admin(
 );
 drop function if exists public.atualizar_encomenda_plataforma_admin(
   text, jsonb, text, text, text, text, text, numeric, text, text, text, text, text, text[]
+);
+drop function if exists public.atualizar_encomenda_plataforma_admin(
+  text, jsonb, text, text, text, text, text, numeric, text, text, text, text, text, text[], numeric
 );
 
 create or replace function public.atualizar_encomenda_plataforma_admin(
@@ -456,9 +459,6 @@ begin
 end;
 $$;
 
-revoke execute on function public.atualizar_encomenda_plataforma_admin(
-  text, jsonb, text, text, text, text, text, numeric, text, text, text, text, text, text[]
-) from public, anon;
 revoke execute on function public.atualizar_encomenda_plataforma_admin(
   text, jsonb, text, text, text, text, text, numeric, text, text, text, text, text, text[], numeric
 ) from public, anon;
