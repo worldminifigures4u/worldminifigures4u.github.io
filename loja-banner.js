@@ -7,7 +7,8 @@
     const slides = Array.from(raiz.querySelectorAll('[data-loja-banner-slide]'));
     if (slides.length < 2) return;
 
-    let indice = Math.floor(Math.random() * slides.length);
+    // Sempre comeca no primeiro slide (astronauta / marca Figures Planet).
+    let indice = 0;
     let temporizador = null;
     const reduzirMovimento = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
