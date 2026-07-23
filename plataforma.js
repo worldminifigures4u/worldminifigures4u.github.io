@@ -542,9 +542,11 @@ function atualizarVisibilidadePortesManualPlataforma() {
     if (!bloco) return;
     const visivel = podeEditarPortesManuaisPlataforma();
     bloco.hidden = !visivel;
-    if (!visivel) {
-        const campo = document.getElementById('plataforma-portes-manual');
-        if (campo && !encomendaPlataformaEmEdicao) campo.value = '';
+    if (!visivel && !encomendaPlataformaEmEdicao) {
+        const campoPortes = document.getElementById('plataforma-portes-manual');
+        const campoTotal = document.getElementById('plataforma-total-manual');
+        if (campoPortes) campoPortes.value = '';
+        if (campoTotal) campoTotal.value = '';
     }
 }
 
@@ -553,6 +555,19 @@ function obterPortesManuaisPlataforma() {
     const campo = document.getElementById('plataforma-portes-manual');
     const valor = parseEuroManualPlataforma(campo?.value);
     return valor === null ? 0 : valor;
+}
+
+function campoTotalManualPreenchidoPlataforma() {
+    return Boolean(String(document.getElementById('plataforma-total-manual')?.value || '').trim());
+}
+
+function obterTotalManualPlataforma(subtotal, portes) {
+    const calculado = Math.round((Number(subtotal || 0) + Number(portes || 0)) * 100) / 100;
+    if (!podeEditarPortesManuaisPlataforma() || !campoTotalManualPreenchidoPlataforma()) {
+        return calculado;
+    }
+    const valor = parseEuroManualPlataforma(document.getElementById('plataforma-total-manual')?.value);
+    return valor === null ? calculado : valor;
 }
 
 function obterEnvioPlataforma() {
@@ -624,11 +639,12 @@ function atualizarResumoPlataforma() {
     const subtotal = calcularSubtotalPlataforma();
     const envio = obterEnvioPlataforma();
     const portes = envio.portes;
+    const total = obterTotalManualPlataforma(subtotal, portes);
     const peso = document.getElementById('plataforma-peso');
     if (peso) peso.textContent = `Peso estimado: ${envio.peso}g`;
     document.getElementById('plataforma-subtotal').textContent = `${formatarEuroWallapop(subtotal)} \u20ac`;
     document.getElementById('plataforma-portes').textContent = `${formatarEuroWallapop(portes)} \u20ac`;
-    document.getElementById('plataforma-total').textContent = `${formatarEuroWallapop(subtotal + portes)} \u20ac`;
+    document.getElementById('plataforma-total').textContent = `${formatarEuroWallapop(total)} \u20ac`;
     atualizarContagemFigurasPlataforma();
 }
 
@@ -2452,6 +2468,13 @@ async function carregarEncomendaPlataformaPorCodigo(codigo) {
             ? formatarEuroWallapop(portesGuardados)
             : '';
     }
+    const campoTotal = document.getElementById('plataforma-total-manual');
+    if (campoTotal) {
+        const totalGuardado = Number(encomenda.total || 0);
+        campoTotal.value = totalGuardado > 0
+            ? formatarEuroWallapop(totalGuardado)
+            : '';
+    }
     atualizarResumoPlataforma();
     const campoSeguimento = document.getElementById('plataforma-codigo-seguimento');
     if (campoSeguimento) campoSeguimento.value = encomenda.codigo_seguimento || '';
@@ -2577,11 +2600,22 @@ async function registarEncomendaWallapop() {
             document.getElementById('plataforma-portes-manual')?.focus();
             return;
         }
+        if (campoTotalManualPreenchidoPlataforma()) {
+            const totalValido = parseEuroManualPlataforma(
+                document.getElementById('plataforma-total-manual')?.value
+            );
+            if (totalValido === null) {
+                definirStatusWallapop('Indique um total de encomenda v\u00e1lido (ex.: 28,05).', true);
+                document.getElementById('plataforma-total-manual')?.focus();
+                return;
+            }
+        }
     }
 
     const envio = obterEnvioPlataforma();
     const dadosCliente = obterDadosClientePlataforma();
-    const total = calcularSubtotalPlataforma() + envio.portes;
+    const subtotal = calcularSubtotalPlataforma();
+    const total = obterTotalManualPlataforma(subtotal, envio.portes);
     const naoReporStock = encomendaPlataformaEmEdicao
         ? await escolherReposicaoStockPlataforma()
         : [];
@@ -2608,6 +2642,9 @@ async function registarEncomendaWallapop() {
             p_metodo_envio: envio.id || null,
             p_metodo_envio_nome: envio.nome || null,
             p_portes: envio.portes || 0,
+            p_total: podeEditarPortesManuaisPlataforma() && campoTotalManualPreenchidoPlataforma()
+                ? total
+                : null,
             p_telefone_cliente: dadosCliente.telefone || null,
             p_morada_cliente: dadosCliente.morada || null,
             p_cp_cliente: dadosCliente.cp || null,
@@ -2675,7 +2712,7 @@ async function registarEncomendaWallapop() {
             plataforma,
             nome_cliente: nomeCliente,
             nome_encomenda: nomeEncomendaAutomatico,
-            envio: { ...envio },
+            envio: { ...envio, total },
             cliente: { ...dadosCliente },
             figuras_repetidas: [...plataformaFigurasRepetidasEncomenda],
             itens: wallapopItens.map(item => ({
@@ -2695,6 +2732,10 @@ async function registarEncomendaWallapop() {
         document.getElementById('plataforma-link-perfil').value = '';
         const campoSeguimentoLimpar = document.getElementById('plataforma-codigo-seguimento');
         if (campoSeguimentoLimpar) campoSeguimentoLimpar.value = '';
+        const campoPortesLimpar = document.getElementById('plataforma-portes-manual');
+        if (campoPortesLimpar) campoPortesLimpar.value = '';
+        const campoTotalLimpar = document.getElementById('plataforma-total-manual');
+        if (campoTotalLimpar) campoTotalLimpar.value = '';
         const listaProdutos = document.getElementById('plataforma-lista-produtos');
         if (listaProdutos) listaProdutos.value = '';
         const previaLista = document.getElementById('plataforma-lista-previa');
@@ -2838,6 +2879,10 @@ document.getElementById('plataforma-metodo-envio').addEventListener('change', ()
     atualizarResumoPlataforma();
 });
 document.getElementById('plataforma-portes-manual')?.addEventListener('input', () => {
+    marcarWallapopPorRegistar();
+    atualizarResumoPlataforma();
+});
+document.getElementById('plataforma-total-manual')?.addEventListener('input', () => {
     marcarWallapopPorRegistar();
     atualizarResumoPlataforma();
 });

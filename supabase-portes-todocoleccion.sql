@@ -1,8 +1,11 @@
--- Portes manuais em Todocoleccion (criar + atualizar encomenda plataforma).
+-- Portes e total manuais em Todocoleccion (criar + atualizar encomenda plataforma).
 -- Executar no SQL Editor do Supabase.
 
 drop function if exists public.criar_encomenda_plataforma_admin(
   text, jsonb, text, text, text, text, text, numeric
+);
+drop function if exists public.criar_encomenda_plataforma_admin(
+  text, jsonb, text, text, text, text, text, numeric, text, text, text, text, text
 );
 
 create or replace function public.criar_encomenda_plataforma_admin(
@@ -18,7 +21,8 @@ create or replace function public.criar_encomenda_plataforma_admin(
   p_morada_cliente text default null,
   p_cp_cliente text default null,
   p_cidade_cliente text default null,
-  p_pais_cliente text default null
+  p_pais_cliente text default null,
+  p_total numeric default null
 )
 returns jsonb
 language plpgsql
@@ -34,6 +38,7 @@ declare
   v_produtos_texto text := '';
   v_subtotal numeric := 0;
   v_portes numeric := 0;
+  v_total numeric := 0;
   v_peso_total numeric := 0;
   v_codigo text;
   v_encomenda public.encomendas%rowtype;
@@ -158,6 +163,12 @@ begin
     v_portes := 0;
   end if;
 
+  if v_plataforma = 'Todocoleccion' and p_total is not null then
+    v_total := greatest(0, round(p_total::numeric, 2));
+  else
+    v_total := v_subtotal + v_portes;
+  end if;
+
   loop
     v_codigo := upper(substr(replace(gen_random_uuid()::text, '-', ''), 1, 6));
     exit when not exists (select 1 from public.encomendas where codigo_encomenda = v_codigo);
@@ -180,7 +191,7 @@ begin
     case when v_plataforma = 'OLX' then trim(p_metodo_envio_nome) else v_plataforma end,
     v_portes,
     v_peso_total,
-    v_subtotal + v_portes,
+    v_total,
     v_plataforma,
     'A aguardar pagamento',
     v_plataforma,
@@ -199,9 +210,12 @@ $$;
 revoke execute on function public.criar_encomenda_plataforma_admin(
   text, jsonb, text, text, text, text, text, numeric, text, text, text, text, text
 ) from public, anon;
+revoke execute on function public.criar_encomenda_plataforma_admin(
+  text, jsonb, text, text, text, text, text, numeric, text, text, text, text, text, numeric
+) from public, anon;
 
 grant execute on function public.criar_encomenda_plataforma_admin(
-  text, jsonb, text, text, text, text, text, numeric, text, text, text, text, text
+  text, jsonb, text, text, text, text, text, numeric, text, text, text, text, text, numeric
 ) to authenticated;
 
 drop function if exists public.atualizar_encomenda_plataforma_admin(
@@ -209,6 +223,9 @@ drop function if exists public.atualizar_encomenda_plataforma_admin(
 );
 drop function if exists public.atualizar_encomenda_plataforma_admin(
   text, jsonb, text, text, text, text, text, numeric, text[]
+);
+drop function if exists public.atualizar_encomenda_plataforma_admin(
+  text, jsonb, text, text, text, text, text, numeric, text, text, text, text, text, text[]
 );
 
 create or replace function public.atualizar_encomenda_plataforma_admin(
@@ -225,7 +242,8 @@ create or replace function public.atualizar_encomenda_plataforma_admin(
   p_cp_cliente text default null,
   p_cidade_cliente text default null,
   p_pais_cliente text default null,
-  p_nao_repor_ids text[] default array[]::text[]
+  p_nao_repor_ids text[] default array[]::text[],
+  p_total numeric default null
 )
 returns jsonb
 language plpgsql
@@ -245,6 +263,7 @@ declare
   v_produtos_texto text := '';
   v_subtotal numeric := 0;
   v_portes numeric := 0;
+  v_total numeric := 0;
   v_peso_total numeric := 0;
 begin
   if coalesce(auth.jwt() ->> 'email', '') <> 'worldminifigures4u@gmail.com' then
@@ -403,6 +422,12 @@ begin
     v_portes := greatest(0, round(coalesce(p_portes, 0)::numeric, 2));
   end if;
 
+  if upper(v_encomenda.origem) = 'TODOCOLECCION' and p_total is not null then
+    v_total := greatest(0, round(p_total::numeric, 2));
+  else
+    v_total := v_subtotal + v_portes;
+  end if;
+
   update public.encomendas
   set nome_cliente = trim(p_nome_cliente),
       produtos = v_produtos,
@@ -416,7 +441,7 @@ begin
         then trim(p_metodo_envio_nome) else v_encomenda.origem end,
       portes = v_portes,
       peso_total = v_peso_total,
-      total = v_subtotal + v_portes,
+      total = v_total,
       referencia_externa = nullif(trim(p_referencia_externa), ''),
       telefone_cliente = nullif(trim(coalesce(p_telefone_cliente, '')), ''),
       morada_cliente = nullif(trim(coalesce(p_morada_cliente, '')), ''),
@@ -434,7 +459,10 @@ $$;
 revoke execute on function public.atualizar_encomenda_plataforma_admin(
   text, jsonb, text, text, text, text, text, numeric, text, text, text, text, text, text[]
 ) from public, anon;
+revoke execute on function public.atualizar_encomenda_plataforma_admin(
+  text, jsonb, text, text, text, text, text, numeric, text, text, text, text, text, text[], numeric
+) from public, anon;
 
 grant execute on function public.atualizar_encomenda_plataforma_admin(
-  text, jsonb, text, text, text, text, text, numeric, text, text, text, text, text, text[]
+  text, jsonb, text, text, text, text, text, numeric, text, text, text, text, text, text[], numeric
 ) to authenticated;
