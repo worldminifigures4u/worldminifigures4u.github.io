@@ -1,4 +1,4 @@
--- Portes e total manuais em Todocoleccion (criar + atualizar encomenda plataforma).
+-- Portes, total e metodos de envio em Todocoleccion (criar + atualizar).
 -- Executar no SQL Editor do Supabase.
 
 drop function if exists public.criar_encomenda_plataforma_admin(
@@ -161,6 +161,10 @@ begin
     end if;
     v_portes := greatest(0, round(coalesce(p_portes, 0)::numeric, 2));
   elsif v_plataforma = 'Todocoleccion' then
+    if nullif(trim(coalesce(p_metodo_envio, '')), '') is null
+       or nullif(trim(coalesce(p_metodo_envio_nome, '')), '') is null then
+      raise exception 'Selecione o metodo de envio Todocoleccion';
+    end if;
     v_portes := greatest(0, round(coalesce(p_portes, 0)::numeric, 2));
   else
     v_portes := 0;
@@ -189,9 +193,9 @@ begin
     v_produtos,
     v_produtos_texto,
     v_produtos_texto,
-    case when v_plataforma = 'OLX' then coalesce(nullif(trim(p_regiao_envio), ''), 'portugal') else lower(v_plataforma) end,
-    case when v_plataforma = 'OLX' then trim(p_metodo_envio) else lower(v_plataforma) end,
-    case when v_plataforma = 'OLX' then trim(p_metodo_envio_nome) else v_plataforma end,
+    case when v_plataforma in ('OLX', 'Todocoleccion') then coalesce(nullif(trim(p_regiao_envio), ''), 'portugal') else lower(v_plataforma) end,
+    case when v_plataforma in ('OLX', 'Todocoleccion') then trim(p_metodo_envio) else lower(v_plataforma) end,
+    case when v_plataforma in ('OLX', 'Todocoleccion') then trim(p_metodo_envio_nome) else v_plataforma end,
     v_portes,
     v_peso_total,
     v_total,
@@ -422,6 +426,10 @@ begin
     end if;
     v_portes := greatest(0, round(coalesce(p_portes, 0)::numeric, 2));
   elsif upper(v_encomenda.origem) = 'TODOCOLECCION' then
+    if nullif(trim(coalesce(p_metodo_envio, '')), '') is null
+       or nullif(trim(coalesce(p_metodo_envio_nome, '')), '') is null then
+      raise exception 'Selecione o metodo de envio Todocoleccion';
+    end if;
     v_portes := greatest(0, round(coalesce(p_portes, 0)::numeric, 2));
   end if;
 
@@ -436,11 +444,11 @@ begin
       produtos = v_produtos,
       produtos_texto = v_produtos_texto,
       produtos_texto_cliente = v_produtos_texto,
-      regiao_envio = case when upper(v_encomenda.origem) = 'OLX'
+      regiao_envio = case when upper(v_encomenda.origem) in ('OLX', 'TODOCOLECCION')
         then coalesce(nullif(trim(p_regiao_envio), ''), 'portugal') else lower(v_encomenda.origem) end,
-      metodo_envio = case when upper(v_encomenda.origem) = 'OLX'
+      metodo_envio = case when upper(v_encomenda.origem) in ('OLX', 'TODOCOLECCION')
         then trim(p_metodo_envio) else lower(v_encomenda.origem) end,
-      metodo_envio_nome = case when upper(v_encomenda.origem) = 'OLX'
+      metodo_envio_nome = case when upper(v_encomenda.origem) in ('OLX', 'TODOCOLECCION')
         then trim(p_metodo_envio_nome) else v_encomenda.origem end,
       portes = v_portes,
       peso_total = v_peso_total,
