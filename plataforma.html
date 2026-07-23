@@ -17,7 +17,7 @@
     <link rel="icon" type="image/webp" href="favicon-32.webp?v=20260711-leve" sizes="32x32">
     <link rel="stylesheet" href="styles.css?v=20260721-rodape-800">
     <link rel="stylesheet" href="styles-admin.css?v=20260717-portes-cab">
-    <link rel="stylesheet" href="plataforma.css?v=20260716-precos-branco2">
+    <link rel="stylesheet" href="plataforma.css?v=20260723-portes-tc">
     <link rel="stylesheet" href="admin-cliente.css?v=20260718-historico-junto" media="print" data-async-css>
     <link rel="stylesheet" href="clientes.css?v=20260716-form-modal" media="print" data-async-css>
     <link rel="stylesheet" href="morada-formato.css?v=20260714-ficha-cliente" media="print" data-async-css>
@@ -170,6 +170,10 @@
                         </select>
                         <label for="plataforma-metodo-envio">M&eacute;todo de envio</label>
                         <select id="plataforma-metodo-envio"></select>
+                        <div class="plataforma-portes-manual" id="plataforma-portes-manual-bloco" hidden>
+                            <label for="plataforma-portes-manual">Portes cobrados ao cliente (&euro;)</label>
+                            <input type="text" id="plataforma-portes-manual" inputmode="decimal" placeholder="Ex.: 4,50" autocomplete="off">
+                        </div>
                         <div class="plataforma-totais">
                             <span>Figuras</span><strong id="plataforma-total-figuras">0</strong>
                             <span>Subtotal</span><strong id="plataforma-subtotal">0,00 &euro;</strong>
@@ -212,7 +216,7 @@
 <script src="supabase-cdn.js?v=20260711-leve" defer></script>
 <script src="app-config.js?v=20260714-ficha-cliente" defer></script>
 <script src="app-portes.js?v=20260718-metodos" defer></script>
-    <script src="plataforma.js?v=20260721-split" defer></script>
+    <script src="plataforma.js?v=20260723-portes-tc" defer></script>
 <script src="campo-limpar.js?v=20260720-sem-x-cliente" defer></script>
 <script src="inline-listeners-base.js?v=20260721-leve-r28" defer></script>
 <script src="inline-listeners-admin.js?v=20260713-r25" defer></script>

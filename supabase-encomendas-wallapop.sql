@@ -205,6 +205,8 @@ begin
       raise exception 'Selecione o metodo de envio OLX';
     end if;
     v_portes := greatest(0, round(coalesce(p_portes, 0)::numeric, 2));
+  elsif v_plataforma = 'Todocoleccion' then
+    v_portes := greatest(0, round(coalesce(p_portes, 0)::numeric, 2));
   else
     v_portes := 0;
   end if;

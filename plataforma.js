@@ -519,13 +519,52 @@ function calcularPortesPlataforma(valorBase) {
     return Math.round(Number(valorBase || 0) * 100) / 100;
 }
 
+function parseEuroManualPlataforma(texto) {
+    const limpo = String(texto || '')
+        .trim()
+        .replace(/\s/g, '')
+        .replace(/€/g, '')
+        .replace(',', '.');
+    if (!limpo) return 0;
+    const valor = Number(limpo);
+    if (!Number.isFinite(valor) || valor < 0) return null;
+    return Math.round(valor * 100) / 100;
+}
+
+function podeEditarPortesManuaisPlataforma() {
+    const plataforma = obterPlataformaAtual();
+    const metodo = document.getElementById('plataforma-metodo-envio')?.value || '';
+    return plataforma === 'Todocoleccion' && !metodoEnvioEntregaMaoPlataforma(metodo);
+}
+
+function atualizarVisibilidadePortesManualPlataforma() {
+    const bloco = document.getElementById('plataforma-portes-manual-bloco');
+    if (!bloco) return;
+    const visivel = podeEditarPortesManuaisPlataforma();
+    bloco.hidden = !visivel;
+    if (!visivel) {
+        const campo = document.getElementById('plataforma-portes-manual');
+        if (campo && !encomendaPlataformaEmEdicao) campo.value = '';
+    }
+}
+
+function obterPortesManuaisPlataforma() {
+    if (!podeEditarPortesManuaisPlataforma()) return 0;
+    const campo = document.getElementById('plataforma-portes-manual');
+    const valor = parseEuroManualPlataforma(campo?.value);
+    return valor === null ? 0 : valor;
+}
+
 function obterEnvioPlataforma() {
     const regiao = document.getElementById('plataforma-pais-envio')?.value || 'portugal';
     const peso = calcularPesoPlataforma();
     const opcoes = obterOpcoesEnvioPlataforma(regiao, peso);
     const metodo = document.getElementById('plataforma-metodo-envio')?.value || '';
     const opcao = opcoes.find(item => item.id === metodo) || opcoes[0] || { id: '', nome: '', valor: 0 };
-    return { regiao, peso, ...opcao, portes: calcularPortesPlataforma(opcao.valor) };
+    const portes = podeEditarPortesManuaisPlataforma()
+        ? obterPortesManuaisPlataforma()
+        : calcularPortesPlataforma(opcao.valor);
+    return { regiao, peso, ...opcao, portes };
 }
 
 function atualizarVisibilidadeSeguimentoPlataforma() {
@@ -558,6 +597,7 @@ function atualizarOpcoesEnvioPlataforma() {
     }
     select.value = opcoes.some(opcao => opcao.id === anterior) ? anterior : (preferido || opcoes[0]?.id || '');
     atualizarVisibilidadeSeguimentoPlataforma();
+    atualizarVisibilidadePortesManualPlataforma();
     atualizarResumoPlataforma();
 }
 
@@ -2404,6 +2444,14 @@ async function carregarEncomendaPlataformaPorCodigo(codigo) {
         selectMetodo.value = metodoGuardado;
     }
     atualizarVisibilidadeSeguimentoPlataforma();
+    atualizarVisibilidadePortesManualPlataforma();
+    const campoPortes = document.getElementById('plataforma-portes-manual');
+    if (campoPortes) {
+        const portesGuardados = Number(encomenda.portes || 0);
+        campoPortes.value = portesGuardados > 0
+            ? formatarEuroWallapop(portesGuardados)
+            : '';
+    }
     atualizarResumoPlataforma();
     const campoSeguimento = document.getElementById('plataforma-codigo-seguimento');
     if (campoSeguimento) campoSeguimento.value = encomenda.codigo_seguimento || '';
@@ -2518,6 +2566,17 @@ async function registarEncomendaWallapop() {
     if (!confirmarFaltasStockPlataforma()) {
         definirStatusWallapop('Encomenda n\u00e3o registada. Confirma primeiro os produtos sem stock.', true);
         return;
+    }
+
+    if (podeEditarPortesManuaisPlataforma()) {
+        const portesValidos = parseEuroManualPlataforma(
+            document.getElementById('plataforma-portes-manual')?.value
+        );
+        if (portesValidos === null) {
+            definirStatusWallapop('Indique um valor de portes v\u00e1lido (ex.: 4,50).', true);
+            document.getElementById('plataforma-portes-manual')?.focus();
+            return;
+        }
     }
 
     const envio = obterEnvioPlataforma();
@@ -2775,6 +2834,11 @@ document.getElementById('plataforma-pais-envio').addEventListener('change', atua
 document.getElementById('plataforma-metodo-envio').addEventListener('change', () => {
     marcarWallapopPorRegistar();
     atualizarVisibilidadeSeguimentoPlataforma();
+    atualizarVisibilidadePortesManualPlataforma();
+    atualizarResumoPlataforma();
+});
+document.getElementById('plataforma-portes-manual')?.addEventListener('input', () => {
+    marcarWallapopPorRegistar();
     atualizarResumoPlataforma();
 });
 window.addEventListener('load', iniciarWallapopAdmin);
