@@ -350,6 +350,42 @@ body.pagina-wallapop{
             display:none;
         }
 
+        .plataforma-envio-linha{
+            display:grid;
+            grid-template-columns:minmax(0, 0.9fr) minmax(0, 1.1fr);
+            gap:12px;
+            margin-top:12px;
+            align-items:end;
+        }
+
+        .plataforma-envio-campo label{
+            display:block;
+            margin-bottom:6px;
+            color:#cfcfcf;
+            font-size:13px;
+        }
+
+        .plataforma-envio-campo select{
+            width:100%;
+            box-sizing:border-box;
+            padding:10px 12px;
+            border:1px solid #444;
+            border-radius:6px;
+            background:#111;
+            color:#fff;
+            font-size:15px;
+        }
+
+        .plataforma-envio-linha.sem-pais{
+            grid-template-columns:1fr;
+        }
+
+        @media (max-width: 640px){
+            .plataforma-envio-linha{
+                grid-template-columns:1fr;
+            }
+        }
+
         .plataforma-portes-manual{
             margin-top:12px;
         }

@@ -654,11 +654,16 @@ function atualizarModoPlataforma() {
     const plataforma = obterPlataformaAtual();
     const wallapop = plataforma === 'Wallapop';
     const olx = plataforma === 'OLX';
+    const mostrarPais = !wallapop;
     document.getElementById('label-cliente-plataforma').textContent = 'Nome de utilizador';
     document.getElementById('wallapop-nome-cliente').placeholder = `Nome ou utilizador no ${plataforma}`;
     document.getElementById('plataforma-envio').hidden = false;
     document.getElementById('wallapop-folha-escala').hidden = !wallapop;
     document.getElementById('plataforma-resumo').hidden = true;
+    const linhaEnvio = document.getElementById('plataforma-envio-linha');
+    const blocoPais = document.getElementById('plataforma-pais-envio-bloco');
+    if (linhaEnvio) linhaEnvio.classList.toggle('sem-pais', !mostrarPais);
+    if (blocoPais) blocoPais.hidden = !mostrarPais;
     document.getElementById('plataforma-resumo-titulo').textContent = plataforma === 'OLX'
         ? 'Ficheiros OLX'
         : 'Ficheiro Todocoleccion';
@@ -2450,8 +2455,14 @@ async function carregarEncomendaPlataformaPorCodigo(codigo) {
     document.getElementById('plataforma-cp-cliente').value = encomenda.cp_cliente || '';
     document.getElementById('plataforma-cidade-cliente').value = encomenda.cidade_cliente || '';
 
-    if (encomenda.origem === 'OLX') {
-        document.getElementById('plataforma-pais-envio').value = encomenda.regiao_envio || 'portugal';
+    if (encomenda.origem === 'OLX' || encomenda.origem === 'Todocoleccion') {
+        const selectPais = document.getElementById('plataforma-pais-envio');
+        const regiao = String(encomenda.regiao_envio || 'portugal').toLowerCase();
+        if (selectPais && [...selectPais.options].some(opcao => opcao.value === regiao)) {
+            selectPais.value = regiao;
+        } else if (selectPais) {
+            selectPais.value = 'portugal';
+        }
     }
     atualizarOpcoesEnvioPlataforma();
     const metodoGuardado = encomenda.metodo_envio
@@ -2875,7 +2886,10 @@ document.getElementById('plataforma-link-perfil').addEventListener('input', () =
         });
     }, 350);
 });
-document.getElementById('plataforma-pais-envio').addEventListener('change', atualizarOpcoesEnvioPlataforma);
+document.getElementById('plataforma-pais-envio').addEventListener('change', () => {
+    marcarWallapopPorRegistar();
+    atualizarOpcoesEnvioPlataforma();
+});
 document.getElementById('plataforma-metodo-envio').addEventListener('change', () => {
     marcarWallapopPorRegistar();
     atualizarVisibilidadeSeguimentoPlataforma();
