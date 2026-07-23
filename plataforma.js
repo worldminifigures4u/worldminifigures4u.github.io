@@ -493,7 +493,6 @@ function metodoEnvioEntregaMaoPlataforma(id) {
 
 function obterOpcaoEnvioPadraoPlataforma(plataforma) {
     if (plataforma === 'Wallapop') return { id: 'wallapop', nome: 'Wallapop', valor: 0 };
-    if (plataforma === 'Todocoleccion') return { id: 'todocoleccion', nome: 'Todocoleccion', valor: 0 };
     return null;
 }
 
@@ -512,7 +511,10 @@ function obterOpcoesEnvioPlataforma(regiao, peso) {
     const zona = tabela[zonaEnvio] || tabela.portugal || [];
     if (!zona.length) return [{ ...ENTREGA_MAO_PLATAFORMA }];
     const opcoes = (zona.find(linha => peso <= linha.ate) || zona[zona.length - 1]).opcoes || [];
-    return [...opcoes, { ...ENTREGA_MAO_PLATAFORMA }];
+    const filtradas = plataforma === 'Todocoleccion'
+        ? opcoes.filter(opcao => opcao.id === 'ctt_registado' || opcao.id === 'inpost_registado')
+        : opcoes;
+    return [...filtradas, { ...ENTREGA_MAO_PLATAFORMA }];
 }
 
 function calcularPortesPlataforma(valorBase) {
@@ -605,7 +607,7 @@ function atualizarOpcoesEnvioPlataforma() {
         select.appendChild(option);
     });
     let preferido = '';
-    if (plataforma === 'OLX') {
+    if (plataforma === 'OLX' || plataforma === 'Todocoleccion') {
         preferido = opcoes.find(opcao => opcao.id === 'ctt_registado')?.id || '';
     } else {
         preferido = obterOpcaoEnvioPadraoPlataforma(plataforma)?.id || '';
@@ -2453,11 +2455,13 @@ async function carregarEncomendaPlataformaPorCodigo(codigo) {
     }
     atualizarOpcoesEnvioPlataforma();
     const metodoGuardado = encomenda.metodo_envio
-        || (encomenda.origem === 'Wallapop' ? 'wallapop'
-            : (encomenda.origem === 'Todocoleccion' ? 'todocoleccion' : ''));
+        || (encomenda.origem === 'Wallapop' ? 'wallapop' : '');
     const selectMetodo = document.getElementById('plataforma-metodo-envio');
     if (selectMetodo && metodoGuardado && [...selectMetodo.options].some(opcao => opcao.value === metodoGuardado)) {
         selectMetodo.value = metodoGuardado;
+    } else if (selectMetodo && encomenda.origem === 'Todocoleccion') {
+        const fallback = [...selectMetodo.options].find(opcao => opcao.value === 'ctt_registado');
+        if (fallback) selectMetodo.value = fallback.value;
     }
     atualizarVisibilidadeSeguimentoPlataforma();
     atualizarVisibilidadePortesManualPlataforma();
