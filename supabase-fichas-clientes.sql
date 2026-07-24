@@ -42,7 +42,7 @@ where nullif(trim(email), '') is not null;
 create table if not exists public.clientes_perfis_externos (
   id uuid primary key default gen_random_uuid(),
   cliente_id uuid not null references public.clientes_gestao(id) on delete cascade,
-  plataforma text not null check (plataforma in ('Wallapop', 'OLX', 'Todocoleccion')),
+  plataforma text not null check (plataforma in ('Wallapop', 'Vinted', 'OLX', 'Todocoleccion')),
   utilizador text not null,
   utilizador_normalizado text not null,
   url_perfil text not null,
