@@ -321,9 +321,9 @@ body.pagina-encomendas-admin{
         }
 
         .admin-encomenda-linha .admin-encomenda-origem.plataforma-todocoleccion{
-            border-color:#b55cff;
-            color:#b55cff;
-            background:rgba(181, 92, 255, .1);
+            border-color:#6c1f7d;
+            color:#fff;
+            background:#6c1f7d;
         }
 
         .admin-encomenda-linha .admin-encomenda-cliente-link{
