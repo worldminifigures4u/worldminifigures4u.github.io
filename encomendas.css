@@ -311,7 +311,7 @@ body.pagina-encomendas-admin{
         .admin-encomenda-linha .admin-encomenda-origem.plataforma-wallapop{
             border-color:#13c9b7;
             color:#13c9b7;
-            background:rgba(19, 201, 183, .08);
+            background:transparent;
         }
 
         .admin-encomenda-linha .admin-encomenda-origem.plataforma-vinted{
