@@ -1136,13 +1136,21 @@ body.pagina-encomendas-admin{
         .admin-encomenda-resumo-rotulo,
         .admin-encomenda-resumo-valor{
             color:#29b6f6;
-            font-size:18px;
+            font-size:13px;
             font-weight:800;
             line-height:1.2;
         }
 
         .admin-encomenda-resumo-valor{
             font-variant-numeric:tabular-nums;
+        }
+
+        .admin-encomenda-resumo-alerta{
+            color:#ff5252;
+            font-size:18px;
+            font-weight:800;
+            line-height:1.2;
+            white-space:nowrap;
         }
 
         .admin-encomenda-total-grupo{

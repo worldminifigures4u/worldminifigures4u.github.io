@@ -256,18 +256,20 @@ window.AdminEncomendaVista = (function () {
     function resumirQuantidadesProdutos(encomenda) {
         const itens = obterProdutos(encomenda);
         let totalPecas = 0;
+        let temMultiplasUnidades = false;
         const distintos = new Set();
         itens.forEach((item, indice) => {
             const quantidade = Math.max(1, Number(item.quantidade || item.qtd || 1) || 1);
             totalPecas += quantidade;
+            if (quantidade > 1) temMultiplasUnidades = true;
             const chave = String(item.sku || item.id_produto || item.id || item.nome || `linha-${indice}`).trim().toUpperCase();
             distintos.add(chave);
         });
-        return { totalPecas, diferentes: distintos.size };
+        return { totalPecas, diferentes: distintos.size, temMultiplasUnidades };
     }
 
     function criarResumoPecasProdutos(encomenda) {
-        const { totalPecas, diferentes } = resumirQuantidadesProdutos(encomenda);
+        const { totalPecas, diferentes, temMultiplasUnidades } = resumirQuantidadesProdutos(encomenda);
         const resumo = criarElemento("div", "admin-encomenda-resumo-pecas");
 
         function adicionarItem(rotulo, valor, titulo) {
@@ -283,6 +285,11 @@ window.AdminEncomendaVista = (function () {
 
         adicionarItem("Peças:", totalPecas, "Total de figuras");
         adicionarItem("Diferentes:", diferentes, "Figuras diferentes");
+        if (temMultiplasUnidades) {
+            const alerta = criarElemento("span", "admin-encomenda-resumo-alerta", "Atenção às unidades");
+            alerta.title = "Há pelo menos uma figura com mais de uma unidade";
+            resumo.appendChild(alerta);
+        }
         return resumo;
     }
 
