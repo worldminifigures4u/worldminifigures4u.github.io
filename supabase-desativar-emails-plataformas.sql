@@ -1,6 +1,6 @@
 -- O webhook do Make envia os emails da nova encomenda.
 -- Deve ser executado apenas para encomendas feitas diretamente no site.
--- Wallapop, OLX e Todocoleccion ficam excluidos porque tem outra origem.
+-- Wallapop, Vinted, OLX e Todocoleccion ficam excluidos porque tem outra origem.
 --
 -- SEGURANCA:
 -- Nao guardar o URL real do webhook no repositorio publico.

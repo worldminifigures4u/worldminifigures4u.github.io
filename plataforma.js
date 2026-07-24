@@ -40,17 +40,26 @@ function analisarLinkPerfilPlataforma(valor) {
     const caminho = decodeURIComponent(url.pathname).replace(/\/+$/, '');
     const regras = [
         { plataforma: 'Wallapop', valido: dominioValido('wallapop.com'), expressao: /\/user\/([^/?#]+)$/i },
+        {
+            plataforma: 'Vinted',
+            valido: /^vinted\.[a-z.]+$/i.test(host),
+            expressao: /\/member\/([^/?#]+)$/i
+        },
         { plataforma: 'OLX', valido: dominioValido('olx.pt'), expressao: /\/ads\/user\/([^/?#]+)$/i },
         { plataforma: 'Todocoleccion', valido: dominioValido('todocoleccion.net'), expressao: /\/usuario\/([^/?#]+)$/i }
     ];
     const regra = regras.find(item => item.valido && item.expressao.test(caminho));
-    if (!regra) return { erro: 'Link n\u00e3o reconhecido. Use um perfil Wallapop, OLX ou Todocoleccion.' };
+    if (!regra) return { erro: 'Link n\u00e3o reconhecido. Use um perfil Wallapop, Vinted, OLX ou Todocoleccion.' };
     const correspondencia = caminho.match(regra.expressao);
     return {
         plataforma: regra.plataforma,
         utilizador: correspondencia?.[1] || '',
         url: url.href
     };
+}
+
+function ehPlataformaEstiloAnuncio(plataforma) {
+    return plataforma === 'Wallapop' || plataforma === 'Vinted';
 }
 
 function atualizarBarraPerfilPlataforma(opcoes = {}) {
@@ -493,6 +502,7 @@ function metodoEnvioEntregaMaoPlataforma(id) {
 
 function obterOpcaoEnvioPadraoPlataforma(plataforma) {
     if (plataforma === 'Wallapop') return { id: 'wallapop', nome: 'Wallapop', valor: 0 };
+    if (plataforma === 'Vinted') return { id: 'vinted', nome: 'Vinted', valor: 0 };
     return null;
 }
 
@@ -589,7 +599,7 @@ function atualizarVisibilidadeSeguimentoPlataforma() {
     if (!blocoSeguimento) return;
     const plataforma = obterPlataformaAtual();
     const metodo = document.getElementById('plataforma-metodo-envio')?.value || '';
-    blocoSeguimento.hidden = plataforma === 'Wallapop' || metodoEnvioEntregaMaoPlataforma(metodo);
+    blocoSeguimento.hidden = ehPlataformaEstiloAnuncio(plataforma) || metodoEnvioEntregaMaoPlataforma(metodo);
 }
 
 function atualizarOpcoesEnvioPlataforma() {
@@ -652,29 +662,31 @@ function atualizarResumoPlataforma() {
 
 function atualizarModoPlataforma() {
     const plataforma = obterPlataformaAtual();
-    const wallapop = plataforma === 'Wallapop';
+    const anuncio = ehPlataformaEstiloAnuncio(plataforma);
     const olx = plataforma === 'OLX';
-    const mostrarPais = !wallapop;
+    const mostrarPais = !anuncio;
     document.getElementById('label-cliente-plataforma').textContent = 'Nome de utilizador';
     document.getElementById('wallapop-nome-cliente').placeholder = `Nome ou utilizador no ${plataforma}`;
     document.getElementById('plataforma-envio').hidden = false;
-    document.getElementById('wallapop-folha-escala').hidden = !wallapop;
+    document.getElementById('wallapop-folha-escala').hidden = !anuncio;
     document.getElementById('plataforma-resumo').hidden = true;
     const linhaEnvio = document.getElementById('plataforma-envio-linha');
     const blocoPais = document.getElementById('plataforma-pais-envio-bloco');
     if (linhaEnvio) linhaEnvio.classList.toggle('sem-pais', !mostrarPais);
     if (blocoPais) blocoPais.hidden = !mostrarPais;
-    document.getElementById('plataforma-resumo-titulo').textContent = plataforma === 'OLX'
+    document.getElementById('plataforma-resumo-titulo').textContent = olx
         ? 'Ficheiros OLX'
-        : 'Ficheiro Todocoleccion';
-    document.getElementById('plataforma-resumo-texto').textContent = plataforma === 'OLX'
+        : (anuncio ? `An\u00fancio ${plataforma}` : 'Ficheiro Todocoleccion');
+    document.getElementById('plataforma-resumo-texto').textContent = olx
         ? 'Ser\u00e3o criados dois TXT: um para enviar ao cliente e outro para a gest\u00e3o interna.'
-        : 'Ser\u00e1 criado um TXT interno com quantidade, nome e SKU separados por tabula\u00e7\u00f5es.';
-    document.getElementById('btn-descarregar-wallapop').textContent = wallapop
+        : (anuncio
+            ? 'Ser\u00e3o criados o PNG do an\u00fancio e o TXT da encomenda.'
+            : 'Ser\u00e1 criado um TXT interno com quantidade, nome e SKU separados por tabula\u00e7\u00f5es.');
+    document.getElementById('btn-descarregar-wallapop').textContent = anuncio
         ? 'Guardar an\u00fancio'
         : (olx ? 'Guardar ficheiros OLX' : 'Guardar ficheiro Todocoleccion');
     atualizarBotaoRegistoPlataforma();
-    document.getElementById('plataforma-ajuda-ficheiros').textContent = wallapop
+    document.getElementById('plataforma-ajuda-ficheiros').textContent = anuncio
         ? 'Ao guardar, ser\u00e3o criados o PNG e o TXT dentro da pasta da encomenda.'
         : 'Ao guardar, escolhe a pasta de destino. Dentro dela ser\u00e1 criada uma pasta com o nome da encomenda.';
     marcarWallapopPorRegistar();
@@ -2266,7 +2278,7 @@ async function descarregarImagemWallapop() {
 
 async function guardarFicheirosPlataforma() {
     const plataforma = obterPlataformaParaFicheiros();
-    if (plataforma === 'Wallapop') {
+    if (ehPlataformaEstiloAnuncio(plataforma)) {
         await descarregarImagemWallapop();
         return;
     }
@@ -2466,7 +2478,8 @@ async function carregarEncomendaPlataformaPorCodigo(codigo) {
     }
     atualizarOpcoesEnvioPlataforma();
     const metodoGuardado = encomenda.metodo_envio
-        || (encomenda.origem === 'Wallapop' ? 'wallapop' : '');
+        || (encomenda.origem === 'Wallapop' ? 'wallapop'
+            : (encomenda.origem === 'Vinted' ? 'vinted' : ''));
     const selectMetodo = document.getElementById('plataforma-metodo-envio');
     if (selectMetodo && metodoGuardado && [...selectMetodo.options].some(opcao => opcao.value === metodoGuardado)) {
         selectMetodo.value = metodoGuardado;
@@ -2693,7 +2706,7 @@ async function registarEncomendaWallapop() {
 
         const encomendaId = String(data.encomenda?.id || encomendaPlataformaEmEdicao?.id || '');
         const metodoEnvio = obterEnvioPlataforma().id;
-        if (encomendaId && obterPlataformaAtual() !== 'Wallapop' && !metodoEnvioEntregaMaoPlataforma(metodoEnvio)) {
+        if (encomendaId && !ehPlataformaEstiloAnuncio(obterPlataformaAtual()) && !metodoEnvioEntregaMaoPlataforma(metodoEnvio)) {
             const codigoSeguimento = document.getElementById('plataforma-codigo-seguimento')?.value.trim() || '';
             const { error: erroSeguimento } = await wallapopClient
                 .from('encomendas')

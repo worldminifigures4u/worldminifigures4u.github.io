@@ -314,6 +314,12 @@ body.pagina-encomendas-admin{
             background:rgba(19, 201, 183, .08);
         }
 
+        .admin-encomenda-linha .admin-encomenda-origem.plataforma-vinted{
+            border-color:#09b1ba;
+            color:#09b1ba;
+            background:rgba(9, 177, 186, .1);
+        }
+
         .admin-encomenda-linha .admin-encomenda-origem.plataforma-todocoleccion{
             border-color:#b55cff;
             color:#b55cff;

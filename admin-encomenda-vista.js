@@ -97,7 +97,7 @@ window.AdminEncomendaVista = (function () {
     }
 
     function envioExigeCodigoSeguimento(encomenda) {
-        if (origemEncomenda(encomenda) === "wallapop") return false;
+        if (origemEncomenda(encomenda) === "wallapop" || origemEncomenda(encomenda) === "vinted") return false;
         const metodoId = normalizarTextoEnvio(encomenda?.metodo_envio).replace(/\s+/g, "_");
         if (metodoId === "entrega_tomar") return false;
         if (typeof obterMetaMetodoEnvio === "function") {
@@ -112,7 +112,7 @@ window.AdminEncomendaVista = (function () {
     }
 
     function mostrarCampoSeguimento(encomenda) {
-        if (origemEncomenda(encomenda) === "wallapop") return false;
+        if (origemEncomenda(encomenda) === "wallapop" || origemEncomenda(encomenda) === "vinted") return false;
         const metodoId = normalizarTextoEnvio(encomenda?.metodo_envio).replace(/\s+/g, "_");
         if (metodoId === "entrega_tomar") return false;
         const nome = normalizarTextoEnvio(encomenda?.metodo_envio_nome);
@@ -1555,7 +1555,7 @@ window.AdminEncomendaVista = (function () {
             gravarAlteracoesPendentes();
         });
         const origem = normalizar(encomenda.origem);
-        const plataformaExterna = ["wallapop", "olx", "todocoleccion"].includes(origem);
+        const plataformaExterna = ["wallapop", "vinted", "olx", "todocoleccion"].includes(origem);
         const podeEditar = plataformaExterna
             && estadoNormalizado(encomenda.estado) !== "Cancelado"
             && encomenda.codigo_encomenda;

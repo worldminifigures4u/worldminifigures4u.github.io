@@ -77,6 +77,10 @@ function obterRotuloPerfilCliente(perfil, indice) {
         const match = url.match(/\/user\/([^/?#]+)/i);
         if (match) return `Wallapop: ${match[1]}`;
     }
+    if (/vinted\./i.test(url)) {
+        const match = url.match(/\/member\/([^/?#]+)/i);
+        if (match) return `Vinted: ${match[1]}`;
+    }
     try {
         return new URL(url).hostname.replace(/^www\./, "");
     } catch (_) {

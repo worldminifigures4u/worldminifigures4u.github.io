@@ -101,6 +101,7 @@ function obterPlataformaEncomenda(encomenda) {
     const normalizada = normalizarTextoEstatisticas(origem);
     if (normalizada === 'loja' || normalizada === 'site') return 'Site';
     if (normalizada === 'wallapop') return 'Wallapop';
+    if (normalizada === 'vinted') return 'Vinted';
     if (normalizada === 'olx') return 'OLX';
     if (normalizada === 'todocoleccion') return 'Todocoleccion';
     return origem;
