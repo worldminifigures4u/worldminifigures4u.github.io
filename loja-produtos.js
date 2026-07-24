@@ -64,6 +64,12 @@ function ellipse(cx, cy, rx, ry, attrs = {}) {
     return { tag: 'ellipse', attrs: { cx: String(cx), cy: String(cy), rx: String(rx), ry: String(ry), ...attrs } };
 }
 
+/* Ícones raster exactos (extraídos das imagens de referência). */
+const MAPA_ICONES_MASCARA = {
+    'Bluey': 'img/icone-bluey.png',
+    'Dinossauros': 'img/icone-dinossauros.png'
+};
+
 /* Ícones no estilo do mockup DEPOIS (line-art Lucide/Heroicons). */
 const MAPA_ICONES_TEMAS = {
     'Todos': [
@@ -81,14 +87,7 @@ const MAPA_ICONES_TEMAS = {
         path('M15.2 15.8c1 .8 1.5 2 1.2 3.1-.4 1.4-2.1 2.1-3.6 1.6'),
         path('M12 13.5c1.6 0 2.8 1.1 2.8 2.5S13.6 18.5 12 18.5 9.2 17.4 9.2 16s1.2-2.5 2.8-2.5z')
     ],
-    'Bluey': [
-        path('M7.5 9.5c0-2.5 1.8-4.5 4.5-4.5s4.5 2 4.5 4.5v1.2c1.4.3 2.5 1.5 2.5 3V17a2.5 2.5 0 0 1-2.5 2.5h-9A2.5 2.5 0 0 1 5 17v-3.3c0-1.5 1.1-2.7 2.5-3z'),
-        path('M9 7.2c.3-.9 1-1.5 1.8-1.5'),
-        path('M15 7.2c-.3-.9-1-1.5-1.8-1.5'),
-        circle(9.8, 12.2, 0.7),
-        circle(14.2, 12.2, 0.7),
-        path('M11 14.2h2')
-    ],
+    'Bluey': [], // silhueta exacta via img/icone-bluey.png
     'Bonecos': [
         circle(12, 7, 3.2),
         path('M6.5 20v-1.2c0-2.6 2.5-4.8 5.5-4.8s5.5 2.2 5.5 4.8V20'),
@@ -111,13 +110,7 @@ const MAPA_ICONES_TEMAS = {
             { fill: '#111' }
         )
     ],
-    'Dinossauros': [
-        path('M4 17c1.2-1.2 2.4-2 4-2.2 1-.1 1.8-.8 2.1-1.7.4-1.2 1.5-2.1 2.8-2.1h1.4c1.2 0 2.2-.8 2.5-1.9.2-.7.8-1.2 1.5-1.3L20 7.5'),
-        path('M8 17v3'),
-        path('M12.5 17v3'),
-        path('M9.5 14.8c.8.5 1.8.8 2.8.8 1.4 0 2.7-.5 3.7-1.4'),
-        path('M18.5 8.2l1.2-.8')
-    ],
+    'Dinossauros': [], // silhueta exacta via img/icone-dinossauros.png (máscara CSS)
     'Disney': [
         path('M4 21h16'),
         path('M6 21V11l3-2.5V8l1.5-1.2L12 5l1.5 1.8L15 8v.5L18 11v10'),
@@ -161,9 +154,11 @@ const MAPA_ICONES_TEMAS = {
         path('M8.8 16.8l.8-2.6h4.8l.8 2.6')
     ],
     'Ghostbusters': [
-        circle(12, 12, 9),
-        path('M9 9.5c0-1.7 1.3-3 3-3s3 1.3 3 3c0 2.2-3 4.5-3 4.5S9 11.7 9 9.5z'),
-        path('M6 18l12-12')
+        /* Fantasma da referência: braços laterais, base ondulada, 2 olhos + boca O (sem nariz) */
+        path('M12 5c-3 0-5.2 2.2-5.2 5v1.4H5.2c-.55 0-1 .45-.95 1l.35 1.55c.08.4.45.7.85.7H6.8v1.5c0 .55.15 1 .7 1.15.35.1.7-.05.9-.3l.85-1.05 1.15 1.4c.2.25.55.25.75 0l1.15-1.4.85 1.05c.2.25.55.4.9.3.55-.15.7-.6.7-1.15v-1.5h1.35c.4 0 .77-.3.85-.7l.35-1.55c.05-.55-.4-1-.95-1h-1.6V10c0-2.8-2.2-5-5.2-5z'),
+        circle(10.2, 10.5, 0.85),
+        circle(13.8, 10.5, 0.85),
+        circle(12, 13.2, 1.15)
     ],
     'Harry Potter': [
         path('M5 19L16.5 7.5'),
@@ -231,9 +226,12 @@ const MAPA_ICONES_TEMAS = {
         circle(12, 12, 4.5)
     ],
     'One Piece': [
-        path('M7 10.5c0-2.8 2.2-5 5-5s5 2.2 5 5c0 1.6-.7 3-1.8 4L16.5 20h-9L8.8 14.5A5 5 0 0 1 7 10.5z'),
-        path('M9.5 8.2c.6-.5 1.5-.8 2.5-.8'),
-        path('M10 12h4')
+        /* Chapéu de palha — copa + fita + aba larga */
+        path('M7.2 12.2V9.2a4.8 4.8 0 0 1 9.6 0v3'),
+        path('M7 11.6h10'),
+        path('M7 13h10'),
+        path('M2.8 14.2c2.2-1.6 5.4-2.4 9.2-2.4s7 0.8 9.2 2.4c.25.2.1.7-.3.7H3.1c-.4 0-.55-.5-.3-.7z'),
+        path('M4 15.6c2-.7 4.8-1.1 8-1.1s6 .4 8 1.1')
     ],
     'Os Simpsons': [
         path('M8 9.5c0-2.5 1.8-4.5 4-4.5s4 2 4 4.5v5.5c0 2.5-1.8 4.5-4 4.5s-4-2-4-4.5z'),
@@ -304,6 +302,15 @@ const MAPA_ICONES_TEMAS = {
 };
 
 function criarIconeTema(tema = '') {
+    const mascara = MAPA_ICONES_MASCARA[tema];
+    if (mascara) {
+        const el = document.createElement('span');
+        el.className = 'icone-tema-mask';
+        el.style.webkitMaskImage = `url('${mascara}')`;
+        el.style.maskImage = `url('${mascara}')`;
+        el.setAttribute('aria-hidden', 'true');
+        return el;
+    }
     const partes = MAPA_ICONES_TEMAS[tema] || MAPA_ICONES_TEMAS['Diversos'];
     const preenchido = tema === 'DC Comics';
     const svg = criarSvgTema(partes, { preenchido });

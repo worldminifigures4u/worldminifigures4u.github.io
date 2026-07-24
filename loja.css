@@ -425,6 +425,21 @@
             opacity:0.9;
         }
 
+        .icone-tema-mask{
+            width:16px;
+            height:16px;
+            flex:0 0 16px;
+            display:inline-block;
+            background:currentColor;
+            opacity:0.95;
+            -webkit-mask-size:contain;
+            mask-size:contain;
+            -webkit-mask-repeat:no-repeat;
+            mask-repeat:no-repeat;
+            -webkit-mask-position:center;
+            mask-position:center;
+        }
+
         .icone-tema-marca{
             opacity:1;
             overflow:visible;
@@ -690,6 +705,12 @@
     }
 
     .icone-tema{
+        width:18px;
+        height:18px;
+        flex-basis:18px;
+    }
+
+    .icone-tema-mask{
         width:18px;
         height:18px;
         flex-basis:18px;
