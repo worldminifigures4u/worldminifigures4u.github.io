@@ -106,6 +106,9 @@ begin
   if v_url ~* '^https?://([^/]+\.)?wallapop\.com/user/[^/?#]+' then
     v_plataforma := 'Wallapop';
     v_utilizador := substring(v_url from '(?i)/user/([^/?#]+)');
+  elsif v_url ~* '^https?://([^/]*\.)?vinted\.[a-z.]+/member/[^/?#]+' then
+    v_plataforma := 'Vinted';
+    v_utilizador := substring(v_url from '(?i)/member/([^/?#]+)');
   elsif v_url ~* '^https?://([^/]+\.)?olx\.pt/ads/user/[^/?#]+' then
     v_plataforma := 'OLX';
     v_utilizador := substring(v_url from '(?i)/ads/user/([^/?#]+)');
@@ -487,6 +490,9 @@ begin
   if v_url ~* '^https?://([^/]+\.)?wallapop\.com/user/[^/?#]+' then
     v_plataforma := 'Wallapop';
     v_utilizador := substring(v_url from '(?i)/user/([^/?#]+)');
+  elsif v_url ~* '^https?://([^/]*\.)?vinted\.[a-z.]+/member/[^/?#]+' then
+    v_plataforma := 'Vinted';
+    v_utilizador := substring(v_url from '(?i)/member/([^/?#]+)');
   elsif v_url ~* '^https?://([^/]+\.)?olx\.pt/ads/user/[^/?#]+' then
     v_plataforma := 'OLX';
     v_utilizador := substring(v_url from '(?i)/ads/user/([^/?#]+)');
