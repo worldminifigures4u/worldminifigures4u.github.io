@@ -300,44 +300,37 @@ window.AdminEncomendaVista = (function () {
         linha.classList.toggle("marcado-penultimo", marcacao === "penultimo");
     }
 
-    function criarCelulaCheckboxMarcacaoOrdem(encomenda, item, indice, tipo, linhaProduto, outroInputRef) {
+    function criarCelulaCheckboxMarcacaoOrdem(encomenda, item, indice, tipo, linhaProduto, outroRef) {
+        const rotulo = tipo === "ultimo" ? "Último" : "Penúltimo";
         const celula = criarElemento("label", `admin-encomenda-produto-marcacao admin-encomenda-produto-marcacao-${tipo}`);
         const input = document.createElement("input");
         input.type = "checkbox";
         input.className = "admin-encomenda-produto-marcacao-input";
-        input.title = tipo === "ultimo" ? "Último" : "Penúltimo";
-        input.setAttribute("aria-label", tipo === "ultimo" ? "Último" : "Penúltimo");
+        input.title = rotulo;
+        input.setAttribute("aria-label", rotulo);
+        const texto = criarElemento("span", "admin-encomenda-produto-marcacao-texto", rotulo);
+        texto.setAttribute("aria-hidden", "true");
+
         const marcacaoAtual = obterMarcacaoOrdemItem(encomenda, item, indice);
         input.checked = marcacaoAtual === tipo;
+        celula.classList.toggle("marcacao-ativa", input.checked);
+
         input.addEventListener("click", evento => evento.stopPropagation());
         input.addEventListener("change", evento => {
             evento.stopPropagation();
             const selecionado = input.checked;
-            if (selecionado && outroInputRef.atual) outroInputRef.atual.checked = false;
+            if (selecionado && outroRef.atual) {
+                outroRef.atual.input.checked = false;
+                outroRef.atual.celula.classList.remove("marcacao-ativa");
+            }
+            celula.classList.toggle("marcacao-ativa", selecionado);
             const novaMarcacao = selecionado ? tipo : "";
             guardarMarcacaoOrdemItem(encomenda, item, indice, novaMarcacao);
             aplicarDestaqueMarcacaoOrdem(linhaProduto, novaMarcacao);
         });
-        celula.appendChild(input);
-        return { celula, input };
-    }
 
-    function criarCabecalhoProdutosEncomenda() {
-        const cabecalho = criarElemento("div", "admin-encomenda-produto admin-encomenda-produto-cabecalho");
-        [
-            ["admin-encomenda-produto-quantidade", ""],
-            ["admin-encomenda-produto-nome", ""],
-            ["admin-encomenda-produto-foto-espaco", ""],
-            ["admin-encomenda-produto-tema", ""],
-            ["admin-encomenda-produto-subtema", ""],
-            ["admin-encomenda-produto-referencia", ""],
-            ["admin-encomenda-produto-preco", ""],
-            ["admin-encomenda-produto-marcacao-rotulo", "Penúltimo"],
-            ["admin-encomenda-produto-marcacao-rotulo", "Último"]
-        ].forEach(([classe, texto]) => {
-            cabecalho.appendChild(criarElemento("span", classe, texto));
-        });
-        return cabecalho;
+        celula.append(input, texto);
+        return { celula, input };
     }
 
     function resumirQuantidadesProdutos(encomenda) {
@@ -1673,7 +1666,6 @@ window.AdminEncomendaVista = (function () {
 
         const produtos = criarElemento("div", "admin-encomenda-produtos");
         const lista = criarElemento("div", "admin-encomenda-produtos-lista");
-        lista.appendChild(criarCabecalhoProdutosEncomenda());
         obterProdutos(encomenda).forEach((item, indice) => {
             const linhaProduto = criarElemento("div", "admin-encomenda-produto");
             const quantidade = Number(item.quantidade || item.qtd || 1);
@@ -1686,9 +1678,9 @@ window.AdminEncomendaVista = (function () {
                 encomenda, item, indice, "penultimo", linhaProduto, refUltimo
             );
             const celulaUltimo = criarCelulaCheckboxMarcacaoOrdem(
-                encomenda, item, indice, "ultimo", linhaProduto, { atual: celulaPenultimo.input }
+                encomenda, item, indice, "ultimo", linhaProduto, { atual: celulaPenultimo }
             );
-            refUltimo.atual = celulaUltimo.input;
+            refUltimo.atual = celulaUltimo;
 
             linhaProduto.append(
                 criarElemento("span", "admin-encomenda-produto-quantidade", `${quantidade}x`),

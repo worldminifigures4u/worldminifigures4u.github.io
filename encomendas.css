@@ -1069,42 +1069,25 @@ body.pagina-encomendas-admin{
             padding:5px 0;
             border-bottom:1px solid #272727;
             display:grid;
-            grid-template-columns:44px minmax(0, 1fr) 58px minmax(88px, 1.05fr) minmax(88px, 1.05fr) 96px 76px 72px 64px;
+            grid-template-columns:44px minmax(0, 1fr) 58px minmax(88px, 1.05fr) minmax(88px, 1.05fr) 96px 76px minmax(118px, auto) minmax(88px, auto);
             gap:10px;
             align-items:center;
             font-size:13px;
         }
 
-        .admin-encomenda-produto-cabecalho{
-            min-height:0;
-            padding:0 0 6px;
-            border-bottom:1px solid #333;
-            color:#bbb;
-            font-size:11px;
-            font-weight:800;
-            letter-spacing:.02em;
-            text-transform:none;
-        }
-
-        .admin-encomenda-produto-cabecalho .admin-encomenda-produto-foto-espaco{
-            width:50px;
-            height:1px;
-        }
-
-        .admin-encomenda-produto-marcacao-rotulo{
-            text-align:center;
-            white-space:nowrap;
-        }
-
         .admin-encomenda-produto-marcacao{
             display:inline-flex;
             align-items:center;
-            justify-content:center;
+            justify-content:flex-start;
+            gap:6px;
             margin:0;
+            min-width:0;
             cursor:pointer;
+            user-select:none;
         }
 
         .admin-encomenda-produto-marcacao-input{
+            flex:0 0 auto;
             width:16px;
             height:16px;
             margin:0;
@@ -1114,6 +1097,22 @@ body.pagina-encomendas-admin{
 
         .admin-encomenda-produto-marcacao-penultimo .admin-encomenda-produto-marcacao-input{
             accent-color:#ff9f1c;
+        }
+
+        .admin-encomenda-produto-marcacao-texto{
+            color:transparent;
+            font-size:12px;
+            font-weight:800;
+            line-height:1.2;
+            white-space:nowrap;
+        }
+
+        .admin-encomenda-produto-marcacao-penultimo.marcacao-ativa .admin-encomenda-produto-marcacao-texto{
+            color:#ff9f1c;
+        }
+
+        .admin-encomenda-produto-marcacao-ultimo.marcacao-ativa .admin-encomenda-produto-marcacao-texto{
+            color:#ff5252;
         }
 
         .admin-encomenda-produto.marcado-ultimo{
@@ -1439,16 +1438,11 @@ body.pagina-encomendas-admin{
                 height:auto;
             }
             .admin-encomenda-produto{
-                grid-template-columns:36px minmax(0, 1fr) 52px 64px 56px 52px;
+                grid-template-columns:36px minmax(0, 1fr) 52px 64px minmax(108px, auto) minmax(78px, auto);
             }
             .admin-encomenda-produto-referencia,
             .admin-encomenda-produto-tema,
             .admin-encomenda-produto-subtema{
-                display:none;
-            }
-            .admin-encomenda-produto-cabecalho .admin-encomenda-produto-referencia,
-            .admin-encomenda-produto-cabecalho .admin-encomenda-produto-tema,
-            .admin-encomenda-produto-cabecalho .admin-encomenda-produto-subtema{
                 display:none;
             }
             .admin-encomenda-acoes{
