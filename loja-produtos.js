@@ -554,7 +554,7 @@ function gerarMenus(listaProdutos){
     cabecalho.className = 'cabecalho-menu-temas';
 
     const tituloMenu = document.createElement('h2');
-    tituloMenu.textContent = 'Temas';
+    tituloMenu.textContent = 'Categorias';
     cabecalho.appendChild(tituloMenu);
 
     const toggleMenu = document.createElement('button');
