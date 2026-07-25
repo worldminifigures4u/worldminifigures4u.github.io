@@ -380,6 +380,55 @@ function obterQuantidadePedidaItemFornecedorMapa(item) {
     )));
 }
 
+function normalizarChaveFornecedorMapa(texto) {
+    return String(texto || "")
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, "");
+}
+
+function obterObjetoFornecedoresProdutoMapa(produto) {
+    let fornecedores = produto?.fornecedores;
+    if (typeof fornecedores === "string") {
+        try { fornecedores = JSON.parse(fornecedores); }
+        catch (_) { return {}; }
+    }
+    return fornecedores && typeof fornecedores === "object" && !Array.isArray(fornecedores)
+        ? fornecedores
+        : {};
+}
+
+/** Data da marcação Encomendada na ficha (a que o utilizador vê no mapa), se existir. */
+function obterDataMarcacaoEncomendadaMapa(produto, fornecedorNome) {
+    const chaveAlvo = normalizarChaveFornecedorMapa(fornecedorNome);
+    if (!chaveAlvo) return "";
+    const fornecedores = obterObjetoFornecedoresProdutoMapa(produto);
+    const entrada = Object.entries(fornecedores).find(([chave]) =>
+        normalizarChaveFornecedorMapa(chave) === chaveAlvo
+    );
+    if (!entrada) return "";
+    const valor = entrada[1];
+    const historico = Array.isArray(valor?.historico) ? valor.historico : [];
+    for (let i = historico.length - 1; i >= 0; i -= 1) {
+        const tipo = String(historico[i]?.tipo || "").trim().toLowerCase();
+        if (tipo === "encomendada" || tipo === "encomendado" || tipo === "encomendada_os") {
+            return String(historico[i].data || "").trim();
+        }
+    }
+    return "";
+}
+
+function obterDataLinhaEncomendaFornecedorMapa(produto, pedido) {
+    const marcacao = obterDataMarcacaoEncomendadaMapa(produto, pedido?.fornecedor);
+    if (marcacao) return marcacao;
+    const estado = String(pedido?.estado || "").trim().toLowerCase();
+    if ((estado.includes("encomend") || estado.includes("parcial")) && pedido?.atualizado_em) {
+        return pedido.atualizado_em;
+    }
+    return pedido?.criado_em || pedido?.atualizado_em || "";
+}
+
 function obterLinhasEncomendaFornecedorProdutoMapa(produto, pedidos) {
     const linhas = [];
     (pedidos || []).forEach((pedido) => {
@@ -388,21 +437,24 @@ function obterLinhasEncomendaFornecedorProdutoMapa(produto, pedidos) {
             const pedidoQtd = obterQuantidadePedidaItemFornecedorMapa(item);
             if (pedidoQtd <= 0) return;
             const recebido = Math.max(0, Math.floor(Number(item.recebido || 0)));
-            linhas.push({ pedido, item, pedidoQtd, recebido });
+            const dataRef = obterDataLinhaEncomendaFornecedorMapa(produto, pedido);
+            linhas.push({ pedido, item, pedidoQtd, recebido, dataRef });
         });
     });
     linhas.sort((a, b) => {
-        const dataA = Date.parse(a.pedido.criado_em || a.pedido.atualizado_em || 0) || 0;
-        const dataB = Date.parse(b.pedido.criado_em || b.pedido.atualizado_em || 0) || 0;
+        const dataA = Date.parse(a.dataRef || a.pedido.criado_em || 0) || 0;
+        const dataB = Date.parse(b.dataRef || b.pedido.criado_em || 0) || 0;
         return dataB - dataA;
     });
     return linhas;
 }
 
-function formatarDataEncomendaFornecedorMapa(pedido) {
-    const bruto = pedido?.criado_em || pedido?.atualizado_em || "";
-    if (!bruto) return "—";
-    const data = new Date(bruto);
+function formatarDataEncomendaFornecedorMapa(valor) {
+    if (!valor) return "—";
+    const texto = String(valor).trim();
+    const isoDia = texto.match(/^(\d{4})-(\d{2})-(\d{2})/);
+    if (isoDia) return `${isoDia[3]}/${isoDia[2]}/${isoDia[1]}`;
+    const data = new Date(texto);
     return Number.isNaN(data.getTime()) ? "—" : data.toLocaleDateString("pt-PT");
 }
 
@@ -431,13 +483,13 @@ function renderizarHistoricoEncomendasFornecedorMapa(conteudo, produto, pedidos)
     thead.appendChild(linhaCabecalho);
 
     const tbody = document.createElement("tbody");
-    linhas.forEach(({ pedido, pedidoQtd, recebido }) => {
+    linhas.forEach(({ pedido, pedidoQtd, recebido, dataRef }) => {
         const tr = document.createElement("tr");
         if (recebido < pedidoQtd) {
             tr.classList.add("mapas-produto-historico-pendente");
         }
         [
-            formatarDataEncomendaFornecedorMapa(pedido),
+            formatarDataEncomendaFornecedorMapa(dataRef),
             pedido.codigo || pedido.referencia || "—",
             pedido.fornecedor || "—",
             String(pedidoQtd || "—"),
