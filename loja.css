@@ -28,6 +28,7 @@
         }
 
         .menu-temas h2{
+            display:none;
             margin-top:0;
             border-bottom:1px solid #2a2a2a;
             padding-bottom:10px;
@@ -489,7 +490,7 @@
         }
 
         .cabecalho-menu-temas{
-            display:flex;
+            display:none;
             justify-content:space-between;
             align-items:center;
             gap:10px;
@@ -633,6 +634,15 @@
         overflow:visible;
         padding-left:16px;
         padding-right:16px;
+    }
+
+    .cabecalho-menu-temas{
+        display:flex;
+    }
+
+    .cabecalho-menu-temas h2,
+    .menu-temas > h2{
+        display:block;
     }
 
     .btn-toggle-menu{
