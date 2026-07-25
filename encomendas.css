@@ -1086,6 +1086,10 @@ body.pagina-encomendas-admin{
             user-select:none;
         }
 
+        .admin-encomenda-produto-marcacao-penultimo{
+            margin-left:18px;
+        }
+
         .admin-encomenda-produto-marcacao-input{
             flex:0 0 auto;
             width:16px;
