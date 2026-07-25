@@ -1920,6 +1920,10 @@ body.pagina-mapas-admin > main.fornecedores-admin {
     color: #eee;
 }
 
+.mapas-produto-historico-rececoes-tabela tr.mapas-produto-historico-pendente td {
+    color: #ffca28;
+}
+
 .mapas-produto-upload-bloco {
     display: grid;
     gap: 8px;

@@ -374,40 +374,47 @@ async function carregarEncomendasFornecedorMapa(forcar = false) {
     return mapasEncomendasFornecedorPromessa;
 }
 
-function obterLinhasRececaoProdutoMapa(produto, pedidos) {
+function obterQuantidadePedidaItemFornecedorMapa(item) {
+    return Math.max(0, Math.floor(Number(
+        item?.quantidade_original ?? item?.quantidade ?? item?.qtd ?? 0
+    )));
+}
+
+function obterLinhasEncomendaFornecedorProdutoMapa(produto, pedidos) {
     const linhas = [];
     (pedidos || []).forEach((pedido) => {
         (pedido.itens || []).forEach((item) => {
             if (!produtoCorrespondeItemRececaoMapa(produto, item)) return;
+            const pedidoQtd = obterQuantidadePedidaItemFornecedorMapa(item);
+            if (pedidoQtd <= 0) return;
             const recebido = Math.max(0, Math.floor(Number(item.recebido || 0)));
-            if (recebido <= 0) return;
-            linhas.push({ pedido, item, recebido });
+            linhas.push({ pedido, item, pedidoQtd, recebido });
         });
     });
     linhas.sort((a, b) => {
-        const dataA = Date.parse(a.pedido.atualizado_em || a.pedido.criado_em || 0) || 0;
-        const dataB = Date.parse(b.pedido.atualizado_em || b.pedido.criado_em || 0) || 0;
+        const dataA = Date.parse(a.pedido.criado_em || a.pedido.atualizado_em || 0) || 0;
+        const dataB = Date.parse(b.pedido.criado_em || b.pedido.atualizado_em || 0) || 0;
         return dataB - dataA;
     });
     return linhas;
 }
 
-function formatarDataRececaoMapa(pedido) {
-    const bruto = pedido?.atualizado_em || pedido?.criado_em || "";
+function formatarDataEncomendaFornecedorMapa(pedido) {
+    const bruto = pedido?.criado_em || pedido?.atualizado_em || "";
     if (!bruto) return "—";
     const data = new Date(bruto);
     return Number.isNaN(data.getTime()) ? "—" : data.toLocaleDateString("pt-PT");
 }
 
-function renderizarHistoricoRececoesMapa(conteudo, produto, pedidos) {
+function renderizarHistoricoEncomendasFornecedorMapa(conteudo, produto, pedidos) {
     if (!conteudo) return;
-    const linhas = obterLinhasRececaoProdutoMapa(produto, pedidos);
+    const linhas = obterLinhasEncomendaFornecedorProdutoMapa(produto, pedidos);
     conteudo.replaceChildren();
 
     if (!linhas.length) {
         const vazio = document.createElement("p");
         vazio.className = "mapas-produto-ajuda-media";
-        vazio.textContent = "Ainda não há receções desta figura em encomendas a fornecedores.";
+        vazio.textContent = "Ainda não há encomendas a fornecedores com esta figura.";
         conteudo.appendChild(vazio);
         return;
     }
@@ -424,13 +431,13 @@ function renderizarHistoricoRececoesMapa(conteudo, produto, pedidos) {
     thead.appendChild(linhaCabecalho);
 
     const tbody = document.createElement("tbody");
-    linhas.forEach(({ pedido, item, recebido }) => {
+    linhas.forEach(({ pedido, pedidoQtd, recebido }) => {
         const tr = document.createElement("tr");
-        const pedidoQtd = Math.max(0, Math.floor(Number(
-            item.quantidade_original ?? item.quantidade ?? item.qtd ?? 0
-        )));
+        if (recebido < pedidoQtd) {
+            tr.classList.add("mapas-produto-historico-pendente");
+        }
         [
-            formatarDataRececaoMapa(pedido),
+            formatarDataEncomendaFornecedorMapa(pedido),
             pedido.codigo || pedido.referencia || "—",
             pedido.fornecedor || "—",
             String(pedidoQtd || "—"),
@@ -447,18 +454,21 @@ function renderizarHistoricoRececoesMapa(conteudo, produto, pedidos) {
     tabela.append(thead, tbody);
     conteudo.appendChild(tabela);
 
+    const totalPedido = linhas.reduce((soma, linha) => soma + linha.pedidoQtd, 0);
     const totalRecebido = linhas.reduce((soma, linha) => soma + linha.recebido, 0);
+    const pendentes = linhas.filter((linha) => linha.recebido < linha.pedidoQtd).length;
     const resumo = document.createElement("p");
     resumo.className = "mapas-produto-ajuda-media";
-    resumo.textContent = `${linhas.length} encomenda(s) · ${totalRecebido} unidade(s) recebida(s)`;
+    resumo.textContent = `${linhas.length} encomenda(s) · ${totalPedido} pedida(s) · ${totalRecebido} recebida(s)`
+        + (pendentes ? ` · ${pendentes} ainda por receber` : "");
     conteudo.appendChild(resumo);
 }
 
 function montarSecaoHistoricoRececoesMapa(campos, produto) {
-    const secao = criarSecaoEdicaoMapa("Histórico de receções", "mapas-produto-secao-media mapas-produto-secao-historico");
+    const secao = criarSecaoEdicaoMapa("Histórico a fornecedores", "mapas-produto-secao-media mapas-produto-secao-historico");
     const ajuda = document.createElement("p");
     ajuda.className = "mapas-produto-ajuda-media";
-    ajuda.textContent = "Encomendas a fornecedores em que esta figura já foi recebida.";
+    ajuda.textContent = "Encomendas a fornecedores em que esta figura foi pedida (incluindo as ainda encomendadas).";
     const conteudo = document.createElement("div");
     conteudo.className = "mapas-produto-historico-rececoes";
     conteudo.id = "mapas-produto-historico-rececoes";
@@ -473,7 +483,7 @@ function montarSecaoHistoricoRececoesMapa(campos, produto) {
     const produtoId = String(produto.id || "");
     carregarEncomendasFornecedorMapa().then((pedidos) => {
         if (conteudo.dataset.produtoId !== produtoId) return;
-        renderizarHistoricoRececoesMapa(conteudo, produto, pedidos);
+        renderizarHistoricoEncomendasFornecedorMapa(conteudo, produto, pedidos);
     });
 }
 
