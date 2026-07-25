@@ -15,6 +15,7 @@ window.AdminEncomendaVista = (function () {
         "Concluído",
         "Cancelado"
     ];
+    const MARCACOES_ORDEM_STORAGE_KEY = "figures-planet-encomenda-marcacoes-ordem";
     const SEM_IMAGEM = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(
         '<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120"><rect width="100%" height="100%" fill="#222"/><text x="50%" y="50%" text-anchor="middle" dominant-baseline="middle" fill="#888" font-family="Arial" font-size="13">Sem foto</text></svg>'
     );
@@ -251,6 +252,92 @@ window.AdminEncomendaVista = (function () {
             try { produtos = JSON.parse(produtos); } catch (_) { produtos = []; }
         }
         return Array.isArray(produtos) ? produtos : [];
+    }
+
+    function chaveItemMarcacaoOrdem(item, indice) {
+        return String(
+            item?.sku || item?.id_produto || item?.produto_id || item?.id || item?.referencia || item?.nome || `linha-${indice}`
+        ).trim().toUpperCase();
+    }
+
+    function lerMarcacoesOrdemGuardadas() {
+        try {
+            const dados = JSON.parse(localStorage.getItem(MARCACOES_ORDEM_STORAGE_KEY) || "{}");
+            return dados && typeof dados === "object" && !Array.isArray(dados) ? dados : {};
+        } catch (_) {
+            return {};
+        }
+    }
+
+    function obterMarcacaoOrdemItem(encomenda, item, indice) {
+        const encomendaId = String(encomenda?.id || encomenda?.codigo_encomenda || "").trim();
+        if (!encomendaId) return "";
+        const mapa = lerMarcacoesOrdemGuardadas()[encomendaId] || {};
+        const valor = String(mapa[chaveItemMarcacaoOrdem(item, indice)] || "").trim().toLowerCase();
+        return valor === "ultimo" || valor === "penultimo" ? valor : "";
+    }
+
+    function guardarMarcacaoOrdemItem(encomenda, item, indice, marcacao) {
+        const encomendaId = String(encomenda?.id || encomenda?.codigo_encomenda || "").trim();
+        if (!encomendaId) return;
+        const todos = lerMarcacoesOrdemGuardadas();
+        const mapa = { ...(todos[encomendaId] || {}) };
+        const chave = chaveItemMarcacaoOrdem(item, indice);
+        const valor = String(marcacao || "").trim().toLowerCase();
+        if (valor === "ultimo" || valor === "penultimo") mapa[chave] = valor;
+        else delete mapa[chave];
+        if (Object.keys(mapa).length) todos[encomendaId] = mapa;
+        else delete todos[encomendaId];
+        try {
+            localStorage.setItem(MARCACOES_ORDEM_STORAGE_KEY, JSON.stringify(todos));
+        } catch (_) {
+            // Ignora quota / modo privado
+        }
+    }
+
+    function aplicarDestaqueMarcacaoOrdem(linha, marcacao) {
+        linha.classList.toggle("marcado-ultimo", marcacao === "ultimo");
+        linha.classList.toggle("marcado-penultimo", marcacao === "penultimo");
+    }
+
+    function criarCelulaCheckboxMarcacaoOrdem(encomenda, item, indice, tipo, linhaProduto, outroInputRef) {
+        const celula = criarElemento("label", `admin-encomenda-produto-marcacao admin-encomenda-produto-marcacao-${tipo}`);
+        const input = document.createElement("input");
+        input.type = "checkbox";
+        input.className = "admin-encomenda-produto-marcacao-input";
+        input.title = tipo === "ultimo" ? "Último" : "Penúltimo";
+        input.setAttribute("aria-label", tipo === "ultimo" ? "Último" : "Penúltimo");
+        const marcacaoAtual = obterMarcacaoOrdemItem(encomenda, item, indice);
+        input.checked = marcacaoAtual === tipo;
+        input.addEventListener("click", evento => evento.stopPropagation());
+        input.addEventListener("change", evento => {
+            evento.stopPropagation();
+            const selecionado = input.checked;
+            if (selecionado && outroInputRef.atual) outroInputRef.atual.checked = false;
+            const novaMarcacao = selecionado ? tipo : "";
+            guardarMarcacaoOrdemItem(encomenda, item, indice, novaMarcacao);
+            aplicarDestaqueMarcacaoOrdem(linhaProduto, novaMarcacao);
+        });
+        celula.appendChild(input);
+        return { celula, input };
+    }
+
+    function criarCabecalhoProdutosEncomenda() {
+        const cabecalho = criarElemento("div", "admin-encomenda-produto admin-encomenda-produto-cabecalho");
+        [
+            ["admin-encomenda-produto-quantidade", ""],
+            ["admin-encomenda-produto-nome", ""],
+            ["admin-encomenda-produto-foto-espaco", ""],
+            ["admin-encomenda-produto-tema", ""],
+            ["admin-encomenda-produto-subtema", ""],
+            ["admin-encomenda-produto-referencia", ""],
+            ["admin-encomenda-produto-preco", ""],
+            ["admin-encomenda-produto-marcacao-rotulo", "Último"],
+            ["admin-encomenda-produto-marcacao-rotulo", "Penúltimo"]
+        ].forEach(([classe, texto]) => {
+            cabecalho.appendChild(criarElemento("span", classe, texto));
+        });
+        return cabecalho;
     }
 
     function resumirQuantidadesProdutos(encomenda) {
@@ -1586,10 +1673,23 @@ window.AdminEncomendaVista = (function () {
 
         const produtos = criarElemento("div", "admin-encomenda-produtos");
         const lista = criarElemento("div", "admin-encomenda-produtos-lista");
-        obterProdutos(encomenda).forEach(item => {
+        lista.appendChild(criarCabecalhoProdutosEncomenda());
+        obterProdutos(encomenda).forEach((item, indice) => {
             const linhaProduto = criarElemento("div", "admin-encomenda-produto");
             const quantidade = Number(item.quantidade || item.qtd || 1);
             const preco = Number(item.preco_unitario ?? item.preco ?? 0);
+            const marcacaoAtual = obterMarcacaoOrdemItem(encomenda, item, indice);
+            aplicarDestaqueMarcacaoOrdem(linhaProduto, marcacaoAtual);
+
+            const refPenultimo = { atual: null };
+            const celulaUltimo = criarCelulaCheckboxMarcacaoOrdem(
+                encomenda, item, indice, "ultimo", linhaProduto, refPenultimo
+            );
+            const celulaPenultimo = criarCelulaCheckboxMarcacaoOrdem(
+                encomenda, item, indice, "penultimo", linhaProduto, { atual: celulaUltimo.input }
+            );
+            refPenultimo.atual = celulaPenultimo.input;
+
             linhaProduto.append(
                 criarElemento("span", "admin-encomenda-produto-quantidade", `${quantidade}x`),
                 criarElemento("strong", "admin-encomenda-produto-nome", item.nome || "Produto"),
@@ -1597,7 +1697,9 @@ window.AdminEncomendaVista = (function () {
                 criarElemento("span", "admin-encomenda-produto-tema", obterTemaProduto(item)),
                 criarElemento("span", "admin-encomenda-produto-subtema", obterSubtemaProduto(item)),
                 criarElemento("span", "admin-encomenda-produto-referencia", obterReferenciaProduto(item) || "—"),
-                criarElemento("span", "admin-encomenda-produto-preco", formatarEuro(preco))
+                criarElemento("span", "admin-encomenda-produto-preco", formatarEuro(preco)),
+                celulaUltimo.celula,
+                celulaPenultimo.celula
             );
             lista.appendChild(linhaProduto);
         });
