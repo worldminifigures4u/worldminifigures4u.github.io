@@ -762,8 +762,7 @@ window.AdminEncomendaVista = (function () {
             const quantidade = Number(item.quantidade || item.qtd || 1);
             const nome = item.nome || "Produto";
             const referencia = obterReferenciaProduto(item);
-            const identificadores = [referencia ? `Ref. ${referencia}` : "", item.sku ? `SKU ${item.sku}` : ""].filter(Boolean).join(" | ");
-            const sufixo = identificadores ? ` (${identificadores})` : "";
+            const sufixo = referencia ? ` (${referencia})` : "";
             const preco = Number(item.preco_unitario ?? item.preco ?? 0);
             return `${quantidade}x ${nome}${sufixo} - ${formatarEuro(preco)}`;
         }).join("\n");
@@ -1597,8 +1596,7 @@ window.AdminEncomendaVista = (function () {
                 criarMiniaturaProduto(item),
                 criarElemento("span", "admin-encomenda-produto-tema", obterTemaProduto(item)),
                 criarElemento("span", "admin-encomenda-produto-subtema", obterSubtemaProduto(item)),
-                criarElemento("span", "admin-encomenda-produto-referencia", `Ref. ${obterReferenciaProduto(item) || "—"}`),
-                criarElemento("span", "admin-encomenda-produto-sku", `SKU ${item.sku || "—"}`),
+                criarElemento("span", "admin-encomenda-produto-referencia", obterReferenciaProduto(item) || "—"),
                 criarElemento("span", "admin-encomenda-produto-preco", formatarEuro(preco))
             );
             lista.appendChild(linhaProduto);
