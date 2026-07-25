@@ -332,8 +332,8 @@ window.AdminEncomendaVista = (function () {
             ["admin-encomenda-produto-subtema", ""],
             ["admin-encomenda-produto-referencia", ""],
             ["admin-encomenda-produto-preco", ""],
-            ["admin-encomenda-produto-marcacao-rotulo", "Último"],
-            ["admin-encomenda-produto-marcacao-rotulo", "Penúltimo"]
+            ["admin-encomenda-produto-marcacao-rotulo", "Penúltimo"],
+            ["admin-encomenda-produto-marcacao-rotulo", "Último"]
         ].forEach(([classe, texto]) => {
             cabecalho.appendChild(criarElemento("span", classe, texto));
         });
@@ -1681,14 +1681,14 @@ window.AdminEncomendaVista = (function () {
             const marcacaoAtual = obterMarcacaoOrdemItem(encomenda, item, indice);
             aplicarDestaqueMarcacaoOrdem(linhaProduto, marcacaoAtual);
 
-            const refPenultimo = { atual: null };
-            const celulaUltimo = criarCelulaCheckboxMarcacaoOrdem(
-                encomenda, item, indice, "ultimo", linhaProduto, refPenultimo
-            );
+            const refUltimo = { atual: null };
             const celulaPenultimo = criarCelulaCheckboxMarcacaoOrdem(
-                encomenda, item, indice, "penultimo", linhaProduto, { atual: celulaUltimo.input }
+                encomenda, item, indice, "penultimo", linhaProduto, refUltimo
             );
-            refPenultimo.atual = celulaPenultimo.input;
+            const celulaUltimo = criarCelulaCheckboxMarcacaoOrdem(
+                encomenda, item, indice, "ultimo", linhaProduto, { atual: celulaPenultimo.input }
+            );
+            refUltimo.atual = celulaUltimo.input;
 
             linhaProduto.append(
                 criarElemento("span", "admin-encomenda-produto-quantidade", `${quantidade}x`),
@@ -1698,8 +1698,8 @@ window.AdminEncomendaVista = (function () {
                 criarElemento("span", "admin-encomenda-produto-subtema", obterSubtemaProduto(item)),
                 criarElemento("span", "admin-encomenda-produto-referencia", obterReferenciaProduto(item) || "—"),
                 criarElemento("span", "admin-encomenda-produto-preco", formatarEuro(preco)),
-                celulaUltimo.celula,
-                celulaPenultimo.celula
+                celulaPenultimo.celula,
+                celulaUltimo.celula
             );
             lista.appendChild(linhaProduto);
         });
