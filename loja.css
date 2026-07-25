@@ -510,6 +510,7 @@
         }
 
         .btn-toggle-menu{
+            display:none;
             background:#222;
             color:var(--cor-texto-principal, #fff);
             border:1px solid #2a2a2a;
@@ -522,18 +523,9 @@
             min-height:34px;
         }
 
+        /* No PC a lista fica sempre visível, mesmo se a classe recolhida vier do telemóvel. */
         .lista-temas.recolhida{
-            display:none;
-        }
-
-        .menu-temas:has(.lista-temas.recolhida){
-            padding:10px 12px;
-        }
-
-        .menu-temas:has(.lista-temas.recolhida) .cabecalho-menu-temas{
-            border-bottom:none;
-            padding-bottom:0;
-            margin-bottom:0;
+            display:block;
         }
 
         .linha-tema{
@@ -643,11 +635,24 @@
         padding-right:16px;
     }
 
+    .btn-toggle-menu{
+        display:inline-flex;
+        align-items:center;
+        justify-content:center;
+    }
+
+    .lista-temas.recolhida{
+        display:none;
+    }
+
     .menu-temas:has(.lista-temas.recolhida){
         padding:7px 16px 5px;
     }
 
     .menu-temas:has(.lista-temas.recolhida) .cabecalho-menu-temas{
+        border-bottom:none;
+        padding-bottom:0;
+        margin-bottom:0;
         overflow:visible;
         justify-content:flex-start;
         gap:8px;
