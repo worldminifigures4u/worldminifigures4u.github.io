@@ -37,7 +37,7 @@
         if (typeof carregarProdutosDaNuvem === 'function') return Promise.resolve();
         if (!promessaLojaProdutos) {
             promessaLojaProdutos = garantirCartMiniLoja()
-                .then(() => carregarScript('loja-produtos.js?v=20260725-categorias'));
+                .then(() => carregarScript('loja-produtos.js?v=20260725-categorias-hamburger'));
         }
         return promessaLojaProdutos;
     }
@@ -132,6 +132,16 @@
         document.getElementById('campo-pesquisa')?.addEventListener('focus', pedirVitrine, { once: true });
         document.getElementById('menu-lateral-temas')?.addEventListener('click', pedirVitrine, { once: true });
         document.getElementById('vitrine-produtos')?.addEventListener('mouseenter', pedirVitrine, { once: true });
+        document.getElementById('btn-categorias-cabecalho')?.addEventListener('click', function (evento) {
+            evento.preventDefault();
+            garantirVitrineLojaPronta()
+                .then(function () {
+                    if (typeof alternarMenuCategoriasCabecalho === 'function') {
+                        alternarMenuCategoriasCabecalho();
+                    }
+                })
+                .catch(console.error);
+        });
     }
 
     async function iniciarVitrineLoja() {
@@ -197,7 +207,7 @@
 
     function agendarPrefetchModulosLoja() {
         const iniciar = function () {
-            ['loja-produtos.js?v=20260725-categorias', 'cart-mini.js?v=20260711-leve'].forEach(function (href) {
+            ['loja-produtos.js?v=20260725-categorias-hamburger', 'cart-mini.js?v=20260711-leve'].forEach(function (href) {
                 if (document.querySelector('link[rel="prefetch"][href="' + href + '"]')) return;
                 const link = document.createElement('link');
                 link.rel = 'prefetch';

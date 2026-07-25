@@ -564,6 +564,7 @@ function gerarMenus(listaProdutos){
     toggleMenu.onclick = function(){
         const recolhido = listaTemas.classList.toggle('recolhida');
         toggleMenu.textContent = recolhido ? 'Mostrar' : 'Recolher';
+        sincronizarBotaoCategoriasCabecalho();
         agendarAtualizacaoStickyTemas();
     };
     cabecalho.appendChild(toggleMenu);
@@ -648,6 +649,7 @@ function gerarMenus(listaProdutos){
 
     observarTamanhoMenuTemas();
     agendarAtualizacaoStickyTemas();
+    sincronizarBotaoCategoriasCabecalho();
 }
 
 function criarIconeCoracaoFavorito() {
@@ -1036,6 +1038,40 @@ async function reiniciarVitrinePaginada() {
 }
 
 
+function sincronizarBotaoCategoriasCabecalho() {
+    const listaTemas = document.querySelector('#menu-lateral-temas .lista-temas');
+    const botao = document.getElementById('btn-categorias-cabecalho');
+    if (!botao) return;
+    const aberto = Boolean(listaTemas) && !listaTemas.classList.contains('recolhida');
+    botao.classList.toggle('ativa', aberto);
+    botao.setAttribute('aria-expanded', aberto ? 'true' : 'false');
+    botao.setAttribute('aria-label', aberto ? 'Fechar categorias' : 'Abrir categorias');
+}
+
+function alternarMenuCategoriasCabecalho() {
+    const listaTemas = document.querySelector('#menu-lateral-temas .lista-temas');
+    const botaoToggle = document.querySelector('#menu-lateral-temas .btn-toggle-menu');
+    if (!listaTemas) return;
+
+    const recolhido = listaTemas.classList.toggle('recolhida');
+    if (botaoToggle) botaoToggle.textContent = recolhido ? 'Mostrar' : 'Recolher';
+    sincronizarBotaoCategoriasCabecalho();
+    agendarAtualizacaoStickyTemas();
+
+    if (!recolhido) {
+        const menu = document.getElementById('menu-lateral-temas');
+        if (!menu) return;
+        const header = document.querySelector('header');
+        const headerAltura = header ? header.getBoundingClientRect().height : 0;
+        const destino = menu.getBoundingClientRect().top + window.scrollY - headerAltura - 8;
+        const reduzirMovimento = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        window.scrollTo({
+            top: Math.max(0, destino),
+            behavior: reduzirMovimento ? 'auto' : 'smooth'
+        });
+    }
+}
+
 function recolherMenuTemasNoTelemovel() {
     if (!window.matchMedia || !window.matchMedia('(max-width: 1100px)').matches) return;
 
@@ -1045,6 +1081,7 @@ function recolherMenuTemasNoTelemovel() {
 
     listaTemas.classList.add('recolhida');
     if (botaoToggle) botaoToggle.textContent = 'Mostrar';
+    sincronizarBotaoCategoriasCabecalho();
     agendarAtualizacaoStickyTemas();
 }
 

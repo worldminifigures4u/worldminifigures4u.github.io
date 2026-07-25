@@ -15,12 +15,12 @@
     <title>Figures Planet</title>
     <link rel="icon" type="image/webp" href="favicon-32.webp?v=20260711-leve" sizes="32x32">
 
-    <link rel="stylesheet" href="styles.css?v=20260721-rodape-800">
+    <link rel="stylesheet" href="styles.css?v=20260725-categorias-hamburger">
     <link rel="stylesheet" href="critico-loja.css?v=20260722-banner-fullh">
     <link rel="stylesheet" href="styles-tema.css?v=20260721-sem-underline" media="print" data-async-css>
     <noscript><link rel="stylesheet" href="styles-tema.css?v=20260721-sem-underline"></noscript>
-    <link rel="stylesheet" href="loja.css?v=20260725-categorias-mobile" media="print" data-async-css>
-    <noscript><link rel="stylesheet" href="loja.css?v=20260725-categorias-mobile"></noscript>
+    <link rel="stylesheet" href="loja.css?v=20260725-categorias-hamburger" media="print" data-async-css>
+    <noscript><link rel="stylesheet" href="loja.css?v=20260725-categorias-hamburger"></noscript>
     <script src="async-css.js?v=20260713-r26"></script>
 </head>
 <body data-page="loja">
@@ -35,6 +35,12 @@
             <span class="icone-pesquisa" aria-hidden="true"></span>
         </form>
         <div class="acoes-cabecalho acoes-cabecalho-publicas">
+            <button type="button" class="acao-cabecalho acao-categorias-cabecalho" id="btn-categorias-cabecalho" aria-label="Abrir categorias" aria-controls="menu-lateral-temas" aria-expanded="false">
+                <span class="icone-hamburger" aria-hidden="true">
+                    <span></span><span></span><span></span>
+                </span>
+                <span class="texto-acao"><strong>Categorias</strong></span>
+            </button>
             <a class="acao-cabecalho" href="conta.html" aria-label="Abrir area de cliente" data-vista-nav="conta">
                 <span class="icone-acao" aria-hidden="true"></span>
                 <span class="texto-acao">
@@ -137,7 +143,7 @@
 <script src="app-config.js?v=20260713-r25" defer></script>
 <script src="app-util.js?v=20260721-mais-produtos" defer></script>
 <script src="app-favoritos-loader.js?v=20260719-favoritos-persist" defer></script>
-<script src="loja-pagina.js?v=20260725-categorias" defer></script>
+<script src="loja-pagina.js?v=20260725-categorias-hamburger" defer></script>
 <script src="app-sessao.js?v=20260721-leve-r28" defer></script>
 <script src="campo-limpar.js?v=20260720-sem-x-cliente" defer></script>
 <script src="inline-listeners-base.js?v=20260725-logo-hq" defer></script>

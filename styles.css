@@ -201,6 +201,28 @@ body{
             text-decoration:none;
         }
 
+        .acao-categorias-cabecalho{
+            display:none;
+            font:inherit;
+        }
+
+        .acao-categorias-cabecalho .icone-hamburger{
+            display:flex;
+            flex-direction:column;
+            justify-content:center;
+            gap:3px;
+            width:18px;
+            flex:0 0 18px;
+        }
+
+        .acao-categorias-cabecalho .icone-hamburger span{
+            display:block;
+            width:100%;
+            height:2px;
+            border-radius:1px;
+            background:currentColor;
+        }
+
         .acao-cabecalho:hover,
         .acao-cabecalho:focus-visible{
             background:#222;
@@ -451,6 +473,9 @@ body{
                 width:auto;
                 flex-basis:auto;
             }
+            body[data-page="loja"] .acao-categorias-cabecalho{
+                display:inline-flex;
+            }
             .texto-acao span{ max-width:120px; }
             .texto-acao strong{ max-width:120px; }
             .acao-cabecalho{ padding:0 14px; }
@@ -514,7 +539,8 @@ body{
                 padding:0;
             }
             [data-vista-nav="conta"] .texto-acao,
-            [data-vista-nav="conta"] .detalhe-conta-cabecalho{
+            [data-vista-nav="conta"] .detalhe-conta-cabecalho,
+            .acao-categorias-cabecalho .texto-acao{
                 display:none;
             }
             .acao-favoritos-topo{
@@ -535,6 +561,14 @@ body{
                 width:24px;
                 height:24px;
                 flex:0 0 24px;
+            }
+            .acao-categorias-cabecalho .icone-hamburger{
+                width:22px;
+                flex-basis:22px;
+                gap:4px;
+            }
+            .acao-categorias-cabecalho .icone-hamburger span{
+                height:2.5px;
             }
             .badge-carrinho{
                 top:2px;
