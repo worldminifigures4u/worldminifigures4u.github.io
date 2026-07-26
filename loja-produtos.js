@@ -397,6 +397,21 @@ function aplicarFiltrosQueryProdutos(query, filtros) {
     return consulta;
 }
 
+function deveBaralharPrimeiraPaginaVitrine(filtros) {
+    return !String(filtros?.pesquisa || '').trim() && !filtros?.tema && filtroTemaAtual === 'todos';
+}
+
+function baralharProdutosVitrine(lista) {
+    const itens = Array.isArray(lista) ? lista.slice() : [];
+    for (let i = itens.length - 1; i > 0; i -= 1) {
+        const j = Math.floor(Math.random() * (i + 1));
+        const temp = itens[i];
+        itens[i] = itens[j];
+        itens[j] = temp;
+    }
+    return itens;
+}
+
 async function carregarMetadadosTemasLoja() {
     let metadados = lerCacheTemasLoja();
 
@@ -500,8 +515,11 @@ async function carregarPaginaProdutosLoja({ reiniciar = false } = {}) {
             mesclarProdutosNoCatalogoLocal(produtosPagina);
 
             if (reiniciar) {
-                produtosFiltradosAtual = produtosPagina;
-                produtosVitrineAtual = produtosPagina;
+                const primeiraPagina = deveBaralharPrimeiraPaginaVitrine(filtros)
+                    ? baralharProdutosVitrine(produtosPagina)
+                    : produtosPagina;
+                produtosFiltradosAtual = primeiraPagina;
+                produtosVitrineAtual = primeiraPagina;
                 indiceRenderizado = 0;
             } else {
                 produtosFiltradosAtual.push(...produtosPagina);
