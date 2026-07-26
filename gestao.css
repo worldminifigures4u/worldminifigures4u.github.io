@@ -135,10 +135,11 @@ body.pagina-gestao-admin > main.gestao-admin {
 
 .gestao-banner-preview-texto-livre {
     pointer-events: auto;
-    cursor: pointer;
+    cursor: grab;
     padding: 4px 6px;
     border: 1px dashed transparent;
     border-radius: 4px;
+    touch-action: none;
     -webkit-user-select: none;
     user-select: none;
 }
@@ -164,6 +165,23 @@ body.pagina-gestao-admin > main.gestao-admin {
 .gestao-banner-preview-texto-livre:hover {
     border-color: rgba(255, 193, 7, 0.75);
     background: rgba(0, 0, 0, 0.18);
+}
+
+.gestao-banner-preview-texto-livre.is-a-arrastar {
+    cursor: grabbing;
+    border-color: #ffc107;
+    z-index: 2;
+}
+
+.gestao-texto-posicao-livre {
+    margin-right: auto;
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: #ffc107;
+}
+
+.gestao-texto-repor-alinhamento {
+    justify-self: start;
 }
 
 .gestao-banner-preview-ajuda {
