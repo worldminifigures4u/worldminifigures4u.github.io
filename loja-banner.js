@@ -43,18 +43,52 @@
         temporizador = window.setInterval(seguinte, INTERVALO_MS);
     }
 
+    function textoBanner(valor) {
+        return String(valor || '').trim();
+    }
+
+    function altBanner(banner) {
+        const esq = textoBanner(banner.texto_esquerda || banner.alt);
+        const dir = textoBanner(banner.texto_direita);
+        return [esq, dir].filter(Boolean).join(' · ');
+    }
+
+    function criarTexto(lado, valor) {
+        const texto = textoBanner(valor);
+        if (!texto) return null;
+        const el = document.createElement('span');
+        el.className = 'loja-banner-cgi-texto loja-banner-cgi-texto-' + lado;
+        el.textContent = texto;
+        return el;
+    }
+
     function criarSlide(banner, ativo) {
+        const slide = document.createElement('div');
+        slide.className = 'loja-banner-cgi-slide' + (ativo ? ' is-ativo' : '');
+        slide.setAttribute('data-loja-banner-slide', '');
+        slide.setAttribute('aria-hidden', ativo ? 'false' : 'true');
+
         const img = document.createElement('img');
-        img.className = 'loja-banner-cgi-img' + (ativo ? ' is-ativo' : '');
+        img.className = 'loja-banner-cgi-img';
         img.src = banner.url;
-        img.alt = banner.alt || '';
+        img.alt = altBanner(banner);
         img.width = 2048;
         img.height = 362;
         img.decoding = 'async';
-        img.fetchPriority = ativo ? 'low' : 'low';
-        img.setAttribute('data-loja-banner-slide', '');
-        img.setAttribute('aria-hidden', ativo ? 'false' : 'true');
-        return img;
+        img.fetchPriority = 'low';
+        slide.appendChild(img);
+
+        const esq = criarTexto('esq', banner.texto_esquerda || banner.alt);
+        const dir = criarTexto('dir', banner.texto_direita);
+        if (esq || dir) {
+            const textos = document.createElement('div');
+            textos.className = 'loja-banner-cgi-textos';
+            if (esq) textos.appendChild(esq);
+            if (dir) textos.appendChild(dir);
+            slide.appendChild(textos);
+        }
+
+        return slide;
     }
 
     function aplicarBannersRemotos(banners) {
@@ -81,7 +115,7 @@
             const client = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
             const { data, error } = await client
                 .from('banners_loja')
-                .select('url, alt, ordem')
+                .select('url, alt, texto_esquerda, texto_direita, ordem')
                 .eq('ativo', true)
                 .order('ordem', { ascending: true })
                 .order('criado_em', { ascending: true });

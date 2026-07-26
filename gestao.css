@@ -25,7 +25,7 @@ body.pagina-gestao-admin > main.gestao-admin {
 
 .gestao-form-banner {
     display: grid;
-    grid-template-columns: minmax(180px, 1.4fr) minmax(140px, 1fr) 90px auto auto;
+    grid-template-columns: minmax(160px, 1.2fr) minmax(120px, 1fr) minmax(120px, 1fr) 90px auto auto;
     gap: 12px;
     align-items: end;
 }
@@ -92,17 +92,54 @@ body.pagina-gestao-admin > main.gestao-admin {
     background: rgba(0, 0, 0, 0.22);
 }
 
+.gestao-banner-preview-wrap {
+    position: relative;
+    border-radius: 6px;
+    overflow: hidden;
+    background: #111;
+}
+
 .gestao-banner-preview {
     width: 100%;
     aspect-ratio: 2048 / 362;
     object-fit: cover;
-    border-radius: 6px;
-    background: #111;
+    display: block;
+}
+
+.gestao-banner-preview-textos {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 10px 14px;
+    pointer-events: none;
+}
+
+.gestao-banner-preview-texto {
+    max-width: 42%;
+    font-family: "Nunito", Arial, Helvetica, sans-serif;
+    font-size: clamp(0.75rem, 1.6vw, 1rem);
+    font-weight: 800;
+    color: #fff;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.55), 0 3px 10px rgba(0, 0, 0, 0.65);
+    line-height: 1.15;
+}
+
+.gestao-banner-preview-texto-esq {
+    text-align: left;
+    margin-right: auto;
+}
+
+.gestao-banner-preview-texto-dir {
+    text-align: right;
+    margin-left: auto;
 }
 
 .gestao-banner-campos {
     display: grid;
-    grid-template-columns: 1fr 90px;
+    grid-template-columns: 1fr 1fr 90px;
     gap: 10px;
     align-content: start;
 }
@@ -153,5 +190,9 @@ body.pagina-gestao-admin > main.gestao-admin {
 
     .gestao-banner-campos {
         grid-template-columns: 1fr;
+    }
+
+    .gestao-campo-ordem {
+        max-width: 120px;
     }
 }

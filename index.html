@@ -16,11 +16,11 @@
     <link rel="icon" type="image/webp" href="favicon-32.webp?v=20260711-leve" sizes="32x32">
 
     <link rel="stylesheet" href="styles.css?v=20260726-esconder-pesquisa-v2">
-    <link rel="stylesheet" href="critico-loja.css?v=20260726-sem-banner-mobile">
+    <link rel="stylesheet" href="critico-loja.css?v=20260726-textos-banner">
     <link rel="stylesheet" href="styles-tema.css?v=20260721-sem-underline" media="print" data-async-css>
     <noscript><link rel="stylesheet" href="styles-tema.css?v=20260721-sem-underline"></noscript>
-    <link rel="stylesheet" href="loja.css?v=20260726-sem-banner-mobile" media="print" data-async-css>
-    <noscript><link rel="stylesheet" href="loja.css?v=20260726-sem-banner-mobile"></noscript>
+    <link rel="stylesheet" href="loja.css?v=20260726-textos-banner" media="print" data-async-css>
+    <noscript><link rel="stylesheet" href="loja.css?v=20260726-textos-banner"></noscript>
     <script src="async-css.js?v=20260713-r26"></script>
 </head>
 <body data-page="loja">
@@ -83,38 +83,42 @@
 
     <div class="conteudo-central">
         <div class="loja-banner-cgi" data-loja-banner aria-roledescription="carousel" aria-label="Destaques Figures Planet">
-            <img
-                class="loja-banner-cgi-img is-ativo"
-                src="img/banner-cgi-astronauta.png?v=20260723-espaco"
-                alt="Figures Planet"
-                width="2048"
-                height="362"
-                decoding="async"
-                fetchpriority="low"
-                data-loja-banner-slide
-            >
-            <img
-                class="loja-banner-cgi-img"
-                src="img/banner-cgi-filme.png?v=20260722-cont"
-                alt=""
-                width="2048"
-                height="362"
-                decoding="async"
-                loading="lazy"
-                aria-hidden="true"
-                data-loja-banner-slide
-            >
-            <img
-                class="loja-banner-cgi-img"
-                src="img/banner-cgi-duelo.png?v=20260722-fullh"
-                alt=""
-                width="2048"
-                height="362"
-                decoding="async"
-                loading="lazy"
-                aria-hidden="true"
-                data-loja-banner-slide
-            >
+            <div class="loja-banner-cgi-slide is-ativo" data-loja-banner-slide aria-hidden="false">
+                <img
+                    class="loja-banner-cgi-img"
+                    src="img/banner-cgi-astronauta.png?v=20260723-espaco"
+                    alt="Figures Planet"
+                    width="2048"
+                    height="362"
+                    decoding="async"
+                    fetchpriority="low"
+                >
+                <div class="loja-banner-cgi-textos">
+                    <span class="loja-banner-cgi-texto loja-banner-cgi-texto-esq">Figures Planet</span>
+                </div>
+            </div>
+            <div class="loja-banner-cgi-slide" data-loja-banner-slide aria-hidden="true">
+                <img
+                    class="loja-banner-cgi-img"
+                    src="img/banner-cgi-filme.png?v=20260722-cont"
+                    alt=""
+                    width="2048"
+                    height="362"
+                    decoding="async"
+                    loading="lazy"
+                >
+            </div>
+            <div class="loja-banner-cgi-slide" data-loja-banner-slide aria-hidden="true">
+                <img
+                    class="loja-banner-cgi-img"
+                    src="img/banner-cgi-duelo.png?v=20260722-fullh"
+                    alt=""
+                    width="2048"
+                    height="362"
+                    decoding="async"
+                    loading="lazy"
+                >
+            </div>
         </div>
         <nav id="loja-breadcrumb" class="loja-breadcrumb" aria-label="Caminho de navegação" hidden></nav>
         <main class="produtos" id="vitrine-produtos">
@@ -142,7 +146,7 @@
 </footer>
 <script src="supabase-cdn.js?v=20260711-leve" defer></script>
 <script src="app-config.js?v=20260713-r25" defer></script>
-<script src="loja-banner.js?v=20260726-gestao" defer></script>
+<script src="loja-banner.js?v=20260726-textos-banner" defer></script>
 <script src="app-util.js?v=20260721-mais-produtos" defer></script>
 <script src="app-favoritos-loader.js?v=20260719-favoritos-persist" defer></script>
 <script src="loja-pagina.js?v=20260726-vitrine-aleatoria" defer></script>
