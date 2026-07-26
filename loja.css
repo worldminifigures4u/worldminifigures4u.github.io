@@ -898,18 +898,24 @@
         width:100%;
         box-sizing:border-box;
         height:42px;
-        border:1px solid #333;
+        border:1px solid #4a4a4a;
         border-radius:10px;
-        background:#0a0a0a;
+        background:#1a1a1a;
         color:#fff;
         font:inherit;
         font-size:16px;
         padding:0 14px;
+        box-shadow:inset 0 0 0 1px rgba(255,255,255,0.04);
+    }
+
+    .menu-temas-pesquisa .input-pesquisa-menu::placeholder{
+        color:#a3a3a3;
     }
 
     .menu-temas-pesquisa .input-pesquisa-menu:focus{
         outline:none;
         border-color:#ffc107;
+        box-shadow:0 0 0 3px rgba(255, 193, 7, 0.22);
     }
 
     .menu-temas:has(.lista-temas.recolhida){
