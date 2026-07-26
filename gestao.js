@@ -22,6 +22,64 @@ function textoPlanoGestao(valor) {
     return String(valor || '').replace(/\*\*/g, '').trim();
 }
 
+function limitarPercentagem(valor, minimo = 0, maximo = 100) {
+    const n = Number(valor);
+    if (!Number.isFinite(n)) return minimo;
+    return Math.min(maximo, Math.max(minimo, Math.round(n * 10) / 10));
+}
+
+function novoIdTextoGestao() {
+    if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+        return crypto.randomUUID();
+    }
+    return 'txt-' + Date.now() + '-' + Math.random().toString(16).slice(2);
+}
+
+function criarTextoBannerPadrao(parcial = {}) {
+    return {
+        id: parcial.id || novoIdTextoGestao(),
+        texto: String(parcial.texto || ''),
+        cor: normalizarCorHexGestao(parcial.cor, GESTAO_COR_BRANCO),
+        cor_destaque: normalizarCorHexGestao(parcial.cor_destaque, GESTAO_COR_AMARELO_LOGO),
+        x: limitarPercentagem(parcial.x ?? 50, 0, 100),
+        y: limitarPercentagem(parcial.y ?? 50, 0, 100),
+        maxWidth: limitarPercentagem(parcial.maxWidth ?? 28, 10, 80),
+        align: ['left', 'center', 'right'].includes(parcial.align) ? parcial.align : 'left'
+    };
+}
+
+function normalizarListaTextosBanner(banner) {
+    if (Array.isArray(banner?.textos) && banner.textos.length) {
+        return banner.textos.map((item) => criarTextoBannerPadrao(item));
+    }
+    const lista = [];
+    const esq = String(banner?.texto_esquerda || banner?.alt || '').trim();
+    const dir = String(banner?.texto_direita || '').trim();
+    if (esq) {
+        lista.push(criarTextoBannerPadrao({
+            id: 'legado-esq',
+            texto: esq,
+            cor: banner?.cor_esquerda,
+            cor_destaque: banner?.cor_destaque,
+            x: 10,
+            y: 50,
+            align: 'left'
+        }));
+    }
+    if (dir) {
+        lista.push(criarTextoBannerPadrao({
+            id: 'legado-dir',
+            texto: dir,
+            cor: banner?.cor_direita,
+            cor_destaque: banner?.cor_destaque,
+            x: 90,
+            y: 50,
+            align: 'right'
+        }));
+    }
+    return lista;
+}
+
 function preencherTextoBannerGestao(el, valor, corBase, corDestaque) {
     el.replaceChildren();
     el.style.color = corBase;
@@ -38,6 +96,14 @@ function preencherTextoBannerGestao(el, valor, corBase, corDestaque) {
         }
         if (parte) el.appendChild(document.createTextNode(parte));
     });
+}
+
+function aplicarEstiloTextoLivre(el, item) {
+    el.style.left = limitarPercentagem(item.x) + '%';
+    el.style.top = limitarPercentagem(item.y) + '%';
+    el.style.maxWidth = limitarPercentagem(item.maxWidth, 10, 80) + '%';
+    el.style.textAlign = item.align || 'left';
+    el.style.transform = 'translate(-50%, -50%)';
 }
 
 async function obterAssinaturaCloudinaryGestao() {
@@ -82,43 +148,37 @@ async function enviarFicheiroCloudinaryGestao(ficheiro) {
     return resultado.eager?.[0]?.secure_url || resultado.secure_url;
 }
 
-function criarCampoTextoGestao(rotulo, valor, maxLength = 160) {
-    const label = document.createElement('label');
-    label.className = 'gestao-campo gestao-campo-texto';
-    const span = document.createElement('span');
-    span.textContent = rotulo;
-    const input = document.createElement('textarea');
-    input.rows = 2;
-    input.value = valor || '';
-    input.maxLength = maxLength;
-    input.dataset.semLimparCampo = '1';
-    label.appendChild(span);
-    label.appendChild(input);
-    return { label, input };
-}
+function ligarArrastoTextoGestao(el, item, previewWrap) {
+    let aArrastar = false;
 
-function criarCampoCorGestao(rotulo, valor, fallback) {
-    const label = document.createElement('label');
-    label.className = 'gestao-campo gestao-campo-cor';
-    const span = document.createElement('span');
-    span.textContent = rotulo;
-    const wrap = document.createElement('div');
-    wrap.className = 'gestao-cor-wrap';
-    const input = document.createElement('input');
-    input.type = 'color';
-    input.value = normalizarCorHexGestao(valor, fallback);
-    input.dataset.semLimparCampo = '1';
-    const codigo = document.createElement('code');
-    codigo.className = 'gestao-cor-codigo';
-    codigo.textContent = input.value;
-    input.addEventListener('input', () => {
-        codigo.textContent = input.value;
+    const atualizarPosicao = (evento) => {
+        const rect = previewWrap.getBoundingClientRect();
+        if (!rect.width || !rect.height) return;
+        item.x = limitarPercentagem(((evento.clientX - rect.left) / rect.width) * 100);
+        item.y = limitarPercentagem(((evento.clientY - rect.top) / rect.height) * 100);
+        aplicarEstiloTextoLivre(el, item);
+    };
+
+    el.addEventListener('pointerdown', (evento) => {
+        if (evento.button != null && evento.button !== 0) return;
+        evento.preventDefault();
+        aArrastar = true;
+        el.classList.add('is-a-arrastar');
+        el.setPointerCapture?.(evento.pointerId);
+        atualizarPosicao(evento);
     });
-    wrap.appendChild(input);
-    wrap.appendChild(codigo);
-    label.appendChild(span);
-    label.appendChild(wrap);
-    return { label, input };
+    el.addEventListener('pointermove', (evento) => {
+        if (!aArrastar) return;
+        atualizarPosicao(evento);
+    });
+    const terminar = (evento) => {
+        if (!aArrastar) return;
+        aArrastar = false;
+        el.classList.remove('is-a-arrastar');
+        try { el.releasePointerCapture?.(evento.pointerId); } catch (_) { /* ignore */ }
+    };
+    el.addEventListener('pointerup', terminar);
+    el.addEventListener('pointercancel', terminar);
 }
 
 function renderizarListaBannersGestao() {
@@ -129,7 +189,7 @@ function renderizarListaBannersGestao() {
     if (!gestaoBanners.length) {
         const vazio = document.createElement('p');
         vazio.className = 'gestao-vazio';
-        vazio.textContent = 'Ainda não há banners. Adiciona o primeiro acima (ou corre o SQL supabase-banners-loja.sql).';
+        vazio.textContent = 'Ainda não há banners. Adiciona o primeiro acima (ou corre o SQL supabase-banners-loja-textos-livres.sql).';
         lista.appendChild(vazio);
         return;
     }
@@ -139,48 +199,47 @@ function renderizarListaBannersGestao() {
         card.className = 'gestao-banner-card';
         card.dataset.id = banner.id;
 
-        const textoEsq = String(banner.texto_esquerda || banner.alt || '').trim();
-        const textoDir = String(banner.texto_direita || '').trim();
-        const corEsq = normalizarCorHexGestao(banner.cor_esquerda, GESTAO_COR_BRANCO);
-        const corDir = normalizarCorHexGestao(banner.cor_direita, GESTAO_COR_BRANCO);
-        const corDest = normalizarCorHexGestao(banner.cor_destaque, GESTAO_COR_AMARELO_LOGO);
+        const textosEstado = normalizarListaTextosBanner(banner);
+        let textoAtivoId = textosEstado[0]?.id || null;
 
         const previewWrap = document.createElement('div');
         previewWrap.className = 'gestao-banner-preview-wrap';
         const preview = document.createElement('img');
         preview.className = 'gestao-banner-preview';
         preview.src = banner.url;
-        preview.alt = [textoPlanoGestao(textoEsq), textoPlanoGestao(textoDir)].filter(Boolean).join(' · ') || 'Banner';
+        preview.alt = textosEstado.map((t) => textoPlanoGestao(t.texto)).filter(Boolean).join(' · ') || 'Banner';
         preview.loading = 'lazy';
         preview.decoding = 'async';
+        preview.draggable = false;
         previewWrap.appendChild(preview);
-        if (textoPlanoGestao(textoEsq) || textoPlanoGestao(textoDir)) {
-            const textos = document.createElement('div');
-            textos.className = 'gestao-banner-preview-textos';
-            if (textoPlanoGestao(textoEsq)) {
-                const esq = document.createElement('span');
-                esq.className = 'gestao-banner-preview-texto gestao-banner-preview-texto-esq';
-                preencherTextoBannerGestao(esq, textoEsq, corEsq, corDest);
-                textos.appendChild(esq);
-            }
-            if (textoPlanoGestao(textoDir)) {
-                const dir = document.createElement('span');
-                dir.className = 'gestao-banner-preview-texto gestao-banner-preview-texto-dir';
-                preencherTextoBannerGestao(dir, textoDir, corDir, corDest);
-                textos.appendChild(dir);
-            }
-            previewWrap.appendChild(textos);
-        }
+
+        const camadaTextos = document.createElement('div');
+        camadaTextos.className = 'gestao-banner-preview-textos';
+        previewWrap.appendChild(camadaTextos);
+
+        const ajudaPreview = document.createElement('p');
+        ajudaPreview.className = 'gestao-banner-preview-ajuda';
+        ajudaPreview.textContent = 'Arrasta os textos na pré-visualização para os posicionar.';
+        previewWrap.appendChild(ajudaPreview);
+
         card.appendChild(previewWrap);
 
         const campos = document.createElement('div');
-        campos.className = 'gestao-banner-campos';
+        campos.className = 'gestao-banner-campos gestao-banner-campos-livres';
 
-        const campoEsq = criarCampoTextoGestao('Texto à esquerda', textoEsq);
-        const campoDir = criarCampoTextoGestao('Texto à direita', textoDir);
-        const campoCorEsq = criarCampoCorGestao('Cor esquerda', corEsq, GESTAO_COR_BRANCO);
-        const campoCorDir = criarCampoCorGestao('Cor direita', corDir, GESTAO_COR_BRANCO);
-        const campoCorDest = criarCampoCorGestao('Cor destaque (**texto**)', corDest, GESTAO_COR_AMARELO_LOGO);
+        const topoTextos = document.createElement('div');
+        topoTextos.className = 'gestao-textos-topo';
+        const tituloTextos = document.createElement('h3');
+        tituloTextos.textContent = 'Textos do banner';
+        const btnAddTexto = document.createElement('button');
+        btnAddTexto.type = 'button';
+        btnAddTexto.className = 'wallapop-botao';
+        btnAddTexto.textContent = 'Adicionar texto';
+        topoTextos.appendChild(tituloTextos);
+        topoTextos.appendChild(btnAddTexto);
+
+        const listaTextos = document.createElement('div');
+        listaTextos.className = 'gestao-textos-lista';
 
         const labelOrdem = document.createElement('label');
         labelOrdem.className = 'gestao-campo gestao-campo-ordem';
@@ -194,7 +253,6 @@ function renderizarListaBannersGestao() {
 
         const acoes = document.createElement('div');
         acoes.className = 'gestao-banner-acoes';
-
         const labelAtivo = document.createElement('label');
         labelAtivo.className = 'gestao-check';
         const inputAtivo = document.createElement('input');
@@ -205,6 +263,173 @@ function renderizarListaBannersGestao() {
         textoAtivo.textContent = 'Ativo na loja';
         labelAtivo.appendChild(textoAtivo);
 
+        const mapaPreview = new Map();
+
+        const sincronizarPreview = () => {
+            camadaTextos.replaceChildren();
+            mapaPreview.clear();
+            textosEstado.forEach((item) => {
+                if (!textoPlanoGestao(item.texto)) return;
+                const el = document.createElement('span');
+                el.className = 'gestao-banner-preview-texto gestao-banner-preview-texto-livre';
+                if (item.id === textoAtivoId) el.classList.add('is-selecionado');
+                el.dataset.textoId = item.id;
+                aplicarEstiloTextoLivre(el, item);
+                preencherTextoBannerGestao(el, item.texto, item.cor, item.cor_destaque);
+                el.title = 'Arrastar para posicionar';
+                el.addEventListener('pointerdown', () => {
+                    textoAtivoId = item.id;
+                    sincronizarLista();
+                    sincronizarPreview();
+                });
+                ligarArrastoTextoGestao(el, item, previewWrap);
+                camadaTextos.appendChild(el);
+                mapaPreview.set(item.id, el);
+            });
+        };
+
+        const sincronizarLista = () => {
+            listaTextos.replaceChildren();
+            if (!textosEstado.length) {
+                const vazio = document.createElement('p');
+                vazio.className = 'gestao-vazio';
+                vazio.textContent = 'Sem textos. Clica em «Adicionar texto».';
+                listaTextos.appendChild(vazio);
+                return;
+            }
+
+            textosEstado.forEach((item, indice) => {
+                const bloco = document.createElement('div');
+                bloco.className = 'gestao-texto-item' + (item.id === textoAtivoId ? ' is-ativo' : '');
+
+                const cabeca = document.createElement('div');
+                cabeca.className = 'gestao-texto-item-topo';
+                const rotulo = document.createElement('strong');
+                rotulo.textContent = 'Texto ' + (indice + 1);
+                const btnRemover = document.createElement('button');
+                btnRemover.type = 'button';
+                btnRemover.className = 'wallapop-botao';
+                btnRemover.textContent = 'Remover';
+                btnRemover.addEventListener('click', () => {
+                    const idx = textosEstado.findIndex((t) => t.id === item.id);
+                    if (idx < 0) return;
+                    textosEstado.splice(idx, 1);
+                    if (textoAtivoId === item.id) textoAtivoId = textosEstado[0]?.id || null;
+                    sincronizarLista();
+                    sincronizarPreview();
+                });
+                cabeca.appendChild(rotulo);
+                cabeca.appendChild(btnRemover);
+
+                const area = document.createElement('textarea');
+                area.rows = 2;
+                area.maxLength = 160;
+                area.value = item.texto;
+                area.dataset.semLimparCampo = '1';
+                area.placeholder = 'Escreve o texto… Enter para nova linha. **destaque**';
+                area.addEventListener('focus', () => {
+                    textoAtivoId = item.id;
+                    sincronizarLista();
+                    sincronizarPreview();
+                });
+                area.addEventListener('input', () => {
+                    item.texto = area.value;
+                    const el = mapaPreview.get(item.id);
+                    if (el) {
+                        preencherTextoBannerGestao(el, item.texto, item.cor, item.cor_destaque);
+                    } else {
+                        sincronizarPreview();
+                    }
+                });
+
+                const linhaCores = document.createElement('div');
+                linhaCores.className = 'gestao-texto-item-cores';
+
+                const corLabel = document.createElement('label');
+                corLabel.className = 'gestao-campo gestao-campo-cor';
+                corLabel.innerHTML = '<span>Cor</span>';
+                const corInput = document.createElement('input');
+                corInput.type = 'color';
+                corInput.value = item.cor;
+                corInput.dataset.semLimparCampo = '1';
+                corInput.addEventListener('input', () => {
+                    item.cor = normalizarCorHexGestao(corInput.value, GESTAO_COR_BRANCO);
+                    sincronizarPreview();
+                });
+                corLabel.appendChild(corInput);
+
+                const destLabel = document.createElement('label');
+                destLabel.className = 'gestao-campo gestao-campo-cor';
+                destLabel.innerHTML = '<span>Destaque **</span>';
+                const destInput = document.createElement('input');
+                destInput.type = 'color';
+                destInput.value = item.cor_destaque;
+                destInput.dataset.semLimparCampo = '1';
+                destInput.addEventListener('input', () => {
+                    item.cor_destaque = normalizarCorHexGestao(destInput.value, GESTAO_COR_AMARELO_LOGO);
+                    sincronizarPreview();
+                });
+                destLabel.appendChild(destInput);
+
+                const alignLabel = document.createElement('label');
+                alignLabel.className = 'gestao-campo';
+                alignLabel.innerHTML = '<span>Alinhamento</span>';
+                const alignSelect = document.createElement('select');
+                alignSelect.dataset.semLimparCampo = '1';
+                [['left', 'Esquerda'], ['center', 'Centro'], ['right', 'Direita']].forEach(([valor, rotuloOpt]) => {
+                    const opt = document.createElement('option');
+                    opt.value = valor;
+                    opt.textContent = rotuloOpt;
+                    if (item.align === valor) opt.selected = true;
+                    alignSelect.appendChild(opt);
+                });
+                alignSelect.addEventListener('change', () => {
+                    item.align = alignSelect.value;
+                    sincronizarPreview();
+                });
+                alignLabel.appendChild(alignSelect);
+
+                const larguraLabel = document.createElement('label');
+                larguraLabel.className = 'gestao-campo';
+                larguraLabel.innerHTML = '<span>Largura máx. (%)</span>';
+                const larguraInput = document.createElement('input');
+                larguraInput.type = 'number';
+                larguraInput.min = '10';
+                larguraInput.max = '80';
+                larguraInput.step = '1';
+                larguraInput.value = String(item.maxWidth);
+                larguraInput.dataset.semLimparCampo = '1';
+                larguraInput.addEventListener('input', () => {
+                    item.maxWidth = limitarPercentagem(larguraInput.value, 10, 80);
+                    sincronizarPreview();
+                });
+                larguraLabel.appendChild(larguraInput);
+
+                linhaCores.appendChild(corLabel);
+                linhaCores.appendChild(destLabel);
+                linhaCores.appendChild(alignLabel);
+                linhaCores.appendChild(larguraLabel);
+
+                bloco.appendChild(cabeca);
+                bloco.appendChild(area);
+                bloco.appendChild(linhaCores);
+                listaTextos.appendChild(bloco);
+            });
+        };
+
+        btnAddTexto.addEventListener('click', () => {
+            const novo = criarTextoBannerPadrao({
+                texto: 'Novo texto',
+                x: 50,
+                y: 50,
+                align: 'center'
+            });
+            textosEstado.push(novo);
+            textoAtivoId = novo.id;
+            sincronizarLista();
+            sincronizarPreview();
+        });
+
         const btnGuardar = document.createElement('button');
         btnGuardar.type = 'button';
         btnGuardar.className = 'wallapop-botao wallapop-botao-destaque';
@@ -212,11 +437,7 @@ function renderizarListaBannersGestao() {
         btnGuardar.addEventListener('click', () => {
             guardarBannerGestao(banner.id, {
                 url: banner.url,
-                texto_esquerda: campoEsq.input.value,
-                texto_direita: campoDir.input.value,
-                cor_esquerda: campoCorEsq.input.value,
-                cor_direita: campoCorDir.input.value,
-                cor_destaque: campoCorDest.input.value,
+                textos: textosEstado.map((item) => criarTextoBannerPadrao(item)),
                 ordem: Number(inputOrdem.value),
                 ativo: inputAtivo.checked
             }).catch(console.error);
@@ -231,18 +452,18 @@ function renderizarListaBannersGestao() {
         });
 
         acoes.appendChild(labelAtivo);
+        acoes.appendChild(labelOrdem);
         acoes.appendChild(btnGuardar);
         acoes.appendChild(btnApagar);
 
-        campos.appendChild(campoEsq.label);
-        campos.appendChild(campoDir.label);
-        campos.appendChild(labelOrdem);
-        campos.appendChild(campoCorEsq.label);
-        campos.appendChild(campoCorDir.label);
-        campos.appendChild(campoCorDest.label);
+        campos.appendChild(topoTextos);
+        campos.appendChild(listaTextos);
         campos.appendChild(acoes);
         card.appendChild(campos);
         lista.appendChild(card);
+
+        sincronizarLista();
+        sincronizarPreview();
     });
 }
 
@@ -260,11 +481,7 @@ async function guardarBannerGestao(id, dados) {
     const { data, error } = await gestaoClient.rpc('guardar_banner_loja_admin', {
         p_id: id || null,
         p_url: dados.url,
-        p_texto_esquerda: dados.texto_esquerda || '',
-        p_texto_direita: dados.texto_direita || '',
-        p_cor_esquerda: normalizarCorHexGestao(dados.cor_esquerda, GESTAO_COR_BRANCO),
-        p_cor_direita: normalizarCorHexGestao(dados.cor_direita, GESTAO_COR_BRANCO),
-        p_cor_destaque: normalizarCorHexGestao(dados.cor_destaque, GESTAO_COR_AMARELO_LOGO),
+        p_textos: Array.isArray(dados.textos) ? dados.textos : [],
         p_ordem: Number.isFinite(Number(dados.ordem)) ? Number(dados.ordem) : 0,
         p_ativo: dados.ativo !== false
     });
@@ -312,28 +529,15 @@ async function adicionarBannerGestao(evento) {
 
     try {
         const url = await enviarFicheiroCloudinaryGestao(ficheiro);
-        const textoEsq = document.getElementById('novo-banner-texto-esq')?.value || '';
-        const textoDir = document.getElementById('novo-banner-texto-dir')?.value || '';
-        const corEsq = document.getElementById('novo-banner-cor-esq')?.value || GESTAO_COR_BRANCO;
-        const corDir = document.getElementById('novo-banner-cor-dir')?.value || GESTAO_COR_BRANCO;
-        const corDest = document.getElementById('novo-banner-cor-dest')?.value || GESTAO_COR_AMARELO_LOGO;
         const ordem = Number(document.getElementById('novo-banner-ordem')?.value);
         const ativo = document.getElementById('novo-banner-ativo')?.checked !== false;
         await guardarBannerGestao(null, {
             url,
-            texto_esquerda: textoEsq,
-            texto_direita: textoDir,
-            cor_esquerda: corEsq,
-            cor_direita: corDir,
-            cor_destaque: corDest,
+            textos: [],
             ordem: Number.isFinite(ordem) ? ordem : 100,
             ativo
         });
         if (ficheiroInput) ficheiroInput.value = '';
-        const esqInput = document.getElementById('novo-banner-texto-esq');
-        const dirInput = document.getElementById('novo-banner-texto-dir');
-        if (esqInput) esqInput.value = '';
-        if (dirInput) dirInput.value = '';
     } catch (erro) {
         definirStatusGestao('Erro: ' + (erro.message || 'desconhecido'));
         throw erro;
@@ -377,7 +581,7 @@ async function iniciarPainelGestao() {
     } catch (erro) {
         console.error(erro);
         definirStatusGestao(
-            'Erro ao carregar. Confirma se executaste o SQL supabase-banners-loja-cores.sql no Supabase. '
+            'Erro ao carregar. Confirma se executaste o SQL supabase-banners-loja-textos-livres.sql no Supabase. '
             + (erro.message || '')
         );
     }

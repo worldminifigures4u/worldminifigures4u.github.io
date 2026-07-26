@@ -73,6 +73,11 @@
     white-space: pre-line;
 }
 
+.loja-banner-cgi-texto-livre {
+    width: auto;
+    transform: translate(-50%, -50%);
+}
+
 .loja-banner-cgi-destaque {
     font-weight: 800;
 }

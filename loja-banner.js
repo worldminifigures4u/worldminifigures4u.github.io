@@ -54,18 +54,53 @@
         return fallback;
     }
 
+    function limitarPercentagem(valor, minimo = 0, maximo = 100) {
+        const n = Number(valor);
+        if (!Number.isFinite(n)) return minimo;
+        return Math.min(maximo, Math.max(minimo, n));
+    }
+
     function textoPlanoBanner(valor) {
         return String(valor || '').replace(/\*\*/g, '').trim();
     }
 
-    function textoBanner(valor) {
-        return textoPlanoBanner(valor);
+    function listaTextosBanner(banner) {
+        if (Array.isArray(banner?.textos) && banner.textos.length) {
+            return banner.textos;
+        }
+        const lista = [];
+        const esq = String(banner?.texto_esquerda || banner?.alt || '').trim();
+        const dir = String(banner?.texto_direita || '').trim();
+        if (esq) {
+            lista.push({
+                texto: esq,
+                cor: banner?.cor_esquerda || COR_BRANCO,
+                cor_destaque: banner?.cor_destaque || COR_AMARELO_LOGO,
+                x: 10,
+                y: 50,
+                maxWidth: 28,
+                align: 'left'
+            });
+        }
+        if (dir) {
+            lista.push({
+                texto: dir,
+                cor: banner?.cor_direita || COR_BRANCO,
+                cor_destaque: banner?.cor_destaque || COR_AMARELO_LOGO,
+                x: 90,
+                y: 50,
+                maxWidth: 28,
+                align: 'right'
+            });
+        }
+        return lista;
     }
 
     function altBanner(banner) {
-        const esq = textoBanner(banner.texto_esquerda || banner.alt);
-        const dir = textoBanner(banner.texto_direita);
-        return [esq, dir].filter(Boolean).join(' · ');
+        return listaTextosBanner(banner)
+            .map((item) => textoPlanoBanner(item.texto))
+            .filter(Boolean)
+            .join(' · ');
     }
 
     function preencherTextoComDestaques(el, valor, corBase, corDestaque) {
@@ -86,11 +121,20 @@
         });
     }
 
-    function criarTexto(lado, valor, corBase, corDestaque) {
-        if (!textoPlanoBanner(valor)) return null;
+    function criarTextoLivre(item) {
+        if (!textoPlanoBanner(item?.texto)) return null;
         const el = document.createElement('span');
-        el.className = 'loja-banner-cgi-texto loja-banner-cgi-texto-' + lado;
-        preencherTextoComDestaques(el, valor, corBase, corDestaque);
+        el.className = 'loja-banner-cgi-texto loja-banner-cgi-texto-livre';
+        el.style.left = limitarPercentagem(item.x ?? 50) + '%';
+        el.style.top = limitarPercentagem(item.y ?? 50) + '%';
+        el.style.maxWidth = limitarPercentagem(item.maxWidth ?? 28, 10, 80) + '%';
+        el.style.textAlign = ['left', 'center', 'right'].includes(item.align) ? item.align : 'left';
+        preencherTextoComDestaques(
+            el,
+            item.texto,
+            normalizarCorHex(item.cor, COR_BRANCO),
+            normalizarCorHex(item.cor_destaque, COR_AMARELO_LOGO)
+        );
         return el;
     }
 
@@ -99,10 +143,6 @@
         slide.className = 'loja-banner-cgi-slide' + (ativo ? ' is-ativo' : '');
         slide.setAttribute('data-loja-banner-slide', '');
         slide.setAttribute('aria-hidden', ativo ? 'false' : 'true');
-
-        const corEsq = normalizarCorHex(banner.cor_esquerda, COR_BRANCO);
-        const corDir = normalizarCorHex(banner.cor_direita, COR_BRANCO);
-        const corDest = normalizarCorHex(banner.cor_destaque, COR_AMARELO_LOGO);
 
         const img = document.createElement('img');
         img.className = 'loja-banner-cgi-img';
@@ -114,14 +154,14 @@
         img.fetchPriority = 'low';
         slide.appendChild(img);
 
-        const esq = criarTexto('esq', banner.texto_esquerda || banner.alt, corEsq, corDest);
-        const dir = criarTexto('dir', banner.texto_direita, corDir, corDest);
-        if (esq || dir) {
-            const textos = document.createElement('div');
-            textos.className = 'loja-banner-cgi-textos';
-            if (esq) textos.appendChild(esq);
-            if (dir) textos.appendChild(dir);
-            slide.appendChild(textos);
+        const textos = listaTextosBanner(banner)
+            .map(criarTextoLivre)
+            .filter(Boolean);
+        if (textos.length) {
+            const camada = document.createElement('div');
+            camada.className = 'loja-banner-cgi-textos';
+            textos.forEach((el) => camada.appendChild(el));
+            slide.appendChild(camada);
         }
 
         return slide;
@@ -151,7 +191,7 @@
             const client = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
             const { data, error } = await client
                 .from('banners_loja')
-                .select('url, alt, texto_esquerda, texto_direita, cor_esquerda, cor_direita, cor_destaque, ordem')
+                .select('url, alt, textos, texto_esquerda, texto_direita, cor_esquerda, cor_direita, cor_destaque, ordem')
                 .eq('ativo', true)
                 .order('ordem', { ascending: true })
                 .order('criado_em', { ascending: true });
