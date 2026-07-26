@@ -239,6 +239,29 @@ window.AdminEncomendaVista = (function () {
         return partes.join(" | ") || String(error);
     }
 
+    function confirmarRecuperacaoStockNegativo(produtosSemStock) {
+        const lista = Array.isArray(produtosSemStock) ? produtosSemStock : [];
+        if (!lista.length) return false;
+        const detalhes = lista.map(item => {
+            const nome = item.nome || item.id_produto || "Produto";
+            const stock = Number.isFinite(Number(item.stock_registado))
+                ? Number(item.stock_registado)
+                : (Number.isFinite(Number(item.disponivel)) ? Number(item.disponivel) : "?");
+            const necessario = Number.isFinite(Number(item.necessario)) ? Number(item.necessario) : "?";
+            const resultante = Number.isFinite(Number(stock)) && Number.isFinite(Number(necessario))
+                ? Number(stock) - Number(necessario)
+                : null;
+            return `• ${nome}\n  Stock registado: ${stock} | Necessário: ${necessario}`
+                + (resultante !== null ? ` | Stock após recuperar: ${resultante}` : "");
+        }).join("\n\n");
+        return window.confirm(
+            "Há figuras sem stock suficiente para recuperar esta encomenda.\n\n"
+            + detalhes
+            + "\n\nConfirmas que queres recuperar mesmo assim? O stock pode ficar negativo.\n"
+            + "Quando receberes a encomenda do fornecedor, o stock soma a esse valor (ex.: -1 + 5 = 4)."
+        );
+    }
+
     function criarElemento(tag, classe, texto) {
         const elemento = document.createElement(tag);
         if (classe) elemento.className = classe;
@@ -1211,8 +1234,28 @@ window.AdminEncomendaVista = (function () {
             } else if (estadoAnterior === "Cancelado") {
                 ({ data, error } = await obterClient().rpc("recuperar_encomenda_admin", {
                     p_encomenda_id: String(encomenda.id),
-                    p_estado: estado
+                    p_estado: estado,
+                    p_permitir_stock_negativo: false
                 }));
+
+                if (
+                    !error
+                    && data?.sucesso === false
+                    && Array.isArray(data.produtos_sem_stock)
+                    && data.produtos_sem_stock.length
+                ) {
+                    if (!confirmarRecuperacaoStockNegativo(data.produtos_sem_stock)) {
+                        select.value = estadoAnterior;
+                        hooks.definirStatus("Recuperação cancelada: stock insuficiente.");
+                        return;
+                    }
+                    ({ data, error } = await obterClient().rpc("recuperar_encomenda_admin", {
+                        p_encomenda_id: String(encomenda.id),
+                        p_estado: estado,
+                        p_permitir_stock_negativo: true
+                    }));
+                }
+
                 if (!error && dataPagamentoIso) {
                     try {
                         const dataAtualizada = await atualizarDataPagamento(encomenda, dataPagamentoIso);
