@@ -732,6 +732,18 @@ async function iniciarPainelGestao() {
             + (erro.message || '')
         );
     }
+
+    if (typeof window.iniciarPainelPortes === 'function') {
+        try {
+            await window.iniciarPainelPortes({ jaAutenticado: true, embutido: true });
+        } catch (erroPortes) {
+            console.error(erroPortes);
+            const statusPortes = document.getElementById('portes-status');
+            if (statusPortes) {
+                statusPortes.textContent = 'Erro ao carregar portes: ' + (erroPortes.message || 'desconhecido');
+            }
+        }
+    }
 }
 
 document.addEventListener('DOMContentLoaded', () => {

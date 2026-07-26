@@ -479,7 +479,8 @@ async function guardarTudoPortesAdmin() {
     }
 }
 
-async function iniciarPainelPortes() {
+async function iniciarPainelPortes(opcoes = {}) {
+    const embutido = Boolean(opcoes.embutido) || Boolean(document.getElementById('portes-aplicacao')?.closest('#gestao-aplicacao'));
     const bloqueio = document.getElementById('portes-bloqueio');
     const aplicacao = document.getElementById('portes-aplicacao');
 
@@ -489,40 +490,61 @@ async function iniciarPainelPortes() {
     }
 
     portesClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-    const { data: { user }, error } = await portesClient.auth.getUser();
-    if (error || !user || !ADMIN_EMAILS.includes(String(user.email || '').toLowerCase())) {
-        if (bloqueio) bloqueio.textContent = 'Acesso reservado ao administrador. A regressar à conta...';
-        setTimeout(() => window.location.replace('conta.html'), 1400);
-        return;
-    }
 
-    if (typeof mostrarNavegacaoAdminValidada === 'function') {
-        mostrarNavegacaoAdminValidada();
-    }
-    if (bloqueio) bloqueio.hidden = true;
-    if (aplicacao) aplicacao.hidden = false;
-
-    document.querySelectorAll('.portes-tab').forEach((botao) => {
-        botao.addEventListener('click', () => ativarTabPortes(botao.dataset.zona));
-    });
-    document.getElementById('btn-guardar-portes')?.addEventListener('click', () => {
-        guardarTudoPortesAdmin().catch(console.error);
-    });
-    document.getElementById('form-criar-metodo-portes')?.addEventListener('submit', (evento) => {
-        criarMetodoPortesAdmin(evento).catch(console.error);
-    });
-    document.getElementById('novo-metodo-nome')?.addEventListener('blur', () => {
-        const idInput = document.getElementById('novo-metodo-id');
-        if (idInput && !idInput.value.trim()) {
-            idInput.value = slugifyMetodoId(document.getElementById('novo-metodo-nome')?.value || '');
+    if (!opcoes.jaAutenticado) {
+        const { data: { user }, error } = await portesClient.auth.getUser();
+        if (error || !user || !ADMIN_EMAILS.includes(String(user.email || '').toLowerCase())) {
+            if (embutido) {
+                definirStatusPortes('Acesso reservado ao administrador.');
+                return;
+            }
+            if (bloqueio) bloqueio.textContent = 'Acesso reservado ao administrador. A regressar à conta...';
+            setTimeout(() => window.location.replace('conta.html'), 1400);
+            return;
         }
-    });
+    }
+
+    if (!embutido) {
+        if (typeof mostrarNavegacaoAdminValidada === 'function') {
+            mostrarNavegacaoAdminValidada();
+        }
+        if (bloqueio) bloqueio.hidden = true;
+        if (aplicacao) aplicacao.hidden = false;
+    }
+
+    if (!window.__portesUiLigada) {
+        window.__portesUiLigada = true;
+        document.querySelectorAll('.portes-tab').forEach((botao) => {
+            botao.addEventListener('click', () => ativarTabPortes(botao.dataset.zona));
+        });
+        document.getElementById('btn-guardar-portes')?.addEventListener('click', () => {
+            guardarTudoPortesAdmin().catch(console.error);
+        });
+        document.getElementById('form-criar-metodo-portes')?.addEventListener('submit', (evento) => {
+            criarMetodoPortesAdmin(evento).catch(console.error);
+        });
+        document.getElementById('novo-metodo-nome')?.addEventListener('blur', () => {
+            const idInput = document.getElementById('novo-metodo-id');
+            if (idInput && !idInput.value.trim()) {
+                idInput.value = slugifyMetodoId(document.getElementById('novo-metodo-nome')?.value || '');
+            }
+        });
+    }
 
     await carregarMetodosPortesAdmin();
     await carregarPortesAdmin();
+
+    if (embutido && window.location.hash === '#gestao-portes') {
+        document.getElementById('gestao-portes')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
 }
 
+window.iniciarPainelPortes = iniciarPainelPortes;
+
 document.addEventListener('DOMContentLoaded', () => {
+    if (document.getElementById('portes-aplicacao')?.closest('#gestao-aplicacao')) {
+        return;
+    }
     iniciarPainelPortes().catch((erro) => {
         console.error(erro);
         const bloqueio = document.getElementById('portes-bloqueio');
