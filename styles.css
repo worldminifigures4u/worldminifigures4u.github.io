@@ -126,21 +126,21 @@ body{
         .cabecalho-pesquisa .input-pesquisa{
             height:40px;
             padding:0 44px 0 18px;
-            background:#fff;
-            color:#111;
-            border:1px solid rgba(0,0,0,0.08);
+            background:#111;
+            color:#fff;
+            border:1px solid #333;
             border-radius:18px;
             box-shadow:none;
             font-size:16px;
         }
 
         .cabecalho-pesquisa .input-pesquisa::placeholder{
-            color:#9a9a9a;
+            color:#8a8a8a;
         }
 
         .cabecalho-pesquisa .input-pesquisa:focus{
-            border-color:rgba(0,0,0,0.14);
-            box-shadow:0 0 0 3px rgba(0,0,0,0.08);
+            border-color:#ffc107;
+            box-shadow:0 0 0 3px rgba(255, 193, 7, 0.18);
             outline:none;
         }
 
@@ -167,6 +167,16 @@ body{
             background:#8a8a8a;
             transform:rotate(45deg);
             border-radius:2px;
+        }
+
+        .cabecalho-pesquisa .input-pesquisa:focus + .icone-pesquisa,
+        .cabecalho-pesquisa:focus-within .icone-pesquisa{
+            border-color:#ffc107;
+        }
+
+        .cabecalho-pesquisa .input-pesquisa:focus + .icone-pesquisa::after,
+        .cabecalho-pesquisa:focus-within .icone-pesquisa::after{
+            background:#ffc107;
         }
 
         .acoes-cabecalho{
