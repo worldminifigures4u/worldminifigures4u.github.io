@@ -72,6 +72,17 @@
         return ['top', 'middle', 'bottom'].includes(valor) ? valor : 'middle';
     }
 
+    const BANNER_TEXTO_INSET = 1.5;
+
+    function coordenadasPorAlinhamento(align, alignV) {
+        const h = alinharHTextoBanner(align);
+        const v = alinharVTextoBanner(alignV);
+        return {
+            x: h === 'left' ? BANNER_TEXTO_INSET : h === 'right' ? 100 - BANNER_TEXTO_INSET : 50,
+            y: v === 'top' ? BANNER_TEXTO_INSET : v === 'bottom' ? 100 - BANNER_TEXTO_INSET : 50
+        };
+    }
+
     function transformTextoBanner(align, alignV) {
         const tx = align === 'left' ? '0' : align === 'right' ? '-100%' : '-50%';
         const ty = alignV === 'top' ? '0' : alignV === 'bottom' ? '-100%' : '-50%';
@@ -90,8 +101,6 @@
                 texto: esq,
                 cor: banner?.cor_esquerda || COR_BRANCO,
                 cor_destaque: banner?.cor_destaque || COR_AMARELO_LOGO,
-                x: 10,
-                y: 50,
                 maxWidth: 28,
                 align: 'left',
                 alignV: 'middle'
@@ -102,8 +111,6 @@
                 texto: dir,
                 cor: banner?.cor_direita || COR_BRANCO,
                 cor_destaque: banner?.cor_destaque || COR_AMARELO_LOGO,
-                x: 90,
-                y: 50,
                 maxWidth: 28,
                 align: 'right',
                 alignV: 'middle'
@@ -142,10 +149,11 @@
         const el = document.createElement('span');
         const align = alinharHTextoBanner(item.align);
         const alignV = alinharVTextoBanner(item.alignV);
+        const coords = coordenadasPorAlinhamento(align, alignV);
         const largura = limitarPercentagem(item.maxWidth ?? 28, 10, 80) + '%';
         el.className = 'loja-banner-cgi-texto loja-banner-cgi-texto-livre';
-        el.style.left = limitarPercentagem(item.x ?? 50) + '%';
-        el.style.top = limitarPercentagem(item.y ?? 50) + '%';
+        el.style.left = coords.x + '%';
+        el.style.top = coords.y + '%';
         el.style.width = largura;
         el.style.maxWidth = largura;
         el.style.textAlign = align;

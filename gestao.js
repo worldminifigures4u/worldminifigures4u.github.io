@@ -43,6 +43,18 @@ function alinharVTextoBanner(valor) {
     return ['top', 'middle', 'bottom'].includes(valor) ? valor : 'middle';
 }
 
+/** Margem mínima (%) para o texto não colar no corte da imagem. */
+const BANNER_TEXTO_INSET = 1.5;
+
+function coordenadasPorAlinhamento(align, alignV) {
+    const h = alinharHTextoBanner(align);
+    const v = alinharVTextoBanner(alignV);
+    return {
+        x: h === 'left' ? BANNER_TEXTO_INSET : h === 'right' ? 100 - BANNER_TEXTO_INSET : 50,
+        y: v === 'top' ? BANNER_TEXTO_INSET : v === 'bottom' ? 100 - BANNER_TEXTO_INSET : 50
+    };
+}
+
 function transformTextoBanner(align, alignV) {
     const tx = align === 'left' ? '0' : align === 'right' ? '-100%' : '-50%';
     const ty = alignV === 'top' ? '0' : alignV === 'bottom' ? '-100%' : '-50%';
@@ -50,16 +62,19 @@ function transformTextoBanner(align, alignV) {
 }
 
 function criarTextoBannerPadrao(parcial = {}) {
+    const align = alinharHTextoBanner(parcial.align);
+    const alignV = alinharVTextoBanner(parcial.alignV);
+    const coords = coordenadasPorAlinhamento(align, alignV);
     return {
         id: parcial.id || novoIdTextoGestao(),
         texto: String(parcial.texto || ''),
         cor: normalizarCorHexGestao(parcial.cor, GESTAO_COR_BRANCO),
         cor_destaque: normalizarCorHexGestao(parcial.cor_destaque, GESTAO_COR_AMARELO_LOGO),
-        x: limitarPercentagem(parcial.x ?? 50, 0, 100),
-        y: limitarPercentagem(parcial.y ?? 50, 0, 100),
+        x: coords.x,
+        y: coords.y,
         maxWidth: limitarPercentagem(parcial.maxWidth ?? 28, 10, 80),
-        align: alinharHTextoBanner(parcial.align),
-        alignV: alinharVTextoBanner(parcial.alignV)
+        align,
+        alignV
     };
 }
 
@@ -76,8 +91,8 @@ function normalizarListaTextosBanner(banner) {
             texto: esq,
             cor: banner?.cor_esquerda,
             cor_destaque: banner?.cor_destaque,
-            x: 10,
-            y: 50,
+            x: undefined,
+            y: undefined,
             align: 'left',
             alignV: 'middle'
         }));
@@ -88,8 +103,8 @@ function normalizarListaTextosBanner(banner) {
             texto: dir,
             cor: banner?.cor_direita,
             cor_destaque: banner?.cor_destaque,
-            x: 90,
-            y: 50,
+            x: undefined,
+            y: undefined,
             align: 'right',
             alignV: 'middle'
         }));
@@ -118,9 +133,14 @@ function preencherTextoBannerGestao(el, valor, corBase, corDestaque) {
 function aplicarEstiloTextoLivre(el, item) {
     const align = alinharHTextoBanner(item.align);
     const alignV = alinharVTextoBanner(item.alignV);
+    const coords = coordenadasPorAlinhamento(align, alignV);
+    item.align = align;
+    item.alignV = alignV;
+    item.x = coords.x;
+    item.y = coords.y;
     const largura = limitarPercentagem(item.maxWidth, 10, 80) + '%';
-    el.style.left = limitarPercentagem(item.x) + '%';
-    el.style.top = limitarPercentagem(item.y) + '%';
+    el.style.left = coords.x + '%';
+    el.style.top = coords.y + '%';
     el.style.width = largura;
     el.style.maxWidth = largura;
     el.style.textAlign = align;
@@ -169,48 +189,12 @@ async function enviarFicheiroCloudinaryGestao(ficheiro) {
     return resultado.eager?.[0]?.secure_url || resultado.secure_url;
 }
 
-function ligarArrastoTextoGestao(el, item, previewWrap, onSelecionar) {
-    let aArrastar = false;
-    let pointerIdAtivo = null;
-
-    const atualizarPosicao = (evento) => {
-        const rect = previewWrap.getBoundingClientRect();
-        if (!rect.width || !rect.height) return;
-        item.x = limitarPercentagem(((evento.clientX - rect.left) / rect.width) * 100);
-        item.y = limitarPercentagem(((evento.clientY - rect.top) / rect.height) * 100);
-        aplicarEstiloTextoLivre(el, item);
-    };
-
-    const emMovimento = (evento) => {
-        if (!aArrastar || evento.pointerId !== pointerIdAtivo) return;
-        evento.preventDefault();
-        atualizarPosicao(evento);
-    };
-
-    const terminar = (evento) => {
-        if (!aArrastar || (pointerIdAtivo != null && evento.pointerId !== pointerIdAtivo)) return;
-        aArrastar = false;
-        pointerIdAtivo = null;
-        el.classList.remove('is-a-arrastar');
-        document.removeEventListener('pointermove', emMovimento);
-        document.removeEventListener('pointerup', terminar);
-        document.removeEventListener('pointercancel', terminar);
-        try { el.releasePointerCapture?.(evento.pointerId); } catch (_) { /* ignore */ }
-    };
-
+function ligarSelecaoTextoGestao(el, onSelecionar) {
     el.addEventListener('pointerdown', (evento) => {
         if (evento.button != null && evento.button !== 0) return;
         evento.preventDefault();
         evento.stopPropagation();
         if (typeof onSelecionar === 'function') onSelecionar();
-        aArrastar = true;
-        pointerIdAtivo = evento.pointerId;
-        el.classList.add('is-a-arrastar');
-        try { el.setPointerCapture(evento.pointerId); } catch (_) { /* ignore */ }
-        document.addEventListener('pointermove', emMovimento);
-        document.addEventListener('pointerup', terminar);
-        document.addEventListener('pointercancel', terminar);
-        atualizarPosicao(evento);
     });
 }
 
@@ -252,7 +236,7 @@ function renderizarListaBannersGestao() {
 
         const ajudaPreview = document.createElement('p');
         ajudaPreview.className = 'gestao-banner-preview-ajuda';
-        ajudaPreview.textContent = 'Arrasta o ponto âncora. Com o mesmo X/Y e alinhamento H+V em todos os banners, o texto fica no mesmo sítio ao alternar.';
+        ajudaPreview.textContent = 'Posição = Alinhar H + Alinhar V (ex.: Esquerda + Topo = canto superior esquerdo). O mesmo alinhamento em todos os banners mantém o texto fixo ao alternar.';
         previewWrap.appendChild(ajudaPreview);
 
         card.appendChild(previewWrap);
@@ -319,8 +303,8 @@ function renderizarListaBannersGestao() {
                 el.dataset.textoId = item.id;
                 aplicarEstiloTextoLivre(el, item);
                 preencherTextoBannerGestao(el, item.texto, item.cor, item.cor_destaque);
-                el.title = 'Arrastar para posicionar';
-                ligarArrastoTextoGestao(el, item, previewWrap, () => {
+                el.title = 'Clica para selecionar; a posição vem do alinhamento H+V';
+                ligarSelecaoTextoGestao(el, () => {
                     textoAtivoId = item.id;
                     marcarSelecaoVisual();
                 });
@@ -413,7 +397,7 @@ function renderizarListaBannersGestao() {
 
                 const alignLabel = document.createElement('label');
                 alignLabel.className = 'gestao-campo';
-                alignLabel.innerHTML = '<span>Alinhar H (âncora)</span>';
+                alignLabel.innerHTML = '<span>Horizontal</span>';
                 const alignSelect = document.createElement('select');
                 alignSelect.dataset.semLimparCampo = '1';
                 [['left', 'Esquerda'], ['center', 'Centro'], ['right', 'Direita']].forEach(([valor, rotuloOpt]) => {
@@ -425,13 +409,14 @@ function renderizarListaBannersGestao() {
                 });
                 alignSelect.addEventListener('change', () => {
                     item.align = alinharHTextoBanner(alignSelect.value);
+                    Object.assign(item, coordenadasPorAlinhamento(item.align, item.alignV));
                     sincronizarPreview();
                 });
                 alignLabel.appendChild(alignSelect);
 
                 const alignVLabel = document.createElement('label');
                 alignVLabel.className = 'gestao-campo';
-                alignVLabel.innerHTML = '<span>Alinhar V (âncora)</span>';
+                alignVLabel.innerHTML = '<span>Vertical</span>';
                 const alignVSelect = document.createElement('select');
                 alignVSelect.dataset.semLimparCampo = '1';
                 [['top', 'Topo'], ['middle', 'Meio'], ['bottom', 'Base']].forEach(([valor, rotuloOpt]) => {
@@ -443,6 +428,7 @@ function renderizarListaBannersGestao() {
                 });
                 alignVSelect.addEventListener('change', () => {
                     item.alignV = alinharVTextoBanner(alignVSelect.value);
+                    Object.assign(item, coordenadasPorAlinhamento(item.align, item.alignV));
                     sincronizarPreview();
                 });
                 alignVLabel.appendChild(alignVSelect);
@@ -479,8 +465,6 @@ function renderizarListaBannersGestao() {
         btnAddTexto.addEventListener('click', () => {
             const novo = criarTextoBannerPadrao({
                 texto: 'Novo texto',
-                x: 50,
-                y: 50,
                 align: 'center',
                 alignV: 'middle'
             });
