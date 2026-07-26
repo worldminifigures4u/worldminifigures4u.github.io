@@ -93,17 +93,18 @@ body.pagina-gestao-admin > main.gestao-admin {
 .gestao-lista-banners {
     display: flex;
     flex-direction: column;
-    gap: 14px;
+    gap: 22px;
 }
 
 .gestao-banner-card {
     display: grid;
     grid-template-columns: 1fr;
     gap: 14px;
-    padding: 12px;
-    border: 1px solid rgba(255, 255, 255, 0.16);
-    border-radius: 8px;
-    background: rgba(0, 0, 0, 0.22);
+    padding: 14px;
+    border: 2px solid rgba(255, 193, 7, 0.55);
+    border-radius: 10px;
+    background: rgba(0, 0, 0, 0.28);
+    box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.08), 0 8px 22px rgba(0, 0, 0, 0.35);
 }
 
 .gestao-banner-preview-wrap {
@@ -113,6 +114,9 @@ body.pagina-gestao-admin > main.gestao-admin {
     background: #111;
     user-select: none;
     touch-action: none;
+    border: 1px solid rgba(255, 255, 255, 0.28);
+    outline: 1px solid rgba(255, 193, 7, 0.25);
+    outline-offset: 0;
 }
 
 .gestao-banner-preview {
