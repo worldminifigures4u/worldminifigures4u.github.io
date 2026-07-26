@@ -92,6 +92,10 @@
         flex-direction: column;
     }
 
+    .loja-banner-cgi {
+        display: none !important;
+    }
+
     .coluna-esquerda {
         order: 1;
         width: 100%;
