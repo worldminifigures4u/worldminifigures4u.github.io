@@ -2,26 +2,27 @@
 <html lang="pt">
 <head>
     <meta charset="UTF-8">
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdn.jsdelivr.net; connect-src 'self' https://cdn.jsdelivr.net https://gksndzxadndrsynvzgzb.supabase.co wss://gksndzxadndrsynvzgzb.supabase.co; img-src 'self' data: blob: https://res.cloudinary.com https://gksndzxadndrsynvzgzb.supabase.co; style-src 'self'; font-src 'self' data:; frame-src 'none'; object-src 'none'; base-uri 'self'; form-action 'self';">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdn.jsdelivr.net; connect-src 'self' https://cdn.jsdelivr.net https://gksndzxadndrsynvzgzb.supabase.co wss://gksndzxadndrsynvzgzb.supabase.co https://api.cloudinary.com; img-src 'self' data: blob: https://res.cloudinary.com https://gksndzxadndrsynvzgzb.supabase.co; style-src 'self'; font-src 'self' data:; frame-src 'none'; object-src 'none'; base-uri 'self'; form-action 'self';">
     <meta name="referrer" content="strict-origin-when-cross-origin">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
     <link rel="preconnect" href="https://gksndzxadndrsynvzgzb.supabase.co" crossorigin>
+    <link rel="preconnect" href="https://res.cloudinary.com" crossorigin>
 
     <meta name="robots" content="noindex, nofollow, noarchive, nosnippet">
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
-    <title>Portes | Figures Planet</title>
+    <title>Gestão | Figures Planet</title>
     <link rel="icon" type="image/webp" href="favicon-32.webp?v=20260711-leve" sizes="32x32">
     <link rel="stylesheet" href="styles.css?v=20260721-rodape-800">
-    <link rel="stylesheet" href="styles-admin.css?v=20260717-portes-cab">
-    <link rel="stylesheet" href="portes.css?v=20260718-espaco-vertical">
+    <link rel="stylesheet" href="styles-admin.css?v=20260726-gestao">
+    <link rel="stylesheet" href="gestao.css?v=20260726-gestao">
     <link rel="stylesheet" href="styles-tema.css?v=20260721-sem-underline" media="print" data-async-css>
     <noscript><link rel="stylesheet" href="styles-tema.css?v=20260721-sem-underline"></noscript>
     <script src="async-css.js?v=20260713-r25"></script>
 </head>
-<body class="pagina-portes-admin cabecalho-com-admin pagina-com-cabecalho-site">
+<body class="pagina-gestao-admin cabecalho-com-admin pagina-com-cabecalho-site">
     <header class="cabecalho-site-admin">
         <div class="cabecalho-loja">
             <a class="logo-loja" href="index.html" aria-label="Figures Planet - Produtos">
@@ -52,65 +53,56 @@
             <nav class="navegacao-admin-cabecalho" aria-label="Navegação administrativa" hidden>
                 <a class="acao-cabecalho acao-plataforma-admin" href="plataforma.html" aria-label="Gerir plataformas">Plataformas</a>
                 <a class="acao-cabecalho acao-clientes-admin" href="clientes.html" aria-label="Gerir clientes">Clientes</a>
-                <a class="acao-cabecalho acao-encomendas-admin ativa" href="encomendas.html" aria-label="Gerir encomendas">Encomendas</a>
+                <a class="acao-cabecalho acao-encomendas-admin" href="encomendas.html" aria-label="Gerir encomendas">Encomendas</a>
                 <a class="acao-cabecalho acao-fornecedores-admin" href="fornecedores.html" aria-label="Gerir fornecedores">Fornecedores</a>
                 <a class="acao-cabecalho acao-mapas-admin" href="mapas.html" aria-label="Gerir mapas">Mapas</a>
-                <a class="acao-cabecalho acao-gestao-admin" href="gestao.html" aria-label="Gestão">Gestão</a>
+                <a class="acao-cabecalho acao-gestao-admin ativa" href="gestao.html" aria-label="Gestão">Gestão</a>
                 <a class="acao-cabecalho acao-estatisticas-admin" href="estatisticas.html" aria-label="Ver estatísticas">Estatísticas</a>
                 <a class="acao-cabecalho acao-conta-admin" href="conta.html" aria-label="Abrir conta">Conta</a>
             </nav>
         </div>
     </header>
 
-    <div class="wallapop-bloqueio" id="portes-bloqueio">A verificar acesso administrativo...</div>
+    <div class="wallapop-bloqueio" id="gestao-bloqueio">A verificar acesso administrativo...</div>
 
-    <main class="portes-admin" id="portes-aplicacao" hidden>
-        <aside class="portes-aviso" aria-label="Como preencher os preços">
-            <strong>Como meter os preços</strong>
-            <ul>
-                <li><strong>CTT</strong> (Normal, Azul, Registado): preço de tabela × <strong>1,23</strong></li>
-                <li><strong>InPost</strong>: preço de tabela (total da fatura InPost) — <strong>sem</strong> × 1,23</li>
-            </ul>
-        </aside>
-
-        <section class="portes-metodos" aria-label="Métodos de envio">
-            <div class="portes-metodos-topo">
-                <h2>Métodos de envio</h2>
-                <p>Define se o método é registado (com rastreamento). Isso controla a info no carrinho.</p>
-            </div>
-            <form class="portes-metodos-criar" id="form-criar-metodo-portes">
-                <label class="portes-campo portes-campo-id">
-                    <span>ID (ex.: ctt_verde)</span>
-                    <input type="text" id="novo-metodo-id" required pattern="[a-z0-9_]+" placeholder="meu_metodo" autocomplete="off" data-sem-limpar-campo="1">
+    <main class="gestao-admin" id="gestao-aplicacao" hidden>
+        <section class="gestao-secao" aria-label="Adicionar banner">
+            <h1>Banners da loja</h1>
+            <p class="gestao-ajuda">Os banners ativos aparecem na página inicial e alternam automaticamente. Preferível imagem larga (~2048×362).</p>
+            <form class="gestao-form-banner" id="form-novo-banner">
+                <label class="gestao-campo gestao-campo-ficheiro">
+                    <span>Imagem</span>
+                    <input type="file" id="novo-banner-ficheiro" accept="image/jpeg,image/png,image/webp" required>
                 </label>
-                <label class="portes-campo portes-campo-nome">
-                    <span>Nome no site</span>
-                    <input type="text" id="novo-metodo-nome" required placeholder="CTT Verde" autocomplete="off" data-sem-limpar-campo="1">
+                <label class="gestao-campo">
+                    <span>Texto alternativo</span>
+                    <input type="text" id="novo-banner-alt" placeholder="Figures Planet" maxlength="120" autocomplete="off" data-sem-limpar-campo="1">
                 </label>
-                <label class="portes-metodos-check">
-                    <input type="checkbox" id="novo-metodo-registado">
-                    <span>Registado (com rastreamento)</span>
+                <label class="gestao-campo gestao-campo-ordem">
+                    <span>Ordem</span>
+                    <input type="number" id="novo-banner-ordem" value="100" step="1" autocomplete="off" data-sem-limpar-campo="1">
                 </label>
-                <button type="submit" class="wallapop-botao portes-btn-criar">Criar método</button>
-                <button type="button" class="wallapop-botao wallapop-botao-destaque portes-btn-guardar" id="btn-guardar-portes">Guardar alterações</button>
+                <label class="gestao-check">
+                    <input type="checkbox" id="novo-banner-ativo" checked>
+                    <span>Ativo na loja</span>
+                </label>
+                <button type="submit" class="wallapop-botao wallapop-botao-destaque" id="btn-adicionar-banner">Adicionar banner</button>
             </form>
-            <div id="portes-metodos-lista" class="portes-metodos-lista"></div>
         </section>
 
-        <div class="portes-tabs" role="tablist" aria-label="Zonas de envio">
-            <button type="button" class="portes-tab ativa" data-zona="portugal" role="tab" aria-selected="true">Portugal</button>
-            <button type="button" class="portes-tab" data-zona="espanha" role="tab" aria-selected="false">Espanha</button>
-            <button type="button" class="portes-tab" data-zona="europa" role="tab" aria-selected="false">Europa</button>
-        </div>
-
-        <section class="portes-painel" id="portes-painel" aria-label="Tabela de tarifas"></section>
-        <p class="wallapop-status" id="portes-status" aria-live="polite"></p>
+        <section class="gestao-secao" aria-label="Lista de banners">
+            <div class="gestao-lista-topo">
+                <h2>Banners guardados</h2>
+                <button type="button" class="wallapop-botao" id="btn-atualizar-banners">Atualizar lista</button>
+            </div>
+            <div id="gestao-lista-banners" class="gestao-lista-banners"></div>
+            <p class="wallapop-status" id="gestao-status" aria-live="polite"></p>
+        </section>
     </main>
 
     <script src="supabase-cdn.js?v=20260711-leve" defer></script>
     <script src="app-config.js?v=20260713-r25" defer></script>
-    <script src="app-portes.js?v=20260718-metodos" defer></script>
-    <script src="portes.js?v=20260718-guardar-baixo" defer></script>
+    <script src="gestao.js?v=20260726-gestao" defer></script>
     <script src="campo-limpar.js?v=20260720-sem-x-cliente" defer></script>
     <script src="inline-listeners-base.js?v=20260725-logo-hq" defer></script>
     <script src="inline-listeners-admin.js?v=20260713-r25" defer></script>

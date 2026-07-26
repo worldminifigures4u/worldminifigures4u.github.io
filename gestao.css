@@ -1,0 +1,157 @@
+body.pagina-gestao-admin > main.gestao-admin {
+    width: min(1100px, calc(100% - 32px));
+    margin: 0 auto;
+    padding: 18px 0 40px;
+    color: #fff;
+}
+
+.gestao-secao {
+    margin-bottom: 28px;
+}
+
+.gestao-secao h1,
+.gestao-secao h2 {
+    margin: 0 0 10px;
+    font-size: 1.35rem;
+    font-weight: 800;
+}
+
+.gestao-ajuda {
+    margin: 0 0 16px;
+    color: rgba(255, 255, 255, 0.78);
+    line-height: 1.45;
+    max-width: 62ch;
+}
+
+.gestao-form-banner {
+    display: grid;
+    grid-template-columns: minmax(180px, 1.4fr) minmax(140px, 1fr) 90px auto auto;
+    gap: 12px;
+    align-items: end;
+}
+
+.gestao-campo {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-width: 0;
+}
+
+.gestao-campo span,
+.gestao-check span {
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: rgba(255, 255, 255, 0.85);
+}
+
+.gestao-campo input[type="text"],
+.gestao-campo input[type="number"],
+.gestao-campo input[type="file"] {
+    min-height: 42px;
+    border: 1px solid rgba(255, 255, 255, 0.22);
+    border-radius: 6px;
+    background: rgba(0, 0, 0, 0.28);
+    color: #fff;
+    padding: 8px 10px;
+    font: inherit;
+}
+
+.gestao-campo input[type="file"] {
+    padding: 8px;
+}
+
+.gestao-check {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 42px;
+    padding-bottom: 2px;
+}
+
+.gestao-lista-topo {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 12px;
+}
+
+.gestao-lista-banners {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.gestao-banner-card {
+    display: grid;
+    grid-template-columns: minmax(220px, 1.6fr) minmax(220px, 1fr);
+    gap: 14px;
+    padding: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    border-radius: 8px;
+    background: rgba(0, 0, 0, 0.22);
+}
+
+.gestao-banner-preview {
+    width: 100%;
+    aspect-ratio: 2048 / 362;
+    object-fit: cover;
+    border-radius: 6px;
+    background: #111;
+}
+
+.gestao-banner-campos {
+    display: grid;
+    grid-template-columns: 1fr 90px;
+    gap: 10px;
+    align-content: start;
+}
+
+.gestao-banner-acoes {
+    grid-column: 1 / -1;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: center;
+}
+
+.gestao-banner-acoes .gestao-check {
+    margin-right: auto;
+    min-height: auto;
+    padding: 0;
+}
+
+.gestao-vazio {
+    margin: 0;
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.wallapop-status {
+    margin-top: 14px;
+    min-height: 1.4em;
+}
+
+@media (max-width: 900px) {
+    .gestao-form-banner {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .gestao-campo-ficheiro,
+    .gestao-form-banner > .wallapop-botao {
+        grid-column: 1 / -1;
+    }
+
+    .gestao-banner-card {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 560px) {
+    .gestao-form-banner {
+        grid-template-columns: 1fr;
+    }
+
+    .gestao-banner-campos {
+        grid-template-columns: 1fr;
+    }
+}

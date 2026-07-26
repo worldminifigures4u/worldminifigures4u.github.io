@@ -1,0 +1,275 @@
+let gestaoClient = null;
+let gestaoBanners = [];
+
+function definirStatusGestao(mensagem) {
+    const status = document.getElementById('gestao-status');
+    if (status) status.textContent = mensagem || '';
+}
+
+async function obterAssinaturaCloudinaryGestao() {
+    const { data: { session }, error: sessionError } = await gestaoClient.auth.getSession();
+    if (sessionError || !session?.access_token) {
+        throw new Error('Sessão de administrador obrigatória para enviar imagens.');
+    }
+    const resposta = await fetch(`${SUPABASE_URL}/functions/v1/cloudinary-sign-upload`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${session.access_token}`,
+            apikey: SUPABASE_KEY
+        },
+        body: JSON.stringify({ origem: 'gestao-banners' })
+    });
+    const dados = await resposta.json().catch(() => ({}));
+    if (!resposta.ok) throw new Error(dados?.error || 'Não foi possível obter assinatura do Cloudinary.');
+    if (!dados?.cloudName || !dados?.apiKey || !dados?.timestamp || !dados?.signature) {
+        throw new Error('Assinatura Cloudinary incompleta.');
+    }
+    return dados;
+}
+
+async function enviarFicheiroCloudinaryGestao(ficheiro) {
+    const assinatura = await obterAssinaturaCloudinaryGestao();
+    const formData = new FormData();
+    formData.append('file', ficheiro);
+    formData.append('api_key', assinatura.apiKey);
+    formData.append('timestamp', String(assinatura.timestamp));
+    formData.append('signature', assinatura.signature);
+    if (assinatura.folder) formData.append('folder', assinatura.folder);
+    if (assinatura.eager) formData.append('eager', assinatura.eager);
+
+    const resposta = await fetch(`https://api.cloudinary.com/v1_1/${assinatura.cloudName}/image/upload`, {
+        method: 'POST',
+        body: formData
+    });
+    const resultado = await resposta.json().catch(() => ({}));
+    if (!resposta.ok) throw new Error(resultado?.error?.message || 'Falha no upload para o Cloudinary.');
+    if (!resultado?.secure_url) throw new Error('O Cloudinary não devolveu URL da imagem.');
+    return resultado.eager?.[0]?.secure_url || resultado.secure_url;
+}
+
+function renderizarListaBannersGestao() {
+    const lista = document.getElementById('gestao-lista-banners');
+    if (!lista) return;
+    lista.replaceChildren();
+
+    if (!gestaoBanners.length) {
+        const vazio = document.createElement('p');
+        vazio.className = 'gestao-vazio';
+        vazio.textContent = 'Ainda não há banners. Adiciona o primeiro acima (ou corre o SQL supabase-banners-loja.sql).';
+        lista.appendChild(vazio);
+        return;
+    }
+
+    gestaoBanners.forEach((banner) => {
+        const card = document.createElement('article');
+        card.className = 'gestao-banner-card';
+        card.dataset.id = banner.id;
+
+        const preview = document.createElement('img');
+        preview.className = 'gestao-banner-preview';
+        preview.src = banner.url;
+        preview.alt = banner.alt || 'Banner';
+        preview.loading = 'lazy';
+        preview.decoding = 'async';
+        card.appendChild(preview);
+
+        const campos = document.createElement('div');
+        campos.className = 'gestao-banner-campos';
+
+        const labelAlt = document.createElement('label');
+        labelAlt.className = 'gestao-campo';
+        labelAlt.innerHTML = '<span>Texto alternativo</span>';
+        const inputAlt = document.createElement('input');
+        inputAlt.type = 'text';
+        inputAlt.value = banner.alt || '';
+        inputAlt.maxLength = 120;
+        inputAlt.dataset.semLimparCampo = '1';
+        labelAlt.appendChild(inputAlt);
+
+        const labelOrdem = document.createElement('label');
+        labelOrdem.className = 'gestao-campo';
+        labelOrdem.innerHTML = '<span>Ordem</span>';
+        const inputOrdem = document.createElement('input');
+        inputOrdem.type = 'number';
+        inputOrdem.value = String(banner.ordem ?? 0);
+        inputOrdem.step = '1';
+        inputOrdem.dataset.semLimparCampo = '1';
+        labelOrdem.appendChild(inputOrdem);
+
+        const acoes = document.createElement('div');
+        acoes.className = 'gestao-banner-acoes';
+
+        const labelAtivo = document.createElement('label');
+        labelAtivo.className = 'gestao-check';
+        const inputAtivo = document.createElement('input');
+        inputAtivo.type = 'checkbox';
+        inputAtivo.checked = banner.ativo !== false;
+        labelAtivo.appendChild(inputAtivo);
+        const textoAtivo = document.createElement('span');
+        textoAtivo.textContent = 'Ativo na loja';
+        labelAtivo.appendChild(textoAtivo);
+
+        const btnGuardar = document.createElement('button');
+        btnGuardar.type = 'button';
+        btnGuardar.className = 'wallapop-botao wallapop-botao-destaque';
+        btnGuardar.textContent = 'Guardar';
+        btnGuardar.addEventListener('click', () => {
+            guardarBannerGestao(banner.id, {
+                url: banner.url,
+                alt: inputAlt.value,
+                ordem: Number(inputOrdem.value),
+                ativo: inputAtivo.checked
+            }).catch(console.error);
+        });
+
+        const btnApagar = document.createElement('button');
+        btnApagar.type = 'button';
+        btnApagar.className = 'wallapop-botao';
+        btnApagar.textContent = 'Apagar';
+        btnApagar.addEventListener('click', () => {
+            apagarBannerGestao(banner.id).catch(console.error);
+        });
+
+        acoes.appendChild(labelAtivo);
+        acoes.appendChild(btnGuardar);
+        acoes.appendChild(btnApagar);
+
+        campos.appendChild(labelAlt);
+        campos.appendChild(labelOrdem);
+        campos.appendChild(acoes);
+        card.appendChild(campos);
+        lista.appendChild(card);
+    });
+}
+
+async function carregarBannersGestao() {
+    definirStatusGestao('A carregar banners...');
+    const { data, error } = await gestaoClient.rpc('listar_banners_loja_admin');
+    if (error) throw error;
+    gestaoBanners = Array.isArray(data) ? data : [];
+    renderizarListaBannersGestao();
+    definirStatusGestao(gestaoBanners.length ? `${gestaoBanners.length} banner(s).` : 'Sem banners.');
+}
+
+async function guardarBannerGestao(id, dados) {
+    definirStatusGestao('A guardar...');
+    const { data, error } = await gestaoClient.rpc('guardar_banner_loja_admin', {
+        p_id: id || null,
+        p_url: dados.url,
+        p_alt: dados.alt || '',
+        p_ordem: Number.isFinite(Number(dados.ordem)) ? Number(dados.ordem) : 0,
+        p_ativo: dados.ativo !== false
+    });
+    if (error) {
+        definirStatusGestao('Erro ao guardar: ' + (error.message || 'desconhecido'));
+        throw error;
+    }
+    if (!data?.sucesso) {
+        definirStatusGestao('Não foi possível guardar o banner.');
+        return;
+    }
+    await carregarBannersGestao();
+    definirStatusGestao(id ? 'Banner atualizado.' : 'Banner adicionado. Já aparece na loja se estiver ativo.');
+}
+
+async function apagarBannerGestao(id) {
+    if (!id) return;
+    if (!window.confirm('Apagar este banner?')) return;
+    definirStatusGestao('A apagar...');
+    const { data, error } = await gestaoClient.rpc('apagar_banner_loja_admin', { p_id: id });
+    if (error) {
+        definirStatusGestao('Erro ao apagar: ' + (error.message || 'desconhecido'));
+        throw error;
+    }
+    if (!data?.sucesso) {
+        definirStatusGestao('Não foi possível apagar o banner.');
+        return;
+    }
+    await carregarBannersGestao();
+    definirStatusGestao('Banner apagado.');
+}
+
+async function adicionarBannerGestao(evento) {
+    evento.preventDefault();
+    const ficheiroInput = document.getElementById('novo-banner-ficheiro');
+    const ficheiro = ficheiroInput?.files?.[0];
+    if (!ficheiro) {
+        definirStatusGestao('Escolhe uma imagem.');
+        return;
+    }
+
+    const btn = document.getElementById('btn-adicionar-banner');
+    if (btn) btn.disabled = true;
+    definirStatusGestao('A enviar imagem...');
+
+    try {
+        const url = await enviarFicheiroCloudinaryGestao(ficheiro);
+        const alt = document.getElementById('novo-banner-alt')?.value || '';
+        const ordem = Number(document.getElementById('novo-banner-ordem')?.value);
+        const ativo = document.getElementById('novo-banner-ativo')?.checked !== false;
+        await guardarBannerGestao(null, {
+            url,
+            alt,
+            ordem: Number.isFinite(ordem) ? ordem : 100,
+            ativo
+        });
+        if (ficheiroInput) ficheiroInput.value = '';
+        const altInput = document.getElementById('novo-banner-alt');
+        if (altInput) altInput.value = '';
+    } catch (erro) {
+        definirStatusGestao('Erro: ' + (erro.message || 'desconhecido'));
+        throw erro;
+    } finally {
+        if (btn) btn.disabled = false;
+    }
+}
+
+async function iniciarPainelGestao() {
+    const bloqueio = document.getElementById('gestao-bloqueio');
+    const aplicacao = document.getElementById('gestao-aplicacao');
+
+    await window.carregarScriptSupabase();
+    if (typeof supabase === 'undefined') {
+        throw new Error('A biblioteca Supabase não carregou.');
+    }
+
+    gestaoClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    const { data: { user }, error } = await gestaoClient.auth.getUser();
+    if (error || !user || !ADMIN_EMAILS.includes(String(user.email || '').toLowerCase())) {
+        if (bloqueio) bloqueio.textContent = 'Acesso reservado ao administrador. A regressar à conta...';
+        setTimeout(() => window.location.replace('conta.html'), 1400);
+        return;
+    }
+
+    if (typeof mostrarNavegacaoAdminValidada === 'function') {
+        mostrarNavegacaoAdminValidada();
+    }
+    if (bloqueio) bloqueio.hidden = true;
+    if (aplicacao) aplicacao.hidden = false;
+
+    document.getElementById('form-novo-banner')?.addEventListener('submit', (evento) => {
+        adicionarBannerGestao(evento).catch(console.error);
+    });
+    document.getElementById('btn-atualizar-banners')?.addEventListener('click', () => {
+        carregarBannersGestao().catch(console.error);
+    });
+
+    try {
+        await carregarBannersGestao();
+    } catch (erro) {
+        console.error(erro);
+        definirStatusGestao(
+            'Erro ao carregar. Confirma se executaste o SQL supabase-banners-loja.sql no Supabase. '
+            + (erro.message || '')
+        );
+    }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    iniciarPainelGestao().catch((erro) => {
+        console.error(erro);
+        const bloqueio = document.getElementById('gestao-bloqueio');
+        if (bloqueio) bloqueio.textContent = 'Erro ao iniciar a página de gestão.';
+    });
+});
