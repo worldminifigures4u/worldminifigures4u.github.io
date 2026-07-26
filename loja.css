@@ -84,32 +84,31 @@
             position:absolute;
             inset:0;
             z-index:1;
-            display:flex;
-            align-items:center;
-            justify-content:space-between;
-            gap:16px;
-            padding:clamp(10px, 2.2vw, 24px) clamp(14px, 3vw, 36px);
             pointer-events:none;
             line-height:1.15;
         }
 
         .loja-banner-cgi-texto{
-            max-width:42%;
+            position:absolute;
+            top:50%;
+            transform:translateY(-50%);
+            width:min(24%, 220px);
+            max-width:24%;
             font-family:"Nunito", Arial, Helvetica, sans-serif;
-            font-size:clamp(1rem, 2.35vw, 2rem);
+            font-size:clamp(0.85rem, 1.7vw, 1.35rem);
             font-weight:800;
             color:#fff;
             text-shadow:0 1px 2px rgba(0, 0, 0, 0.55), 0 4px 16px rgba(0, 0, 0, 0.65);
         }
 
         .loja-banner-cgi-texto-esq{
+            left:clamp(12px, 1.8vw, 22px);
             text-align:left;
-            margin-right:auto;
         }
 
         .loja-banner-cgi-texto-dir{
+            right:clamp(12px, 1.8vw, 22px);
             text-align:right;
-            margin-left:auto;
         }
 
         .loja-breadcrumb{
