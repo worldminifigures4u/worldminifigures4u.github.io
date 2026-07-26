@@ -61,6 +61,16 @@ function transformTextoBanner(align, alignV) {
     return `translate(${tx}, ${ty})`;
 }
 
+function limitarTamanhoFonteBanner(valor) {
+    return limitarPercentagem(valor ?? 100, 50, 200);
+}
+
+/** Escala 100 = tamanho actual da loja (clamp responsivo). */
+function cssFonteTextoBanner(escala) {
+    const s = limitarTamanhoFonteBanner(escala) / 100;
+    return `clamp(${(0.85 * s).toFixed(3)}rem, ${(1.7 * s).toFixed(3)}vw, ${(1.35 * s).toFixed(3)}rem)`;
+}
+
 function criarTextoBannerPadrao(parcial = {}) {
     const align = alinharHTextoBanner(parcial.align);
     const alignV = alinharVTextoBanner(parcial.alignV);
@@ -74,6 +84,7 @@ function criarTextoBannerPadrao(parcial = {}) {
         x: posicaoLivre ? limitarPercentagem(parcial.x ?? coords.x, 0, 100) : coords.x,
         y: posicaoLivre ? limitarPercentagem(parcial.y ?? coords.y, 0, 100) : coords.y,
         maxWidth: limitarPercentagem(parcial.maxWidth ?? 28, 10, 80),
+        fontSize: limitarTamanhoFonteBanner(parcial.fontSize),
         align,
         alignV,
         posicaoLivre
@@ -147,6 +158,7 @@ function aplicarEstiloTextoLivre(el, item) {
     el.style.top = coords.y + '%';
     el.style.width = largura;
     el.style.maxWidth = largura;
+    el.style.fontSize = cssFonteTextoBanner(item.fontSize);
     el.style.textAlign = align;
     el.style.transform = transformTextoBanner(align, alignV);
 }
@@ -508,11 +520,29 @@ function renderizarListaBannersGestao() {
                 });
                 larguraLabel.appendChild(larguraInput);
 
+                const tamanhoLabel = document.createElement('label');
+                tamanhoLabel.className = 'gestao-campo';
+                tamanhoLabel.innerHTML = '<span>Tamanho letra (%)</span>';
+                const tamanhoInput = document.createElement('input');
+                tamanhoInput.type = 'number';
+                tamanhoInput.min = '50';
+                tamanhoInput.max = '200';
+                tamanhoInput.step = '5';
+                tamanhoInput.value = String(item.fontSize);
+                tamanhoInput.title = '100 = tamanho normal da loja; 50 = metade; 200 = dobro';
+                tamanhoInput.dataset.semLimparCampo = '1';
+                tamanhoInput.addEventListener('input', () => {
+                    item.fontSize = limitarTamanhoFonteBanner(tamanhoInput.value);
+                    sincronizarPreview();
+                });
+                tamanhoLabel.appendChild(tamanhoInput);
+
                 linhaCores.appendChild(corLabel);
                 linhaCores.appendChild(destLabel);
                 linhaCores.appendChild(alignLabel);
                 linhaCores.appendChild(alignVLabel);
                 linhaCores.appendChild(larguraLabel);
+                linhaCores.appendChild(tamanhoLabel);
 
                 bloco.appendChild(cabeca);
                 bloco.appendChild(area);

@@ -144,6 +144,15 @@
         });
     }
 
+    function limitarTamanhoFonteBanner(valor) {
+        return limitarPercentagem(valor ?? 100, 50, 200);
+    }
+
+    function cssFonteTextoBanner(escala) {
+        const s = limitarTamanhoFonteBanner(escala) / 100;
+        return `clamp(${(0.85 * s).toFixed(3)}rem, ${(1.7 * s).toFixed(3)}vw, ${(1.35 * s).toFixed(3)}rem)`;
+    }
+
     function criarTextoLivre(item) {
         if (!textoPlanoBanner(item?.texto)) return null;
         const el = document.createElement('span');
@@ -161,6 +170,7 @@
         el.style.top = coords.y + '%';
         el.style.width = largura;
         el.style.maxWidth = largura;
+        el.style.fontSize = cssFonteTextoBanner(item.fontSize);
         el.style.textAlign = align;
         el.style.transform = transformTextoBanner(align, alignV);
         preencherTextoComDestaques(
