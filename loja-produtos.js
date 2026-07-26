@@ -599,6 +599,7 @@ function gerarMenus(listaProdutos){
 
     const todosBtn = document.createElement('button');
     todosBtn.className = 'btn-tema ativo';
+    todosBtn.dataset.filtroTema = 'todos';
     todosBtn.appendChild(criarRotuloTema('Todos'));
     todosBtn.onclick = function(){ filtrarTema('todos', this); };
     listaTemas.appendChild(todosBtn);
@@ -618,6 +619,7 @@ function gerarMenus(listaProdutos){
 
         const btnTema = document.createElement('button');
         btnTema.className = 'btn-tema';
+        btnTema.dataset.filtroTema = temaId;
 
         btnTema.appendChild(criarRotuloTema(tema));
 
@@ -648,6 +650,7 @@ function gerarMenus(listaProdutos){
                 const subId = subtema.toLowerCase().replace(/\s+/g, '-');
                 const btnSub = document.createElement('button');
                 btnSub.className = 'btn-subtema';
+                btnSub.dataset.filtroTema = temaId + '|' + subId;
                 btnSub.textContent = subtema;
                 btnSub.onclick = function(e){
                     e.stopPropagation();
@@ -669,6 +672,7 @@ function gerarMenus(listaProdutos){
     agendarAtualizacaoStickyTemas();
     sincronizarBotaoCategoriasCabecalho();
     ligarFecharCategoriasAoScrollTelemovel();
+    atualizarBreadcrumbLoja();
 }
 
 function criarIconeCoracaoFavorito() {
@@ -1184,6 +1188,78 @@ function rolarParaPrimeiraLinhaProdutos() {
     });
 }
 
+function obterBotaoFiltroTemaLoja(filtro) {
+    const alvo = String(filtro || 'todos');
+    const escapado = (typeof CSS !== 'undefined' && typeof CSS.escape === 'function')
+        ? CSS.escape(alvo)
+        : alvo.replace(/\\/g, '\\\\').replace(/"/g, '\\"');
+    return document.querySelector(`#menu-lateral-temas [data-filtro-tema="${escapado}"]`)
+        || document.querySelector(`#menu-lateral-temas [data-tema-filtro="${escapado}"]`);
+}
+
+function atualizarBreadcrumbLoja() {
+    const nav = document.getElementById('loja-breadcrumb');
+    if (!nav) return;
+
+    if (filtroTemaAtual === 'todos') {
+        nav.hidden = true;
+        nav.replaceChildren();
+        return;
+    }
+
+    const partes = String(filtroTemaAtual || '').split('|');
+    const slugTema = partes[0] || '';
+    const slugSubtema = partes[1] || '';
+    const infoTema = mapaTemasLoja.get(slugTema);
+    if (!infoTema) {
+        nav.hidden = true;
+        nav.replaceChildren();
+        return;
+    }
+
+    const nomeSubtema = slugSubtema ? (infoTema.subtemas.get(slugSubtema) || '') : '';
+
+    function criarSeparador() {
+        const sep = document.createElement('span');
+        sep.className = 'loja-breadcrumb-sep';
+        sep.setAttribute('aria-hidden', 'true');
+        sep.textContent = '›';
+        return sep;
+    }
+
+    function criarLink(texto, filtro) {
+        const link = document.createElement('a');
+        link.href = 'index.html';
+        link.textContent = texto;
+        link.addEventListener('click', evento => {
+            evento.preventDefault();
+            const botao = obterBotaoFiltroTemaLoja(filtro) || document.querySelector('#menu-lateral-temas .btn-tema');
+            if (botao) filtrarTema(filtro, botao);
+        });
+        return link;
+    }
+
+    nav.replaceChildren();
+    nav.appendChild(criarLink('Home', 'todos'));
+    nav.appendChild(criarSeparador());
+
+    if (nomeSubtema) {
+        nav.appendChild(criarLink(infoTema.nome, slugTema));
+        nav.appendChild(criarSeparador());
+        const atual = document.createElement('span');
+        atual.className = 'loja-breadcrumb-atual';
+        atual.textContent = nomeSubtema;
+        nav.appendChild(atual);
+    } else {
+        const atual = document.createElement('span');
+        atual.className = 'loja-breadcrumb-atual';
+        atual.textContent = infoTema.nome;
+        nav.appendChild(atual);
+    }
+
+    nav.hidden = false;
+}
+
 function filtrarTema(filtro, botao){
     document.querySelectorAll('.btn-tema, .btn-subtema').forEach(btn => { btn.classList.remove('ativo'); });
     botao.classList.add('ativo');
@@ -1206,6 +1282,7 @@ function filtrarTema(filtro, botao){
         if(grupoAlvo && partes.length === 1){ grupoAlvo.classList.add('aberto'); }
     }
 
+    atualizarBreadcrumbLoja();
     recolherMenuTemasNoTelemovel();
     executarFiltrosCombinados({ rolarParaProdutos: true });
 }
