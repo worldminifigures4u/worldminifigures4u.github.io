@@ -149,7 +149,12 @@
         const el = document.createElement('span');
         const align = alinharHTextoBanner(item.align);
         const alignV = alinharVTextoBanner(item.alignV);
-        const coords = coordenadasPorAlinhamento(align, alignV);
+        const coords = item.posicaoLivre
+            ? {
+                x: limitarPercentagem(item.x ?? 50),
+                y: limitarPercentagem(item.y ?? 50)
+            }
+            : coordenadasPorAlinhamento(align, alignV);
         const largura = limitarPercentagem(item.maxWidth ?? 28, 10, 80) + '%';
         el.className = 'loja-banner-cgi-texto loja-banner-cgi-texto-livre';
         el.style.left = coords.x + '%';

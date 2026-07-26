@@ -65,16 +65,18 @@ function criarTextoBannerPadrao(parcial = {}) {
     const align = alinharHTextoBanner(parcial.align);
     const alignV = alinharVTextoBanner(parcial.alignV);
     const coords = coordenadasPorAlinhamento(align, alignV);
+    const posicaoLivre = Boolean(parcial.posicaoLivre);
     return {
         id: parcial.id || novoIdTextoGestao(),
         texto: String(parcial.texto || ''),
         cor: normalizarCorHexGestao(parcial.cor, GESTAO_COR_BRANCO),
         cor_destaque: normalizarCorHexGestao(parcial.cor_destaque, GESTAO_COR_AMARELO_LOGO),
-        x: coords.x,
-        y: coords.y,
+        x: posicaoLivre ? limitarPercentagem(parcial.x ?? coords.x, 0, 100) : coords.x,
+        y: posicaoLivre ? limitarPercentagem(parcial.y ?? coords.y, 0, 100) : coords.y,
         maxWidth: limitarPercentagem(parcial.maxWidth ?? 28, 10, 80),
         align,
-        alignV
+        alignV,
+        posicaoLivre
     };
 }
 
@@ -133,9 +135,11 @@ function preencherTextoBannerGestao(el, valor, corBase, corDestaque) {
 function aplicarEstiloTextoLivre(el, item) {
     const align = alinharHTextoBanner(item.align);
     const alignV = alinharVTextoBanner(item.alignV);
-    const coords = coordenadasPorAlinhamento(align, alignV);
     item.align = align;
     item.alignV = alignV;
+    const coords = item.posicaoLivre
+        ? { x: limitarPercentagem(item.x, 0, 100), y: limitarPercentagem(item.y, 0, 100) }
+        : coordenadasPorAlinhamento(align, alignV);
     item.x = coords.x;
     item.y = coords.y;
     const largura = limitarPercentagem(item.maxWidth, 10, 80) + '%';
@@ -145,6 +149,11 @@ function aplicarEstiloTextoLivre(el, item) {
     el.style.maxWidth = largura;
     el.style.textAlign = align;
     el.style.transform = transformTextoBanner(align, alignV);
+}
+
+function aplicarAlinhamentoAutomatico(item) {
+    item.posicaoLivre = false;
+    Object.assign(item, coordenadasPorAlinhamento(item.align, item.alignV));
 }
 
 async function obterAssinaturaCloudinaryGestao() {
@@ -189,12 +198,50 @@ async function enviarFicheiroCloudinaryGestao(ficheiro) {
     return resultado.eager?.[0]?.secure_url || resultado.secure_url;
 }
 
-function ligarSelecaoTextoGestao(el, onSelecionar) {
+function ligarArrastoTextoGestao(el, item, previewWrap, onSelecionar, onArrastou) {
+    let aArrastar = false;
+    let pointerIdAtivo = null;
+
+    const atualizarPosicao = (evento) => {
+        const rect = previewWrap.getBoundingClientRect();
+        if (!rect.width || !rect.height) return;
+        item.posicaoLivre = true;
+        item.x = limitarPercentagem(((evento.clientX - rect.left) / rect.width) * 100);
+        item.y = limitarPercentagem(((evento.clientY - rect.top) / rect.height) * 100);
+        aplicarEstiloTextoLivre(el, item);
+    };
+
+    const emMovimento = (evento) => {
+        if (!aArrastar || evento.pointerId !== pointerIdAtivo) return;
+        evento.preventDefault();
+        atualizarPosicao(evento);
+    };
+
+    const terminar = (evento) => {
+        if (!aArrastar || (pointerIdAtivo != null && evento.pointerId !== pointerIdAtivo)) return;
+        aArrastar = false;
+        pointerIdAtivo = null;
+        el.classList.remove('is-a-arrastar');
+        document.removeEventListener('pointermove', emMovimento);
+        document.removeEventListener('pointerup', terminar);
+        document.removeEventListener('pointercancel', terminar);
+        try { el.releasePointerCapture?.(evento.pointerId); } catch (_) { /* ignore */ }
+        if (typeof onArrastou === 'function') onArrastou();
+    };
+
     el.addEventListener('pointerdown', (evento) => {
         if (evento.button != null && evento.button !== 0) return;
         evento.preventDefault();
         evento.stopPropagation();
         if (typeof onSelecionar === 'function') onSelecionar();
+        aArrastar = true;
+        pointerIdAtivo = evento.pointerId;
+        el.classList.add('is-a-arrastar');
+        try { el.setPointerCapture(evento.pointerId); } catch (_) { /* ignore */ }
+        document.addEventListener('pointermove', emMovimento);
+        document.addEventListener('pointerup', terminar);
+        document.addEventListener('pointercancel', terminar);
+        atualizarPosicao(evento);
     });
 }
 
@@ -236,7 +283,7 @@ function renderizarListaBannersGestao() {
 
         const ajudaPreview = document.createElement('p');
         ajudaPreview.className = 'gestao-banner-preview-ajuda';
-        ajudaPreview.textContent = 'Posição = Alinhar H + Alinhar V (ex.: Esquerda + Topo = canto superior esquerdo). O mesmo alinhamento em todos os banners mantém o texto fixo ao alternar.';
+        ajudaPreview.textContent = 'Horizontal + Vertical = cantos/margens. Ou arrasta o texto para posição livre. O mesmo alinhamento (ou as mesmas coords livres) em todos os banners evita saltos ao alternar.';
         previewWrap.appendChild(ajudaPreview);
 
         card.appendChild(previewWrap);
@@ -303,10 +350,14 @@ function renderizarListaBannersGestao() {
                 el.dataset.textoId = item.id;
                 aplicarEstiloTextoLivre(el, item);
                 preencherTextoBannerGestao(el, item.texto, item.cor, item.cor_destaque);
-                el.title = 'Clica para selecionar; a posição vem do alinhamento H+V';
-                ligarSelecaoTextoGestao(el, () => {
+                el.title = item.posicaoLivre
+                    ? 'Posição livre — arrasta para mover; usa Horizontal/Vertical para voltar ao alinhamento'
+                    : 'Arrasta para posição livre, ou usa Horizontal/Vertical';
+                ligarArrastoTextoGestao(el, item, previewWrap, () => {
                     textoAtivoId = item.id;
                     marcarSelecaoVisual();
+                }, () => {
+                    sincronizarLista();
                 });
                 camadaTextos.appendChild(el);
                 mapaPreview.set(item.id, el);
@@ -344,6 +395,12 @@ function renderizarListaBannersGestao() {
                     sincronizarPreview();
                 });
                 cabeca.appendChild(rotulo);
+                if (item.posicaoLivre) {
+                    const notaLivre = document.createElement('span');
+                    notaLivre.className = 'gestao-texto-posicao-livre';
+                    notaLivre.textContent = 'Posição livre';
+                    cabeca.appendChild(notaLivre);
+                }
                 cabeca.appendChild(btnRemover);
 
                 const area = document.createElement('textarea');
@@ -409,8 +466,9 @@ function renderizarListaBannersGestao() {
                 });
                 alignSelect.addEventListener('change', () => {
                     item.align = alinharHTextoBanner(alignSelect.value);
-                    Object.assign(item, coordenadasPorAlinhamento(item.align, item.alignV));
+                    aplicarAlinhamentoAutomatico(item);
                     sincronizarPreview();
+                    sincronizarLista();
                 });
                 alignLabel.appendChild(alignSelect);
 
@@ -428,8 +486,9 @@ function renderizarListaBannersGestao() {
                 });
                 alignVSelect.addEventListener('change', () => {
                     item.alignV = alinharVTextoBanner(alignVSelect.value);
-                    Object.assign(item, coordenadasPorAlinhamento(item.align, item.alignV));
+                    aplicarAlinhamentoAutomatico(item);
                     sincronizarPreview();
+                    sincronizarLista();
                 });
                 alignVLabel.appendChild(alignVSelect);
 
@@ -458,6 +517,20 @@ function renderizarListaBannersGestao() {
                 bloco.appendChild(cabeca);
                 bloco.appendChild(area);
                 bloco.appendChild(linhaCores);
+
+                if (item.posicaoLivre) {
+                    const btnRepor = document.createElement('button');
+                    btnRepor.type = 'button';
+                    btnRepor.className = 'wallapop-botao gestao-texto-repor-alinhamento';
+                    btnRepor.textContent = 'Voltar ao alinhamento H+V';
+                    btnRepor.addEventListener('click', () => {
+                        aplicarAlinhamentoAutomatico(item);
+                        sincronizarPreview();
+                        sincronizarLista();
+                    });
+                    bloco.appendChild(btnRepor);
+                }
+
                 listaTextos.appendChild(bloco);
             });
         };
