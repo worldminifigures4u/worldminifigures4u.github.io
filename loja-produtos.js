@@ -668,6 +668,7 @@ function gerarMenus(listaProdutos){
     observarTamanhoMenuTemas();
     agendarAtualizacaoStickyTemas();
     sincronizarBotaoCategoriasCabecalho();
+    ligarFecharCategoriasAoScrollTelemovel();
 }
 
 function criarIconeCoracaoFavorito() {
@@ -1066,6 +1067,44 @@ function sincronizarBotaoCategoriasCabecalho() {
     botao.setAttribute('aria-label', aberto ? 'Fechar categorias' : 'Abrir categorias');
 }
 
+let scrollYCategoriasAnterior = 0;
+let ignorarFechoCategoriasScrollAte = 0;
+let fechoCategoriasScrollLigado = false;
+
+function prepararIgnorarFechoCategoriasPorScroll(ms = 800) {
+    ignorarFechoCategoriasScrollAte = Date.now() + ms;
+    scrollYCategoriasAnterior = window.scrollY || window.pageYOffset || 0;
+}
+
+function aoScrollFecharCategoriasTelemovel() {
+    if (!window.matchMedia || !window.matchMedia('(max-width: 1100px)').matches) return;
+
+    const y = window.scrollY || window.pageYOffset || 0;
+    if (Date.now() < ignorarFechoCategoriasScrollAte) {
+        scrollYCategoriasAnterior = y;
+        return;
+    }
+
+    const listaTemas = document.querySelector('#menu-lateral-temas .lista-temas');
+    if (!listaTemas || listaTemas.classList.contains('recolhida')) {
+        scrollYCategoriasAnterior = y;
+        return;
+    }
+
+    const desceu = y > scrollYCategoriasAnterior + 12;
+    scrollYCategoriasAnterior = y;
+    if (!desceu) return;
+
+    recolherMenuTemasNoTelemovel();
+}
+
+function ligarFecharCategoriasAoScrollTelemovel() {
+    if (fechoCategoriasScrollLigado) return;
+    fechoCategoriasScrollLigado = true;
+    scrollYCategoriasAnterior = window.scrollY || window.pageYOffset || 0;
+    window.addEventListener('scroll', aoScrollFecharCategoriasTelemovel, { passive: true });
+}
+
 function alternarMenuCategoriasCabecalho() {
     const listaTemas = document.querySelector('#menu-lateral-temas .lista-temas');
     const botaoToggle = document.querySelector('#menu-lateral-temas .btn-toggle-menu');
@@ -1077,6 +1116,7 @@ function alternarMenuCategoriasCabecalho() {
     agendarAtualizacaoStickyTemas();
 
     if (!recolhido) {
+        prepararIgnorarFechoCategoriasPorScroll(900);
         const menu = document.getElementById('menu-lateral-temas');
         if (!menu) return;
         const header = document.querySelector('header');
