@@ -1076,8 +1076,25 @@ function prepararIgnorarFechoCategoriasPorScroll(ms = 800) {
     scrollYCategoriasAnterior = window.scrollY || window.pageYOffset || 0;
 }
 
+function definirPesquisaCabecalhoEscondidaTelemovel(escondida) {
+    const corpo = document.body;
+    if (!corpo) return;
+    const estavaEscondida = corpo.classList.contains('pesquisa-cabecalho-escondida');
+    corpo.classList.toggle('pesquisa-cabecalho-escondida', Boolean(escondida));
+    if (estavaEscondida === Boolean(escondida)) return;
+    if (typeof window.sincronizarEspacamentoCabecalho === 'function') {
+        window.requestAnimationFrame(window.sincronizarEspacamentoCabecalho);
+    }
+    if (typeof agendarAtualizacaoStickyTemas === 'function') {
+        agendarAtualizacaoStickyTemas();
+    }
+}
+
 function aoScrollFecharCategoriasTelemovel() {
-    if (!window.matchMedia || !window.matchMedia('(max-width: 1100px)').matches) return;
+    if (!window.matchMedia || !window.matchMedia('(max-width: 1100px)').matches) {
+        definirPesquisaCabecalhoEscondidaTelemovel(false);
+        return;
+    }
 
     const y = window.scrollY || window.pageYOffset || 0;
     if (Date.now() < ignorarFechoCategoriasScrollAte) {
@@ -1085,15 +1102,23 @@ function aoScrollFecharCategoriasTelemovel() {
         return;
     }
 
-    const listaTemas = document.querySelector('#menu-lateral-temas .lista-temas');
-    if (!listaTemas || listaTemas.classList.contains('recolhida')) {
-        scrollYCategoriasAnterior = y;
-        return;
+    const desceu = y > scrollYCategoriasAnterior + 12;
+    const subiu = y < scrollYCategoriasAnterior - 12;
+    scrollYCategoriasAnterior = y;
+
+    const campoPesquisa = document.getElementById('campo-pesquisa');
+    const pesquisaEmFoco = campoPesquisa && document.activeElement === campoPesquisa;
+
+    if (y <= 24 || subiu || pesquisaEmFoco) {
+        definirPesquisaCabecalhoEscondidaTelemovel(false);
+    } else if (desceu) {
+        definirPesquisaCabecalhoEscondidaTelemovel(true);
     }
 
-    const desceu = y > scrollYCategoriasAnterior + 12;
-    scrollYCategoriasAnterior = y;
     if (!desceu) return;
+
+    const listaTemas = document.querySelector('#menu-lateral-temas .lista-temas');
+    if (!listaTemas || listaTemas.classList.contains('recolhida')) return;
 
     recolherMenuTemasNoTelemovel();
 }

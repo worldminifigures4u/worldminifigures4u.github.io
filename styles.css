@@ -517,6 +517,9 @@ body{
                 max-width:none;
                 width:100%;
             }
+            body[data-page="loja"].pesquisa-cabecalho-escondida .cabecalho-loja{
+                grid-template-rows:auto auto auto;
+            }
             .cabecalho-pesquisa .input-pesquisa{
                 height:40px;
                 font-size:16px;
