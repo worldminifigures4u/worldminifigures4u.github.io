@@ -23,6 +23,53 @@ let vitrineInicioAleatorio = 0;
 let vitrineCursorCatalogo = 0;
 let vitrineVoltaAoInicio = false;
 const mapaTemasLoja = new Map();
+let lojaFotoModalLigado = false;
+
+function fecharFotoProdutoAmpliada() {
+    const modal = document.getElementById('loja-foto-modal');
+    const foto = document.getElementById('loja-foto-modal-img');
+    if (!modal) return;
+    modal.hidden = true;
+    if (foto) {
+        foto.removeAttribute('src');
+        foto.alt = '';
+    }
+    document.body.classList.remove('loja-foto-modal-aberto');
+}
+
+function abrirFotoProdutoAmpliada(url, alt) {
+    const modal = document.getElementById('loja-foto-modal');
+    const foto = document.getElementById('loja-foto-modal-img');
+    const fechar = document.getElementById('loja-foto-modal-fechar');
+    if (!modal || !foto || !url) return;
+    const urlAmpliada = typeof otimizarImagemCloudinary === 'function'
+        ? otimizarImagemCloudinary(url, 1200)
+        : url;
+    foto.src = urlAmpliada;
+    foto.alt = alt || 'Produto';
+    modal.hidden = false;
+    document.body.classList.add('loja-foto-modal-aberto');
+    fechar?.focus();
+}
+
+function garantirListenersModalFotoLoja() {
+    if (lojaFotoModalLigado) return;
+    const modal = document.getElementById('loja-foto-modal');
+    if (!modal) return;
+    lojaFotoModalLigado = true;
+    document.getElementById('loja-foto-modal-fechar')?.addEventListener('click', (evento) => {
+        evento.preventDefault();
+        fecharFotoProdutoAmpliada();
+    });
+    modal.addEventListener('click', (evento) => {
+        if (evento.target === modal) fecharFotoProdutoAmpliada();
+    });
+    document.addEventListener('keydown', (evento) => {
+        if (evento.key !== 'Escape') return;
+        const atual = document.getElementById('loja-foto-modal');
+        if (atual && !atual.hidden) fecharFotoProdutoAmpliada();
+    });
+}
 
 function slugificarTemaLoja(texto) {
     return String(texto || '').toLowerCase().replace(/\s+/g, '-');
@@ -883,34 +930,51 @@ function criarCardProduto(prod) {
 
     const galeria = document.createElement('div');
     galeria.className = 'produto-galeria';
+    galeria.setAttribute('role', 'button');
+    galeria.setAttribute('tabindex', '0');
+    galeria.setAttribute('aria-label', 'Ver foto ampliada de ' + (prod.nome || 'produto'));
     galeria.appendChild(imagemPrincipal);
 
-    if (imagensOtimizadas.length > 1) {
-        let imagemAtual = 0;
-        let toqueInicioX = 0;
-        const totalImagens = imagensOtimizadas.length;
-        const indicador = document.createElement('span');
-        indicador.className = 'produto-galeria-indicador';
+    let imagemAtual = 0;
+    let toqueInicioX = 0;
+    let toqueInicioY = 0;
+    const totalImagens = Math.max(1, imagensOtimizadas.length || 1);
+    let indicadorGaleria = null;
 
-        const atualizarImagem = (proximoIndice) => {
-            imagemAtual = (proximoIndice + totalImagens) % totalImagens;
-            const proximaUrl = listaImagens[imagemAtual];
-            const proximaImagem = imagensOtimizadas[imagemAtual];
-            const responsivoNovo = otimizarImagemCloudinarySrcset(proximaUrl);
-            imagemPrincipal.dataset.srcOriginal = proximaImagem;
-            if (responsivoNovo.srcset) {
-                imagemPrincipal.srcset = responsivoNovo.srcset;
-                imagemPrincipal.sizes = responsivoNovo.sizes;
-                imagemPrincipal.src = responsivoNovo.src;
-            } else {
-                imagemPrincipal.removeAttribute('srcset');
-                imagemPrincipal.removeAttribute('sizes');
-                imagemPrincipal.src = proximaImagem;
-            }
-            indicador.textContent = (imagemAtual + 1) + ' / ' + totalImagens;
-            precarregarImagemProduto(imagensOtimizadas[(imagemAtual + 1) % totalImagens]);
-            precarregarImagemProduto(imagensOtimizadas[(imagemAtual - 1 + totalImagens) % totalImagens]);
-        };
+    const obterUrlOriginalAtual = () => listaImagens[imagemAtual] || listaImagens[0] || imagemFallback;
+
+    const atualizarImagem = (proximoIndice) => {
+        if (totalImagens < 2) return;
+        imagemAtual = (proximoIndice + totalImagens) % totalImagens;
+        const proximaUrl = listaImagens[imagemAtual];
+        const proximaImagem = imagensOtimizadas[imagemAtual];
+        const responsivoNovo = otimizarImagemCloudinarySrcset(proximaUrl);
+        imagemPrincipal.dataset.srcOriginal = proximaImagem;
+        if (responsivoNovo.srcset) {
+            imagemPrincipal.srcset = responsivoNovo.srcset;
+            imagemPrincipal.sizes = responsivoNovo.sizes;
+            imagemPrincipal.src = responsivoNovo.src;
+        } else {
+            imagemPrincipal.removeAttribute('srcset');
+            imagemPrincipal.removeAttribute('sizes');
+            imagemPrincipal.src = proximaImagem;
+        }
+        if (indicadorGaleria) {
+            indicadorGaleria.textContent = (imagemAtual + 1) + ' / ' + totalImagens;
+        }
+        precarregarImagemProduto(imagensOtimizadas[(imagemAtual + 1) % totalImagens]);
+        precarregarImagemProduto(imagensOtimizadas[(imagemAtual - 1 + totalImagens) % totalImagens]);
+    };
+
+    const abrirAmpliacaoAtual = () => {
+        garantirListenersModalFotoLoja();
+        abrirFotoProdutoAmpliada(obterUrlOriginalAtual(), prod.nome || 'Produto');
+    };
+
+    if (totalImagens > 1) {
+        indicadorGaleria = document.createElement('span');
+        indicadorGaleria.className = 'produto-galeria-indicador';
+        indicadorGaleria.textContent = '1 / ' + totalImagens;
 
         const criarSeta = (classe, texto, direcao) => {
             const botao = document.createElement('button');
@@ -923,27 +987,37 @@ function criarCardProduto(prod) {
                 evento.stopPropagation();
                 atualizarImagem(imagemAtual + direcao);
             };
-            botao.addEventListener('pointerdown', evento => evento.stopPropagation());
+            botao.addEventListener('pointerdown', (evento) => evento.stopPropagation());
             botao.addEventListener('click', ativarSeta);
             return botao;
         };
 
         galeria.appendChild(criarSeta('produto-galeria-seta-anterior', '<', -1));
         galeria.appendChild(criarSeta('produto-galeria-seta-seguinte', '>', 1));
-        galeria.appendChild(indicador);
-        indicador.textContent = '1 / ' + totalImagens;
-
-        galeria.addEventListener('pointerdown', evento => {
-            if (evento.target.closest('.produto-galeria-seta')) return;
-            toqueInicioX = evento.clientX;
-        });
-        galeria.addEventListener('pointerup', evento => {
-            if (evento.target.closest('.produto-galeria-seta')) return;
-            const deltaX = evento.clientX - toqueInicioX;
-            if (Math.abs(deltaX) < 40) return;
-            atualizarImagem(imagemAtual + (deltaX < 0 ? 1 : -1));
-        });
+        galeria.appendChild(indicadorGaleria);
     }
+
+    galeria.addEventListener('pointerdown', (evento) => {
+        if (evento.target.closest('.produto-galeria-seta')) return;
+        toqueInicioX = evento.clientX;
+        toqueInicioY = evento.clientY;
+    });
+    galeria.addEventListener('pointerup', (evento) => {
+        if (evento.target.closest('.produto-galeria-seta')) return;
+        const deltaX = evento.clientX - toqueInicioX;
+        const deltaY = evento.clientY - toqueInicioY;
+        if (totalImagens > 1 && Math.abs(deltaX) >= 40 && Math.abs(deltaX) > Math.abs(deltaY)) {
+            atualizarImagem(imagemAtual + (deltaX < 0 ? 1 : -1));
+            return;
+        }
+        if (Math.abs(deltaX) >= 40 || Math.abs(deltaY) >= 40) return;
+        abrirAmpliacaoAtual();
+    });
+    galeria.addEventListener('keydown', (evento) => {
+        if (evento.key !== 'Enter' && evento.key !== ' ') return;
+        evento.preventDefault();
+        abrirAmpliacaoAtual();
+    });
 
     card.appendChild(galeria);
 

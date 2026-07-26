@@ -345,6 +345,7 @@
             padding:6px;
             box-sizing:border-box;
             z-index:1;
+            cursor:zoom-in;
         }
 
         .produto-img{
@@ -358,6 +359,60 @@
             pointer-events:none;
             transition:transform 0.22s ease;
             border-radius:6px;
+        }
+
+        .loja-foto-modal[hidden]{
+            display:none;
+        }
+
+        .loja-foto-modal{
+            position:fixed;
+            z-index:10000;
+            inset:0;
+            padding:28px;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            background:rgba(0,0,0,.88);
+            cursor:zoom-out;
+        }
+
+        .loja-foto-modal img{
+            display:block;
+            max-width:min(94vw, 1200px);
+            max-height:92vh;
+            width:auto;
+            height:auto;
+            object-fit:contain;
+            background:#111;
+            border-radius:8px;
+            cursor:default;
+        }
+
+        .loja-foto-modal-fechar{
+            position:fixed;
+            top:18px;
+            right:22px;
+            width:44px;
+            height:44px;
+            border:0;
+            border-radius:4px;
+            background:#ff4d4d;
+            color:#fff;
+            font-size:30px;
+            line-height:1;
+            cursor:pointer;
+            z-index:10001;
+        }
+
+        .loja-foto-modal-fechar:hover,
+        .loja-foto-modal-fechar:focus-visible{
+            background:#e04343;
+            outline:none;
+        }
+
+        body.loja-foto-modal-aberto{
+            overflow:hidden;
         }
 
         .produto-galeria-seta{

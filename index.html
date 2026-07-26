@@ -19,8 +19,8 @@
     <link rel="stylesheet" href="critico-loja.css?v=20260726-grelha-5">
     <link rel="stylesheet" href="styles-tema.css?v=20260721-sem-underline" media="print" data-async-css>
     <noscript><link rel="stylesheet" href="styles-tema.css?v=20260721-sem-underline"></noscript>
-    <link rel="stylesheet" href="loja.css?v=20260726-grelha-5" media="print" data-async-css>
-    <noscript><link rel="stylesheet" href="loja.css?v=20260726-grelha-5"></noscript>
+    <link rel="stylesheet" href="loja.css?v=20260726-foto-ampliada" media="print" data-async-css>
+    <noscript><link rel="stylesheet" href="loja.css?v=20260726-foto-ampliada"></noscript>
     <script src="async-css.js?v=20260713-r26"></script>
 </head>
 <body data-page="loja">
@@ -133,6 +133,11 @@
 
 </div>
 
+<div class="loja-foto-modal" id="loja-foto-modal" hidden>
+    <button type="button" class="loja-foto-modal-fechar" id="loja-foto-modal-fechar" aria-label="Fechar fotografia">&times;</button>
+    <img id="loja-foto-modal-img" alt="">
+</div>
+
 <footer class="rodape-site">
     <div class="rodape-conteudo">
         <div class="rodape-frase">Figures Planet &copy; 2026 &middot; Minifiguras, colecion&aacute;veis e pe&ccedil;as especiais</div>
@@ -149,7 +154,7 @@
 <script src="loja-banner.js?v=20260726-linhas-banner" defer></script>
 <script src="app-util.js?v=20260721-mais-produtos" defer></script>
 <script src="app-favoritos-loader.js?v=20260719-favoritos-persist" defer></script>
-<script src="loja-pagina.js?v=20260726-vitrine-aleatoria" defer></script>
+<script src="loja-pagina.js?v=20260726-foto-ampliada" defer></script>
 <script src="app-sessao.js?v=20260726-gestao" defer></script>
 <script src="campo-limpar.js?v=20260720-sem-x-cliente" defer></script>
 <script src="inline-listeners-base.js?v=20260725-logo-hq" defer></script>
