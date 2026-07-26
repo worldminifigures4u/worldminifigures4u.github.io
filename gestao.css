@@ -20,7 +20,8 @@ body.pagina-gestao-admin > main.gestao-admin {
     margin: 0 0 16px;
     color: rgba(255, 255, 255, 0.78);
     line-height: 1.45;
-    max-width: 72ch;
+    max-width: none;
+    width: 100%;
 }
 
 .gestao-ajuda code {
