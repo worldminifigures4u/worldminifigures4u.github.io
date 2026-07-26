@@ -156,6 +156,9 @@
         if (formulario) {
             formulario.addEventListener('submit', function (evento) {
                 evento.preventDefault();
+                if (typeof window.definirValorPesquisaLoja === 'function') {
+                    window.definirValorPesquisaLoja(campo?.value || '', campo);
+                }
                 executarPesquisaLoja(true);
             });
         }
@@ -171,12 +174,18 @@
         }, { once: true });
 
         campo.addEventListener('input', function () {
+            if (typeof window.definirValorPesquisaLoja === 'function') {
+                window.definirValorPesquisaLoja(campo.value, campo);
+            }
             executarPesquisaLoja(false);
         });
 
         campo.addEventListener('keydown', function (evento) {
             if (evento.key !== 'Enter') return;
             evento.preventDefault();
+            if (typeof window.definirValorPesquisaLoja === 'function') {
+                window.definirValorPesquisaLoja(campo.value, campo);
+            }
             executarPesquisaLoja(true);
         });
     }

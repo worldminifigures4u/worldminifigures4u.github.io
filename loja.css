@@ -756,6 +756,10 @@
             display:block;
         }
 
+        .menu-temas-pesquisa{
+            display:none;
+        }
+
         .linha-tema{
             display:flex;
             flex-direction:column;
@@ -883,6 +887,29 @@
 
     .lista-temas.recolhida{
         display:none;
+    }
+
+    .menu-temas-pesquisa{
+        display:block;
+        margin:0 0 10px;
+    }
+
+    .menu-temas-pesquisa .input-pesquisa-menu{
+        width:100%;
+        box-sizing:border-box;
+        height:42px;
+        border:1px solid #333;
+        border-radius:10px;
+        background:#0a0a0a;
+        color:#fff;
+        font:inherit;
+        font-size:16px;
+        padding:0 14px;
+    }
+
+    .menu-temas-pesquisa .input-pesquisa-menu:focus{
+        outline:none;
+        border-color:#ffc107;
     }
 
     .menu-temas:has(.lista-temas.recolhida){

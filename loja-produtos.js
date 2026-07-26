@@ -525,8 +525,9 @@ function construirMapaTemasLoja(metadados = []) {
 }
 
 function obterFiltrosVitrineAtuais() {
-    const campoPesquisa = document.getElementById('campo-pesquisa');
-    const pesquisa = String(campoPesquisa?.value || '').trim();
+    const pesquisa = typeof obterValorPesquisaLoja === 'function'
+        ? obterValorPesquisaLoja().trim()
+        : String(document.getElementById('campo-pesquisa')?.value || '').trim();
     const partes = filtroTemaAtual.split('|');
     const slugTema = partes[0];
     const slugSubtema = partes[1] || '';
@@ -853,6 +854,43 @@ function gerarMenus(listaProdutos){
         listaTemas.classList.add('recolhida');
         toggleMenu.textContent = 'Mostrar';
     }
+
+    const blocoPesquisa = document.createElement('div');
+    blocoPesquisa.className = 'menu-temas-pesquisa';
+    const campoMenu = document.createElement('input');
+    campoMenu.type = 'search';
+    campoMenu.id = 'campo-pesquisa-menu';
+    campoMenu.className = 'input-pesquisa input-pesquisa-menu';
+    campoMenu.name = 'q-menu';
+    campoMenu.placeholder = 'O que estás à procura?';
+    campoMenu.autocomplete = 'off';
+    campoMenu.setAttribute('enterkeyhint', 'search');
+    campoMenu.setAttribute('aria-label', 'Pesquisar produtos');
+    campoMenu.value = typeof obterValorPesquisaLoja === 'function'
+        ? obterValorPesquisaLoja()
+        : (document.getElementById('campo-pesquisa')?.value || '');
+    campoMenu.addEventListener('input', () => {
+        if (typeof definirValorPesquisaLoja === 'function') {
+            definirValorPesquisaLoja(campoMenu.value, campoMenu);
+        }
+        window.clearTimeout(window.__pesquisaLojaTimer);
+        window.__pesquisaLojaTimer = window.setTimeout(() => {
+            if (typeof executarFiltrosCombinados === 'function') executarFiltrosCombinados();
+        }, 250);
+    });
+    campoMenu.addEventListener('keydown', (evento) => {
+        if (evento.key !== 'Enter') return;
+        evento.preventDefault();
+        if (typeof definirValorPesquisaLoja === 'function') {
+            definirValorPesquisaLoja(campoMenu.value, campoMenu);
+        }
+        if (typeof executarFiltrosCombinados === 'function') {
+            executarFiltrosCombinados({ rolarParaProdutos: true });
+        }
+    });
+    blocoPesquisa.appendChild(campoMenu);
+    listaTemas.appendChild(blocoPesquisa);
+
     menu.appendChild(listaTemas);
 
     const todosBtn = document.createElement('button');
@@ -1198,8 +1236,9 @@ function removerSentinelaCarregarMais() {
 }
 
 function obterPesquisaAtivaVitrine() {
-    const campoPesquisa = document.getElementById('campo-pesquisa');
-    const inputRaw = campoPesquisa?.value || '';
+    const inputRaw = typeof obterValorPesquisaLoja === 'function'
+        ? obterValorPesquisaLoja()
+        : (document.getElementById('campo-pesquisa')?.value || '');
     const textoPesquisa = inputRaw.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
     return textoPesquisa.length > 0 || filtroTemaAtual !== 'todos';
 }
@@ -1309,8 +1348,9 @@ async function reiniciarVitrinePaginada() {
     removerSentinelaCarregarMais();
     vitrine.replaceChildren();
 
-    const campoPesquisa = document.getElementById('campo-pesquisa');
-    const inputRaw = campoPesquisa?.value || '';
+    const inputRaw = typeof obterValorPesquisaLoja === 'function'
+        ? obterValorPesquisaLoja()
+        : (document.getElementById('campo-pesquisa')?.value || '');
     const textoPesquisa = inputRaw.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
     const pesquisaAtiva = textoPesquisa.length > 0;
 
@@ -1389,7 +1429,6 @@ function definirPesquisaCabecalhoEscondidaTelemovel(escondida) {
 
 function aoScrollFecharCategoriasTelemovel() {
     if (!window.matchMedia || !window.matchMedia('(max-width: 1100px)').matches) {
-        definirPesquisaCabecalhoEscondidaTelemovel(false);
         return;
     }
 
@@ -1400,17 +1439,7 @@ function aoScrollFecharCategoriasTelemovel() {
     }
 
     const desceu = y > scrollYCategoriasAnterior + 12;
-    const subiu = y < scrollYCategoriasAnterior - 12;
     scrollYCategoriasAnterior = y;
-
-    const campoPesquisa = document.getElementById('campo-pesquisa');
-    const pesquisaEmFoco = campoPesquisa && document.activeElement === campoPesquisa;
-
-    if (y <= 24 || subiu || pesquisaEmFoco) {
-        definirPesquisaCabecalhoEscondidaTelemovel(false);
-    } else if (desceu) {
-        definirPesquisaCabecalhoEscondidaTelemovel(true);
-    }
 
     if (!desceu) return;
 
@@ -1593,7 +1622,9 @@ function verificarTeclaEnter(evento) {
     if (evento.key === "Enter") {
         evento.preventDefault();
         if (obterVistaPagina() !== 'loja') {
-            const pesquisa = document.getElementById('campo-pesquisa')?.value.trim() || '';
+            const pesquisa = (typeof obterValorPesquisaLoja === 'function'
+                ? obterValorPesquisaLoja()
+                : document.getElementById('campo-pesquisa')?.value || '').trim();
             window.location.href = 'index.html' + (pesquisa ? '?q=' + encodeURIComponent(pesquisa) : '');
             return;
         }
@@ -1635,7 +1666,9 @@ function atualizarContadorProdutos(totalVisiveis, totalProdutos, pesquisaAtiva) 
 }
 
 function executarFiltrosCombinados(opcoes = {}) {
-    if (!document.getElementById('campo-pesquisa')) return Promise.resolve();
+    if (!document.getElementById('campo-pesquisa') && !document.getElementById('campo-pesquisa-menu')) {
+        return Promise.resolve();
+    }
 
     return reiniciarVitrinePaginada()
         .then(() => {

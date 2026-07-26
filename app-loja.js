@@ -8,15 +8,32 @@ function pesquisarNoCabecalho() {
     if(typeof executarFiltrosCombinados === 'function') executarFiltrosCombinados();
 }
 
+function obterValorPesquisaLoja() {
+    const menu = document.getElementById('campo-pesquisa-menu');
+    const cabecalho = document.getElementById('campo-pesquisa');
+    if (document.activeElement === menu) return String(menu.value || '');
+    if (document.activeElement === cabecalho) return String(cabecalho.value || '');
+    return String(menu?.value || cabecalho?.value || '');
+}
+
+function definirValorPesquisaLoja(valor, origem = null) {
+    const texto = String(valor ?? '');
+    const cabecalho = document.getElementById('campo-pesquisa');
+    const menu = document.getElementById('campo-pesquisa-menu');
+    if (cabecalho && cabecalho !== origem) cabecalho.value = texto;
+    if (menu && menu !== origem) menu.value = texto;
+}
+
 function aplicarPesquisaUrl() {
     if (obterVistaPagina() !== 'loja') return;
     const pesquisa = (new URLSearchParams(window.location.search).get('q') || '').trim();
-    const campo = document.getElementById('campo-pesquisa');
-    if (campo && pesquisa) {
-        campo.value = pesquisa;
-        if(typeof executarFiltrosCombinados === 'function') executarFiltrosCombinados();
-    }
+    if (!pesquisa) return;
+    definirValorPesquisaLoja(pesquisa);
+    if(typeof executarFiltrosCombinados === 'function') executarFiltrosCombinados();
 }
+
+window.obterValorPesquisaLoja = obterValorPesquisaLoja;
+window.definirValorPesquisaLoja = definirValorPesquisaLoja;
 let frameAtualizacaoStickyTemas = null;
 let observadorTamanhoMenuTemas = null;
 let folhaDinamicaTemas = null;

@@ -1,4 +1,4 @@
-// Carregamento dos modulos da vitrine (app-loja, loja-produtos, cart-mini).
+﻿// Carregamento dos modulos da vitrine (app-loja, loja-produtos, cart-mini).
 (function () {
     let promessaAppLoja = null;
     let promessaLojaProdutos = null;
@@ -28,7 +28,7 @@
     function garantirAppLoja() {
         if (typeof inicializarPaginaLoja === 'function') return Promise.resolve();
         if (!promessaAppLoja) {
-            promessaAppLoja = carregarScript('app-loja.js?v=20260716-pesquisa-trim');
+            promessaAppLoja = carregarScript('app-loja.js?v=20260726-pesquisa-cat');
         }
         return promessaAppLoja;
     }
@@ -37,7 +37,7 @@
         if (typeof carregarProdutosDaNuvem === 'function') return Promise.resolve();
         if (!promessaLojaProdutos) {
             promessaLojaProdutos = garantirCartMiniLoja()
-                .then(() => carregarScript('loja-produtos.js?v=20260726-foto-nav'));
+                .then(() => carregarScript('loja-produtos.js?v=20260726-pesquisa-cat'));
         }
         return promessaLojaProdutos;
     }
@@ -218,7 +218,7 @@
 
     function agendarPrefetchModulosLoja() {
         const iniciar = function () {
-            ['loja-produtos.js?v=20260726-foto-nav', 'cart-mini.js?v=20260711-leve'].forEach(function (href) {
+            ['loja-produtos.js?v=20260726-pesquisa-cat', 'cart-mini.js?v=20260711-leve'].forEach(function (href) {
                 if (document.querySelector('link[rel="prefetch"][href="' + href + '"]')) return;
                 const link = document.createElement('link');
                 link.rel = 'prefetch';
