@@ -121,7 +121,7 @@ body.pagina-gestao-admin > main.gestao-admin {
 
 .gestao-banner-card {
     display: grid;
-    grid-template-columns: minmax(220px, 1.6fr) minmax(220px, 1fr);
+    grid-template-columns: 1fr;
     gap: 14px;
     padding: 12px;
     border: 1px solid rgba(255, 255, 255, 0.16);
@@ -153,10 +153,10 @@ body.pagina-gestao-admin > main.gestao-admin {
     position: absolute;
     top: 50%;
     transform: translateY(-50%);
-    width: min(24%, 140px);
+    width: min(24%, 220px);
     max-width: 24%;
     font-family: "Nunito", Arial, Helvetica, sans-serif;
-    font-size: clamp(0.65rem, 1.2vw, 0.85rem);
+    font-size: clamp(0.75rem, 1.5vw, 1.05rem);
     font-weight: 800;
     color: #fff;
     text-shadow: 0 1px 2px rgba(0, 0, 0, 0.55), 0 3px 10px rgba(0, 0, 0, 0.65);
@@ -176,8 +176,8 @@ body.pagina-gestao-admin > main.gestao-admin {
 
 .gestao-banner-campos {
     display: grid;
-    grid-template-columns: 1fr 1fr 90px;
-    gap: 10px;
+    grid-template-columns: 1fr 1fr minmax(90px, 120px);
+    gap: 10px 12px;
     align-content: start;
 }
 
@@ -221,10 +221,6 @@ body.pagina-gestao-admin > main.gestao-admin {
     .gestao-campo-ficheiro,
     .gestao-form-banner > .wallapop-botao {
         grid-column: 1 / -1;
-    }
-
-    .gestao-banner-card {
-        grid-template-columns: 1fr;
     }
 }
 
