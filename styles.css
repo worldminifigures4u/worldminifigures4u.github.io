@@ -577,8 +577,13 @@ body{
                 height:2.5px;
             }
             .badge-carrinho{
-                top:2px;
-                right:6px;
+                top:1px;
+                right:4px;
+                min-width:20px;
+                height:20px;
+                padding:0 5px;
+                font-size:12px;
+                line-height:20px;
             }
         }
 
