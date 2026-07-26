@@ -125,7 +125,19 @@ body.pagina-gestao-admin > main.gestao-admin {
 .gestao-banner-preview-textos {
     position: absolute;
     inset: 0;
+    z-index: 2;
     pointer-events: none;
+}
+
+.gestao-banner-preview-texto-livre {
+    pointer-events: auto;
+    cursor: grab;
+    padding: 4px 6px;
+    border: 1px dashed transparent;
+    border-radius: 4px;
+    touch-action: none;
+    -webkit-user-select: none;
+    user-select: none;
 }
 
 .gestao-banner-preview-texto {
@@ -142,14 +154,6 @@ body.pagina-gestao-admin > main.gestao-admin {
     text-shadow: 0 1px 2px rgba(0, 0, 0, 0.55), 0 3px 10px rgba(0, 0, 0, 0.65);
     line-height: 1.2;
     white-space: pre-line;
-}
-
-.gestao-banner-preview-texto-livre {
-    pointer-events: auto;
-    cursor: grab;
-    padding: 2px 4px;
-    border: 1px dashed transparent;
-    border-radius: 4px;
 }
 
 .gestao-banner-preview-texto-livre.is-selecionado,

@@ -148,8 +148,9 @@ async function enviarFicheiroCloudinaryGestao(ficheiro) {
     return resultado.eager?.[0]?.secure_url || resultado.secure_url;
 }
 
-function ligarArrastoTextoGestao(el, item, previewWrap) {
+function ligarArrastoTextoGestao(el, item, previewWrap, onSelecionar) {
     let aArrastar = false;
+    let pointerIdAtivo = null;
 
     const atualizarPosicao = (evento) => {
         const rect = previewWrap.getBoundingClientRect();
@@ -159,26 +160,37 @@ function ligarArrastoTextoGestao(el, item, previewWrap) {
         aplicarEstiloTextoLivre(el, item);
     };
 
+    const emMovimento = (evento) => {
+        if (!aArrastar || evento.pointerId !== pointerIdAtivo) return;
+        evento.preventDefault();
+        atualizarPosicao(evento);
+    };
+
+    const terminar = (evento) => {
+        if (!aArrastar || (pointerIdAtivo != null && evento.pointerId !== pointerIdAtivo)) return;
+        aArrastar = false;
+        pointerIdAtivo = null;
+        el.classList.remove('is-a-arrastar');
+        document.removeEventListener('pointermove', emMovimento);
+        document.removeEventListener('pointerup', terminar);
+        document.removeEventListener('pointercancel', terminar);
+        try { el.releasePointerCapture?.(evento.pointerId); } catch (_) { /* ignore */ }
+    };
+
     el.addEventListener('pointerdown', (evento) => {
         if (evento.button != null && evento.button !== 0) return;
         evento.preventDefault();
+        evento.stopPropagation();
+        if (typeof onSelecionar === 'function') onSelecionar();
         aArrastar = true;
+        pointerIdAtivo = evento.pointerId;
         el.classList.add('is-a-arrastar');
-        el.setPointerCapture?.(evento.pointerId);
+        try { el.setPointerCapture(evento.pointerId); } catch (_) { /* ignore */ }
+        document.addEventListener('pointermove', emMovimento);
+        document.addEventListener('pointerup', terminar);
+        document.addEventListener('pointercancel', terminar);
         atualizarPosicao(evento);
     });
-    el.addEventListener('pointermove', (evento) => {
-        if (!aArrastar) return;
-        atualizarPosicao(evento);
-    });
-    const terminar = (evento) => {
-        if (!aArrastar) return;
-        aArrastar = false;
-        el.classList.remove('is-a-arrastar');
-        try { el.releasePointerCapture?.(evento.pointerId); } catch (_) { /* ignore */ }
-    };
-    el.addEventListener('pointerup', terminar);
-    el.addEventListener('pointercancel', terminar);
 }
 
 function renderizarListaBannersGestao() {
@@ -265,6 +277,16 @@ function renderizarListaBannersGestao() {
 
         const mapaPreview = new Map();
 
+        const marcarSelecaoVisual = () => {
+            camadaTextos.querySelectorAll('.gestao-banner-preview-texto-livre').forEach((el) => {
+                el.classList.toggle('is-selecionado', el.dataset.textoId === textoAtivoId);
+            });
+            listaTextos.querySelectorAll('.gestao-texto-item').forEach((bloco, indice) => {
+                const item = textosEstado[indice];
+                bloco.classList.toggle('is-ativo', Boolean(item && item.id === textoAtivoId));
+            });
+        };
+
         const sincronizarPreview = () => {
             camadaTextos.replaceChildren();
             mapaPreview.clear();
@@ -277,12 +299,10 @@ function renderizarListaBannersGestao() {
                 aplicarEstiloTextoLivre(el, item);
                 preencherTextoBannerGestao(el, item.texto, item.cor, item.cor_destaque);
                 el.title = 'Arrastar para posicionar';
-                el.addEventListener('pointerdown', () => {
+                ligarArrastoTextoGestao(el, item, previewWrap, () => {
                     textoAtivoId = item.id;
-                    sincronizarLista();
-                    sincronizarPreview();
+                    marcarSelecaoVisual();
                 });
-                ligarArrastoTextoGestao(el, item, previewWrap);
                 camadaTextos.appendChild(el);
                 mapaPreview.set(item.id, el);
             });
@@ -329,8 +349,7 @@ function renderizarListaBannersGestao() {
                 area.placeholder = 'Escreve o texto… Enter para nova linha. **destaque**';
                 area.addEventListener('focus', () => {
                     textoAtivoId = item.id;
-                    sincronizarLista();
-                    sincronizarPreview();
+                    marcarSelecaoVisual();
                 });
                 area.addEventListener('input', () => {
                     item.texto = area.value;
