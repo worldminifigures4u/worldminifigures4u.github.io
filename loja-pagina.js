@@ -37,7 +37,7 @@
         if (typeof carregarProdutosDaNuvem === 'function') return Promise.resolve();
         if (!promessaLojaProdutos) {
             promessaLojaProdutos = garantirCartMiniLoja()
-                .then(() => carregarScript('loja-produtos.js?v=20260726-foto-ampliada'));
+                .then(() => carregarScript('loja-produtos.js?v=20260726-cat-mobile'));
         }
         return promessaLojaProdutos;
     }
@@ -173,6 +173,17 @@
         }
         if (typeof aplicarPesquisaUrl === 'function') aplicarPesquisaUrl();
 
+        try {
+            const params = new URLSearchParams(window.location.search || '');
+            if (params.get('categorias') === '1' && typeof abrirMenuCategoriasCabecalho === 'function') {
+                abrirMenuCategoriasCabecalho();
+                params.delete('categorias');
+                const resto = params.toString();
+                const novoUrl = window.location.pathname + (resto ? '?' + resto : '') + (window.location.hash || '');
+                window.history.replaceState({}, '', novoUrl);
+            }
+        } catch (_) { /* ignore */ }
+
         if (typeof window.garantirAppFavoritos === 'function') {
             await window.garantirAppFavoritos();
             atualizarCoracoesAposCarga();
@@ -207,7 +218,7 @@
 
     function agendarPrefetchModulosLoja() {
         const iniciar = function () {
-            ['loja-produtos.js?v=20260726-foto-ampliada', 'cart-mini.js?v=20260711-leve'].forEach(function (href) {
+            ['loja-produtos.js?v=20260726-cat-mobile', 'cart-mini.js?v=20260711-leve'].forEach(function (href) {
                 if (document.querySelector('link[rel="prefetch"][href="' + href + '"]')) return;
                 const link = document.createElement('link');
                 link.rel = 'prefetch';

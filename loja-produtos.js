@@ -1315,6 +1315,15 @@ function ligarFecharCategoriasAoScrollTelemovel() {
     window.addEventListener('scroll', aoScrollFecharCategoriasTelemovel, { passive: true });
 }
 
+function abrirMenuCategoriasCabecalho() {
+    const listaTemas = document.querySelector('#menu-lateral-temas .lista-temas');
+    if (!listaTemas || !listaTemas.classList.contains('recolhida')) {
+        sincronizarBotaoCategoriasCabecalho();
+        return;
+    }
+    alternarMenuCategoriasCabecalho();
+}
+
 function alternarMenuCategoriasCabecalho() {
     const listaTemas = document.querySelector('#menu-lateral-temas .lista-temas');
     const botaoToggle = document.querySelector('#menu-lateral-temas .btn-toggle-menu');

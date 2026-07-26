@@ -476,7 +476,7 @@ body{
                 width:auto;
                 flex-basis:auto;
             }
-            body[data-page="loja"] .acao-categorias-cabecalho{
+            .acao-categorias-cabecalho{
                 display:inline-flex;
             }
             .texto-acao span{ max-width:120px; }
