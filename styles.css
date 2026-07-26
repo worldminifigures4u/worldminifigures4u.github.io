@@ -458,6 +458,9 @@ body{
                 grid-row:2;
                 max-width:none;
             }
+            body[data-page="loja"].pesquisa-cabecalho-escondida .cabecalho-pesquisa{
+                display:none;
+            }
             .logo-loja{
                 grid-column:1;
                 grid-row:1;
