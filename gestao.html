@@ -17,7 +17,7 @@
     <link rel="icon" type="image/webp" href="favicon-32.webp?v=20260711-leve" sizes="32x32">
     <link rel="stylesheet" href="styles.css?v=20260721-rodape-800">
     <link rel="stylesheet" href="styles-admin.css?v=20260726-gestao">
-    <link rel="stylesheet" href="gestao.css?v=20260726-cores-banner">
+    <link rel="stylesheet" href="gestao.css?v=20260726-linhas-banner">
     <link rel="stylesheet" href="styles-tema.css?v=20260721-sem-underline" media="print" data-async-css>
     <noscript><link rel="stylesheet" href="styles-tema.css?v=20260721-sem-underline"></noscript>
     <script src="async-css.js?v=20260713-r25"></script>
@@ -68,19 +68,19 @@
     <main class="gestao-admin" id="gestao-aplicacao" hidden>
         <section class="gestao-secao" aria-label="Adicionar banner">
             <h1>Banners da loja</h1>
-            <p class="gestao-ajuda">Os banners ativos aparecem na página inicial e alternam automaticamente. Tamanho ideal: <strong>2048 × 362 px</strong> (proporção ≈ 5,66:1). Alternativa mais leve: <strong>1024 × 181</strong>. Evita formatos quadrados ou verticais — a imagem fica cortada ou esticada. Usa as cores para o texto de cada lado. Para destacar só uma parte (ex.: valor), envolve em <code>**...**</code>: <code>Portes grátis **a partir de 50 €**</code> — o destaque usa a cor amarela do logótipo por defeito.</p>
+            <p class="gestao-ajuda">Os banners ativos aparecem na página inicial e alternam automaticamente. Tamanho ideal: <strong>2048 × 362 px</strong> (proporção ≈ 5,66:1). Alternativa mais leve: <strong>1024 × 181</strong>. Evita formatos quadrados ou verticais — a imagem fica cortada ou esticada. Usa as cores para o texto de cada lado. Carrega em <strong>Enter</strong> para passar o texto à linha de baixo (ex.: «Portes de envio» em cima e «a partir de 50 €» em baixo). Para destacar só uma parte, envolve em <code>**...**</code>: <code>**a partir de 50 €**</code> — o destaque usa a cor amarela do logótipo por defeito.</p>
             <form class="gestao-form-banner" id="form-novo-banner">
                 <label class="gestao-campo gestao-campo-ficheiro">
                     <span>Imagem</span>
                     <input type="file" id="novo-banner-ficheiro" accept="image/jpeg,image/png,image/webp" required>
                 </label>
-                <label class="gestao-campo">
+                <label class="gestao-campo gestao-campo-texto">
                     <span>Texto à esquerda</span>
-                    <input type="text" id="novo-banner-texto-esq" placeholder="Figures Planet" maxlength="120" autocomplete="off" data-sem-limpar-campo="1">
+                    <textarea id="novo-banner-texto-esq" rows="2" maxlength="160" placeholder="Figures Planet" autocomplete="off" data-sem-limpar-campo="1"></textarea>
                 </label>
-                <label class="gestao-campo">
+                <label class="gestao-campo gestao-campo-texto">
                     <span>Texto à direita</span>
-                    <input type="text" id="novo-banner-texto-dir" placeholder="Portes grátis **a partir de 50 €**" maxlength="120" autocomplete="off" data-sem-limpar-campo="1">
+                    <textarea id="novo-banner-texto-dir" rows="2" maxlength="160" placeholder="Portes de envio&#10;**a partir de 50 €**" autocomplete="off" data-sem-limpar-campo="1"></textarea>
                 </label>
                 <label class="gestao-campo gestao-campo-ordem">
                     <span>Ordem</span>
@@ -124,7 +124,7 @@
 
     <script src="supabase-cdn.js?v=20260711-leve" defer></script>
     <script src="app-config.js?v=20260713-r25" defer></script>
-    <script src="gestao.js?v=20260726-cores-banner" defer></script>
+    <script src="gestao.js?v=20260726-linhas-banner" defer></script>
     <script src="campo-limpar.js?v=20260720-sem-x-cliente" defer></script>
     <script src="inline-listeners-base.js?v=20260725-logo-hq" defer></script>
     <script src="inline-listeners-admin.js?v=20260713-r25" defer></script>

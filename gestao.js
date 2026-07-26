@@ -82,13 +82,13 @@ async function enviarFicheiroCloudinaryGestao(ficheiro) {
     return resultado.eager?.[0]?.secure_url || resultado.secure_url;
 }
 
-function criarCampoTextoGestao(rotulo, valor, maxLength = 120) {
+function criarCampoTextoGestao(rotulo, valor, maxLength = 160) {
     const label = document.createElement('label');
-    label.className = 'gestao-campo';
+    label.className = 'gestao-campo gestao-campo-texto';
     const span = document.createElement('span');
     span.textContent = rotulo;
-    const input = document.createElement('input');
-    input.type = 'text';
+    const input = document.createElement('textarea');
+    input.rows = 2;
     input.value = valor || '';
     input.maxLength = maxLength;
     input.dataset.semLimparCampo = '1';
