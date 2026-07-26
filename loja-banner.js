@@ -64,6 +64,20 @@
         return String(valor || '').replace(/\*\*/g, '').trim();
     }
 
+    function alinharHTextoBanner(valor) {
+        return ['left', 'center', 'right'].includes(valor) ? valor : 'center';
+    }
+
+    function alinharVTextoBanner(valor) {
+        return ['top', 'middle', 'bottom'].includes(valor) ? valor : 'middle';
+    }
+
+    function transformTextoBanner(align, alignV) {
+        const tx = align === 'left' ? '0' : align === 'right' ? '-100%' : '-50%';
+        const ty = alignV === 'top' ? '0' : alignV === 'bottom' ? '-100%' : '-50%';
+        return `translate(${tx}, ${ty})`;
+    }
+
     function listaTextosBanner(banner) {
         if (Array.isArray(banner?.textos) && banner.textos.length) {
             return banner.textos;
@@ -79,7 +93,8 @@
                 x: 10,
                 y: 50,
                 maxWidth: 28,
-                align: 'left'
+                align: 'left',
+                alignV: 'middle'
             });
         }
         if (dir) {
@@ -90,7 +105,8 @@
                 x: 90,
                 y: 50,
                 maxWidth: 28,
-                align: 'right'
+                align: 'right',
+                alignV: 'middle'
             });
         }
         return lista;
@@ -124,11 +140,16 @@
     function criarTextoLivre(item) {
         if (!textoPlanoBanner(item?.texto)) return null;
         const el = document.createElement('span');
+        const align = alinharHTextoBanner(item.align);
+        const alignV = alinharVTextoBanner(item.alignV);
+        const largura = limitarPercentagem(item.maxWidth ?? 28, 10, 80) + '%';
         el.className = 'loja-banner-cgi-texto loja-banner-cgi-texto-livre';
         el.style.left = limitarPercentagem(item.x ?? 50) + '%';
         el.style.top = limitarPercentagem(item.y ?? 50) + '%';
-        el.style.maxWidth = limitarPercentagem(item.maxWidth ?? 28, 10, 80) + '%';
-        el.style.textAlign = ['left', 'center', 'right'].includes(item.align) ? item.align : 'left';
+        el.style.width = largura;
+        el.style.maxWidth = largura;
+        el.style.textAlign = align;
+        el.style.transform = transformTextoBanner(align, alignV);
         preencherTextoComDestaques(
             el,
             item.texto,

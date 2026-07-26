@@ -148,7 +148,7 @@ body.pagina-gestao-admin > main.gestao-admin {
     position: absolute;
     left: 50%;
     top: 50%;
-    transform: translate(-50%, -50%);
+    /* transform definido em JS conforme align / alignV */
     width: auto;
     max-width: 28%;
     font-family: "Nunito", Arial, Helvetica, sans-serif;
@@ -158,6 +158,7 @@ body.pagina-gestao-admin > main.gestao-admin {
     text-shadow: 0 1px 2px rgba(0, 0, 0, 0.55), 0 3px 10px rgba(0, 0, 0, 0.65);
     line-height: 1.2;
     white-space: pre-line;
+    box-sizing: border-box;
 }
 
 .gestao-banner-preview-texto-livre.is-selecionado,
@@ -250,7 +251,7 @@ body.pagina-gestao-admin > main.gestao-admin {
 
 .gestao-texto-item-cores {
     display: grid;
-    grid-template-columns: repeat(4, minmax(0, 1fr));
+    grid-template-columns: repeat(5, minmax(0, 1fr));
     gap: 10px;
 }
 

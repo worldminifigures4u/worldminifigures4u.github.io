@@ -35,6 +35,20 @@ function novoIdTextoGestao() {
     return 'txt-' + Date.now() + '-' + Math.random().toString(16).slice(2);
 }
 
+function alinharHTextoBanner(valor) {
+    return ['left', 'center', 'right'].includes(valor) ? valor : 'center';
+}
+
+function alinharVTextoBanner(valor) {
+    return ['top', 'middle', 'bottom'].includes(valor) ? valor : 'middle';
+}
+
+function transformTextoBanner(align, alignV) {
+    const tx = align === 'left' ? '0' : align === 'right' ? '-100%' : '-50%';
+    const ty = alignV === 'top' ? '0' : alignV === 'bottom' ? '-100%' : '-50%';
+    return `translate(${tx}, ${ty})`;
+}
+
 function criarTextoBannerPadrao(parcial = {}) {
     return {
         id: parcial.id || novoIdTextoGestao(),
@@ -44,7 +58,8 @@ function criarTextoBannerPadrao(parcial = {}) {
         x: limitarPercentagem(parcial.x ?? 50, 0, 100),
         y: limitarPercentagem(parcial.y ?? 50, 0, 100),
         maxWidth: limitarPercentagem(parcial.maxWidth ?? 28, 10, 80),
-        align: ['left', 'center', 'right'].includes(parcial.align) ? parcial.align : 'left'
+        align: alinharHTextoBanner(parcial.align),
+        alignV: alinharVTextoBanner(parcial.alignV)
     };
 }
 
@@ -63,7 +78,8 @@ function normalizarListaTextosBanner(banner) {
             cor_destaque: banner?.cor_destaque,
             x: 10,
             y: 50,
-            align: 'left'
+            align: 'left',
+            alignV: 'middle'
         }));
     }
     if (dir) {
@@ -74,7 +90,8 @@ function normalizarListaTextosBanner(banner) {
             cor_destaque: banner?.cor_destaque,
             x: 90,
             y: 50,
-            align: 'right'
+            align: 'right',
+            alignV: 'middle'
         }));
     }
     return lista;
@@ -99,11 +116,15 @@ function preencherTextoBannerGestao(el, valor, corBase, corDestaque) {
 }
 
 function aplicarEstiloTextoLivre(el, item) {
+    const align = alinharHTextoBanner(item.align);
+    const alignV = alinharVTextoBanner(item.alignV);
+    const largura = limitarPercentagem(item.maxWidth, 10, 80) + '%';
     el.style.left = limitarPercentagem(item.x) + '%';
     el.style.top = limitarPercentagem(item.y) + '%';
-    el.style.maxWidth = limitarPercentagem(item.maxWidth, 10, 80) + '%';
-    el.style.textAlign = item.align || 'left';
-    el.style.transform = 'translate(-50%, -50%)';
+    el.style.width = largura;
+    el.style.maxWidth = largura;
+    el.style.textAlign = align;
+    el.style.transform = transformTextoBanner(align, alignV);
 }
 
 async function obterAssinaturaCloudinaryGestao() {
@@ -231,7 +252,7 @@ function renderizarListaBannersGestao() {
 
         const ajudaPreview = document.createElement('p');
         ajudaPreview.className = 'gestao-banner-preview-ajuda';
-        ajudaPreview.textContent = 'Arrasta os textos na pré-visualização para os posicionar.';
+        ajudaPreview.textContent = 'Arrasta o ponto âncora. Com o mesmo X/Y e alinhamento H+V em todos os banners, o texto fica no mesmo sítio ao alternar.';
         previewWrap.appendChild(ajudaPreview);
 
         card.appendChild(previewWrap);
@@ -392,7 +413,7 @@ function renderizarListaBannersGestao() {
 
                 const alignLabel = document.createElement('label');
                 alignLabel.className = 'gestao-campo';
-                alignLabel.innerHTML = '<span>Alinhamento</span>';
+                alignLabel.innerHTML = '<span>Alinhar H (âncora)</span>';
                 const alignSelect = document.createElement('select');
                 alignSelect.dataset.semLimparCampo = '1';
                 [['left', 'Esquerda'], ['center', 'Centro'], ['right', 'Direita']].forEach(([valor, rotuloOpt]) => {
@@ -403,14 +424,32 @@ function renderizarListaBannersGestao() {
                     alignSelect.appendChild(opt);
                 });
                 alignSelect.addEventListener('change', () => {
-                    item.align = alignSelect.value;
+                    item.align = alinharHTextoBanner(alignSelect.value);
                     sincronizarPreview();
                 });
                 alignLabel.appendChild(alignSelect);
 
+                const alignVLabel = document.createElement('label');
+                alignVLabel.className = 'gestao-campo';
+                alignVLabel.innerHTML = '<span>Alinhar V (âncora)</span>';
+                const alignVSelect = document.createElement('select');
+                alignVSelect.dataset.semLimparCampo = '1';
+                [['top', 'Topo'], ['middle', 'Meio'], ['bottom', 'Base']].forEach(([valor, rotuloOpt]) => {
+                    const opt = document.createElement('option');
+                    opt.value = valor;
+                    opt.textContent = rotuloOpt;
+                    if (item.alignV === valor) opt.selected = true;
+                    alignVSelect.appendChild(opt);
+                });
+                alignVSelect.addEventListener('change', () => {
+                    item.alignV = alinharVTextoBanner(alignVSelect.value);
+                    sincronizarPreview();
+                });
+                alignVLabel.appendChild(alignVSelect);
+
                 const larguraLabel = document.createElement('label');
                 larguraLabel.className = 'gestao-campo';
-                larguraLabel.innerHTML = '<span>Largura máx. (%)</span>';
+                larguraLabel.innerHTML = '<span>Largura (%)</span>';
                 const larguraInput = document.createElement('input');
                 larguraInput.type = 'number';
                 larguraInput.min = '10';
@@ -427,6 +466,7 @@ function renderizarListaBannersGestao() {
                 linhaCores.appendChild(corLabel);
                 linhaCores.appendChild(destLabel);
                 linhaCores.appendChild(alignLabel);
+                linhaCores.appendChild(alignVLabel);
                 linhaCores.appendChild(larguraLabel);
 
                 bloco.appendChild(cabeca);
@@ -441,7 +481,8 @@ function renderizarListaBannersGestao() {
                 texto: 'Novo texto',
                 x: 50,
                 y: 50,
-                align: 'center'
+                align: 'center',
+                alignV: 'middle'
             });
             textosEstado.push(novo);
             textoAtivoId = novo.id;
