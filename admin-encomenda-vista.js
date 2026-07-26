@@ -1096,14 +1096,18 @@ window.AdminEncomendaVista = (function () {
         hooks.renderizarModal();
     }
 
-    const ORIGENS_FATURA_MOLONI_OPCIONAL = new Set(["olx"]);
+    const ORIGENS_FATURA_MOLONI_OPCIONAL = new Set(["olx", "site"]);
 
     function origemEncomenda(encomenda) {
         return normalizar(encomenda?.origem || "site");
     }
 
-    function encomendaOrigemOlx(encomenda) {
-        return origemEncomenda(encomenda) === "olx";
+    function encomendaFaturaMoloniOpcional(encomenda) {
+        return ORIGENS_FATURA_MOLONI_OPCIONAL.has(origemEncomenda(encomenda));
+    }
+
+    function rotuloOrigemFatura(encomenda) {
+        return origemEncomenda(encomenda) === "olx" ? "OLX" : "Site";
     }
 
     function podeEmitirFaturaMoloni(encomenda) {
@@ -1113,20 +1117,20 @@ window.AdminEncomendaVista = (function () {
 
     function deveEmitirFaturaMoloniAutomaticamente(encomenda) {
         if (!podeEmitirFaturaMoloni(encomenda)) return false;
-        return !ORIGENS_FATURA_MOLONI_OPCIONAL.has(origemEncomenda(encomenda));
+        return !encomendaFaturaMoloniOpcional(encomenda);
     }
 
-    function pedirEmissaoFaturaMoloniOlx(encomenda) {
+    function pedirEmissaoFaturaMoloni(encomenda) {
         const codigo = encomenda.codigo_encomenda || "";
         return window.confirm(
-            `Encomenda OLX ${codigo}: emitir fatura-recibo Moloni automaticamente?`
+            `Encomenda ${rotuloOrigemFatura(encomenda)} ${codigo}: emitir fatura-recibo Moloni automaticamente?`
         );
     }
 
     async function emitirFaturaMoloni(encomenda, opcoes = {}) {
-        const forcarOlx = Boolean(opcoes.forcarOlx);
+        const forcarEmissao = Boolean(opcoes.forcarEmissao);
         if (!podeEmitirFaturaMoloni(encomenda)) return null;
-        if (encomendaOrigemOlx(encomenda) && !forcarOlx) return null;
+        if (encomendaFaturaMoloniOpcional(encomenda) && !forcarEmissao) return null;
 
         const { data: { session } } = await obterClient().auth.getSession();
         if (!session?.access_token) {
@@ -1141,7 +1145,8 @@ window.AdminEncomendaVista = (function () {
             },
             body: JSON.stringify({
                 encomenda_id: String(encomenda.id),
-                forcar_olx: forcarOlx
+                forcar_olx: forcarEmissao,
+                forcar_emissao: forcarEmissao
             })
         });
         const resultado = await resposta.json().catch(() => ({}));
@@ -1166,7 +1171,7 @@ window.AdminEncomendaVista = (function () {
             const codigo = encomenda.codigo_encomenda || "";
             let avisoFatura = "";
             if (podeEmitirFaturaMoloni(encomenda)) {
-                avisoFatura = encomendaOrigemOlx(encomenda)
+                avisoFatura = encomendaFaturaMoloniOpcional(encomenda)
                     ? "\n\nDepois pode escolher se emite fatura-recibo no Moloni (data de emissão de hoje; pagamento com data real)."
                     : "\n\nSerá emitida automaticamente uma fatura-recibo no Moloni (data de emissão de hoje; pagamento com data real).";
             }
@@ -1345,8 +1350,8 @@ window.AdminEncomendaVista = (function () {
             let mensagemFatura = "";
             if (estado === "Concluído" && estadoAnterior !== "Concluído" && podeEmitirFaturaMoloni(encomenda)) {
                 let emitirFatura = deveEmitirFaturaMoloniAutomaticamente(encomenda);
-                if (encomendaOrigemOlx(encomenda)) {
-                    emitirFatura = pedirEmissaoFaturaMoloniOlx(encomenda);
+                if (encomendaFaturaMoloniOpcional(encomenda)) {
+                    emitirFatura = pedirEmissaoFaturaMoloni(encomenda);
                 }
                 if (emitirFatura) {
                     if (!encomenda.data_pagamento) {
@@ -1362,7 +1367,7 @@ window.AdminEncomendaVista = (function () {
                     hooks.definirStatus(`Estado atualizado. A emitir fatura-recibo Moloni para ${encomenda.codigo_encomenda || ""}...`);
                     try {
                         const fatura = await emitirFaturaMoloni(encomenda, {
-                            forcarOlx: encomendaOrigemOlx(encomenda)
+                            forcarEmissao: encomendaFaturaMoloniOpcional(encomenda)
                         });
                         if (fatura?.sucesso) {
                             const numeroFatura = fatura.numero && String(fatura.numero) !== "0"
