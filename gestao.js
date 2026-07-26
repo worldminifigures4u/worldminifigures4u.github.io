@@ -1,9 +1,43 @@
 let gestaoClient = null;
 let gestaoBanners = [];
 
+const GESTAO_COR_BRANCO = '#ffffff';
+const GESTAO_COR_AMARELO_LOGO = '#ffc107';
+
 function definirStatusGestao(mensagem) {
     const status = document.getElementById('gestao-status');
     if (status) status.textContent = mensagem || '';
+}
+
+function normalizarCorHexGestao(valor, fallback = GESTAO_COR_BRANCO) {
+    const bruto = String(valor || '').trim();
+    if (/^#[0-9a-fA-F]{6}$/.test(bruto)) return bruto.toLowerCase();
+    if (/^#[0-9a-fA-F]{3}$/.test(bruto)) {
+        return ('#' + bruto[1] + bruto[1] + bruto[2] + bruto[2] + bruto[3] + bruto[3]).toLowerCase();
+    }
+    return fallback;
+}
+
+function textoPlanoGestao(valor) {
+    return String(valor || '').replace(/\*\*/g, '').trim();
+}
+
+function preencherTextoBannerGestao(el, valor, corBase, corDestaque) {
+    el.replaceChildren();
+    el.style.color = corBase;
+    const bruto = String(valor || '');
+    const partes = bruto.split(/(\*\*[^*]+\*\*)/g);
+    partes.forEach((parte) => {
+        if (/^\*\*[^*]+\*\*$/.test(parte)) {
+            const destaque = document.createElement('span');
+            destaque.className = 'gestao-banner-preview-destaque';
+            destaque.style.color = corDestaque;
+            destaque.textContent = parte.slice(2, -2);
+            el.appendChild(destaque);
+            return;
+        }
+        if (parte) el.appendChild(document.createTextNode(parte));
+    });
 }
 
 async function obterAssinaturaCloudinaryGestao() {
@@ -48,7 +82,7 @@ async function enviarFicheiroCloudinaryGestao(ficheiro) {
     return resultado.eager?.[0]?.secure_url || resultado.secure_url;
 }
 
-function criarCampoTextoGestao(rotulo, valor, maxLength = 80) {
+function criarCampoTextoGestao(rotulo, valor, maxLength = 120) {
     const label = document.createElement('label');
     label.className = 'gestao-campo';
     const span = document.createElement('span');
@@ -60,6 +94,30 @@ function criarCampoTextoGestao(rotulo, valor, maxLength = 80) {
     input.dataset.semLimparCampo = '1';
     label.appendChild(span);
     label.appendChild(input);
+    return { label, input };
+}
+
+function criarCampoCorGestao(rotulo, valor, fallback) {
+    const label = document.createElement('label');
+    label.className = 'gestao-campo gestao-campo-cor';
+    const span = document.createElement('span');
+    span.textContent = rotulo;
+    const wrap = document.createElement('div');
+    wrap.className = 'gestao-cor-wrap';
+    const input = document.createElement('input');
+    input.type = 'color';
+    input.value = normalizarCorHexGestao(valor, fallback);
+    input.dataset.semLimparCampo = '1';
+    const codigo = document.createElement('code');
+    codigo.className = 'gestao-cor-codigo';
+    codigo.textContent = input.value;
+    input.addEventListener('input', () => {
+        codigo.textContent = input.value;
+    });
+    wrap.appendChild(input);
+    wrap.appendChild(codigo);
+    label.appendChild(span);
+    label.appendChild(wrap);
     return { label, input };
 }
 
@@ -83,29 +141,32 @@ function renderizarListaBannersGestao() {
 
         const textoEsq = String(banner.texto_esquerda || banner.alt || '').trim();
         const textoDir = String(banner.texto_direita || '').trim();
+        const corEsq = normalizarCorHexGestao(banner.cor_esquerda, GESTAO_COR_BRANCO);
+        const corDir = normalizarCorHexGestao(banner.cor_direita, GESTAO_COR_BRANCO);
+        const corDest = normalizarCorHexGestao(banner.cor_destaque, GESTAO_COR_AMARELO_LOGO);
 
         const previewWrap = document.createElement('div');
         previewWrap.className = 'gestao-banner-preview-wrap';
         const preview = document.createElement('img');
         preview.className = 'gestao-banner-preview';
         preview.src = banner.url;
-        preview.alt = [textoEsq, textoDir].filter(Boolean).join(' · ') || 'Banner';
+        preview.alt = [textoPlanoGestao(textoEsq), textoPlanoGestao(textoDir)].filter(Boolean).join(' · ') || 'Banner';
         preview.loading = 'lazy';
         preview.decoding = 'async';
         previewWrap.appendChild(preview);
-        if (textoEsq || textoDir) {
+        if (textoPlanoGestao(textoEsq) || textoPlanoGestao(textoDir)) {
             const textos = document.createElement('div');
             textos.className = 'gestao-banner-preview-textos';
-            if (textoEsq) {
+            if (textoPlanoGestao(textoEsq)) {
                 const esq = document.createElement('span');
                 esq.className = 'gestao-banner-preview-texto gestao-banner-preview-texto-esq';
-                esq.textContent = textoEsq;
+                preencherTextoBannerGestao(esq, textoEsq, corEsq, corDest);
                 textos.appendChild(esq);
             }
-            if (textoDir) {
+            if (textoPlanoGestao(textoDir)) {
                 const dir = document.createElement('span');
                 dir.className = 'gestao-banner-preview-texto gestao-banner-preview-texto-dir';
-                dir.textContent = textoDir;
+                preencherTextoBannerGestao(dir, textoDir, corDir, corDest);
                 textos.appendChild(dir);
             }
             previewWrap.appendChild(textos);
@@ -117,6 +178,9 @@ function renderizarListaBannersGestao() {
 
         const campoEsq = criarCampoTextoGestao('Texto à esquerda', textoEsq);
         const campoDir = criarCampoTextoGestao('Texto à direita', textoDir);
+        const campoCorEsq = criarCampoCorGestao('Cor esquerda', corEsq, GESTAO_COR_BRANCO);
+        const campoCorDir = criarCampoCorGestao('Cor direita', corDir, GESTAO_COR_BRANCO);
+        const campoCorDest = criarCampoCorGestao('Cor destaque (**texto**)', corDest, GESTAO_COR_AMARELO_LOGO);
 
         const labelOrdem = document.createElement('label');
         labelOrdem.className = 'gestao-campo gestao-campo-ordem';
@@ -150,6 +214,9 @@ function renderizarListaBannersGestao() {
                 url: banner.url,
                 texto_esquerda: campoEsq.input.value,
                 texto_direita: campoDir.input.value,
+                cor_esquerda: campoCorEsq.input.value,
+                cor_direita: campoCorDir.input.value,
+                cor_destaque: campoCorDest.input.value,
                 ordem: Number(inputOrdem.value),
                 ativo: inputAtivo.checked
             }).catch(console.error);
@@ -170,6 +237,9 @@ function renderizarListaBannersGestao() {
         campos.appendChild(campoEsq.label);
         campos.appendChild(campoDir.label);
         campos.appendChild(labelOrdem);
+        campos.appendChild(campoCorEsq.label);
+        campos.appendChild(campoCorDir.label);
+        campos.appendChild(campoCorDest.label);
         campos.appendChild(acoes);
         card.appendChild(campos);
         lista.appendChild(card);
@@ -192,6 +262,9 @@ async function guardarBannerGestao(id, dados) {
         p_url: dados.url,
         p_texto_esquerda: dados.texto_esquerda || '',
         p_texto_direita: dados.texto_direita || '',
+        p_cor_esquerda: normalizarCorHexGestao(dados.cor_esquerda, GESTAO_COR_BRANCO),
+        p_cor_direita: normalizarCorHexGestao(dados.cor_direita, GESTAO_COR_BRANCO),
+        p_cor_destaque: normalizarCorHexGestao(dados.cor_destaque, GESTAO_COR_AMARELO_LOGO),
         p_ordem: Number.isFinite(Number(dados.ordem)) ? Number(dados.ordem) : 0,
         p_ativo: dados.ativo !== false
     });
@@ -241,12 +314,18 @@ async function adicionarBannerGestao(evento) {
         const url = await enviarFicheiroCloudinaryGestao(ficheiro);
         const textoEsq = document.getElementById('novo-banner-texto-esq')?.value || '';
         const textoDir = document.getElementById('novo-banner-texto-dir')?.value || '';
+        const corEsq = document.getElementById('novo-banner-cor-esq')?.value || GESTAO_COR_BRANCO;
+        const corDir = document.getElementById('novo-banner-cor-dir')?.value || GESTAO_COR_BRANCO;
+        const corDest = document.getElementById('novo-banner-cor-dest')?.value || GESTAO_COR_AMARELO_LOGO;
         const ordem = Number(document.getElementById('novo-banner-ordem')?.value);
         const ativo = document.getElementById('novo-banner-ativo')?.checked !== false;
         await guardarBannerGestao(null, {
             url,
             texto_esquerda: textoEsq,
             texto_direita: textoDir,
+            cor_esquerda: corEsq,
+            cor_direita: corDir,
+            cor_destaque: corDest,
             ordem: Number.isFinite(ordem) ? ordem : 100,
             ativo
         });
@@ -298,7 +377,7 @@ async function iniciarPainelGestao() {
     } catch (erro) {
         console.error(erro);
         definirStatusGestao(
-            'Erro ao carregar. Confirma se executaste o SQL supabase-banners-loja-textos.sql no Supabase. '
+            'Erro ao carregar. Confirma se executaste o SQL supabase-banners-loja-cores.sql no Supabase. '
             + (erro.message || '')
         );
     }

@@ -20,14 +20,25 @@ body.pagina-gestao-admin > main.gestao-admin {
     margin: 0 0 16px;
     color: rgba(255, 255, 255, 0.78);
     line-height: 1.45;
-    max-width: 62ch;
+    max-width: 72ch;
+}
+
+.gestao-ajuda code {
+    font-size: 0.92em;
+    color: #ffc107;
 }
 
 .gestao-form-banner {
     display: grid;
-    grid-template-columns: minmax(160px, 1.2fr) minmax(120px, 1fr) minmax(120px, 1fr) 90px auto auto;
+    grid-template-columns: minmax(160px, 1.2fr) minmax(140px, 1fr) minmax(140px, 1fr) 90px;
     gap: 12px;
     align-items: end;
+}
+
+.gestao-form-banner .gestao-campo-cor,
+.gestao-form-banner .gestao-check,
+.gestao-form-banner > .wallapop-botao {
+    align-self: end;
 }
 
 .gestao-campo {
@@ -46,7 +57,8 @@ body.pagina-gestao-admin > main.gestao-admin {
 
 .gestao-campo input[type="text"],
 .gestao-campo input[type="number"],
-.gestao-campo input[type="file"] {
+.gestao-campo input[type="file"],
+.gestao-campo input[type="color"] {
     min-height: 42px;
     border: 1px solid rgba(255, 255, 255, 0.22);
     border-radius: 6px;
@@ -54,6 +66,24 @@ body.pagina-gestao-admin > main.gestao-admin {
     color: #fff;
     padding: 8px 10px;
     font: inherit;
+}
+
+.gestao-cor-wrap {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 42px;
+}
+
+.gestao-campo input[type="color"] {
+    width: 52px;
+    padding: 4px;
+    cursor: pointer;
+}
+
+.gestao-cor-codigo {
+    font-size: 0.78rem;
+    color: rgba(255, 255, 255, 0.7);
 }
 
 .gestao-campo input[type="file"] {
@@ -141,6 +171,14 @@ body.pagina-gestao-admin > main.gestao-admin {
     grid-template-columns: 1fr 1fr 90px;
     gap: 10px;
     align-content: start;
+}
+
+.gestao-banner-campos .gestao-campo-cor {
+    min-width: 0;
+}
+
+.gestao-banner-preview-destaque {
+    font-weight: 800;
 }
 
 .gestao-banner-acoes {
