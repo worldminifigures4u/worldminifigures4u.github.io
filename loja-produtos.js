@@ -18,6 +18,10 @@ let haMaisProdutosRemotos = false;
 let carregandoProdutosRemotos = false;
 let promessaCargaProdutosEmCurso = null;
 let reinicioProdutosPendente = false;
+let vitrineModoAleatorio = false;
+let vitrineInicioAleatorio = 0;
+let vitrineCursorCatalogo = 0;
+let vitrineVoltaAoInicio = false;
 const mapaTemasLoja = new Map();
 
 function slugificarTemaLoja(texto) {
@@ -412,6 +416,54 @@ function baralharProdutosVitrine(lista) {
     return itens;
 }
 
+function reiniciarEstadoPaginacaoVitrine() {
+    vitrineModoAleatorio = false;
+    vitrineInicioAleatorio = 0;
+    vitrineCursorCatalogo = 0;
+    vitrineVoltaAoInicio = false;
+    offsetProdutosRemotos = 0;
+    haMaisProdutosRemotos = false;
+}
+
+function criarConsultaProdutosLoja(cliente, filtros) {
+    return aplicarFiltrosQueryProdutos(
+        cliente
+            .from('produtos_loja')
+            .select(CAMPOS_PRODUTO_LOJA, { count: 'exact' })
+            .order('tema', { ascending: true })
+            .order('subtema', { ascending: true })
+            .order('nome', { ascending: true })
+            .order('id', { ascending: true }),
+        filtros
+    );
+}
+
+async function contarProdutosLoja(cliente, filtros) {
+    const { count, error } = await executarComTimeout(
+        aplicarFiltrosQueryProdutos(
+            cliente
+                .from('produtos_loja')
+                .select('id', { count: 'exact', head: true }),
+            filtros
+        ),
+        20000,
+        'Contagem de produtos demasiado lenta.'
+    );
+    if (error) throw error;
+    return Math.max(0, Number(count || 0));
+}
+
+async function buscarProdutosLojaIntervalo(cliente, filtros, inicio, fimInclusivo) {
+    if (fimInclusivo < inicio) return [];
+    const { data, error } = await executarComTimeout(
+        criarConsultaProdutosLoja(cliente, filtros).range(inicio, fimInclusivo),
+        20000,
+        'Consulta de produtos demasiado lenta.'
+    );
+    if (error) throw error;
+    return Array.isArray(data) ? data : [];
+}
+
 async function carregarMetadadosTemasLoja() {
     let metadados = lerCacheTemasLoja();
 
@@ -486,45 +538,101 @@ async function carregarPaginaProdutosLoja({ reiniciar = false } = {}) {
         try {
             const cliente = obterClienteProdutosLoja();
             const filtros = obterFiltrosVitrineAtuais();
-            const offset = reiniciar ? 0 : offsetProdutosRemotos;
             const limite = PRODUTOS_POR_PAGINA_SERVIDOR;
-            const consultaBase = aplicarFiltrosQueryProdutos(
-                cliente
-                    .from('produtos_loja')
-                    .select(CAMPOS_PRODUTO_LOJA, { count: 'exact' })
-                    .order('tema', { ascending: true })
-                    .order('subtema', { ascending: true })
-                    .order('nome', { ascending: true })
-                    .order('id', { ascending: true }),
-                filtros
-            );
-
-            const { data: pagina, error, count } = await executarComTimeout(
-                consultaBase.range(offset, offset + limite - 1),
-                20000,
-                'Consulta de produtos demasiado lenta.'
-            );
-
-            if (error) throw error;
-
-            const produtosPagina = pagina || [];
-            totalProdutosRemotos = Number(count || 0);
-            offsetProdutosRemotos = offset + produtosPagina.length;
-            haMaisProdutosRemotos = offsetProdutosRemotos < totalProdutosRemotos;
-
-            mesclarProdutosNoCatalogoLocal(produtosPagina);
+            const baralharAbertura = reiniciar && deveBaralharPrimeiraPaginaVitrine(filtros);
 
             if (reiniciar) {
-                const primeiraPagina = deveBaralharPrimeiraPaginaVitrine(filtros)
-                    ? baralharProdutosVitrine(produtosPagina)
-                    : produtosPagina;
-                produtosFiltradosAtual = primeiraPagina;
-                produtosVitrineAtual = primeiraPagina;
+                reiniciarEstadoPaginacaoVitrine();
+                totalProdutosRemotos = await contarProdutosLoja(cliente, filtros);
+
+                let produtosPagina = [];
+                if (baralharAbertura && totalProdutosRemotos > 0) {
+                    vitrineModoAleatorio = true;
+                    vitrineInicioAleatorio = Math.floor(Math.random() * totalProdutosRemotos);
+                    vitrineCursorCatalogo = vitrineInicioAleatorio;
+                    vitrineVoltaAoInicio = false;
+
+                    const fim = Math.min(vitrineCursorCatalogo + limite - 1, totalProdutosRemotos - 1);
+                    produtosPagina = await buscarProdutosLojaIntervalo(
+                        cliente, filtros, vitrineCursorCatalogo, fim
+                    );
+                    vitrineCursorCatalogo = fim + 1;
+                    if (vitrineCursorCatalogo >= totalProdutosRemotos) {
+                        vitrineCursorCatalogo = 0;
+                        vitrineVoltaAoInicio = true;
+                    }
+
+                    if (produtosPagina.length < limite && vitrineVoltaAoInicio && vitrineInicioAleatorio > 0) {
+                        const falta = limite - produtosPagina.length;
+                        const fimExtra = Math.min(falta - 1, vitrineInicioAleatorio - 1);
+                        const extra = await buscarProdutosLojaIntervalo(cliente, filtros, 0, fimExtra);
+                        produtosPagina = produtosPagina.concat(extra);
+                        vitrineCursorCatalogo = fimExtra + 1;
+                    }
+
+                    produtosPagina = baralharProdutosVitrine(produtosPagina);
+                    offsetProdutosRemotos = produtosPagina.length;
+                    haMaisProdutosRemotos = offsetProdutosRemotos < totalProdutosRemotos
+                        && !(vitrineVoltaAoInicio && vitrineCursorCatalogo >= vitrineInicioAleatorio);
+                } else {
+                    produtosPagina = await buscarProdutosLojaIntervalo(
+                        cliente, filtros, 0, Math.max(0, limite - 1)
+                    );
+                    offsetProdutosRemotos = produtosPagina.length;
+                    haMaisProdutosRemotos = offsetProdutosRemotos < totalProdutosRemotos;
+                }
+
+                mesclarProdutosNoCatalogoLocal(produtosPagina);
+                produtosFiltradosAtual = produtosPagina;
+                produtosVitrineAtual = produtosPagina;
                 indiceRenderizado = 0;
-            } else {
-                produtosFiltradosAtual.push(...produtosPagina);
-                produtosVitrineAtual = produtosFiltradosAtual;
+                return;
             }
+
+            let produtosPagina = [];
+            if (vitrineModoAleatorio) {
+                if (!vitrineVoltaAoInicio) {
+                    if (vitrineCursorCatalogo >= totalProdutosRemotos) {
+                        vitrineCursorCatalogo = 0;
+                        vitrineVoltaAoInicio = true;
+                    } else {
+                        const fim = Math.min(vitrineCursorCatalogo + limite - 1, totalProdutosRemotos - 1);
+                        produtosPagina = await buscarProdutosLojaIntervalo(
+                            cliente, filtros, vitrineCursorCatalogo, fim
+                        );
+                        vitrineCursorCatalogo = fim + 1;
+                        if (vitrineCursorCatalogo >= totalProdutosRemotos) {
+                            vitrineCursorCatalogo = 0;
+                            vitrineVoltaAoInicio = true;
+                        }
+                    }
+                }
+
+                if (vitrineVoltaAoInicio && produtosPagina.length < limite && vitrineCursorCatalogo < vitrineInicioAleatorio) {
+                    const falta = limite - produtosPagina.length;
+                    const fim = Math.min(vitrineCursorCatalogo + falta - 1, vitrineInicioAleatorio - 1);
+                    const extra = await buscarProdutosLojaIntervalo(
+                        cliente, filtros, vitrineCursorCatalogo, fim
+                    );
+                    produtosPagina = produtosPagina.concat(extra);
+                    vitrineCursorCatalogo = fim + 1;
+                }
+
+                offsetProdutosRemotos += produtosPagina.length;
+                haMaisProdutosRemotos = offsetProdutosRemotos < totalProdutosRemotos
+                    && !(vitrineVoltaAoInicio && vitrineCursorCatalogo >= vitrineInicioAleatorio);
+            } else {
+                const offset = offsetProdutosRemotos;
+                produtosPagina = await buscarProdutosLojaIntervalo(
+                    cliente, filtros, offset, offset + limite - 1
+                );
+                offsetProdutosRemotos = offset + produtosPagina.length;
+                haMaisProdutosRemotos = offsetProdutosRemotos < totalProdutosRemotos;
+            }
+
+            mesclarProdutosNoCatalogoLocal(produtosPagina);
+            produtosFiltradosAtual.push(...produtosPagina);
+            produtosVitrineAtual = produtosFiltradosAtual;
         } finally {
             carregandoProdutosRemotos = false;
             promessaCargaProdutosEmCurso = null;
@@ -540,8 +648,7 @@ async function carregarProdutosDaNuvem(){
     try{
         todosOsProdutos = [];
         catalogoAdminCarregado = false;
-        offsetProdutosRemotos = 0;
-        haMaisProdutosRemotos = false;
+        reiniciarEstadoPaginacaoVitrine();
         totalProdutosRemotos = 0;
 
         const metadadosTemas = await carregarMetadadosTemasLoja();
