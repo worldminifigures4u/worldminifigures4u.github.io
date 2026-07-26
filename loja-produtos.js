@@ -24,6 +24,12 @@ let vitrineCursorCatalogo = 0;
 let vitrineVoltaAoInicio = false;
 const mapaTemasLoja = new Map();
 let lojaFotoModalLigado = false;
+let lojaFotoGaleriaUrls = [];
+let lojaFotoGaleriaIndice = 0;
+let lojaFotoGaleriaAlt = '';
+let lojaFotoGaleriaOnChange = null;
+let lojaFotoToqueInicioX = 0;
+let lojaFotoToqueInicioY = 0;
 
 function fecharFotoProdutoAmpliada() {
     const modal = document.getElementById('loja-foto-modal');
@@ -34,19 +40,80 @@ function fecharFotoProdutoAmpliada() {
         foto.removeAttribute('src');
         foto.alt = '';
     }
+    lojaFotoGaleriaUrls = [];
+    lojaFotoGaleriaIndice = 0;
+    lojaFotoGaleriaAlt = '';
+    lojaFotoGaleriaOnChange = null;
     document.body.classList.remove('loja-foto-modal-aberto');
 }
 
-function abrirFotoProdutoAmpliada(url, alt) {
-    const modal = document.getElementById('loja-foto-modal');
+function atualizarControlosFotoProdutoAmpliada() {
+    const total = lojaFotoGaleriaUrls.length;
+    const temVarias = total > 1;
+    const anterior = document.getElementById('loja-foto-modal-anterior');
+    const seguinte = document.getElementById('loja-foto-modal-seguinte');
+    const indicador = document.getElementById('loja-foto-modal-indicador');
+    if (anterior) anterior.hidden = !temVarias;
+    if (seguinte) seguinte.hidden = !temVarias;
+    if (indicador) {
+        indicador.hidden = !temVarias;
+        if (temVarias) {
+            indicador.textContent = (lojaFotoGaleriaIndice + 1) + ' / ' + total;
+        }
+    }
+}
+
+function mostrarFotoProdutoAmpliadaAtual() {
     const foto = document.getElementById('loja-foto-modal-img');
-    const fechar = document.getElementById('loja-foto-modal-fechar');
-    if (!modal || !foto || !url) return;
+    if (!foto || !lojaFotoGaleriaUrls.length) return;
+    const url = lojaFotoGaleriaUrls[lojaFotoGaleriaIndice];
     const urlAmpliada = typeof otimizarImagemCloudinary === 'function'
         ? otimizarImagemCloudinary(url, 1200)
         : url;
     foto.src = urlAmpliada;
-    foto.alt = alt || 'Produto';
+    foto.alt = lojaFotoGaleriaAlt || 'Produto';
+    atualizarControlosFotoProdutoAmpliada();
+    if (typeof lojaFotoGaleriaOnChange === 'function') {
+        lojaFotoGaleriaOnChange(lojaFotoGaleriaIndice);
+    }
+}
+
+function navegarFotoProdutoAmpliada(delta) {
+    const total = lojaFotoGaleriaUrls.length;
+    if (total < 2) return;
+    lojaFotoGaleriaIndice = (lojaFotoGaleriaIndice + delta + total) % total;
+    mostrarFotoProdutoAmpliadaAtual();
+}
+
+function abrirFotoProdutoAmpliada(opcoes) {
+    const modal = document.getElementById('loja-foto-modal');
+    const foto = document.getElementById('loja-foto-modal-img');
+    const fechar = document.getElementById('loja-foto-modal-fechar');
+    if (!modal || !foto) return;
+
+    let urls = [];
+    let indice = 0;
+    let alt = 'Produto';
+    let onChange = null;
+
+    if (typeof opcoes === 'string') {
+        urls = [opcoes];
+        alt = arguments[1] || 'Produto';
+    } else if (opcoes && typeof opcoes === 'object') {
+        urls = Array.isArray(opcoes.urls)
+            ? opcoes.urls.filter(Boolean)
+            : (opcoes.url ? [opcoes.url] : []);
+        indice = Number(opcoes.indice) || 0;
+        alt = opcoes.alt || 'Produto';
+        onChange = typeof opcoes.onChange === 'function' ? opcoes.onChange : null;
+    }
+
+    if (!urls.length) return;
+    lojaFotoGaleriaUrls = urls;
+    lojaFotoGaleriaIndice = ((indice % urls.length) + urls.length) % urls.length;
+    lojaFotoGaleriaAlt = alt;
+    lojaFotoGaleriaOnChange = onChange;
+    mostrarFotoProdutoAmpliadaAtual();
     modal.hidden = false;
     document.body.classList.add('loja-foto-modal-aberto');
     fechar?.focus();
@@ -57,17 +124,54 @@ function garantirListenersModalFotoLoja() {
     const modal = document.getElementById('loja-foto-modal');
     if (!modal) return;
     lojaFotoModalLigado = true;
+
     document.getElementById('loja-foto-modal-fechar')?.addEventListener('click', (evento) => {
         evento.preventDefault();
+        evento.stopPropagation();
         fecharFotoProdutoAmpliada();
+    });
+    document.getElementById('loja-foto-modal-anterior')?.addEventListener('click', (evento) => {
+        evento.preventDefault();
+        evento.stopPropagation();
+        navegarFotoProdutoAmpliada(-1);
+    });
+    document.getElementById('loja-foto-modal-seguinte')?.addEventListener('click', (evento) => {
+        evento.preventDefault();
+        evento.stopPropagation();
+        navegarFotoProdutoAmpliada(1);
     });
     modal.addEventListener('click', (evento) => {
         if (evento.target === modal) fecharFotoProdutoAmpliada();
     });
+    modal.addEventListener('pointerdown', (evento) => {
+        if (evento.target.closest('.loja-foto-modal-fechar, .loja-foto-modal-seta')) return;
+        lojaFotoToqueInicioX = evento.clientX;
+        lojaFotoToqueInicioY = evento.clientY;
+    });
+    modal.addEventListener('pointerup', (evento) => {
+        if (evento.target.closest('.loja-foto-modal-fechar, .loja-foto-modal-seta')) return;
+        const deltaX = evento.clientX - lojaFotoToqueInicioX;
+        const deltaY = evento.clientY - lojaFotoToqueInicioY;
+        if (lojaFotoGaleriaUrls.length > 1 && Math.abs(deltaX) >= 50 && Math.abs(deltaX) > Math.abs(deltaY)) {
+            navegarFotoProdutoAmpliada(deltaX < 0 ? 1 : -1);
+        }
+    });
     document.addEventListener('keydown', (evento) => {
-        if (evento.key !== 'Escape') return;
         const atual = document.getElementById('loja-foto-modal');
-        if (atual && !atual.hidden) fecharFotoProdutoAmpliada();
+        if (!atual || atual.hidden) return;
+        if (evento.key === 'Escape') {
+            fecharFotoProdutoAmpliada();
+            return;
+        }
+        if (evento.key === 'ArrowLeft') {
+            evento.preventDefault();
+            navegarFotoProdutoAmpliada(-1);
+            return;
+        }
+        if (evento.key === 'ArrowRight') {
+            evento.preventDefault();
+            navegarFotoProdutoAmpliada(1);
+        }
     });
 }
 
@@ -968,7 +1072,15 @@ function criarCardProduto(prod) {
 
     const abrirAmpliacaoAtual = () => {
         garantirListenersModalFotoLoja();
-        abrirFotoProdutoAmpliada(obterUrlOriginalAtual(), prod.nome || 'Produto');
+        abrirFotoProdutoAmpliada({
+            urls: listaImagens.length ? listaImagens : [imagemFallback],
+            indice: imagemAtual,
+            alt: prod.nome || 'Produto',
+            onChange: (indice) => {
+                if (indice === imagemAtual) return;
+                atualizarImagem(indice);
+            }
+        });
     };
 
     if (totalImagens > 1) {

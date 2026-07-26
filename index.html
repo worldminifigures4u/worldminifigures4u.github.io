@@ -19,8 +19,8 @@
     <link rel="stylesheet" href="critico-loja.css?v=20260726-alinhar-bordas">
     <link rel="stylesheet" href="styles-tema.css?v=20260721-sem-underline" media="print" data-async-css>
     <noscript><link rel="stylesheet" href="styles-tema.css?v=20260721-sem-underline"></noscript>
-    <link rel="stylesheet" href="loja.css?v=20260726-alinhar-bordas" media="print" data-async-css>
-    <noscript><link rel="stylesheet" href="loja.css?v=20260726-alinhar-bordas"></noscript>
+    <link rel="stylesheet" href="loja.css?v=20260726-foto-nav" media="print" data-async-css>
+    <noscript><link rel="stylesheet" href="loja.css?v=20260726-foto-nav"></noscript>
     <script src="async-css.js?v=20260713-r26"></script>
 </head>
 <body data-page="loja">
@@ -133,9 +133,12 @@
 
 </div>
 
-<div class="loja-foto-modal" id="loja-foto-modal" hidden>
+<div class="loja-foto-modal" id="loja-foto-modal" hidden role="dialog" aria-modal="true" aria-label="Fotografia ampliada">
     <button type="button" class="loja-foto-modal-fechar" id="loja-foto-modal-fechar" aria-label="Fechar fotografia">&times;</button>
+    <button type="button" class="loja-foto-modal-seta loja-foto-modal-anterior" id="loja-foto-modal-anterior" aria-label="Fotografia anterior" hidden>&lt;</button>
     <img id="loja-foto-modal-img" alt="">
+    <button type="button" class="loja-foto-modal-seta loja-foto-modal-seguinte" id="loja-foto-modal-seguinte" aria-label="Fotografia seguinte" hidden>&gt;</button>
+    <span class="loja-foto-modal-indicador" id="loja-foto-modal-indicador" hidden></span>
 </div>
 
 <footer class="rodape-site">
@@ -154,7 +157,7 @@
 <script src="loja-banner.js?v=20260726-tamanho-letra" defer></script>
 <script src="app-util.js?v=20260721-mais-produtos" defer></script>
 <script src="app-favoritos-loader.js?v=20260719-favoritos-persist" defer></script>
-<script src="loja-pagina.js?v=20260726-cat-mobile" defer></script>
+<script src="loja-pagina.js?v=20260726-foto-nav" defer></script>
 <script src="app-sessao.js?v=20260726-gestao" defer></script>
 <script src="campo-limpar.js?v=20260720-sem-x-cliente" defer></script>
 <script src="inline-listeners-base.js?v=20260725-logo-hq" defer></script>
