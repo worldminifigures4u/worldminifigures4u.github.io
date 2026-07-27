@@ -610,8 +610,8 @@ function encomendasFiltradasAdmin() {
             const prioridadeA = a.prioritaria ? 1 : 0;
             const prioridadeB = b.prioritaria ? 1 : 0;
             if (prioridadeA !== prioridadeB) return prioridadeB - prioridadeA;
-            const dataA = new Date(a.created_at).getTime();
-            const dataB = new Date(b.created_at).getTime();
+            const dataA = new Date(a.data_pagamento || a.created_at).getTime();
+            const dataB = new Date(b.data_pagamento || b.created_at).getTime();
             return (Number.isNaN(dataA) ? Number.MAX_SAFE_INTEGER : dataA)
                 - (Number.isNaN(dataB) ? Number.MAX_SAFE_INTEGER : dataB);
         });
