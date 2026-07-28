@@ -1,4 +1,4 @@
-Ôªø<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="pt">
 <head>
     <meta charset="UTF-8">
@@ -14,7 +14,7 @@
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
     <title>Mapas | Figures Planet</title>
-    <link rel="icon" type="image/webp" href="favicon-32.webp?v=20260727-fp-circle" sizes="32x32">
+    <link rel="icon" type="image/webp" href="favicon-32.webp?v=20260728-fp-white" sizes="32x32">
     <link rel="stylesheet" href="styles.css?v=20260721-rodape-800">
     <link rel="stylesheet" href="styles-admin.css?v=20260717-portes-cab">
     <link rel="stylesheet" href="fornecedores-mapas.css?v=20260725-verde-encomendada">
@@ -29,7 +29,7 @@
                 <img src="figures-planet-logo-transparent.webp?v=20260725-logo-hq" alt="Figures Planet" width="383" height="69" decoding="async" fetchpriority="high">
             </a>
             <form class="cabecalho-pesquisa" action="index.html" method="get">
-                <input type="search" name="q" class="input-pesquisa" placeholder="O que est√°s √† procura?">
+                <input type="search" name="q" class="input-pesquisa" placeholder="O que est·s ‡ procura?">
                 <span class="icone-pesquisa" aria-hidden="true"></span>
             </form>
             <div class="acoes-cabecalho acoes-cabecalho-publicas">
@@ -50,14 +50,14 @@
                     <span class="badge-carrinho" id="contador-carrinho-cabecalho">0</span>
                 </a>
             </div>
-            <nav class="navegacao-admin-cabecalho" aria-label="Navega√ß√£o administrativa" hidden>
+            <nav class="navegacao-admin-cabecalho" aria-label="NavegaÁ„o administrativa" hidden>
                 <a class="acao-cabecalho acao-plataforma-admin" href="plataforma.html" aria-label="Gerir plataformas">Plataformas</a>
                 <a class="acao-cabecalho acao-clientes-admin" href="clientes.html" aria-label="Gerir clientes">Clientes</a>
                 <a class="acao-cabecalho acao-encomendas-admin" href="encomendas.html" aria-label="Gerir encomendas">Encomendas</a>
                 <a class="acao-cabecalho acao-fornecedores-admin" href="fornecedores.html" aria-label="Gerir fornecedores">Fornecedores</a>
                 <a class="acao-cabecalho acao-mapas-admin ativa" href="mapas.html" aria-label="Gerir mapas">Mapas</a>
-                <a class="acao-cabecalho acao-estatisticas-admin" href="estatisticas.html" aria-label="Ver estat√≠sticas">Estat√≠sticas</a>
-                <a class="acao-cabecalho acao-gestao-admin" href="gestao.html" aria-label="Gest√£o">Gest√£o</a>
+                <a class="acao-cabecalho acao-estatisticas-admin" href="estatisticas.html" aria-label="Ver estatÌsticas">EstatÌsticas</a>
+                <a class="acao-cabecalho acao-gestao-admin" href="gestao.html" aria-label="Gest„o">Gest„o</a>
                 <a class="acao-cabecalho acao-conta-admin" href="conta.html" aria-label="Abrir conta">Conta</a>
             </nav>
         </div>
@@ -69,7 +69,7 @@
         <section class="fornecedores-grid fornecedores-grid-mapas">
             <section class="fornecedores-painel fornecedores-painel-mapa" id="fornecedores-escolher" aria-label="Mapas">
                 <div id="fornecedor-contador-barra" class="mapas-contador-filtros">
-                    <input id="fornecedor-pesquisa" class="fornecedor-pesquisa-compacta" type="search" placeholder="nome, refer√™ncia, sku ou tema">
+                    <input id="fornecedor-pesquisa" class="fornecedor-pesquisa-compacta" type="search" placeholder="nome, referÍncia, sku ou tema">
                     <select id="mapas-filtro-stock" class="mapas-filtro-stock" aria-label="Filtrar stock">
                         <option value="todos">Todos os stocks</option>
                         <option value="sem-stock">Stock = 0</option>
@@ -85,20 +85,20 @@
                         <option value="maior-9">Stock &gt; 9</option>
                         <option value="maior-10">Stock &gt; 10</option>
                     </select>
-                    <button type="button" id="mapas-copiar-lista" class="mapas-copiar-lista">Copiar lista vis√≠vel</button>
+                    <button type="button" id="mapas-copiar-lista" class="mapas-copiar-lista">Copiar lista visÌvel</button>
                     <details class="mapas-colunas-painel" id="mapas-colunas-painel">
                         <summary>Colunas</summary>
-                        <div class="mapas-colunas-opcoes" id="mapas-colunas-opcoes" role="group" aria-label="Colunas vis√≠veis"></div>
+                        <div class="mapas-colunas-opcoes" id="mapas-colunas-opcoes" role="group" aria-label="Colunas visÌveis"></div>
                     </details>
                     <button type="button" id="mapas-criar-produto" class="mapas-copiar-lista">Novo</button>
                     <details class="mapas-colunas-painel mapas-importacao-painel" id="mapas-painel-importacao">
                         <summary>Importar</summary>
-                        <div class="mapas-importacao-corpo" role="group" aria-label="Op√ß√µes de importa√ß√£o">
+                        <div class="mapas-importacao-corpo" role="group" aria-label="OpÁıes de importaÁ„o">
                             <section class="admin-seccao mapas-importacao-bloco" aria-label="Atualizar stock">
                                 <h3>Atualizar stock</h3>
                                 <div class="form-admin">
                                     <input class="input-upload-admin" type="file" id="admin-ficheiro-stock" accept=".ods,.xlsx,.xls">
-                                    <p class="ajuda-admin">Usa s√≥ as colunas SKU e stock. Atualiza o stock dos produtos existentes e o ativo fica autom√°tico (stock &gt; 0). N√£o cria nem remove produtos.</p>
+                                    <p class="ajuda-admin">Usa sÛ as colunas SKU e stock. Atualiza o stock dos produtos existentes e o ativo fica autom·tico (stock &gt; 0). N„o cria nem remove produtos.</p>
                                     <div id="resumo-importacao-stock" class="resumo-importacao-stock oculto"></div>
                                     <div id="detalhes-importacao-stock" class="lista-importacao-stock oculto"></div>
                                     <button type="button" id="btn-confirmar-importacao-stock" class="btn-acao-cliente" disabled>Atualizar stock</button>
@@ -106,30 +106,30 @@
                                 </div>
                             </section>
 
-                            <section class="admin-seccao mapas-importacao-bloco" aria-label="Atualizar cat√°logo excepto stock">
-                                <h3>Atualizar cat√°logo excepto stock</h3>
+                            <section class="admin-seccao mapas-importacao-bloco" aria-label="Atualizar cat·logo excepto stock">
+                                <h3>Atualizar cat·logo excepto stock</h3>
                                 <div class="form-admin">
                                     <input class="input-upload-admin" type="file" id="admin-ficheiro-catalogo-sem-stock" accept=".ods,.xlsx,.xls">
-                                    <p class="ajuda-admin">N√£o altera stock. Ativo fica autom√°tico (stock &gt; 0). Novos entram com stock 0. N√£o remove produtos em falta.</p>
+                                    <p class="ajuda-admin">N„o altera stock. Ativo fica autom·tico (stock &gt; 0). Novos entram com stock 0. N„o remove produtos em falta.</p>
                                     <div id="resumo-importacao-catalogo-sem-stock" class="resumo-importacao-stock oculto"></div>
                                     <div id="detalhes-importacao-catalogo-sem-stock" class="lista-importacao-stock oculto"></div>
-                                    <button type="button" id="btn-confirmar-importacao-catalogo-sem-stock" class="btn-acao-cliente" disabled>Atualizar cat√°logo excepto stock</button>
+                                    <button type="button" id="btn-confirmar-importacao-catalogo-sem-stock" class="btn-acao-cliente" disabled>Atualizar cat·logo excepto stock</button>
                                     <div id="status-importacao-catalogo-sem-stock" class="msg-status"></div>
                                 </div>
                             </section>
 
-                            <section class="admin-seccao mapas-importacao-bloco" aria-label="Substituir cat√°logo">
-                                <h3>Substituir cat√°logo</h3>
+                            <section class="admin-seccao mapas-importacao-bloco" aria-label="Substituir cat·logo">
+                                <h3>Substituir cat·logo</h3>
                                 <div class="form-admin">
                                     <input class="input-upload-admin" type="file" id="admin-ficheiro-catalogo" accept=".ods,.xlsx,.xls">
-                                    <p class="ajuda-admin">Substitui o cat√°logo completo (nome, pre√ßos, stock, tema, etc.). Ativo fica autom√°tico (stock &gt; 0). Faz backup antes. Produtos em falta no ficheiro s√£o removidos.</p>
+                                    <p class="ajuda-admin">Substitui o cat·logo completo (nome, preÁos, stock, tema, etc.). Ativo fica autom·tico (stock &gt; 0). Faz backup antes. Produtos em falta no ficheiro s„o removidos.</p>
                                     <div id="resumo-importacao-catalogo" class="resumo-importacao-stock oculto"></div>
                                     <div id="detalhes-importacao-catalogo" class="lista-importacao-stock oculto"></div>
                                     <div>
                                         <label for="confirmacao-substituir-catalogo">Escreva SUBSTITUIR:</label>
                                         <input type="text" id="confirmacao-substituir-catalogo" autocomplete="off">
                                     </div>
-                                    <button type="button" id="btn-confirmar-importacao-catalogo" class="btn-logout" disabled>Substituir cat√°logo</button>
+                                    <button type="button" id="btn-confirmar-importacao-catalogo" class="btn-logout" disabled>Substituir cat·logo</button>
                                     <div id="status-importacao-catalogo" class="msg-status"></div>
                                 </div>
                             </section>

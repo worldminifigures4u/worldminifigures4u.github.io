@@ -1,4 +1,4 @@
-ï»¿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="pt">
 <head>
     <meta charset="UTF-8">
@@ -13,7 +13,7 @@
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
     <title>Portes | Figures Planet</title>
-    <link rel="icon" type="image/webp" href="favicon-32.webp?v=20260727-fp-circle" sizes="32x32">
+    <link rel="icon" type="image/webp" href="favicon-32.webp?v=20260728-fp-white" sizes="32x32">
     <link rel="stylesheet" href="styles.css?v=20260721-rodape-800">
     <link rel="stylesheet" href="styles-admin.css?v=20260717-portes-cab">
     <link rel="stylesheet" href="portes.css?v=20260726-embutido-gestao">
@@ -28,7 +28,7 @@
                 <img src="figures-planet-logo-transparent.webp?v=20260725-logo-hq" alt="Figures Planet" width="383" height="69" decoding="async" fetchpriority="high">
             </a>
             <form class="cabecalho-pesquisa" action="index.html" method="get">
-                <input type="search" name="q" class="input-pesquisa" placeholder="O que estÃ¡s Ã  procura?">
+                <input type="search" name="q" class="input-pesquisa" placeholder="O que estás à procura?">
                 <span class="icone-pesquisa" aria-hidden="true"></span>
             </form>
             <div class="acoes-cabecalho acoes-cabecalho-publicas">
@@ -49,14 +49,14 @@
                     <span class="badge-carrinho" id="contador-carrinho-cabecalho">0</span>
                 </a>
             </div>
-            <nav class="navegacao-admin-cabecalho" aria-label="NavegaÃ§Ã£o administrativa" hidden>
+            <nav class="navegacao-admin-cabecalho" aria-label="Navegação administrativa" hidden>
                 <a class="acao-cabecalho acao-plataforma-admin" href="plataforma.html" aria-label="Gerir plataformas">Plataformas</a>
                 <a class="acao-cabecalho acao-clientes-admin" href="clientes.html" aria-label="Gerir clientes">Clientes</a>
                 <a class="acao-cabecalho acao-encomendas-admin ativa" href="encomendas.html" aria-label="Gerir encomendas">Encomendas</a>
                 <a class="acao-cabecalho acao-fornecedores-admin" href="fornecedores.html" aria-label="Gerir fornecedores">Fornecedores</a>
                 <a class="acao-cabecalho acao-mapas-admin" href="mapas.html" aria-label="Gerir mapas">Mapas</a>
-                <a class="acao-cabecalho acao-estatisticas-admin" href="estatisticas.html" aria-label="Ver estatÃ­sticas">EstatÃ­sticas</a>
-                <a class="acao-cabecalho acao-gestao-admin" href="gestao.html" aria-label="GestÃ£o">GestÃ£o</a>
+                <a class="acao-cabecalho acao-estatisticas-admin" href="estatisticas.html" aria-label="Ver estatísticas">Estatísticas</a>
+                <a class="acao-cabecalho acao-gestao-admin" href="gestao.html" aria-label="Gestão">Gestão</a>
                 <a class="acao-cabecalho acao-conta-admin" href="conta.html" aria-label="Abrir conta">Conta</a>
             </nav>
         </div>
@@ -65,18 +65,18 @@
     <div class="wallapop-bloqueio" id="portes-bloqueio">A verificar acesso administrativo...</div>
 
     <main class="portes-admin" id="portes-aplicacao" hidden>
-        <aside class="portes-aviso" aria-label="Como preencher os preÃ§os">
-            <strong>Como meter os preÃ§os</strong>
+        <aside class="portes-aviso" aria-label="Como preencher os preços">
+            <strong>Como meter os preços</strong>
             <ul>
-                <li><strong>CTT</strong> (Normal, Azul, Registado): preÃ§o de tabela Ã— <strong>1,23</strong></li>
-                <li><strong>InPost</strong>: preÃ§o de tabela (total da fatura InPost) â€” <strong>sem</strong> Ã— 1,23</li>
+                <li><strong>CTT</strong> (Normal, Azul, Registado): preço de tabela × <strong>1,23</strong></li>
+                <li><strong>InPost</strong>: preço de tabela (total da fatura InPost) — <strong>sem</strong> × 1,23</li>
             </ul>
         </aside>
 
-        <section class="portes-metodos" aria-label="MÃ©todos de envio">
+        <section class="portes-metodos" aria-label="Métodos de envio">
             <div class="portes-metodos-topo">
-                <h2>MÃ©todos de envio</h2>
-                <p>Define se o mÃ©todo Ã© registado (com rastreamento). Isso controla a info no carrinho.</p>
+                <h2>Métodos de envio</h2>
+                <p>Define se o método é registado (com rastreamento). Isso controla a info no carrinho.</p>
             </div>
             <form class="portes-metodos-criar" id="form-criar-metodo-portes">
                 <label class="portes-campo portes-campo-id">
@@ -91,8 +91,8 @@
                     <input type="checkbox" id="novo-metodo-registado">
                     <span>Registado (com rastreamento)</span>
                 </label>
-                <button type="submit" class="wallapop-botao portes-btn-criar">Criar mÃ©todo</button>
-                <button type="button" class="wallapop-botao wallapop-botao-destaque portes-btn-guardar" id="btn-guardar-portes">Guardar alteraÃ§Ãµes</button>
+                <button type="submit" class="wallapop-botao portes-btn-criar">Criar método</button>
+                <button type="button" class="wallapop-botao wallapop-botao-destaque portes-btn-guardar" id="btn-guardar-portes">Guardar alterações</button>
             </form>
             <div id="portes-metodos-lista" class="portes-metodos-lista"></div>
         </section>
