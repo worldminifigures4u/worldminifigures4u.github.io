@@ -19,7 +19,7 @@
             return garantirTabelaPortesCarregada();
         }
         if (!promessaPortes) {
-            promessaPortes = carregarScript('app-portes.js?v=20260718-metodos')
+            promessaPortes = carregarScript('app-portes.js?v=20260728-inpost-nome')
                 .then(() => typeof garantirTabelaPortesCarregada === 'function'
                     ? garantirTabelaPortesCarregada()
                     : undefined);

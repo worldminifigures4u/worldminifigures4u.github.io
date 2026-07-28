@@ -1,5 +1,5 @@
 // Tabelas de portes usadas pelo carrinho (fallback local + carga remota com cache).
-const PORTES_CACHE_KEY = 'figures-planet-portes-tarifas-v6';
+const PORTES_CACHE_KEY = 'figures-planet-portes-tarifas-v7';
 const PORTES_CACHE_TTL_MS = 6 * 60 * 60 * 1000;
 const PORTES_PESO_ABERTO_G = 999999;
 
@@ -18,25 +18,25 @@ const TABELA_PORTES_FALLBACK = {
             { id: 'ctt_normal', nome: 'CTT Normal', valor: 1.94 },
             { id: 'ctt_azul', nome: 'CTT Azul', valor: 2.58 },
             { id: 'ctt_registado', nome: 'CTT Registado', valor: 5.66 },
-            { id: 'inpost_registado', nome: 'InPost Registado (com seguro de 25\u20ac)', valor: 4.76 }
+            { id: 'inpost_registado', nome: 'InPost Registado', valor: 4.76 }
         ]},
         { ate: 500, opcoes: [
             { id: 'ctt_normal', nome: 'CTT Normal', valor: 2.88 },
             { id: 'ctt_azul', nome: 'CTT Azul', valor: 4.80 },
             { id: 'ctt_registado', nome: 'CTT Registado', valor: 6.64 },
-            { id: 'inpost_registado', nome: 'InPost Registado (com seguro de 25\u20ac)', valor: 4.76 }
+            { id: 'inpost_registado', nome: 'InPost Registado', valor: 4.76 }
         ]},
         { ate: 1000, opcoes: [
             { id: 'ctt_normal', nome: 'CTT Normal', valor: 6.83 },
             { id: 'ctt_azul', nome: 'CTT Azul', valor: 9.59 },
             { id: 'ctt_registado', nome: 'CTT Registado', valor: 10.98 },
-            { id: 'inpost_registado', nome: 'InPost Registado (com seguro de 25\u20ac)', valor: 5.42 }
+            { id: 'inpost_registado', nome: 'InPost Registado', valor: 5.42 }
         ]},
         { ate: Infinity, opcoes: [
             { id: 'ctt_normal', nome: 'CTT Normal', valor: 6.83 },
             { id: 'ctt_azul', nome: 'CTT Azul', valor: 9.59 },
             { id: 'ctt_registado', nome: 'CTT Registado', valor: 10.98 },
-            { id: 'inpost_registado', nome: 'InPost Registado (com seguro de 25\u20ac)', valor: 5.89 }
+            { id: 'inpost_registado', nome: 'InPost Registado', valor: 5.89 }
         ]}
     ],
     espanha: [

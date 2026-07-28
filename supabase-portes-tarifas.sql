@@ -81,22 +81,22 @@ from (values
   ('portugal', 100, 'ctt_normal', 'CTT Normal', 1.94, 1),
   ('portugal', 100, 'ctt_azul', 'CTT Azul', 2.58, 2),
   ('portugal', 100, 'ctt_registado', 'CTT Registado', 5.66, 3),
-  ('portugal', 100, 'inpost_registado', 'InPost Registado (com seguro de 25€)', 4.76, 4),
+  ('portugal', 100, 'inpost_registado', 'InPost Registado', 4.76, 4),
   -- Portugal <= 500g
   ('portugal', 500, 'ctt_normal', 'CTT Normal', 2.88, 1),
   ('portugal', 500, 'ctt_azul', 'CTT Azul', 4.80, 2),
   ('portugal', 500, 'ctt_registado', 'CTT Registado', 6.64, 3),
-  ('portugal', 500, 'inpost_registado', 'InPost Registado (com seguro de 25€)', 4.76, 4),
+  ('portugal', 500, 'inpost_registado', 'InPost Registado', 4.76, 4),
   -- Portugal <= 1000g
   ('portugal', 1000, 'ctt_normal', 'CTT Normal', 6.83, 1),
   ('portugal', 1000, 'ctt_azul', 'CTT Azul', 9.59, 2),
   ('portugal', 1000, 'ctt_registado', 'CTT Registado', 10.98, 3),
-  ('portugal', 1000, 'inpost_registado', 'InPost Registado (com seguro de 25€)', 5.42, 4),
+  ('portugal', 1000, 'inpost_registado', 'InPost Registado', 5.42, 4),
   -- Portugal > 1000g
   ('portugal', 999999, 'ctt_normal', 'CTT Normal', 6.83, 1),
   ('portugal', 999999, 'ctt_azul', 'CTT Azul', 9.59, 2),
   ('portugal', 999999, 'ctt_registado', 'CTT Registado', 10.98, 3),
-  ('portugal', 999999, 'inpost_registado', 'InPost Registado (com seguro de 25€)', 5.89, 4),
+  ('portugal', 999999, 'inpost_registado', 'InPost Registado', 5.89, 4),
   -- Espanha (CTT = precos Europa; + InPost)
   ('espanha', 100, 'ctt_normal', 'CTT Normal', 3.26, 0),
   ('espanha', 100, 'ctt_registado', 'CTT Registado', 7.13, 1),
