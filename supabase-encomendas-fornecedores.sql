@@ -16,7 +16,8 @@ create table if not exists public.encomendas_fornecedores (
     itens jsonb not null default '[]'::jsonb,
     criado_por uuid default auth.uid(),
     criado_em timestamptz not null default now(),
-    atualizado_em timestamptz not null default now()
+    atualizado_em timestamptz not null default now(),
+    data_encomendada timestamptz
 );
 
 create index if not exists idx_encomendas_fornecedores_estado
@@ -232,13 +233,30 @@ set search_path = public
 as $$
 declare
     atualizada public.encomendas_fornecedores;
+    v_estado_anterior text;
 begin
     if not public.admin_fornecedores_autorizado() then
         raise exception 'Acesso reservado ao administrador.';
     end if;
 
+    select estado into v_estado_anterior
+    from public.encomendas_fornecedores
+    where id::text = p_id
+    for update;
+
+    if not found then
+        raise exception 'Encomenda de fornecedor nao encontrada.';
+    end if;
+
     update public.encomendas_fornecedores
-    set estado = p_estado
+    set
+        estado = p_estado,
+        data_encomendada = case
+            when lower(trim(coalesce(p_estado, ''))) = 'encomendada'
+                 and lower(trim(coalesce(v_estado_anterior, ''))) is distinct from 'encomendada'
+            then now()
+            else data_encomendada
+        end
     where id::text = p_id
     returning * into atualizada;
 
@@ -396,6 +414,7 @@ set search_path = public
 as $$
 declare
     atualizada public.encomendas_fornecedores;
+    v_estado_anterior text;
     v_codigo text := case
         when p_dados ? 'codigo' then nullif(trim(coalesce(p_dados ->> 'codigo', '')), '')
         else null
@@ -416,13 +435,28 @@ begin
         raise exception 'Itens invalidos para a encomenda.';
     end if;
 
+    select estado into v_estado_anterior
+    from public.encomendas_fornecedores
+    where id::text = p_id
+    for update;
+
+    if not found then
+        raise exception 'Encomenda de fornecedor nao encontrada.';
+    end if;
+
     update public.encomendas_fornecedores
     set
         codigo = case when p_dados ? 'codigo' then v_codigo else codigo end,
         fornecedor = coalesce(v_fornecedor, fornecedor),
         referencia = case when p_dados ? 'referencia' then v_referencia else referencia end,
         estado = coalesce(v_estado, estado),
-        itens = coalesce(v_itens, itens)
+        itens = coalesce(v_itens, itens),
+        data_encomendada = case
+            when lower(trim(coalesce(coalesce(v_estado, v_estado_anterior), ''))) = 'encomendada'
+                 and lower(trim(coalesce(v_estado_anterior, ''))) is distinct from 'encomendada'
+            then now()
+            else data_encomendada
+        end
     where id::text = p_id
     returning * into atualizada;
 
@@ -450,3 +484,7 @@ grant execute on function public.atualizar_encomenda_fornecedor_admin(text, json
 
 -- Migração: permitir encomendas sem código de seguimento até o fornecedor o enviar
 alter table public.encomendas_fornecedores alter column codigo drop not null;
+
+-- Data em que o estado passou a Encomendada (não muda ao editar código)
+alter table public.encomendas_fornecedores
+    add column if not exists data_encomendada timestamptz;

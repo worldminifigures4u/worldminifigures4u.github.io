@@ -325,6 +325,7 @@ function normalizarPedidoRececaoMapa(pedido) {
         estado: pedido.estado || "",
         criado_em: pedido.criado_em || pedido.data || pedido.created_at || "",
         atualizado_em: pedido.atualizado_em || pedido.updated_at || "",
+        data_encomendada: pedido.data_encomendada || "",
         itens: Array.isArray(itens) ? itens : []
     };
 }
@@ -356,7 +357,7 @@ async function carregarEncomendasFornecedorMapa(forcar = false) {
             }
             const { data, error } = await mapasClient
                 .from("encomendas_fornecedores")
-                .select("id,codigo,fornecedor,referencia,estado,criado_em,atualizado_em,itens")
+                .select("id,codigo,fornecedor,referencia,estado,criado_em,atualizado_em,data_encomendada,itens")
                 .order("criado_em", { ascending: false })
                 .limit(500);
             if (error) throw error;
@@ -420,13 +421,10 @@ function obterDataMarcacaoEncomendadaMapa(produto, fornecedorNome) {
 }
 
 function obterDataLinhaEncomendaFornecedorMapa(produto, pedido) {
+    if (pedido?.data_encomendada) return pedido.data_encomendada;
     const marcacao = obterDataMarcacaoEncomendadaMapa(produto, pedido?.fornecedor);
     if (marcacao) return marcacao;
-    const estado = String(pedido?.estado || "").trim().toLowerCase();
-    if ((estado.includes("encomend") || estado.includes("parcial")) && pedido?.atualizado_em) {
-        return pedido.atualizado_em;
-    }
-    return pedido?.criado_em || pedido?.atualizado_em || "";
+    return pedido?.criado_em || "";
 }
 
 function obterLinhasEncomendaFornecedorProdutoMapa(produto, pedidos) {

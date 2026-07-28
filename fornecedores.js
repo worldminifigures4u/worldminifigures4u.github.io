@@ -64,7 +64,7 @@ function garantirFornecedoresProdutoModal() {
 function garantirFornecedoresEdicaoPedido() {
     if (window.FornecedoresEdicaoPedido) return Promise.resolve();
     if (!__fornecedoresEdicaoPromessa) {
-        __fornecedoresEdicaoPromessa = carregarScriptAdmin("fornecedores-edicao-pedido.js?v=20260721-split");
+        __fornecedoresEdicaoPromessa = carregarScriptAdmin("fornecedores-edicao-pedido.js?v=20260728-data-encomendada");
     }
     return __fornecedoresEdicaoPromessa;
 }
@@ -483,10 +483,20 @@ function normalizarPedidoFornecedor(pedido) {
         estado: pedido.estado || 'A preparar',
         criado_em: pedido.criado_em || new Date().toISOString(),
         atualizado_em: pedido.atualizado_em || pedido.criado_em || new Date().toISOString(),
+        data_encomendada: pedido.data_encomendada || null,
         itens: consolidarItensPedidoFornecedor(
             Array.isArray(pedido.itens) ? pedido.itens.map(normalizarItemPedidoFornecedor).filter(Boolean) : []
         )
     };
+}
+
+/** Data a mostrar na lista: momento «Encomendada», senão criação. Nunca atualizado_em. */
+function obterDataExibicaoPedidoFornecedor(pedido) {
+    if (pedido?.data_encomendada) return pedido.data_encomendada;
+    if (estadoPedidoFornecedorEhEncomendada(pedido?.estado) || estadoPedidoFornecedorEhRecebida(pedido?.estado)) {
+        return pedido?.data_encomendada || pedido?.criado_em || "";
+    }
+    return pedido?.criado_em || "";
 }
 
 function normalizarItemPedidoFornecedor(item) {
@@ -1230,10 +1240,10 @@ function promoverUltimaSolicitadaParaEncomendada(valorAnterior, novaData = dataO
         }
     }
     if (indice < 0) return null;
-    const dataOriginal = String(historico[indice].data || "").trim();
+    const data = String(novaData || dataOsAgoraFornecedor());
     historico[indice] = {
         tipo: "encomendada",
-        data: dataOriginal || String(novaData || dataOsAgoraFornecedor())
+        data
     };
     // Histórico Encomendada + marcação atual Encomendada (stock disponível na encomenda)
     return montarMarcacaoComHistorico(historico, "Encomendada");
@@ -1253,8 +1263,7 @@ function garantirMarcacaoEncomendadaFornecedor(valorAnterior, novaData = dataOsA
     }
     if (indice >= 0) {
         if (historico[indice].tipo === "solicitada") {
-            const dataOriginal = String(historico[indice].data || "").trim() || data;
-            historico[indice] = { tipo: "encomendada", data: dataOriginal };
+            historico[indice] = { tipo: "encomendada", data };
         }
     } else {
         historico.push({ tipo: "encomendada", data });
@@ -1276,8 +1285,7 @@ function confirmarTentativaParcialFornecedor(valorAnterior, novaData = dataOsAgo
     }
 
     if (indice >= 0) {
-        const dataOriginal = String(historico[indice].data || "").trim() || data;
-        historico[indice] = { tipo: "encomendada_os", data: dataOriginal };
+        historico[indice] = { tipo: "encomendada_os", data };
         // Remove linha OS/Encomendada solta logo a seguir (legado com 2 linhas)
         while (
             historico[indice + 1]
@@ -2735,6 +2743,13 @@ async function alterarEstadoPedidoFornecedor(id, estado) {
         });
         if (error) throw error;
         const atualizado = normalizarPedidoFornecedor(data);
+        if (
+            estadoPedidoFornecedorEhEncomendada(atualizado.estado)
+            && !estadoPedidoFornecedorEhEncomendada(estadoAnterior)
+            && !atualizado.data_encomendada
+        ) {
+            atualizado.data_encomendada = dataOsAgoraFornecedor();
+        }
         fornecedorPedidos = fornecedorPedidos.map(item => item.id === id ? atualizado : item);
         guardarPedidosFornecedores();
         if (deveConfirmarHistoricoPedidoFornecedor(estadoAnterior, atualizado.estado)) {
@@ -2791,6 +2806,7 @@ async function apagarPedidoFornecedor(id) {
 
 async function atualizarPedidoFornecedor(id, alteracoes) {
     const idPedido = String(id);
+    const pedidoAntes = fornecedorPedidos.find(item => String(item.id) === idPedido);
     const payload = { ...(alteracoes || {}) };
     if (Array.isArray(payload.itens)) {
         payload.itens = consolidarItensPedidoFornecedor(serializarItensPedidoFornecedor(payload.itens));
@@ -2801,6 +2817,14 @@ async function atualizarPedidoFornecedor(id, alteracoes) {
     });
     if (error) throw error;
     const atualizado = normalizarPedidoFornecedor(data);
+    if (
+        estadoPedidoFornecedorEhEncomendada(atualizado.estado)
+        && pedidoAntes
+        && !estadoPedidoFornecedorEhEncomendada(pedidoAntes.estado)
+        && !atualizado.data_encomendada
+    ) {
+        atualizado.data_encomendada = dataOsAgoraFornecedor();
+    }
     fornecedorPedidos = fornecedorPedidos.map(item => String(item.id) === idPedido ? atualizado : item);
     guardarPedidosFornecedores();
     renderizarResultadosFornecedor();
@@ -3356,7 +3380,7 @@ function renderizarPedidosFornecedores() {
         const resumo = `${totaisPedido.itens} artigo(s) | ${totaisPedido.quantidade} unidade(s) | ${totaisPedido.pendente} por receber${totaisPedido.os > 0 ? ` | ${totaisPedido.os} OS` : ""}`;
         linha.append(
             criarElementoPedidoFornecedor("strong", "admin-encomenda-codigo", obterTextoCodigoPedidoFornecedor(pedido)),
-            criarElementoPedidoFornecedor("span", "admin-encomenda-data", formatarDataPedidoFornecedor(pedido.criado_em)),
+            criarElementoPedidoFornecedor("span", "admin-encomenda-data", formatarDataPedidoFornecedor(obterDataExibicaoPedidoFornecedor(pedido))),
             criarElementoPedidoFornecedor("span", "fornecedor-pedido-fornecedor-nome", pedido.fornecedor || "Fornecedor"),
             criarElementoPedidoFornecedor("span", "fornecedor-pedido-resumo", resumo),
             criarElementoPedidoFornecedor("span", `estado-encomenda ${obterClasseBadgeEstadoPedidoFornecedor(pedido.estado)}`, pedido.estado || "A preparar")
