@@ -569,6 +569,10 @@ function obterPortesManuaisPlataforma() {
     return valor === null ? 0 : valor;
 }
 
+function campoPortesManualPreenchidoPlataforma() {
+    return Boolean(String(document.getElementById('plataforma-portes-manual')?.value || '').trim());
+}
+
 function campoTotalManualPreenchidoPlataforma() {
     return Boolean(String(document.getElementById('plataforma-total-manual')?.value || '').trim());
 }
@@ -588,7 +592,7 @@ function obterEnvioPlataforma() {
     const opcoes = obterOpcoesEnvioPlataforma(regiao, peso);
     const metodo = document.getElementById('plataforma-metodo-envio')?.value || '';
     const opcao = opcoes.find(item => item.id === metodo) || opcoes[0] || { id: '', nome: '', valor: 0 };
-    const portes = podeEditarPortesManuaisPlataforma()
+    const portes = podeEditarPortesManuaisPlataforma() && campoPortesManualPreenchidoPlataforma()
         ? obterPortesManuaisPlataforma()
         : calcularPortesPlataforma(opcao.valor);
     return { regiao, peso, ...opcao, portes };
