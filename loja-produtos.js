@@ -222,6 +222,7 @@ function ellipse(cx, cy, rx, ry, attrs = {}) {
 /* Ícones raster exactos (extraídos das imagens de referência). */
 const MAPA_ICONES_MASCARA = {
     'Bluey': 'img/icone-bluey.png',
+    'DC Comics': 'img/icone-dc-comics-mask.png',
     'Dinossauros': 'img/icone-dinossauros.png'
 };
 
@@ -457,7 +458,7 @@ function criarIconeTema(tema = '') {
     const mascara = MAPA_ICONES_MASCARA[tema];
     if (mascara) {
         const el = document.createElement('span');
-        el.className = 'icone-tema-mask';
+        el.className = tema === 'DC Comics' ? 'icone-tema-mask icone-tema-dc' : 'icone-tema-mask';
         el.style.webkitMaskImage = `url('${mascara}')`;
         el.style.maskImage = `url('${mascara}')`;
         el.setAttribute('aria-hidden', 'true');

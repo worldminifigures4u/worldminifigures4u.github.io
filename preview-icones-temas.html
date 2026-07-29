@@ -344,6 +344,7 @@ const destaque = document.getElementById('destaque');
 const temas = Object.keys(MAPA);
 const MAPA_MASCARAS = {
   'Bluey': 'img/icone-bluey.png',
+  'DC Comics': 'img/icone-dc-comics-mask.png',
   'Dinossauros': 'img/icone-dinossauros.png'
 };
 const DESTAQUE = 'Bluey';
@@ -352,10 +353,12 @@ function criarIconePreview(tema, tamanho) {
   const mascara = MAPA_MASCARAS[tema];
   if (mascara) {
     const mask = document.createElement('div');
+    const largura = tema === 'DC Comics' ? Math.round(tamanho * 2) : tamanho;
+    const altura = tema === 'DC Comics' ? Math.round(tamanho * 1.5) : tamanho;
     mask.className = 'preview-icon';
-    mask.style.width = tamanho + 'px';
-    mask.style.height = tamanho + 'px';
-    mask.style.flex = '0 0 ' + tamanho + 'px';
+    mask.style.width = largura + 'px';
+    mask.style.height = altura + 'px';
+    mask.style.flex = '0 0 ' + largura + 'px';
     mask.style.webkitMaskImage = "url('" + mascara + "')";
     mask.style.maskImage = "url('" + mascara + "')";
     return mask;
