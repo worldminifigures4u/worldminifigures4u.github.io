@@ -605,7 +605,7 @@ function encomendasFiltradasAdmin() {
     const filtradas = obterEncomendasFiltradasBaseAdmin();
     const estado = document.getElementById('filtro-estado-encomendas-admin').value;
 
-    if (estado === 'Pago') {
+    if (estado === 'Pago' || estado === 'Enviado') {
         filtradas.sort((a, b) => {
             const prioridadeA = a.prioritaria ? 1 : 0;
             const prioridadeB = b.prioritaria ? 1 : 0;
