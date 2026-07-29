@@ -170,7 +170,8 @@ function obterNomeUtilizadorPlataforma() {
 }
 
 function obterDadosClientePlataforma() {
-    if (obterPlataformaAtual() !== 'OLX') {
+    const plataforma = obterPlataformaAtual();
+    if (plataforma !== 'OLX' && plataforma !== 'Todocoleccion') {
         return { telefone: '', morada: '', cp: '', cidade: '', pais: '' };
     }
     const cliente = fichaClientePlataformaAtual?.cliente || {};
