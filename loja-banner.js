@@ -40,6 +40,7 @@
         limparTemporizador();
         slides = obterSlides();
         if (!slides.length) return;
+        raiz.classList.remove('is-pendente');
         mostrar(0);
         if (reduzirMovimento || slides.length < 2) return;
         temporizador = window.setInterval(seguinte, INTERVALO_MS);
@@ -230,6 +231,7 @@
                 await window.carregarScriptSupabase();
             }
             if (typeof supabase === 'undefined' || typeof SUPABASE_URL === 'undefined' || typeof SUPABASE_KEY === 'undefined') {
+                iniciarRotacao();
                 return;
             }
             const client = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -239,14 +241,12 @@
                 .eq('ativo', true)
                 .order('ordem', { ascending: true })
                 .order('criado_em', { ascending: true });
-            if (error || !data?.length) return;
-            aplicarBannersRemotos(data);
+            if (error || !data?.length || !aplicarBannersRemotos(data)) iniciarRotacao();
         } catch (erro) {
             console.warn('Banners remotos indisponíveis; a usar fallback local.', erro);
+            iniciarRotacao();
         }
     }
-
-    iniciarRotacao();
 
     document.addEventListener('visibilitychange', () => {
         if (document.hidden) {

@@ -1,4 +1,4 @@
-const CACHE_ESTATICO = 'figures-planet-estatico-v27';
+const CACHE_ESTATICO = 'figures-planet-estatico-v29';
 
 const RECURSOS_PRECARGA = [
     'app-config.js',
@@ -26,7 +26,9 @@ const RECURSOS_PRECARGA = [
     'inline-listeners-loja.js',
     'inline-listeners-conta.js',
     'figures-planet-logo-transparent.webp',
-    'favicon-32.webp'
+    'fp-ring-favicon.ico',
+    'fp-ring-favicon-32.png',
+    'fp-ring-favicon-192.png'
 ];
 
 self.addEventListener('install', evento => {
@@ -54,7 +56,7 @@ function pedidoCacheavel(pedido) {
     if (pedido.method !== 'GET') return false;
     const url = new URL(pedido.url);
     if (url.origin !== self.location.origin) return false;
-    return /\.(?:css|js|webp|png|woff2?)$/i.test(url.pathname);
+    return /\.(?:css|js|webp|png|ico|woff2?)$/i.test(url.pathname);
 }
 
 self.addEventListener('fetch', evento => {
