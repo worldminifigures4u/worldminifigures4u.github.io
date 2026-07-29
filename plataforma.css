@@ -783,6 +783,38 @@ body.pagina-wallapop{
             line-height:1.5;
         }
 
+        .plataforma-stock-dialogo-resumo{
+            width:min(680px, 100%);
+        }
+
+        .plataforma-stock-resumo-bloco{
+            margin:0 0 18px;
+            padding:14px 16px;
+            border:1px solid #333;
+            border-radius:6px;
+            background:#202020;
+        }
+
+        .plataforma-stock-resumo-bloco h3{
+            margin:0 0 10px;
+            color:#fff;
+            font-size:16px;
+        }
+
+        .plataforma-stock-resumo-lista{
+            display:grid;
+            gap:7px;
+            margin:0;
+            padding-left:20px;
+            color:#ddd;
+            font-size:15px;
+            line-height:1.35;
+        }
+
+        .plataforma-stock-resumo-vazio{
+            color:#999;
+        }
+
         .plataforma-stock-acoes{
             display:grid;
             grid-template-columns:1fr 1fr;

@@ -2368,6 +2368,112 @@ function obterReducoesStockPlataforma() {
     }).filter(item => item.quantidade > 0);
 }
 
+function obterNomeProdutoResumoStockPlataforma(id) {
+    const produtoSelecionado = wallapopItens.find(item => String(item.id) === String(id));
+    const produtoCatalogo = wallapopProdutos.find(item => String(item.id) === String(id));
+    return produtoSelecionado?.nome || produtoCatalogo?.nome || `Produto ${id}`;
+}
+
+function obterResumoAlteracoesStockPlataforma(naoReporStock = []) {
+    const originais = encomendaPlataformaEmEdicao?.quantidades_originais || {};
+    const atuais = obterQuantidadesAtuaisPlataforma();
+    const ids = new Set([...Object.keys(originais), ...Object.keys(atuais)]);
+    const naoRepor = new Set((naoReporStock || []).map(id => String(id)));
+    const retirar = [];
+    const acrescentar = [];
+
+    ids.forEach(id => {
+        const quantidadeOriginal = Math.max(0, Number(originais[id] || 0));
+        const quantidadeAtual = Math.max(0, Number(atuais[id] || 0));
+        const diferenca = quantidadeAtual - quantidadeOriginal;
+        if (diferenca > 0) {
+            retirar.push({
+                id,
+                nome: obterNomeProdutoResumoStockPlataforma(id),
+                quantidade: diferenca
+            });
+        } else if (diferenca < 0 && !naoRepor.has(String(id))) {
+            acrescentar.push({
+                id,
+                nome: obterNomeProdutoResumoStockPlataforma(id),
+                quantidade: Math.abs(diferenca)
+            });
+        }
+    });
+
+    return { retirar, acrescentar };
+}
+
+function criarListaResumoStockPlataforma(itens, vazio) {
+    const lista = document.createElement('ul');
+    lista.className = 'plataforma-stock-resumo-lista';
+    if (!itens.length) {
+        const item = document.createElement('li');
+        item.className = 'plataforma-stock-resumo-vazio';
+        item.textContent = vazio;
+        lista.appendChild(item);
+        return lista;
+    }
+    itens.forEach(alteracao => {
+        const item = document.createElement('li');
+        item.textContent = `${alteracao.quantidade} x ${alteracao.nome}`;
+        lista.appendChild(item);
+    });
+    return lista;
+}
+
+function confirmarResumoAlteracoesStockPlataforma(naoReporStock = []) {
+    if (!encomendaPlataformaEmEdicao) return Promise.resolve(true);
+    const resumo = obterResumoAlteracoesStockPlataforma(naoReporStock);
+    return new Promise(resolve => {
+        const fundo = document.createElement('div');
+        fundo.className = 'plataforma-stock-modal';
+        const caixa = document.createElement('div');
+        caixa.className = 'plataforma-stock-dialogo plataforma-stock-dialogo-resumo';
+        const titulo = document.createElement('h2');
+        titulo.textContent = 'Resumo das altera\u00e7\u00f5es de stock';
+        const texto = document.createElement('p');
+        texto.textContent = `Antes de guardar a encomenda ${obterCodigoEncomendaAtual()}, confirma o ajuste que ser\u00e1 feito no stock.`;
+
+        const blocoRetirar = document.createElement('div');
+        blocoRetirar.className = 'plataforma-stock-resumo-bloco';
+        const tituloRetirar = document.createElement('h3');
+        tituloRetirar.textContent = 'Vai retirar do stock';
+        blocoRetirar.append(tituloRetirar, criarListaResumoStockPlataforma(resumo.retirar, 'Nada a retirar.'));
+
+        const blocoAcrescentar = document.createElement('div');
+        blocoAcrescentar.className = 'plataforma-stock-resumo-bloco';
+        const tituloAcrescentar = document.createElement('h3');
+        tituloAcrescentar.textContent = 'Vai acrescentar ao stock';
+        blocoAcrescentar.append(tituloAcrescentar, criarListaResumoStockPlataforma(resumo.acrescentar, 'Nada a acrescentar.'));
+
+        const acoes = document.createElement('div');
+        acoes.className = 'plataforma-stock-acoes';
+        const terminar = resposta => {
+            fundo.remove();
+            document.body.classList.remove('plataforma-modal-aberto');
+            resolve(resposta);
+        };
+        const confirmar = document.createElement('button');
+        confirmar.type = 'button';
+        confirmar.className = 'wallapop-botao wallapop-botao-destaque';
+        confirmar.textContent = 'Guardar altera\u00e7\u00f5es';
+        confirmar.addEventListener('click', () => terminar(true));
+        const cancelar = document.createElement('button');
+        cancelar.type = 'button';
+        cancelar.className = 'wallapop-botao';
+        cancelar.textContent = 'Cancelar';
+        cancelar.addEventListener('click', () => terminar(false));
+
+        acoes.append(confirmar, cancelar);
+        caixa.append(titulo, texto, blocoRetirar, blocoAcrescentar, acoes);
+        fundo.appendChild(caixa);
+        document.body.appendChild(fundo);
+        document.body.classList.add('plataforma-modal-aberto');
+        confirmar.focus();
+    });
+}
+
 function perguntarReposicaoStockPlataforma(reducao) {
     return new Promise(resolve => {
         const fundo = document.createElement('div');
@@ -2651,10 +2757,9 @@ async function registarEncomendaWallapop() {
         definirStatusWallapop('Altera\u00e7\u00f5es n\u00e3o guardadas.');
         return;
     }
-    const confirmado = window.confirm(encomendaPlataformaEmEdicao
-        ? `Guardar as alterações da encomenda ${obterCodigoEncomendaAtual()}? O stock será ajustado automaticamente.`
-        : `Registar a encomenda ${plataforma} de ${nomeCliente} por ${formatarEuroWallapop(total)} € e descontar o stock?`
-    );
+    const confirmado = encomendaPlataformaEmEdicao
+        ? await confirmarResumoAlteracoesStockPlataforma(naoReporStock)
+        : window.confirm(`Registar a encomenda ${plataforma} de ${nomeCliente} por ${formatarEuroWallapop(total)} € e descontar o stock?`);
     if (!confirmado) return;
 
     botao.disabled = true;
