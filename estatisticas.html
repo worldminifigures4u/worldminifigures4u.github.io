@@ -13,7 +13,7 @@
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
-    <title>Estatísticas | Figures Planet</title>
+    <title>EstatÃ­sticas | Figures Planet</title>
     <link rel="icon" type="image/webp" href="favicon-32.webp?v=20260728-fp-ring" sizes="32x32">
     <link rel="stylesheet" href="styles.css?v=20260721-rodape-800">
     <link rel="stylesheet" href="styles-admin.css?v=20260717-portes-cab">
@@ -29,7 +29,7 @@
                 <img src="figures-planet-logo-transparent.webp?v=20260725-logo-hq" alt="Figures Planet" width="383" height="69" decoding="async" fetchpriority="high">
             </a>
             <form class="cabecalho-pesquisa" action="index.html" method="get">
-                <input type="search" name="q" class="input-pesquisa" placeholder="O que estás à procura?">
+                <input type="search" name="q" class="input-pesquisa" placeholder="O que estÃ¡s Ã  procura?">
                 <span class="icone-pesquisa" aria-hidden="true"></span>
             </form>
             <div class="acoes-cabecalho acoes-cabecalho-publicas">
@@ -50,14 +50,14 @@
                     <span class="badge-carrinho" id="contador-carrinho-cabecalho">0</span>
                 </a>
             </div>
-            <nav class="navegacao-admin-cabecalho" aria-label="Navegação administrativa" hidden>
+            <nav class="navegacao-admin-cabecalho" aria-label="NavegaÃ§Ã£o administrativa" hidden>
                 <a class="acao-cabecalho acao-plataforma-admin" href="plataforma.html" aria-label="Gerir plataformas">Plataformas</a>
                 <a class="acao-cabecalho acao-clientes-admin" href="clientes.html" aria-label="Gerir clientes">Clientes</a>
                 <a class="acao-cabecalho acao-encomendas-admin" href="encomendas.html" aria-label="Gerir encomendas">Encomendas</a>
                 <a class="acao-cabecalho acao-fornecedores-admin" href="fornecedores.html" aria-label="Gerir fornecedores">Fornecedores</a>
                 <a class="acao-cabecalho acao-mapas-admin" href="mapas.html" aria-label="Gerir mapas">Mapas</a>
-                <a class="acao-cabecalho acao-estatisticas-admin ativa" href="estatisticas.html" aria-label="Ver estatísticas">Estatísticas</a>
-                <a class="acao-cabecalho acao-gestao-admin" href="gestao.html" aria-label="Gestão">Gestão</a>
+                <a class="acao-cabecalho acao-estatisticas-admin ativa" href="estatisticas.html" aria-label="Ver estatÃ­sticas">EstatÃ­sticas</a>
+                <a class="acao-cabecalho acao-gestao-admin" href="gestao.html" aria-label="GestÃ£o">GestÃ£o</a>
                 <a class="acao-cabecalho acao-conta-admin" href="conta.html" aria-label="Abrir conta">Conta</a>
             </nav>
         </div>
@@ -66,10 +66,10 @@
     <div class="wallapop-bloqueio" id="estatisticas-bloqueio">A verificar acesso administrativo...</div>
 
     <main class="estatisticas-admin" id="estatisticas-aplicacao" hidden>
-        <section class="estatisticas-topo" aria-label="Filtros das estatísticas">
+        <section class="estatisticas-topo" aria-label="Filtros das estatÃ­sticas">
             <div class="estatisticas-filtros">
                 <label>
-                    <span>Período</span>
+                    <span>PerÃ­odo</span>
                     <select id="estatisticas-filtro-periodo">
                         <option value="mes">Meses</option>
                         <option value="dia">Dias</option>
@@ -80,7 +80,7 @@
                     <input type="month" id="estatisticas-data-inicio">
                 </label>
                 <label>
-                    <span>Até</span>
+                    <span>AtÃ©</span>
                     <input type="month" id="estatisticas-data-fim">
                 </label>
                 <label>
@@ -102,11 +102,11 @@
         </section>
 
         <section class="estatisticas-metricas" aria-label="Indicadores principais">
-            <article><span>Total vendido</span><strong id="estatisticas-total-vendido">0,00 €</strong></article>
-            <article><span>Número de encomendas</span><strong id="estatisticas-numero-encomendas">0</strong></article>
-            <article><span>Ticket médio</span><strong id="estatisticas-ticket-medio">0,00 €</strong></article>
+            <article><span>Total vendido</span><strong id="estatisticas-total-vendido">0,00 â‚¬</strong></article>
+            <article><span>NÃºmero de encomendas</span><strong id="estatisticas-numero-encomendas">0</strong></article>
+            <article><span>Ticket mÃ©dio</span><strong id="estatisticas-ticket-medio">0,00 â‚¬</strong></article>
             <article><span>Unidades vendidas</span><strong id="estatisticas-unidades">0</strong></article>
-            <article><span>Preço médio por figura</span><strong id="estatisticas-preco-medio-figura">0,00 €</strong></article>
+            <article><span>PreÃ§o mÃ©dio por figura</span><strong id="estatisticas-preco-medio-figura">0,00 â‚¬</strong></article>
         </section>
 
         <section class="estatisticas-grid estatisticas-grid-principal">
@@ -119,7 +119,7 @@
                 <div class="estatisticas-barras" id="estatisticas-dias-semana"></div>
             </article>
             <article class="estatisticas-painel">
-                <h2>Vendas por mês</h2>
+                <h2>Vendas por mÃªs</h2>
                 <div class="estatisticas-barras" id="estatisticas-meses"></div>
             </article>
             <article class="estatisticas-painel">
@@ -131,7 +131,7 @@
                 <div class="estatisticas-barras" id="estatisticas-plataformas"></div>
             </article>
             <article class="estatisticas-painel">
-                <h2>Vendas por faixas de preço</h2>
+                <h2>Vendas por faixas de preÃ§o</h2>
                 <div class="estatisticas-barras" id="estatisticas-faixas-preco"></div>
             </article>
         </section>
@@ -154,7 +154,7 @@
                 <div class="estatisticas-tabela" id="estatisticas-melhores-meses"></div>
             </article>
             <article class="estatisticas-painel estatisticas-painel-largo">
-                <h2>Plataformas com maior valor médio por encomenda</h2>
+                <h2>Plataformas com maior valor mÃ©dio por encomenda</h2>
                 <div class="estatisticas-tabela" id="estatisticas-ticket-plataformas"></div>
             </article>
             <article class="estatisticas-painel estatisticas-painel-largo">
