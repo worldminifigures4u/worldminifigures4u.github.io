@@ -44,9 +44,11 @@ begin
     'Pago',
     'Em preparação',
     'Enviado',
-    'Concluído',
-    'Cancelado'
+    'Concluído'
   ) then
+    if lower(coalesce(p_estado, '')) = 'cancelado' then
+      raise exception 'Use cancelar_encomenda_plataforma_admin para cancelar e repor o stock';
+    end if;
     raise exception 'Estado inválido';
   end if;
 

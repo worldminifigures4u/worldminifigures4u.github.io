@@ -519,6 +519,7 @@ declare
   v_encomenda public.encomendas%rowtype;
   v_item record;
   v_produto record;
+  v_produto_ok boolean;
   v_quantidade_antiga integer;
   v_quantidade_nova integer;
   v_nao_repor integer;
@@ -559,20 +560,23 @@ begin
   perform 1
   from public.produtos as produto
   where produto.id::text in (
-    select item->>'id_produto' from jsonb_array_elements(v_encomenda.produtos) as antigos(item)
+    select coalesce(nullif(item->>'id_produto', ''), nullif(item->>'id', ''))
+    from jsonb_array_elements(v_encomenda.produtos) as antigos(item)
     union
-    select item->>'id_produto' from jsonb_array_elements(p_itens) as novos(item)
+    select coalesce(nullif(item->>'id_produto', ''), nullif(item->>'id', ''))
+    from jsonb_array_elements(p_itens) as novos(item)
   )
   order by produto.id::text
   for update;
 
   for v_item in
-    select item->>'id_produto' as id_produto,
-           sum((item->>'quantidade')::integer)::integer as quantidade,
-           bool_or(coalesce((item->>'permitir_stock_negativo')::boolean, false)) as permitir_stock_negativo
+    select
+      coalesce(nullif(item->>'id_produto', ''), nullif(item->>'id', '')) as id_produto,
+      sum((item->>'quantidade')::integer)::integer as quantidade,
+      bool_or(coalesce((item->>'permitir_stock_negativo')::boolean, false)) as permitir_stock_negativo
     from jsonb_array_elements(p_itens) as itens(item)
-    group by item->>'id_produto'
-    order by item->>'id_produto'
+    group by 1
+    order by 1
   loop
     if v_item.id_produto is null or v_item.quantidade is null
        or v_item.quantidade < 1 or v_item.quantidade > 99 then
@@ -585,11 +589,12 @@ begin
     into v_produto
     from public.produtos as produto
     where produto.id::text = v_item.id_produto;
+    v_produto_ok := found;
 
     select coalesce(sum(greatest(1, coalesce((antigo.item->>'quantidade')::integer, 1))), 0)::integer
     into v_quantidade_antiga
     from jsonb_array_elements(v_encomenda.produtos) as antigo(item)
-    where antigo.item->>'id_produto' = v_item.id_produto;
+    where coalesce(nullif(antigo.item->>'id_produto', ''), nullif(antigo.item->>'id', '')) = v_item.id_produto;
 
     v_nao_repor := case
       when v_item.id_produto = any(coalesce(p_nao_repor_ids, array[]::text[]))
@@ -597,10 +602,17 @@ begin
       else 0
     end;
 
-    if not found or v_produto.id is null then
+    if not v_produto_ok or v_produto.id is null then
       v_indisponiveis := v_indisponiveis || jsonb_build_array(
         jsonb_build_object('id_produto', v_item.id_produto, 'nome', 'Produto indisponivel')
       );
+    elsif (not v_produto.ativo) and not v_item.permitir_stock_negativo then
+      v_indisponiveis := v_indisponiveis || jsonb_build_array(jsonb_build_object(
+        'id_produto', v_item.id_produto,
+        'nome', v_produto.nome,
+        'pedido', v_item.quantidade,
+        'disponivel', 0
+      ));
     else
       v_disponivel := v_quantidade_antiga + greatest(v_produto.stock, 0) - v_nao_repor;
       if v_disponivel < v_item.quantidade and not v_item.permitir_stock_negativo then
@@ -619,15 +631,20 @@ begin
   end if;
 
   for v_item in
-    select item->>'id_produto' as id_produto,
-           sum(greatest(1, coalesce((item->>'quantidade')::integer, 1)))::integer as quantidade
+    select
+      coalesce(nullif(item->>'id_produto', ''), nullif(item->>'id', '')) as id_produto,
+      sum(greatest(1, coalesce((item->>'quantidade')::integer, 1)))::integer as quantidade
     from jsonb_array_elements(v_encomenda.produtos) as antigos(item)
-    group by item->>'id_produto'
+    group by 1
   loop
+    if v_item.id_produto is null then
+      raise exception 'Produto da encomenda sem id para ajustar stock';
+    end if;
+
     select coalesce(sum((novo.item->>'quantidade')::integer), 0)::integer
     into v_quantidade_nova
     from jsonb_array_elements(p_itens) as novo(item)
-    where novo.item->>'id_produto' = v_item.id_produto;
+    where coalesce(nullif(novo.item->>'id_produto', ''), nullif(novo.item->>'id', '')) = v_item.id_produto;
 
     v_nao_repor := case
       when v_item.id_produto = any(coalesce(p_nao_repor_ids, array[]::text[]))
@@ -642,11 +659,12 @@ begin
   end loop;
 
   for v_item in
-    select item->>'id_produto' as id_produto,
-           sum((item->>'quantidade')::integer)::integer as quantidade,
-           min((item->>'ordem')::integer) as ordem
+    select
+      coalesce(nullif(item->>'id_produto', ''), nullif(item->>'id', '')) as id_produto,
+      sum((item->>'quantidade')::integer)::integer as quantidade,
+      min((item->>'ordem')::integer) as ordem
     from jsonb_array_elements(p_itens) as itens(item)
-    group by item->>'id_produto'
+    group by 1
     order by ordem
   loop
     select produto.id::text as id, produto.nome, produto.referencia, produto.sku,
@@ -655,6 +673,10 @@ begin
     into v_produto
     from public.produtos as produto
     where produto.id::text = v_item.id_produto;
+
+    if not found or v_produto.id is null then
+      raise exception 'Produto % nao encontrado ao atualizar encomenda', v_item.id_produto;
+    end if;
 
     v_produtos := v_produtos || jsonb_build_array(jsonb_build_object(
       'id_produto', v_produto.id,

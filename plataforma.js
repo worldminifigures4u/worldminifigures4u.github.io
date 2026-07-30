@@ -10,6 +10,7 @@ let wallapopClient = null;
 let wallapopProdutos = [];
 let wallapopItens = carregarItensWallapop();
 let wallapopRegistoConcluido = false;
+let registoPlataformaEmCurso = false;
 let encomendaPlataformaEmEdicao = null;
 let encomendaPlataformaParaFicheiros = null;
 let perfilExternoDetetado = null;
@@ -2678,6 +2679,8 @@ function novaEncomendaPlataforma() {
 }
 
 async function registarEncomendaWallapop() {
+    if (registoPlataformaEmCurso) return;
+
     const plataforma = obterPlataformaAtual();
     const eraEdicao = Boolean(encomendaPlataformaEmEdicao);
     const botao = document.getElementById('btn-registar-wallapop');
@@ -2765,6 +2768,7 @@ async function registarEncomendaWallapop() {
         : window.confirm(`Registar a encomenda ${plataforma} de ${nomeCliente} por ${formatarEuroWallapop(total)} € e descontar o stock?`);
     if (!confirmado) return;
 
+    registoPlataformaEmCurso = true;
     botao.disabled = true;
     definirStatusWallapop(encomendaPlataformaEmEdicao
         ? 'A validar o stock e guardar as alterações...'
@@ -2907,6 +2911,8 @@ async function registarEncomendaWallapop() {
         console.error(error);
         botao.disabled = false;
         definirStatusWallapop('Erro ao registar: ' + (error.message || 'erro desconhecido'), true);
+    } finally {
+        registoPlataformaEmCurso = false;
     }
 }
 

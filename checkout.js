@@ -55,10 +55,17 @@ async function criarNovaEncomenda() {
 
     const metodoPagamento = obterMetodoPagamentoSelecionado();
 
-    const itensPedido = carrinho.map(item => ({
-      id_produto: item.id,
-      quantidade: Number(item.quantidade || 1)
-    }));
+    const itensPedido = [];
+    for (const item of carrinho) {
+      const quantidade = Math.floor(Number(item.quantidade));
+      if (!item.id || !Number.isFinite(quantidade) || quantidade < 1 || quantidade > 99) {
+        throw new Error("Carrinho inválido. Atualize as quantidades e tente novamente.");
+      }
+      itensPedido.push({
+        id_produto: item.id,
+        quantidade
+      });
+    }
 
     const { data: { session } } = await dbClient.auth.getSession();
     if(!session?.access_token){

@@ -87,6 +87,12 @@ function recuperar(db, encomendaId, estado = "Pago") {
       p.stock -= item.quantidade;
       p.ativo = p.stock > 0;
     }
+    // linhas sem id: agruparItens ignora; SQL corrigido faz raise se houver null id no group
+    for (const item of enc.produtos) {
+      if (!item.id_produto && !item.id) {
+        throw new Error("Produto da encomenda sem id para recuperar stock");
+      }
+    }
   }
   enc.estado = estado;
   enc.stock_reposto = false;
@@ -116,7 +122,7 @@ function criarPlataforma(db, id, itens, permitirNegativo = false) {
   };
 }
 
-/** Espelha atualizar_encomenda_plataforma_admin */
+/** Espelha atualizar_encomenda_plataforma_admin (corrigida: id + produto_ok) */
 function editarPlataforma(db, id, novosItens, naoReporIds = []) {
   const enc = db.encomendas[id];
   assert(enc && enc.estado !== "Cancelado", "nao editavel");
@@ -125,33 +131,106 @@ function editarPlataforma(db, id, novosItens, naoReporIds = []) {
   const mapaAntigo = Object.fromEntries(antigos.map((i) => [i.id_produto, i.quantidade]));
   const mapaNovo = Object.fromEntries(novos.map((i) => [i.id_produto, i.quantidade]));
 
+  for (const item of novos) {
+    const p = db.produtos[item.id_produto];
+    if (!p) throw new Error(`edit produto indisponivel ${item.id_produto}`);
+    if (p.ativo === false && !item.permitir_stock_negativo) {
+      throw new Error(`edit produto inativo ${item.id_produto}`);
+    }
+    const qAntiga = mapaAntigo[item.id_produto] || 0;
+    const naoRepor = naoReporIds.includes(item.id_produto)
+      ? Math.max(qAntiga - item.quantidade, 0)
+      : 0;
+    const disponivel = qAntiga + Math.max(p.stock, 0) - naoRepor;
+    if (disponivel < item.quantidade && !item.permitir_stock_negativo) {
+      throw new Error(`edit sem stock ${item.id_produto}`);
+    }
+  }
+
   for (const item of antigos) {
     const qNova = mapaNovo[item.id_produto] || 0;
     const naoRepor = naoReporIds.includes(item.id_produto)
       ? Math.max(item.quantidade - qNova, 0)
       : 0;
     const p = db.produtos[item.id_produto];
+    if (!p) throw new Error(`edit restore produto em falta ${item.id_produto}`);
     p.stock += Math.max(item.quantidade - naoRepor, 0);
     p.ativo = p.stock > 0;
   }
   for (const item of novos) {
     const p = db.produtos[item.id_produto];
-    const qAntiga = mapaAntigo[item.id_produto] || 0;
-    const naoRepor = naoReporIds.includes(item.id_produto)
-      ? Math.max(qAntiga - item.quantidade, 0)
-      : 0;
-    const disponivel = qAntiga + Math.max(p.stock, 0) - naoRepor;
-    // Nota: após restore parcial, p.stock já inclui o restore; a checagem real no SQL
-    // usa stock ANTES do restore. Aqui validamos pós-restore: stock >= quantidade.
-    if (p.stock < item.quantidade) {
-      // Reverter simulação simplificada: falha
-      throw new Error(`edit sem stock ${item.id_produto} (disp sim ${p.stock})`);
-    }
     p.stock -= item.quantidade;
     p.ativo = p.stock > 0;
   }
   enc.produtos = novos.map((i) => ({ id_produto: i.id_produto, quantidade: i.quantidade }));
   enc.stock_reposto = false;
+}
+
+/** Espelha editar antigo: so id_produto, NOT FOUND sobrescrito (bug) */
+function editarPlataformaAntigoBug(db, id, novosItens, naoReporIds = []) {
+  const enc = db.encomendas[id];
+  assert(enc && enc.estado !== "Cancelado", "nao editavel");
+  // antigos: so id_produto (ignora campo id)
+  const antigos = [];
+  for (const item of enc.produtos) {
+    if (!item.id_produto) continue;
+    const q = Math.max(1, Number(item.quantidade ?? 1) || 1);
+    const prev = antigos.find((a) => a.id_produto === item.id_produto);
+    if (prev) prev.quantidade += q;
+    else antigos.push({ id_produto: item.id_produto, quantidade: q });
+  }
+  const novos = [];
+  for (const item of novosItens) {
+    const pid = item.id_produto; // so id_produto
+    if (!pid) continue;
+    const q = Math.max(1, Number(item.quantidade ?? 1) || 1);
+    const prev = novos.find((a) => a.id_produto === pid);
+    if (prev) prev.quantidade += q;
+    else novos.push({ id_produto: pid, quantidade: q });
+  }
+  const mapaNovo = Object.fromEntries(novos.map((i) => [i.id_produto, i.quantidade]));
+  let ultimoProduto = null;
+  for (const item of novos) {
+    let p = db.produtos[item.id_produto] || null;
+    // bug: se nao encontra, mantem ultimoProduto (simula NOT FOUND sobrescrito)
+    if (p) ultimoProduto = p;
+    else p = ultimoProduto;
+    if (!p) continue;
+    // validacao passa com stock do produto errado / anterior
+  }
+  for (const item of antigos) {
+    const qNova = mapaNovo[item.id_produto] || 0;
+    const naoRepor = naoReporIds.includes(item.id_produto)
+      ? Math.max(item.quantidade - qNova, 0)
+      : 0;
+    const p = db.produtos[item.id_produto];
+    if (p) {
+      p.stock += Math.max(item.quantidade - naoRepor, 0);
+      p.ativo = p.stock > 0;
+    }
+  }
+  for (const item of novos) {
+    const p = db.produtos[item.id_produto];
+    if (!p) {
+      // UPDATE 0 rows — stock nao descontado para id invalido
+      continue;
+    }
+    p.stock -= item.quantidade;
+    p.ativo = p.stock > 0;
+  }
+  enc.produtos = novos.map((i) => ({ id_produto: i.id_produto, quantidade: i.quantidade }));
+}
+
+/** Espelha atualizar_estado_encomenda_admin antigo (marca Cancelado sem repor) */
+function marcarCanceladoSemRepor(db, id) {
+  const enc = db.encomendas[id];
+  assert(enc, "encomenda nao encontrada");
+  enc.estado = "Cancelado";
+  // stock_reposto intacto — bug
+}
+
+function marcarCanceladoSeguro(db, id) {
+  assert(false, "bloqueado: use cancelar_encomenda_plataforma_admin");
 }
 
 /** Espelha receber_stock_fornecedor_admin (sem teto / sem lock produto) */
@@ -556,6 +635,147 @@ cenario("23. Receber fornecedor seguro ignora quantidades negativas", () => {
   expectStock(db, "A", 0, "stock intacto");
   assert(db.fornecedores.f1.itens[0].recebido === 0, "recebido intacto");
   assert(res.recebido_aplicado.length === 0, "nada aplicado");
+});
+
+cenario("24. BUG: editar com so campo id nao repoe stock antigo", () => {
+  const db = criarDb({ A: 5 });
+  db.encomendas.e1 = {
+    id: "e1",
+    estado: "Pago",
+    stock_reposto: false,
+    produtos: [{ id: "A", quantidade: 2 }],
+  };
+  db.produtos.A.stock = 3;
+  editarPlataformaAntigoBug(db, "e1", [{ id_produto: "A", quantidade: 2 }]);
+  // antigos ignorados (sem id_produto) → sem restore; novos descontam outra vez
+  expectStock(db, "A", 1, "descontado a dobrar");
+  throw new Error("BUG CONFIRMADO: editar antigo com campo id perde +2 e desconta outra vez");
+});
+
+cenario("24b. Editar corrigido repoe stock com campo id", () => {
+  const db = criarDb({ A: 5 });
+  db.encomendas.e1 = {
+    id: "e1",
+    estado: "Pago",
+    stock_reposto: false,
+    produtos: [{ id: "A", quantidade: 2 }],
+  };
+  db.produtos.A.stock = 3;
+  editarPlataforma(db, "e1", [{ id_produto: "A", quantidade: 2 }]);
+  expectStock(db, "A", 3, "restore+deduct neutro");
+});
+
+cenario("25. Editar corrigido rejeita produto inexistente", () => {
+  const db = criarDb({ A: 5 });
+  criarPlataforma(db, "e1", [{ id_produto: "A", quantidade: 1 }]);
+  let falhou = false;
+  try {
+    editarPlataforma(db, "e1", [
+      { id_produto: "A", quantidade: 1 },
+      { id_produto: "Z_INEXISTENTE", quantidade: 1 },
+    ]);
+  } catch (_) {
+    falhou = true;
+  }
+  assert(falhou, "deveria rejeitar produto inexistente");
+  expectStock(db, "A", 4, "stock intacto apos falha");
+});
+
+cenario("26. BUG: marcar Cancelado sem RPC de cancel perde stock", () => {
+  const db = criarDb({ A: 5 });
+  criarPlataforma(db, "e1", [{ id_produto: "A", quantidade: 2 }]);
+  marcarCanceladoSemRepor(db, "e1");
+  expectStock(db, "A", 3, "stock nao reposto");
+  assert(db.encomendas.e1.stock_reposto === false, "flag falsa");
+  throw new Error("BUG CONFIRMADO: estado Cancelado sem repor deixa stock=3");
+});
+
+cenario("26b. atualizar_estado seguro bloqueia Cancelado", () => {
+  const db = criarDb({ A: 5 });
+  criarPlataforma(db, "e1", [{ id_produto: "A", quantidade: 2 }]);
+  let bloqueou = false;
+  try {
+    marcarCanceladoSeguro(db, "e1");
+  } catch (_) {
+    bloqueou = true;
+  }
+  assert(bloqueou, "deveria bloquear");
+  expectStock(db, "A", 3, "stock intacto");
+});
+
+cenario("27. Ultima unidade: segunda encomenda falha", () => {
+  const db = criarDb({ A: 1 });
+  criarPlataforma(db, "e1", [{ id_produto: "A", quantidade: 1 }]);
+  let falhou = false;
+  try {
+    criarPlataforma(db, "e2", [{ id_produto: "A", quantidade: 1 }]);
+  } catch (_) {
+    falhou = true;
+  }
+  assert(falhou, "segunda deveria falhar");
+  expectStock(db, "A", 0, "so e1 descontou");
+});
+
+cenario("28. Cancel com quantidade em falta assume 1 (risco dados corruptos)", () => {
+  const db = criarDb({ A: 5 });
+  db.encomendas.e1 = {
+    id: "e1",
+    estado: "Pago",
+    stock_reposto: false,
+    // deduziu 3 na realidade, mas linha sem quantidade
+    produtos: [{ id_produto: "A" }],
+  };
+  db.produtos.A.stock = 2;
+  cancelar(db, "e1");
+  expectStock(db, "A", 3, "reposto so +1");
+  assert(db.produtos.A.stock !== 5, "evidencia: nao voltou a 5");
+  throw new Error("BUG DE DADOS: qty em falta no cancel repoe 1 em vez da qty real");
+});
+
+cenario("29. Editar pedido fornecedor preserva recebido do DB", () => {
+  const db = criarDb({ A: 0 });
+  db.fornecedores.f1 = {
+    id: "f1",
+    itens: [{ id: "A", quantidade: 5, recebido: 3 }],
+  };
+  // cliente tenta baixar recebido para 0 e quantidade para 2
+  const itensCliente = [{ id: "A", quantidade: 2, recebido: 0 }];
+  const itemDb = db.fornecedores.f1.itens[0];
+  const recebidoFinal = itemDb.recebido; // ignora cliente
+  const quantidadeFinal = Math.max(itensCliente[0].quantidade, recebidoFinal);
+  itemDb.quantidade = quantidadeFinal;
+  itemDb.recebido = recebidoFinal;
+  assert(itemDb.recebido === 3, "recebido preservado");
+  assert(itemDb.quantidade === 3, "quantidade >= recebido");
+  // re-receber nao pode aplicar mais que pendente 0
+  const res = receberFornecedorSeguro(db, "f1", [{ produto_id: "A", quantidade: 10 }]);
+  expectStock(db, "A", 0, "sem re-receber");
+  assert(res.recebido_aplicado.length === 0, "pendente 0");
+});
+
+cenario("30. Criar com stock negativo e cancel volta ao negativo original", () => {
+  const db = criarDb({ A: 0 });
+  db.produtos.A.ativo = false;
+  criarPlataforma(db, "e1", [{ id_produto: "A", quantidade: 1 }], true);
+  expectStock(db, "A", -1, "negativo");
+  cancelar(db, "e1");
+  expectStock(db, "A", 0, "volta a 0");
+});
+
+cenario("31. Mixed id + id_produto no mesmo pedido: cancel agrupa", () => {
+  const db = criarDb({ A: 10 });
+  db.encomendas.e1 = {
+    id: "e1",
+    estado: "Pago",
+    stock_reposto: false,
+    produtos: [
+      { id_produto: "A", quantidade: 2 },
+      { id: "A", quantidade: 3 },
+    ],
+  };
+  db.produtos.A.stock = 5; // 10-5
+  cancelar(db, "e1");
+  expectStock(db, "A", 10, "reposto 2+3");
 });
 
 const falhas = resultados.filter((r) => !r.ok);
