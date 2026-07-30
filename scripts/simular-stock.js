@@ -180,6 +180,15 @@ function apagarEncomenda(db, id) {
   delete db.encomendas[id];
 }
 
+/** Espelha apagar_encomenda_admin corrigida */
+function apagarEncomendaSeguro(db, id) {
+  const enc = db.encomendas[id];
+  assert(enc, "encomenda nao encontrada");
+  assert(String(enc.estado || "").toLowerCase() === "cancelado", "bloqueado: cancelar antes de apagar");
+  assert(enc.stock_reposto === true, "bloqueado: stock ainda nao reposto");
+  delete db.encomendas[id];
+}
+
 const resultados = [];
 function cenario(nome, fn) {
   try {
@@ -308,6 +317,28 @@ cenario("9. Apagar sem cancelar perde stock", () => {
   apagarEncomenda(db, "e1");
   expectStock(db, "A", 3, "stock perdido");
   throw new Error("BUG DE PROCESSO: apagar sem cancelar deixa stock=3 em vez de 5");
+});
+
+cenario("9b. Apagar seguro bloqueia encomenda nao cancelada", () => {
+  const db = criarDb({ A: 5 });
+  criarPlataforma(db, "e1", [{ id_produto: "A", quantidade: 2 }]);
+  let bloqueou = false;
+  try {
+    apagarEncomendaSeguro(db, "e1");
+  } catch (_) {
+    bloqueou = true;
+  }
+  assert(bloqueou, "deveria bloquear apagar sem cancelar");
+  expectStock(db, "A", 3, "stock intacto apos bloqueio");
+});
+
+cenario("9c. Apagar seguro permite encomenda cancelada com stock reposto", () => {
+  const db = criarDb({ A: 5 });
+  criarPlataforma(db, "e1", [{ id_produto: "A", quantidade: 2 }]);
+  cancelar(db, "e1");
+  apagarEncomendaSeguro(db, "e1");
+  assert(!db.encomendas.e1, "encomenda apagada");
+  expectStock(db, "A", 5, "stock reposto antes de apagar");
 });
 
 cenario("10. Editar: reduzir quantidade com repor → stock sobe", () => {
