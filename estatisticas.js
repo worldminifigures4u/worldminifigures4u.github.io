@@ -107,14 +107,29 @@ function obterPlataformaEncomenda(encomenda) {
     return origem;
 }
 
+const ESTATISTICAS_ESTADOS_TOTAIS = new Set([
+    'pago',
+    'em preparacao',
+    'enviado',
+    'concluido'
+]);
+
 function obterEstadoEncomenda(encomenda) {
     const estado = String(encomenda.estado || '').trim();
     if (normalizarTextoEstatisticas(estado) === 'pendente') return 'A aguardar pagamento';
     return estado || 'A aguardar pagamento';
 }
 
+function obterEstadoNormalizadoEstatisticas(encomenda) {
+    return normalizarTextoEstatisticas(obterEstadoEncomenda(encomenda));
+}
+
 function encomendaCancelada(encomenda) {
-    return normalizarTextoEstatisticas(obterEstadoEncomenda(encomenda)) === 'cancelado';
+    return obterEstadoNormalizadoEstatisticas(encomenda) === 'cancelado';
+}
+
+function encomendaContaNosTotais(encomenda) {
+    return ESTATISTICAS_ESTADOS_TOTAIS.has(obterEstadoNormalizadoEstatisticas(encomenda));
 }
 
 function obterProdutosEstatisticas(encomenda) {
@@ -173,9 +188,9 @@ function filtrarEncomendasEstatisticas() {
         if (!encomendaDentroDoPeriodo(encomenda, filtro)) return false;
         if (filtro.plataforma !== 'todas' && obterPlataformaEncomenda(encomenda) !== filtro.plataforma) return false;
         const cancelada = encomendaCancelada(encomenda);
-        if (filtro.canceladas === 'excluir' && cancelada) return false;
-        if (filtro.canceladas === 'apenas' && !cancelada) return false;
-        return true;
+        if (filtro.canceladas === 'excluir') return encomendaContaNosTotais(encomenda);
+        if (filtro.canceladas === 'apenas') return cancelada;
+        return encomendaContaNosTotais(encomenda) || cancelada;
     });
 }
 
