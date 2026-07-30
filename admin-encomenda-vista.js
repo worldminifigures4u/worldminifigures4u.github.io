@@ -1410,11 +1410,15 @@ window.AdminEncomendaVista = (function () {
 
     async function apagarEncomenda(encomenda, botao) {
         const codigo = encomenda.codigo_encomenda || `#${encomenda.id}`;
-        const avisoStock = estadoNormalizado(encomenda.estado) !== "Cancelado"
-            ? "\n\nAtenção: isto não repõe stock. Para repor stock, cancele primeiro a encomenda."
-            : "";
-        if (!window.confirm(`Apagar definitivamente a encomenda ${codigo}?${avisoStock}`)) return;
-        if (!window.confirm("Confirmar eliminação definitiva? Esta ação não pode ser desfeita.")) return;
+        if (estadoNormalizado(encomenda.estado) !== "Cancelado") {
+            hooks.definirStatus(`Para apagar a encomenda ${codigo}, cancele primeiro para repor o stock.`, true);
+            return;
+        }
+        if (!encomenda.stock_reposto) {
+            hooks.definirStatus(`Não é possível apagar a encomenda ${codigo}: o stock ainda não está marcado como reposto.`, true);
+            return;
+        }
+        if (!window.confirm(`Apagar definitivamente a encomenda ${codigo}? Esta ação não pode ser desfeita.`)) return;
 
         botao.disabled = true;
         hooks.definirStatus("A apagar encomenda...");
