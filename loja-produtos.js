@@ -222,7 +222,6 @@ function ellipse(cx, cy, rx, ry, attrs = {}) {
 /* Ícones raster exactos (extraídos das imagens de referência). */
 const MAPA_ICONES_MASCARA = {
     'Bluey': 'img/icone-bluey.png',
-    'DC Comics': 'img/icone-dc-comics-mask.png',
     'Dinossauros': 'img/icone-dinossauros.png'
 };
 
@@ -259,8 +258,8 @@ const MAPA_ICONES_TEMAS = {
     ],
     'DC Comics': [
         path(
-            'M3.1 10.1c1.3-1.2 2.6-1.6 4.1-1.3.3-1 .7-1.9 1.4-2.8.8 1.2 1.7 1.9 2.8 2.1.3-.9.7-1.7 1.1-2.5.4.8.8 1.6 1.1 2.5 1.1-.2 2-.9 2.8-2.1.7.9 1.1 1.8 1.4 2.8 1.5-.3 2.8.1 4.1 1.3-.9.5-1.6 1.1-2.2 1.8.9.5 1.5 1.2 1.9 2.1-2-.4-3.7-.1-5.1.8-1 .6-1.8 1.5-2.5 2.7-.5-1.5-1-2.4-1.5-2.8-.5.4-1 1.3-1.5 2.8-.7-1.2-1.5-2.1-2.5-2.7-1.4-.9-3.1-1.2-5.1-.8.4-.9 1-1.6 1.9-2.1-.6-.7-1.3-1.3-2.2-1.8z',
-            { fill: 'none', stroke: '#ffc107', 'stroke-width': '1.45', 'stroke-linecap': 'round', 'stroke-linejoin': 'round' }
+            'M2.2 12.6c.65-3.1 2.95-5.65 5.7-6.35.6 1.15 1.38 1.8 2.47 1.95L12 5.55l1.63 2.65c1.09-.15 1.87-.8 2.47-1.95 2.75.7 5.05 3.25 5.7 6.35-1.24-.7-2.56-1.02-3.9-.96.48.43.88.95 1.17 1.57-1.38-.3-2.63-.24-3.7.2-.94.38-1.72 1.05-2.37 2.04-.2-.88-.54-1.55-1-2-.46.45-.8 1.12-1 2-.65-.99-1.43-1.66-2.37-2.04-1.07-.44-2.32-.5-3.7-.2.29-.62.69-1.14 1.17-1.57-1.34-.06-2.66.26-3.9.96z',
+            { fill: 'none', stroke: 'currentColor', 'stroke-width': '1.35', 'stroke-linecap': 'round', 'stroke-linejoin': 'round' }
         )
     ],
     'Dinossauros': [], // silhueta exacta via img/icone-dinossauros.png (máscara CSS)
@@ -465,10 +464,7 @@ function criarIconeTema(tema = '') {
         return el;
     }
     const partes = MAPA_ICONES_TEMAS[tema] || MAPA_ICONES_TEMAS['Diversos'];
-    const preenchido = tema === 'DC Comics';
-    const svg = criarSvgTema(partes, { preenchido });
-    if (preenchido) svg.classList.add('icone-tema-marca');
-    return svg;
+    return criarSvgTema(partes);
 }
 
 function criarRotuloTema(temaTexto) {

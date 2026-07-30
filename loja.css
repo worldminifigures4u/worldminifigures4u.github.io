@@ -681,12 +681,6 @@
             overflow:visible;
         }
 
-        .icone-tema-dc{
-            width:32px;
-            height:24px;
-            flex:0 0 32px;
-        }
-
         .nome-tema{
             min-width:0;
             overflow:hidden;
