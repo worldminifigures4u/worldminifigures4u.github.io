@@ -36,12 +36,14 @@ function agruparItens(itens) {
   return [...mapa.entries()].map(([id_produto, quantidade]) => ({ id_produto, quantidade }));
 }
 
-/** Espelha cancelar_encomenda_plataforma_admin (versão recuperar) */
+/** Espelha cancelar_encomenda_plataforma_admin (versão segura) */
 function cancelar(db, encomendaId) {
   const enc = db.encomendas[encomendaId];
   assert(enc, "encomenda nao encontrada");
   let repostouAgora = false;
   if (!enc.stock_reposto) {
+    const itens = Array.isArray(enc.produtos) ? enc.produtos : [];
+    assert(itens.length > 0, "Encomenda sem produtos para repor stock");
     repostouAgora = true;
     for (const item of agruparItens(enc.produtos)) {
       const p = db.produtos[item.id_produto];
@@ -53,6 +55,23 @@ function cancelar(db, encomendaId) {
   }
   enc.estado = "Cancelado";
   return { stock_reposto_agora: repostouAgora, stock_reposto: enc.stock_reposto };
+}
+
+/** Cancel antigo: encomenda vazia marca stock_reposto sem repor */
+function cancelarVazioInseguro(db, encomendaId) {
+  const enc = db.encomendas[encomendaId];
+  assert(enc, "encomenda nao encontrada");
+  if (!enc.stock_reposto) {
+    for (const item of agruparItens(enc.produtos || [])) {
+      const p = db.produtos[item.id_produto];
+      if (p) {
+        p.stock += item.quantidade;
+        p.ativo = p.stock > 0;
+      }
+    }
+    enc.stock_reposto = true;
+  }
+  enc.estado = "Cancelado";
 }
 
 /** Espelha cancelar antigo (plataformas.sql) — sem agrupar, só id_produto */
@@ -776,6 +795,241 @@ cenario("31. Mixed id + id_produto no mesmo pedido: cancel agrupa", () => {
   db.produtos.A.stock = 5; // 10-5
   cancelar(db, "e1");
   expectStock(db, "A", 10, "reposto 2+3");
+});
+
+/** Espelha atualizar_stock_produto_admin (clamp >= 0) */
+function setStockAdmin(db, id, stock, ativo = true) {
+  const p = db.produtos[id];
+  assert(p, `produto ${id}`);
+  p.stock = Math.max(0, Number(stock) || 0);
+  p.ativo = !!ativo;
+}
+
+/** Espelha importar_produtos_admin (overwrite absoluto) */
+function importarOverwrite(db, id, stock) {
+  const p = db.produtos[id];
+  assert(p, `produto ${id}`);
+  p.stock = Number(stock);
+  p.ativo = p.stock > 0;
+}
+
+/** Recuperar forçando stock negativo */
+function recuperarForcandoNegativo(db, encomendaId, estado = "Pago") {
+  const enc = db.encomendas[encomendaId];
+  assert(enc, "encomenda nao encontrada");
+  assert(enc.estado === "Cancelado", "nao cancelada");
+  const eraReposto = !!enc.stock_reposto;
+  if (eraReposto) {
+    for (const item of agruparItens(enc.produtos)) {
+      const p = db.produtos[item.id_produto];
+      assert(p, `produto ${item.id_produto}`);
+      p.stock -= item.quantidade;
+      p.ativo = p.stock > 0;
+    }
+  }
+  enc.estado = estado;
+  enc.stock_reposto = false;
+  return { stock_reduzido: eraReposto };
+}
+
+cenario("32. Multi-produto: criar/cancel/recover mantem ambos", () => {
+  const db = criarDb({ A: 5, B: 4 });
+  criarPlataforma(db, "e1", [
+    { id_produto: "A", quantidade: 2 },
+    { id_produto: "B", quantidade: 3 },
+  ]);
+  expectStock(db, "A", 3, "A");
+  expectStock(db, "B", 1, "B");
+  cancelar(db, "e1");
+  expectStock(db, "A", 5, "A reposto");
+  expectStock(db, "B", 4, "B reposto");
+  recuperar(db, "e1");
+  expectStock(db, "A", 3, "A de novo");
+  expectStock(db, "B", 1, "B de novo");
+});
+
+cenario("33. Recuperar forcando negativo quando stock foi consumido", () => {
+  const db = criarDb({ A: 5 });
+  criarPlataforma(db, "e1", [{ id_produto: "A", quantidade: 3 }]);
+  cancelar(db, "e1");
+  criarPlataforma(db, "e2", [{ id_produto: "A", quantidade: 4 }]);
+  recuperarForcandoNegativo(db, "e1");
+  expectStock(db, "A", -2, "1-3 = -2");
+  assert(db.produtos.A.ativo === false, "inativo com negativo");
+});
+
+cenario("34. BUG OPERACIONAL: setStockAdmin a 0 apaga divida negativa", () => {
+  const db = criarDb({ A: 0 });
+  criarPlataforma(db, "e1", [{ id_produto: "A", quantidade: 2 }], true);
+  expectStock(db, "A", -2, "divida");
+  setStockAdmin(db, "A", 0, false);
+  expectStock(db, "A", 0, "divida apagada");
+  cancelar(db, "e1");
+  expectStock(db, "A", 2, "cancel soma em cima do 0");
+  throw new Error("BUG OPERACIONAL: admin clamp 0 + cancel posterior inflaciona stock para 2");
+});
+
+cenario("35. BUG OPERACIONAL: import overwrite ignora encomendas abertas", () => {
+  const db = criarDb({ A: 10 });
+  criarPlataforma(db, "e1", [{ id_produto: "A", quantidade: 3 }]);
+  expectStock(db, "A", 7, "apos venda");
+  importarOverwrite(db, "A", 10);
+  expectStock(db, "A", 10, "import repoe artificialmente");
+  cancelar(db, "e1");
+  expectStock(db, "A", 13, "cancel +3 em cima do import");
+  throw new Error("BUG OPERACIONAL: import absoluto + cancel posterior → stock 13 em vez de 10");
+});
+
+cenario("36. BUG DE DADOS: cancel encomenda vazia marca stock_reposto sem repor", () => {
+  const db = criarDb({ A: 5 });
+  db.encomendas.e1 = {
+    id: "e1",
+    estado: "Pago",
+    stock_reposto: false,
+    produtos: [],
+  };
+  db.produtos.A.stock = 3;
+  cancelarVazioInseguro(db, "e1");
+  assert(db.encomendas.e1.stock_reposto === true, "flag marcada");
+  expectStock(db, "A", 3, "A nao mexeu");
+  throw new Error("BUG DE DADOS: encomenda vazia cancelada marca stock_reposto sem repor");
+});
+
+cenario("36b. Cancel seguro bloqueia encomenda sem produtos", () => {
+  const db = criarDb({ A: 5 });
+  db.encomendas.e1 = {
+    id: "e1",
+    estado: "Pago",
+    stock_reposto: false,
+    produtos: [],
+  };
+  db.produtos.A.stock = 3;
+  let bloqueou = false;
+  try {
+    cancelar(db, "e1");
+  } catch (_) {
+    bloqueou = true;
+  }
+  assert(bloqueou, "deveria bloquear");
+  assert(db.encomendas.e1.stock_reposto === false, "flag intacta");
+  expectStock(db, "A", 3, "stock intacto");
+});
+
+cenario("37. Receber parcial depois completar", () => {
+  const db = criarDb({ A: 1 });
+  db.fornecedores.f1 = { id: "f1", itens: [{ id: "A", quantidade: 5, recebido: 0 }] };
+  receberFornecedorSeguro(db, "f1", [{ produto_id: "A", quantidade: 2 }]);
+  expectStock(db, "A", 3, "parcial");
+  assert(db.fornecedores.f1.itens[0].recebido === 2, "recebido 2");
+  receberFornecedorSeguro(db, "f1", [{ produto_id: "A", quantidade: 10 }]);
+  expectStock(db, "A", 6, "completa ate 5");
+  assert(db.fornecedores.f1.itens[0].recebido === 5, "pedido completo");
+});
+
+cenario("38. Editar aumentar qty com stock justo", () => {
+  const db = criarDb({ A: 5 });
+  criarPlataforma(db, "e1", [{ id_produto: "A", quantidade: 2 }]);
+  editarPlataforma(db, "e1", [{ id_produto: "A", quantidade: 5 }]);
+  expectStock(db, "A", 0, "usou o resto");
+});
+
+cenario("39. Editar aumentar qty sem stock falha", () => {
+  const db = criarDb({ A: 5 });
+  criarPlataforma(db, "e1", [{ id_produto: "A", quantidade: 2 }]);
+  criarPlataforma(db, "e2", [{ id_produto: "A", quantidade: 3 }]);
+  let falhou = false;
+  try {
+    editarPlataforma(db, "e1", [{ id_produto: "A", quantidade: 4 }]);
+  } catch (_) {
+    falhou = true;
+  }
+  assert(falhou, "sem stock para aumentar");
+  expectStock(db, "A", 0, "intactos e1+e2");
+});
+
+cenario("40. Produto inativo bloqueado na edicao (sem permitir negativo)", () => {
+  const db = criarDb({ A: 5, B: 5 });
+  criarPlataforma(db, "e1", [{ id_produto: "A", quantidade: 1 }]);
+  db.produtos.B.ativo = false;
+  let falhou = false;
+  try {
+    editarPlataforma(db, "e1", [{ id_produto: "B", quantidade: 1 }]);
+  } catch (_) {
+    falhou = true;
+  }
+  assert(falhou, "B inativo");
+  expectStock(db, "A", 4, "A ainda descontado da encomenda original");
+});
+
+cenario("41. Ciclo: receber fornecedor depois de stock negativo de plataforma", () => {
+  const db = criarDb({ A: 0 });
+  criarPlataforma(db, "e1", [{ id_produto: "A", quantidade: 1 }], true);
+  criarPlataforma(db, "e2", [{ id_produto: "A", quantidade: 1 }], true);
+  expectStock(db, "A", -2, "duas vendas");
+  db.fornecedores.f1 = { id: "f1", itens: [{ id: "A", quantidade: 5, recebido: 0 }] };
+  receberFornecedorSeguro(db, "f1", [{ produto_id: "A", quantidade: 5 }]);
+  expectStock(db, "A", 3, "-2+5");
+  assert(db.produtos.A.ativo === true, "reativado");
+});
+
+cenario("42. Tres encomendas sequenciais no mesmo SKU", () => {
+  const db = criarDb({ A: 6 });
+  criarPlataforma(db, "e1", [{ id_produto: "A", quantidade: 2 }]);
+  criarPlataforma(db, "e2", [{ id_produto: "A", quantidade: 2 }]);
+  criarPlataforma(db, "e3", [{ id_produto: "A", quantidade: 2 }]);
+  expectStock(db, "A", 0, "zerado");
+  cancelar(db, "e2");
+  expectStock(db, "A", 2, "meio");
+  cancelar(db, "e1");
+  cancelar(db, "e3");
+  expectStock(db, "A", 6, "tudo");
+});
+
+cenario("43. Checkout qty invalida (0) nao deve virar 1", () => {
+  const qtd = Math.floor(Number(0));
+  const valida = Number.isFinite(qtd) && qtd >= 1 && qtd <= 99;
+  assert(!valida, "qty 0 invalida");
+});
+
+cenario("44. Checkout qty 100 acima do limite", () => {
+  const qtd = Math.floor(Number(100));
+  const valida = Number.isFinite(qtd) && qtd >= 1 && qtd <= 99;
+  assert(!valida, "qty 100 invalida");
+});
+
+cenario("45. Apagar apos cancel+repor nao altera stock", () => {
+  const db = criarDb({ A: 5 });
+  criarPlataforma(db, "e1", [{ id_produto: "A", quantidade: 2 }]);
+  cancelar(db, "e1");
+  expectStock(db, "A", 5, "reposto");
+  apagarEncomendaSeguro(db, "e1");
+  expectStock(db, "A", 5, "apagar nao mexe");
+});
+
+cenario("46. Editar NAO repor parcial (reduzir 5→2, escrever off 3)", () => {
+  const db = criarDb({ A: 10 });
+  criarPlataforma(db, "e1", [{ id_produto: "A", quantidade: 5 }]);
+  expectStock(db, "A", 5, "apos criar");
+  editarPlataforma(db, "e1", [{ id_produto: "A", quantidade: 2 }], ["A"]);
+  // restore (5-3)=2, deduct 2 → stock fica 5
+  expectStock(db, "A", 5, "3 unidades escritas off");
+});
+
+cenario("47. Receber 0 unidades nao altera nada", () => {
+  const db = criarDb({ A: 2 });
+  db.fornecedores.f1 = { id: "f1", itens: [{ id: "A", quantidade: 3, recebido: 0 }] };
+  const res = receberFornecedorSeguro(db, "f1", [{ produto_id: "A", quantidade: 0 }]);
+  expectStock(db, "A", 2, "igual");
+  assert(res.recebido_aplicado.length === 0, "nada");
+});
+
+cenario("48. Cancel+recover+edit neutro no mesmo produto", () => {
+  const db = criarDb({ A: 8 });
+  criarPlataforma(db, "e1", [{ id_produto: "A", quantidade: 3 }]);
+  cancelar(db, "e1");
+  recuperar(db, "e1");
+  editarPlataforma(db, "e1", [{ id_produto: "A", quantidade: 3 }]);
+  expectStock(db, "A", 5, "8-3");
 });
 
 const falhas = resultados.filter((r) => !r.ok);

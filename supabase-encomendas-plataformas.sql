@@ -307,6 +307,11 @@ begin
   end if;
 
   if not coalesce(v_encomenda.stock_reposto, false) then
+    if jsonb_typeof(coalesce(v_encomenda.produtos, '[]'::jsonb)) <> 'array'
+       or jsonb_array_length(coalesce(v_encomenda.produtos, '[]'::jsonb)) = 0 then
+      raise exception 'Encomenda sem produtos para repor stock';
+    end if;
+
     v_repostou_agora := true;
     for v_item in
       select

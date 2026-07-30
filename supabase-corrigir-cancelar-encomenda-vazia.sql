@@ -1,6 +1,6 @@
 -- Executar no SQL Editor do Supabase.
--- Cancelamento: falha se algum produto nao existir / nao tiver id,
--- para nao marcar stock_reposto sem repor stock.
+-- Cancelamento: nao marcar stock_reposto em encomenda sem produtos
+-- (evita apagar depois e perder unidades que tinham sido descontadas).
 
 create or replace function public.cancelar_encomenda_plataforma_admin(
   p_encomenda_id text,
