@@ -1,62 +1,6 @@
--- Figures Planet — data_encomendada nas encomendas a fornecedores
--- Corrige a data mostrada: fica a data em que o estado passa a «Encomendada»,
--- e deixa de mudar quando se edita o código / outros campos (atualizado_em).
--- Correr uma vez no SQL Editor do Supabase.
-
-alter table public.encomendas_fornecedores
-    add column if not exists data_encomendada timestamptz;
-
--- Pedidos já Em «Encomendada» sem data: usar criado_em (não atualizado_em — pode ser edição)
-update public.encomendas_fornecedores
-set data_encomendada = criado_em
-where data_encomendada is null
-  and lower(trim(coalesce(estado, ''))) = 'encomendada';
-
-create or replace function public.alterar_estado_encomenda_fornecedor_admin(
-    p_id text,
-    p_estado text
-)
-returns jsonb
-language plpgsql
-security definer
-set search_path = public
-as $$
-declare
-    atualizada public.encomendas_fornecedores;
-    v_estado_anterior text;
-begin
-    if not public.admin_fornecedores_autorizado() then
-        raise exception 'Acesso reservado ao administrador.';
-    end if;
-
-    select estado into v_estado_anterior
-    from public.encomendas_fornecedores
-    where id::text = p_id
-    for update;
-
-    if not found then
-        raise exception 'Encomenda de fornecedor nao encontrada.';
-    end if;
-
-    update public.encomendas_fornecedores
-    set
-        estado = p_estado,
-        data_encomendada = case
-            when lower(trim(coalesce(p_estado, ''))) = 'encomendada'
-                 and lower(trim(coalesce(v_estado_anterior, ''))) is distinct from 'encomendada'
-            then now()
-            else data_encomendada
-        end
-    where id::text = p_id
-    returning * into atualizada;
-
-    if atualizada.id is null then
-        raise exception 'Encomenda de fornecedor nao encontrada.';
-    end if;
-
-    return to_jsonb(atualizada);
-end;
-$$;
+-- Executar no SQL Editor do Supabase.
+-- Ao editar pedido de fornecedor, nao permitir baixar "recebido":
+-- isso reabria pendente e permitia re-receber stock ja somado ao catalogo.
 
 create or replace function public.atualizar_encomenda_fornecedor_admin(
     p_id text,
@@ -163,7 +107,5 @@ begin
 end;
 $$;
 
-revoke execute on function public.alterar_estado_encomenda_fornecedor_admin(text, text) from public, anon;
 revoke execute on function public.atualizar_encomenda_fornecedor_admin(text, jsonb) from public, anon;
-grant execute on function public.alterar_estado_encomenda_fornecedor_admin(text, text) to authenticated;
 grant execute on function public.atualizar_encomenda_fornecedor_admin(text, jsonb) to authenticated;

@@ -495,6 +495,69 @@ cenario("16. Duas encomendas independentes cancel/recover", () => {
   expectStock(db, "A", 10, "cancel e2");
 });
 
+cenario("18. Editar com linhas duplicadas no novo pedido agrupa antes de descontar", () => {
+  const db = criarDb({ A: 10 });
+  criarPlataforma(db, "e1", [{ id_produto: "A", quantidade: 2 }]);
+  editarPlataforma(db, "e1", [
+    { id_produto: "A", quantidade: 1 },
+    { id_produto: "A", quantidade: 3 },
+  ]);
+  expectStock(db, "A", 6, "stock apos editar para total 4");
+});
+
+cenario("19. Editar removendo produto com NAO repor mantem stock consumido", () => {
+  const db = criarDb({ A: 5, B: 5 });
+  criarPlataforma(db, "e1", [{ id_produto: "A", quantidade: 3 }]);
+  editarPlataforma(db, "e1", [{ id_produto: "B", quantidade: 1 }], ["A"]);
+  expectStock(db, "A", 2, "A nao reposto");
+  expectStock(db, "B", 4, "B descontado");
+});
+
+cenario("20. Recuperar cancelado sem stock_reposto nao mexe no stock", () => {
+  const db = criarDb({ A: 5 });
+  db.encomendas.e1 = {
+    id: "e1",
+    estado: "Cancelado",
+    stock_reposto: false,
+    produtos: [{ id_produto: "A", quantidade: 2 }],
+  };
+  db.produtos.A.stock = 3;
+  const res = recuperar(db, "e1", "Pago");
+  expectStock(db, "A", 3, "stock mantido");
+  assert(res.stock_reduzido === false, "nao reduziu stock");
+});
+
+cenario("21. Receber fornecedor seguro soma linhas duplicadas e aplica teto", () => {
+  const db = criarDb({ A: 0 });
+  db.fornecedores.f1 = { id: "f1", itens: [{ id: "A", quantidade: 5, recebido: 1 }] };
+  const res = receberFornecedorSeguro(db, "f1", [
+    { produto_id: "A", quantidade: 3 },
+    { produto_id: "A", quantidade: 3 },
+  ]);
+  expectStock(db, "A", 4, "aplica apenas pendente 4");
+  assert(db.fornecedores.f1.itens[0].recebido === 5, "pedido completo");
+  assert(res.recebido_aplicado[0].solicitada === 6, "audita solicitado total");
+  assert(res.recebido_aplicado[0].quantidade === 4, "aplicado limitado");
+});
+
+cenario("22. Receber fornecedor seguro ignora produto estranho ao pedido", () => {
+  const db = criarDb({ A: 0, B: 10 });
+  db.fornecedores.f1 = { id: "f1", itens: [{ id: "A", quantidade: 2, recebido: 0 }] };
+  const res = receberFornecedorSeguro(db, "f1", [{ produto_id: "B", quantidade: 5 }]);
+  expectStock(db, "A", 0, "A intacto");
+  expectStock(db, "B", 10, "B intacto");
+  assert(res.recebido_aplicado.length === 0, "nada aplicado");
+});
+
+cenario("23. Receber fornecedor seguro ignora quantidades negativas", () => {
+  const db = criarDb({ A: 0 });
+  db.fornecedores.f1 = { id: "f1", itens: [{ id: "A", quantidade: 2, recebido: 0 }] };
+  const res = receberFornecedorSeguro(db, "f1", [{ produto_id: "A", quantidade: -5 }]);
+  expectStock(db, "A", 0, "stock intacto");
+  assert(db.fornecedores.f1.itens[0].recebido === 0, "recebido intacto");
+  assert(res.recebido_aplicado.length === 0, "nada aplicado");
+});
+
 const falhas = resultados.filter((r) => !r.ok);
 const bugs = falhas.filter((r) => String(r.erro || "").startsWith("BUG"));
 console.log("\n=== RESUMO ===");

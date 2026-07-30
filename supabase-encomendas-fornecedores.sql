@@ -415,6 +415,14 @@ as $$
 declare
     atualizada public.encomendas_fornecedores;
     v_estado_anterior text;
+    v_itens_atuais jsonb;
+    v_itens jsonb := case when p_dados ? 'itens' then p_dados -> 'itens' else null end;
+    v_itens_seguros jsonb := '[]'::jsonb;
+    v_item jsonb;
+    v_produto_id text;
+    v_quantidade int;
+    v_recebido_db int;
+    v_recebido int;
     v_codigo text := case
         when p_dados ? 'codigo' then nullif(trim(coalesce(p_dados ->> 'codigo', '')), '')
         else null
@@ -425,7 +433,6 @@ declare
         else null
     end;
     v_estado text := nullif(trim(p_dados ->> 'estado'), '');
-    v_itens jsonb := case when p_dados ? 'itens' then p_dados -> 'itens' else null end;
 begin
     if not public.admin_fornecedores_autorizado() then
         raise exception 'Acesso reservado ao administrador.';
@@ -435,13 +442,46 @@ begin
         raise exception 'Itens invalidos para a encomenda.';
     end if;
 
-    select estado into v_estado_anterior
+    select estado, coalesce(itens, '[]'::jsonb)
+    into v_estado_anterior, v_itens_atuais
     from public.encomendas_fornecedores
     where id::text = p_id
     for update;
 
     if not found then
         raise exception 'Encomenda de fornecedor nao encontrada.';
+    end if;
+
+    if v_itens is not null then
+        for v_item in select value from jsonb_array_elements(v_itens) loop
+            v_produto_id := coalesce(nullif(v_item ->> 'id', ''), nullif(v_item ->> 'produto_id', ''));
+            v_quantidade := greatest(0, coalesce((v_item ->> 'quantidade')::int, 0));
+
+            select greatest(0, coalesce((antigo.value ->> 'recebido')::int, 0))
+            into v_recebido_db
+            from jsonb_array_elements(v_itens_atuais) as antigo(value)
+            where coalesce(nullif(antigo.value ->> 'id', ''), nullif(antigo.value ->> 'produto_id', '')) = v_produto_id
+            limit 1;
+
+            if not found then
+                v_recebido_db := 0;
+            end if;
+
+            -- recebido so muda via receber_stock_fornecedor_admin (ignora valor do cliente).
+            v_recebido := v_recebido_db;
+            -- Quantidade pedida nao pode ficar abaixo do ja recebido.
+            v_quantidade := greatest(v_quantidade, v_recebido);
+
+            v_itens_seguros := v_itens_seguros || jsonb_build_array(
+                jsonb_set(
+                    jsonb_set(v_item, '{quantidade}', to_jsonb(v_quantidade), true),
+                    '{recebido}',
+                    to_jsonb(v_recebido),
+                    true
+                )
+            );
+        end loop;
+        v_itens := v_itens_seguros;
     end if;
 
     update public.encomendas_fornecedores

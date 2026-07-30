@@ -170,10 +170,15 @@ async function imprimirPedidoFornecedor(id) {
 }
 
 
+const receberStockFornecedorEmCurso = new Set();
+
 async function receberPedidoFornecedor(id) {
-    const pedido = fornecedorPedidos.find(item => item.id === id);
+    const idPedido = String(id || '');
+    if (!idPedido || receberStockFornecedorEmCurso.has(idPedido)) return;
+
+    const pedido = fornecedorPedidos.find(item => String(item.id) === idPedido);
     if (!pedido) return;
-    const linhas = Array.from(document.querySelectorAll(`.fornecedor-recebido-input[data-pedido="${CSS.escape(id)}"]`));
+    const linhas = Array.from(document.querySelectorAll(`.fornecedor-recebido-input[data-pedido="${CSS.escape(idPedido)}"]`));
     const rececoes = linhas.map(input => {
         const produtoId = input.dataset.produto;
         const itemPedido = (pedido.itens || []).find(item => String(item.id) === String(produtoId));
@@ -186,10 +191,12 @@ async function receberPedidoFornecedor(id) {
         return;
     }
     if (!window.confirm(`Atualizar stock de ${rececoes.length} produto(s) da encomenda ${obterTextoCodigoPedidoFornecedor(pedido)}?`)) return;
+
+    receberStockFornecedorEmCurso.add(idPedido);
     try {
         definirStatusFornecedor('A atualizar stock...');
         const { data, error } = await fornecedoresClient.rpc('receber_stock_fornecedor_admin', {
-            p_encomenda_id: id,
+            p_encomenda_id: idPedido,
             p_recebidos: rececoes
         });
         if (error) throw error;
@@ -197,9 +204,9 @@ async function receberPedidoFornecedor(id) {
             throw new Error(data?.erro || 'Nao foi possivel receber stock.');
         }
 
+        // Stock/ativo/novidade ficam só na RPC — sem reescritas absolutas depois (evita anular vendas).
         const aplicado = Array.isArray(data?.recebido_aplicado) ? data.recebido_aplicado : rececoes;
-        const ativarPorPrimeiraRececao = [];
-        const limparNovidadeAposReceber = [];
+        let ativados = 0;
         aplicado.forEach(rececao => {
             const produtoId = rececao.produto_id || rececao.id;
             const qtd = Math.max(0, Number(rececao.quantidade || 0));
@@ -211,22 +218,12 @@ async function receberPedidoFornecedor(id) {
             const stockDepois = Number.isFinite(Number(rececao.stock_depois))
                 ? Number(rececao.stock_depois)
                 : stockAntes + qtd;
-            if (stockAntes <= 0 && stockDepois > 0 && obterBooleanoProdutoFornecedor(produto.novidade)) {
-                produto.novidade = false;
-                limparNovidadeAposReceber.push({
-                    id: String(produto.id),
-                    sku: String(produto.sku || "").trim()
-                });
-            }
+            const saiuDeZero = stockAntes <= 0 && stockDepois > 0;
             produto.stock = stockDepois;
-            // Saída de stock <=0 para >0 (inclui stock negativo pré-encomenda): ativar
-            if (stockAntes <= 0 && stockDepois > 0) {
+            if (saiuDeZero || rececao.ativado) {
                 produto.ativo = true;
-                ativarPorPrimeiraRececao.push({
-                    id: String(produto.id),
-                    sku: String(produto.sku || "").trim(),
-                    stock: stockDepois
-                });
+                if (obterBooleanoProdutoFornecedor(produto.novidade)) produto.novidade = false;
+                ativados += 1;
             } else if (produto.ativo === false && stockDepois > 0) {
                 produto.ativo = true;
             }
@@ -234,56 +231,9 @@ async function receberPedidoFornecedor(id) {
 
         const encomendaAtualizada = data?.encomenda || data;
         const atualizado = normalizarPedidoFornecedor(encomendaAtualizada);
-        fornecedorPedidos = fornecedorPedidos.map(item => item.id === id ? atualizado : item);
+        fornecedorPedidos = fornecedorPedidos.map(item => String(item.id) === idPedido ? atualizado : item);
         guardarPedidosFornecedores();
         await carregarCatalogoFornecedores();
-
-        // Se a RPC nao limpou novidade na 1.ª receção, gravar no catálogo
-        for (const item of limparNovidadeAposReceber) {
-            const produto = fornecedorProdutos.find(p =>
-                String(p.id) === item.id || String(p.sku || "").trim().toUpperCase() === item.sku.toUpperCase()
-            );
-            if (!produto || !obterBooleanoProdutoFornecedor(produto.novidade)) continue;
-            try {
-                const { data: editado, error: erroNovidade } = await fornecedoresClient.rpc("editar_produto_admin_v2", {
-                    p_id: String(produto.id),
-                    p_sku_original: String(produto.sku || item.sku),
-                    p_produto: {
-                        ...produto,
-                        novidade: false,
-                        imagens: Array.isArray(produto.imagens) ? produto.imagens : []
-                    }
-                });
-                if (!erroNovidade && editado?.id) {
-                    produto.novidade = false;
-                } else if (erroNovidade) {
-                    console.warn("Não foi possível limpar novidade após receber:", item.sku, erroNovidade);
-                }
-            } catch (erroNovidade) {
-                console.warn("Não foi possível limpar novidade após receber:", item.sku, erroNovidade);
-            }
-        }
-        for (const item of ativarPorPrimeiraRececao) {
-            const produto = fornecedorProdutos.find(p =>
-                String(p.id) === item.id || String(p.sku || "").trim().toUpperCase() === item.sku.toUpperCase()
-            );
-            if (!produto || Number(produto.stock || 0) <= 0) continue;
-            if (produto.ativo !== false) {
-                produto.ativo = true;
-                continue;
-            }
-            if (!item.sku) continue;
-            const stockReal = Number.isFinite(Number(produto.stock))
-                ? Math.floor(Number(produto.stock))
-                : Math.floor(Number(item.stock || 0));
-            const { error: erroAtivo } = await fornecedoresClient.rpc("atualizar_stock_produto_admin", {
-                p_sku: item.sku,
-                p_stock: Math.max(0, stockReal),
-                p_ativo: true
-            });
-            if (!erroAtivo) produto.ativo = true;
-            else console.warn("Não foi possível ativar após receber:", item.sku, erroAtivo);
-        }
 
         renderizarResultadosFornecedor();
         renderizarPedidosFornecedores();
@@ -291,13 +241,15 @@ async function receberPedidoFornecedor(id) {
         const avisoTeto = aplicado.some(item => Number(item.solicitada || 0) > Number(item.quantidade || 0))
             ? ' Quantidades acima do pendente foram ignoradas.'
             : '';
-        const avisoAtivo = ativarPorPrimeiraRececao.length
-            ? ` ${ativarPorPrimeiraRececao.length} produto(s) ativado(s) (stock saiu de zero/negativo).`
+        const avisoAtivo = ativados
+            ? ` ${ativados} produto(s) ativado(s) (stock saiu de zero/negativo).`
             : '';
         definirStatusFornecedor(`Stock atualizado (+${unidades} un.) para a encomenda ${atualizado.codigo || ''}.${avisoTeto}${avisoAtivo}`);
     } catch (error) {
         console.error(error);
         definirStatusFornecedor('Erro ao receber stock: ' + (error.message || 'erro desconhecido'), true);
+    } finally {
+        receberStockFornecedorEmCurso.delete(idPedido);
     }
 }
 

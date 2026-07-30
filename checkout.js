@@ -1,7 +1,17 @@
 // Codigo de finalizacao de encomenda.
 // Carregado apenas na pagina Carrinho.
 
+let criarEncomendaEmCurso = false;
+
+function definirBotoesConfirmarEncomenda(desativado) {
+  document.querySelectorAll('[data-acao-carrinho="confirmar-encomenda"]').forEach((botao) => {
+    botao.disabled = !!desativado;
+  });
+}
+
 async function criarNovaEncomenda() {
+  if (criarEncomendaEmCurso) return;
+
   const statusDiv = document.getElementById('status-encomenda');
   statusDiv.className = "msg-status";
   statusDiv.innerText = "A processar encomenda...";
@@ -12,41 +22,44 @@ async function criarNovaEncomenda() {
     return;
   }
 
-  const { data: { user }, error: authError } = await dbClient.auth.getUser();
-
-  if (authError || !user) {
-    console.error("Erro de Autenticação:", authError);
-    statusDiv.className = "msg-status msg-erro";
-    statusDiv.innerText = "Necessita de iniciar sessão ou registar-se na secção Minha Conta para finalizar a encomenda.";
-    return;
-  }
-
-  if (user.email_confirmed_at === null) {
-    statusDiv.className = "msg-status msg-erro";
-    statusDiv.innerText = "Confirme o seu e-mail antes de finalizar a encomenda.";
-    return;
-  }
-
-  const { error: bloqueioErro } = await dbClient.rpc('assert_cliente_pode_comprar_site');
-  if (bloqueioErro) {
-    statusDiv.className = "msg-status msg-erro";
-    statusDiv.innerText = obterMensagemErroCliente(
-      bloqueioErro,
-      "Não é possível concluir compras com esta conta."
-    );
-    return;
-  }
-
-  const totais = recalcularTotais();
-
-  const metodoPagamento = obterMetodoPagamentoSelecionado();
-
-  const itensPedido = carrinho.map(item => ({
-    id_produto: item.id,
-    quantidade: Number(item.quantidade || 1)
-  }));
+  criarEncomendaEmCurso = true;
+  definirBotoesConfirmarEncomenda(true);
 
   try {
+    const { data: { user }, error: authError } = await dbClient.auth.getUser();
+
+    if (authError || !user) {
+      console.error("Erro de Autenticação:", authError);
+      statusDiv.className = "msg-status msg-erro";
+      statusDiv.innerText = "Necessita de iniciar sessão ou registar-se na secção Minha Conta para finalizar a encomenda.";
+      return;
+    }
+
+    if (user.email_confirmed_at === null) {
+      statusDiv.className = "msg-status msg-erro";
+      statusDiv.innerText = "Confirme o seu e-mail antes de finalizar a encomenda.";
+      return;
+    }
+
+    const { error: bloqueioErro } = await dbClient.rpc('assert_cliente_pode_comprar_site');
+    if (bloqueioErro) {
+      statusDiv.className = "msg-status msg-erro";
+      statusDiv.innerText = obterMensagemErroCliente(
+        bloqueioErro,
+        "Não é possível concluir compras com esta conta."
+      );
+      return;
+    }
+
+    const totais = recalcularTotais();
+
+    const metodoPagamento = obterMetodoPagamentoSelecionado();
+
+    const itensPedido = carrinho.map(item => ({
+      id_produto: item.id,
+      quantidade: Number(item.quantidade || 1)
+    }));
+
     const { data: { session } } = await dbClient.auth.getSession();
     if(!session?.access_token){
       throw new Error("Sessão inválida. Faça login novamente.");
@@ -103,5 +116,9 @@ async function criarNovaEncomenda() {
     statusDiv.innerText = mensagemStock.startsWith('Stock insuficiente')
       ? mensagemStock
       : obterMensagemErroCliente(err, "Não foi possível concluir a encomenda. Tente novamente.");
+  } finally {
+    criarEncomendaEmCurso = false;
+    // Sucesso esvazia o carrinho: manter botão desativado evita reenvio acidental.
+    if (carrinho.length > 0) definirBotoesConfirmarEncomenda(false);
   }
 }
