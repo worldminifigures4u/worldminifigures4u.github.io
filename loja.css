@@ -655,16 +655,16 @@
         }
 
         .icone-tema{
-            width:16px;
-            height:16px;
-            flex:0 0 16px;
+            width:20px;
+            height:20px;
+            flex:0 0 20px;
             opacity:0.9;
         }
 
         .icone-tema-mask{
-            width:16px;
-            height:16px;
-            flex:0 0 16px;
+            width:20px;
+            height:20px;
+            flex:0 0 20px;
             display:inline-block;
             background:currentColor;
             opacity:0.95;
@@ -978,15 +978,15 @@
     }
 
     .icone-tema{
-        width:18px;
-        height:18px;
-        flex-basis:18px;
+        width:20px;
+        height:20px;
+        flex-basis:20px;
     }
 
     .icone-tema-mask{
-        width:18px;
-        height:18px;
-        flex-basis:18px;
+        width:20px;
+        height:20px;
+        flex-basis:20px;
     }
 
     .indicador-tema{
