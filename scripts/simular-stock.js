@@ -175,6 +175,32 @@ function receberFornecedor(db, pedidoId, recebidos) {
   }
 }
 
+/** Espelha receber_stock_fornecedor_admin corrigida (com teto ao pendente) */
+function receberFornecedorSeguro(db, pedidoId, recebidos) {
+  const pedido = db.fornecedores[pedidoId];
+  assert(pedido, "pedido nao encontrado");
+  const aplicado = [];
+  for (const item of pedido.itens) {
+    const id = item.id;
+    const pedidoQtd = Math.max(0, Number(item.quantidade || 0));
+    const jaRecebido = Math.max(0, Number(item.recebido || 0));
+    const pendente = Math.max(0, pedidoQtd - jaRecebido);
+    const solicitado = recebidos
+      .filter((r) => (r.produto_id || r.id) === id)
+      .reduce((s, r) => s + Math.max(0, Number(r.quantidade || 0)), 0);
+    const aplicar = Math.min(solicitado, pendente);
+    if (aplicar <= 0) continue;
+    const p = db.produtos[id];
+    assert(p, `produto ${id}`);
+    const antes = p.stock;
+    p.stock += aplicar;
+    p.ativo = p.stock > 0;
+    item.recebido = jaRecebido + aplicar;
+    aplicado.push({ produto_id: id, quantidade: aplicar, solicitada: solicitado, pendente_antes: pendente, stock_antes: antes, stock_depois: p.stock });
+  }
+  return { recebido_aplicado: aplicado };
+}
+
 /** Apagar sem repor */
 function apagarEncomenda(db, id) {
   delete db.encomendas[id];
@@ -385,6 +411,17 @@ cenario("13. BUG: receber fornecedor acima do pedido (sem teto + re-submit)", ()
   throw new Error("BUG CONFIRMADO: 2x receber 5 num pedido de 5 → stock 11 e recebido 10");
 });
 
+cenario("13b. Receber fornecedor seguro ignora re-submit acima do pendente", () => {
+  const db = criarDb({ A: 1 });
+  db.fornecedores.f1 = { id: "f1", itens: [{ id: "A", quantidade: 5, recebido: 0 }] };
+  receberFornecedorSeguro(db, "f1", [{ produto_id: "A", quantidade: 5 }]);
+  expectStock(db, "A", 6, "pedido completo");
+  const segunda = receberFornecedorSeguro(db, "f1", [{ produto_id: "A", quantidade: 5 }]);
+  expectStock(db, "A", 6, "re-submit ignorado");
+  assert(db.fornecedores.f1.itens[0].recebido === 5, "recebido nao passa do pedido");
+  assert(segunda.recebido_aplicado.length === 0, "sem aplicacoes no re-submit");
+});
+
 cenario("17. BUG: cancel marca stock_reposto mesmo se produto id nao existe", () => {
   const db = criarDb({ A: 5 });
   db.encomendas.e1 = {
@@ -419,6 +456,16 @@ cenario("14. Receber mais do que o pedido (sem teto)", () => {
   receberFornecedor(db, "f1", [{ produto_id: "A", quantidade: 50 }]);
   expectStock(db, "A", 50, "sem teto");
   throw new Error("BUG CONFIRMADO: recebeu 50 com pedido de 2 → stock=50");
+});
+
+cenario("14b. Receber fornecedor seguro aplica no maximo o pendente", () => {
+  const db = criarDb({ A: 0 });
+  db.fornecedores.f1 = { id: "f1", itens: [{ id: "A", quantidade: 2, recebido: 0 }] };
+  const res = receberFornecedorSeguro(db, "f1", [{ produto_id: "A", quantidade: 50 }]);
+  expectStock(db, "A", 2, "limitado ao pedido");
+  assert(db.fornecedores.f1.itens[0].recebido === 2, "recebido limitado");
+  assert(res.recebido_aplicado[0].quantidade === 2, "aplicado limitado");
+  assert(res.recebido_aplicado[0].solicitada === 50, "mantem auditoria da quantidade solicitada");
 });
 
 cenario("15. Recuperar sem stock suficiente falha (correto)", () => {

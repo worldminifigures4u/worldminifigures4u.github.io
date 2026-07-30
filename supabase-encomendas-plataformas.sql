@@ -287,7 +287,11 @@ set search_path = public
 as $$
 declare
   v_encomenda public.encomendas%rowtype;
-  v_item jsonb;
+  v_item record;
+  v_produto public.produtos%rowtype;
+  v_quantidade integer;
+  v_stock_atual integer;
+  v_repostou_agora boolean := false;
 begin
   if coalesce(auth.jwt() ->> 'email', '') <> 'worldminifigures4u@gmail.com' then
     raise exception 'Acesso reservado ao administrador';
@@ -301,17 +305,46 @@ begin
   if not found then
     raise exception 'Encomenda nao encontrada';
   end if;
-  if lower(coalesce(v_encomenda.origem, 'site')) not in ('wallapop', 'vinted', 'olx', 'todocoleccion') then
-    raise exception 'Esta operacao destina-se a encomendas de plataformas externas';
-  end if;
 
-  if p_repor_stock and not coalesce(v_encomenda.stock_reposto, false) then
-    for v_item in select value from jsonb_array_elements(v_encomenda.produtos)
+  if not coalesce(v_encomenda.stock_reposto, false) then
+    v_repostou_agora := true;
+    for v_item in
+      select
+        coalesce(nullif(item->>'id_produto', ''), nullif(item->>'id', '')) as id_produto,
+        sum(
+          greatest(
+            1,
+            coalesce(
+              nullif(item->>'quantidade', '')::integer,
+              nullif(item->>'qtd', '')::integer,
+              1
+            )
+          )
+        )::integer as quantidade
+      from jsonb_array_elements(coalesce(v_encomenda.produtos, '[]'::jsonb)) as item
+      group by 1
     loop
+      if v_item.id_produto is null then
+        raise exception 'Produto da encomenda sem id para repor stock';
+      end if;
+
+      v_quantidade := greatest(coalesce(v_item.quantidade, 1), 1);
+
+      select * into v_produto
+      from public.produtos
+      where id::text = v_item.id_produto
+      for update;
+
+      if not found then
+        raise exception 'Produto % da encomenda nao encontrado para repor stock', v_item.id_produto;
+      end if;
+
+      v_stock_atual := coalesce(v_produto.stock, 0);
+
       update public.produtos
-    set stock = coalesce(stock, 0) + greatest(1, coalesce((v_item->>'quantidade')::integer, 1)),
-          ativo = (coalesce(stock, 0) + greatest(1, coalesce((v_item->>'quantidade')::integer, 1))) > 0
-      where id::text = v_item->>'id_produto';
+      set stock = v_stock_atual + v_quantidade,
+          ativo = (v_stock_atual + v_quantidade) > 0
+      where id::text = v_item.id_produto;
     end loop;
     v_encomenda.stock_reposto := true;
   end if;
@@ -324,7 +357,8 @@ begin
   return jsonb_build_object(
     'sucesso', true,
     'estado', 'Cancelado',
-    'stock_reposto', v_encomenda.stock_reposto
+    'stock_reposto', v_encomenda.stock_reposto,
+    'stock_reposto_agora', v_repostou_agora
   );
 end;
 $$;
