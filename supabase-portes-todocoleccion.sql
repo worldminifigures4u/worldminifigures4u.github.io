@@ -1,4 +1,4 @@
--- Portes, total e metodos de envio em Todocoleccion (criar + atualizar).
+-- Historico de portes/total Todocoleccion. Mantem as funcoes de plataforma alinhadas com supabase-vinted-plataforma.sql.
 -- Executar no SQL Editor do Supabase.
 
 drop function if exists public.criar_encomenda_plataforma_admin(
@@ -52,6 +52,7 @@ begin
 
   v_plataforma := case lower(trim(coalesce(p_plataforma, '')))
     when 'wallapop' then 'Wallapop'
+    when 'vinted' then 'Vinted'
     when 'olx' then 'OLX'
     when 'todocoleccion' then 'Todocoleccion'
     else null
@@ -291,7 +292,7 @@ begin
   if not found then
     raise exception 'Encomenda nao encontrada';
   end if;
-  if lower(coalesce(v_encomenda.origem, 'site')) not in ('wallapop', 'olx', 'todocoleccion') then
+  if lower(coalesce(v_encomenda.origem, 'site')) not in ('wallapop', 'vinted', 'olx', 'todocoleccion') then
     raise exception 'Esta encomenda nao pertence a uma plataforma externa';
   end if;
   if lower(coalesce(v_encomenda.estado, '')) = 'cancelado' then
