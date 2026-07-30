@@ -177,15 +177,11 @@ function configurarModalEncomendaCliente() {
     document.getElementById("clientes-encomenda-fechar")?.addEventListener("click", fecharModalEncomendaCliente);
     document.getElementById("clientes-encomenda-anterior")?.addEventListener("click", () => irParaEncomendaModalCliente(-1));
     document.getElementById("clientes-encomenda-seguinte")?.addEventListener("click", () => irParaEncomendaModalCliente(1));
-    document.getElementById("clientes-encomenda-modal")?.addEventListener("click", evento => {
-        if (evento.target === evento.currentTarget) fecharModalEncomendaCliente();
-    });
+    ligarFechoModalPorFundo(document.getElementById("clientes-encomenda-modal"), fecharModalEncomendaCliente);
     document.getElementById("admin-imagem-modal-fechar")?.addEventListener("click", () => {
         AdminEncomendaVista.fecharImagemProduto();
     });
-    document.getElementById("admin-imagem-modal")?.addEventListener("click", evento => {
-        if (evento.target === evento.currentTarget) AdminEncomendaVista.fecharImagemProduto();
-    });
+    ligarFechoModalPorFundo(document.getElementById("admin-imagem-modal"), () => AdminEncomendaVista.fecharImagemProduto());
     document.addEventListener("keydown", evento => {
         const modal = document.getElementById("clientes-encomenda-modal");
         if (modal?.hidden) return;

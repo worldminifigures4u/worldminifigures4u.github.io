@@ -6,3 +6,19 @@ const ADMIN_EMAILS = ['worldminifigures4u@gmail.com'];
 const PESO_PADRAO_PRODUTO_GRAMAS = 10;
 const NOME_CONTA_CABECALHO_KEY = 'figures-planet-conta-primeiro-nome';
 const CONTA_BLOQUEADA_KEY = 'figures-planet-conta-bloqueada';
+
+/** Fecha o modal só se o clique começar e acabar no fundo (evita fechar ao selecionar texto). */
+function ligarFechoModalPorFundo(modal, fechar) {
+    if (!modal || typeof fechar !== 'function') return;
+    let pointerDownNoFundo = false;
+    modal.addEventListener('pointerdown', (evento) => {
+        pointerDownNoFundo = evento.target === modal;
+    });
+    modal.addEventListener('pointercancel', () => {
+        pointerDownNoFundo = false;
+    });
+    modal.addEventListener('click', (evento) => {
+        if (evento.target === modal && pointerDownNoFundo) fechar(evento);
+        pointerDownNoFundo = false;
+    });
+}

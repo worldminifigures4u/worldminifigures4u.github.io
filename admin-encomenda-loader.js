@@ -34,7 +34,7 @@
         if (!promessaModal) {
             promessaModal = garantirAdminEncomendaVista()
                 .then(function () {
-                    return carregarScript('clientes-encomenda-modal.js?v=20260713-r27');
+                    return carregarScript('clientes-encomenda-modal.js?v=20260730-fecho-fundo');
                 })
                 .then(function () {
                     if (typeof configurarModalEncomendaCliente === 'function' && !modalConfigurado) {

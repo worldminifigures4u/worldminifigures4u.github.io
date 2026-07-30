@@ -56,7 +56,7 @@ var __fornecedoresPrintPromessa = null;
 function garantirFornecedoresProdutoModal() {
     if (window.FornecedoresProdutoModal) return Promise.resolve();
     if (!__fornecedoresProdutoPromessa) {
-        __fornecedoresProdutoPromessa = carregarScriptAdmin("fornecedores-produto-modal.js?v=20260721-split");
+        __fornecedoresProdutoPromessa = carregarScriptAdmin("fornecedores-produto-modal.js?v=20260730-fecho-fundo");
     }
     return __fornecedoresProdutoPromessa;
 }
@@ -64,7 +64,7 @@ function garantirFornecedoresProdutoModal() {
 function garantirFornecedoresEdicaoPedido() {
     if (window.FornecedoresEdicaoPedido) return Promise.resolve();
     if (!__fornecedoresEdicaoPromessa) {
-        __fornecedoresEdicaoPromessa = carregarScriptAdmin("fornecedores-edicao-pedido.js?v=20260728-data-encomendada");
+        __fornecedoresEdicaoPromessa = carregarScriptAdmin("fornecedores-edicao-pedido.js?v=20260730-fecho-fundo");
     }
     return __fornecedoresEdicaoPromessa;
 }
@@ -3553,11 +3553,7 @@ ligarEventoFornecedor('btn-criar-fornecedor', 'click', criarPedidoFornecedor);
 ligarEventoFornecedor('fornecedor-filtro-estado', 'change', renderizarPedidosFornecedores);
 ligarEventoFornecedor('btn-editar-fornecedor-selecionado', 'click', editarFornecedorSelecionado);
 ligarEventoFornecedor('fornecedor-ficha-modal-fechar', 'click', fecharModalFichaFornecedor);
-document.getElementById('fornecedor-ficha-modal')?.addEventListener('click', (evento) => {
-    if (evento.target?.id === 'fornecedor-ficha-modal') {
-        fecharModalFichaFornecedor();
-    }
-});
+ligarFechoModalPorFundo(document.getElementById('fornecedor-ficha-modal'), fecharModalFichaFornecedor);
 ligarEventoFornecedor('fornecedor-ficha-lista', 'change', () => {
     preencherFormularioFichaFornecedor(obterFichaFornecedorPorId(document.getElementById('fornecedor-ficha-lista')?.value));
 });
@@ -3567,11 +3563,7 @@ ligarEventoFornecedor('fornecedor-ficha-form', 'submit', guardarFichaFornecedor)
 
 const botaoFecharImagemFornecedor = document.getElementById('admin-imagem-modal-fechar');
 botaoFecharImagemFornecedor?.addEventListener('click', fecharImagemFornecedorModal);
-document.getElementById('admin-imagem-modal')?.addEventListener('click', (evento) => {
-    if (evento.target?.id === 'admin-imagem-modal') {
-        fecharImagemFornecedorModal();
-    }
-});
+ligarFechoModalPorFundo(document.getElementById('admin-imagem-modal'), fecharImagemFornecedorModal);
 document.addEventListener('keydown', (evento) => {
     const modal = document.getElementById('admin-imagem-modal');
     if (evento.key === 'Escape' && modal && !modal.hidden) {

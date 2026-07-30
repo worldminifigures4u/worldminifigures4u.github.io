@@ -915,7 +915,7 @@ function garantirModalEdicaoProdutoMapa() {
         const id = modal.dataset.produtoId || document.getElementById("mapas-editar-id")?.value;
         if (id) abrirEdicaoProdutoMapa(id);
     });
-    modal.addEventListener("click", evento => { if (evento.target === modal) fecharEdicaoProdutoMapa(); });
+    ligarFechoModalPorFundo(modal, fecharEdicaoProdutoMapa);
     modal.querySelector("#mapas-produto-form")?.addEventListener("submit", guardarEdicaoProdutoMapa);
     return modal;
 }

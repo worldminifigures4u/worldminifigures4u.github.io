@@ -30,6 +30,7 @@ let lojaFotoGaleriaAlt = '';
 let lojaFotoGaleriaOnChange = null;
 let lojaFotoToqueInicioX = 0;
 let lojaFotoToqueInicioY = 0;
+let lojaFotoPointerDownNoFundo = false;
 
 function fecharFotoProdutoAmpliada() {
     const modal = document.getElementById('loja-foto-modal');
@@ -141,12 +142,17 @@ function garantirListenersModalFotoLoja() {
         navegarFotoProdutoAmpliada(1);
     });
     modal.addEventListener('click', (evento) => {
-        if (evento.target === modal) fecharFotoProdutoAmpliada();
+        if (evento.target === modal && lojaFotoPointerDownNoFundo) fecharFotoProdutoAmpliada();
+        lojaFotoPointerDownNoFundo = false;
     });
     modal.addEventListener('pointerdown', (evento) => {
+        lojaFotoPointerDownNoFundo = evento.target === modal;
         if (evento.target.closest('.loja-foto-modal-fechar, .loja-foto-modal-seta')) return;
         lojaFotoToqueInicioX = evento.clientX;
         lojaFotoToqueInicioY = evento.clientY;
+    });
+    modal.addEventListener('pointercancel', () => {
+        lojaFotoPointerDownNoFundo = false;
     });
     modal.addEventListener('pointerup', (evento) => {
         if (evento.target.closest('.loja-foto-modal-fechar, .loja-foto-modal-seta')) return;

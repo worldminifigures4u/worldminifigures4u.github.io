@@ -30,9 +30,7 @@ function garantirModalEdicaoProdutoMapa() {
 
     modal.querySelector(".mapas-produto-modal-fechar")?.addEventListener("click", fecharEdicaoProdutoMapa);
     modal.querySelector("#mapas-produto-cancelar")?.addEventListener("click", fecharEdicaoProdutoMapa);
-    modal.addEventListener("click", (evento) => {
-        if (evento.target === modal) fecharEdicaoProdutoMapa();
-    });
+    ligarFechoModalPorFundo(modal, fecharEdicaoProdutoMapa);
     modal.querySelector("#mapas-produto-form")?.addEventListener("submit", guardarEdicaoProdutoMapa);
     return modal;
 }

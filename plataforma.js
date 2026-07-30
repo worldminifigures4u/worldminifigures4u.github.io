@@ -345,7 +345,7 @@ function garantirFichaClientePlataforma() {
     if (!__plataformaFichaPromessa) {
         __plataformaFichaPromessa = carregarScriptAdmin('morada-formato.js?v=20260721-split')
             .then(function () {
-                return carregarScriptAdmin('admin-ficha-cliente.js?v=20260721-split');
+                return carregarScriptAdmin('admin-ficha-cliente.js?v=20260730-fecho-fundo');
             })
             .then(function () {
                 window.AdminFichaCliente?.configurar({
@@ -1359,9 +1359,7 @@ function abrirRevisaoListaProdutosPlataforma() {
     acoes.append(cancelar, adicionar);
     dialogo.append(topo, explicacao, resumoEl, lista, aviso, acoes);
     modal.appendChild(dialogo);
-    modal.addEventListener('click', evento => {
-        if (evento.target === modal) fecharRevisaoListaProdutosPlataforma();
-    });
+    ligarFechoModalPorFundo(modal, fecharRevisaoListaProdutosPlataforma);
     document.body.appendChild(modal);
     document.body.classList.add('plataforma-modal-aberto');
 }

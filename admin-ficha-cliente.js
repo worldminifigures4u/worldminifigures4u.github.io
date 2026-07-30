@@ -532,17 +532,7 @@
     }
 
     function ligarFechoPorFundoModal(modal, fechar) {
-        let pointerDownNoFundo = false;
-        modal.addEventListener('pointerdown', (evento) => {
-            pointerDownNoFundo = evento.target === modal;
-        });
-        modal.addEventListener('pointercancel', () => {
-            pointerDownNoFundo = false;
-        });
-        modal.addEventListener('click', (evento) => {
-            if (evento.target === modal && pointerDownNoFundo) fechar();
-            pointerDownNoFundo = false;
-        });
+        ligarFechoModalPorFundo(modal, fechar);
         const dialogo = modal.querySelector('.admin-cliente-dialogo');
         dialogo?.addEventListener('click', (evento) => evento.stopPropagation());
     }

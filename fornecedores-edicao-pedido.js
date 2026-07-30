@@ -551,9 +551,7 @@ function garantirModalEdicaoFornecedor() {
     modal.querySelector('#fornecedor-edicao-limpar-lista-final')?.addEventListener('click', limparListaFinalEdicaoFornecedor);
     modal.querySelector('#fornecedor-edicao-aplicar-lista-os')?.addEventListener('click', aplicarListaOsNaEdicaoFornecedor);
     modal.querySelector('#fornecedor-edicao-limpar-lista-os')?.addEventListener('click', limparListaOsEdicaoFornecedor);
-    modal.addEventListener('click', (evento) => {
-        if (evento.target === modal) fecharEdicaoPedidoFornecedor();
-    });
+    ligarFechoModalPorFundo(modal, fecharEdicaoPedidoFornecedor);
     modal.querySelector('#fornecedor-edicao-form')?.addEventListener('submit', guardarEdicaoPedidoFornecedor);
     modal.querySelector('#fornecedor-edicao-form')?.addEventListener('keydown', (evento) => {
         if (evento.key !== 'Enter') return;

@@ -751,22 +751,10 @@ document.getElementById('admin-cliente-fechar').addEventListener('click', fechar
 (function ligarFechoFundoFichaCliente() {
     const modal = document.getElementById('admin-cliente-modal');
     if (!modal) return;
-    let pointerDownNoFundo = false;
-    modal.addEventListener('pointerdown', (evento) => {
-        pointerDownNoFundo = evento.target === modal;
-    });
-    modal.addEventListener('pointercancel', () => {
-        pointerDownNoFundo = false;
-    });
-    modal.addEventListener('click', (evento) => {
-        if (evento.target === modal && pointerDownNoFundo) fecharFichaClienteAdmin();
-        pointerDownNoFundo = false;
-    });
+    ligarFechoModalPorFundo(modal, fecharFichaClienteAdmin);
     modal.querySelector('.admin-cliente-dialogo')?.addEventListener('click', (evento) => evento.stopPropagation());
 })();
-document.getElementById('admin-imagem-modal').addEventListener('click', evento => {
-    if (evento.target === evento.currentTarget) fecharImagemProdutoEncomenda();
-});
+ligarFechoModalPorFundo(document.getElementById('admin-imagem-modal'), fecharImagemProdutoEncomenda);
 document.addEventListener('keydown', evento => {
     if (evento.key === 'Escape' && !document.getElementById('admin-imagem-modal').hidden) {
         fecharImagemProdutoEncomenda();

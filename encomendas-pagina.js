@@ -20,7 +20,7 @@
 
         promessaEncomendasJs = carregarScript('morada-formato.js?v=20260713-morada-formatada')
             .then(function () {
-                return carregarScript('encomendas.js?v=20260727-pago-data');
+                return carregarScript('encomendas.js?v=20260730-fecho-fundo');
             });
 
         return promessaEncomendasJs;
