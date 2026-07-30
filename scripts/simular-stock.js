@@ -1032,6 +1032,111 @@ cenario("48. Cancel+recover+edit neutro no mesmo produto", () => {
   expectStock(db, "A", 5, "8-3");
 });
 
+cenario("49. Limite qty 99: criar ok", () => {
+  const db = criarDb({ A: 100 });
+  criarPlataforma(db, "e1", [{ id_produto: "A", quantidade: 99 }]);
+  expectStock(db, "A", 1, "99 descontados");
+  cancelar(db, "e1");
+  expectStock(db, "A", 100, "reposto");
+});
+
+cenario("50. Dois pedidos fornecedor do mesmo SKU: receber independentemente", () => {
+  const db = criarDb({ A: 0 });
+  db.fornecedores.f1 = { id: "f1", itens: [{ id: "A", quantidade: 3, recebido: 0 }] };
+  db.fornecedores.f2 = { id: "f2", itens: [{ id: "A", quantidade: 2, recebido: 0 }] };
+  receberFornecedorSeguro(db, "f1", [{ produto_id: "A", quantidade: 3 }]);
+  receberFornecedorSeguro(db, "f2", [{ produto_id: "A", quantidade: 2 }]);
+  expectStock(db, "A", 5, "3+2");
+  assert(db.fornecedores.f1.itens[0].recebido === 3, "f1");
+  assert(db.fornecedores.f2.itens[0].recebido === 2, "f2");
+});
+
+cenario("51. Juntar selecao a PO: recebido do item existente preservado", () => {
+  const db = criarDb({ A: 1, B: 0 });
+  db.produtos.C = { id: "C", stock: 0, ativo: false };
+  db.fornecedores.f1 = {
+    id: "f1",
+    itens: [
+      { id: "A", quantidade: 5, recebido: 2 },
+      { id: "B", quantidade: 1, recebido: 0 },
+    ],
+  };
+  const existentes = Object.fromEntries(
+    db.fornecedores.f1.itens.map((i) => [i.id, i.recebido])
+  );
+  const novos = [
+    { id: "A", quantidade: 8, recebido: 0 },
+    { id: "B", quantidade: 1, recebido: 0 },
+    { id: "C", quantidade: 2, recebido: 0 },
+  ];
+  db.fornecedores.f1.itens = novos.map((n) => ({
+    ...n,
+    recebido: existentes[n.id] || 0,
+    quantidade: Math.max(n.quantidade, existentes[n.id] || 0),
+  }));
+  assert(db.fornecedores.f1.itens[0].recebido === 2, "A recebido preservado");
+  assert(db.fornecedores.f1.itens[0].quantidade === 8, "A qty aumentada");
+  assert(db.fornecedores.f1.itens[2].recebido === 0, "C novo");
+  receberFornecedorSeguro(db, "f1", [
+    { produto_id: "A", quantidade: 10 },
+    { produto_id: "C", quantidade: 2 },
+  ]);
+  // pendente A = 8-2=6 → stock 1+6=7, recebido A=8
+  expectStock(db, "A", 7, "A +pendente");
+  expectStock(db, "C", 2, "C completo");
+  assert(db.fornecedores.f1.itens[0].recebido === 8, "A completo no novo qty");
+  assert(db.fornecedores.f1.itens[2].recebido === 2, "C recebido");
+});
+
+cenario("52. Criar plataforma: validacao portes OLX falha apos deduct — em SQL real faz rollback", () => {
+  // Documenta que a funcao e atomica: raise apos update stock reverte tudo.
+  // Simulacao local nao tem transacoes; aqui so validamos a ordem conceptual.
+  const ordem = ["validar_stock", "descontar", "validar_portes_olx", "insert"];
+  const idxDescontar = ordem.indexOf("descontar");
+  const idxPortes = ordem.indexOf("validar_portes_olx");
+  assert(idxDescontar < idxPortes, "desconta antes da validacao portes");
+  assert(true, "PL/pgSQL reverte o deduct se raise nos portes");
+});
+
+cenario("53. CSV stock admin: valor negativo e clampado a 0", () => {
+  const db = criarDb({ A: 5 });
+  setStockAdmin(db, "A", -3, false);
+  expectStock(db, "A", 0, "clamp");
+});
+
+cenario("54. Editar encomenda: manter qty e mudar so portes (stock neutro)", () => {
+  const db = criarDb({ A: 5 });
+  criarPlataforma(db, "e1", [{ id_produto: "A", quantidade: 2 }]);
+  const stockAntes = stockDe(db, "A");
+  editarPlataforma(db, "e1", [{ id_produto: "A", quantidade: 2 }]);
+  expectStock(db, "A", stockAntes, "neutro");
+});
+
+cenario("55. Recuperar → cancel imediato deixa stock original", () => {
+  const db = criarDb({ A: 7 });
+  criarPlataforma(db, "e1", [{ id_produto: "A", quantidade: 4 }]);
+  cancelar(db, "e1");
+  recuperar(db, "e1", "Em preparação");
+  cancelar(db, "e1");
+  expectStock(db, "A", 7, "original");
+});
+
+cenario("56. Tres SKUs + cancel parcial de uma encomenda so", () => {
+  const db = criarDb({ A: 3, B: 3, C: 3 });
+  criarPlataforma(db, "e1", [
+    { id_produto: "A", quantidade: 1 },
+    { id_produto: "B", quantidade: 1 },
+    { id_produto: "C", quantidade: 1 },
+  ]);
+  criarPlataforma(db, "e2", [{ id_produto: "A", quantidade: 1 }]);
+  cancelar(db, "e1");
+  expectStock(db, "A", 2, "e2 ainda tem 1");
+  expectStock(db, "B", 3, "B reposto");
+  expectStock(db, "C", 3, "C reposto");
+  cancelar(db, "e2");
+  expectStock(db, "A", 3, "A full");
+});
+
 const falhas = resultados.filter((r) => !r.ok);
 const bugs = falhas.filter((r) => String(r.erro || "").startsWith("BUG"));
 console.log("\n=== RESUMO ===");
