@@ -200,9 +200,9 @@
 
     function aplicarPaisPredefinidoNoFormulario(formulario, plataforma) {
         const paisDefault = paisPredefinidoPlataforma(plataforma);
-        if (!paisDefault || !formulario) return;
+        if (!paisDefault || !formulario) return false;
         const select = formulario.querySelector('select[name="pais"]');
-        if (!select) return;
+        if (!select) return false;
         if (![...select.options].some((opcao) => opcao.value === paisDefault)) {
             const extra = document.createElement('option');
             extra.value = paisDefault;
@@ -211,6 +211,18 @@
         }
         select.value = paisDefault;
         select.dispatchEvent(new Event('change', { bubbles: true }));
+        return true;
+    }
+
+    function aplicarPaisPredefinidoDosPerfis(formulario) {
+        if (!formulario) return false;
+        const inputs = Array.from(formulario.querySelectorAll('[name^="perfil_url_"]'));
+        for (const input of inputs) {
+            const plataforma = detetarPlataformaUrl(input.value);
+            if (!plataforma) continue;
+            return aplicarPaisPredefinidoNoFormulario(formulario, plataforma);
+        }
+        return false;
     }
 
     function ligarPerfisAoPaisCliente(formulario) {
@@ -226,7 +238,9 @@
         };
 
         formulario.addEventListener('change', aoAlterarLink);
+        formulario.addEventListener('input', aoAlterarLink);
         formulario.addEventListener('blur', aoAlterarLink, true);
+        aplicarPaisPredefinidoDosPerfis(formulario);
     }
 
     global.PaisesCliente = {
@@ -237,6 +251,7 @@
         normalizarPaisParaOpcao,
         criarSelectPaisCliente,
         aplicarPaisPredefinidoNoFormulario,
+        aplicarPaisPredefinidoDosPerfis,
         ligarPerfisAoPaisCliente
     };
 }(window));

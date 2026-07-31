@@ -297,8 +297,10 @@
 
         const urlInicial = obterUrlExternoSeguro(opcoes.url || '');
         const nomeInicial = String(opcoes.nome || '').trim();
+        const plataformaInicial = global.PaisesCliente?.detetarPlataformaUrl(urlInicial);
+        const paisInicial = global.PaisesCliente?.paisPredefinidoPlataforma(plataformaInicial) || 'Portugal';
         const { formulario } = montarFormularioClienteModal({
-            cliente: { nome: nomeInicial, pais: 'Portugal' },
+            cliente: { nome: nomeInicial, pais: paisInicial },
             perfis: urlInicial ? [{ url: urlInicial }] : [],
             modoCriacao: true,
             onCancelar: fecharFichaClienteAdmin,

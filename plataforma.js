@@ -486,10 +486,10 @@ function garantirFichaClientePlataforma() {
     if (!__plataformaFichaPromessa) {
         __plataformaFichaPromessa = carregarScriptAdmin('morada-formato.js?v=20260721-split')
             .then(function () {
-                return carregarScriptAdmin('paises-cliente.js?v=20260731-pais-default');
+                return carregarScriptAdmin('paises-cliente.js?v=20260731-wallapop-es');
             })
             .then(function () {
-                return carregarScriptAdmin('admin-ficha-cliente.js?v=20260731-pais-default');
+                return carregarScriptAdmin('admin-ficha-cliente.js?v=20260731-wallapop-es');
             })
             .then(function () {
                 window.AdminFichaCliente?.configurar({
