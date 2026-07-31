@@ -120,6 +120,9 @@ function atualizarPerfilExternoPlataforma() {
         atualizarModoPlataforma();
     }
     document.getElementById('wallapop-nome-cliente').value = perfilExternoDetetado.utilizador;
+    if (!seletor?.disabled) {
+        aplicarPaisEnvioPredefinidoPlataforma();
+    }
 }
 
 function normalizarTextoPlataforma(valor) {
@@ -279,6 +282,22 @@ function selecionarPaisEnvioMoloniPlataforma(paisCliente, regiaoEnvio) {
     selecionarPaisEnvioPlataforma(resolverValorPaisEnvioMoloniPlataforma(paisCliente, regiaoEnvio));
 }
 
+const PAIS_ENVIO_PREDEFINIDO_POR_PLATAFORMA = {
+    Wallapop: 'espanha',
+    OLX: 'portugal',
+    Vinted: 'franca',
+    Todocoleccion: 'espanha'
+};
+
+function obterPaisEnvioPredefinidoPorPlataforma(plataforma) {
+    return PAIS_ENVIO_PREDEFINIDO_POR_PLATAFORMA[plataforma] || 'portugal';
+}
+
+function aplicarPaisEnvioPredefinidoPlataforma() {
+    const plataforma = perfilExternoDetetado?.plataforma || obterPlataformaAtual();
+    selecionarPaisEnvioPlataforma(obterPaisEnvioPredefinidoPorPlataforma(plataforma));
+}
+
 function preencherClientePlataformaComFicha(dados) {
     fichaClientePlataformaAtual = dados?.sucesso ? dados : null;
     const cliente = fichaClientePlataformaAtual?.cliente || {};
@@ -287,7 +306,7 @@ function preencherClientePlataformaComFicha(dados) {
     document.getElementById('plataforma-morada-cliente').value = cliente.morada || '';
     document.getElementById('plataforma-cp-cliente').value = cliente.cp || '';
     document.getElementById('plataforma-cidade-cliente').value = cliente.cidade || '';
-    selecionarPaisEnvioMoloniPlataforma(cliente.pais, null);
+    aplicarPaisEnvioPredefinidoPlataforma();
     renderizarFichaClientePlataforma(dados);
 }
 
