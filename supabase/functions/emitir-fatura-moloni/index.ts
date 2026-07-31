@@ -271,12 +271,14 @@ function mensagemErrosMoloni(erros: MoloniError[] | null | undefined): string {
 }
 
 function resolverDestinoFatura(encomenda: EncomendaRow): "PT" | "EST" {
+  const origensNaoPais = new Set(["wallapop", "vinted", "olx", "todocoleccion"]);
   const candidatos = [
     encomenda.pais_cliente,
     encomenda.regiao_envio,
   ]
     .map((valor) => String(valor || "").trim())
-    .filter(Boolean);
+    .filter(Boolean)
+    .filter((valor) => !origensNaoPais.has(normalizarTexto(valor)));
 
   const paisNormalizado = normalizarTexto(candidatos[0] || "portugal");
   const ePortugal = !paisNormalizado
