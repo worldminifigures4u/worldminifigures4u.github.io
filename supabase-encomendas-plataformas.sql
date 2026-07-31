@@ -465,11 +465,13 @@ begin
     'preco', coalesce(produto.preco, 0),
     'peso', coalesce(produto.peso, 10),
     'imagens', produto.imagens,
+    'stock', coalesce(produto.stock, 0),
     'ativo', coalesce(produto.ativo, true)
   ) order by itens.ordem), '[]'::jsonb)
   into v_catalogo
   from jsonb_array_elements(v_encomenda.produtos) with ordinality as itens(item, ordem)
-  join public.produtos as produto on produto.id::text = itens.item->>'id_produto';
+  join public.produtos as produto
+    on produto.id::text = coalesce(nullif(itens.item->>'id_produto', ''), nullif(itens.item->>'id', ''));
 
   return jsonb_build_object(
     'sucesso', true,
@@ -611,16 +613,19 @@ begin
       v_indisponiveis := v_indisponiveis || jsonb_build_array(
         jsonb_build_object('id_produto', v_item.id_produto, 'nome', 'Produto indisponivel')
       );
-    elsif (not v_produto.ativo) and not v_item.permitir_stock_negativo then
-      v_indisponiveis := v_indisponiveis || jsonb_build_array(jsonb_build_object(
-        'id_produto', v_item.id_produto,
-        'nome', v_produto.nome,
-        'pedido', v_item.quantidade,
-        'disponivel', 0
-      ));
     else
       v_disponivel := v_quantidade_antiga + greatest(v_produto.stock, 0) - v_nao_repor;
-      if v_disponivel < v_item.quantidade and not v_item.permitir_stock_negativo then
+      if (not v_produto.ativo)
+         and v_quantidade_antiga = 0
+         and greatest(v_produto.stock, 0) <= 0
+         and not v_item.permitir_stock_negativo then
+        v_indisponiveis := v_indisponiveis || jsonb_build_array(jsonb_build_object(
+          'id_produto', v_item.id_produto,
+          'nome', v_produto.nome,
+          'pedido', v_item.quantidade,
+          'disponivel', 0
+        ));
+      elsif v_disponivel < v_item.quantidade and not v_item.permitir_stock_negativo then
         v_indisponiveis := v_indisponiveis || jsonb_build_array(jsonb_build_object(
           'id_produto', v_item.id_produto,
           'nome', v_produto.nome,

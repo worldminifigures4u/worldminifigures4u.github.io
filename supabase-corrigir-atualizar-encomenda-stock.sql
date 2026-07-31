@@ -2,7 +2,8 @@
 -- Corrige atualizar_encomenda_plataforma_admin:
 -- 1) NOT FOUND do produto nao e sobrescrito pelo SELECT da quantidade antiga
 -- 2) linhas antigas com campo "id" (sem id_produto) tambem repoem stock
--- 3) produtos inativos bloqueados na edicao (como na criacao), salvo stock negativo
+-- 3) produtos inativos: so bloqueiam se nao tiverem stock nem reserva nesta encomenda
+-- 4) credita sempre a quantidade ja reservada na encomenda ao validar stock
 
 create or replace function public.atualizar_encomenda_plataforma_admin(
   p_encomenda_id text,
@@ -117,16 +118,21 @@ begin
       v_indisponiveis := v_indisponiveis || jsonb_build_array(
         jsonb_build_object('id_produto', v_item.id_produto, 'nome', 'Produto indisponivel')
       );
-    elsif (not v_produto.ativo) and not v_item.permitir_stock_negativo then
-      v_indisponiveis := v_indisponiveis || jsonb_build_array(jsonb_build_object(
-        'id_produto', v_item.id_produto,
-        'nome', v_produto.nome,
-        'pedido', v_item.quantidade,
-        'disponivel', 0
-      ));
     else
+      -- Credita a quantidade ja reservada nesta encomenda.
+      -- Produto inativo so bloqueia se nao houver stock util (nem reserva na encomenda).
       v_disponivel := v_quantidade_antiga + greatest(v_produto.stock, 0) - v_nao_repor;
-      if v_disponivel < v_item.quantidade and not v_item.permitir_stock_negativo then
+      if (not v_produto.ativo)
+         and v_quantidade_antiga = 0
+         and greatest(v_produto.stock, 0) <= 0
+         and not v_item.permitir_stock_negativo then
+        v_indisponiveis := v_indisponiveis || jsonb_build_array(jsonb_build_object(
+          'id_produto', v_item.id_produto,
+          'nome', v_produto.nome,
+          'pedido', v_item.quantidade,
+          'disponivel', 0
+        ));
+      elsif v_disponivel < v_item.quantidade and not v_item.permitir_stock_negativo then
         v_indisponiveis := v_indisponiveis || jsonb_build_array(jsonb_build_object(
           'id_produto', v_item.id_produto,
           'nome', v_produto.nome,
@@ -265,3 +271,70 @@ revoke execute on function public.atualizar_encomenda_plataforma_admin(
 grant execute on function public.atualizar_encomenda_plataforma_admin(
   text, jsonb, text, text, text, text, text, numeric, text, text, text, text, text, text[], numeric
 ) to authenticated;
+
+-- Reativa produtos com stock > 0 que ficaram inativos (ex.: apos stock a 0 e reentrada).
+update public.produtos
+set ativo = true
+where coalesce(stock, 0) > 0
+  and coalesce(ativo, false) = false;
+
+create or replace function public.obter_encomenda_plataforma_admin(
+  p_codigo_encomenda text
+)
+returns jsonb
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_encomenda public.encomendas%rowtype;
+  v_catalogo jsonb;
+begin
+  if coalesce(auth.jwt() ->> 'email', '') <> 'worldminifigures4u@gmail.com' then
+    raise exception 'Acesso reservado ao administrador';
+  end if;
+
+  select * into v_encomenda
+  from public.encomendas
+  where upper(codigo_encomenda) = upper(trim(p_codigo_encomenda))
+  limit 1;
+
+  if not found then
+    return jsonb_build_object('sucesso', false, 'erro', 'Encomenda nao encontrada');
+  end if;
+  if lower(coalesce(v_encomenda.origem, 'site')) not in ('wallapop', 'vinted', 'olx', 'todocoleccion') then
+    return jsonb_build_object('sucesso', false, 'erro', 'A encomenda nao pertence a uma plataforma externa');
+  end if;
+  if lower(coalesce(v_encomenda.estado, '')) = 'cancelado' then
+    return jsonb_build_object('sucesso', false, 'erro', 'Uma encomenda cancelada nao pode ser editada');
+  end if;
+
+  select coalesce(jsonb_agg(jsonb_build_object(
+    'id', produto.id::text,
+    'referencia', produto.referencia,
+    'sku', produto.sku,
+    'nome', produto.nome,
+    'preco', coalesce(produto.preco, 0),
+    'peso', coalesce(produto.peso, 10),
+    'imagens', produto.imagens,
+    'stock', coalesce(produto.stock, 0),
+    'ativo', coalesce(produto.ativo, true)
+  ) order by itens.ordem), '[]'::jsonb)
+  into v_catalogo
+  from jsonb_array_elements(v_encomenda.produtos) with ordinality as itens(item, ordem)
+  join public.produtos as produto
+    on produto.id::text = coalesce(nullif(itens.item->>'id_produto', ''), nullif(itens.item->>'id', ''));
+
+  return jsonb_build_object(
+    'sucesso', true,
+    'encomenda', to_jsonb(v_encomenda),
+    'catalogo_itens', v_catalogo
+  );
+end;
+$$;
+
+revoke execute on function public.obter_encomenda_plataforma_admin(text)
+from public, anon;
+
+grant execute on function public.obter_encomenda_plataforma_admin(text)
+to authenticated;

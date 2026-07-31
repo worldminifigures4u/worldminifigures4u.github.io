@@ -2707,9 +2707,19 @@ async function carregarEncomendaPlataformaPorCodigo(codigo) {
     const produtosEncomenda = Array.isArray(encomenda.produtos) ? encomenda.produtos : [];
     stockNegativoConfirmado = new Set();
     wallapopItens = catalogo.map(produto => {
-        const reservado = produtosEncomenda.find(item => String(item.id_produto) === String(produto.id));
+        const reservado = produtosEncomenda.find(item => (
+            String(item.id_produto || item.id || '') === String(produto.id)
+        ));
         const atual = wallapopProdutos.find(item => String(item.id) === String(produto.id));
-        return { ...produto, ...atual, quantidade: Math.max(1, Number(reservado?.quantidade) || 1) };
+        return {
+            ...produto,
+            ...atual,
+            id: produto.id || atual?.id,
+            stock: Number.isFinite(Number(atual?.stock))
+                ? Number(atual.stock)
+                : Number(produto.stock),
+            quantidade: Math.max(1, Number(reservado?.quantidade) || 1)
+        };
     });
     encomendaPlataformaEmEdicao = {
         id: encomenda.id,
@@ -2717,9 +2727,9 @@ async function carregarEncomendaPlataformaPorCodigo(codigo) {
         origem: encomenda.origem,
         estado: encomenda.estado,
         quantidades_originais: Object.fromEntries(produtosEncomenda.map(item => [
-            String(item.id_produto),
+            String(item.id_produto || item.id || ''),
             Math.max(1, Number(item.quantidade) || 1)
-        ]))
+        ]).filter(([id]) => id))
     };
     encomendaPlataformaParaFicheiros = null;
     limparFigurasRepetidasListaPlataforma();
