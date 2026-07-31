@@ -271,22 +271,120 @@ function mensagemErrosMoloni(erros: MoloniError[] | null | undefined): string {
 }
 
 function resolverDestinoFatura(encomenda: EncomendaRow): "PT" | "EST" {
-  const origensNaoPais = new Set(["wallapop", "vinted", "olx", "todocoleccion"]);
+  return resolverPaisFaturaMoloni(encomenda).destino;
+}
+
+const ORIGENS_REGIAO_NAO_PAIS = new Set(["wallapop", "vinted", "olx", "todocoleccion"]);
+
+const ISO_POR_PAIS: Record<string, string> = {
+  portugal: "PT",
+  pt: "PT",
+  espanha: "ES",
+  espana: "ES",
+  spain: "ES",
+  es: "ES",
+  alemanha: "DE",
+  germany: "DE",
+  deutschland: "DE",
+  de: "DE",
+  austria: "AT",
+  at: "AT",
+  belgica: "BE",
+  belgium: "BE",
+  be: "BE",
+  bulgaria: "BG",
+  bg: "BG",
+  chequia: "CZ",
+  czechia: "CZ",
+  "czech republic": "CZ",
+  cz: "CZ",
+  chipre: "CY",
+  cyprus: "CY",
+  cy: "CY",
+  croacia: "HR",
+  croatia: "HR",
+  hr: "HR",
+  dinamarca: "DK",
+  denmark: "DK",
+  dk: "DK",
+  eslovaquia: "SK",
+  slovakia: "SK",
+  sk: "SK",
+  eslovenia: "SI",
+  slovenia: "SI",
+  si: "SI",
+  estonia: "EE",
+  ee: "EE",
+  finlandia: "FI",
+  finland: "FI",
+  fi: "FI",
+  franca: "FR",
+  france: "FR",
+  fr: "FR",
+  grecia: "GR",
+  greece: "GR",
+  gr: "GR",
+  hungria: "HU",
+  hungary: "HU",
+  hu: "HU",
+  irlanda: "IE",
+  ireland: "IE",
+  ie: "IE",
+  italia: "IT",
+  italy: "IT",
+  it: "IT",
+  letonia: "LV",
+  latvia: "LV",
+  lv: "LV",
+  lituania: "LT",
+  lithuania: "LT",
+  lt: "LT",
+  luxemburgo: "LU",
+  luxembourg: "LU",
+  lu: "LU",
+  malta: "MT",
+  mt: "MT",
+  "paises baixos": "NL",
+  paises_baixos: "NL",
+  netherlands: "NL",
+  holland: "NL",
+  nl: "NL",
+  polonia: "PL",
+  poland: "PL",
+  pl: "PL",
+  romenia: "RO",
+  romania: "RO",
+  ro: "RO",
+  suecia: "SE",
+  sweden: "SE",
+  se: "SE",
+};
+
+type PaisFaturaMoloni = {
+  destino: "PT" | "EST";
+  iso: string;
+  chave: string;
+};
+
+function resolverPaisFaturaMoloni(encomenda: EncomendaRow): PaisFaturaMoloni {
   const candidatos = [
     encomenda.pais_cliente,
     encomenda.regiao_envio,
   ]
     .map((valor) => String(valor || "").trim())
     .filter(Boolean)
-    .filter((valor) => !origensNaoPais.has(normalizarTexto(valor)));
+    .filter((valor) => !ORIGENS_REGIAO_NAO_PAIS.has(normalizarTexto(valor)));
 
-  const paisNormalizado = normalizarTexto(candidatos[0] || "portugal");
-  const ePortugal = !paisNormalizado
-    || paisNormalizado === "portugal"
-    || paisNormalizado === "pt"
-    || paisNormalizado.startsWith("portugal");
-
-  return ePortugal ? "PT" : "EST";
+  const chave = normalizarTexto(candidatos[0] || "portugal").replace(/\s+/g, " ");
+  const iso = ISO_POR_PAIS[chave]
+    || ISO_POR_PAIS[chave.replace(/\s+/g, "_")]
+    || (chave.length === 2 ? chave.toUpperCase() : "PT");
+  const isoFinal = String(iso || "PT").toUpperCase();
+  return {
+    destino: isoFinal === "PT" ? "PT" : "EST",
+    iso: isoFinal,
+    chave,
+  };
 }
 
 async function moloniRequest<T>(query: string, variables: Record<string, unknown>): Promise<T> {
@@ -313,6 +411,30 @@ async function moloniRequest<T>(query: string, variables: Record<string, unknown
   }
 
   return payload as T;
+}
+
+async function obterCountryIdMoloni(iso: string): Promise<number> {
+  const query = `
+    query PaisesMoloni($defaultLanguageId: Int) {
+      countries(options: { defaultLanguageId: $defaultLanguageId }) {
+        data {
+          countryId
+          iso3166_1
+        }
+      }
+    }
+  `;
+  const payload = await moloniRequest<{
+    data?: { countries?: { data?: Array<{ countryId?: number; iso3166_1?: string }> } };
+  }>(query, { defaultLanguageId: 1 });
+
+  const paises = payload.data?.countries?.data || [];
+  const alvo = String(iso || "PT").toUpperCase();
+  const encontrado = paises.find((pais) => String(pais.iso3166_1 || "").toUpperCase() === alvo);
+  if (!encontrado?.countryId) {
+    throw new Error(`Nao foi possivel obter countryId Moloni para ${alvo}.`);
+  }
+  return Number(encontrado.countryId);
 }
 
 function construirLinhasFatura(
@@ -376,7 +498,9 @@ async function criarFaturaReciboMoloni(
   const portesBruto = numero(encomenda.portes);
   const linhas = construirLinhasFatura(totalBruto, portesBruto, productIdLote, productIdPortes);
   const referencia = String(encomenda.codigo_encomenda || encomenda.id).trim();
-  const destino = resolverDestinoFatura(encomenda);
+  const paisFatura = resolverPaisFaturaMoloni(encomenda);
+  const countryId = await obterCountryIdMoloni(paisFatura.iso);
+  const destino = paisFatura.destino;
 
   const query = `
     mutation EmitirFaturaReciboMoloni($companyId: Int!, $data: InvoiceReceiptInsert!) {
@@ -399,6 +523,8 @@ async function criarFaturaReciboMoloni(
     data: {
       documentSetId,
       customerId,
+      countryId,
+      fiscalZone: paisFatura.iso,
       date: formatarDataIso(dataEmissao),
       expirationDate: formatarDataVencimento(vencimento),
       status: invoiceStatus,
@@ -430,7 +556,7 @@ async function criarFaturaReciboMoloni(
     );
   }
 
-  return { ...resultado.data, destino };
+  return { ...resultado.data, destino, country_id: countryId, fiscal_zone: paisFatura.iso };
 }
 
 Deno.serve(async (request) => {
