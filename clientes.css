@@ -71,18 +71,56 @@ body.pagina-clientes-admin{
     align-items:stretch;
 }
 
+.clientes-pesquisa .campo-com-limpar{
+    width:100%;
+    min-width:0;
+    --campo-limpar-tamanho:22px;
+}
+
 .clientes-pesquisa input{
     min-width:0;
     width:100%;
     box-sizing:border-box;
-    min-height:var(--fp-btn-altura);
+    min-height:38px;
+    height:38px;
     border:1px solid #555;
     border-radius:6px;
     background:#222;
     color:#fff;
-    padding:0 12px;
+    padding:8px 12px;
     font:inherit;
     font-size:var(--fp-fonte-valor);
+    line-height:1.25;
+    outline:none;
+    transition:border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.clientes-pesquisa .campo-com-limpar > input{
+    padding-right:calc(var(--campo-limpar-tamanho) + 10px);
+}
+
+.clientes-pesquisa input:focus,
+.clientes-pesquisa input:focus-visible{
+    border-color:#ffc107;
+    box-shadow:0 0 0 2px rgba(255, 193, 7, 0.2);
+    outline:none;
+}
+
+.clientes-pesquisa .campo-limpar-botao{
+    right:6px;
+    width:22px;
+    height:22px;
+    border-radius:6px;
+    background:#3a3a3a;
+    color:#ddd;
+    font-size:16px;
+    font-weight:700;
+}
+
+.clientes-pesquisa .campo-limpar-botao:hover,
+.clientes-pesquisa .campo-limpar-botao:focus-visible{
+    background:#555;
+    color:#fff;
 }
 
 .clientes-pesquisa-acoes{
@@ -131,6 +169,27 @@ body.pagina-clientes-admin{
     min-height:0;
     height:100%;
     max-height:none;
+    scrollbar-width:thin;
+    scrollbar-color:#555 #1a1a1a;
+}
+
+.clientes-lista::-webkit-scrollbar{
+    width:10px;
+}
+
+.clientes-lista::-webkit-scrollbar-track{
+    background:#1a1a1a;
+    border-radius:8px;
+}
+
+.clientes-lista::-webkit-scrollbar-thumb{
+    background:#555;
+    border-radius:8px;
+    border:2px solid #1a1a1a;
+}
+
+.clientes-lista::-webkit-scrollbar-thumb:hover{
+    background:#777;
 }
 
 .clientes-ficha{
