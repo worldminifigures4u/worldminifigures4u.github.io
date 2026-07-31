@@ -74,7 +74,6 @@ body.pagina-clientes-admin{
 .clientes-pesquisa .campo-com-limpar{
     width:100%;
     min-width:0;
-    --campo-limpar-tamanho:22px;
 }
 
 .clientes-pesquisa input{
@@ -95,32 +94,11 @@ body.pagina-clientes-admin{
     transition:border-color 0.15s ease, box-shadow 0.15s ease;
 }
 
-.clientes-pesquisa .campo-com-limpar > input{
-    padding-right:calc(var(--campo-limpar-tamanho) + 10px);
-}
-
 .clientes-pesquisa input:focus,
 .clientes-pesquisa input:focus-visible{
     border-color:#ffc107;
     box-shadow:0 0 0 2px rgba(255, 193, 7, 0.2);
     outline:none;
-}
-
-.clientes-pesquisa .campo-limpar-botao{
-    right:6px;
-    width:22px;
-    height:22px;
-    border-radius:6px;
-    background:#3a3a3a;
-    color:#ddd;
-    font-size:16px;
-    font-weight:700;
-}
-
-.clientes-pesquisa .campo-limpar-botao:hover,
-.clientes-pesquisa .campo-limpar-botao:focus-visible{
-    background:#555;
-    color:#fff;
 }
 
 .clientes-pesquisa-acoes{
