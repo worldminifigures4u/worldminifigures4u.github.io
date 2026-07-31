@@ -486,7 +486,10 @@ function garantirFichaClientePlataforma() {
     if (!__plataformaFichaPromessa) {
         __plataformaFichaPromessa = carregarScriptAdmin('morada-formato.js?v=20260721-split')
             .then(function () {
-                return carregarScriptAdmin('admin-ficha-cliente.js?v=20260730-fecho-fundo');
+                return carregarScriptAdmin('paises-cliente.js?v=20260731-pais-default');
+            })
+            .then(function () {
+                return carregarScriptAdmin('admin-ficha-cliente.js?v=20260731-pais-default');
             })
             .then(function () {
                 window.AdminFichaCliente?.configurar({

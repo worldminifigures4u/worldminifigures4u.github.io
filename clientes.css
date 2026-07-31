@@ -783,6 +783,7 @@ body.clientes-encomenda-modal-aberto{
 .clientes-formulario .admin-cliente-campo-cp input,
 .clientes-formulario .admin-cliente-campo-cidade input,
 .clientes-formulario .admin-cliente-campo-pais input,
+.clientes-formulario .admin-cliente-campo-pais select,
 .clientes-formulario .admin-cliente-campo-email input,
 .clientes-formulario .admin-cliente-campo-telefone input,
 .clientes-formulario [class*="admin-cliente-campo-perfil_url_"] input{

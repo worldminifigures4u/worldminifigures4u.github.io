@@ -184,11 +184,15 @@ function renderizarFormularioClienteExterno(dados, secao) {
         ) || criarCampoEdicaoCliente('Morada', 'morada', cliente.morada),
         criarCampoEdicaoCliente('C\u00f3digo postal', 'cp', cliente.cp),
         criarCampoEdicaoCliente('Cidade', 'cidade', cliente.cidade),
-        criarCampoEdicaoCliente('Pa\u00eds', 'pais', cliente.pais)
+        window.PaisesCliente?.criarSelectPaisCliente(
+            criarElementoEncomenda,
+            cliente.pais || 'Portugal'
+        ) || criarCampoEdicaoCliente('Pa\u00eds', 'pais', cliente.pais)
     );
     const tituloPerfis = criarElementoEncomenda('h3', 'admin-cliente-formulario-subtitulo', 'Links externos');
     formulario.appendChild(tituloPerfis);
     formulario.appendChild(criarCamposPerfisCliente(perfis));
+    window.PaisesCliente?.ligarPerfisAoPaisCliente(formulario);
 
     const acoes = criarElementoEncomenda('div', 'admin-cliente-formulario-acoes');
     const cancelar = criarElementoEncomenda('button', 'wallapop-botao', 'Cancelar');

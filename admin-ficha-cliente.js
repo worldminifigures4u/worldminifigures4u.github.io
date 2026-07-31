@@ -189,7 +189,10 @@
             ) || criarCampoEdicaoCliente('Morada', 'morada', cliente.morada || ''),
             criarCampoEdicaoCliente('C\u00f3digo postal', 'cp', cliente.cp || ''),
             criarCampoEdicaoCliente('Cidade', 'cidade', cliente.cidade || ''),
-            criarCampoEdicaoCliente('Pa\u00eds', 'pais', cliente.pais || (modoCriacao ? 'Portugal' : '')),
+            global.PaisesCliente?.criarSelectPaisCliente(
+                criarElemento,
+                cliente.pais || (modoCriacao ? 'Portugal' : '')
+            ) || criarCampoEdicaoCliente('Pa\u00eds', 'pais', cliente.pais || (modoCriacao ? 'Portugal' : '')),
             criarCampoEdicaoCliente('Telem\u00f3vel', 'telefone', cliente.telefone || ''),
             criarCampoEdicaoCliente('E-mail', 'email', cliente.email || '', 'email')
         );
@@ -201,6 +204,7 @@
         const linksExternos = criarElemento('div', 'clientes-formulario-links');
         linksExternos.appendChild(criarCamposPerfisCliente(perfis, true, cliente.notas || ''));
         formulario.appendChild(linksExternos);
+        global.PaisesCliente?.ligarPerfisAoPaisCliente(formulario);
 
         formulario.addEventListener('submit', async (evento) => {
             evento.preventDefault();

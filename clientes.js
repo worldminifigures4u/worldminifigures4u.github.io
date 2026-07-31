@@ -462,7 +462,10 @@ function montarFormularioCliente(dados, opcoes = {}) {
         ) || criarInputCliente("Morada", "morada", cliente.morada),
         criarInputCliente("C\u00f3digo postal", "cp", cliente.cp),
         criarInputCliente("Cidade", "cidade", cliente.cidade),
-        criarInputCliente("Pa\u00eds", "pais", cliente.pais),
+        window.PaisesCliente?.criarSelectPaisCliente(
+            criarElementoCliente,
+            cliente.pais || (novoCliente ? "Portugal" : "")
+        ) || criarInputCliente("Pa\u00eds", "pais", cliente.pais),
         criarInputCliente("Telem\u00f3vel", "telefone", cliente.telefone),
         criarInputCliente("E-mail", "email", cliente.email, "email")
     );
@@ -488,6 +491,7 @@ function montarFormularioCliente(dados, opcoes = {}) {
         ));
     }
     formulario.appendChild(linksExternos);
+    window.PaisesCliente?.ligarPerfisAoPaisCliente(formulario);
 
     aplicarCamposClienteRegistadoSite(formulario, cliente);
 
