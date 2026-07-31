@@ -1493,3 +1493,42 @@ body.pagina-encomendas-admin{
                 width:100%;
             }
         }
+
+.admin-fatura-confirmacao{
+    position:fixed;
+    inset:0;
+    z-index:1200;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:20px;
+    background:rgba(0,0,0,0.72);
+    box-sizing:border-box;
+}
+
+.admin-fatura-confirmacao-caixa{
+    width:min(420px, 100%);
+    padding:22px 20px 18px;
+    border:1px solid #333;
+    border-radius:8px;
+    background:#171717;
+    color:#fff;
+    box-shadow:0 16px 40px rgba(0,0,0,0.45);
+}
+
+.admin-fatura-confirmacao-texto{
+    margin:0 0 18px;
+    font-size:15px;
+    line-height:1.45;
+}
+
+.admin-fatura-confirmacao-acoes{
+    display:flex;
+    flex-wrap:wrap;
+    gap:10px;
+    justify-content:flex-end;
+}
+
+.admin-fatura-confirmacao-acoes .wallapop-botao{
+    min-width:120px;
+}

@@ -1120,10 +1120,55 @@ window.AdminEncomendaVista = (function () {
         return !encomendaFaturaMoloniOpcional(encomenda);
     }
 
+    function pedirConfirmacaoFatura(mensagem) {
+        return new Promise((resolve) => {
+            const existente = document.getElementById("admin-fatura-confirmacao");
+            if (existente) existente.remove();
+
+            const fundo = criarElemento("div", "admin-fatura-confirmacao");
+            fundo.id = "admin-fatura-confirmacao";
+            fundo.setAttribute("role", "dialog");
+            fundo.setAttribute("aria-modal", "true");
+
+            const caixa = criarElemento("div", "admin-fatura-confirmacao-caixa");
+            const texto = criarElemento("p", "admin-fatura-confirmacao-texto", mensagem);
+            const acoes = criarElemento("div", "admin-fatura-confirmacao-acoes");
+            const botaoMaisTarde = criarElemento("button", "wallapop-botao", "Mais tarde");
+            botaoMaisTarde.type = "button";
+            const botaoEmiteJa = criarElemento("button", "wallapop-botao wallapop-botao-destaque", "Emite já");
+            botaoEmiteJa.type = "button";
+
+            const fechar = (emitir) => {
+                document.removeEventListener("keydown", aoTecla);
+                fundo.remove();
+                resolve(emitir);
+            };
+            const aoTecla = (evento) => {
+                if (evento.key === "Escape") {
+                    evento.preventDefault();
+                    fechar(false);
+                }
+            };
+
+            botaoMaisTarde.addEventListener("click", () => fechar(false));
+            botaoEmiteJa.addEventListener("click", () => fechar(true));
+            fundo.addEventListener("click", (evento) => {
+                if (evento.target === fundo) fechar(false);
+            });
+            document.addEventListener("keydown", aoTecla);
+
+            acoes.append(botaoMaisTarde, botaoEmiteJa);
+            caixa.append(texto, acoes);
+            fundo.appendChild(caixa);
+            document.body.appendChild(fundo);
+            botaoEmiteJa.focus();
+        });
+    }
+
     function pedirEmissaoFaturaMoloni(encomenda) {
         const codigo = encomenda.codigo_encomenda || "";
-        return window.confirm(
-            `Encomenda ${rotuloOrigemFatura(encomenda)} ${codigo}: emitir fatura-recibo Moloni automaticamente?`
+        return pedirConfirmacaoFatura(
+            `Encomenda ${rotuloOrigemFatura(encomenda)} ${codigo}: emitir fatura-recibo Moloni?`
         );
     }
 
@@ -1351,7 +1396,7 @@ window.AdminEncomendaVista = (function () {
             if (estado === "Concluído" && estadoAnterior !== "Concluído" && podeEmitirFaturaMoloni(encomenda)) {
                 let emitirFatura = deveEmitirFaturaMoloniAutomaticamente(encomenda);
                 if (encomendaFaturaMoloniOpcional(encomenda)) {
-                    emitirFatura = pedirEmissaoFaturaMoloni(encomenda);
+                    emitirFatura = await pedirEmissaoFaturaMoloni(encomenda);
                 }
                 if (emitirFatura) {
                     if (!encomenda.data_pagamento) {
