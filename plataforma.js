@@ -130,18 +130,153 @@ function normalizarTextoPlataforma(valor) {
         .toLowerCase();
 }
 
-function selecionarPaisEnvioPorTextoPlataforma(pais) {
-    const select = document.getElementById('plataforma-pais-envio');
-    if (!select || !pais) return;
-    const alvo = normalizarTextoPlataforma(pais);
-    const option = [...select.options].find(item => (
-        normalizarTextoPlataforma(item.textContent) === alvo
-        || normalizarTextoPlataforma(item.value) === alvo
-    ));
-    if (option) {
-        select.value = option.value;
-        atualizarOpcoesEnvioPlataforma();
+const ALIAS_PAIS_ENVIO_PLATAFORMA = {
+    pt: 'portugal',
+    portugal: 'portugal',
+    es: 'espanha',
+    espanha: 'espanha',
+    espana: 'espanha',
+    spain: 'espanha',
+    de: 'alemanha',
+    alemanha: 'alemanha',
+    germany: 'alemanha',
+    deutschland: 'alemanha',
+    at: 'austria',
+    austria: 'austria',
+    be: 'belgica',
+    belgica: 'belgica',
+    belgium: 'belgica',
+    bg: 'bulgaria',
+    bulgaria: 'bulgaria',
+    cz: 'chequia',
+    chequia: 'chequia',
+    czechia: 'chequia',
+    'czech republic': 'chequia',
+    cy: 'chipre',
+    chipre: 'chipre',
+    cyprus: 'chipre',
+    hr: 'croacia',
+    croacia: 'croacia',
+    croatia: 'croacia',
+    dk: 'dinamarca',
+    dinamarca: 'dinamarca',
+    denmark: 'dinamarca',
+    sk: 'eslovaquia',
+    eslovaquia: 'eslovaquia',
+    slovakia: 'eslovaquia',
+    si: 'eslovenia',
+    eslovenia: 'eslovenia',
+    slovenia: 'eslovenia',
+    ee: 'estonia',
+    estonia: 'estonia',
+    fi: 'finlandia',
+    finlandia: 'finlandia',
+    finland: 'finlandia',
+    fr: 'franca',
+    franca: 'franca',
+    france: 'franca',
+    gr: 'grecia',
+    grecia: 'grecia',
+    greece: 'grecia',
+    hu: 'hungria',
+    hungria: 'hungria',
+    hungary: 'hungria',
+    ie: 'irlanda',
+    irlanda: 'irlanda',
+    ireland: 'irlanda',
+    it: 'italia',
+    italia: 'italia',
+    italy: 'italia',
+    lv: 'letonia',
+    letonia: 'letonia',
+    latvia: 'letonia',
+    lt: 'lituania',
+    lituania: 'lituania',
+    lithuania: 'lituania',
+    lu: 'luxemburgo',
+    luxemburgo: 'luxemburgo',
+    luxembourg: 'luxemburgo',
+    mt: 'malta',
+    malta: 'malta',
+    nl: 'paises_baixos',
+    'paises baixos': 'paises_baixos',
+    paises_baixos: 'paises_baixos',
+    netherlands: 'paises_baixos',
+    holland: 'paises_baixos',
+    pl: 'polonia',
+    polonia: 'polonia',
+    poland: 'polonia',
+    ro: 'romenia',
+    romenia: 'romenia',
+    romania: 'romenia',
+    se: 'suecia',
+    suecia: 'suecia',
+    sweden: 'suecia'
+};
+
+const ORIGENS_REGIAO_NAO_PAIS_PLATAFORMA = new Set([
+    'wallapop',
+    'vinted',
+    'olx',
+    'todocoleccion'
+]);
+
+function chaveAliasPaisEnvioPlataforma(texto) {
+    return normalizarTextoPlataforma(texto).replace(/\s+/g, ' ');
+}
+
+function mapearTextoParaValorPaisEnvioPlataforma(texto, select) {
+    const alvo = chaveAliasPaisEnvioPlataforma(texto);
+    if (!alvo) return null;
+    if (ORIGENS_REGIAO_NAO_PAIS_PLATAFORMA.has(alvo.replace(/\s+/g, ''))) return null;
+
+    const alias = ALIAS_PAIS_ENVIO_PLATAFORMA[alvo]
+        || ALIAS_PAIS_ENVIO_PLATAFORMA[alvo.replace(/\s+/g, '_')];
+    if (alias && [...select.options].some((opcao) => opcao.value === alias)) {
+        return alias;
     }
+
+    const option = [...select.options].find((item) => (
+        chaveAliasPaisEnvioPlataforma(item.textContent) === alvo
+        || chaveAliasPaisEnvioPlataforma(item.value) === alvo
+        || chaveAliasPaisEnvioPlataforma(item.value.replace(/_/g, ' ')) === alvo
+    ));
+    return option?.value || null;
+}
+
+function resolverValorPaisEnvioMoloniPlataforma(paisCliente, regiaoEnvio) {
+    const select = document.getElementById('plataforma-pais-envio');
+    if (!select) return 'portugal';
+
+    const candidatos = [paisCliente, regiaoEnvio]
+        .map((valor) => String(valor || '').trim())
+        .filter(Boolean);
+
+    for (const candidato of candidatos) {
+        const valor = mapearTextoParaValorPaisEnvioPlataforma(candidato, select);
+        if (valor) return valor;
+    }
+    return 'portugal';
+}
+
+function selecionarPaisEnvioPlataforma(valor) {
+    const select = document.getElementById('plataforma-pais-envio');
+    if (!select) return;
+    const destino = [...select.options].some((opcao) => opcao.value === valor)
+        ? valor
+        : 'portugal';
+    if (select.value !== destino) {
+        select.value = destino;
+    }
+    atualizarOpcoesEnvioPlataforma();
+}
+
+function selecionarPaisEnvioPorTextoPlataforma(pais) {
+    selecionarPaisEnvioMoloniPlataforma(pais, null);
+}
+
+function selecionarPaisEnvioMoloniPlataforma(paisCliente, regiaoEnvio) {
+    selecionarPaisEnvioPlataforma(resolverValorPaisEnvioMoloniPlataforma(paisCliente, regiaoEnvio));
 }
 
 function preencherClientePlataformaComFicha(dados) {
@@ -152,7 +287,7 @@ function preencherClientePlataformaComFicha(dados) {
     document.getElementById('plataforma-morada-cliente').value = cliente.morada || '';
     document.getElementById('plataforma-cp-cliente').value = cliente.cp || '';
     document.getElementById('plataforma-cidade-cliente').value = cliente.cidade || '';
-    selecionarPaisEnvioPorTextoPlataforma(cliente.pais);
+    selecionarPaisEnvioMoloniPlataforma(cliente.pais, null);
     renderizarFichaClientePlataforma(dados);
 }
 
@@ -170,10 +305,15 @@ function obterNomeUtilizadorPlataforma() {
     return document.getElementById('wallapop-nome-cliente')?.value.trim() || '';
 }
 
+function obterPaisEnvioSelecionadoPlataforma() {
+    return obterTextoOpcaoSelecionada('plataforma-pais-envio') || 'Portugal';
+}
+
 function obterDadosClientePlataforma() {
     const plataforma = obterPlataformaAtual();
+    const paisSeletor = obterPaisEnvioSelecionadoPlataforma();
     if (plataforma !== 'OLX' && plataforma !== 'Todocoleccion') {
-        return { telefone: '', morada: '', cp: '', cidade: '', pais: '' };
+        return { telefone: '', morada: '', cp: '', cidade: '', pais: paisSeletor };
     }
     const cliente = fichaClientePlataformaAtual?.cliente || {};
     return {
@@ -181,7 +321,7 @@ function obterDadosClientePlataforma() {
         morada: cliente.morada || document.getElementById('plataforma-morada-cliente')?.value.trim() || '',
         cp: cliente.cp || document.getElementById('plataforma-cp-cliente')?.value.trim() || '',
         cidade: cliente.cidade || document.getElementById('plataforma-cidade-cliente')?.value.trim() || '',
-        pais: cliente.pais || obterTextoOpcaoSelecionada('plataforma-pais-envio')
+        pais: paisSeletor
     };
 }
 
@@ -670,7 +810,6 @@ function atualizarModoPlataforma() {
     const plataforma = obterPlataformaAtual();
     const anuncio = ehPlataformaEstiloAnuncio(plataforma);
     const olx = plataforma === 'OLX';
-    const mostrarPais = !anuncio;
     document.getElementById('label-cliente-plataforma').textContent = 'Nome de utilizador';
     document.getElementById('wallapop-nome-cliente').placeholder = `Nome ou utilizador no ${plataforma}`;
     document.getElementById('plataforma-envio').hidden = false;
@@ -678,8 +817,8 @@ function atualizarModoPlataforma() {
     document.getElementById('plataforma-resumo').hidden = true;
     const linhaEnvio = document.getElementById('plataforma-envio-linha');
     const blocoPais = document.getElementById('plataforma-pais-envio-bloco');
-    if (linhaEnvio) linhaEnvio.classList.toggle('sem-pais', !mostrarPais);
-    if (blocoPais) blocoPais.hidden = !mostrarPais;
+    if (linhaEnvio) linhaEnvio.classList.remove('sem-pais');
+    if (blocoPais) blocoPais.hidden = false;
     document.getElementById('plataforma-resumo-titulo').textContent = olx
         ? 'Ficheiros OLX'
         : (anuncio ? `An\u00fancio ${plataforma}` : 'Ficheiro Todocoleccion');
@@ -2192,7 +2331,7 @@ function criarCabecalhoCodigoEncomenda() {
     const codigo = obterCodigoEncomendaAtual();
     if (!codigo) return [];
     const nomeCliente = obterNomeClienteParaCabecalhoTxt();
-    return [`Lote personalizado \u2013 Reservado ${nomeCliente}`, ''];
+    return [`${nomeCliente} - Lote personalizado \u2013 Reservado`, ''];
 }
 
 function validarEncomendaRegistadaParaFicheiros() {
@@ -2577,16 +2716,7 @@ async function carregarEncomendaPlataformaPorCodigo(codigo) {
     document.getElementById('plataforma-cp-cliente').value = encomenda.cp_cliente || '';
     document.getElementById('plataforma-cidade-cliente').value = encomenda.cidade_cliente || '';
 
-    if (encomenda.origem === 'OLX' || encomenda.origem === 'Todocoleccion') {
-        const selectPais = document.getElementById('plataforma-pais-envio');
-        const regiao = String(encomenda.regiao_envio || 'portugal').toLowerCase();
-        if (selectPais && [...selectPais.options].some(opcao => opcao.value === regiao)) {
-            selectPais.value = regiao;
-        } else if (selectPais) {
-            selectPais.value = 'portugal';
-        }
-    }
-    atualizarOpcoesEnvioPlataforma();
+    selecionarPaisEnvioMoloniPlataforma(encomenda.pais_cliente, encomenda.regiao_envio);
     const metodoGuardado = encomenda.metodo_envio
         || (encomenda.origem === 'Wallapop' ? 'wallapop'
             : (encomenda.origem === 'Vinted' ? 'vinted' : ''));
@@ -2665,6 +2795,7 @@ function novaEncomendaPlataforma() {
     document.getElementById('wallapop-nome-cliente').value = '';
     document.getElementById('plataforma-link-perfil').value = '';
     limparDadosClientePlataforma();
+    selecionarPaisEnvioPlataforma('portugal');
     const campoSeguimento = document.getElementById('plataforma-codigo-seguimento');
     if (campoSeguimento) campoSeguimento.value = '';
     perfilExternoDetetado = null;
@@ -2789,7 +2920,7 @@ async function registarEncomendaWallapop() {
             p_morada_cliente: dadosCliente.morada || null,
             p_cp_cliente: dadosCliente.cp || null,
             p_cidade_cliente: dadosCliente.cidade || null,
-            p_pais_cliente: dadosCliente.pais || null
+            p_pais_cliente: obterPaisEnvioSelecionadoPlataforma()
         };
         const nomeFuncao = encomendaPlataformaEmEdicao
             ? 'atualizar_encomenda_plataforma_admin'
