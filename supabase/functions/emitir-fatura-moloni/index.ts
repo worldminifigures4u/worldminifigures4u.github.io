@@ -499,9 +499,11 @@ async function criarFaturaReciboMoloni(
   const linhas = construirLinhasFatura(totalBruto, portesBruto, productIdLote, productIdPortes);
   const referencia = String(encomenda.codigo_encomenda || encomenda.id).trim();
   const paisFatura = resolverPaisFaturaMoloni(encomenda);
-  // País do cliente no documento (ex.: Alemanha); zona fiscal da empresa portuguesa (PT).
+  // B2C UE < 10.000€/ano: IVA PT (23%), zona fiscal e país = destino (ex.: Alemanha).
+  // Override opcional: MOLONI_FISCAL_ZONE (só se a Moloni exigir um código diferente).
   const countryId = await obterCountryIdMoloni(paisFatura.iso);
-  const fiscalZone = String(Deno.env.get("MOLONI_FISCAL_ZONE") || "PT").trim().toUpperCase() || "PT";
+  const fiscalZoneOverride = String(Deno.env.get("MOLONI_FISCAL_ZONE") || "").trim().toUpperCase();
+  const fiscalZone = fiscalZoneOverride || paisFatura.iso || "PT";
   const destino = paisFatura.destino;
 
   const query = `
