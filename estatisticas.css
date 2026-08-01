@@ -50,6 +50,30 @@
     padding: 0 10px;
     box-sizing: border-box;
     font: inherit;
+    color-scheme: dark;
+}
+
+.estatisticas-filtros input[type="date"],
+.estatisticas-filtros input[type="month"] {
+    padding-right: 8px;
+}
+
+.estatisticas-filtros input[type="date"]::-webkit-calendar-picker-indicator,
+.estatisticas-filtros input[type="month"]::-webkit-calendar-picker-indicator {
+    cursor: pointer;
+    opacity: 1;
+    width: 18px;
+    height: 18px;
+    padding: 2px;
+    border-radius: 4px;
+    background-color: transparent;
+    filter: invert(1) brightness(1.15);
+}
+
+.estatisticas-filtros input[type="date"]::-webkit-calendar-picker-indicator:hover,
+.estatisticas-filtros input[type="month"]::-webkit-calendar-picker-indicator:hover {
+    background-color: rgba(255, 193, 7, 0.18);
+    filter: invert(77%) sepia(84%) saturate(1200%) hue-rotate(359deg) brightness(105%);
 }
 
 .estatisticas-metricas {
