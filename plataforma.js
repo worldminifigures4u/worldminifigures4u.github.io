@@ -2263,11 +2263,47 @@ function limparNomePastaWallapop(nome) {
     return limpo;
 }
 
+function erroFicheiroEstadoDesatualizado(error) {
+    const nome = String(error?.name || '');
+    const mensagem = String(error?.message || '');
+    return nome === 'InvalidStateError'
+        || /state cached|state had changed|interface object/i.test(mensagem);
+}
+
+function mensagemErroGuardarFicheirosPlataforma(error) {
+    if (error?.name === 'AbortError') return 'Seleção da pasta cancelada.';
+    if (erroFicheiroEstadoDesatualizado(error)) {
+        return 'A pasta ficou desatualizada (OneDrive/antivirus ou ficheiro aberto). Fecha o explorador nessa pasta e tenta outra vez.';
+    }
+    if (error?.name === 'NotAllowedError') {
+        return 'Sem permissão para escrever na pasta escolhida.';
+    }
+    return 'Não foi possível guardar a encomenda: ' + (error?.message || 'erro desconhecido');
+}
+
 async function escreverFicheiroWallapop(pasta, nome, conteudo) {
-    const ficheiro = await pasta.getFileHandle(nome, { create: true });
-    const escrita = await ficheiro.createWritable();
-    await escrita.write(conteudo);
-    await escrita.close();
+    let ultimoErro = null;
+    for (let tentativa = 0; tentativa < 3; tentativa += 1) {
+        let escrita = null;
+        try {
+            if (tentativa > 0) {
+                try { await pasta.removeEntry(nome); } catch (_) { /* ficheiro pode nao existir */ }
+            }
+            const ficheiro = await pasta.getFileHandle(nome, { create: true });
+            escrita = await ficheiro.createWritable({ keepExistingData: false });
+            await escrita.write(conteudo);
+            await escrita.close();
+            return;
+        } catch (error) {
+            ultimoErro = error;
+            if (escrita) {
+                try { await escrita.abort(); } catch (_) { /* ignore */ }
+            }
+            if (!erroFicheiroEstadoDesatualizado(error) || tentativa === 2) throw error;
+            await new Promise(resolver => setTimeout(resolver, 80 * (tentativa + 1)));
+        }
+    }
+    throw ultimoErro;
 }
 
 function criarTextoEncomendaWallapop() {
@@ -2403,19 +2439,18 @@ async function descarregarImagemWallapop() {
         definirStatusWallapop('Adicione pelo menos um produto.', true);
         return;
     }
-    definirStatusWallapop('A preparar a pasta e os ficheiros...');
+    definirStatusWallapop('A gerar as imagens do anúncio...');
     try {
         await garantirHtml2CanvasPlataforma();
-        const pastaBase = await obterPastaBaseWallapop();
         const paginasItens = dividirItensWallapop(itensFicheiros);
         if (!paginasItens.length) throw new Error('Nao existem folhas para exportar.');
         const totalPaginas = paginasItens.length;
         const totalFiguras = calcularTotalFigurasLoteWallapop(itensFicheiros);
         const totalPrecoLote = calcularTotalPrecoLoteWallapop(itensFicheiros);
 
-        const pastaEncomenda = await pastaBase.getDirectoryHandle(nomeEncomenda, { create: true });
-        await escreverFicheiroWallapop(pastaEncomenda, `${nomeEncomenda}.txt`, criarTextoEncomendaWallapop());
-
+        const ficheiros = [
+            { nome: `${nomeEncomenda}.txt`, conteudo: criarTextoEncomendaWallapop() }
+        ];
         for (let indice = 0; indice < paginasItens.length; indice += 1) {
             const canvas = await gerarCanvasFolhaWallapop(
                 paginasItens[indice],
@@ -2426,7 +2461,14 @@ async function descarregarImagemWallapop() {
             );
             const imagem = await canvasParaBlobWallapop(canvas);
             const nomeImagem = paginasItens.length === 1 ? 'foto anuncio.png' : `foto anuncio ${indice + 1}.png`;
-            await escreverFicheiroWallapop(pastaEncomenda, nomeImagem, imagem);
+            ficheiros.push({ nome: nomeImagem, conteudo: imagem });
+        }
+
+        definirStatusWallapop('Escolhe a pasta de destino...');
+        const pastaBase = await obterPastaBaseWallapop();
+        const pastaEncomenda = await pastaBase.getDirectoryHandle(nomeEncomenda, { create: true });
+        for (const ficheiro of ficheiros) {
+            await escreverFicheiroWallapop(pastaEncomenda, ficheiro.nome, ficheiro.conteudo);
         }
         definirStatusWallapop(`Pasta "${nomeEncomenda}" guardada com ${paginasItens.length} imagem(ns).`);
     } catch (error) {
@@ -2435,7 +2477,7 @@ async function descarregarImagemWallapop() {
             definirStatusWallapop('Seleção da pasta cancelada.', true);
             return;
         }
-        definirStatusWallapop('Não foi possível guardar a encomenda: ' + (error.message || 'erro desconhecido'), true);
+        definirStatusWallapop(mensagemErroGuardarFicheirosPlataforma(error), true);
     } finally {
         renderizarFolhaWallapop();
     }
@@ -2479,7 +2521,7 @@ async function guardarFicheirosPlataforma() {
             definirStatusWallapop('Sele\u00e7\u00e3o da pasta cancelada.', true);
             return;
         }
-        definirStatusWallapop('N\u00e3o foi poss\u00edvel guardar: ' + (error.message || 'erro desconhecido'), true);
+        definirStatusWallapop(mensagemErroGuardarFicheirosPlataforma(error), true);
     }
 }
 
