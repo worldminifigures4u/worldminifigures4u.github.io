@@ -499,7 +499,9 @@ async function criarFaturaReciboMoloni(
   const linhas = construirLinhasFatura(totalBruto, portesBruto, productIdLote, productIdPortes);
   const referencia = String(encomenda.codigo_encomenda || encomenda.id).trim();
   const paisFatura = resolverPaisFaturaMoloni(encomenda);
+  // País do cliente no documento (ex.: Alemanha); zona fiscal da empresa portuguesa (PT).
   const countryId = await obterCountryIdMoloni(paisFatura.iso);
+  const fiscalZone = String(Deno.env.get("MOLONI_FISCAL_ZONE") || "PT").trim().toUpperCase() || "PT";
   const destino = paisFatura.destino;
 
   const query = `
@@ -524,12 +526,13 @@ async function criarFaturaReciboMoloni(
       documentSetId,
       customerId,
       countryId,
-      fiscalZone: paisFatura.iso,
+      fiscalZone,
       date: formatarDataIso(dataEmissao),
       expirationDate: formatarDataVencimento(vencimento),
       status: invoiceStatus,
-      yourReference: referencia,
-      ourReference: destino,
+      // No Moloni ON: yourReference = Ref. doc.; ourReference = Ref. cliente
+      yourReference: destino,
+      ourReference: referencia,
       products: linhas,
       payments: [
         {
@@ -556,7 +559,7 @@ async function criarFaturaReciboMoloni(
     );
   }
 
-  return { ...resultado.data, destino, country_id: countryId, fiscal_zone: paisFatura.iso };
+  return { ...resultado.data, destino, country_id: countryId, fiscal_zone: fiscalZone };
 }
 
 Deno.serve(async (request) => {
