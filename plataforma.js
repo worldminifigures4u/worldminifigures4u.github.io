@@ -2278,6 +2278,9 @@ function mensagemErroGuardarFicheirosPlataforma(error) {
     if (error?.name === 'NotAllowedError') {
         return 'Sem permissão para escrever na pasta escolhida.';
     }
+    if (/user gesture|showDirectoryPicker/i.test(String(error?.message || ''))) {
+        return 'O Chrome bloqueou a escolha da pasta. Clica outra vez em Guardar anúncio.';
+    }
     return 'Não foi possível guardar a encomenda: ' + (error?.message || 'erro desconhecido');
 }
 
@@ -2439,8 +2442,12 @@ async function descarregarImagemWallapop() {
         definirStatusWallapop('Adicione pelo menos um produto.', true);
         return;
     }
-    definirStatusWallapop('A gerar as imagens do anúncio...');
+    definirStatusWallapop('Escolhe a pasta de destino...');
     try {
+        // O picker tem de abrir ainda no clique do utilizador.
+        const pastaBase = await obterPastaBaseWallapop();
+
+        definirStatusWallapop('A gerar as imagens do anúncio...');
         await garantirHtml2CanvasPlataforma();
         const paginasItens = dividirItensWallapop(itensFicheiros);
         if (!paginasItens.length) throw new Error('Nao existem folhas para exportar.');
@@ -2464,8 +2471,8 @@ async function descarregarImagemWallapop() {
             ficheiros.push({ nome: nomeImagem, conteudo: imagem });
         }
 
-        definirStatusWallapop('Escolhe a pasta de destino...');
-        const pastaBase = await obterPastaBaseWallapop();
+        definirStatusWallapop('A guardar os ficheiros...');
+        // Voltar a obter a subpasta imediatamente antes de escrever (evita handle stale).
         const pastaEncomenda = await pastaBase.getDirectoryHandle(nomeEncomenda, { create: true });
         for (const ficheiro of ficheiros) {
             await escreverFicheiroWallapop(pastaEncomenda, ficheiro.nome, ficheiro.conteudo);
