@@ -297,6 +297,7 @@ const ISO_POR_PAIS: Record<string, string> = {
   chequia: "CZ",
   czechia: "CZ",
   "czech republic": "CZ",
+  "republica checa": "CZ",
   cz: "CZ",
   chipre: "CY",
   cyprus: "CY",
@@ -328,8 +329,12 @@ const ISO_POR_PAIS: Record<string, string> = {
   hungary: "HU",
   hu: "HU",
   irlanda: "IE",
+  "republica da irlanda": "IE",
   ireland: "IE",
   ie: "IE",
+  "irlanda do norte": "XI",
+  "northern ireland": "XI",
+  xi: "XI",
   italia: "IT",
   italy: "IT",
   it: "IT",
@@ -348,6 +353,7 @@ const ISO_POR_PAIS: Record<string, string> = {
   paises_baixos: "NL",
   netherlands: "NL",
   holland: "NL",
+  holanda: "NL",
   nl: "NL",
   polonia: "PL",
   poland: "PL",
@@ -360,30 +366,88 @@ const ISO_POR_PAIS: Record<string, string> = {
   se: "SE",
 };
 
+/** Clientes Moloni "Consumidor Final" por país (ID interno Moloni). */
+const MOLONI_CUSTOMER_ID_POR_ISO: Record<string, number> = {
+  PT: 1,
+  ES: 2,
+  FR: 3,
+  DE: 4,
+  IT: 5,
+  BE: 6,
+  XI: 7, // Irlanda do Norte
+  IE: 8,
+  LU: 9,
+  NL: 10,
+  SI: 11,
+  HR: 12,
+  CZ: 13,
+  AT: 14,
+  SK: 15,
+  HU: 16,
+  DK: 17,
+  BG: 18,
+  PL: 19,
+  GR: 20,
+  RO: 21,
+  SE: 22,
+};
+
+/** countryId Moloni usa ISO-3166; XI (NI) mapeia para GB. */
+const ISO_COUNTRY_ID_POR_FISCAL: Record<string, string> = {
+  XI: "GB",
+};
+
 type PaisFaturaMoloni = {
   destino: "PT" | "EST";
   iso: string;
   chave: string;
+  customerId: number;
+  fiscalZone: string;
 };
 
-function resolverPaisFaturaMoloni(encomenda: EncomendaRow): PaisFaturaMoloni {
-  const candidatos = [
-    encomenda.pais_cliente,
-    encomenda.regiao_envio,
-  ]
-    .map((valor) => String(valor || "").trim())
-    .filter(Boolean)
-    .filter((valor) => !ORIGENS_REGIAO_NAO_PAIS.has(normalizarTexto(valor)));
-
-  const chave = normalizarTexto(candidatos[0] || "portugal").replace(/\s+/g, " ");
+function resolverIsoPaisTexto(valor: string): string | null {
+  const chave = normalizarTexto(valor).replace(/\s+/g, " ");
+  if (!chave || ORIGENS_REGIAO_NAO_PAIS.has(chave)) return null;
   const iso = ISO_POR_PAIS[chave]
     || ISO_POR_PAIS[chave.replace(/\s+/g, "_")]
-    || (chave.length === 2 ? chave.toUpperCase() : "PT");
-  const isoFinal = String(iso || "PT").toUpperCase();
+    || (chave.length === 2 ? chave.toUpperCase() : "");
+  const isoFinal = String(iso || "").toUpperCase();
+  return isoFinal || null;
+}
+
+function resolverPaisFaturaMoloni(encomenda: EncomendaRow): PaisFaturaMoloni {
+  // País de envio: regiao_envio (site/OLX) tem prioridade; pais_cliente (seletor plataformas).
+  const candidatos = [
+    encomenda.regiao_envio,
+    encomenda.pais_cliente,
+  ]
+    .map((valor) => String(valor || "").trim())
+    .filter(Boolean);
+
+  let isoFinal = "PT";
+  let chave = "portugal";
+  for (const candidato of candidatos) {
+    const iso = resolverIsoPaisTexto(candidato);
+    if (!iso) continue;
+    isoFinal = iso;
+    chave = normalizarTexto(candidato).replace(/\s+/g, " ") || chave;
+    break;
+  }
+
+  const customerDefault = Number(Deno.env.get("MOLONI_CUSTOMER_ID") || "1") || 1;
+  const customerMapeado = MOLONI_CUSTOMER_ID_POR_ISO[isoFinal];
+  const customerId = customerMapeado || customerDefault;
+  // Zona fiscal do destino só com cliente Consumidor Final correspondente na Moloni.
+  const fiscalZone = customerMapeado
+    ? isoFinal
+    : (String(Deno.env.get("MOLONI_FISCAL_ZONE") || "PT").trim().toUpperCase() || "PT");
+
   return {
     destino: isoFinal === "PT" ? "PT" : "EST",
     iso: isoFinal,
     chave,
+    customerId,
+    fiscalZone,
   };
 }
 
@@ -429,7 +493,8 @@ async function obterCountryIdMoloni(iso: string): Promise<number> {
   }>(query, { defaultLanguageId: 1 });
 
   const paises = payload.data?.countries?.data || [];
-  const alvo = String(iso || "PT").toUpperCase();
+  const fiscal = String(iso || "PT").toUpperCase();
+  const alvo = String(ISO_COUNTRY_ID_POR_FISCAL[fiscal] || fiscal).toUpperCase();
   const encontrado = paises.find((pais) => String(pais.iso3166_1 || "").toUpperCase() === alvo);
   if (!encontrado?.countryId) {
     throw new Error(`Nao foi possivel obter countryId Moloni para ${alvo}.`);
@@ -485,7 +550,6 @@ async function criarFaturaReciboMoloni(
   encomenda: EncomendaRow,
   companyId: number,
   documentSetId: number,
-  customerId: number,
   productIdLote: number,
   productIdPortes: number,
   paymentMethodId: number,
@@ -499,11 +563,10 @@ async function criarFaturaReciboMoloni(
   const linhas = construirLinhasFatura(totalBruto, portesBruto, productIdLote, productIdPortes);
   const referencia = String(encomenda.codigo_encomenda || encomenda.id).trim();
   const paisFatura = resolverPaisFaturaMoloni(encomenda);
-  // B2C UE < 10.000€/ano: IVA PT (23%).
-  // País do documento = destino (ES/DE/...). Zona fiscal = PT (empresa/Consumidor final na Moloni).
-  // A Moloni rejeita fiscalZone ES/DE com o cliente atual: "Unable to match selected fiscalZone...".
+  // B2C UE < 10.000€/ano: IVA PT (23%) no produto; cliente + fiscalZone = país de envio.
   const countryId = await obterCountryIdMoloni(paisFatura.iso);
-  const fiscalZone = String(Deno.env.get("MOLONI_FISCAL_ZONE") || "PT").trim().toUpperCase() || "PT";
+  const customerId = paisFatura.customerId;
+  const fiscalZone = paisFatura.fiscalZone;
   const destino = paisFatura.destino;
 
   const query = `
@@ -561,7 +624,14 @@ async function criarFaturaReciboMoloni(
     );
   }
 
-  return { ...resultado.data, destino, country_id: countryId, fiscal_zone: fiscalZone };
+  return {
+    ...resultado.data,
+    destino,
+    country_id: countryId,
+    fiscal_zone: fiscalZone,
+    customer_id: customerId,
+    pais_iso: paisFatura.iso,
+  };
 }
 
 Deno.serve(async (request) => {
@@ -578,7 +648,6 @@ Deno.serve(async (request) => {
   const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
   const companyId = Number(Deno.env.get("MOLONI_COMPANY_ID") || "0");
   const documentSetId = Number(Deno.env.get("MOLONI_DOCUMENT_SET_ID") || "0");
-  const customerId = Number(Deno.env.get("MOLONI_CUSTOMER_ID") || "0");
   const productIdLote = Number(Deno.env.get("MOLONI_PRODUCT_ID_LOTE") || "0");
   const productIdPortes = Number(Deno.env.get("MOLONI_PRODUCT_ID_PORTES") || productIdLote || "0");
   const pagamentosMoloni = carregarPagamentosMoloni();
@@ -588,7 +657,7 @@ Deno.serve(async (request) => {
     return jsonResponse(request, { error: "Configuracao Supabase incompleta." }, 500);
   }
   const erroPagamentos = validarPagamentosMoloni(pagamentosMoloni);
-  if (!companyId || !documentSetId || !customerId || !productIdLote || erroPagamentos) {
+  if (!companyId || !documentSetId || !productIdLote || erroPagamentos) {
     return jsonResponse(request, { error: erroPagamentos || "Configuracao Moloni incompleta." }, 500);
   }
 
@@ -660,7 +729,6 @@ Deno.serve(async (request) => {
       encomendaRow,
       companyId,
       documentSetId,
-      customerId,
       productIdLote,
       productIdPortes,
       paymentMethodId,
