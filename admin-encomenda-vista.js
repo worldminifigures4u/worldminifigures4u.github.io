@@ -80,15 +80,39 @@ window.AdminEncomendaVista = (function () {
             : (estado || "A aguardar pagamento");
     }
 
+    function capitalizarNomeTitulo(texto) {
+        const limpo = String(texto || "").trim().toLowerCase();
+        return limpo ? limpo.charAt(0).toUpperCase() + limpo.slice(1) : "";
+    }
+
+    function formatarUtilizadorWallapopComoNome(valor) {
+        const base = String(valor || "").trim().replace(/-\d+$/, "");
+        if (!/^[a-z][a-z]+$/i.test(base) || base.length < 3) return "";
+        return `${capitalizarNomeTitulo(base.slice(0, -1))} ${base.slice(-1).toUpperCase()}.`;
+    }
+
+    function formatarNomeTituloEncomenda(valor, encomenda) {
+        const texto = String(valor || "").trim();
+        if (!texto) return "";
+        if (normalizar(encomenda?.origem) === "wallapop" && /-\d+$/.test(texto)) {
+            return formatarUtilizadorWallapopComoNome(texto) || texto;
+        }
+        return texto;
+    }
+
     function obterNomeTituloEncomenda(encomenda) {
-        return String(
-            encomenda?.clientes_gestao?.nome_utilizador
-            || encomenda?.cliente_gestao?.nome_utilizador
-            || encomenda?.nome_utilizador_cliente
-            || encomenda?.nome_cliente
-            || encomenda?.perfil_externo_utilizador
-            || ""
-        ).trim();
+        const candidatos = [
+            encomenda?.clientes_gestao?.nome_utilizador,
+            encomenda?.cliente_gestao?.nome_utilizador,
+            encomenda?.nome_utilizador_cliente,
+            encomenda?.nome_cliente,
+            encomenda?.perfil_externo_utilizador
+        ];
+        for (const candidato of candidatos) {
+            const nome = formatarNomeTituloEncomenda(candidato, encomenda);
+            if (nome) return nome;
+        }
+        return "";
     }
 
     function normalizarTextoEnvio(valor) {
@@ -1952,6 +1976,7 @@ window.AdminEncomendaVista = (function () {
         formatarEuro,
         formatarData,
         estadoNormalizado,
+        obterNomeTituloEncomenda,
         normalizar,
         abrirImagemProduto,
         fecharImagemProduto
