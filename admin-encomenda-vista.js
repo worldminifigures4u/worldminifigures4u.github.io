@@ -80,23 +80,8 @@ window.AdminEncomendaVista = (function () {
             : (estado || "A aguardar pagamento");
     }
 
-    function capitalizarNomeTitulo(texto) {
-        const limpo = String(texto || "").trim().toLowerCase();
-        return limpo ? limpo.charAt(0).toUpperCase() + limpo.slice(1) : "";
-    }
-
-    function formatarUtilizadorWallapopComoNome(valor) {
-        const base = String(valor || "").trim().replace(/-\d+$/, "");
-        if (!/^[a-z][a-z]+$/i.test(base) || base.length < 3) return "";
-        return `${capitalizarNomeTitulo(base.slice(0, -1))} ${base.slice(-1).toUpperCase()}.`;
-    }
-
-    function formatarNomeTituloEncomenda(valor, encomenda) {
+    function formatarNomeTituloEncomenda(valor) {
         const texto = String(valor || "").trim();
-        if (!texto) return "";
-        if (normalizar(encomenda?.origem) === "wallapop" && /-\d+$/.test(texto)) {
-            return formatarUtilizadorWallapopComoNome(texto) || texto;
-        }
         return texto;
     }
 
@@ -107,11 +92,10 @@ window.AdminEncomendaVista = (function () {
             encomenda?.nome_utilizador_cliente,
             encomenda?.clientes_gestao?.nome,
             encomenda?.cliente_gestao?.nome,
-            encomenda?.perfil_externo_utilizador,
             encomenda?.nome_cliente
         ];
         for (const candidato of candidatos) {
-            const nome = formatarNomeTituloEncomenda(candidato, encomenda);
+            const nome = formatarNomeTituloEncomenda(candidato);
             if (nome) return nome;
         }
         return "";
