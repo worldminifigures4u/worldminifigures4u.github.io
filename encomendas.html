@@ -19,7 +19,7 @@
     <link rel="apple-touch-icon" href="fp-ring-favicon-192.png">
     <link rel="stylesheet" href="styles.css?v=20260721-rodape-800">
     <link rel="stylesheet" href="styles-admin.css?v=20260717-portes-cab">
-    <link rel="stylesheet" href="encomendas.css?v=20260731-emite-ja">
+    <link rel="stylesheet" href="encomendas.css?v=20260804-modal-encomenda">
     <link rel="stylesheet" href="morada-formato.css?v=20260713-dados-colunas">
     <link rel="stylesheet" href="styles-tema.css?v=20260721-sem-underline" media="print" data-async-css>
     <link rel="stylesheet" href="admin-cliente.css?v=20260804-nome-utilizador-topo" media="print" data-async-css>
@@ -116,6 +116,16 @@
         <img id="admin-imagem-modal-foto" alt="">
     </div>
 
+    <div class="admin-encomenda-modal" id="admin-encomenda-modal" hidden role="dialog" aria-modal="true" aria-labelledby="admin-encomenda-modal-titulo">
+        <div class="admin-encomenda-modal-dialogo">
+            <div class="admin-encomenda-modal-topo">
+                <h2 id="admin-encomenda-modal-titulo">Encomenda</h2>
+                <button type="button" class="admin-encomenda-modal-fechar" id="admin-encomenda-modal-fechar" aria-label="Fechar encomenda">&times;</button>
+            </div>
+            <div id="admin-encomenda-modal-conteudo" class="admin-encomenda-modal-conteudo"></div>
+        </div>
+    </div>
+
     <div class="admin-cliente-modal" id="admin-cliente-modal" hidden role="dialog" aria-modal="true" aria-labelledby="admin-cliente-titulo">
         <div class="admin-cliente-dialogo">
             <button type="button" class="admin-cliente-fechar" id="admin-cliente-fechar" aria-label="Fechar ficha do cliente">&times;</button>
@@ -142,8 +152,8 @@
     </div>
 <script src="supabase-cdn.js?v=20260711-leve" defer></script>
 <script src="app-config.js?v=20260730-fecho-fundo" defer></script>
-<script src="admin-encomenda-loader.js?v=20260731-emite-ja" defer></script>
-<script src="encomendas-pagina.js?v=20260731-wallapop-es" defer></script>
+<script src="admin-encomenda-loader.js?v=20260804-modal-encomenda" defer></script>
+<script src="encomendas-pagina.js?v=20260804-modal-encomenda" defer></script>
 <script src="campo-limpar.js?v=20260720-sem-x-cliente" defer></script>
 <script src="inline-listeners-base.js?v=20260725-logo-hq" defer></script>
 <script src="inline-listeners-admin.js?v=20260713-r27" defer></script>

@@ -1693,6 +1693,10 @@ window.AdminEncomendaVista = (function () {
             detalhes.hidden = true;
             card.classList.remove("aberta");
             const alternarDetalhes = async () => {
+                if (typeof opcoes.abrirEncomenda === "function") {
+                    opcoes.abrirEncomenda(encomenda);
+                    return;
+                }
                 if (!detalhes.hidden) {
                     await prepararSaidaEncomenda();
                 }

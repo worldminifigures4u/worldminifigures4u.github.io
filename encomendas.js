@@ -426,8 +426,35 @@ async function abrirFichaClienteAdmin(encomenda) {
 
 function criarCardEncomenda(encomenda) {
     return AdminEncomendaVista.criarCardEncomenda(encomenda, {
-        abrirCliente: abrirFichaClienteAdmin
+        abrirCliente: abrirFichaClienteAdmin,
+        abrirEncomenda: abrirModalEncomendaAdmin
     });
+}
+
+function fecharModalEncomendaAdmin() {
+    const modal = document.getElementById('admin-encomenda-modal');
+    const conteudo = document.getElementById('admin-encomenda-modal-conteudo');
+    if (!modal || !conteudo) return;
+    conteudo.querySelector('.admin-encomenda-card')?._limparAlturaNotas?.();
+    modal.hidden = true;
+    conteudo.replaceChildren();
+    document.body.classList.remove('admin-encomenda-modal-aberto');
+}
+
+function abrirModalEncomendaAdmin(encomenda) {
+    const modal = document.getElementById('admin-encomenda-modal');
+    const conteudo = document.getElementById('admin-encomenda-modal-conteudo');
+    const titulo = document.getElementById('admin-encomenda-modal-titulo');
+    if (!modal || !conteudo) return;
+
+    conteudo.replaceChildren(AdminEncomendaVista.criarCardEncomenda(encomenda, {
+        modoModal: true,
+        abrirCliente: abrirFichaClienteAdmin
+    }));
+    if (titulo) titulo.textContent = `Encomenda ${encomenda.codigo_encomenda || encomenda.id || ''}`.trim();
+    modal.hidden = false;
+    document.body.classList.add('admin-encomenda-modal-aberto');
+    document.getElementById('admin-encomenda-modal-fechar')?.focus();
 }
 
 function obterUrlPerfilEncomenda(encomenda) {
@@ -692,7 +719,6 @@ function encomendasFiltradasAdmin() {
 function renderizarEncomendasAdmin() {
     const lista = document.getElementById('lista-encomendas-admin');
     const pesquisaFigura = Boolean(obterTermoPesquisaFiguraAdmin());
-    const idEncomendaAberta = document.querySelector('.admin-encomenda-card.aberta')?.dataset.encomendaId || '';
 
     if (pesquisaFigura) {
         if (lista) {
@@ -712,16 +738,6 @@ function renderizarEncomendasAdmin() {
         return;
     }
     filtradas.forEach(encomenda => lista.appendChild(criarCardEncomenda(encomenda)));
-    if (idEncomendaAberta) {
-        const cardAberta = lista.querySelector(`.admin-encomenda-card[data-encomenda-id="${idEncomendaAberta}"]`);
-        const detalhesAbertos = cardAberta?.querySelector('.admin-encomenda-detalhes');
-        if (cardAberta && detalhesAbertos) {
-            detalhesAbertos.hidden = false;
-            cardAberta.classList.add('aberta');
-            cardAberta._ajustarAlturaNotas?.();
-            cardAberta.querySelector('.admin-encomenda-gestao-anexos')?.carregarAnexos?.();
-        }
-    }
     AdminEncomendaVista.carregarContagensAnexosLista(filtradas).catch(console.warn);
 }
 
@@ -744,13 +760,8 @@ function abrirEncomendaAdminPorCodigo(codigo) {
         ?.closest('.admin-encomenda-card');
     if (!card) return false;
 
-    const detalhes = card.querySelector('.admin-encomenda-detalhes');
-    if (detalhes?.hidden) {
-        card.querySelector('.admin-encomenda-cabecalho')?.click();
-    } else {
-        card.classList.add('aberta');
-    }
-
+    const encomenda = encomendasAdmin.find(item => String(item.codigo_encomenda || '').trim().toUpperCase() === alvo.toUpperCase());
+    if (encomenda) abrirModalEncomendaAdmin(encomenda);
     card.scrollIntoView({ behavior: 'smooth', block: 'start' });
     return true;
 }
@@ -833,6 +844,7 @@ document.getElementById('pesquisa-encomendas-admin').addEventListener('input', r
 document.getElementById('pesquisa-figura-encomendas-admin').addEventListener('input', renderizarEncomendasAdmin);
 document.getElementById('filtro-estado-encomendas-admin').addEventListener('change', renderizarEncomendasAdmin);
 document.getElementById('admin-imagem-modal-fechar').addEventListener('click', fecharImagemProdutoEncomenda);
+document.getElementById('admin-encomenda-modal-fechar')?.addEventListener('click', fecharModalEncomendaAdmin);
 document.getElementById('admin-cliente-fechar').addEventListener('click', fecharFichaClienteAdmin);
 (function ligarFechoFundoFichaCliente() {
     const modal = document.getElementById('admin-cliente-modal');
@@ -841,9 +853,12 @@ document.getElementById('admin-cliente-fechar').addEventListener('click', fechar
     modal.querySelector('.admin-cliente-dialogo')?.addEventListener('click', (evento) => evento.stopPropagation());
 })();
 ligarFechoModalPorFundo(document.getElementById('admin-imagem-modal'), fecharImagemProdutoEncomenda);
+ligarFechoModalPorFundo(document.getElementById('admin-encomenda-modal'), fecharModalEncomendaAdmin);
 document.addEventListener('keydown', evento => {
     if (evento.key === 'Escape' && !document.getElementById('admin-imagem-modal').hidden) {
         fecharImagemProdutoEncomenda();
+    } else if (evento.key === 'Escape' && !document.getElementById('admin-encomenda-modal')?.hidden) {
+        fecharModalEncomendaAdmin();
     } else if (evento.key === 'Escape' && !document.getElementById('admin-cliente-modal').hidden) {
         fecharFichaClienteAdmin();
     }
