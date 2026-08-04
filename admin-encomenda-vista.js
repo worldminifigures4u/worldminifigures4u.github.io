@@ -82,11 +82,11 @@ window.AdminEncomendaVista = (function () {
 
     function obterNomeTituloEncomenda(encomenda) {
         return String(
-            encomenda?.perfil_externo_utilizador
-            || encomenda?.clientes_gestao?.nome_utilizador
+            encomenda?.clientes_gestao?.nome_utilizador
             || encomenda?.cliente_gestao?.nome_utilizador
             || encomenda?.nome_utilizador_cliente
             || encomenda?.nome_cliente
+            || encomenda?.perfil_externo_utilizador
             || ""
         ).trim();
     }
