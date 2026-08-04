@@ -182,7 +182,7 @@
 
         const dadosCliente = criarElemento('div', 'clientes-formulario-dados');
         dadosCliente.append(
-            criarCampoEdicaoCliente('Nome', 'nome', cliente.nome || '', 'text', true),
+            criarCampoEdicaoCliente('Nome de utilizador', 'nome', cliente.nome || '', 'text', true),
             global.MoradaFormato?.criarCampoMoradaEdicao(
                 criarElemento,
                 global.MoradaFormato.obterMoradaEdicao(cliente.morada)

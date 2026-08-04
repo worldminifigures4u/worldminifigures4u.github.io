@@ -455,7 +455,7 @@ function montarFormularioCliente(dados, opcoes = {}) {
 
     const dadosCliente = criarElementoCliente("div", "clientes-formulario-dados");
     dadosCliente.append(
-        criarInputCliente("Nome", "nome", cliente.nome, "text", true),
+        criarInputCliente("Nome de utilizador", "nome", cliente.nome, "text", true),
         window.MoradaFormato?.criarCampoMoradaEdicao(
             criarElementoCliente,
             window.MoradaFormato.obterMoradaEdicao(cliente.morada)
