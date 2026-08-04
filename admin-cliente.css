@@ -53,6 +53,7 @@
             display:grid;
             grid-template-columns:minmax(160px, 220px) minmax(0, 1fr);
             grid-template-areas:
+                "nome_utilizador nome_utilizador"
                 "nome nome"
                 "morada morada"
                 "cp cidade"
@@ -76,6 +77,7 @@
             border-left:1px solid #2e2e2e;
         }
 
+        .admin-cliente-dialogo .clientes-formulario-dados .admin-cliente-campo-nome_utilizador{ grid-area:nome_utilizador; }
         .admin-cliente-dialogo .clientes-formulario-dados .admin-cliente-campo-nome{ grid-area:nome; }
         .admin-cliente-dialogo .clientes-formulario-dados .admin-cliente-campo-morada,
         .admin-cliente-dialogo .clientes-formulario-dados .morada-edicao-linhas,
@@ -165,6 +167,7 @@
                 padding:0;
                 border-left:0;
             }
+            .admin-cliente-dialogo .clientes-formulario-dados .admin-cliente-campo-nome_utilizador,
             .admin-cliente-dialogo .clientes-formulario-dados .admin-cliente-campo-nome,
             .admin-cliente-dialogo .clientes-formulario-dados .admin-cliente-campo-morada,
             .admin-cliente-dialogo .clientes-formulario-dados .morada-edicao-linhas,
