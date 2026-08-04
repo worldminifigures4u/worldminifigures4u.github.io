@@ -105,8 +105,8 @@ window.AdminEncomendaVista = (function () {
             encomenda?.clientes_gestao?.nome_utilizador,
             encomenda?.cliente_gestao?.nome_utilizador,
             encomenda?.nome_utilizador_cliente,
-            encomenda?.nome_cliente,
-            encomenda?.perfil_externo_utilizador
+            encomenda?.perfil_externo_utilizador,
+            encomenda?.nome_cliente
         ];
         for (const candidato of candidatos) {
             const nome = formatarNomeTituloEncomenda(candidato, encomenda);
