@@ -506,11 +506,9 @@ function renderizarHistoricoEncomendasFornecedorMapa(conteudo, produto, pedidos)
 
     const totalPedido = linhas.reduce((soma, linha) => soma + linha.pedidoQtd, 0);
     const totalRecebido = linhas.reduce((soma, linha) => soma + linha.recebido, 0);
-    const pendentes = linhas.filter((linha) => linha.recebido < linha.pedidoQtd).length;
     const resumo = document.createElement("p");
     resumo.className = "mapas-produto-ajuda-media";
-    resumo.textContent = `${linhas.length} encomenda(s) · ${totalPedido} pedida(s) · ${totalRecebido} recebida(s)`
-        + (pendentes ? ` · ${pendentes} ainda por receber` : "");
+    resumo.textContent = `${linhas.length} encomenda(s) · ${totalPedido} pedida(s) · ${totalRecebido} recebida(s)`;
     conteudo.appendChild(resumo);
 }
 
