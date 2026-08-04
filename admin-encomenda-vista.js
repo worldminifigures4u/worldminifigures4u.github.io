@@ -80,6 +80,17 @@ window.AdminEncomendaVista = (function () {
             : (estado || "A aguardar pagamento");
     }
 
+    function obterNomeTituloEncomenda(encomenda) {
+        return String(
+            encomenda?.perfil_externo_utilizador
+            || encomenda?.clientes_gestao?.nome_utilizador
+            || encomenda?.cliente_gestao?.nome_utilizador
+            || encomenda?.nome_utilizador_cliente
+            || encomenda?.nome_cliente
+            || ""
+        ).trim();
+    }
+
     function normalizarTextoEnvio(valor) {
         return String(valor || "")
             .normalize("NFD")
@@ -1570,7 +1581,8 @@ window.AdminEncomendaVista = (function () {
         );
 
         if (!ocultarCliente) {
-            const abrirCliente = criarElemento("button", "admin-encomenda-cliente-link", encomenda.nome_cliente || "Cliente sem nome");
+            const nomeTitulo = obterNomeTituloEncomenda(encomenda) || "Cliente sem nome";
+            const abrirCliente = criarElemento("button", "admin-encomenda-cliente-link", nomeTitulo);
             abrirCliente.type = "button";
             abrirCliente.title = "Abrir ficha do cliente";
             abrirCliente.addEventListener("click", evento => {
@@ -1580,7 +1592,7 @@ window.AdminEncomendaVista = (function () {
             abrirCliente.addEventListener("keydown", evento => evento.stopPropagation());
             linha.appendChild(abrirCliente);
         } else {
-            linha.appendChild(criarElemento("span", "admin-encomenda-cliente-link admin-encomenda-cliente-texto", encomenda.nome_cliente || "Cliente sem nome"));
+            linha.appendChild(criarElemento("span", "admin-encomenda-cliente-link admin-encomenda-cliente-texto", obterNomeTituloEncomenda(encomenda) || "Cliente sem nome"));
         }
 
         linha.append(

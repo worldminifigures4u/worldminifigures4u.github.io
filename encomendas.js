@@ -56,6 +56,17 @@ function estadoNormalizadoEncomenda(estado) {
     return AdminEncomendaVista.estadoNormalizado(estado);
 }
 
+function obterNomeTituloEncomendaAdmin(encomenda) {
+    return String(
+        encomenda?.perfil_externo_utilizador
+        || encomenda?.clientes_gestao?.nome_utilizador
+        || encomenda?.cliente_gestao?.nome_utilizador
+        || encomenda?.nome_utilizador_cliente
+        || encomenda?.nome_cliente
+        || ''
+    ).trim();
+}
+
 function definirStatusEncomendas(texto, erro = false) {
     const status = document.getElementById('status-encomendas-admin');
     status.textContent = texto || '';
@@ -446,6 +457,7 @@ function obterEncomendasFiltradasBaseAdmin() {
         const correspondeEstado = estado === 'todos' || estadoNormalizadoEncomenda(encomenda.estado) === estado;
         const texto = normalizarEncomenda([
             encomenda.codigo_encomenda,
+            obterNomeTituloEncomendaAdmin(encomenda),
             encomenda.nome_cliente,
             encomenda.email_cliente,
             encomenda.origem,
@@ -593,7 +605,7 @@ function renderizarVendasFiguraAdmin() {
         linha.append(
             criarElementoEncomenda('span', '', formatarDataEncomenda(encomenda.created_at)),
             codigo,
-            criarElementoEncomenda('span', 'admin-encomendas-vendas-figura-nome', encomenda.nome_cliente || '\u2014'),
+            criarElementoEncomenda('span', 'admin-encomendas-vendas-figura-nome', obterNomeTituloEncomendaAdmin(encomenda) || '\u2014'),
             criarElementoEncomenda('span', '', encomenda.origem || 'Site'),
             criarElementoEncomenda('span', '', estadoNormalizadoEncomenda(encomenda.estado)),
             criarElementoEncomenda('span', '', String(quantidade)),
@@ -702,10 +714,18 @@ function atualizarResumoEncomendas() {
 
 async function carregarEncomendasAdmin() {
     definirStatusEncomendas('A carregar encomendas...');
-    const { data, error } = await encomendasClient
+    let { data, error } = await encomendasClient
         .from('encomendas')
-        .select('*')
+        .select('*, clientes_gestao(nome_utilizador)')
         .order('created_at', { ascending: false });
+    if (error && /clientes_gestao|nome_utilizador|relationship|schema cache/i.test(String(error.message || error.details || ''))) {
+        const fallback = await encomendasClient
+            .from('encomendas')
+            .select('*')
+            .order('created_at', { ascending: false });
+        data = fallback.data;
+        error = fallback.error;
+    }
     if (error) throw error;
     encomendasAdmin = data || [];
     await carregarImagensProdutosEncomendas();
