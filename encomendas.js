@@ -430,6 +430,45 @@ function criarCardEncomenda(encomenda) {
     });
 }
 
+async function enriquecerNomeFichaEncomenda(encomenda) {
+    const nomeAtual = obterNomeTituloEncomendaAdmin(encomenda);
+    const usaPerfilExterno = nomeAtual && String(nomeAtual).trim() === String(encomenda.perfil_externo_utilizador || '').trim();
+    const temNomeFicha = Boolean(
+        encomenda?.clientes_gestao?.nome_utilizador
+        || encomenda?.clientes_gestao?.nome
+        || encomenda?.cliente_gestao?.nome_utilizador
+        || encomenda?.cliente_gestao?.nome
+    );
+    if (temNomeFicha || !usaPerfilExterno) return;
+
+    try {
+        const { data, error } = await encomendasClient.rpc('obter_ficha_cliente_admin', {
+            p_encomenda_id: String(encomenda.id)
+        });
+        const cliente = data?.cliente;
+        if (error || data?.sucesso === false || !cliente) return;
+        encomenda.clientes_gestao = {
+            ...(encomenda.clientes_gestao || {}),
+            nome_utilizador: cliente.nome_utilizador || null,
+            nome: cliente.nome || null
+        };
+        encomenda.cliente_gestao_id = encomenda.cliente_gestao_id || cliente.id || null;
+    } catch (_) {
+        // Se o enriquecimento falhar, a encomenda continua a renderizar com os dados locais.
+    }
+}
+
+async function enriquecerNomesFichasEncomendas() {
+    const pendentes = encomendasAdmin.filter(encomenda => {
+        const nomeAtual = obterNomeTituloEncomendaAdmin(encomenda);
+        return nomeAtual && String(nomeAtual).trim() === String(encomenda.perfil_externo_utilizador || '').trim();
+    });
+    for (let indice = 0; indice < pendentes.length; indice += 8) {
+        const grupo = pendentes.slice(indice, indice + 8);
+        await Promise.all(grupo.map(enriquecerNomeFichaEncomenda));
+    }
+}
+
 function obterProdutosEncomenda(encomenda) {
     let produtos = encomenda?.produtos || encomenda?.artigos || [];
     if (typeof produtos === 'string') {
@@ -752,6 +791,7 @@ async function carregarEncomendasAdmin() {
     }
     if (error) throw error;
     encomendasAdmin = data || [];
+    await enriquecerNomesFichasEncomendas();
     await carregarImagensProdutosEncomendas();
     atualizarResumoEncomendas();
     renderizarEncomendasAdmin();
