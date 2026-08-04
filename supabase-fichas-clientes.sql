@@ -4,6 +4,7 @@
 create table if not exists public.clientes_gestao (
   id uuid primary key default gen_random_uuid(),
   auth_user_id uuid unique,
+  nome_utilizador text,
   nome text,
   email text,
   telefone text,
@@ -19,6 +20,7 @@ create table if not exists public.clientes_gestao (
 
 alter table public.clientes_gestao
   add column if not exists auth_user_id uuid,
+  add column if not exists nome_utilizador text,
   add column if not exists nome text,
   add column if not exists email text,
   add column if not exists telefone text,
@@ -30,6 +32,11 @@ alter table public.clientes_gestao
   add column if not exists tem_aviso boolean not null default false,
   add column if not exists created_at timestamptz not null default now(),
   add column if not exists updated_at timestamptz not null default now();
+
+update public.clientes_gestao
+set nome_utilizador = nome
+where nullif(trim(coalesce(nome_utilizador, '')), '') is null
+  and nullif(trim(coalesce(nome, '')), '') is not null;
 
 create unique index if not exists clientes_gestao_auth_user_id_unico
 on public.clientes_gestao (auth_user_id)
@@ -147,9 +154,9 @@ begin
   end if;
   if not found then
     insert into public.clientes_gestao (
-      auth_user_id, nome, email, telefone, morada, cp, cidade, pais
+      auth_user_id, nome_utilizador, nome, email, telefone, morada, cp, cidade, pais
     ) values (
-      v_encomenda.id_cliente, coalesce(nullif(trim(v_encomenda.nome_cliente), ''), v_utilizador),
+      v_encomenda.id_cliente, v_utilizador, nullif(trim(v_encomenda.nome_cliente), ''),
       nullif(trim(v_encomenda.email_cliente), ''), nullif(trim(v_encomenda.telefone_cliente), ''),
       nullif(trim(v_encomenda.morada_cliente), ''), nullif(trim(v_encomenda.cp_cliente), ''),
       nullif(trim(v_encomenda.cidade_cliente), ''), nullif(trim(v_encomenda.pais_cliente), '')
@@ -157,7 +164,8 @@ begin
   end if;
 
   update public.clientes_gestao set
-    nome = coalesce(nullif(trim(v_encomenda.nome_cliente), ''), nome, v_utilizador),
+    nome_utilizador = coalesce(nullif(trim(nome_utilizador), ''), v_utilizador),
+    nome = coalesce(nullif(trim(v_encomenda.nome_cliente), ''), nome),
     email = coalesce(nullif(trim(v_encomenda.email_cliente), ''), email),
     telefone = coalesce(nullif(trim(v_encomenda.telefone_cliente), ''), telefone),
     morada = coalesce(nullif(trim(v_encomenda.morada_cliente), ''), morada),
@@ -252,9 +260,9 @@ begin
   end if;
   if not found then
     insert into public.clientes_gestao (
-      auth_user_id, nome, email, telefone, morada, cp, cidade, pais
+      auth_user_id, nome_utilizador, nome, email, telefone, morada, cp, cidade, pais
     ) values (
-      v_encomenda.id_cliente, v_encomenda.nome_cliente, nullif(trim(v_encomenda.email_cliente), ''),
+      v_encomenda.id_cliente, nullif(trim(v_encomenda.perfil_externo_utilizador), ''), nullif(trim(v_encomenda.nome_cliente), ''), nullif(trim(v_encomenda.email_cliente), ''),
       nullif(trim(v_encomenda.telefone_cliente), ''), nullif(trim(v_encomenda.morada_cliente), ''),
       nullif(trim(v_encomenda.cp_cliente), ''), nullif(trim(v_encomenda.cidade_cliente), ''),
       nullif(trim(v_encomenda.pais_cliente), '')
@@ -343,6 +351,10 @@ $$;
 revoke execute on function public.guardar_aviso_cliente_admin(uuid, boolean) from public, anon;
 grant execute on function public.guardar_aviso_cliente_admin(uuid, boolean) to authenticated;
 
+drop function if exists public.criar_cliente_externo_admin(
+  text, text, text, text, text, text, text
+);
+
 create or replace function public.criar_cliente_externo_admin(
   p_nome text,
   p_email text,
@@ -350,7 +362,8 @@ create or replace function public.criar_cliente_externo_admin(
   p_morada text,
   p_cp text,
   p_cidade text,
-  p_pais text
+  p_pais text,
+  p_nome_utilizador text default null
 )
 returns jsonb
 language plpgsql
@@ -365,8 +378,8 @@ begin
     raise exception 'Acesso reservado ao administrador';
   end if;
 
-  if nullif(trim(coalesce(p_nome, '')), '') is null then
-    raise exception 'O nome do cliente e obrigatorio';
+  if nullif(trim(coalesce(p_nome_utilizador, p_nome, '')), '') is null then
+    raise exception 'O nome de utilizador do cliente e obrigatorio';
   end if;
 
   if v_email is not null and exists (
@@ -378,9 +391,10 @@ begin
   end if;
 
   insert into public.clientes_gestao (
-    nome, email, telefone, morada, cp, cidade, pais
+    nome_utilizador, nome, email, telefone, morada, cp, cidade, pais
   ) values (
-    trim(p_nome),
+    trim(coalesce(p_nome_utilizador, p_nome)),
+    nullif(trim(coalesce(p_nome, '')), ''),
     v_email,
     nullif(trim(coalesce(p_telefone, '')), ''),
     nullif(trim(coalesce(p_morada, '')), ''),
@@ -395,11 +409,15 @@ end;
 $$;
 
 revoke execute on function public.criar_cliente_externo_admin(
-  text, text, text, text, text, text, text
+  text, text, text, text, text, text, text, text
 ) from public, anon;
 grant execute on function public.criar_cliente_externo_admin(
-  text, text, text, text, text, text, text
+  text, text, text, text, text, text, text, text
 ) to authenticated;
+
+drop function if exists public.atualizar_cliente_externo_admin(
+  uuid, text, text, text, text, text, text, text
+);
 
 create or replace function public.atualizar_cliente_externo_admin(
   p_cliente_id uuid,
@@ -409,7 +427,8 @@ create or replace function public.atualizar_cliente_externo_admin(
   p_morada text,
   p_cp text,
   p_cidade text,
-  p_pais text
+  p_pais text,
+  p_nome_utilizador text default null
 )
 returns jsonb
 language plpgsql
@@ -437,8 +456,8 @@ begin
     raise exception 'Os dados de clientes registados no site sao geridos pelo proprio cliente';
   end if;
 
-  if nullif(trim(coalesce(p_nome, '')), '') is null then
-    raise exception 'O nome do cliente e obrigatorio';
+  if nullif(trim(coalesce(p_nome_utilizador, p_nome, '')), '') is null then
+    raise exception 'O nome de utilizador do cliente e obrigatorio';
   end if;
 
   if v_email is not null and exists (
@@ -450,7 +469,8 @@ begin
   end if;
 
   update public.clientes_gestao
-  set nome = trim(p_nome),
+  set nome_utilizador = trim(coalesce(p_nome_utilizador, p_nome)),
+      nome = nullif(trim(coalesce(p_nome, '')), ''),
       email = v_email,
       telefone = nullif(trim(coalesce(p_telefone, '')), ''),
       morada = nullif(trim(coalesce(p_morada, '')), ''),
@@ -466,10 +486,10 @@ end;
 $$;
 
 revoke execute on function public.atualizar_cliente_externo_admin(
-  uuid, text, text, text, text, text, text, text
+  uuid, text, text, text, text, text, text, text, text
 ) from public, anon;
 grant execute on function public.atualizar_cliente_externo_admin(
-  uuid, text, text, text, text, text, text, text
+  uuid, text, text, text, text, text, text, text, text
 ) to authenticated;
 
 create or replace function public.normalizar_url_perfil_externo_admin(p_url text)
@@ -829,6 +849,7 @@ begin
       where encomenda.cliente_gestao_id = cliente.id
     ) resumo on true
     where v_pesquisa = ''
+       or lower(coalesce(cliente.nome_utilizador, '')) like '%' || v_pesquisa || '%'
        or lower(coalesce(cliente.nome, '')) like '%' || v_pesquisa || '%'
        or lower(coalesce(cliente.email, '')) like '%' || v_pesquisa || '%'
        or lower(coalesce(cliente.telefone, '')) like '%' || v_pesquisa || '%'

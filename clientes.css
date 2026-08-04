@@ -711,6 +711,7 @@ body.clientes-encomenda-modal-aberto{
         display:grid;
         grid-template-columns:240px minmax(0, 1fr);
         grid-template-areas:
+            "nome_utilizador nome_utilizador"
             "nome nome"
             "morada morada"
             "cp cidade"
@@ -751,6 +752,10 @@ body.clientes-encomenda-modal-aberto{
     .clientes-formulario .clientes-campo-site,
     .clientes-formulario .clientes-aviso-edicao-site{
         grid-column:1 / -1;
+    }
+
+    .clientes-formulario-dados .admin-cliente-campo-nome_utilizador{
+        grid-area:nome_utilizador;
     }
 
     .clientes-formulario-dados .admin-cliente-campo-nome{

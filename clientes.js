@@ -3,6 +3,14 @@ let clientesClient = null;
 let clientesLista = [];
 let clienteAbertoId = "";
 
+function obterNomeUtilizadorCliente(cliente = {}) {
+    return String(cliente.nome_utilizador || cliente.nome || "").trim();
+}
+
+function obterNomePessoaCliente(cliente = {}) {
+    return String(cliente.nome || "").trim();
+}
+
 function criarElementoCliente(tag, classe, texto) {
     const elemento = document.createElement(tag);
     if (classe) elemento.className = classe;
@@ -26,6 +34,18 @@ function definirStatusClientes(texto, erro = false) {
     status.textContent = texto || "";
     status.classList.toggle("msg-erro", erro);
     status.classList.toggle("msg-sucesso", Boolean(texto) && !erro);
+}
+
+async function chamarRpcClienteComFallback(nomeFuncao, parametros) {
+    const resposta = await clientesClient.rpc(nomeFuncao, parametros);
+    const erro = resposta.error;
+    const mensagem = String(erro?.message || erro?.details || "");
+    if (!erro || !("p_nome_utilizador" in parametros) || !/p_nome_utilizador|function|schema cache/i.test(mensagem)) {
+        return resposta;
+    }
+    const antigos = { ...parametros, p_nome: parametros.p_nome_utilizador || parametros.p_nome };
+    delete antigos.p_nome_utilizador;
+    return clientesClient.rpc(nomeFuncao, antigos);
 }
 
 function formatarEuroCliente(valor) {
@@ -104,6 +124,7 @@ function montarVistaConsultaCliente(dados, resumo = {}) {
     const dadosSecao = criarElementoCliente("section", "admin-cliente-secao clientes-ficha-consulta-dados");
     const grelha = criarElementoCliente("div", "admin-cliente-grelha");
     grelha.append(
+        criarCampoCliente("Nome", obterNomePessoaCliente(cliente), "admin-cliente-campo-nome-pessoa"),
         criarCampoFichaMoradaCliente(cliente),
         criarCampoCliente("Telem\u00f3vel", cliente.telefone, "admin-cliente-campo-telefone"),
         criarCampoCliente("E-mail", cliente.email, "admin-cliente-campo-email")
@@ -150,7 +171,7 @@ function clienteRegistadoNoSite(cliente) {
 
 function aplicarCamposClienteRegistadoSite(formulario, cliente) {
     if (!clienteRegistadoNoSite(cliente)) return;
-    ["nome", "morada", "morada_linha1", "morada_linha2", "cp", "cidade", "pais", "email", "telefone"].forEach((nome) => {
+    ["nome_utilizador", "nome", "morada", "morada_linha1", "morada_linha2", "cp", "cidade", "pais", "email", "telefone"].forEach((nome) => {
         const input = formulario.querySelector(`input[name="${nome}"]`);
         if (!input) return;
         input.readOnly = true;
@@ -293,7 +314,7 @@ function renderizarClientesLista() {
         botao.classList.toggle("ativo", String(cliente.id) === String(clienteAbertoId));
         botao.addEventListener("click", () => abrirCliente(cliente.id));
 
-        botao.appendChild(criarElementoCliente("span", "clientes-lista-nome", cliente.nome || "Cliente sem nome"));
+        botao.appendChild(criarElementoCliente("span", "clientes-lista-nome", obterNomeUtilizadorCliente(cliente) || "Cliente sem nome"));
         if (cliente.tem_aviso) {
             botao.appendChild(criarIconeFichaCliente());
         }
@@ -455,7 +476,8 @@ function montarFormularioCliente(dados, opcoes = {}) {
 
     const dadosCliente = criarElementoCliente("div", "clientes-formulario-dados");
     dadosCliente.append(
-        criarInputCliente("Nome de utilizador", "nome", cliente.nome, "text", true),
+        criarInputCliente("Nome de utilizador", "nome_utilizador", obterNomeUtilizadorCliente(cliente), "text", true),
+        criarInputCliente("Nome", "nome", obterNomePessoaCliente(cliente), "text"),
         window.MoradaFormato?.criarCampoMoradaEdicao(
             criarElementoCliente,
             window.MoradaFormato.obterMoradaEdicao(cliente.morada)
@@ -536,6 +558,7 @@ function montarFormularioCliente(dados, opcoes = {}) {
         const campos = new FormData(formulario);
         const parametrosCliente = {
             p_nome: String(campos.get("nome") || ""),
+            p_nome_utilizador: String(campos.get("nome_utilizador") || ""),
             p_email: String(campos.get("email") || ""),
             p_telefone: String(campos.get("telefone") || ""),
             p_morada: window.MoradaFormato?.obterMoradaFormulario(formulario) || String(campos.get("morada") || ""),
@@ -547,8 +570,8 @@ function montarFormularioCliente(dados, opcoes = {}) {
         let clienteId = cliente.id;
         if (!clienteRegistadoSite) {
             const { data, error } = novoCliente
-                ? await clientesClient.rpc("criar_cliente_externo_admin", parametrosCliente)
-                : await clientesClient.rpc("atualizar_cliente_externo_admin", {
+                ? await chamarRpcClienteComFallback("criar_cliente_externo_admin", parametrosCliente)
+                : await chamarRpcClienteComFallback("atualizar_cliente_externo_admin", {
                     p_cliente_id: cliente.id,
                     ...parametrosCliente
                 });
@@ -641,7 +664,7 @@ function renderizarEdicaoCliente(dados) {
     ficha.replaceChildren();
 
     const topo = criarElementoCliente("div", "clientes-ficha-topo");
-    topo.appendChild(criarElementoCliente("h2", "", cliente.nome || "Cliente sem nome"));
+    topo.appendChild(criarElementoCliente("h2", "", obterNomeUtilizadorCliente(cliente) || "Cliente sem nome"));
     const acoesTopo = criarElementoCliente("div", "clientes-ficha-acoes");
     const cancelar = criarElementoCliente("button", "wallapop-botao", "Cancelar");
     cancelar.type = "button";
@@ -658,7 +681,7 @@ function renderizarEdicaoCliente(dados) {
 
 function criarClienteNovo() {
     renderizarFormularioCliente({
-        cliente: { nome: "", email: "", telefone: "", morada: "", cp: "", cidade: "", pais: "", tem_aviso: false },
+        cliente: { nome: "", nome_utilizador: "", email: "", telefone: "", morada: "", cp: "", cidade: "", pais: "", tem_aviso: false },
         perfis: [],
         historico: [],
         resumo: {}
@@ -667,7 +690,7 @@ function criarClienteNovo() {
 
 async function apagarFichaCliente(dados, botao) {
     const cliente = dados.cliente || {};
-    const nome = cliente.nome || "Cliente sem nome";
+    const nome = obterNomeUtilizadorCliente(cliente) || "Cliente sem nome";
     const encomendas = Number(dados.resumo?.encomendas || 0);
     const avisoHistorico = encomendas > 0
         ? `\n\nEste cliente tem ${encomendas} encomenda(s). As encomendas ficam guardadas, mas deixam de estar ligadas a esta ficha.`
@@ -704,7 +727,7 @@ function renderizarFichaCliente(dados) {
     ficha.replaceChildren();
 
     const topo = criarElementoCliente("div", "clientes-ficha-topo");
-    const titulo = criarElementoCliente("h2", "", cliente.nome || "Cliente sem nome");
+    const titulo = criarElementoCliente("h2", "", obterNomeUtilizadorCliente(cliente) || "Cliente sem nome");
     if (cliente.tem_aviso) {
         const aviso = criarElementoCliente("span", "clientes-ficha-aviso-topo");
         aviso.append(

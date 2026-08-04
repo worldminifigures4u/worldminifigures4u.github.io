@@ -7,6 +7,14 @@
     let eventosConfigurados = false;
     let aoCriarCliente = null;
 
+    function obterNomeUtilizadorCliente(cliente = {}) {
+        return String(cliente.nome_utilizador || cliente.nome || '').trim();
+    }
+
+    function obterNomePessoaCliente(cliente = {}) {
+        return String(cliente.nome || '').trim();
+    }
+
     function criarElemento(tag, classe, texto) {
         const elemento = document.createElement(tag);
         if (classe) elemento.className = classe;
@@ -31,6 +39,18 @@
         status.textContent = texto || '';
         status.classList.toggle('msg-erro', erro);
         status.classList.toggle('msg-sucesso', Boolean(texto) && !erro);
+    }
+
+    async function chamarRpcFichaClienteComFallback(nomeFuncao, parametros) {
+        const resposta = await fichaClient.rpc(nomeFuncao, parametros);
+        const erro = resposta.error;
+        const mensagem = String(erro?.message || erro?.details || '');
+        if (!erro || !('p_nome_utilizador' in parametros) || !/p_nome_utilizador|function|schema cache/i.test(mensagem)) {
+            return resposta;
+        }
+        const antigos = { ...parametros, p_nome: parametros.p_nome_utilizador || parametros.p_nome };
+        delete antigos.p_nome_utilizador;
+        return fichaClient.rpc(nomeFuncao, antigos);
     }
 
     function fecharFichaClienteAdmin() {
@@ -182,7 +202,8 @@
 
         const dadosCliente = criarElemento('div', 'clientes-formulario-dados');
         dadosCliente.append(
-            criarCampoEdicaoCliente('Nome de utilizador', 'nome', cliente.nome || '', 'text', true),
+            criarCampoEdicaoCliente('Nome de utilizador', 'nome_utilizador', obterNomeUtilizadorCliente(cliente), 'text', true),
+            criarCampoEdicaoCliente('Nome', 'nome', obterNomePessoaCliente(cliente), 'text'),
             global.MoradaFormato?.criarCampoMoradaEdicao(
                 criarElemento,
                 global.MoradaFormato.obterMoradaEdicao(cliente.morada)
@@ -234,9 +255,10 @@
             onCancelar: () => renderizarFichaClienteAdmin(dados),
             onSubmit: async ({ formulario: form, campos }) => {
                 definirStatusFichaCliente('A guardar dados do cliente...');
-                const { data, error } = await fichaClient.rpc('atualizar_cliente_externo_admin', {
+                const { data, error } = await chamarRpcFichaClienteComFallback('atualizar_cliente_externo_admin', {
                     p_cliente_id: cliente.id,
                     p_nome: String(campos.get('nome') || ''),
+                    p_nome_utilizador: String(campos.get('nome_utilizador') || ''),
                     p_email: String(campos.get('email') || ''),
                     p_telefone: String(campos.get('telefone') || ''),
                     p_morada: global.MoradaFormato?.obterMoradaFormulario(form) || String(campos.get('morada') || ''),
@@ -288,7 +310,7 @@
         });
 
         conteudo.replaceChildren(formulario);
-        formulario.querySelector('input[name="nome"]')?.focus();
+        formulario.querySelector('input[name="nome_utilizador"]')?.focus();
     }
 
     function renderizarFormularioCriacaoCliente(opcoes = {}) {
@@ -300,7 +322,7 @@
         const plataformaInicial = global.PaisesCliente?.detetarPlataformaUrl(urlInicial);
         const paisInicial = global.PaisesCliente?.paisPredefinidoPlataforma(plataformaInicial) || 'Portugal';
         const { formulario } = montarFormularioClienteModal({
-            cliente: { nome: nomeInicial, pais: paisInicial },
+            cliente: { nome: '', nome_utilizador: nomeInicial, pais: paisInicial },
             perfis: urlInicial ? [{ url: urlInicial }] : [],
             modoCriacao: true,
             onCancelar: fecharFichaClienteAdmin,
@@ -310,8 +332,9 @@
                     return;
                 }
                 definirStatusFichaCliente('A criar ficha de cliente...');
-                const { data, error } = await fichaClient.rpc('criar_cliente_externo_admin', {
+                const { data, error } = await chamarRpcFichaClienteComFallback('criar_cliente_externo_admin', {
                     p_nome: String(campos.get('nome') || ''),
+                    p_nome_utilizador: String(campos.get('nome_utilizador') || ''),
                     p_email: String(campos.get('email') || ''),
                     p_telefone: String(campos.get('telefone') || ''),
                     p_morada: global.MoradaFormato?.obterMoradaFormulario(form) || String(campos.get('morada') || ''),
@@ -358,7 +381,7 @@
         });
 
         conteudo.replaceChildren(formulario);
-        formulario.querySelector('input[name="nome"]')?.focus();
+        formulario.querySelector('input[name="nome_utilizador"]')?.focus();
     }
 
     function abrirCriacao(opcoes = {}) {
@@ -399,6 +422,7 @@
         dadosPessoais.appendChild(cabecalhoDados);
         const grelha = criarElemento('div', 'admin-cliente-grelha');
         grelha.append(
+            criarCampoFichaCliente('Nome', obterNomePessoaCliente(cliente)),
             criarCampoFichaCliente('E-mail', cliente.email),
             criarCampoFichaCliente('Telem\u00f3vel', cliente.telefone),
             criarCampoFichaMorada(cliente)

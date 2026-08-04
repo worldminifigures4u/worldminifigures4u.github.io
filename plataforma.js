@@ -301,7 +301,7 @@ function aplicarPaisEnvioPredefinidoPlataforma() {
 function preencherClientePlataformaComFicha(dados) {
     fichaClientePlataformaAtual = dados?.sucesso ? dados : null;
     const cliente = fichaClientePlataformaAtual?.cliente || {};
-    document.getElementById('wallapop-nome-encomenda').value = cliente.nome || '';
+    document.getElementById('wallapop-nome-encomenda').value = cliente.nome || cliente.nome_utilizador || '';
     document.getElementById('plataforma-telefone-cliente').value = cliente.telefone || '';
     document.getElementById('plataforma-morada-cliente').value = cliente.morada || '';
     document.getElementById('plataforma-cp-cliente').value = cliente.cp || '';
@@ -558,7 +558,7 @@ function renderizarFichaClientePlataforma(dados) {
 
     const nome = document.createElement('span');
     nome.className = 'plataforma-cliente-ficha-nome';
-    nome.textContent = cliente.nome || dados.utilizador || 'Cliente externo';
+    nome.textContent = cliente.nome_utilizador || cliente.nome || dados.utilizador || 'Cliente externo';
     linha.appendChild(nome);
 
     const direita = document.createElement('div');

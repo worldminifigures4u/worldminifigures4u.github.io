@@ -70,9 +70,9 @@ begin
   end if;
   if not found then
     insert into public.clientes_gestao (
-      auth_user_id, nome, email, telefone, morada, cp, cidade, pais
+      auth_user_id, nome_utilizador, nome, email, telefone, morada, cp, cidade, pais
     ) values (
-      v_encomenda.id_cliente, coalesce(nullif(trim(v_encomenda.nome_cliente), ''), v_utilizador),
+      v_encomenda.id_cliente, v_utilizador, nullif(trim(v_encomenda.nome_cliente), ''),
       nullif(trim(v_encomenda.email_cliente), ''), nullif(trim(v_encomenda.telefone_cliente), ''),
       nullif(trim(v_encomenda.morada_cliente), ''), nullif(trim(v_encomenda.cp_cliente), ''),
       nullif(trim(v_encomenda.cidade_cliente), ''), nullif(trim(v_encomenda.pais_cliente), '')
@@ -80,7 +80,8 @@ begin
   end if;
 
   update public.clientes_gestao set
-    nome = coalesce(nullif(trim(v_encomenda.nome_cliente), ''), nome, v_utilizador),
+    nome_utilizador = coalesce(nullif(trim(nome_utilizador), ''), v_utilizador),
+    nome = coalesce(nullif(trim(v_encomenda.nome_cliente), ''), nome),
     email = coalesce(nullif(trim(v_encomenda.email_cliente), ''), email),
     telefone = coalesce(nullif(trim(v_encomenda.telefone_cliente), ''), telefone),
     morada = coalesce(nullif(trim(v_encomenda.morada_cliente), ''), morada),
