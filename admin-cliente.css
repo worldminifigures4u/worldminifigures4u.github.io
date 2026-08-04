@@ -384,10 +384,9 @@
             padding:8px 11px;
             border-bottom:1px solid #292929;
             display:grid;
-            grid-template-columns:5.75rem 6.25rem 6.5rem 10.25rem 5.5rem;
+            grid-template-columns:minmax(5.75rem, max-content) minmax(5.5rem, max-content) minmax(10rem, 1fr) minmax(10.25rem, max-content) minmax(5.5rem, max-content);
             gap:8px 14px;
             align-items:center;
-            justify-content:start;
             font-size:13px;
         }
 
