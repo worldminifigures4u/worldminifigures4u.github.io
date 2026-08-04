@@ -503,13 +503,6 @@ function renderizarHistoricoEncomendasFornecedorMapa(conteudo, produto, pedidos)
 
     tabela.append(thead, tbody);
     conteudo.appendChild(tabela);
-
-    const totalPedido = linhas.reduce((soma, linha) => soma + linha.pedidoQtd, 0);
-    const totalRecebido = linhas.reduce((soma, linha) => soma + linha.recebido, 0);
-    const resumo = document.createElement("p");
-    resumo.className = "mapas-produto-ajuda-media";
-    resumo.textContent = `${linhas.length} encomenda(s) · ${totalPedido} pedida(s) · ${totalRecebido} recebida(s)`;
-    conteudo.appendChild(resumo);
 }
 
 function montarSecaoHistoricoRececoesMapa(campos, produto) {
