@@ -3103,6 +3103,9 @@ async function registarEncomendaWallapop() {
         mostrarEdicaoPlataforma(null);
         atualizarModoPlataforma();
         atualizarBotaoRegistoPlataforma();
+        renderizarResultadosWallapop();
+        renderizarSelecionadosWallapop();
+        renderizarFolhaWallapop();
         definirStatusWallapop(
             eraEdicao
                 ? `Encomenda ${codigo} guardada e lista limpa. Pode guardar os ficheiros ou iniciar outra encomenda.${avisoPerfil}`
