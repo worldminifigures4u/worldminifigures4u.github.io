@@ -732,9 +732,17 @@ async function carregarEncomendasAdmin() {
     definirStatusEncomendas('A carregar encomendas...');
     let { data, error } = await encomendasClient
         .from('encomendas')
-        .select('*, clientes_gestao(nome_utilizador)')
+        .select('*, clientes_gestao(nome_utilizador, nome)')
         .order('created_at', { ascending: false });
-    if (error && /clientes_gestao|nome_utilizador|relationship|schema cache/i.test(String(error.message || error.details || ''))) {
+    if (error && /nome_utilizador|schema cache/i.test(String(error.message || error.details || ''))) {
+        const fallbackFicha = await encomendasClient
+            .from('encomendas')
+            .select('*, clientes_gestao(nome)')
+            .order('created_at', { ascending: false });
+        data = fallbackFicha.data;
+        error = fallbackFicha.error;
+    }
+    if (error && /clientes_gestao|relationship|schema cache/i.test(String(error.message || error.details || ''))) {
         const fallback = await encomendasClient
             .from('encomendas')
             .select('*')

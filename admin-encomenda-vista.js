@@ -105,6 +105,8 @@ window.AdminEncomendaVista = (function () {
             encomenda?.clientes_gestao?.nome_utilizador,
             encomenda?.cliente_gestao?.nome_utilizador,
             encomenda?.nome_utilizador_cliente,
+            encomenda?.clientes_gestao?.nome,
+            encomenda?.cliente_gestao?.nome,
             encomenda?.perfil_externo_utilizador,
             encomenda?.nome_cliente
         ];
