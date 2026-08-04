@@ -77,6 +77,26 @@ function criarElementoEncomenda(tag, classe, texto) {
     return elemento;
 }
 
+function obterNomeUtilizadorFichaCliente(cliente = {}) {
+    return String(cliente.nome_utilizador || cliente.nome || '').trim();
+}
+
+function obterNomePessoaFichaCliente(cliente = {}) {
+    return String(cliente.nome || '').trim();
+}
+
+async function chamarRpcClienteEncomendasComFallback(nomeFuncao, parametros) {
+    const resposta = await encomendasClient.rpc(nomeFuncao, parametros);
+    const erro = resposta.error;
+    const mensagem = String(erro?.message || erro?.details || '');
+    if (!erro || !('p_nome_utilizador' in parametros) || !/p_nome_utilizador|function|schema cache/i.test(mensagem)) {
+        return resposta;
+    }
+    const antigos = { ...parametros, p_nome: parametros.p_nome_utilizador || parametros.p_nome };
+    delete antigos.p_nome_utilizador;
+    return encomendasClient.rpc(nomeFuncao, antigos);
+}
+
 function abrirImagemProdutoEncomenda(url, nome) {
     AdminEncomendaVista.abrirImagemProduto(url, nome);
 }
@@ -179,7 +199,8 @@ function renderizarFormularioClienteExterno(dados, secao) {
     const formulario = document.createElement('form');
     formulario.className = 'admin-cliente-formulario';
     formulario.append(
-        criarCampoEdicaoCliente('Nome', 'nome', cliente.nome, 'text', true),
+        criarCampoEdicaoCliente('Nome de utilizador', 'nome_utilizador', obterNomeUtilizadorFichaCliente(cliente), 'text', true),
+        criarCampoEdicaoCliente('Nome', 'nome', obterNomePessoaFichaCliente(cliente), 'text'),
         criarCampoEdicaoCliente('E-mail', 'email', cliente.email, 'email'),
         criarCampoEdicaoCliente('Telem\u00f3vel', 'telefone', cliente.telefone),
         window.MoradaFormato?.criarCampoMoradaEdicao(
@@ -213,9 +234,10 @@ function renderizarFormularioClienteExterno(dados, secao) {
         cancelar.disabled = true;
         definirStatusFichaCliente('A guardar dados do cliente...');
         const campos = new FormData(formulario);
-        const { data, error } = await encomendasClient.rpc('atualizar_cliente_externo_admin', {
+        const { data, error } = await chamarRpcClienteEncomendasComFallback('atualizar_cliente_externo_admin', {
             p_cliente_id: cliente.id,
             p_nome: String(campos.get('nome') || ''),
+            p_nome_utilizador: String(campos.get('nome_utilizador') || ''),
             p_email: String(campos.get('email') || ''),
             p_telefone: String(campos.get('telefone') || ''),
             p_morada: window.MoradaFormato?.obterMoradaFormulario(formulario) || String(campos.get('morada') || ''),
@@ -247,7 +269,7 @@ function renderizarFormularioClienteExterno(dados, secao) {
     });
 
     secao.replaceChildren(criarElementoEncomenda('h3', '', 'Editar dados do cliente'), formulario);
-    formulario.querySelector('input[name="nome"]').focus();
+    formulario.querySelector('input[name="nome_utilizador"]').focus();
 }
 
 function criarCodigoHistoricoEncomenda(item, indice, historico) {
@@ -287,7 +309,8 @@ function renderizarFichaClienteAdmin(dados) {
     dadosPessoais.appendChild(cabecalhoDados);
     const grelha = criarElementoEncomenda('div', 'admin-cliente-grelha');
     grelha.append(
-        criarCampoFichaCliente('Nome', cliente.nome),
+        criarCampoFichaCliente('Nome de utilizador', obterNomeUtilizadorFichaCliente(cliente)),
+        criarCampoFichaCliente('Nome', obterNomePessoaFichaCliente(cliente)),
         criarCampoFichaCliente('E-mail', cliente.email),
         criarCampoFichaCliente('Telem\u00f3vel', cliente.telefone),
         criarCampoFichaMorada(cliente)
