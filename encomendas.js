@@ -430,6 +430,43 @@ function criarCardEncomenda(encomenda) {
     });
 }
 
+function obterUrlPerfilEncomenda(encomenda) {
+    return String(encomenda.perfil_externo_url || encomenda.link_perfil || '').trim();
+}
+
+function precisaNomeUtilizadorFicha(encomenda) {
+    return Boolean(
+        obterUrlPerfilEncomenda(encomenda)
+        && !encomenda?.clientes_gestao?.nome_utilizador
+        && !encomenda?.cliente_gestao?.nome_utilizador
+    );
+}
+
+async function preencherNomeUtilizadorPorPerfil(encomenda) {
+    const urlPerfil = obterUrlPerfilEncomenda(encomenda);
+    if (!urlPerfil) return;
+    try {
+        const { data, error } = await encomendasClient.rpc('obter_ficha_cliente_por_perfil_admin', {
+            p_url_perfil: urlPerfil
+        });
+        const cliente = data?.cliente;
+        if (error || data?.sucesso === false || !cliente?.nome_utilizador) return;
+        encomenda.clientes_gestao = {
+            ...(encomenda.clientes_gestao || {}),
+            nome_utilizador: cliente.nome_utilizador,
+            nome: cliente.nome || encomenda.clientes_gestao?.nome || null
+        };
+        encomenda.cliente_gestao_id = encomenda.cliente_gestao_id || cliente.id || null;
+    } catch (_) {}
+}
+
+async function preencherNomesUtilizadorPorPerfil() {
+    const pendentes = encomendasAdmin.filter(precisaNomeUtilizadorFicha);
+    for (let indice = 0; indice < pendentes.length; indice += 8) {
+        await Promise.all(pendentes.slice(indice, indice + 8).map(preencherNomeUtilizadorPorPerfil));
+    }
+}
+
 function obterProdutosEncomenda(encomenda) {
     let produtos = encomenda?.produtos || encomenda?.artigos || [];
     if (typeof produtos === 'string') {
@@ -752,6 +789,7 @@ async function carregarEncomendasAdmin() {
     }
     if (error) throw error;
     encomendasAdmin = data || [];
+    await preencherNomesUtilizadorPorPerfil();
     await carregarImagensProdutosEncomendas();
     atualizarResumoEncomendas();
     renderizarEncomendasAdmin();
