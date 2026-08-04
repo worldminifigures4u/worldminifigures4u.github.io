@@ -1,14 +1,16 @@
 // ==UserScript==
 // @name         Wallapop etiqueta - PDF
 // @namespace    figuresplanet
-// @version      5.5
-// @description  Guarda etiqueta Wallapop em PDF A4 com nome do cliente (imagem) ou PDF a 90% (etiqueta CTT)
+// @version      5.6
+// @description  Guarda etiqueta Wallapop em PDF A4 com nome da encomenda (imagem) ou PDF a 90% (etiqueta CTT)
 // @match        https://*.wallapop.com/*
 // @match        https://wallapop-delivery-labels.wallapop.com/*
+// @match        https://figuresplanet.com/plataforma.html*
 // @run-at       document-idle
 // @connect      wallapop-delivery-labels.wallapop.com
 // @grant        GM_setValue
 // @grant        GM_getValue
+// @grant        unsafeWindow
 // @require      https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/dist/pdf-lib.min.js
 // ==/UserScript==
 
@@ -68,6 +70,24 @@
     GM_setValue(STORAGE_TS, Date.now());
   }
 
+  function guardarNomeEtiqueta(nome) {
+    const seguro = nomeFicheiroSeguro(String(nome || ''));
+    if (!seguro) return;
+    GM_setValue(STORAGE_NOME, seguro);
+    GM_setValue(STORAGE_TS, Date.now());
+  }
+
+  function obterNomeEncomendaFiguresPlanet() {
+    const nomePorFuncao = typeof unsafeWindow !== 'undefined'
+      ? unsafeWindow.obterNomeParaFicheirosPlataforma?.()
+      : window.obterNomeParaFicheirosPlataforma?.();
+    return nomePorFuncao || document.getElementById('wallapop-nome-encomenda')?.value || '';
+  }
+
+  function guardarNomeEncomendaFiguresPlanet() {
+    guardarNomeEtiqueta(obterNomeEncomendaFiguresPlanet());
+  }
+
   function obterNomeEtiqueta() {
     const nome = GM_getValue(STORAGE_NOME, '');
     const ts = GM_getValue(STORAGE_TS, 0);
@@ -98,6 +118,24 @@
       obs.observe(document.body, { childList: true, subtree: true });
       setTimeout(() => obs.disconnect(), 120000);
     }
+  }
+
+  function iniciarCapturaFiguresPlanet() {
+    guardarNomeEncomendaFiguresPlanet();
+
+    document.addEventListener(
+      'input',
+      (e) => {
+        if (e.target?.matches?.('#wallapop-nome-encomenda, #wallapop-nome-cliente')) {
+          guardarNomeEncomendaFiguresPlanet();
+        }
+      },
+      true
+    );
+
+    document.addEventListener('click', guardarNomeEncomendaFiguresPlanet, true);
+    window.addEventListener('beforeunload', guardarNomeEncomendaFiguresPlanet);
+    setInterval(guardarNomeEncomendaFiguresPlanet, 3000);
   }
 
   function calcularTamanhoEtiqueta(pageW, pageH, imgW, imgH) {
@@ -322,7 +360,9 @@
     criarBotao();
   }
 
-  if (location.hostname === 'wallapop-delivery-labels.wallapop.com') {
+  if (location.hostname === 'figuresplanet.com') {
+    iniciarCapturaFiguresPlanet();
+  } else if (location.hostname === 'wallapop-delivery-labels.wallapop.com') {
     iniciarEtiqueta();
   } else {
     iniciarCapturaCliente();
