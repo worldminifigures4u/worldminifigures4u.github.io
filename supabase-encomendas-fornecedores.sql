@@ -1,4 +1,4 @@
-﻿-- Figures Planet - encomendas a fornecedores
+-- Figures Planet - encomendas a fornecedores
 -- Executar no Supabase SQL Editor.
 
 create extension if not exists pgcrypto;
@@ -37,26 +37,26 @@ create policy "Admin pode ler encomendas fornecedores"
 on public.encomendas_fornecedores
 for select
 to authenticated
-using ((select auth.jwt() ->> 'email') = 'worldminifigures4u@gmail.com');
+using (public.is_admin());
 
 create policy "Admin pode criar encomendas fornecedores"
 on public.encomendas_fornecedores
 for insert
 to authenticated
-with check ((select auth.jwt() ->> 'email') = 'worldminifigures4u@gmail.com');
+with check (public.is_admin());
 
 create policy "Admin pode atualizar encomendas fornecedores"
 on public.encomendas_fornecedores
 for update
 to authenticated
-using ((select auth.jwt() ->> 'email') = 'worldminifigures4u@gmail.com')
-with check ((select auth.jwt() ->> 'email') = 'worldminifigures4u@gmail.com');
+using (public.is_admin())
+with check (public.is_admin());
 
 create policy "Admin pode apagar encomendas fornecedores"
 on public.encomendas_fornecedores
 for delete
 to authenticated
-using ((select auth.jwt() ->> 'email') = 'worldminifigures4u@gmail.com');
+using (public.is_admin());
 
 grant select, insert, update, delete on public.encomendas_fornecedores to authenticated;
 
@@ -81,26 +81,26 @@ create policy "Admin pode ler fornecedores"
 on public.fornecedores_admin
 for select
 to authenticated
-using ((select auth.jwt() ->> 'email') = 'worldminifigures4u@gmail.com');
+using (public.is_admin());
 
 create policy "Admin pode criar fornecedores"
 on public.fornecedores_admin
 for insert
 to authenticated
-with check ((select auth.jwt() ->> 'email') = 'worldminifigures4u@gmail.com');
+with check (public.is_admin());
 
 create policy "Admin pode atualizar fornecedores"
 on public.fornecedores_admin
 for update
 to authenticated
-using ((select auth.jwt() ->> 'email') = 'worldminifigures4u@gmail.com')
-with check ((select auth.jwt() ->> 'email') = 'worldminifigures4u@gmail.com');
+using (public.is_admin())
+with check (public.is_admin());
 
 create policy "Admin pode apagar fornecedores"
 on public.fornecedores_admin
 for delete
 to authenticated
-using ((select auth.jwt() ->> 'email') = 'worldminifigures4u@gmail.com');
+using (public.is_admin());
 
 grant select, insert, update, delete on public.fornecedores_admin to authenticated;
 
@@ -143,7 +143,7 @@ returns boolean
 language sql
 stable
 as $$
-    select coalesce(auth.jwt() ->> 'email', '') = 'worldminifigures4u@gmail.com';
+    select public.is_admin();
 $$;
 
 create or replace function public.gerar_codigo_encomenda_fornecedor()

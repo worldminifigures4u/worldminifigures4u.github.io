@@ -1,0 +1,4 @@
+﻿Contact: mailto:worldminifigures4u@gmail.com
+Preferred-Languages: pt, en
+Canonical: https://figuresplanet.com/.well-known/security.txt
+Expires: 2027-08-05T00:00:00.000Z

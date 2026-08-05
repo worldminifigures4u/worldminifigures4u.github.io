@@ -13,8 +13,7 @@ declare
   v_importados integer := 0;
   v_stock integer;
 begin
-  if lower(coalesce(auth.jwt() ->> 'email', '')) <>
-     'worldminifigures4u@gmail.com' then
+  if not public.is_admin() then
     raise exception 'Acesso administrativo negado.' using errcode = '42501';
   end if;
 

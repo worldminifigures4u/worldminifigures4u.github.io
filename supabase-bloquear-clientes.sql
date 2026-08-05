@@ -80,7 +80,7 @@ as $$
 declare
   v_cliente public.clientes_gestao%rowtype;
 begin
-  if lower(coalesce(auth.jwt() ->> 'email', '')) <> 'worldminifigures4u@gmail.com' then
+  if not public.is_admin() then
     raise exception 'Acesso reservado ao administrador';
   end if;
 

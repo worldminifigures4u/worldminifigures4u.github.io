@@ -106,7 +106,7 @@ declare
   v_quantidade integer;
   v_ultima timestamptz;
 begin
-  if lower(coalesce(auth.jwt() ->> 'email', '')) <> 'worldminifigures4u@gmail.com' then
+  if not public.is_admin() then
     raise exception 'Acesso reservado ao administrador';
   end if;
 
@@ -241,7 +241,7 @@ declare
   v_quantidade integer;
   v_ultima timestamptz;
 begin
-  if lower(coalesce(auth.jwt() ->> 'email', '')) <> 'worldminifigures4u@gmail.com' then
+  if not public.is_admin() then
     raise exception 'Acesso reservado ao administrador';
   end if;
 
@@ -316,7 +316,7 @@ security definer
 set search_path = public
 as $$
 begin
-  if lower(coalesce(auth.jwt() ->> 'email', '')) <> 'worldminifigures4u@gmail.com' then
+  if not public.is_admin() then
     raise exception 'Acesso reservado ao administrador';
   end if;
   update public.clientes_gestao
@@ -337,7 +337,7 @@ security definer
 set search_path = public
 as $$
 begin
-  if lower(coalesce(auth.jwt() ->> 'email', '')) <> 'worldminifigures4u@gmail.com' then
+  if not public.is_admin() then
     raise exception 'Acesso reservado ao administrador';
   end if;
   update public.clientes_gestao
@@ -374,7 +374,7 @@ declare
   v_cliente public.clientes_gestao%rowtype;
   v_email text := nullif(trim(coalesce(p_email, '')), '');
 begin
-  if lower(coalesce(auth.jwt() ->> 'email', '')) <> 'worldminifigures4u@gmail.com' then
+  if not public.is_admin() then
     raise exception 'Acesso reservado ao administrador';
   end if;
 
@@ -439,7 +439,7 @@ declare
   v_cliente public.clientes_gestao%rowtype;
   v_email text := nullif(trim(coalesce(p_email, '')), '');
 begin
-  if lower(coalesce(auth.jwt() ->> 'email', '')) <> 'worldminifigures4u@gmail.com' then
+  if not public.is_admin() then
     raise exception 'Acesso reservado ao administrador';
   end if;
 
@@ -548,7 +548,7 @@ declare
   v_perfil jsonb;
   v_normalizado jsonb;
 begin
-  if lower(coalesce(auth.jwt() ->> 'email', '')) <> 'worldminifigures4u@gmail.com' then
+  if not public.is_admin() then
     raise exception 'Acesso reservado ao administrador';
   end if;
 
@@ -635,7 +635,7 @@ declare
   v_quantidade integer;
   v_ultima timestamptz;
 begin
-  if lower(coalesce(auth.jwt() ->> 'email', '')) <> 'worldminifigures4u@gmail.com' then
+  if not public.is_admin() then
     raise exception 'Acesso reservado ao administrador';
   end if;
 
@@ -713,7 +713,7 @@ declare
   v_quantidade integer;
   v_ultima timestamptz;
 begin
-  if lower(coalesce(auth.jwt() ->> 'email', '')) <> 'worldminifigures4u@gmail.com' then
+  if not public.is_admin() then
     raise exception 'Acesso reservado ao administrador';
   end if;
 
@@ -773,7 +773,7 @@ declare
   v_cliente public.clientes_gestao%rowtype;
   v_encomendas integer;
 begin
-  if lower(coalesce(auth.jwt() ->> 'email', '')) <> 'worldminifigures4u@gmail.com' then
+  if not public.is_admin() then
     raise exception 'Acesso reservado ao administrador';
   end if;
 
@@ -817,7 +817,7 @@ as $$
 declare
   v_pesquisa text := lower(trim(coalesce(p_pesquisa, '')));
 begin
-  if lower(coalesce(auth.jwt() ->> 'email', '')) <> 'worldminifigures4u@gmail.com' then
+  if not public.is_admin() then
     raise exception 'Acesso reservado ao administrador';
   end if;
 

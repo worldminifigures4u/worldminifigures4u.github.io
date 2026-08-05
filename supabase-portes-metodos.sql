@@ -19,7 +19,7 @@ on public.portes_metodos for select
 to anon, authenticated
 using (
   ativo = true
-  or lower(coalesce(auth.jwt() ->> 'email', '')) = 'worldminifigures4u@gmail.com'
+  or public.is_admin()
 );
 
 revoke insert, update, delete on public.portes_metodos from public, anon, authenticated;
@@ -51,7 +51,7 @@ declare
   item jsonb;
   atualizados integer := 0;
 begin
-  if lower(coalesce(auth.jwt() ->> 'email', '')) <> 'worldminifigures4u@gmail.com' then
+  if not public.is_admin() then
     raise exception 'Acesso reservado ao administrador';
   end if;
 
@@ -96,7 +96,7 @@ declare
   v_ordem smallint;
   v_linhas integer := 0;
 begin
-  if lower(coalesce(auth.jwt() ->> 'email', '')) <> 'worldminifigures4u@gmail.com' then
+  if not public.is_admin() then
     raise exception 'Acesso reservado ao administrador';
   end if;
 
@@ -156,7 +156,7 @@ declare
   v_id text;
   v_tarifas integer := 0;
 begin
-  if lower(coalesce(auth.jwt() ->> 'email', '')) <> 'worldminifigures4u@gmail.com' then
+  if not public.is_admin() then
     raise exception 'Acesso reservado ao administrador';
   end if;
 

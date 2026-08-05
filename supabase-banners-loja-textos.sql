@@ -34,7 +34,7 @@ declare
     v_alt text;
     v_row public.banners_loja%rowtype;
 begin
-    if lower(coalesce(auth.jwt() ->> 'email', '')) <> 'worldminifigures4u@gmail.com' then
+    if not public.is_admin() then
         raise exception 'Acesso reservado ao administrador';
     end if;
 

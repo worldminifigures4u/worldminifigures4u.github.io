@@ -36,8 +36,7 @@ declare
   v_produto jsonb;
   v_importados integer := 0;
 begin
-  if lower(coalesce(auth.jwt() ->> 'email', '')) <>
-     'worldminifigures4u@gmail.com' then
+  if not public.is_admin() then
     raise exception 'Acesso administrativo negado.' using errcode = '42501';
   end if;
 
@@ -106,7 +105,7 @@ security definer
 set search_path = public
 as $$
 begin
-  if coalesce(auth.jwt() ->> 'email', '') <> 'worldminifigures4u@gmail.com' then
+  if not public.is_admin() then
     raise exception 'Acesso reservado ao administrador';
   end if;
 
@@ -154,8 +153,7 @@ declare
   v_imagens json[];
   v_sku text;
 begin
-  if lower(coalesce(auth.jwt() ->> 'email', '')) <>
-     'worldminifigures4u@gmail.com' then
+  if not public.is_admin() then
     raise exception 'Acesso administrativo negado.' using errcode = '42501';
   end if;
 
@@ -237,8 +235,7 @@ as $$
 declare
   v_sku text;
 begin
-  if lower(coalesce(auth.jwt() ->> 'email', '')) <>
-     'worldminifigures4u@gmail.com' then
+  if not public.is_admin() then
     raise exception 'Acesso administrativo negado.' using errcode = '42501';
   end if;
 
@@ -275,8 +272,7 @@ as $$
 declare
   v_id text;
 begin
-  if lower(coalesce(auth.jwt() ->> 'email', '')) <>
-     'worldminifigures4u@gmail.com' then
+  if not public.is_admin() then
     raise exception 'Acesso administrativo negado.' using errcode = '42501';
   end if;
 
@@ -313,8 +309,7 @@ as $$
 declare
   v_produto public.produtos%rowtype;
 begin
-  if lower(coalesce(auth.jwt() ->> 'email', '')) <>
-     'worldminifigures4u@gmail.com' then
+  if not public.is_admin() then
     raise exception 'Acesso administrativo negado.' using errcode = '42501';
   end if;
 
@@ -366,8 +361,7 @@ declare
   v_imagens json[];
   v_sku text;
 begin
-  if lower(coalesce(auth.jwt() ->> 'email', '')) <>
-     'worldminifigures4u@gmail.com' then
+  if not public.is_admin() then
     raise exception 'Acesso administrativo negado.' using errcode = '42501';
   end if;
 
@@ -479,8 +473,7 @@ security definer
 set search_path = public
 as $$
 begin
-  if lower(coalesce(auth.jwt() ->> 'email', '')) <>
-     'worldminifigures4u@gmail.com' then
+  if not public.is_admin() then
     raise exception 'Acesso administrativo negado.' using errcode = '42501';
   end if;
 
@@ -537,8 +530,7 @@ declare
   v_imagens json[];
   v_sku text;
 begin
-  if lower(coalesce(auth.jwt() ->> 'email', '')) <>
-     'worldminifigures4u@gmail.com' then
+  if not public.is_admin() then
     raise exception 'Acesso administrativo negado.' using errcode = '42501';
   end if;
 
@@ -651,8 +643,7 @@ as $$
 declare
   v_produtos jsonb;
 begin
-  if lower(coalesce(auth.jwt() ->> 'email', '')) <>
-     'worldminifigures4u@gmail.com' then
+  if not public.is_admin() then
     raise exception 'Acesso reservado ao administrador';
   end if;
 

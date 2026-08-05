@@ -16,7 +16,7 @@ declare
   v_estado text;
   v_stock_reposto boolean;
 begin
-  if coalesce(auth.jwt() ->> 'email', '') <> 'worldminifigures4u@gmail.com' then
+  if not public.is_admin() then
     raise exception 'Acesso reservado ao administrador';
   end if;
 

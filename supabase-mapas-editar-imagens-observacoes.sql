@@ -11,8 +11,7 @@ security definer
 set search_path = public
 as $$
 begin
-  if lower(coalesce(auth.jwt() ->> 'email', '')) <>
-     'worldminifigures4u@gmail.com' then
+  if not public.is_admin() then
     raise exception 'Acesso administrativo negado.' using errcode = '42501';
   end if;
 
@@ -69,8 +68,7 @@ declare
   v_imagens json[];
   v_sku text;
 begin
-  if lower(coalesce(auth.jwt() ->> 'email', '')) <>
-     'worldminifigures4u@gmail.com' then
+  if not public.is_admin() then
     raise exception 'Acesso administrativo negado.' using errcode = '42501';
   end if;
 

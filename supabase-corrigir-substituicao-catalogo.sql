@@ -15,8 +15,7 @@ declare
   v_produto jsonb;
   v_importados integer := 0;
 begin
-  if lower(coalesce(auth.jwt() ->> 'email', '')) <>
-     'worldminifigures4u@gmail.com' then
+  if not public.is_admin() then
     raise exception 'Acesso administrativo negado.' using errcode = '42501';
   end if;
 
@@ -88,8 +87,7 @@ as $$
 declare
   v_removidos integer := 0;
 begin
-  if lower(coalesce(auth.jwt() ->> 'email', '')) <>
-     'worldminifigures4u@gmail.com' then
+  if not public.is_admin() then
     raise exception 'Acesso administrativo negado.' using errcode = '42501';
   end if;
 

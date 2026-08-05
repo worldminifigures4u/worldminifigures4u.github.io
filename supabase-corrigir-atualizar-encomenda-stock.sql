@@ -44,7 +44,7 @@ declare
   v_total numeric := 0;
   v_peso_total numeric := 0;
 begin
-  if coalesce(auth.jwt() ->> 'email', '') <> 'worldminifigures4u@gmail.com' then
+  if not public.is_admin() then
     raise exception 'Acesso reservado ao administrador';
   end if;
   if nullif(trim(p_nome_cliente), '') is null then
@@ -290,7 +290,7 @@ declare
   v_encomenda public.encomendas%rowtype;
   v_catalogo jsonb;
 begin
-  if coalesce(auth.jwt() ->> 'email', '') <> 'worldminifigures4u@gmail.com' then
+  if not public.is_admin() then
     raise exception 'Acesso reservado ao administrador';
   end if;
 

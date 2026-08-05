@@ -19,7 +19,7 @@ declare
   v_stock_atual integer;
   v_repostou_agora boolean := false;
 begin
-  if coalesce(auth.jwt() ->> 'email', '') <> 'worldminifigures4u@gmail.com' then
+  if not public.is_admin() then
     raise exception 'Acesso reservado ao administrador';
   end if;
 
