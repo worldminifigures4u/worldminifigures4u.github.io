@@ -24,6 +24,7 @@ create index if not exists banners_loja_ativo_ordem_idx
 
 alter table public.banners_loja enable row level security;
 
+revoke insert, update, delete on table public.banners_loja from public, anon, authenticated;
 grant select on table public.banners_loja to anon, authenticated;
 
 drop policy if exists banners_loja_public_read on public.banners_loja;

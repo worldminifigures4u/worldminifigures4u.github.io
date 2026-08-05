@@ -63,7 +63,7 @@ for select
 to authenticated
 using (
   bucket_id = 'anexos-encomendas'
-  and lower(coalesce(auth.jwt() ->> 'email', '')) = 'worldminifigures4u@gmail.com'
+  and public.is_admin()
 );
 
 drop policy if exists "Admin pode adicionar anexos de encomendas" on storage.objects;
@@ -73,7 +73,7 @@ for insert
 to authenticated
 with check (
   bucket_id = 'anexos-encomendas'
-  and lower(coalesce(auth.jwt() ->> 'email', '')) = 'worldminifigures4u@gmail.com'
+  and public.is_admin()
 );
 
 drop policy if exists "Admin pode apagar anexos de encomendas" on storage.objects;
@@ -83,6 +83,6 @@ for delete
 to authenticated
 using (
   bucket_id = 'anexos-encomendas'
-  and lower(coalesce(auth.jwt() ->> 'email', '')) = 'worldminifigures4u@gmail.com'
+  and public.is_admin()
 );
 

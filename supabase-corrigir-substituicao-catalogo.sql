@@ -114,7 +114,11 @@ grant execute on function public.remover_produtos_admin(text[])
 to authenticated;
 
 -- A vista publica da loja nao expoe stock, referencia nem fornecedores.
-create or replace view public.produtos_loja as
+revoke all on table public.produtos from public, anon, authenticated;
+
+create or replace view public.produtos_loja
+with (security_invoker = false)
+as
 select
   produto.id,
   produto.sku,

@@ -11,6 +11,20 @@ as $$
   select lower(trim(coalesce(p_email, ''))) = 'worldminifigures4u@gmail.com';
 $$;
 
+create or replace function public.is_admin()
+returns boolean
+language sql
+stable
+security definer
+set search_path = public
+as $$
+  select public.email_e_admin_clientes(auth.jwt() ->> 'email');
+$$;
+
+revoke all on function public.is_admin() from public, anon;
+grant execute on function public.is_admin() to authenticated;
+grant execute on function public.is_admin() to anon;
+
 create or replace function public.upsert_ficha_cliente_gestao_por_conta(
   p_auth_user_id uuid,
   p_nome text,

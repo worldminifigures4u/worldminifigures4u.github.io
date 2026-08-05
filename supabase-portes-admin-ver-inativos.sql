@@ -7,5 +7,5 @@ on public.portes_tarifas for select
 to anon, authenticated
 using (
   ativo = true
-  or lower(coalesce(auth.jwt() ->> 'email', '')) = 'worldminifigures4u@gmail.com'
+    or public.is_admin()
 );

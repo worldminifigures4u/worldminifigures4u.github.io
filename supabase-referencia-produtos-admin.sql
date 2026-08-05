@@ -679,7 +679,12 @@ grant execute on function public.obter_imagens_produtos_encomendas_admin(text[])
 to authenticated;
 
 -- A vista publica da loja nao expoe stock, referencia nem fornecedores.
-create or replace view public.produtos_loja as
+-- security_invoker=false: anon nao precisa de SELECT directo em produtos.
+revoke all on table public.produtos from public, anon, authenticated;
+
+create or replace view public.produtos_loja
+with (security_invoker = false)
+as
 select
   produto.id,
   produto.sku,

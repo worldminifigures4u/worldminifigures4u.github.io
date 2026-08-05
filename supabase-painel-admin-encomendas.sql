@@ -11,7 +11,7 @@ create policy "Administrador pode ler todas as encomendas"
 on public.encomendas
 for select
 to authenticated
-using ((select auth.jwt() ->> 'email') = 'worldminifigures4u@gmail.com');
+using (public.is_admin());
 
 grant select on public.encomendas to authenticated;
 
@@ -20,8 +20,8 @@ create policy "Administrador pode atualizar estado das encomendas"
 on public.encomendas
 for update
 to authenticated
-using ((select auth.jwt() ->> 'email') = 'worldminifigures4u@gmail.com')
-with check ((select auth.jwt() ->> 'email') = 'worldminifigures4u@gmail.com');
+using (public.is_admin())
+with check (public.is_admin());
 
 grant update (estado) on public.encomendas to authenticated;
 
@@ -35,7 +35,7 @@ security definer
 set search_path = public
 as $$
 begin
-  if coalesce(auth.jwt() ->> 'email', '') <> 'worldminifigures4u@gmail.com' then
+  if not public.is_admin() then
     raise exception 'Acesso reservado ao administrador';
   end if;
 
@@ -80,7 +80,7 @@ security definer
 set search_path = public
 as $$
 begin
-  if coalesce(auth.jwt() ->> 'email', '') <> 'worldminifigures4u@gmail.com' then
+  if not public.is_admin() then
     raise exception 'Acesso reservado ao administrador';
   end if;
 
@@ -117,7 +117,7 @@ as $$
 declare
   v_total numeric;
 begin
-  if coalesce(auth.jwt() ->> 'email', '') <> 'worldminifigures4u@gmail.com' then
+  if not public.is_admin() then
     raise exception 'Acesso reservado ao administrador';
   end if;
 
@@ -159,8 +159,7 @@ as $$
 declare
   v_produtos jsonb;
 begin
-  if lower(coalesce(auth.jwt() ->> 'email', '')) <>
-     'worldminifigures4u@gmail.com' then
+  if not public.is_admin() then
     raise exception 'Acesso reservado ao administrador';
   end if;
 

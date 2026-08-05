@@ -158,8 +158,12 @@ function obterImagemPrincipalProduto(prod = {}) {
 }
 
 function utilizadorAdmin(user) {
-    const email = String(user?.email || '').toLowerCase();
-    return ADMIN_EMAILS.includes(email);
+    const email = String(user?.email || '').trim().toLowerCase();
+    if (!email) return false;
+    const admins = (typeof ADMIN_EMAILS !== 'undefined' ? ADMIN_EMAILS : [])
+        .map((item) => String(item || '').trim().toLowerCase())
+        .filter(Boolean);
+    return admins.includes(email);
 }
 
 function garantirEstilosAdmin() {
