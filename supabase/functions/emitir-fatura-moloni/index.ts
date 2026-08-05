@@ -415,6 +415,11 @@ function resolverIsoPaisTexto(valor: string): string | null {
   return isoFinal || null;
 }
 
+function resolverFiscalZoneDefault(): string {
+  const fiscalZone = String(Deno.env.get("MOLONI_FISCAL_ZONE") || "pt").trim().toLowerCase();
+  return /^[a-z]{2}(?:-[a-z]{2})?$/.test(fiscalZone) ? fiscalZone : "pt";
+}
+
 function resolverPaisFaturaMoloni(encomenda: EncomendaRow): PaisFaturaMoloni {
   // País de envio: regiao_envio (site/OLX) tem prioridade; pais_cliente (seletor plataformas).
   const candidatos = [
@@ -439,8 +444,8 @@ function resolverPaisFaturaMoloni(encomenda: EncomendaRow): PaisFaturaMoloni {
   const customerId = customerMapeado || customerDefault;
   // Zona fiscal do destino só com cliente Consumidor Final correspondente na Moloni.
   const fiscalZone = customerMapeado
-    ? isoFinal
-    : (String(Deno.env.get("MOLONI_FISCAL_ZONE") || "PT").trim().toUpperCase() || "PT");
+    ? isoFinal.toLowerCase()
+    : resolverFiscalZoneDefault();
 
   return {
     destino: isoFinal === "PT" ? "PT" : "EST",
