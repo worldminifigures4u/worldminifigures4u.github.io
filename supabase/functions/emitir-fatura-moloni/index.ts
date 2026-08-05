@@ -507,6 +507,42 @@ async function obterCountryIdMoloni(iso: string): Promise<number> {
   return Number(encontrado.countryId);
 }
 
+async function obterCustomerIdMoloniPorNumero(companyId: number, numeroCliente: number): Promise<number> {
+  const query = `
+    query ClientesMoloni($companyId: Int!) {
+      customers(companyId: $companyId) {
+        errors { field msg }
+        data {
+          customerId
+          number
+          name
+        }
+      }
+    }
+  `;
+  const payload = await moloniRequest<{
+    data?: {
+      customers?: {
+        errors?: MoloniError[];
+        data?: Array<{ customerId?: number; number?: string | number; name?: string }>;
+      };
+    };
+  }>(query, { companyId });
+
+  const resultado = payload.data?.customers;
+  if (resultado?.errors?.length) {
+    throw new Error(mensagemErrosMoloni(resultado.errors));
+  }
+
+  const numeroAlvo = String(numeroCliente).trim();
+  const cliente = (resultado?.data || []).find((item) => String(item.number ?? "").trim() === numeroAlvo);
+  if (!cliente?.customerId) {
+    throw new Error(`Cliente Moloni com codigo ${numeroAlvo} nao encontrado.`);
+  }
+
+  return Number(cliente.customerId);
+}
+
 function construirLinhasFatura(
   totalBruto: number,
   portesBruto: number,
@@ -570,7 +606,7 @@ async function criarFaturaReciboMoloni(
   const paisFatura = resolverPaisFaturaMoloni(encomenda);
   // B2C UE < 10.000€/ano: IVA PT (23%) no produto; cliente + fiscalZone = país de envio.
   const countryId = await obterCountryIdMoloni(paisFatura.iso);
-  const customerId = paisFatura.customerId;
+  const customerId = await obterCustomerIdMoloniPorNumero(companyId, paisFatura.customerId);
   const fiscalZone = paisFatura.fiscalZone;
   const destino = paisFatura.destino;
 
