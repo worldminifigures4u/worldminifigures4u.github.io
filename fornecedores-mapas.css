@@ -2411,6 +2411,11 @@ body.mapas-produto-modal-aberto {
 
 .mapas-th-ordenavel button[aria-sort] {
     color: var(--fp-cor-destaque, #ffc400);
+    outline: 2px solid var(--fp-cor-destaque, #ffc400);
+    outline-offset: -3px;
+    border-radius: 4px;
+    background: rgba(255, 196, 0, .08);
+    box-shadow: inset 0 -2px 0 var(--fp-cor-destaque, #ffc400);
 }
 
 .pagina-fornecedores-unificada .fornecedor-tabela-cabecalho-fixo {
