@@ -636,9 +636,9 @@ async function criarFaturaReciboMoloni(
       date: formatarDataIso(dataEmissao),
       expirationDate: formatarDataVencimento(vencimento),
       status: invoiceStatus,
-      // Na lista Moloni, Ref. doc. = ourReference (PT/EST); Ref. cliente = yourReference
-      yourReference: referencia,
-      ourReference: destino,
+      // Na lista Moloni, Ref. doc. = ourReference; Ref. cliente = yourReference.
+      yourReference: destino,
+      ourReference: referencia,
       products: linhas,
       payments: [
         {
