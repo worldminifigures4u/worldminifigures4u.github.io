@@ -1545,7 +1545,8 @@ body.pagina-mapas-admin > main.fornecedores-admin {
 
 .pagina-fornecedores-unificada .fornecedor-pedido-produtos .mapas-col-pedido-qtd,
 .pagina-fornecedores-unificada .fornecedor-pedido-produtos .mapas-col-recebido-qtd,
-.pagina-fornecedores-unificada .fornecedor-pedido-produtos .mapas-col-stock-atual {
+.pagina-fornecedores-unificada .fornecedor-pedido-produtos .mapas-col-stock-atual,
+.pagina-fornecedores-unificada .fornecedor-pedido-produtos .mapas-col-origem-ajuste {
     text-align: center;
     white-space: nowrap;
 }
@@ -1557,8 +1558,13 @@ body.pagina-mapas-admin > main.fornecedores-admin {
 }
 
 .pagina-fornecedores-unificada .fornecedor-pedido-produtos .mapas-col-stock-atual {
-    width: 118px;
-    min-width: 102px;
+    width: 106px;
+    min-width: 92px;
+}
+
+.pagina-fornecedores-unificada .fornecedor-pedido-produtos .mapas-col-origem-ajuste {
+    width: 132px;
+    min-width: 112px;
 }
 
 .pagina-fornecedores-unificada .fornecedor-pedido-produtos .fornecedor-pedido-info-linha {
@@ -1568,7 +1574,7 @@ body.pagina-mapas-admin > main.fornecedores-admin {
     color: var(--fp-texto-suave, #ccc);
 }
 
-.pagina-fornecedores-unificada .fornecedor-pedido-produtos .mapas-col-stock-atual .fornecedor-ajuste-os {
+.pagina-fornecedores-unificada .fornecedor-pedido-produtos .mapas-col-origem-ajuste .fornecedor-ajuste-os {
     display: block;
     margin-top: 2px;
 }

@@ -3214,6 +3214,7 @@ function renderizarPedidoFornecedorProdutosTabela(caixa, pedido) {
         ["Pedido", "mapas-col-pedido-qtd", "pedido"],
         ["Recebido", "mapas-col-recebido-qtd", "recebido"],
         ["Stock atual", "mapas-col-stock-atual", "stock"],
+        ["Origem", "mapas-col-origem-ajuste", ""],
         ["Receber", "mapas-col-qtd", "receber"],
     ].forEach(([texto, classe, coluna]) => {
         const th = document.createElement("th");
@@ -3297,19 +3298,24 @@ function renderizarPedidoFornecedorProdutosTabela(caixa, pedido) {
         stockPrincipal.className = "fornecedor-pedido-info-linha";
         stockPrincipal.textContent = String(Number(produtoAtual.stock || 0));
         stockCelula.appendChild(stockPrincipal);
+        linha.appendChild(stockCelula);
+
+        const origemCelula = document.createElement("td");
+        origemCelula.className = "mapas-col-origem-ajuste";
         if (faltaOs > 0) {
             const osSpan = document.createElement("span");
             osSpan.className = "fornecedor-ajuste-os ativo";
             osSpan.textContent = `OS/Falta: ${faltaOs}${item.quantidade_original ? ` de ${Number(item.quantidade_original || 0)}` : ""}`;
-            stockCelula.appendChild(osSpan);
+            origemCelula.appendChild(osSpan);
         }
         if (item.origem_ajuste) {
             const origemSpan = document.createElement("span");
             origemSpan.className = "fornecedor-ajuste-os";
             origemSpan.textContent = obterTextoOrigemAjustePedidoFornecedor(item.origem_ajuste);
-            stockCelula.appendChild(origemSpan);
+            origemCelula.appendChild(origemSpan);
         }
-        linha.appendChild(stockCelula);
+        if (!origemCelula.childElementCount) origemCelula.textContent = "-";
+        linha.appendChild(origemCelula);
 
         const qtdCelula = document.createElement("td");
         qtdCelula.className = "mapas-col-qtd";
