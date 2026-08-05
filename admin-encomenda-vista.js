@@ -1311,7 +1311,7 @@ window.AdminEncomendaVista = (function () {
         return botao;
     }
 
-    async function atualizarEstado(encomenda, estado, select) {
+    async function atualizarEstado(encomenda, estado, select, opcoes = {}) {
         const estadoAnterior = estadoNormalizado(encomenda.estado);
         const atualizarDataPagamentoFlag = deveAtualizarDataPagamento(estadoAnterior, estado);
         const dataPagamentoIso = atualizarDataPagamentoFlag ? new Date().toISOString() : null;
@@ -1549,6 +1549,9 @@ window.AdminEncomendaVista = (function () {
                     `Estado da encomenda ${encomenda.codigo_encomenda || ""} atualizado.${limpeza}${reposicao}${recuperacao}${seguimento}${mensagemFatura}`,
                     faturaComErro
                 );
+            }
+            if (estado === "Concluído" && typeof opcoes.fecharAoConcluir === "function") {
+                opcoes.fecharAoConcluir(encomenda);
             }
         } catch (error) {
             select.value = estadoAnterior;
@@ -1923,7 +1926,7 @@ window.AdminEncomendaVista = (function () {
         select.addEventListener("change", evento => {
             evento.stopPropagation();
             if (select.value === select.dataset.estadoAtual) return;
-            atualizarEstado(encomenda, select.value, select);
+            atualizarEstado(encomenda, select.value, select, opcoes);
         });
         caixaEstado.appendChild(select);
         blocoEstado.appendChild(caixaEstado);
