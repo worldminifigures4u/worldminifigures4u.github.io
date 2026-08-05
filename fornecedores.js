@@ -3166,6 +3166,13 @@ function obterValorOrdenacaoItemPedidoFornecedor(item, coluna) {
         return Math.max(0, Number(item?.quantidade || 0) - recebido);
     }
     if (coluna === "stock") return Number(produtoAtual?.stock || 0);
+    if (coluna === "origem") {
+        const faltaOs = Math.max(0, Number(item?.falta_os || 0));
+        const partes = [];
+        if (faltaOs > 0) partes.push("OS/Falta");
+        if (item?.origem_ajuste) partes.push(obterTextoOrigemAjustePedidoFornecedor(item.origem_ajuste));
+        return partes.join(" ") || "-";
+    }
     return item?.nome || "";
 }
 
@@ -3214,7 +3221,7 @@ function renderizarPedidoFornecedorProdutosTabela(caixa, pedido) {
         ["Pedido", "mapas-col-pedido-qtd", "pedido"],
         ["Recebido", "mapas-col-recebido-qtd", "recebido"],
         ["Stock atual", "mapas-col-stock-atual", "stock"],
-        ["Origem", "mapas-col-origem-ajuste", ""],
+        ["Origem", "mapas-col-origem-ajuste", "origem"],
         ["Receber", "mapas-col-qtd", "receber"],
     ].forEach(([texto, classe, coluna]) => {
         const th = document.createElement("th");
