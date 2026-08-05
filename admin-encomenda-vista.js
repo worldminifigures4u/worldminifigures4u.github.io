@@ -1274,7 +1274,41 @@ window.AdminEncomendaVista = (function () {
 
         encomenda.moloni_document_id = resultado.document_id;
         encomenda.moloni_fatura_numero = resultado.numero ?? encomenda.moloni_fatura_numero;
+        sincronizarEncomendaNaLista(encomenda, {
+            moloni_document_id: encomenda.moloni_document_id,
+            moloni_fatura_numero: encomenda.moloni_fatura_numero
+        });
         return resultado;
+    }
+
+    function criarBotaoEmitirFaturaMoloni(encomenda) {
+        if (estadoNormalizado(encomenda.estado) !== "Concluído" || !podeEmitirFaturaMoloni(encomenda)) return null;
+        const botao = criarElemento("button", "wallapop-botao admin-encomenda-editar", "Emitir Moloni");
+        botao.type = "button";
+        botao.addEventListener("click", async evento => {
+            evento.stopPropagation();
+            const codigo = encomenda.codigo_encomenda || "";
+            if (!window.confirm(`Emitir fatura-recibo Moloni para a encomenda ${codigo}?`)) return;
+            botao.disabled = true;
+            hooks.definirStatus(`A emitir fatura-recibo Moloni para ${codigo}...`);
+            try {
+                const fatura = await emitirFaturaMoloni(encomenda, { forcarEmissao: true });
+                if (fatura?.sucesso) {
+                    const numeroFatura = fatura.numero && String(fatura.numero) !== "0"
+                        ? ` n. ${fatura.numero}`
+                        : " (rascunho)";
+                    botao.textContent = "Moloni OK";
+                    hooks.definirStatus(`Fatura-recibo Moloni${numeroFatura} criada para ${codigo}.`);
+                } else {
+                    botao.disabled = false;
+                    hooks.definirStatus(`Moloni não emitiu documento para ${codigo}.`, true);
+                }
+            } catch (error) {
+                botao.disabled = false;
+                hooks.definirStatus(`Erro ao emitir Moloni para ${codigo}: ${detalheErro(error)}`, true);
+            }
+        });
+        return botao;
     }
 
     async function atualizarEstado(encomenda, estado, select) {
@@ -1821,6 +1855,8 @@ window.AdminEncomendaVista = (function () {
 
         const botoesAcoes = criarElemento("div", "admin-encomenda-dados-botoes");
         botoesAcoes.appendChild(gravarTudo);
+        const emitirMoloni = criarBotaoEmitirFaturaMoloni(encomenda);
+        if (emitirMoloni) botoesAcoes.appendChild(emitirMoloni);
         if (podeEditar) {
             const editar = criarElemento("a", "wallapop-botao admin-encomenda-editar", "Editar");
             editar.href = `plataforma.html?editar=${encodeURIComponent(encomenda.codigo_encomenda)}`;
