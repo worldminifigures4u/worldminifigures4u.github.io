@@ -25,6 +25,17 @@ function mudarAba(tipo) {
     }
 }
 
+/** Remove HTML/tags e limita o nome (alinhado com sanitizar_nome_pessoa no SQL). */
+function sanitizarNomePessoaCliente(valor) {
+    let nome = String(valor || '');
+    nome = nome.replace(/<[^>]*>/g, ' ');
+    nome = nome.replace(/&lt;|&gt;|&quot;|&#39;|&amp;/gi, ' ');
+    nome = nome.replace(/[<>"\u0000-\u001F\u007F]/g, '');
+    nome = nome.replace(/\s+/g, ' ').trim();
+    if (nome.length > 120) nome = nome.slice(0, 120).replace(/\s+$/g, '');
+    return nome;
+}
+
 async function sincronizarFichaClienteSite() {
     if (!dbClient) return;
     try {
@@ -177,7 +188,7 @@ async function registarCliente(event) {
     statusDiv.className = "msg-status";
     statusDiv.innerText = "A processar registo de segurança...";
 
-    const nome = document.getElementById('registo-nome').value.trim();
+    const nome = sanitizarNomePessoaCliente(document.getElementById('registo-nome').value);
     const email = document.getElementById('registo-email').value.trim();
     const password = document.getElementById('registo-password').value;
     const telemovel = document.getElementById('registo-telemovel').value.trim();
@@ -185,6 +196,11 @@ async function registarCliente(event) {
     const cp = document.getElementById('registo-cp').value.trim();
     const cidade = document.getElementById('registo-cidade').value.trim();
     const pais = document.getElementById('registo-pais').value.trim();
+
+    if (!nome) {
+        mostrarMensagem(statusDiv, 'Indique o nome.', 'msg-erro');
+        return;
+    }
 
     try {
        const { data, error } = await dbClient.auth.signUp({
@@ -419,7 +435,7 @@ function preencherFormularioDadosCliente(data = {}, user = null) {
 async function guardarDadosCliente(event) {
     event.preventDefault();
     const statusDiv = document.getElementById('status-dados-cliente');
-    const nome = document.getElementById('editar-nome').value.trim();
+    const nome = sanitizarNomePessoaCliente(document.getElementById('editar-nome').value);
     const email = document.getElementById('editar-email').value.trim();
     const telemovel = document.getElementById('editar-telemovel').value.trim();
     const morada = document.getElementById('editar-morada').value.trim();
