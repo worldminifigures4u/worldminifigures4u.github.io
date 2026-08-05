@@ -3159,7 +3159,8 @@ function obterValorOrdenacaoItemPedidoFornecedor(item, coluna) {
     const produtoAtual = obterProdutoParaPedidoFornecedor(item) || item;
     if (coluna === "nome") return item?.nome || "";
     if (coluna === "ref") return item?.referencia || "";
-    if (coluna === "estado") return Math.max(0, Number(item?.quantidade || 0));
+    if (coluna === "pedido") return Math.max(0, Number(item?.quantidade || 0));
+    if (coluna === "recebido") return Math.max(0, Number(item?.recebido || 0));
     if (coluna === "receber") {
         const recebido = Math.max(0, Number(item?.recebido || 0));
         return Math.max(0, Number(item?.quantidade || 0) - recebido);
@@ -3210,7 +3211,9 @@ function renderizarPedidoFornecedorProdutosTabela(caixa, pedido) {
         ["", "mapas-col-foto", ""],
         ["Nome", "mapas-col-nome", "nome"],
         ["Ref.", "mapas-col-ref", "ref"],
-        ["Estado", "mapas-col-pedido-info", "estado"],
+        ["Pedido", "mapas-col-pedido-qtd", "pedido"],
+        ["Recebido", "mapas-col-recebido-qtd", "recebido"],
+        ["Stock atual", "mapas-col-stock-atual", "stock"],
         ["Receber", "mapas-col-qtd", "receber"],
     ].forEach(([texto, classe, coluna]) => {
         const th = document.createElement("th");
@@ -3278,25 +3281,35 @@ function renderizarPedidoFornecedorProdutosTabela(caixa, pedido) {
         refCelula.textContent = item.referencia || "-";
         linha.appendChild(refCelula);
 
-        const infoCelula = document.createElement("td");
-        infoCelula.className = "mapas-col-pedido-info";
-        const infoPrincipal = document.createElement("span");
-        infoPrincipal.className = "fornecedor-pedido-info-linha";
-        infoPrincipal.textContent = `Pedido: ${Number(item.quantidade || 0)} | Recebido: ${recebido} | Stock atual: ${Number(produtoAtual.stock || 0)}`;
-        infoCelula.appendChild(infoPrincipal);
+        const pedidoCelula = document.createElement("td");
+        pedidoCelula.className = "mapas-col-pedido-qtd";
+        pedidoCelula.textContent = String(Number(item.quantidade || 0));
+        linha.appendChild(pedidoCelula);
+
+        const recebidoCelula = document.createElement("td");
+        recebidoCelula.className = "mapas-col-recebido-qtd";
+        recebidoCelula.textContent = String(recebido);
+        linha.appendChild(recebidoCelula);
+
+        const stockCelula = document.createElement("td");
+        stockCelula.className = "mapas-col-stock-atual";
+        const stockPrincipal = document.createElement("span");
+        stockPrincipal.className = "fornecedor-pedido-info-linha";
+        stockPrincipal.textContent = String(Number(produtoAtual.stock || 0));
+        stockCelula.appendChild(stockPrincipal);
         if (faltaOs > 0) {
             const osSpan = document.createElement("span");
             osSpan.className = "fornecedor-ajuste-os ativo";
             osSpan.textContent = `OS/Falta: ${faltaOs}${item.quantidade_original ? ` de ${Number(item.quantidade_original || 0)}` : ""}`;
-            infoCelula.appendChild(osSpan);
+            stockCelula.appendChild(osSpan);
         }
         if (item.origem_ajuste) {
             const origemSpan = document.createElement("span");
             origemSpan.className = "fornecedor-ajuste-os";
             origemSpan.textContent = obterTextoOrigemAjustePedidoFornecedor(item.origem_ajuste);
-            infoCelula.appendChild(origemSpan);
+            stockCelula.appendChild(origemSpan);
         }
-        linha.appendChild(infoCelula);
+        linha.appendChild(stockCelula);
 
         const qtdCelula = document.createElement("td");
         qtdCelula.className = "mapas-col-qtd";
