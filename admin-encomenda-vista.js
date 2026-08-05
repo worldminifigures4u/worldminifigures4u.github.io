@@ -304,6 +304,11 @@ window.AdminEncomendaVista = (function () {
         ).trim().toUpperCase();
     }
 
+    function normalizarMarcacaoOrdem(valor) {
+        const texto = String(valor || "").trim().toLowerCase();
+        return texto === "ultimo" || texto === "penultimo" ? texto : "";
+    }
+
     function lerMarcacoesOrdemGuardadas() {
         try {
             const dados = JSON.parse(localStorage.getItem(MARCACOES_ORDEM_STORAGE_KEY) || "{}");
@@ -314,11 +319,14 @@ window.AdminEncomendaVista = (function () {
     }
 
     function obterMarcacaoOrdemItem(encomenda, item, indice) {
+        const marcacaoProduto = normalizarMarcacaoOrdem(
+            item?.marcacao_ordem || item?.marcacao_preparacao || item?.ordem_preparacao
+        );
+        if (marcacaoProduto) return marcacaoProduto;
         const encomendaId = String(encomenda?.id || encomenda?.codigo_encomenda || "").trim();
         if (!encomendaId) return "";
         const mapa = lerMarcacoesOrdemGuardadas()[encomendaId] || {};
-        const valor = String(mapa[chaveItemMarcacaoOrdem(item, indice)] || "").trim().toLowerCase();
-        return valor === "ultimo" || valor === "penultimo" ? valor : "";
+        return normalizarMarcacaoOrdem(mapa[chaveItemMarcacaoOrdem(item, indice)]);
     }
 
     function guardarMarcacaoOrdemItem(encomenda, item, indice, marcacao) {
@@ -337,6 +345,29 @@ window.AdminEncomendaVista = (function () {
         } catch (_) {
             // Ignora quota / modo privado
         }
+    }
+
+    async function guardarMarcacaoOrdemItemRemota(encomenda, item, indice, marcacao) {
+        if (!encomenda?.id) return false;
+        const chave = chaveItemMarcacaoOrdem(item, indice);
+        const valor = normalizarMarcacaoOrdem(marcacao);
+        const produtos = obterProdutos(encomenda).map((produto, produtoIndice) => {
+            const copia = { ...produto };
+            if (chaveItemMarcacaoOrdem(copia, produtoIndice) !== chave) return copia;
+            if (valor) copia.marcacao_ordem = valor;
+            else delete copia.marcacao_ordem;
+            return copia;
+        });
+        const { data, error } = await obterClient()
+            .from("encomendas")
+            .update({ produtos })
+            .eq("id", String(encomenda.id))
+            .select("id, produtos")
+            .single();
+        if (error) throw error;
+        const produtosGuardados = obterProdutos(data || { produtos });
+        sincronizarEncomendaNaLista(encomenda, { produtos: produtosGuardados });
+        return true;
     }
 
     function aplicarDestaqueMarcacaoOrdem(linha, marcacao) {
@@ -360,9 +391,10 @@ window.AdminEncomendaVista = (function () {
         celula.classList.toggle("marcacao-ativa", input.checked);
 
         input.addEventListener("click", evento => evento.stopPropagation());
-        input.addEventListener("change", evento => {
+        input.addEventListener("change", async evento => {
             evento.stopPropagation();
             const selecionado = input.checked;
+            const marcacaoAnterior = obterMarcacaoOrdemItem(encomenda, item, indice);
             if (selecionado && outroRef.atual) {
                 outroRef.atual.input.checked = false;
                 outroRef.atual.celula.classList.remove("marcacao-ativa");
@@ -371,6 +403,24 @@ window.AdminEncomendaVista = (function () {
             const novaMarcacao = selecionado ? tipo : "";
             guardarMarcacaoOrdemItem(encomenda, item, indice, novaMarcacao);
             aplicarDestaqueMarcacaoOrdem(linhaProduto, novaMarcacao);
+            input.disabled = true;
+            if (outroRef.atual) outroRef.atual.input.disabled = true;
+            try {
+                await guardarMarcacaoOrdemItemRemota(encomenda, item, indice, novaMarcacao);
+            } catch (error) {
+                guardarMarcacaoOrdemItem(encomenda, item, indice, marcacaoAnterior);
+                input.checked = marcacaoAnterior === tipo;
+                celula.classList.toggle("marcacao-ativa", input.checked);
+                if (outroRef.atual) {
+                    outroRef.atual.input.checked = !!marcacaoAnterior && marcacaoAnterior !== tipo;
+                    outroRef.atual.celula.classList.toggle("marcacao-ativa", outroRef.atual.input.checked);
+                }
+                aplicarDestaqueMarcacaoOrdem(linhaProduto, marcacaoAnterior);
+                hooks.definirStatus("Erro ao guardar marcação: " + detalheErro(error), true);
+            } finally {
+                input.disabled = false;
+                if (outroRef.atual) outroRef.atual.input.disabled = false;
+            }
         });
 
         celula.append(input, texto);
