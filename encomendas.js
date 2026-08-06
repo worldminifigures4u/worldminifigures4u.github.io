@@ -854,7 +854,6 @@ document.getElementById('admin-cliente-fechar').addEventListener('click', fechar
     modal.querySelector('.admin-cliente-dialogo')?.addEventListener('click', (evento) => evento.stopPropagation());
 })();
 ligarFechoModalPorFundo(document.getElementById('admin-imagem-modal'), fecharImagemProdutoEncomenda);
-ligarFechoModalPorFundo(document.getElementById('admin-encomenda-modal'), fecharModalEncomendaAdmin);
 document.addEventListener('keydown', evento => {
     if (evento.key === 'Escape' && !document.getElementById('admin-imagem-modal').hidden) {
         fecharImagemProdutoEncomenda();
