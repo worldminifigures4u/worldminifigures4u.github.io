@@ -3347,6 +3347,185 @@ function renderizarPedidoFornecedorProdutosTabela(caixa, pedido) {
     caixa.appendChild(envoltorio);
 }
 
+function criarDetalhesPedidoFornecedor(pedido) {
+    const detalhes = criarElementoPedidoFornecedor("div", "admin-encomenda-detalhes fornecedor-pedido-detalhes");
+
+    const produtos = criarElementoPedidoFornecedor("div", "admin-encomenda-produtos fornecedor-pedido-produtos");
+    if (estaPaginaFornecedoresUnificada()) {
+        renderizarPedidoFornecedorProdutosTabela(produtos, pedido);
+    } else {
+        const lista = criarElementoPedidoFornecedor("div", "fornecedor-pedido-produtos-lista");
+        pedido.itens.forEach(item => {
+            const produtoAtual = obterProdutoParaPedidoFornecedor(item) || item;
+            const recebido = Number(item.recebido || 0);
+            const restante = Math.max(0, Number(item.quantidade || 0) - recebido);
+            const faltaOs = Math.max(0, Number(item.falta_os || 0));
+            const linhaProduto = criarElementoPedidoFornecedor("div", "fornecedor-pedido-linha");
+            if (faltaOs > 0) linhaProduto.classList.add("tem-os");
+            linhaProduto.appendChild(criarImagemFornecedor(produtoAtual, "fornecedor-miniatura pequena"));
+            const info = criarElementoPedidoFornecedor("div", "fornecedor-info");
+            info.innerHTML = `<strong>${escaparHtmlFornecedor(item.nome)}</strong><span class="fornecedor-identificadores">Ref. ${escaparHtmlFornecedor(item.referencia || "-")} | SKU ${escaparHtmlFornecedor(item.sku || "-")}</span><span>Pedido: ${Number(item.quantidade || 0)} | Recebido: ${recebido} | Stock atual: ${Number(produtoAtual.stock || 0)}</span>${faltaOs > 0 ? `<span class="fornecedor-ajuste-os ativo">OS/Falta: ${faltaOs}${item.quantidade_original ? ` de ${Number(item.quantidade_original || 0)}` : ""}</span>` : ""}${item.origem_ajuste ? `<span class="fornecedor-ajuste-os">${escaparHtmlFornecedor(obterTextoOrigemAjustePedidoFornecedor(item.origem_ajuste))}</span>` : ""}`;
+            const input = document.createElement("input");
+            input.type = "number";
+            input.min = "0";
+            input.max = String(restante);
+            input.step = "1";
+            input.value = restante > 0 ? restante : 0;
+            input.className = "fornecedor-recebido-input";
+            input.dataset.pedido = pedido.id;
+            input.dataset.produto = item.id;
+            linhaProduto.append(info, input);
+            lista.appendChild(linhaProduto);
+        });
+        produtos.appendChild(lista);
+    }
+
+    const acoes = criarElementoPedidoFornecedor("div", "admin-encomenda-acoes fornecedor-pedido-acoes");
+    const grupoEstado = criarElementoPedidoFornecedor("div", "admin-encomenda-estado-edicao");
+    const estado = document.createElement("select");
+    estado.className = "fornecedor-status-select";
+    estado.setAttribute("aria-label", "Estado da encomenda");
+    obterEstadosPedidoFornecedor().forEach(opcao => {
+        const opt = document.createElement("option");
+        opt.value = opcao;
+        opt.textContent = opcao;
+        opt.selected = pedido.estado === opcao;
+        estado.appendChild(opt);
+    });
+    estado.addEventListener("change", () => alterarEstadoPedidoFornecedor(pedido.id, estado.value));
+    grupoEstado.appendChild(estado);
+
+    const botoes = criarElementoPedidoFornecedor("div", "admin-encomenda-botoes");
+    const editar = criarElementoPedidoFornecedor("button", "wallapop-botao", "Editar encomenda");
+    editar.type = "button";
+    editar.addEventListener("click", () => abrirEdicaoPedidoFornecedor(pedido.id));
+    const imprimir = criarElementoPedidoFornecedor("button", "wallapop-botao", "Imprimir");
+    imprimir.type = "button";
+    imprimir.addEventListener("click", () => imprimirPedidoFornecedor(pedido.id));
+    const exportarTxt = criarElementoPedidoFornecedor("button", "wallapop-botao", "Exportar TXT");
+    exportarTxt.type = "button";
+    exportarTxt.addEventListener("click", () => {
+        const texto = obterTextoExportacaoPedidoFornecedor(pedido);
+        if (!texto) {
+            definirStatusFornecedor("A encomenda nao tem produtos para exportar.", true);
+            return;
+        }
+        exportarTxtPedidoFornecedor(pedido);
+        definirStatusFornecedor(`TXT da encomenda ${pedido.codigo || pedido.id} exportado.`);
+    });
+    const receber = criarElementoPedidoFornecedor("button", "wallapop-botao wallapop-botao-destaque", "Receber stock");
+    receber.type = "button";
+    receber.addEventListener("click", () => receberPedidoFornecedor(pedido.id));
+    const apagar = criarElementoPedidoFornecedor("button", "wallapop-botao admin-encomenda-apagar", "Apagar pedido");
+    apagar.type = "button";
+    apagar.addEventListener("click", () => apagarPedidoFornecedor(pedido.id));
+    botoes.append(editar, imprimir, exportarTxt, receber, apagar);
+    acoes.append(grupoEstado, botoes);
+
+    detalhes.append(acoes, produtos);
+    return detalhes;
+}
+
+function obterModalPedidoFornecedor() {
+    let modal = document.getElementById("fornecedor-pedido-modal");
+    if (modal) return modal;
+
+    modal = document.createElement("div");
+    modal.id = "fornecedor-pedido-modal";
+    modal.className = "fornecedor-pedido-modal";
+    modal.hidden = true;
+    modal.setAttribute("role", "dialog");
+    modal.setAttribute("aria-modal", "true");
+    modal.setAttribute("aria-labelledby", "fornecedor-pedido-modal-titulo");
+
+    const dialog = document.createElement("div");
+    dialog.className = "fornecedor-pedido-modal-dialog";
+
+    const topo = document.createElement("div");
+    topo.className = "fornecedor-pedido-modal-topo";
+    const titulo = document.createElement("h3");
+    titulo.id = "fornecedor-pedido-modal-titulo";
+    const fechar = document.createElement("button");
+    fechar.type = "button";
+    fechar.className = "fornecedor-edicao-fechar fornecedor-pedido-modal-fechar";
+    fechar.setAttribute("aria-label", "Fechar encomenda a fornecedor");
+    fechar.textContent = "x";
+    fechar.addEventListener("click", fecharModalPedidoFornecedor);
+    topo.append(titulo, fechar);
+
+    const corpo = document.createElement("div");
+    corpo.className = "fornecedor-pedido-modal-corpo";
+
+    dialog.append(topo, corpo);
+    modal.appendChild(dialog);
+    document.body.appendChild(modal);
+    return modal;
+}
+
+function fecharModalPedidoFornecedor() {
+    const modal = document.getElementById("fornecedor-pedido-modal");
+    if (!modal) return;
+    modal.hidden = true;
+    modal.dataset.pedidoId = "";
+    document.body.classList.remove("fornecedor-pedido-modal-aberto");
+    fornecedorPedidosAbertos.clear();
+    renderizarPedidosFornecedores();
+}
+
+function renderizarModalPedidoFornecedor(id) {
+    const pedido = fornecedorPedidos.find(item => String(item.id) === String(id));
+    const modal = obterModalPedidoFornecedor();
+    if (!pedido) {
+        fecharModalPedidoFornecedor();
+        return;
+    }
+
+    const titulo = modal.querySelector("#fornecedor-pedido-modal-titulo");
+    const corpo = modal.querySelector(".fornecedor-pedido-modal-corpo");
+    if (titulo) titulo.textContent = `Encomenda ${obterTextoCodigoPedidoFornecedor(pedido)}`;
+    if (!corpo) return;
+    corpo.replaceChildren();
+
+    const card = criarElementoPedidoFornecedor("article", "admin-encomenda-card fornecedor-pedido-card aberta fornecedor-pedido-card-modal");
+    const cabecalho = criarElementoPedidoFornecedor("div", "admin-encomenda-cabecalho fornecedor-pedido-cabecalho fornecedor-pedido-cabecalho-modal");
+    const totaisPedido = (pedido.itens || []).reduce((totais, item) => {
+        const quantidade = Math.max(0, Number(item.quantidade || 0));
+        const recebido = Math.max(0, Number(item.recebido || 0));
+        const faltaOs = Math.max(0, Number(item.falta_os || 0));
+        totais.itens += 1;
+        totais.quantidade += quantidade;
+        totais.os += faltaOs;
+        totais.pendente += Math.max(0, quantidade - recebido);
+        return totais;
+    }, { itens: 0, quantidade: 0, os: 0, pendente: 0 });
+    const resumo = `${totaisPedido.itens} artigo(s) | ${totaisPedido.quantidade} unidade(s) | ${totaisPedido.pendente} por receber${totaisPedido.os > 0 ? ` | ${totaisPedido.os} OS` : ""}`;
+    const linha = criarElementoPedidoFornecedor("div", "admin-encomenda-linha fornecedor-pedido-linha-cabecalho");
+    linha.append(
+        criarElementoPedidoFornecedor("strong", "admin-encomenda-codigo", obterTextoCodigoPedidoFornecedor(pedido)),
+        criarElementoPedidoFornecedor("span", "admin-encomenda-data", formatarDataPedidoFornecedor(obterDataExibicaoPedidoFornecedor(pedido))),
+        criarElementoPedidoFornecedor("span", "fornecedor-pedido-fornecedor-nome", pedido.fornecedor || "Fornecedor"),
+        criarElementoPedidoFornecedor("span", "fornecedor-pedido-resumo", resumo),
+        criarElementoPedidoFornecedor("span", `estado-encomenda ${obterClasseBadgeEstadoPedidoFornecedor(pedido.estado)}`, pedido.estado || "A preparar")
+    );
+    cabecalho.appendChild(linha);
+    card.append(cabecalho, criarDetalhesPedidoFornecedor(pedido));
+    corpo.appendChild(card);
+
+    modal.hidden = false;
+    modal.dataset.pedidoId = String(pedido.id);
+    document.body.classList.add("fornecedor-pedido-modal-aberto");
+    modal.querySelector(".fornecedor-pedido-modal-fechar")?.focus();
+}
+
+function abrirModalPedidoFornecedor(id) {
+    fornecedorPedidosAbertos.clear();
+    fornecedorPedidosAbertos.add(String(id));
+    fornecedorPedidoAlvoJuntar = String(id);
+    sincronizarPedidoAlvoJuntarSelecaoFornecedor();
+    renderizarPedidosFornecedores();
+    renderizarModalPedidoFornecedor(id);
+}
+
 function renderizarPedidosFornecedores() {
     const caixa = document.getElementById('fornecedor-pedidos');
     if (!caixa) return;
@@ -3383,17 +3562,7 @@ function renderizarPedidosFornecedores() {
         cabecalho.setAttribute("role", "button");
         cabecalho.setAttribute("aria-expanded", aberto ? "true" : "false");
 
-        const alternarPedido = () => {
-            const idPedido = String(pedido.id);
-            if (fornecedorPedidosAbertos.has(idPedido)) {
-                fornecedorPedidosAbertos.delete(idPedido);
-            } else {
-                fornecedorPedidosAbertos.add(idPedido);
-                fornecedorPedidoAlvoJuntar = idPedido;
-            }
-            sincronizarPedidoAlvoJuntarSelecaoFornecedor();
-            renderizarPedidosFornecedores();
-        };
+        const alternarPedido = () => abrirModalPedidoFornecedor(pedido.id);
         cabecalho.addEventListener("click", alternarPedido);
         cabecalho.addEventListener("keydown", (evento) => {
             if (evento.key === "Enter" || evento.key === " ") {
@@ -3417,85 +3586,12 @@ function renderizarPedidosFornecedores() {
         }
         cabecalho.append(linha, criarElementoPedidoFornecedor("span", "admin-encomenda-seta", "▾"));
 
-        const detalhes = criarElementoPedidoFornecedor("div", "admin-encomenda-detalhes fornecedor-pedido-detalhes");
-        detalhes.hidden = !aberto;
-
-        const produtos = criarElementoPedidoFornecedor("div", "admin-encomenda-produtos fornecedor-pedido-produtos");
-        if (estaPaginaFornecedoresUnificada()) {
-            renderizarPedidoFornecedorProdutosTabela(produtos, pedido);
-        } else {
-            const lista = criarElementoPedidoFornecedor("div", "fornecedor-pedido-produtos-lista");
-            pedido.itens.forEach(item => {
-                const produtoAtual = obterProdutoParaPedidoFornecedor(item) || item;
-                const recebido = Number(item.recebido || 0);
-                const restante = Math.max(0, Number(item.quantidade || 0) - recebido);
-                const faltaOs = Math.max(0, Number(item.falta_os || 0));
-                const linhaProduto = criarElementoPedidoFornecedor("div", "fornecedor-pedido-linha");
-                if (faltaOs > 0) linhaProduto.classList.add("tem-os");
-                linhaProduto.appendChild(criarImagemFornecedor(produtoAtual, "fornecedor-miniatura pequena"));
-                const info = criarElementoPedidoFornecedor("div", "fornecedor-info");
-                info.innerHTML = `<strong>${escaparHtmlFornecedor(item.nome)}</strong><span class="fornecedor-identificadores">Ref. ${escaparHtmlFornecedor(item.referencia || "-")} | SKU ${escaparHtmlFornecedor(item.sku || "-")}</span><span>Pedido: ${Number(item.quantidade || 0)} | Recebido: ${recebido} | Stock atual: ${Number(produtoAtual.stock || 0)}</span>${faltaOs > 0 ? `<span class="fornecedor-ajuste-os ativo">OS/Falta: ${faltaOs}${item.quantidade_original ? ` de ${Number(item.quantidade_original || 0)}` : ""}</span>` : ""}${item.origem_ajuste ? `<span class="fornecedor-ajuste-os">${escaparHtmlFornecedor(obterTextoOrigemAjustePedidoFornecedor(item.origem_ajuste))}</span>` : ""}`;
-                const input = document.createElement("input");
-                input.type = "number";
-                input.min = "0";
-                input.max = String(restante);
-                input.step = "1";
-                input.value = restante > 0 ? restante : 0;
-                input.className = "fornecedor-recebido-input";
-                input.dataset.pedido = pedido.id;
-                input.dataset.produto = item.id;
-                linhaProduto.append(info, input);
-                lista.appendChild(linhaProduto);
-            });
-            produtos.appendChild(lista);
-        }
-
-        const acoes = criarElementoPedidoFornecedor("div", "admin-encomenda-acoes fornecedor-pedido-acoes");
-        const grupoEstado = criarElementoPedidoFornecedor("div", "admin-encomenda-estado-edicao");
-        const estado = document.createElement("select");
-        estado.className = "fornecedor-status-select";
-        estado.setAttribute("aria-label", "Estado da encomenda");
-        obterEstadosPedidoFornecedor().forEach(opcao => {
-            const opt = document.createElement("option");
-            opt.value = opcao;
-            opt.textContent = opcao;
-            opt.selected = pedido.estado === opcao;
-            estado.appendChild(opt);
-        });
-        estado.addEventListener("change", () => alterarEstadoPedidoFornecedor(pedido.id, estado.value));
-        grupoEstado.appendChild(estado);
-
-        const botoes = criarElementoPedidoFornecedor("div", "admin-encomenda-botoes");
-        const editar = criarElementoPedidoFornecedor("button", "wallapop-botao", "Editar encomenda");
-        editar.type = "button";
-        editar.addEventListener("click", () => abrirEdicaoPedidoFornecedor(pedido.id));
-        const imprimir = criarElementoPedidoFornecedor("button", "wallapop-botao", "Imprimir");
-        imprimir.type = "button";
-        imprimir.addEventListener("click", () => imprimirPedidoFornecedor(pedido.id));
-        const exportarTxt = criarElementoPedidoFornecedor("button", "wallapop-botao", "Exportar TXT");
-        exportarTxt.type = "button";
-        exportarTxt.addEventListener("click", () => {
-            const texto = obterTextoExportacaoPedidoFornecedor(pedido);
-            if (!texto) {
-                definirStatusFornecedor("A encomenda nao tem produtos para exportar.", true);
-                return;
-            }
-            exportarTxtPedidoFornecedor(pedido);
-            definirStatusFornecedor(`TXT da encomenda ${pedido.codigo || pedido.id} exportado.`);
-        });
-        const receber = criarElementoPedidoFornecedor("button", "wallapop-botao wallapop-botao-destaque", "Receber stock");
-        receber.type = "button";
-        receber.addEventListener("click", () => receberPedidoFornecedor(pedido.id));
-        const apagar = criarElementoPedidoFornecedor("button", "wallapop-botao admin-encomenda-apagar", "Apagar pedido");
-        apagar.type = "button";
-        apagar.addEventListener("click", () => apagarPedidoFornecedor(pedido.id));
-        botoes.append(editar, imprimir, exportarTxt, receber, apagar);
-        acoes.append(grupoEstado, botoes);
-
-        detalhes.append(acoes, produtos);
-        card.append(cabecalho, detalhes);
+        card.appendChild(cabecalho);
         caixa.appendChild(card);
     });
+    const modalPedido = document.getElementById("fornecedor-pedido-modal");
+    const idModalAberto = modalPedido && !modalPedido.hidden ? modalPedido.dataset.pedidoId : "";
+    if (idModalAberto) renderizarModalPedidoFornecedor(idModalAberto);
     atualizarBotaoJuntarSelecaoFornecedor();
 }
 
@@ -3606,6 +3702,10 @@ document.addEventListener('keydown', (evento) => {
     const modalFicha = document.getElementById('fornecedor-ficha-modal');
     if (evento.key === 'Escape' && modalFicha && !modalFicha.hidden) {
         fecharModalFichaFornecedor();
+    }
+    const modalPedidoFornecedor = document.getElementById('fornecedor-pedido-modal');
+    if (evento.key === 'Escape' && modalPedidoFornecedor && !modalPedidoFornecedor.hidden) {
+        fecharModalPedidoFornecedor();
     }
 });
 
