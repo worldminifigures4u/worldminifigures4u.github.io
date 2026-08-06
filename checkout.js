@@ -2,11 +2,25 @@
 // Carregado apenas na pagina Carrinho.
 
 let criarEncomendaEmCurso = false;
+const CHAVE_POPUP_SUCESSO_ENCOMENDA = 'figures-planet-encomenda-sucesso';
 
 function definirBotoesConfirmarEncomenda(desativado) {
   document.querySelectorAll('[data-acao-carrinho="confirmar-encomenda"]').forEach((botao) => {
     botao.disabled = !!desativado;
   });
+}
+
+function guardarPopupSucessoEncomenda(mensagem) {
+  try {
+    sessionStorage.setItem(CHAVE_POPUP_SUCESSO_ENCOMENDA, JSON.stringify({
+      mensagem: String(mensagem || ''),
+      criadoEm: Date.now()
+    }));
+    return true;
+  } catch (erro) {
+    console.warn('Nao foi possivel preparar o popup de sucesso da encomenda:', erro);
+    return false;
+  }
 }
 
 async function criarNovaEncomenda() {
@@ -104,15 +118,22 @@ async function criarNovaEncomenda() {
         : '';
       throw new Error(mensagemStock || resultado.error || "Não foi possível criar a encomenda.");
     }
-    mostrarMensagem(
-      statusDiv,
-      mensagemSucessoEncomenda(metodoPagamento, resultado.encomenda?.codigo_encomenda || ''),
-      "msg-sucesso"
+    const mensagemSucesso = mensagemSucessoEncomenda(
+      metodoPagamento,
+      resultado.encomenda?.codigo_encomenda || ''
     );
+    const popupPreparado = guardarPopupSucessoEncomenda(mensagemSucesso);
+    mostrarMensagem(statusDiv, mensagemSucesso, "msg-sucesso");
     
     carrinho = [];
     guardarCarrinho();
     atualizarCarrinho();
+
+    if (popupPreparado) {
+      window.location.assign('index.html?encomenda=sucesso');
+      return;
+    }
+
     await carregarProdutosConformeUtilizador();
     if(typeof carregarHistoricoEncomendas === 'function') carregarHistoricoEncomendas(user.id);
 

@@ -1,5 +1,6 @@
 ﻿// Carregamento dos modulos da vitrine (app-loja, loja-produtos, cart-mini).
 (function () {
+    const CHAVE_POPUP_SUCESSO_ENCOMENDA = 'figures-planet-encomenda-sucesso';
     let promessaAppLoja = null;
     let promessaLojaProdutos = null;
     let promessaCartMini = null;
@@ -102,6 +103,73 @@
         if (typeof atualizarBotoesFavoritos === 'function') {
             atualizarBotoesFavoritos();
         }
+    }
+
+    function obterMensagemPopupSucessoEncomenda() {
+        try {
+            const bruto = sessionStorage.getItem(CHAVE_POPUP_SUCESSO_ENCOMENDA);
+            if (!bruto) return null;
+            sessionStorage.removeItem(CHAVE_POPUP_SUCESSO_ENCOMENDA);
+            const dados = JSON.parse(bruto);
+            const criadoEm = Number(dados?.criadoEm || 0);
+            if (criadoEm && Date.now() - criadoEm > 10 * 60 * 1000) return null;
+            return String(dados?.mensagem || '').trim() || null;
+        } catch (erro) {
+            try { sessionStorage.removeItem(CHAVE_POPUP_SUCESSO_ENCOMENDA); } catch (_) { /* ignore */ }
+            console.warn('Nao foi possivel ler o popup de sucesso da encomenda:', erro);
+            return null;
+        }
+    }
+
+    function mostrarPopupSucessoEncomenda(mensagem) {
+        const linhas = String(mensagem || '').split(/\r?\n/).map(linha => linha.trim()).filter(Boolean);
+        const titulo = linhas.shift() || 'Encomenda registada com sucesso!';
+        const detalhe = linhas.join('\n');
+
+        const overlay = document.createElement('div');
+        overlay.className = 'popup-encomenda-sucesso';
+        overlay.setAttribute('role', 'dialog');
+        overlay.setAttribute('aria-modal', 'true');
+        overlay.setAttribute('aria-labelledby', 'popup-encomenda-sucesso-titulo');
+
+        const caixa = document.createElement('div');
+        caixa.className = 'popup-encomenda-sucesso__caixa';
+
+        const fechar = document.createElement('button');
+        fechar.type = 'button';
+        fechar.className = 'popup-encomenda-sucesso__fechar';
+        fechar.setAttribute('aria-label', 'Fechar');
+        fechar.textContent = 'x';
+
+        const h2 = document.createElement('h2');
+        h2.id = 'popup-encomenda-sucesso-titulo';
+        h2.textContent = titulo;
+
+        const texto = document.createElement('p');
+        texto.textContent = detalhe;
+
+        const ok = document.createElement('button');
+        ok.type = 'button';
+        ok.className = 'popup-encomenda-sucesso__ok';
+        ok.textContent = 'OK';
+
+        const fecharPopup = () => {
+            overlay.remove();
+            document.removeEventListener('keydown', aoTeclado);
+        };
+        const aoTeclado = (evento) => {
+            if (evento.key === 'Escape') fecharPopup();
+        };
+
+        fechar.addEventListener('click', fecharPopup);
+        ok.addEventListener('click', fecharPopup);
+        caixa.append(fechar, h2);
+        if (detalhe) caixa.appendChild(texto);
+        caixa.appendChild(ok);
+        overlay.appendChild(caixa);
+        document.body.appendChild(overlay);
+        document.addEventListener('keydown', aoTeclado);
+        ok.focus();
     }
 
     function agendarFavoritosLoja() {
@@ -209,6 +277,11 @@
 
     document.addEventListener('DOMContentLoaded', function () {
         if (!document.getElementById('vitrine-produtos')) return;
+
+        const mensagemSucesso = obterMensagemPopupSucessoEncomenda();
+        if (mensagemSucesso) {
+            window.requestAnimationFrame(() => mostrarPopupSucessoEncomenda(mensagemSucesso));
+        }
 
         garantirModulosLoja().catch(console.error);
         ligarInteracaoModulosLoja();

@@ -373,7 +373,7 @@
 
         const carregarCheckout = () => new Promise((resolve, reject) => {
             const script = document.createElement('script');
-            script.src = 'checkout.js?v=20260721-erros-cliente';
+            script.src = 'checkout.js?v=20260806-popup-sucesso-encomenda';
             script.defer = true;
             script.onload = () => resolve();
             script.onerror = () => reject(new Error('Falha ao carregar checkout.'));

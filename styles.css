@@ -790,3 +790,73 @@ input[type="number"]::-webkit-inner-spin-button{
 .campo-com-limpar--cabecalho > input.tem-limpar-campo{
     padding-right:calc(44px + var(--campo-limpar-tamanho) + 6px);
 }
+
+.popup-encomenda-sucesso {
+    position: fixed;
+    inset: 0;
+    z-index: 10000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    background: rgba(0, 0, 0, 0.72);
+}
+
+.popup-encomenda-sucesso__caixa {
+    position: relative;
+    width: min(520px, 100%);
+    padding: 32px 30px 28px;
+    border: 1px solid #333;
+    border-radius: 10px;
+    background: #171717;
+    box-shadow: 0 24px 70px rgba(0, 0, 0, 0.55);
+    text-align: center;
+}
+
+.popup-encomenda-sucesso__caixa h2 {
+    margin: 0 34px 18px;
+    color: #00c853;
+    font-size: 24px;
+    line-height: 1.25;
+}
+
+.popup-encomenda-sucesso__caixa p {
+    margin: 0 0 24px;
+    color: #00d84a;
+    font-size: 18px;
+    line-height: 1.45;
+    white-space: pre-line;
+}
+
+.popup-encomenda-sucesso__fechar {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    width: 38px;
+    height: 38px;
+    border: 0;
+    border-radius: 8px;
+    background: #ff4444;
+    color: #fff;
+    font-size: 24px;
+    font-weight: 900;
+    line-height: 1;
+    cursor: pointer;
+}
+
+.popup-encomenda-sucesso__ok {
+    min-width: 180px;
+    min-height: 44px;
+    border: 0;
+    border-radius: 10px;
+    background: #22aa48;
+    color: #fff;
+    font-size: 18px;
+    font-weight: 900;
+    cursor: pointer;
+}
+
+.popup-encomenda-sucesso__fechar:hover,
+.popup-encomenda-sucesso__ok:hover {
+    filter: brightness(1.08);
+}
