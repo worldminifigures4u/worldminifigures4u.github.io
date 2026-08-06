@@ -1,5 +1,15 @@
 // Agendamento de conta-cliente.js na pagina Conta.
 (function () {
+    function prepararContaSemFlash() {
+        if (document.body?.dataset?.page === 'conta') {
+            document.body.classList.add('conta-a-verificar');
+        }
+        document.getElementById('conteudo-cliente-anonimo')?.classList.add('oculto');
+        document.querySelectorAll('[data-seccao-conta="historico"]').forEach((botao) => {
+            botao.remove();
+        });
+    }
+
     function urlTemRecuperacaoConta() {
         const params = new URLSearchParams(window.location.search);
         const hash = window.location.hash ? window.location.hash.replace(/^#/, '') : '';
@@ -36,6 +46,8 @@
     }
 
     document.addEventListener('DOMContentLoaded', () => {
+        prepararContaSemFlash();
+
         const painel = document.getElementById('painel-cliente');
         const formLogin = document.getElementById('form-login');
         if (!painel && !formLogin) return;
@@ -54,4 +66,6 @@
 
         agendarCarregamentoConta();
     });
+
+    prepararContaSemFlash();
 })();

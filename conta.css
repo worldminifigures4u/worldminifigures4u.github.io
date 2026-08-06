@@ -82,6 +82,10 @@ body[data-page="conta"] #conteudo-cliente-autenticado:not(.oculto) ~ #conteudo-c
             display:none !important;
         }
 
+body[data-page="conta"] [data-seccao-conta="historico"]{
+            display:none !important;
+        }
+
 body[data-page="conta"].conta-a-verificar #conteudo-cliente-autenticado,
 body[data-page="conta"].conta-a-verificar #conteudo-cliente-anonimo{
             display:none !important;

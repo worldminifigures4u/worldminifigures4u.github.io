@@ -8,7 +8,7 @@
 
         promessaContaCliente = new Promise((resolve, reject) => {
             const script = document.createElement('script');
-            script.src = 'conta-cliente.js?v=20260806-conta-login-oculto-inicial';
+            script.src = 'conta-cliente.js?v=20260806-conta-flash-defensivo';
             script.defer = true;
             script.onload = () => resolve();
             script.onerror = () => reject(new Error('Falha ao carregar conta-cliente.js'));
