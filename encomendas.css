@@ -1549,6 +1549,10 @@ body.pagina-encomendas-admin{
     background:rgba(0,0,0,.86);
 }
 
+.pagina-encomendas-admin .admin-imagem-modal{
+    z-index:20000;
+}
+
 .admin-encomenda-modal-dialogo{
     position:relative;
     width:min(1280px, 100%);
