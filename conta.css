@@ -82,6 +82,20 @@ body[data-page="conta"] #conteudo-cliente-autenticado:not(.oculto) ~ #conteudo-c
             display:none !important;
         }
 
+body[data-page="conta"].conta-a-verificar #conteudo-cliente-autenticado,
+body[data-page="conta"].conta-a-verificar #conteudo-cliente-anonimo{
+            display:none !important;
+        }
+
+body[data-page="conta"].conta-a-verificar #painel-cliente::before{
+            content:"A carregar conta...";
+            display:block;
+            padding:18px 0;
+            color:#aaa;
+            font-size:16px;
+            font-weight:800;
+        }
+
         .area-cliente h2{
             margin-top:0;
         }

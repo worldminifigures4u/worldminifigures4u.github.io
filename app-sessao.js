@@ -41,6 +41,7 @@ async function prepararRecuperacaoPassword() {
     if (typeof mostrarFormularioRecuperacaoPassword === 'function') {
         mostrarFormularioRecuperacaoPassword();
     }
+    concluirVerificacaoContaSeExistir();
 }
 
 function carregarCarrinhoLocal() {
@@ -122,7 +123,14 @@ function mostrarContaAnonimaSeExistir() {
     const anonimo = document.getElementById('conteudo-cliente-anonimo');
     if (autenticado) autenticado.classList.add('oculto');
     if (anonimo) anonimo.classList.remove('oculto');
+    concluirVerificacaoContaSeExistir();
     mostrarAvisoContaBloqueadaSeExistir();
+}
+
+function concluirVerificacaoContaSeExistir() {
+    if (document.body?.dataset?.page === 'conta') {
+        document.body.classList.remove('conta-a-verificar');
+    }
 }
 
 function mostrarAvisoContaBloqueadaSeExistir() {
@@ -224,6 +232,7 @@ async function obterDadosPerfilDaTabela(userId, user = null) {
             const autenticado = document.getElementById('conteudo-cliente-autenticado');
             if (anonimo) anonimo.classList.add('oculto');
             if (autenticado) autenticado.classList.remove('oculto');
+            concluirVerificacaoContaSeExistir();
             if (typeof preencherFormularioDadosCliente === 'function') preencherFormularioDadosCliente({}, user);
             atualizarVisibilidadeAdmin(user);
             if (typeof carregarFavoritosUtilizador === 'function') carregarFavoritosUtilizador(userId);
@@ -237,6 +246,7 @@ async function obterDadosPerfilDaTabela(userId, user = null) {
             const autenticado = document.getElementById('conteudo-cliente-autenticado');
             if (anonimo) anonimo.classList.add('oculto');
             if (autenticado) autenticado.classList.remove('oculto');
+            concluirVerificacaoContaSeExistir();
             if (typeof preencherFormularioDadosCliente === 'function') preencherFormularioDadosCliente(data, user);
             atualizarVisibilidadeAdmin(user);
             if (typeof carregarFavoritosUtilizador === 'function') carregarFavoritosUtilizador(userId);
@@ -245,6 +255,7 @@ async function obterDadosPerfilDaTabela(userId, user = null) {
         }
     } catch (e) {
         console.error(e);
+        concluirVerificacaoContaSeExistir();
     } finally {
         await sincronizarFichaClienteSiteRemota();
     }
@@ -258,6 +269,11 @@ async function verificarSessaoSupabase() {
             return;
         }
         await obterDadosPerfilDaTabela(session.user.id, session.user);
+    } else {
+        atualizarVisibilidadeAdmin(null);
+        mostrarContaAnonimaSeExistir();
+        atualizarCabecalhoCliente();
+        if (typeof carregarFavoritosUtilizador === 'function') carregarFavoritosUtilizador();
     }
 }
 
@@ -280,6 +296,7 @@ function iniciarClientesSupabase() {
                 if (typeof mostrarFormularioRecuperacaoPassword === 'function') {
                     mostrarFormularioRecuperacaoPassword();
                 }
+                concluirVerificacaoContaSeExistir();
                 return;
             }
 
@@ -287,6 +304,7 @@ function iniciarClientesSupabase() {
                 if (typeof mostrarFormularioRecuperacaoPassword === 'function') {
                     mostrarFormularioRecuperacaoPassword();
                 }
+                concluirVerificacaoContaSeExistir();
                 return;
             }
 
@@ -351,11 +369,15 @@ window.addEventListener('load', async () => {
         await window.carregarScriptSupabase();
     } catch (erro) {
         console.error(erro);
+        concluirVerificacaoContaSeExistir();
         window.dispatchEvent(new Event('figures-planet-sessao-erro'));
         return;
     }
 
-    if (typeof supabase === 'undefined') return;
+    if (typeof supabase === 'undefined') {
+        concluirVerificacaoContaSeExistir();
+        return;
+    }
 
     iniciarClientesSupabase();
     window.dispatchEvent(new Event('figures-planet-sessao-pronta'));

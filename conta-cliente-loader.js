@@ -8,7 +8,7 @@
 
         promessaContaCliente = new Promise((resolve, reject) => {
             const script = document.createElement('script');
-            script.src = 'conta-cliente.js?v=20260806-historico-topo';
+            script.src = 'conta-cliente.js?v=20260806-conta-sem-flash-login';
             script.defer = true;
             script.onload = () => resolve();
             script.onerror = () => reject(new Error('Falha ao carregar conta-cliente.js'));

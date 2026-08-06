@@ -485,7 +485,7 @@
 
     if ('serviceWorker' in navigator && window.location.protocol !== 'file:') {
         window.addEventListener('load', () => {
-            navigator.serviceWorker.register('sw.js?v=20260729-favicon-fp-ring-v2').then((registo) => {
+            navigator.serviceWorker.register('sw.js?v=20260806-conta-sem-flash-login').then((registo) => {
                 registo.addEventListener('updatefound', () => {
                     const novoWorker = registo.installing;
                     if (!novoWorker) return;
