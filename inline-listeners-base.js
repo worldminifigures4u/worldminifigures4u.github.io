@@ -485,7 +485,7 @@
 
     if ('serviceWorker' in navigator && window.location.protocol !== 'file:') {
         window.addEventListener('load', () => {
-            navigator.serviceWorker.register('sw.js?v=20260806-conta-sem-flash-login').then((registo) => {
+            navigator.serviceWorker.register('sw.js?v=20260806-conta-login-oculto-inicial').then((registo) => {
                 registo.addEventListener('updatefound', () => {
                     const novoWorker = registo.installing;
                     if (!novoWorker) return;
