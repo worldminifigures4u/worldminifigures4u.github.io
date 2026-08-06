@@ -2,7 +2,7 @@
 
         .admin-imagem-modal{
             position:fixed;
-            z-index:10000;
+            z-index:11000;
             inset:0;
             padding:28px;
             display:flex;
