@@ -668,6 +668,28 @@ function ligarElementoConta(id, evento, handler) {
     if (elemento) elemento.addEventListener(evento, handler);
 }
 
+function obterSeccaoContaValida(alvo) {
+    const pretendida = String(alvo || '').trim();
+    const secoes = Array.from(document.querySelectorAll('[data-conta-seccao]'));
+    return secoes.some(function (secao) {
+        return secao.dataset.contaSeccao === pretendida;
+    }) ? pretendida : 'gestao';
+}
+
+function ativarSeccaoConta(alvo) {
+    const destino = obterSeccaoContaValida(alvo);
+
+    document.querySelectorAll('[data-seccao-conta]').forEach(function (item) {
+        item.classList.toggle('ativa', item.dataset.seccaoConta === destino);
+    });
+    document.querySelectorAll('[data-conta-seccao]').forEach(function (secao) {
+        secao.classList.toggle('ativa', secao.dataset.contaSeccao === destino);
+    });
+    document.querySelectorAll('.acao-historico-topo').forEach(function (link) {
+        link.classList.toggle('ativa', destino === 'historico');
+    });
+}
+
 function ligarContaCliente() {
     ligarElementoConta('form-editar-dados-cliente', 'submit', function (evento) {
         if (typeof guardarDadosCliente === 'function') guardarDadosCliente(evento);
@@ -700,13 +722,16 @@ function ligarContaCliente() {
     document.querySelectorAll('[data-seccao-conta]').forEach(function (botao) {
         botao.addEventListener('click', function () {
             const destino = botao.dataset.seccaoConta;
-            document.querySelectorAll('[data-seccao-conta]').forEach(function (item) {
-                item.classList.toggle('ativa', item === botao);
-            });
-            document.querySelectorAll('[data-conta-seccao]').forEach(function (secao) {
-                secao.classList.toggle('ativa', secao.dataset.contaSeccao === destino);
-            });
+            ativarSeccaoConta(destino);
+            if (window.history && typeof window.history.replaceState === 'function') {
+                window.history.replaceState(null, '', destino === 'gestao' ? 'conta.html' : `conta.html#${destino}`);
+            }
         });
+    });
+
+    ativarSeccaoConta((window.location.hash || '').replace(/^#/, ''));
+    window.addEventListener('hashchange', function () {
+        ativarSeccaoConta((window.location.hash || '').replace(/^#/, ''));
     });
 
     document.querySelectorAll('[data-acao-cliente="recuperar-password"]').forEach(function (botao) {
