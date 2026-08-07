@@ -694,7 +694,8 @@ async function guardarEdicaoPedidoFornecedor(evento) {
         status.textContent = 'A atualizar histórico na ficha do produto...';
         await sincronizarHistoricoPedidosFornecedor(itens, fornecedor, {
             modo: "editar",
-            itensAnteriores: pedido.itens || []
+            itensAnteriores: pedido.itens || [],
+            estadoPedido: estado
         });
         if (deveConfirmarHistoricoPedidoFornecedor(estadoAnterior, estado)) {
             await sincronizarHistoricoPedidosFornecedor(itens, fornecedor, { modo: "confirmar" });
