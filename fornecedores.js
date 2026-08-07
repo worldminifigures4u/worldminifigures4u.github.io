@@ -2958,17 +2958,16 @@ async function sincronizarHistoricoPedidosFornecedor(itens, fornecedorNome, opco
                 if (encomendaJaConfirmada) {
                     // A encomenda já estava Encomendada/Recebida antes desta edição, por isso o
                     // modo "confirmar" não volta a correr (só dispara em mudança de estado).
-                    // Corrige sempre que a marcação atual ainda não estiver em OS - inclui casos
-                    // em que o artigo já estava OS de uma edição anterior a esta correção existir.
                     const marcacaoAtual = normalizarMarcacaoFornecedor(atual);
+                    if (!marcacaoAtual.historico.length) {
+                        // Sem nenhuma entrada de histórico (artigo ficou OS antes de este
+                        // registo existir) - cria uma entrada com a data real da encomenda
+                        // (não a de hoje), para não ficar "Sem histórico" apesar de já
+                        // estar marcado OS. Corre sempre, independentemente da marcação
+                        // atual já estar ou não em OS.
+                        atual = acrescentarHistoricoFornecedor(atual, "os", opcoes.dataPedido || agora);
+                    }
                     if (marcacaoAtual.estado.toUpperCase() !== "OS") {
-                        if (!marcacaoAtual.historico.length) {
-                            // Sem nenhuma entrada de histórico (artigo ficou OS antes de este
-                            // registo existir) - cria uma entrada com a data real da encomenda
-                            // (não a de hoje), para não ficar "Sem histórico" apesar de já
-                            // estar marcado OS.
-                            atual = acrescentarHistoricoFornecedor(atual, "os", opcoes.dataPedido || agora);
-                        }
                         atual = aplicarMarcacaoAtualAposConfirmar(atual, "OS", agora);
                     }
                 }
