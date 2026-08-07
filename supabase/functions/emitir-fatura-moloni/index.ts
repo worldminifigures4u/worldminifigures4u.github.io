@@ -597,7 +597,6 @@ async function criarFaturaReciboMoloni(
   invoiceStatus: number,
 ) {
   const dataEmissao = new Date();
-  const dataPagamento = parseDataPagamento(encomenda.data_pagamento || encomenda.created_at);
   const vencimento = adicionarDias(dataEmissao, 30);
   const totalBruto = numero(encomenda.total);
   const portesBruto = numero(encomenda.portes);
@@ -644,7 +643,7 @@ async function criarFaturaReciboMoloni(
         {
           paymentMethodId,
           value: totalBruto,
-          date: formatarDataIso(dataPagamento),
+          date: formatarDataIso(dataEmissao),
         },
       ],
     },
