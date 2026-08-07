@@ -1,4 +1,3 @@
-
 const MAPAS_COLUNAS = [
     { chave: "foto", rotulo: "foto", classe: "mapas-col-foto", semOrdenacao: true, largura: 64 },
     { chave: "nome", rotulo: "nome", classe: "mapas-col-nome", obrigatorio: true, largura: 280 },
@@ -62,7 +61,7 @@ var __mapasProdutoModalPromessa = null;
 function garantirMapasProdutoModal() {
     if (window.MapasProdutoModal) return Promise.resolve();
     if (!__mapasProdutoModalPromessa) {
-        __mapasProdutoModalPromessa = carregarScriptAdmin("mapas-produto-modal.js?v=20260804-sem-resumo-fornecedores");
+        __mapasProdutoModalPromessa = carregarScriptAdmin("mapas-produto-modal.js?v=20260807-fix-estado-os");
     }
     return __mapasProdutoModalPromessa;
 }
