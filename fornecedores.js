@@ -2949,16 +2949,21 @@ async function sincronizarHistoricoPedidosFornecedor(itens, fornecedorNome, opco
         } else if (modo === "editar") {
             // OS total (nada a receber): atualiza historico já na edição
             // OS parcial: historico "Encomendada / OS" só ao confirmar estado Encomendada/Recebida
-            if (agoraOs && !eraOs && quantidade <= 0) {
-                atual = corrigirUltimaTentativaParaOs(atual, agora);
+            if (agoraOs && quantidade <= 0) {
+                if (!eraOs) {
+                    atual = corrigirUltimaTentativaParaOs(atual, agora);
+                }
                 const encomendaJaConfirmada = estadoPedidoFornecedorEhEncomendada(opcoes.estadoPedido)
                     || estadoPedidoFornecedorEhRecebida(opcoes.estadoPedido);
                 if (encomendaJaConfirmada) {
                     // A encomenda já estava Encomendada/Recebida antes desta edição, por isso o
                     // modo "confirmar" não volta a correr (só dispara em mudança de estado).
-                    // Sem isto, a marcação atual do produto ficava presa no valor anterior (ex.
-                    // "Encomendada") mesmo com o artigo já sem stock no fornecedor.
-                    atual = aplicarMarcacaoAtualAposConfirmar(atual, "OS", agora);
+                    // Corrige sempre que a marcação atual ainda não estiver em OS - inclui casos
+                    // em que o artigo já estava OS de uma edição anterior a esta correção existir.
+                    const marcacaoAtual = normalizarMarcacaoFornecedor(atual);
+                    if (marcacaoAtual.estado.toUpperCase() !== "OS") {
+                        atual = aplicarMarcacaoAtualAposConfirmar(atual, "OS", agora);
+                    }
                 }
                 alterou = true;
             } else if (!anterior && quantidade > 0) {
