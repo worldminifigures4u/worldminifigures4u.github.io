@@ -3238,6 +3238,7 @@ function renderizarPedidoFornecedorProdutosTabela(caixa, pedido) {
             if (ativo) {
                 botao.setAttribute("aria-sort", fornecedorPedidoItensOrdenacao.direcao === "asc" ? "ascending" : "descending");
                 botao.textContent += fornecedorPedidoItensOrdenacao.direcao === "asc" ? " ▲" : " ▼";
+                tabela.dataset.colunaAtiva = coluna;
             }
             botao.addEventListener("click", () => {
                 const mesmaColuna = fornecedorPedidoItensOrdenacao.coluna === coluna;

@@ -2476,6 +2476,17 @@ body.mapas-produto-modal-aberto {
     box-shadow: inset 0 -2px 0 var(--fp-cor-destaque, #ffc400);
 }
 
+.fornecedor-pedido-tabela[data-coluna-ativa="nome"] td.mapas-col-nome,
+.fornecedor-pedido-tabela[data-coluna-ativa="ref"] td.mapas-col-ref,
+.fornecedor-pedido-tabela[data-coluna-ativa="pedido"] td.mapas-col-pedido-qtd,
+.fornecedor-pedido-tabela[data-coluna-ativa="recebido"] td.mapas-col-recebido-qtd,
+.fornecedor-pedido-tabela[data-coluna-ativa="stock"] td.mapas-col-stock-atual,
+.fornecedor-pedido-tabela[data-coluna-ativa="origem"] td.mapas-col-origem-ajuste,
+.fornecedor-pedido-tabela[data-coluna-ativa="receber"] td.mapas-col-qtd {
+    background: rgba(255, 196, 0, .08);
+    box-shadow: inset 0 1px 0 rgba(255, 196, 0, .35), inset 0 -1px 0 rgba(255, 196, 0, .35);
+}
+
 .pagina-fornecedores-unificada .fornecedor-tabela-cabecalho-fixo {
     overflow: hidden;
     background: var(--fp-cabecalho-tabela-fundo);
