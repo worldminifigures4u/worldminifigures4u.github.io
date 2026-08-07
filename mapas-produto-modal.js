@@ -481,18 +481,25 @@ function renderizarHistoricoEncomendasFornecedorMapa(conteudo, produto, pedidos)
     thead.appendChild(linhaCabecalho);
 
     const tbody = document.createElement("tbody");
-    linhas.forEach(({ pedido, pedidoQtd, recebido, dataRef }) => {
+    linhas.forEach(({ pedido, item, pedidoQtd, recebido, dataRef }) => {
         const tr = document.createElement("tr");
-        if (recebido < pedidoQtd) {
+        const faltaOs = Math.max(0, Math.floor(Number(item?.falta_os || 0)));
+        const emFalta = faltaOs > 0;
+        if (emFalta) {
+            tr.classList.add("mapas-produto-historico-os");
+        } else if (recebido < pedidoQtd) {
             tr.classList.add("mapas-produto-historico-pendente");
         }
+        const estadoTexto = emFalta
+            ? `Sem stock no fornecedor (OS: ${faltaOs})`
+            : (pedido.estado || "—");
         [
             formatarDataEncomendaFornecedorMapa(dataRef),
             pedido.codigo || pedido.referencia || "—",
             pedido.fornecedor || "—",
             String(pedidoQtd || "—"),
             String(recebido),
-            pedido.estado || "—"
+            estadoTexto
         ].forEach((valor) => {
             const td = document.createElement("td");
             td.textContent = valor;
