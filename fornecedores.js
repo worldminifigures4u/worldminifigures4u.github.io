@@ -27,6 +27,58 @@ var FORNECEDOR_LISTA_MAX_LINHAS = 500;
 var fornecedorPedidosAbertos = new Set();
 var fornecedorPedidoAlvoJuntar = null;
 
+var mapasClient = null;
+var mapasProdutos = [];
+var mapasEncomendasFornecedorCache = null;
+var mapasEncomendasFornecedorPromessa = null;
+var mapasVendasClienteCache = null;
+var mapasVendasClientePromessa = null;
+const MAPAS_FORNECEDORES_STORAGE_KEY = FORNECEDORES_STORAGE_KEY;
+
+function sincronizarPonteProdutoMapaFornecedor() {
+    mapasClient = fornecedoresClient;
+    mapasProdutos = fornecedorProdutos;
+}
+
+function formatarEuroMapa(valor) {
+    return formatarEuroFornecedor(valor);
+}
+
+function textoLegoMapa(valor) {
+    const texto = normalizarFornecedor(valor);
+    if (texto === "sim") return "sim";
+    if (texto === "nao" || texto === "não") return "não";
+    return "por verificar";
+}
+
+function definirStatusMapa(texto, erro = false) {
+    definirStatusFornecedor(texto, erro);
+}
+
+function normalizarImagensMapa(imagens) {
+    if (Array.isArray(imagens)) return imagens.map(url => String(url || "").trim()).filter(Boolean);
+    if (typeof imagens === "string") {
+        try {
+            const parsed = JSON.parse(imagens);
+            if (Array.isArray(parsed)) return parsed.map(url => String(url || "").trim()).filter(Boolean);
+        } catch (_) {
+            return imagens.split(/[\n,]+/).map(url => url.trim()).filter(Boolean);
+        }
+    }
+    return [];
+}
+
+function normalizarProdutoMapa(produto) {
+    return produto || {};
+}
+
+function sincronizarEstadoImportacaoMapa() {}
+
+function atualizarResultadosMapa() {
+    fornecedorProdutos = mapasProdutos;
+    renderizarResultadosFornecedor();
+    renderizarSelecionadosFornecedor();
+}
 
 function carregarScriptAdmin(src) {
     return new Promise(function (resolve, reject) {
@@ -50,8 +102,18 @@ function carregarScriptAdmin(src) {
 }
 
 var __fornecedoresProdutoPromessa = null;
+var __fornecedoresFichaProdutoPromessa = null;
 var __fornecedoresEdicaoPromessa = null;
 var __fornecedoresPrintPromessa = null;
+
+function garantirFichaProdutoMapaFornecedor() {
+    sincronizarPonteProdutoMapaFornecedor();
+    if (window.MapasProdutoModal) return Promise.resolve();
+    if (!__fornecedoresFichaProdutoPromessa) {
+        __fornecedoresFichaProdutoPromessa = carregarScriptAdmin("mapas-produto-modal.js?v=20260807-ficha-fornecedores");
+    }
+    return __fornecedoresFichaProdutoPromessa;
+}
 
 function garantirFornecedoresProdutoModal() {
     if (window.FornecedoresProdutoModal) return Promise.resolve();
@@ -80,6 +142,26 @@ function garantirFornecedoresPrintReceive() {
 async function abrirEdicaoProdutoMapa() {
     await garantirFornecedoresProdutoModal();
     return window.FornecedoresProdutoModal.abrir.apply(null, arguments);
+}
+
+async function abrirFichaProdutoMapaFornecedor(produtoId) {
+    await garantirFichaProdutoMapaFornecedor();
+    sincronizarPonteProdutoMapaFornecedor();
+    const resultado = await window.MapasProdutoModal.abrirFicha(produtoId);
+    const botaoEditar = document.getElementById("mapas-produto-passar-editar");
+    if (botaoEditar && botaoEditar.dataset.fornecedoresEditarCompleto !== "1") {
+        botaoEditar.dataset.fornecedoresEditarCompleto = "1";
+        botaoEditar.addEventListener("click", (evento) => {
+            evento.preventDefault();
+            evento.stopImmediatePropagation();
+            const id = document.getElementById("mapas-produto-modal")?.dataset.produtoId
+                || document.getElementById("mapas-editar-id")?.value
+                || "";
+            window.MapasProdutoModal?.fechar?.();
+            if (id) abrirEdicaoProdutoMapa(id);
+        }, true);
+    }
+    return resultado;
 }
 
 async function abrirEdicaoPedidoFornecedor() {
@@ -2274,9 +2356,9 @@ function renderizarResultadosFornecedorTabelaEncomenda(caixa, resultados) {
         nomeBotao.type = "button";
         nomeBotao.className = "mapas-produto-nome-botao";
         nomeBotao.textContent = atual.nome || "Produto sem nome";
-        nomeBotao.title = "Editar produto";
+        nomeBotao.title = "Abrir ficha do produto";
         nomeBotao.tabIndex = -1;
-        nomeBotao.addEventListener("click", () => abrirEdicaoProdutoMapa(atual.id));
+        nomeBotao.addEventListener("click", () => abrirFichaProdutoMapaFornecedor(atual.id));
         nomeCelula.appendChild(nomeBotao);
         linha.appendChild(nomeCelula);
 
@@ -2505,9 +2587,9 @@ function renderizarSelecionadosFornecedorTabela(caixa) {
         nomeBotao.type = "button";
         nomeBotao.className = "mapas-produto-nome-botao";
         nomeBotao.textContent = atual.nome || "Produto sem nome";
-        nomeBotao.title = "Editar produto";
+        nomeBotao.title = "Abrir ficha do produto";
         nomeBotao.tabIndex = -1;
-        nomeBotao.addEventListener("click", () => abrirEdicaoProdutoMapa(atual.id));
+        nomeBotao.addEventListener("click", () => abrirFichaProdutoMapaFornecedor(atual.id));
         nomeCelula.appendChild(nomeBotao);
         linha.appendChild(nomeCelula);
 
@@ -3296,10 +3378,10 @@ function renderizarPedidoFornecedorProdutosTabela(caixa, pedido) {
         nomeBotao.type = "button";
         nomeBotao.className = "mapas-produto-nome-botao";
         nomeBotao.textContent = item.nome || "Produto sem nome";
-        nomeBotao.title = "Editar produto";
+        nomeBotao.title = "Abrir ficha do produto";
         nomeBotao.tabIndex = -1;
         if (produtoAtual?.id) {
-            nomeBotao.addEventListener("click", () => abrirEdicaoProdutoMapa(produtoAtual.id));
+            nomeBotao.addEventListener("click", () => abrirFichaProdutoMapaFornecedor(produtoAtual.id));
         } else {
             nomeBotao.disabled = true;
         }
