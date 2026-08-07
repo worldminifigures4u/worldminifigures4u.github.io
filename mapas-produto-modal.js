@@ -522,7 +522,7 @@ function montarSecaoHistoricoRececoesMapa(campos, produto) {
     campos.appendChild(secao);
 
     const produtoId = String(produto.id || "");
-    carregarEncomendasFornecedorMapa().then((pedidos) => {
+    carregarEncomendasFornecedorMapa(true).then((pedidos) => {
         if (conteudo.dataset.produtoId !== produtoId) return;
         renderizarHistoricoEncomendasFornecedorMapa(conteudo, produto, pedidos);
     });
