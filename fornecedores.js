@@ -2245,6 +2245,7 @@ function renderizarResultadosFornecedorTabelaEncomenda(caixa, resultados) {
 
     const tabela = document.createElement("table");
     tabela.className = "mapas-produtos-tabela fornecedor-tabela-encomenda";
+    tabela.dataset.colunaAtiva = fornecedorMapaOrdenacao.coluna || "";
 
     tabela.appendChild(criarTheadTabelaEncomendaFornecedor());
 
