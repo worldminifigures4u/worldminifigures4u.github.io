@@ -695,7 +695,8 @@ async function guardarEdicaoPedidoFornecedor(evento) {
         await sincronizarHistoricoPedidosFornecedor(itens, fornecedor, {
             modo: "editar",
             itensAnteriores: pedido.itens || [],
-            estadoPedido: estado
+            estadoPedido: estado,
+            dataPedido: pedido.data_encomendada || pedido.criado_em || ''
         });
         if (deveConfirmarHistoricoPedidoFornecedor(estadoAnterior, estado)) {
             await sincronizarHistoricoPedidosFornecedor(itens, fornecedor, { modo: "confirmar" });

@@ -2962,6 +2962,13 @@ async function sincronizarHistoricoPedidosFornecedor(itens, fornecedorNome, opco
                     // em que o artigo já estava OS de uma edição anterior a esta correção existir.
                     const marcacaoAtual = normalizarMarcacaoFornecedor(atual);
                     if (marcacaoAtual.estado.toUpperCase() !== "OS") {
+                        if (!marcacaoAtual.historico.length) {
+                            // Sem nenhuma entrada de histórico (artigo ficou OS antes de este
+                            // registo existir) - cria uma entrada com a data real da encomenda
+                            // (não a de hoje), para não ficar "Sem histórico" apesar de já
+                            // estar marcado OS.
+                            atual = acrescentarHistoricoFornecedor(atual, "os", opcoes.dataPedido || agora);
+                        }
                         atual = aplicarMarcacaoAtualAposConfirmar(atual, "OS", agora);
                     }
                 }
