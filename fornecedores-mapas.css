@@ -2275,6 +2275,15 @@ body.pagina-mapas-admin > main.fornecedores-admin {
     resize: vertical;
 }
 
+.mapas-produto-form-grid input:-webkit-autofill,
+.mapas-produto-fornecedores input:-webkit-autofill,
+.mapas-produto-form-grid input:-webkit-autofill:hover,
+.mapas-produto-form-grid input:-webkit-autofill:focus {
+    -webkit-text-fill-color: #fff;
+    box-shadow: 0 0 0 1000px #242424 inset;
+    transition: background-color 9999s ease-in-out 0s;
+}
+
 #mapas-editar-imagens {
     min-height: 72px;
     max-height: 120px;

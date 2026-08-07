@@ -9,6 +9,7 @@ function criarInputEdicaoMapa(form, id, rotulo, valor, tipo = "text", opcoes = {
     input.id = id;
     input.name = id;
     input.type = tipo;
+    input.autocomplete = "off";
     input.value = valor ?? "";
     if (opcoes.required) input.required = true;
     if (opcoes.min !== undefined) input.min = String(opcoes.min);
