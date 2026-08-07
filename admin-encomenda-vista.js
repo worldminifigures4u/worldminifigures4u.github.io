@@ -1281,6 +1281,39 @@ window.AdminEncomendaVista = (function () {
         return resultado;
     }
 
+    function emitirFaturaMoloniEmSegundoPlano(encomenda, opcoes = {}) {
+        const codigo = encomenda.codigo_encomenda || "";
+        setTimeout(async () => {
+            hooks.definirStatus(`A emitir fatura-recibo Moloni para ${codigo}...`);
+            try {
+                if (!encomenda.data_pagamento) {
+                    try {
+                        const agora = new Date().toISOString();
+                        const dataAtualizada = await atualizarDataPagamento(encomenda, agora);
+                        encomenda.data_pagamento = dataAtualizada?.data_pagamento || agora;
+                        sincronizarEncomendaNaLista(encomenda, { data_pagamento: encomenda.data_pagamento });
+                    } catch (erroData) {
+                        console.warn("Nao foi possivel gravar data de pagamento antes da fatura.", erroData);
+                    }
+                }
+
+                const fatura = await emitirFaturaMoloni(encomenda, opcoes);
+                if (fatura?.sucesso) {
+                    const numeroFatura = fatura.numero && String(fatura.numero) !== "0"
+                        ? ` n. ${fatura.numero}`
+                        : " (rascunho)";
+                    hooks.definirStatus(`Fatura-recibo Moloni${numeroFatura} criada para ${codigo}.`);
+                } else {
+                    hooks.definirStatus(`Moloni não emitiu documento para ${codigo}.`, true);
+                }
+            } catch (erroFatura) {
+                hooks.definirStatus(`Fatura-recibo Moloni não emitida para ${codigo}: ${erroFatura.message || "erro desconhecido"}.`, true);
+            } finally {
+                atualizarListaAposAlteracaoEncomenda();
+            }
+        }, 0);
+    }
+
     function criarBotaoEmitirFaturaMoloni(encomenda) {
         if (estadoNormalizado(encomenda.estado) !== "Concluído" || !podeEmitirFaturaMoloni(encomenda)) return null;
         const botao = criarElemento("button", "wallapop-botao admin-encomenda-editar", "Emitir Moloni");
@@ -1497,42 +1530,21 @@ window.AdminEncomendaVista = (function () {
             }
             select.dataset.estadoAtual = estado;
             atualizarListaAposAlteracaoEncomenda();
-            let mensagemFatura = "";
+            let emitirFaturaDepois = false;
+            let forcarEmissaoFatura = false;
             if (estado === "Concluído" && estadoAnterior !== "Concluído" && podeEmitirFaturaMoloni(encomenda)) {
                 let emitirFatura = deveEmitirFaturaMoloniAutomaticamente(encomenda);
                 if (encomendaFaturaMoloniOpcional(encomenda)) {
                     emitirFatura = await pedirEmissaoFaturaMoloni(encomenda);
                 }
                 if (emitirFatura) {
-                    if (!encomenda.data_pagamento) {
-                        try {
-                            const agora = new Date().toISOString();
-                            const dataAtualizada = await atualizarDataPagamento(encomenda, agora);
-                            encomenda.data_pagamento = dataAtualizada?.data_pagamento || agora;
-                            sincronizarEncomendaNaLista(encomenda, { data_pagamento: encomenda.data_pagamento });
-                        } catch (erroData) {
-                            console.warn("Nao foi possivel gravar data de pagamento antes da fatura.", erroData);
-                        }
-                    }
-                    hooks.definirStatus(`Estado atualizado. A emitir fatura-recibo Moloni para ${encomenda.codigo_encomenda || ""}...`);
-                    try {
-                        const fatura = await emitirFaturaMoloni(encomenda, {
-                            forcarEmissao: encomendaFaturaMoloniOpcional(encomenda)
-                        });
-                        if (fatura?.sucesso) {
-                            const numeroFatura = fatura.numero && String(fatura.numero) !== "0"
-                                ? ` n. ${fatura.numero}`
-                                : " (rascunho)";
-                            mensagemFatura = ` Fatura-recibo Moloni${numeroFatura} criada.`;
-                        }
-                    } catch (erroFatura) {
-                        mensagemFatura = ` Fatura-recibo Moloni nao emitida: ${erroFatura.message || "erro desconhecido"}.`;
-                    }
+                    emitirFaturaDepois = true;
+                    forcarEmissaoFatura = encomendaFaturaMoloniOpcional(encomenda);
                 }
             }
             if (erroAnexos) {
                 hooks.definirStatus(
-                    `Estado atualizado, mas não foi possível eliminar os anexos: ${erroAnexos.message || "erro desconhecido"}${mensagemFatura}`,
+                    `Estado atualizado, mas não foi possível eliminar os anexos: ${erroAnexos.message || "erro desconhecido"}`,
                     true
                 );
             } else {
@@ -1544,14 +1556,15 @@ window.AdminEncomendaVista = (function () {
                 const seguimento = codigoSeguimentoPendente
                     ? ` Seguimento: ${encomenda.codigo_seguimento}.`
                     : "";
-                const faturaComErro = mensagemFatura.includes("nao emitida");
                 hooks.definirStatus(
-                    `Estado da encomenda ${encomenda.codigo_encomenda || ""} atualizado.${limpeza}${reposicao}${recuperacao}${seguimento}${mensagemFatura}`,
-                    faturaComErro
+                    `Estado da encomenda ${encomenda.codigo_encomenda || ""} atualizado.${limpeza}${reposicao}${recuperacao}${seguimento}`
                 );
             }
             if (estado === "Concluído" && typeof opcoes.fecharAoConcluir === "function") {
                 opcoes.fecharAoConcluir(encomenda);
+            }
+            if (emitirFaturaDepois) {
+                emitirFaturaMoloniEmSegundoPlano(encomenda, { forcarEmissao: forcarEmissaoFatura });
             }
         } catch (error) {
             select.value = estadoAnterior;
