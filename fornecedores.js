@@ -598,7 +598,8 @@ function normalizarItemPedidoFornecedor(item) {
         data_os: item.data_os || null,
         preco_custo: Number.isFinite(precoCusto) ? Math.max(0, precoCusto) : 0,
         estado_fornecedor: item.estado_fornecedor || (faltaOs > 0 ? 'OS' : ''),
-        origem_ajuste: item.origem_ajuste || ''
+        origem_ajuste: item.origem_ajuste || '',
+        data_ajuste: item.data_ajuste || null
     };
 }
 
@@ -697,6 +698,7 @@ function serializarItemPedidoFornecedor(item) {
         data_os: normalizado.data_os || null,
         estado_fornecedor: String(normalizado.estado_fornecedor || ''),
         origem_ajuste: String(normalizado.origem_ajuste || ''),
+        data_ajuste: normalizado.data_ajuste || null,
         recebido: Math.max(0, Math.floor(Number(normalizado.recebido || 0))),
         novidade: obterBooleanoProdutoFornecedor(normalizado.novidade),
         stock_no_momento: (() => {
@@ -3244,18 +3246,22 @@ async function adicionarSelecaoAoPedidoFornecedor(id) {
     fornecedorSelecao.forEach(selecionado => {
         const existente = encontrarItemPedidoFornecedor(itens, selecionado);
         const quantidade = Math.max(1, Math.floor(Number(selecionado.quantidade) || 1));
+        const agora = dataOsAgoraFornecedor();
         itensExportar.push(criarItemFornecedorAPartirSelecao(selecionado, existente ? 'reforco' : 'substituicao'));
         if (existente) {
             existente.quantidade = Math.max(0, Number(existente.quantidade || 0)) + quantidade;
             existente.quantidade_original = Math.max(0, Number(existente.quantidade_original || existente.quantidade || 0)) + quantidade;
             existente.origem_ajuste = existente.origem_ajuste || 'reforco';
+            existente.data_ajuste = existente.data_ajuste || agora;
             const precoCusto = Math.max(0, Number(selecionado.preco_custo ?? selecionado.custo ?? 0) || 0);
             if (precoCusto > 0) {
                 existente.preco_custo = precoCusto;
                 existente.preco = precoCusto;
             }
         } else {
-            itens.push(serializarItemPedidoFornecedor(criarItemFornecedorAPartirSelecao(selecionado, 'substituicao')));
+            const novoItem = criarItemFornecedorAPartirSelecao(selecionado, 'substituicao');
+            novoItem.data_ajuste = agora;
+            itens.push(serializarItemPedidoFornecedor(novoItem));
         }
     });
 
@@ -3461,10 +3467,11 @@ function renderizarPedidoFornecedorProdutosTabela(caixa, pedido) {
         if (item.origem_ajuste) {
             const origemSpan = document.createElement("span");
             origemSpan.className = "fornecedor-ajuste-os";
-            origemSpan.textContent = obterTextoOrigemAjustePedidoFornecedor(item.origem_ajuste);
+            origemSpan.textContent = item.data_ajuste
+                ? formatarDataPedidoFornecedor(item.data_ajuste)
+                : obterTextoOrigemAjustePedidoFornecedor(item.origem_ajuste);
             origemCelula.appendChild(origemSpan);
         }
-        if (!origemCelula.childElementCount) origemCelula.textContent = "-";
         linha.appendChild(origemCelula);
 
         const qtdCelula = document.createElement("td");
