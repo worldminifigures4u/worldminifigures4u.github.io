@@ -208,8 +208,12 @@ body.pagina-fornecedores-admin{ margin:0; padding-left:0; padding-right:0; paddi
             grid-template-columns:minmax(0,0.68fr) minmax(0,0.88fr) minmax(0,0.92fr) minmax(0,1.15fr) auto;
             column-gap:12px;
         }
-        .fornecedor-pedido-cabecalho .admin-encomenda-linha.fornecedor-pedido-linha-cabecalho.com-destino-selecao{
-            grid-template-columns:minmax(0,0.62fr) minmax(0,0.82fr) minmax(0,0.86fr) minmax(0,1fr) auto auto;
+        .fornecedor-pedido-estado-bloco{
+            display:flex;
+            align-items:center;
+            gap:6px;
+            justify-self:end;
+            min-width:0;
         }
         .fornecedor-pedido-destino-selecao{
             justify-self:end;

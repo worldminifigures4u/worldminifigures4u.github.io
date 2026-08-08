@@ -3719,17 +3719,18 @@ function renderizarPedidosFornecedores() {
 
         const linha = criarElementoPedidoFornecedor("div", "admin-encomenda-linha fornecedor-pedido-linha-cabecalho");
         const resumo = `${totaisPedido.itens} artigo(s) | ${totaisPedido.quantidade} unidade(s) | ${totaisPedido.pendente} por receber${totaisPedido.os > 0 ? ` | ${totaisPedido.os} OS` : ""}`;
+        const blocoEstado = criarElementoPedidoFornecedor("span", "fornecedor-pedido-estado-bloco");
+        blocoEstado.appendChild(criarElementoPedidoFornecedor("span", `estado-encomenda ${obterClasseBadgeEstadoPedidoFornecedor(pedido.estado)}`, pedido.estado || "A preparar"));
+        if (alvoJuntar) {
+            blocoEstado.appendChild(criarElementoPedidoFornecedor("span", "fornecedor-pedido-destino-selecao", "Destino seleção"));
+        }
         linha.append(
             criarElementoPedidoFornecedor("strong", "admin-encomenda-codigo", obterTextoCodigoPedidoFornecedor(pedido)),
             criarElementoPedidoFornecedor("span", "admin-encomenda-data", formatarDataPedidoFornecedor(obterDataExibicaoPedidoFornecedor(pedido))),
             criarElementoPedidoFornecedor("span", "fornecedor-pedido-fornecedor-nome", pedido.fornecedor || "Fornecedor"),
             criarElementoPedidoFornecedor("span", "fornecedor-pedido-resumo", resumo),
-            criarElementoPedidoFornecedor("span", `estado-encomenda ${obterClasseBadgeEstadoPedidoFornecedor(pedido.estado)}`, pedido.estado || "A preparar")
+            blocoEstado
         );
-        if (alvoJuntar) {
-            linha.classList.add("com-destino-selecao");
-            linha.appendChild(criarElementoPedidoFornecedor("span", "fornecedor-pedido-destino-selecao", "Destino seleção"));
-        }
         cabecalho.append(linha, criarElementoPedidoFornecedor("span", "admin-encomenda-seta", "▾"));
 
         card.appendChild(cabecalho);
