@@ -1314,6 +1314,7 @@ function preencherSelectProdutosPlataforma(select, produtos, textoVazio, produto
 function fecharRevisaoListaProdutosPlataforma() {
     document.getElementById('plataforma-revisao-lista')?.remove();
     document.body.classList.remove('plataforma-modal-aberto');
+    plataformaNotasRevisaoRascunho = '';
 }
 
 function aplicarSelecoesListaProdutosPlataforma(selecoes) {
@@ -1393,6 +1394,8 @@ function atualizarPreviaListaProdutosPlataforma() {
     previa.textContent = formatarPreviaListaPlataforma(resumo);
 }
 
+let plataformaNotasRevisaoRascunho = '';
+
 function abrirRevisaoListaProdutosPlataforma() {
     const texto = document.getElementById('plataforma-lista-produtos').value;
     if (texto.length > PLATAFORMA_LISTA_MAX_CARACTERES) {
@@ -1435,6 +1438,22 @@ function abrirRevisaoListaProdutosPlataforma() {
     const resumoEl = document.createElement('p');
     resumoEl.className = 'plataforma-lista-resumo';
     resumoEl.textContent = formatarPreviaListaPlataforma(resumo);
+
+    const notasBloco = document.createElement('div');
+    notasBloco.className = 'plataforma-lista-notas-bloco';
+    const notasLabel = document.createElement('label');
+    notasLabel.setAttribute('for', 'plataforma-lista-notas');
+    notasLabel.textContent = 'Notas da encomenda';
+    const notasArea = document.createElement('textarea');
+    notasArea.id = 'plataforma-lista-notas';
+    notasArea.rows = 2;
+    notasArea.placeholder = 'Apontamentos enquanto revês esta lista (não entra na encomenda)...';
+    notasArea.value = plataformaNotasRevisaoRascunho;
+    notasArea.addEventListener('input', () => {
+        plataformaNotasRevisaoRascunho = notasArea.value;
+    });
+    notasBloco.append(notasLabel, notasArea);
+
     const lista = document.createElement('div');
     lista.className = 'plataforma-lista-revisao';
 
@@ -1519,7 +1538,7 @@ function abrirRevisaoListaProdutosPlataforma() {
     adicionar.textContent = 'Adicionar produtos selecionados';
     adicionar.onclick = () => adicionarListaRevistaPlataforma(linhas, modal);
     acoes.append(cancelar, adicionar);
-    dialogo.append(topo, explicacao, resumoEl, lista, aviso, acoes);
+    dialogo.append(topo, explicacao, resumoEl, notasBloco, lista, aviso, acoes);
     modal.appendChild(dialogo);
     ligarFechoModalPorFundo(modal, fecharRevisaoListaProdutosPlataforma);
     document.body.appendChild(modal);

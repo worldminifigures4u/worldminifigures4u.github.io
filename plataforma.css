@@ -178,6 +178,37 @@ body.pagina-wallapop{
             margin:0 0 12px;
         }
 
+        .plataforma-lista-notas-bloco{
+            display:grid;
+            gap:6px;
+            margin:0 0 14px;
+            padding:10px 12px;
+            border:1px solid #333;
+            border-radius:8px;
+            background:#161616;
+        }
+
+        .plataforma-lista-notas-bloco label{
+            color:#ffc400;
+            font-size:12px;
+            font-weight:800;
+            text-transform:uppercase;
+            letter-spacing:.02em;
+        }
+
+        .plataforma-lista-notas-bloco textarea{
+            width:100%;
+            box-sizing:border-box;
+            border:1px solid #444;
+            border-radius:6px;
+            background:#242424;
+            color:#fff;
+            padding:8px 10px;
+            font:inherit;
+            resize:vertical;
+            min-height:44px;
+        }
+
         .wallapop-resultado,
         .wallapop-selecionado{
             display:grid;
