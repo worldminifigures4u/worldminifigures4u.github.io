@@ -14,9 +14,52 @@ function criarInputEdicaoMapa(form, id, rotulo, valor, tipo = "text", opcoes = {
     if (opcoes.required) input.required = true;
     if (opcoes.min !== undefined) input.min = String(opcoes.min);
     if (opcoes.step !== undefined) input.step = String(opcoes.step);
+    if (opcoes.listaId) {
+        input.setAttribute("list", opcoes.listaId);
+    }
     label.appendChild(input);
     form.appendChild(label);
+    if (opcoes.listaId) {
+        const datalist = document.createElement("datalist");
+        datalist.id = opcoes.listaId;
+        (opcoes.listaOpcoes || []).forEach((texto) => {
+            const option = document.createElement("option");
+            option.value = texto;
+            datalist.appendChild(option);
+        });
+        form.appendChild(datalist);
+    }
     return input;
+}
+
+/** Temas/subtemas distintos já usados no catálogo, para sugerir no formulário de produto. */
+function obterTemasESubtemasExistentesMapa() {
+    const temas = new Set();
+    const subtemasPorTema = {};
+    const todosSubtemas = new Set();
+    (typeof mapasProdutos !== "undefined" ? mapasProdutos : []).forEach((produto) => {
+        const tema = String(produto?.tema || "").trim();
+        const subtema = String(produto?.subtema || "").trim();
+        const subtemaValido = subtema && subtema.toLowerCase() !== "semsubtema" ? subtema : "";
+        if (tema) temas.add(tema);
+        if (subtemaValido) {
+            todosSubtemas.add(subtemaValido);
+            if (tema) {
+                if (!subtemasPorTema[tema]) subtemasPorTema[tema] = new Set();
+                subtemasPorTema[tema].add(subtemaValido);
+            }
+        }
+    });
+    const ordenar = (conjunto) => Array.from(conjunto).sort((a, b) => a.localeCompare(b, "pt"));
+    const subtemasPorTemaOrdenado = {};
+    Object.keys(subtemasPorTema).forEach((tema) => {
+        subtemasPorTemaOrdenado[tema] = ordenar(subtemasPorTema[tema]);
+    });
+    return {
+        temas: ordenar(temas),
+        subtemas: ordenar(todosSubtemas),
+        subtemasPorTema: subtemasPorTemaOrdenado
+    };
 }
 
 function criarTextareaEdicaoMapa(form, id, rotulo, valor, opcoes = {}) {
@@ -940,8 +983,23 @@ function preencherFormularioProdutoMapa(produto, modo = "editar") {
     criarInputEdicaoMapa(secaoIdentificacao, "mapas-editar-nome", "Nome", produto.nome || "", "text", { required: true, largo: true });
     criarInputEdicaoMapa(secaoIdentificacao, "mapas-editar-referencia", "Ref.", produto.referencia || "");
     criarInputEdicaoMapa(secaoIdentificacao, "mapas-editar-sku", "SKU", produto.sku || "", "text", { required: true });
-    criarInputEdicaoMapa(secaoIdentificacao, "mapas-editar-tema", "Tema", produto.tema || "", "text", { required: true });
-    criarInputEdicaoMapa(secaoIdentificacao, "mapas-editar-subtema", "Subtema", produto.subtema === "semsubtema" ? "" : (produto.subtema || ""));
+    const { temas, subtemas, subtemasPorTema } = obterTemasESubtemasExistentesMapa();
+    criarInputEdicaoMapa(secaoIdentificacao, "mapas-editar-tema", "Tema", produto.tema || "", "text", { required: true, listaId: "mapas-lista-temas", listaOpcoes: temas });
+    const inputSubtema = criarInputEdicaoMapa(secaoIdentificacao, "mapas-editar-subtema", "Subtema", produto.subtema === "semsubtema" ? "" : (produto.subtema || ""), "text", { listaId: "mapas-lista-subtemas", listaOpcoes: subtemas });
+    const inputTema = secaoIdentificacao.querySelector("#mapas-editar-tema");
+    const datalistSubtema = secaoIdentificacao.querySelector("#mapas-lista-subtemas");
+    if (inputTema && datalistSubtema) {
+        inputTema.addEventListener("input", () => {
+            const temaAtual = inputTema.value.trim();
+            const opcoesFiltradas = subtemasPorTema[temaAtual] || subtemas;
+            datalistSubtema.replaceChildren();
+            opcoesFiltradas.forEach((texto) => {
+                const option = document.createElement("option");
+                option.value = texto;
+                datalistSubtema.appendChild(option);
+            });
+        });
+    }
     criarCheckboxEdicaoMapa(secaoIdentificacao, "mapas-editar-top", "Top", Boolean(String(produto.top || "").trim()));
     criarCheckboxEdicaoMapa(secaoIdentificacao, "mapas-editar-arquivado", "Arquivado", Boolean(produto.arquivado));
     criarCheckboxEdicaoMapa(secaoIdentificacao, "mapas-editar-descontinuado", "Descontinuado", Boolean(produto.descontinuado));
