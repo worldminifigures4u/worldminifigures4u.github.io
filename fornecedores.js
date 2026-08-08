@@ -3164,6 +3164,7 @@ function atualizarBotaoJuntarSelecaoFornecedor() {
     if (!botao || !estaPaginaFornecedoresUnificada()) return;
 
     sincronizarPedidoAlvoJuntarSelecaoFornecedor();
+    atualizarSelectAlvoJuntarSelecaoFornecedor();
     const pedido = obterPedidoAlvoJuntarSelecaoFornecedor();
     const temSelecao = fornecedorSelecao.length > 0;
     const podeJuntar = temSelecao && Boolean(pedido);
@@ -3173,9 +3174,47 @@ function atualizarBotaoJuntarSelecaoFornecedor() {
     if (!temSelecao) {
         botao.title = "Selecione primeiro produtos na lista acima.";
     } else if (!pedido) {
-        botao.title = "Abra acima a encomenda existente onde pretende juntar a seleção.";
+        botao.title = "Escolha acima a encomenda existente onde pretende juntar a seleção.";
     } else {
         botao.title = `Juntar seleção à encomenda ${obterTextoCodigoPedidoFornecedor(pedido)}.`;
+    }
+}
+
+/** Preenche o seletor "Juntar a..." com as encomendas existentes e sincroniza o valor escolhido. */
+function atualizarSelectAlvoJuntarSelecaoFornecedor() {
+    const select = document.getElementById("fornecedor-alvo-juntar-select");
+    if (!select) return;
+    const pedidosOrdenados = [...fornecedorPedidos].sort((a, b) => {
+        const dataA = new Date(obterDataExibicaoPedidoFornecedor(a) || 0).getTime() || 0;
+        const dataB = new Date(obterDataExibicaoPedidoFornecedor(b) || 0).getTime() || 0;
+        return dataB - dataA;
+    });
+    const valorAtual = fornecedorPedidoAlvoJuntar || "";
+    select.replaceChildren();
+    const optionVazia = document.createElement("option");
+    optionVazia.value = "";
+    optionVazia.textContent = "Juntar a...";
+    select.appendChild(optionVazia);
+    pedidosOrdenados.forEach((pedido) => {
+        const option = document.createElement("option");
+        option.value = String(pedido.id);
+        option.textContent = `${obterTextoCodigoPedidoFornecedor(pedido)} · ${pedido.fornecedor || "Fornecedor"} (${pedido.estado || "A preparar"})`;
+        select.appendChild(option);
+    });
+    select.value = valorAtual;
+    if (select.value !== valorAtual) {
+        // A encomenda alvo já não existe na lista (ex: foi apagada) - repor vazio.
+        select.value = "";
+    }
+    if (!select.dataset.ligado) {
+        select.dataset.ligado = "1";
+        select.addEventListener("change", () => {
+            const id = select.value;
+            fornecedorPedidosAbertos.clear();
+            if (id) fornecedorPedidosAbertos.add(id);
+            fornecedorPedidoAlvoJuntar = id || null;
+            renderizarPedidosFornecedores();
+        });
     }
 }
 
@@ -3572,7 +3611,10 @@ function fecharModalPedidoFornecedor() {
     modal.hidden = true;
     modal.dataset.pedidoId = "";
     document.body.classList.remove("fornecedor-pedido-modal-aberto");
-    fornecedorPedidosAbertos.clear();
+    // Não limpar fornecedorPedidosAbertos aqui: a encomenda continua a ser o
+    // "alvo" para o botão "Juntar seleção a encomenda existente" mesmo depois
+    // de fechar o modal, para poderes descer, escolher figuras, e só depois
+    // juntar - sem teres de reabrir a encomenda outra vez.
     renderizarPedidosFornecedores();
 }
 

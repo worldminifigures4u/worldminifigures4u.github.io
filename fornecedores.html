@@ -19,7 +19,7 @@
     <link rel="apple-touch-icon" href="fp-ring-favicon-192.png">
     <link rel="stylesheet" href="styles.css?v=20260721-rodape-800">
     <link rel="stylesheet" href="styles-admin.css?v=20260717-portes-cab">
-    <link rel="stylesheet" href="fornecedores-mapas.css?v=20260807-fix-autofill">
+    <link rel="stylesheet" href="fornecedores-mapas.css?v=20260807-seletor-encomenda-alvo">
     <link rel="stylesheet" href="styles-tema.css?v=20260721-sem-underline" media="print" data-async-css>
     <link rel="stylesheet" href="admin-imagem.css?v=20260628-css-split-admin-imagem" media="print" data-async-css>
     <link rel="stylesheet" href="encomendas.css?v=20260713-contagem-anexos" media="print" data-async-css>
@@ -161,6 +161,9 @@
                     <div id="fornecedor-selecionados" class="fornecedor-selecionados" data-sem-limpar-campo></div>
                     <div class="fornecedores-acoes fornecedor-acoes-encomenda">
                         <button type="button" id="btn-limpar-fornecedor" class="wallapop-botao">Limpar lista</button>
+                        <select id="fornecedor-alvo-juntar-select" class="fornecedor-alvo-juntar-select" aria-label="Encomenda à qual juntar a seleção">
+                            <option value="">Juntar a...</option>
+                        </select>
                         <button type="button" id="btn-juntar-selecao-fornecedor" class="wallapop-botao" disabled>Juntar seleção a encomenda existente</button>
                         <button type="button" id="btn-criar-fornecedor" class="wallapop-botao wallapop-botao-destaque">Criar encomenda</button>
                         <span id="fornecedor-total-figuras-encomenda" class="fornecedor-total-figuras-encomenda" aria-live="polite"></span>
@@ -215,7 +218,7 @@
     </div>
 <script src="supabase-cdn.js?v=20260711-leve" defer></script>
 <script src="app-config.js?v=20260730-fecho-fundo" defer></script>
-    <script src="fornecedores.js?v=20260807-ficha-produto" defer></script>
+    <script src="fornecedores.js?v=20260807-seletor-encomenda-alvo" defer></script>
 <script src="campo-limpar.js?v=20260720-sem-x-cliente" defer></script>
 <script src="inline-listeners-base.js?v=20260725-logo-hq" defer></script>
 <script src="inline-listeners-admin.js?v=20260713-r25" defer></script>
