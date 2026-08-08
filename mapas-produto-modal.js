@@ -875,6 +875,8 @@ function criarCheckboxEdicaoMapa(form, id, rotulo, marcado) {
     input.checked = Boolean(marcado);
     const texto = document.createElement("span");
     texto.textContent = rotulo;
+    // Clicar no texto não deve marcar/desmarcar - só o quadrado da checkbox.
+    texto.addEventListener("click", (evento) => evento.preventDefault());
     label.append(input, texto);
     form.appendChild(label);
     return input;
