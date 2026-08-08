@@ -53,6 +53,8 @@ body.pagina-fornecedores-admin{ margin:0; padding-left:0; padding-right:0; paddi
         .fornecedor-info span{ color:#cfcfcf; font-size:13px; }
         .fornecedor-ajuste-os{ color:#bdbdbd !important; font-size:12px !important; font-weight:700; }
         .fornecedor-ajuste-os.ativo{ color:#ffc400 !important; }
+        .fornecedor-ajuste-ex{ color:#bdbdbd !important; font-size:12px !important; font-weight:700; }
+        .fornecedor-ajuste-ex.ativo{ color:#7ec8ff !important; }
         .fornecedor-identificadores{ color:#18c4ff !important; font-weight:700; }
         .fornecedor-stock{ color:#fff !important; font-weight:700; }
         .fornecedor-stock.sem-stock{ color:#ff4d4d !important; }
