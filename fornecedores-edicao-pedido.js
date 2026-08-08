@@ -184,6 +184,26 @@ function montarLinhaEdicaoProdutoFornecedor(pedido, item, indice) {
     marcarOsInput.checked = faltaAtual > 0 || item.estado_fornecedor === "OS";
     marcarOs.append(marcarOsInput, document.createTextNode(" Marcar OS"));
 
+    const marcarEx = document.createElement("label");
+    marcarEx.className = "fornecedor-edicao-marcar-ex";
+    marcarEx.title = "Marca a figura como EX (preço demasiado caro neste fornecedor) e regista a data na ficha do produto";
+    const marcarExInput = document.createElement("input");
+    marcarExInput.type = "checkbox";
+    marcarExInput.dataset.campo = "marcar_ex";
+    marcarExInput.checked = item.estado_fornecedor === "EX";
+    marcarEx.append(marcarExInput, document.createTextNode(" Marcar EX"));
+    marcarExInput.addEventListener("change", () => {
+        if (marcarExInput.checked && marcarOsInput.checked) {
+            marcarOsInput.checked = false;
+            faltaInput.value = "0";
+            quantidadeInput.value = String(quantidadeOriginal);
+            atualizarAjuste();
+        }
+    });
+    marcarOsInput.addEventListener("change", () => {
+        if (marcarOsInput.checked && marcarExInput.checked) marcarExInput.checked = false;
+    });
+
     const remover = document.createElement("label");
     remover.className = "fornecedor-edicao-remover";
     const removerInput = document.createElement("input");
@@ -259,7 +279,7 @@ function montarLinhaEdicaoProdutoFornecedor(pedido, item, indice) {
         });
     });
 
-    campos.append(quantidade, falta, precoCusto, recebido, marcarOs, remover);
+    campos.append(quantidade, falta, precoCusto, recebido, marcarOs, marcarEx, remover);
     linha.append(info, campos);
     return linha;
 }
@@ -617,6 +637,7 @@ function lerItensEditadosPedidoFornecedor(pedido, modal) {
         const quantidade = Math.max(0, Math.floor(Number(linha.querySelector('[data-campo="quantidade"]')?.value || 0)));
         const quantidadeOriginal = Math.max(quantidade, Math.floor(Number(item.quantidade_original ?? item.quantidade ?? quantidade) || quantidade));
         const marcarOs = Boolean(linha.querySelector('[data-campo="marcar_os"]')?.checked);
+        const marcarEx = Boolean(linha.querySelector('[data-campo="marcar_ex"]')?.checked) && !marcarOs;
         let faltaOsIndicada = Math.max(0, Math.floor(Number(linha.querySelector('[data-campo="falta_os"]')?.value || 0)));
         if (marcarOs && faltaOsIndicada === 0) {
             faltaOsIndicada = Math.max(1, quantidadeOriginal - quantidade);
@@ -634,7 +655,8 @@ function lerItensEditadosPedidoFornecedor(pedido, modal) {
             data_os: estaOs ? (item.data_os || dataOsHojeFornecedor()) : null,
             preco_custo: precoCusto,
             preco: precoCusto,
-            estado_fornecedor: estaOs ? 'OS' : (item.estado_fornecedor === 'OS' ? '' : item.estado_fornecedor || ''),
+            estado_fornecedor: estaOs ? 'OS' : (marcarEx ? 'EX' : (['OS', 'EX'].includes(item.estado_fornecedor) ? '' : item.estado_fornecedor || '')),
+            marcado_ex: marcarEx,
             recebido: Math.min(recebido, quantidadeFinal)
         };
     }).filter(item => item && (Number(item.quantidade || 0) > 0 || Number(item.falta_os || 0) > 0));

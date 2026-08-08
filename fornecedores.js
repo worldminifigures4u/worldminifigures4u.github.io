@@ -126,7 +126,7 @@ function garantirFornecedoresProdutoModal() {
 function garantirFornecedoresEdicaoPedido() {
     if (window.FornecedoresEdicaoPedido) return Promise.resolve();
     if (!__fornecedoresEdicaoPromessa) {
-        __fornecedoresEdicaoPromessa = carregarScriptAdmin("fornecedores-edicao-pedido.js?v=20260730-fecho-fundo");
+        __fornecedoresEdicaoPromessa = carregarScriptAdmin("fornecedores-edicao-pedido.js?v=20260807-marcar-ex");
     }
     return __fornecedoresEdicaoPromessa;
 }
@@ -3014,6 +3014,7 @@ async function sincronizarHistoricoPedidosFornecedor(itens, fornecedorNome, opco
         const anterior = mapaAnterior.get(chaveItemHistoricoPedidoFornecedor(item));
         const eraOs = itemPedidoEstavaOsFornecedor(anterior);
         const agoraOs = faltaOs > 0 || String(item.estado_fornecedor || "").trim().toUpperCase() === "OS";
+        const agoraEx = Boolean(item?.marcado_ex) || String(item.estado_fornecedor || "").trim().toUpperCase() === "EX";
 
         let fornecedores = obterObjetoFornecedoresProduto(produtoAtual);
         const chaveNormalizada = normalizarChaveFornecedor(fornecedorNome);
@@ -3053,6 +3054,21 @@ async function sincronizarHistoricoPedidosFornecedor(itens, fornecedorNome, opco
                     }
                     if (marcacaoAtual.estado.toUpperCase() !== "OS") {
                         atual = aplicarMarcacaoAtualAposConfirmar(atual, "OS", agora);
+                    }
+                }
+                alterou = true;
+            } else if (agoraEx) {
+                // EX (preço demasiado caro no fornecedor) - mesma lógica da OS, mas sem
+                // zerar a quantidade a receber.
+                const encomendaJaConfirmada = estadoPedidoFornecedorEhEncomendada(opcoes.estadoPedido)
+                    || estadoPedidoFornecedorEhRecebida(opcoes.estadoPedido);
+                if (encomendaJaConfirmada) {
+                    const marcacaoAtual = normalizarMarcacaoFornecedor(atual);
+                    if (!marcacaoAtual.historico.length) {
+                        atual = acrescentarHistoricoFornecedor(atual, "ex", opcoes.dataPedido || agora);
+                    }
+                    if (marcacaoAtual.estado.toUpperCase() !== "EX") {
+                        atual = aplicarMarcacaoAtualAposConfirmar(atual, "EX", agora);
                     }
                 }
                 alterou = true;

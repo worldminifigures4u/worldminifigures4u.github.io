@@ -441,6 +441,7 @@ body.pagina-fornecedores-admin{ margin:0; padding-left:0; padding-right:0; paddi
         .fornecedor-edicao-recebido-info{ display:grid; gap:4px; color:#ddd; font-weight:700; font-size:12px; min-width:0; }
         .fornecedor-edicao-recebido-info span{ min-height:36px; display:flex; align-items:center; border:1px solid #333; border-radius:6px; background:#1a1a1a; color:#aaa; padding:8px; box-sizing:border-box; }
         .fornecedor-edicao-marcar-os,
+        .fornecedor-edicao-marcar-ex,
         .fornecedor-edicao-remover{
             display:flex !important;
             align-items:center;
@@ -448,10 +449,13 @@ body.pagina-fornecedores-admin{ margin:0; padding-left:0; padding-right:0; paddi
             white-space:nowrap;
             min-height:36px;
             font-size:12px;
-            grid-column:span 2;
+            grid-column:span 1;
         }
+        .fornecedor-edicao-remover{ grid-column:span 2; }
         .fornecedor-edicao-marcar-os{ color:#f0c36d; }
+        .fornecedor-edicao-marcar-ex{ color:#7ec8ff; }
         .fornecedor-edicao-marcar-os input,
+        .fornecedor-edicao-marcar-ex input,
         .fornecedor-edicao-remover input{ width:auto; }
         .fornecedor-edicao-status{ min-height:20px; }
         body.fornecedor-edicao-modal-aberto{ overflow:hidden; }
@@ -478,6 +482,7 @@ body.pagina-fornecedores-admin{ margin:0; padding-left:0; padding-right:0; paddi
                 grid-template-columns:repeat(2,minmax(0,1fr));
             }
             .fornecedor-edicao-marcar-os,
+            .fornecedor-edicao-marcar-ex,
             .fornecedor-edicao-remover{ grid-column:span 1; }
             .fornecedor-miniatura,.fornecedor-miniatura.pequena{ width:86px; height:86px; }
         }
