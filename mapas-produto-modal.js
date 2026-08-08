@@ -502,7 +502,12 @@ function formatarDataEncomendaFornecedorMapa(valor) {
 
 function renderizarHistoricoEncomendasFornecedorMapa(conteudo, produto, pedidos) {
     if (!conteudo) return;
-    const linhas = obterLinhasEncomendaFornecedorProdutoMapa(produto, pedidos);
+    const linhas = obterLinhasEncomendaFornecedorProdutoMapa(produto, pedidos).filter(({ item }) => {
+        const faltaOs = Math.max(0, Math.floor(Number(item?.falta_os || 0)));
+        const emEx = Boolean(item?.marcado_ex) || String(item?.estado_fornecedor || "").trim().toUpperCase() === "EX";
+        // EX (preço alto) não deve aparecer aqui - só interessa mostrar quando é OS.
+        return faltaOs > 0 || !emEx;
+    });
     conteudo.replaceChildren();
 
     if (!linhas.length) {

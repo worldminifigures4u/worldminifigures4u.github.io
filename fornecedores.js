@@ -110,7 +110,7 @@ function garantirFichaProdutoMapaFornecedor() {
     sincronizarPonteProdutoMapaFornecedor();
     if (window.MapasProdutoModal) return Promise.resolve();
     if (!__fornecedoresFichaProdutoPromessa) {
-        __fornecedoresFichaProdutoPromessa = carregarScriptAdmin("mapas-produto-modal.js?v=20260807-fix-abrir-ficha");
+        __fornecedoresFichaProdutoPromessa = carregarScriptAdmin("mapas-produto-modal.js?v=20260807-esconder-ex");
     }
     return __fornecedoresFichaProdutoPromessa;
 }
