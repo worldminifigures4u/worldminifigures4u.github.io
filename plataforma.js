@@ -1360,7 +1360,29 @@ function adicionarListaRevistaPlataforma(linhas, modal) {
 
     const adicionados = aplicarSelecoesListaProdutosPlataforma(selecoes);
     if (!adicionados) return;
+    exportarNotasRevisaoListaPlataforma();
     definirStatusWallapop(`${adicionados} figura(s) adicionada(s) a partir da lista.`);
+}
+
+/** Exporta as notas tomadas durante a revisão da lista para um .txt com o nome do cliente. */
+function exportarNotasRevisaoListaPlataforma() {
+    const notas = (plataformaNotasRevisaoRascunho || '').trim();
+    if (!notas) return;
+    const nomeCliente = (document.getElementById('wallapop-nome-cliente')?.value || '').trim() || 'cliente';
+    const nomeFicheiroSeguro = nomeCliente
+        .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+        .replace(/[^a-zA-Z0-9 _-]/g, '')
+        .trim()
+        .replace(/\s+/g, '_') || 'cliente';
+    const blob = new Blob([`${nomeCliente}\n\n${notas}`], { type: 'text/plain;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `${nomeFicheiroSeguro}.txt`;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 
 function adicionarListaAnalisadaPlataforma(linhas) {
