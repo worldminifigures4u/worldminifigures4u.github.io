@@ -126,7 +126,7 @@ function garantirFornecedoresProdutoModal() {
 function garantirFornecedoresEdicaoPedido() {
     if (window.FornecedoresEdicaoPedido) return Promise.resolve();
     if (!__fornecedoresEdicaoPromessa) {
-        __fornecedoresEdicaoPromessa = carregarScriptAdmin("fornecedores-edicao-pedido.js?v=20260807-marcar-ex");
+        __fornecedoresEdicaoPromessa = carregarScriptAdmin("fornecedores-edicao-pedido.js?v=20260807-ex-editavel");
     }
     return __fornecedoresEdicaoPromessa;
 }
@@ -2998,7 +2998,8 @@ async function sincronizarHistoricoPedidosFornecedor(itens, fornecedorNome, opco
     for (const item of (itens || [])) {
         const quantidade = Math.max(0, Number(item?.quantidade || 0));
         const faltaOs = Math.max(0, Number(item?.falta_os || 0));
-        if (quantidade <= 0 && faltaOs <= 0 && String(item?.estado_fornecedor || "").trim().toUpperCase() !== "OS") {
+        const estadoFornecedorItem = String(item?.estado_fornecedor || "").trim().toUpperCase();
+        if (quantidade <= 0 && faltaOs <= 0 && !item?.marcado_ex && estadoFornecedorItem !== "OS" && estadoFornecedorItem !== "EX") {
             continue;
         }
 

@@ -193,12 +193,18 @@ function montarLinhaEdicaoProdutoFornecedor(pedido, item, indice) {
     marcarExInput.checked = item.estado_fornecedor === "EX";
     marcarEx.append(marcarExInput, document.createTextNode(" Marcar EX"));
     marcarExInput.addEventListener("change", () => {
-        if (marcarExInput.checked && marcarOsInput.checked) {
-            marcarOsInput.checked = false;
-            faltaInput.value = "0";
+        if (marcarExInput.checked) {
+            if (marcarOsInput.checked) {
+                marcarOsInput.checked = false;
+                faltaInput.value = "0";
+            }
+            // Marcar como EX (caro demais) exclui automaticamente da encomenda,
+            // tal como acontece ao marcar OS - mas sem contar como "falta de stock".
+            quantidadeInput.value = "0";
+        } else {
             quantidadeInput.value = String(quantidadeOriginal);
-            atualizarAjuste();
         }
+        atualizarAjuste();
     });
     marcarOsInput.addEventListener("change", () => {
         if (marcarOsInput.checked && marcarExInput.checked) marcarExInput.checked = false;
@@ -230,6 +236,12 @@ function montarLinhaEdicaoProdutoFornecedor(pedido, item, indice) {
     const sincronizarFalta = () => {
         const pedidoValor = lerNumeroCampo(quantidadeInput);
         quantidadeInput.value = String(pedidoValor);
+        if (marcarExInput.checked) {
+            // Marcado como EX: a quantidade pode ser ajustada livremente (ex: decidir
+            // encomendar apesar do preço) sem que isso mexa em OS/Falta nem desmarque EX.
+            atualizarAjuste();
+            return;
+        }
         const faltaValor = Math.max(0, quantidadeOriginal - pedidoValor);
         faltaInput.value = String(faltaValor);
         marcarOsInput.checked = faltaValor > 0;
@@ -659,7 +671,7 @@ function lerItensEditadosPedidoFornecedor(pedido, modal) {
             marcado_ex: marcarEx,
             recebido: Math.min(recebido, quantidadeFinal)
         };
-    }).filter(item => item && (Number(item.quantidade || 0) > 0 || Number(item.falta_os || 0) > 0));
+    }).filter(item => item && (Number(item.quantidade || 0) > 0 || Number(item.falta_os || 0) > 0 || item.marcado_ex));
 }
 
 async function guardarEdicaoPedidoFornecedor(evento) {
