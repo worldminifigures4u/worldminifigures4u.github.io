@@ -654,10 +654,12 @@ function lerItensEditadosPedidoFornecedor(pedido, modal) {
         if (marcarOs && faltaOsIndicada === 0) {
             faltaOsIndicada = Math.max(1, quantidadeOriginal - quantidade);
         }
-        const faltaOs = Math.max(faltaOsIndicada, quantidadeOriginal - quantidade);
+        // A diferença entre quantidade original e a receber só implica OS quando
+        // não é um caso de EX (aí a quantidade foi reduzida por preço, não por falta).
+        const faltaOs = marcarEx ? faltaOsIndicada : Math.max(faltaOsIndicada, quantidadeOriginal - quantidade);
         const precoCusto = Math.max(0, Number(String(linha.querySelector('[data-campo="preco_custo"]')?.value || '').replace(',', '.')) || 0);
         const recebido = Math.max(0, Math.floor(Number(linha.querySelector('[data-campo="recebido"]')?.dataset.valor || item.recebido || 0)));
-        const estaOs = faltaOs > 0 || marcarOs;
+        const estaOs = !marcarEx && (faltaOs > 0 || marcarOs);
         const quantidadeFinal = estaOs ? Math.max(0, quantidadeOriginal - faltaOs) : quantidade;
         return {
             ...item,

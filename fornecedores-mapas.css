@@ -2020,6 +2020,10 @@ body.pagina-mapas-admin > main.fornecedores-admin {
     color: #b8862f;
 }
 
+.mapas-produto-historico-rececoes-tabela tr.mapas-produto-historico-ex td {
+    color: #7ec8ff;
+}
+
 .mapas-produto-upload-bloco {
     display: grid;
     gap: 8px;

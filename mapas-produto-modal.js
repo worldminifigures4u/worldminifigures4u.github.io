@@ -529,14 +529,19 @@ function renderizarHistoricoEncomendasFornecedorMapa(conteudo, produto, pedidos)
         const tr = document.createElement("tr");
         const faltaOs = Math.max(0, Math.floor(Number(item?.falta_os || 0)));
         const emFalta = faltaOs > 0;
+        const emEx = Boolean(item?.marcado_ex) || String(item?.estado_fornecedor || "").trim().toUpperCase() === "EX";
         if (emFalta) {
             tr.classList.add("mapas-produto-historico-os");
+        } else if (emEx) {
+            tr.classList.add("mapas-produto-historico-ex");
         } else if (recebido < pedidoQtd) {
             tr.classList.add("mapas-produto-historico-pendente");
         }
         const estadoTexto = emFalta
             ? `Sem stock no fornecedor (OS: ${faltaOs})`
-            : (pedido.estado || "—");
+            : emEx
+                ? "Preço muito alto neste fornecedor (EX)"
+                : (pedido.estado || "—");
         [
             formatarDataEncomendaFornecedorMapa(dataRef),
             pedido.codigo || pedido.referencia || "—",
