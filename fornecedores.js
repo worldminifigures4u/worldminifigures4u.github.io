@@ -588,7 +588,12 @@ function normalizarItemPedidoFornecedor(item) {
         quantidade,
         Math.floor(Number(item.quantidade_original ?? item.quantidade_inicial ?? quantidade) || quantidade)
     );
-    const faltaOs = Math.max(0, Math.floor(Number(item.falta_os || Math.max(0, quantidadeOriginal - quantidade)) || 0));
+    const estadoFornecedorNormalizado = String(item.estado_fornecedor || '').trim().toUpperCase();
+    const marcadoEx = Boolean(item.marcado_ex) || estadoFornecedorNormalizado === 'EX';
+    // item.falta_os pode ser 0 de forma legítima (ex: artigo marcado EX) - "??" só usa o
+    // valor calculado quando falta_os é mesmo null/undefined, não quando é 0 explícito.
+    const faltaOsBruto = item.falta_os ?? (marcadoEx ? 0 : Math.max(0, quantidadeOriginal - quantidade));
+    const faltaOs = Math.max(0, Math.floor(Number(faltaOsBruto) || 0));
     const precoCusto = Number(item.preco_custo ?? item.custo ?? item.preco_compra ?? item.preco_fornecedor ?? item.preco ?? 0);
     return {
         ...item,
@@ -598,6 +603,7 @@ function normalizarItemPedidoFornecedor(item) {
         data_os: item.data_os || null,
         preco_custo: Number.isFinite(precoCusto) ? Math.max(0, precoCusto) : 0,
         estado_fornecedor: item.estado_fornecedor || (faltaOs > 0 ? 'OS' : ''),
+        marcado_ex: marcadoEx,
         origem_ajuste: item.origem_ajuste || '',
         data_ajuste: item.data_ajuste || null
     };
