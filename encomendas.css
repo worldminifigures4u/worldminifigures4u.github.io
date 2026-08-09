@@ -453,6 +453,12 @@ body.pagina-encomendas-admin{
             color:#ff9da5;
         }
 
+        .estado-devolvido{
+            background:rgba(130, 170, 255, 0.1);
+            border-color:rgba(130, 170, 255, 0.32);
+            color:#9ebaff;
+        }
+
         .admin-encomenda-seta{
             flex:0 0 auto;
             color:var(--cor-texto-principal, #fff);

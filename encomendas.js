@@ -14,6 +14,7 @@ const ESTADOS_ENCOMENDA = [
     'Em preparação',
     'Enviado',
     'Concluído',
+    'Devolvido',
     'Cancelado'
 ];
 

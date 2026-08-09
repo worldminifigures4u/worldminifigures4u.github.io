@@ -13,6 +13,7 @@ window.AdminEncomendaVista = (function () {
         "Em preparação",
         "Enviado",
         "Concluído",
+        "Devolvido",
         "Cancelado"
     ];
     const MARCACOES_ORDEM_STORAGE_KEY = "figures-planet-encomenda-marcacoes-ordem";
@@ -78,6 +79,11 @@ window.AdminEncomendaVista = (function () {
         return String(estado || "").toLowerCase() === "pendente"
             ? "A aguardar pagamento"
             : (estado || "A aguardar pagamento");
+    }
+
+    function estadoRepostoNormalizado(estado) {
+        const normalizado = estadoNormalizado(estado);
+        return normalizado === "Cancelado" || normalizado === "Devolvido";
     }
 
     function formatarNomeTituloEncomenda(valor) {
@@ -1367,7 +1373,7 @@ window.AdminEncomendaVista = (function () {
             }
         }
 
-        if (estadoAnterior === "Cancelado" && estado !== "Cancelado") {
+        if (estadoRepostoNormalizado(estadoAnterior) && !estadoRepostoNormalizado(estado)) {
             const codigo = encomenda.codigo_encomenda || "";
             let mensagemRecuperacao = `Recuperar a encomenda ${codigo} para o estado «${estado}»?`;
             if (encomenda.stock_reposto) {
@@ -1379,11 +1385,13 @@ window.AdminEncomendaVista = (function () {
             }
         }
 
-        if (estado === "Cancelado") {
+        if (estadoRepostoNormalizado(estado)) {
             const codigo = encomenda.codigo_encomenda || "";
             const mensagemCancelamento = encomenda.stock_reposto
-                ? `Cancelar novamente a encomenda ${codigo}?`
-                : `Cancelar a encomenda ${codigo} e repor automaticamente o stock dos produtos?`;
+                ? `${estado} novamente a encomenda ${codigo}?`
+                : estado === "Devolvido"
+                    ? `Marcar a encomenda ${codigo} como devolvida e repor automaticamente o stock dos produtos?\n\nConfirme apenas quando já recebeu a devolução e verificou as figuras.`
+                    : `Cancelar a encomenda ${codigo} e repor automaticamente o stock dos produtos?`;
             if (!window.confirm(mensagemCancelamento)) {
                 select.value = estadoAnterior;
                 return;
@@ -1414,12 +1422,29 @@ window.AdminEncomendaVista = (function () {
             let data = null;
             let error = null;
 
-            if (estado === "Cancelado") {
+            if (estadoRepostoNormalizado(estado)) {
                 ({ data, error } = await obterClient().rpc("cancelar_encomenda_plataforma_admin", {
                     p_encomenda_id: String(encomenda.id),
                     p_repor_stock: reporStock
                 }));
-            } else if (estadoAnterior === "Cancelado") {
+                if (!error && estado === "Devolvido") {
+                    try {
+                        const dataAtualizada = await atualizarEstadoDireto(encomenda, "Devolvido", null);
+                        data = {
+                            ...(data || {}),
+                            sucesso: true,
+                            estado: "Devolvido",
+                            created_at: dataAtualizada?.created_at || data?.created_at,
+                            stock_reposto: true
+                        };
+                    } catch (erroEstado) {
+                        error = erroEstado;
+                    }
+                }
+            } else if (estadoRepostoNormalizado(estadoAnterior)) {
+                if (estadoAnterior === "Devolvido") {
+                    await atualizarEstadoDireto(encomenda, "Cancelado", null);
+                }
                 ({ data, error } = await obterClient().rpc("recuperar_encomenda_admin", {
                     p_encomenda_id: String(encomenda.id),
                     p_estado: estado,
@@ -1549,8 +1574,8 @@ window.AdminEncomendaVista = (function () {
                 );
             } else {
                 const limpeza = estado === "Concluído" ? ` ${anexosEliminados} anexo(s) eliminado(s).` : "";
-                const reposicao = estado === "Cancelado" && data?.stock_reposto_agora ? " Stock reposto." : "";
-                const recuperacao = estadoAnterior === "Cancelado" && estado !== "Cancelado"
+                const reposicao = estadoRepostoNormalizado(estado) && data?.stock_reposto_agora ? " Stock reposto." : "";
+                const recuperacao = estadoRepostoNormalizado(estadoAnterior) && !estadoRepostoNormalizado(estado)
                     ? (data?.stock_reduzido ? " Stock reduzido novamente." : " Encomenda recuperada.")
                     : "";
                 const seguimento = codigoSeguimentoPendente
@@ -1576,8 +1601,8 @@ window.AdminEncomendaVista = (function () {
 
     async function apagarEncomenda(encomenda, botao) {
         const codigo = encomenda.codigo_encomenda || `#${encomenda.id}`;
-        if (estadoNormalizado(encomenda.estado) !== "Cancelado") {
-            hooks.definirStatus(`Para apagar a encomenda ${codigo}, cancele primeiro para repor o stock.`, true);
+        if (!estadoRepostoNormalizado(encomenda.estado)) {
+            hooks.definirStatus(`Para apagar a encomenda ${codigo}, cancele/devolva primeiro para repor o stock.`, true);
             return;
         }
         if (!encomenda.stock_reposto) {
@@ -1841,7 +1866,10 @@ window.AdminEncomendaVista = (function () {
             colunaContacto.appendChild(criarLinhaDetalhe("Referência externa", encomenda.referencia_externa));
         }
         if (encomenda.stock_reposto) {
-            colunaContacto.appendChild(criarLinhaDetalhe("Stock", "Reposto após cancelamento"));
+            const rotuloStockReposto = estadoNormalizado(encomenda.estado) === "Devolvido"
+                ? "Reposto após devolução"
+                : "Reposto após cancelamento";
+            colunaContacto.appendChild(criarLinhaDetalhe("Stock", rotuloStockReposto));
         }
 
         const grupoInfo = criarElemento("div", "admin-encomenda-dados-info-grupo");
@@ -1866,7 +1894,7 @@ window.AdminEncomendaVista = (function () {
         const origem = normalizar(encomenda.origem);
         const plataformaExterna = ["wallapop", "vinted", "olx", "todocoleccion"].includes(origem);
         const podeEditar = plataformaExterna
-            && estadoNormalizado(encomenda.estado) !== "Cancelado"
+            && !estadoRepostoNormalizado(encomenda.estado)
             && encomenda.codigo_encomenda;
 
         const botoesAcoes = criarElemento("div", "admin-encomenda-dados-botoes");
