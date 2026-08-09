@@ -29,6 +29,8 @@ var fornecedorPedidoAlvoJuntar = null;
 
 var mapasClient = null;
 var mapasProdutos = [];
+var fornecedorVendas3MesesIndice = null;
+var fornecedorVendas3MesesPromessa = null;
 var mapasEncomendasFornecedorCache = null;
 var mapasEncomendasFornecedorPromessa = null;
 var mapasVendasClienteCache = null;
@@ -38,6 +40,7 @@ const MAPAS_FORNECEDORES_STORAGE_KEY = FORNECEDORES_STORAGE_KEY;
 function sincronizarPonteProdutoMapaFornecedor() {
     mapasClient = fornecedoresClient;
     mapasProdutos = fornecedorProdutos;
+    if (!fornecedorVendas3MesesIndice) carregarVendas3MesesFornecedor();
 }
 
 function formatarEuroMapa(valor) {
@@ -105,6 +108,58 @@ var __fornecedoresProdutoPromessa = null;
 var __fornecedoresFichaProdutoPromessa = null;
 var __fornecedoresEdicaoPromessa = null;
 var __fornecedoresPrintPromessa = null;
+
+/** Carrega (e indexa por produto) as unidades vendidas nos últimos 3 meses, para ajudar a decidir quantidades a encomendar. */
+async function carregarVendas3MesesFornecedor(forcar = false) {
+    if (!forcar && fornecedorVendas3MesesIndice) return fornecedorVendas3MesesIndice;
+    if (!forcar && fornecedorVendas3MesesPromessa) return fornecedorVendas3MesesPromessa;
+
+    fornecedorVendas3MesesPromessa = (async () => {
+        const indice = { porId: new Map(), porSku: new Map() };
+        try {
+            if (!mapasClient) throw new Error("Supabase indisponível.");
+            const desde = new Date();
+            desde.setMonth(desde.getMonth() - 3);
+            const { data, error } = await mapasClient
+                .from("encomendas")
+                .select("produtos,created_at")
+                .gte("created_at", desde.toISOString())
+                .limit(2000);
+            if (error) throw error;
+            (data || []).forEach((encomenda) => {
+                (encomenda.produtos || []).forEach((item) => {
+                    const quantidade = Math.max(1, Math.floor(Number(item?.quantidade ?? item?.qtd ?? 1) || 1));
+                    const id = String(item?.id_produto || item?.produto_id || item?.id || "").trim();
+                    const sku = String(item?.sku || "").trim().toUpperCase();
+                    if (id) indice.porId.set(id, (indice.porId.get(id) || 0) + quantidade);
+                    if (sku) indice.porSku.set(sku, (indice.porSku.get(sku) || 0) + quantidade);
+                });
+            });
+        } catch (erro) {
+            console.warn("Não foi possível carregar vendas dos últimos 3 meses.", erro);
+        }
+        fornecedorVendas3MesesIndice = indice;
+        return indice;
+    })();
+
+    const resultado = await fornecedorVendas3MesesPromessa;
+    fornecedorVendas3MesesPromessa = null;
+    return resultado;
+}
+
+/** Unidades vendidas nos últimos 3 meses para um produto, a partir do índice já carregado. */
+function obterVendidos3MesesFornecedor(produto) {
+    if (!fornecedorVendas3MesesIndice || !produto) return 0;
+    const id = String(produto.id || "").trim();
+    if (id && fornecedorVendas3MesesIndice.porId.has(id)) {
+        return fornecedorVendas3MesesIndice.porId.get(id);
+    }
+    const sku = String(produto.sku || "").trim().toUpperCase();
+    if (sku && fornecedorVendas3MesesIndice.porSku.has(sku)) {
+        return fornecedorVendas3MesesIndice.porSku.get(sku);
+    }
+    return 0;
+}
 
 function garantirFichaProdutoMapaFornecedor() {
     sincronizarPonteProdutoMapaFornecedor();
@@ -2281,6 +2336,7 @@ function criarTheadTabelaEncomendaFornecedor() {
         ["Chegar", "mapas-col-pendente", "pendente"],
         ["Prev.", "mapas-col-previsto", "previsto"],
         ["Qtd", "mapas-col-qtd", "qtd"],
+        ["Vend. 3m", "mapas-col-vendidos-3m", ""],
     ].forEach(([texto, classe, coluna]) => {
         const th = document.createElement("th");
         th.className = `${classe} mapas-th-ordenavel`;
@@ -2401,12 +2457,31 @@ function renderizarResultadosFornecedorTabelaEncomenda(caixa, resultados) {
         qtdCelula.appendChild(input);
         linha.appendChild(qtdCelula);
 
+        const vendidos3mCelula = document.createElement("td");
+        vendidos3mCelula.className = "mapas-col-vendidos-3m";
+        vendidos3mCelula.textContent = String(obterVendidos3MesesFornecedor(atual));
+        vendidos3mCelula.title = "Unidades vendidas nos últimos 3 meses";
+        linha.appendChild(vendidos3mCelula);
+
         tbody.appendChild(linha);
     });
 
     tabela.appendChild(tbody);
     envoltorio.appendChild(tabela);
     caixa.appendChild(envoltorio);
+
+    carregarVendas3MesesFornecedor().then((indice) => {
+        if (!indice) return;
+        // Os dados de vendas chegam de forma assíncrona - atualiza as células já
+        // desenhadas assim que estiverem disponíveis, sem re-renderizar a tabela toda.
+        tbody.querySelectorAll("tr").forEach((tr, indiceLinha) => {
+            const produtoLinha = resultadosOrdenados[indiceLinha]?.produto;
+            const celula = tr.querySelector(".mapas-col-vendidos-3m");
+            if (produtoLinha && celula) {
+                celula.textContent = String(obterVendidos3MesesFornecedor(produtoLinha));
+            }
+        });
+    });
 }
 
 function renderizarResultadosFornecedor() {

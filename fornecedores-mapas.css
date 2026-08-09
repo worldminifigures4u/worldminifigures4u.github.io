@@ -1282,6 +1282,7 @@ body.pagina-mapas-admin > main.fornecedores-admin {
 .mapas-col-pendente { width: 88px; }
 .mapas-col-previsto { width: 88px; }
 .mapas-col-qtd { width: 82px; }
+.mapas-col-vendidos-3m { width: 74px; text-align: center; color: #9fdcff; font-weight: 700; }
 
 .pagina-mapas-admin .mapas-col-foto {
     width: 64px;
