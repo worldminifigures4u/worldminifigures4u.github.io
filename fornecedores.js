@@ -232,7 +232,7 @@ function garantirFichaProdutoMapaFornecedor() {
     instalarExtensaoEditorProdutoFornecedor();
     if (window.MapasProdutoModal) return Promise.resolve();
     if (!__fornecedoresFichaProdutoPromessa) {
-        __fornecedoresFichaProdutoPromessa = carregarScriptAdmin("mapas-produto-modal.js?v=20260809-fix-observacoes");
+        __fornecedoresFichaProdutoPromessa = carregarScriptAdmin("mapas-produto-modal.js?v=20260809-secao-estado");
     }
     return __fornecedoresFichaProdutoPromessa;
 }

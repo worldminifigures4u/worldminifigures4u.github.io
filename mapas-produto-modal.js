@@ -798,18 +798,6 @@ function criarBadgeLeituraMapa(secao, rotulo, ativo) {
     return badge;
 }
 
-function montarSecaoMediaLeituraMapa(campos, produto) {
-    const observacoes = String(produto.observacoes || "").trim();
-    if (!observacoes) return;
-
-    const secao = criarSecaoEdicaoMapa("Observações", "mapas-produto-secao-media");
-    const texto = document.createElement("p");
-    texto.className = "mapas-produto-observacoes-leitura";
-    texto.textContent = observacoes;
-    secao.appendChild(texto);
-    campos.appendChild(secao);
-}
-
 function criarFotoPrincipalFichaMapa(produto) {
     const imagens = normalizarImagensMapa(produto.imagens);
     const figura = document.createElement("figure");
@@ -866,7 +854,18 @@ function preencherFichaProdutoMapa(produto) {
     criarCampoLeituraMapa(secaoDetalhes, "Lego", textoLegoMapa(produto.lego) || "por verificar");
     topo.appendChild(secaoDetalhes);
 
-    const secaoMarcas = criarSecaoEdicaoMapa("Marcas", "mapas-produto-secao-marcas");
+    const observacoesTexto = String(produto.observacoes || "").trim();
+    if (observacoesTexto) {
+        topo.classList.add("mapas-produto-ficha-topo-com-obs");
+        const secaoObsLeitura = criarSecaoEdicaoMapa("Observações", "mapas-produto-secao-media");
+        const textoObs = document.createElement("p");
+        textoObs.className = "mapas-produto-observacoes-leitura";
+        textoObs.textContent = observacoesTexto;
+        secaoObsLeitura.appendChild(textoObs);
+        topo.appendChild(secaoObsLeitura);
+    }
+
+    const secaoMarcas = criarSecaoEdicaoMapa("Estado", "mapas-produto-secao-marcas");
     const flagsLista = document.createElement("div");
     flagsLista.className = "mapas-produto-leitura-badges mapas-produto-leitura-badges-vertical";
     secaoMarcas.appendChild(flagsLista);
@@ -880,7 +879,6 @@ function preencherFichaProdutoMapa(produto) {
     topo.appendChild(secaoMarcas);
     campos.appendChild(topo);
 
-    montarSecaoMediaLeituraMapa(campos, produto);
     montarSecaoHistoricoRececoesMapa(campos, produto);
     montarSecaoHistoricoVendasMapa(campos, produto);
 }
@@ -1036,12 +1034,15 @@ function preencherFormularioProdutoMapa(produto, modo = "editar") {
             });
         });
     }
-    criarCheckboxEdicaoMapa(secaoIdentificacao, "mapas-editar-ativo", "Produto ativo", produto.ativo !== false);
-    criarCheckboxEdicaoMapa(secaoIdentificacao, "mapas-editar-top", "Top", Boolean(String(produto.top || "").trim()));
-    criarCheckboxEdicaoMapa(secaoIdentificacao, "mapas-editar-arquivado", "Arquivado", Boolean(produto.arquivado));
-    criarCheckboxEdicaoMapa(secaoIdentificacao, "mapas-editar-descontinuado", "Descontinuado", Boolean(produto.descontinuado));
-    criarCheckboxEdicaoMapa(secaoIdentificacao, "mapas-editar-novidade", "Novidade", modo === "criar" ? true : Boolean(produto.novidade));
     campos.appendChild(secaoIdentificacao);
+
+    const secaoEstado = criarSecaoEdicaoMapa("Estado", "mapas-produto-secao-marcas");
+    criarCheckboxEdicaoMapa(secaoEstado, "mapas-editar-ativo", "Produto ativo", produto.ativo !== false);
+    criarCheckboxEdicaoMapa(secaoEstado, "mapas-editar-top", "Top", Boolean(String(produto.top || "").trim()));
+    criarCheckboxEdicaoMapa(secaoEstado, "mapas-editar-arquivado", "Arquivado", Boolean(produto.arquivado));
+    criarCheckboxEdicaoMapa(secaoEstado, "mapas-editar-descontinuado", "Descontinuado", Boolean(produto.descontinuado));
+    criarCheckboxEdicaoMapa(secaoEstado, "mapas-editar-novidade", "Novidade", modo === "criar" ? true : Boolean(produto.novidade));
+    campos.appendChild(secaoEstado);
 
     const secaoDetalhes = criarSecaoEdicaoMapa("Detalhes", "mapas-produto-secao-detalhes");
     criarInputEdicaoMapa(secaoDetalhes, "mapas-editar-stock", "Stock", Number(produto.stock || 0), "number", { required: true, step: 1 });
