@@ -3340,8 +3340,12 @@ function obterValorOrdenacaoItemPedidoFornecedor(item, coluna) {
     if (coluna === "origem") {
         const faltaOs = Math.max(0, Number(item?.falta_os || 0));
         const emEx = Boolean(item?.marcado_ex) || String(item?.estado_fornecedor || "").trim().toUpperCase() === "EX";
-        if (faltaOs > 0) return 2;
-        if (emEx) return 1;
+        if (faltaOs > 0) return 3000000000000;
+        if (emEx) return 2000000000000;
+        if (item?.origem_ajuste) {
+            const timestamp = item?.data_ajuste ? new Date(item.data_ajuste).getTime() : 0;
+            return 1000000000000 + (Number.isFinite(timestamp) ? timestamp : 0);
+        }
         return 0;
     }
     return item?.nome || "";
