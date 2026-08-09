@@ -1036,6 +1036,7 @@ function preencherFormularioProdutoMapa(produto, modo = "editar") {
             });
         });
     }
+    criarCheckboxEdicaoMapa(secaoIdentificacao, "mapas-editar-ativo", "Produto ativo", produto.ativo !== false);
     criarCheckboxEdicaoMapa(secaoIdentificacao, "mapas-editar-top", "Top", Boolean(String(produto.top || "").trim()));
     criarCheckboxEdicaoMapa(secaoIdentificacao, "mapas-editar-arquivado", "Arquivado", Boolean(produto.arquivado));
     criarCheckboxEdicaoMapa(secaoIdentificacao, "mapas-editar-descontinuado", "Descontinuado", Boolean(produto.descontinuado));
@@ -1052,7 +1053,6 @@ function preencherFormularioProdutoMapa(produto, modo = "editar") {
         { valor: "sim", texto: "sim" },
         { valor: "não", texto: "não" }
     ]);
-    criarCheckboxEdicaoMapa(secaoDetalhes, "mapas-editar-ativo", "Produto ativo", produto.ativo !== false);
     campos.appendChild(secaoDetalhes);
 
     montarSecaoMediaEdicaoMapa(campos, produto);
