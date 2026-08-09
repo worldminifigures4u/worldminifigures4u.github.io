@@ -1685,6 +1685,7 @@ function obterValorOrdenacaoFornecedor(item, coluna) {
         const selecionado = fornecedorSelecao.find(sel => String(sel.id) === String(produto.id));
         return Number(selecionado?.quantidade || 0);
     }
+    if (coluna === "vendidos3m") return obterVendidos3MesesFornecedor(produto);
     return produto.nome || "";
 }
 
@@ -2335,7 +2336,7 @@ function criarTheadTabelaEncomendaFornecedor() {
         ["Chegar", "mapas-col-pendente", "pendente"],
         ["Prev.", "mapas-col-previsto", "previsto"],
         ["Qtd", "mapas-col-qtd", "qtd"],
-        ["Vend. 3m", "mapas-col-vendidos-3m", ""],
+        ["Vend. 3m", "mapas-col-vendidos-3m", "vendidos3m"],
     ].forEach(([texto, classe, coluna]) => {
         const th = document.createElement("th");
         th.className = `${classe} mapas-th-ordenavel`;
@@ -2471,6 +2472,12 @@ function renderizarResultadosFornecedorTabelaEncomenda(caixa, resultados) {
 
     carregarVendas3MesesFornecedor().then((indice) => {
         if (!indice) return;
+        if (fornecedorMapaOrdenacao.coluna === "vendidos3m") {
+            // A ordenação foi feita antes dos dados chegarem (todos a 0) - agora que já
+            // temos os valores reais, é preciso voltar a renderizar para ordenar bem.
+            renderizarResultadosFornecedor();
+            return;
+        }
         // Os dados de vendas chegam de forma assíncrona - atualiza as células já
         // desenhadas assim que estiverem disponíveis, sem re-renderizar a tabela toda.
         tbody.querySelectorAll("tr").forEach((tr, indiceLinha) => {
