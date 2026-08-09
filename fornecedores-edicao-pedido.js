@@ -666,7 +666,7 @@ function lerItensEditadosPedidoFornecedor(pedido, modal) {
             quantidade_original: quantidadeOriginal,
             quantidade: quantidadeFinal,
             falta_os: faltaOs,
-            data_os: estaOs ? (item.data_os || dataOsHojeFornecedor()) : null,
+            data_os: (estaOs || marcarEx) ? (item.data_os || dataOsHojeFornecedor()) : null,
             preco_custo: precoCusto,
             preco: precoCusto,
             estado_fornecedor: estaOs ? 'OS' : (marcarEx ? 'EX' : (['OS', 'EX'].includes(item.estado_fornecedor) ? '' : item.estado_fornecedor || '')),

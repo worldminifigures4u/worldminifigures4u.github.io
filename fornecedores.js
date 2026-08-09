@@ -126,7 +126,7 @@ function garantirFornecedoresProdutoModal() {
 function garantirFornecedoresEdicaoPedido() {
     if (window.FornecedoresEdicaoPedido) return Promise.resolve();
     if (!__fornecedoresEdicaoPromessa) {
-        __fornecedoresEdicaoPromessa = carregarScriptAdmin("fornecedores-edicao-pedido.js?v=20260807-fix-ex-nao-os");
+        __fornecedoresEdicaoPromessa = carregarScriptAdmin("fornecedores-edicao-pedido.js?v=20260807-data-ex");
     }
     return __fornecedoresEdicaoPromessa;
 }
@@ -3485,12 +3485,12 @@ function renderizarPedidoFornecedorProdutosTabela(caixa, pedido) {
         if (faltaOs > 0) {
             const osSpan = document.createElement("span");
             osSpan.className = "fornecedor-ajuste-os ativo";
-            osSpan.textContent = "OS";
+            osSpan.textContent = item.data_os ? `OS (${formatarDataOsCurtaFornecedor(item.data_os)})` : "OS";
             origemCelula.appendChild(osSpan);
         } else if (emEx) {
             const exSpan = document.createElement("span");
             exSpan.className = "fornecedor-ajuste-ex ativo";
-            exSpan.textContent = "EX";
+            exSpan.textContent = item.data_os ? `EX (${formatarDataOsCurtaFornecedor(item.data_os)})` : "EX";
             origemCelula.appendChild(exSpan);
         }
         linha.appendChild(origemCelula);
@@ -3536,7 +3536,7 @@ function criarDetalhesPedidoFornecedor(pedido) {
             if (faltaOs > 0) linhaProduto.classList.add("tem-os");
             linhaProduto.appendChild(criarImagemFornecedor(produtoAtual, "fornecedor-miniatura pequena"));
             const info = criarElementoPedidoFornecedor("div", "fornecedor-info");
-            info.innerHTML = `<strong>${escaparHtmlFornecedor(item.nome)}</strong><span class="fornecedor-identificadores">Ref. ${escaparHtmlFornecedor(item.referencia || "-")} | SKU ${escaparHtmlFornecedor(item.sku || "-")}</span><span>Pedido: ${Number(item.quantidade || 0)} | Recebido: ${recebido} | Stock atual: ${Number(produtoAtual.stock || 0)}</span>${faltaOs > 0 ? `<span class="fornecedor-ajuste-os ativo">OS</span>` : (emExCartao ? `<span class="fornecedor-ajuste-ex ativo">EX</span>` : "")}`;
+            info.innerHTML = `<strong>${escaparHtmlFornecedor(item.nome)}</strong><span class="fornecedor-identificadores">Ref. ${escaparHtmlFornecedor(item.referencia || "-")} | SKU ${escaparHtmlFornecedor(item.sku || "-")}</span><span>Pedido: ${Number(item.quantidade || 0)} | Recebido: ${recebido} | Stock atual: ${Number(produtoAtual.stock || 0)}</span>${faltaOs > 0 ? `<span class="fornecedor-ajuste-os ativo">${item.data_os ? `OS (${formatarDataOsCurtaFornecedor(item.data_os)})` : "OS"}</span>` : (emExCartao ? `<span class="fornecedor-ajuste-ex ativo">${item.data_os ? `EX (${formatarDataOsCurtaFornecedor(item.data_os)})` : "EX"}</span>` : "")}`;
             const input = document.createElement("input");
             input.type = "number";
             input.min = "0";

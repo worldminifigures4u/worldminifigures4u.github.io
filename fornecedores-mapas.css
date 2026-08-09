@@ -1649,11 +1649,6 @@ body.pagina-mapas-admin > main.fornecedores-admin {
     margin-top: 2px;
 }
 
-.pagina-fornecedores-unificada .fornecedor-pedido-produtos .fornecedor-tabela-encomenda tbody tr.tem-os td {
-    background: #211c12 !important;
-    border-color: #80612d;
-}
-
 .pagina-fornecedores-unificada .fornecedor-pedido-produtos .fornecedor-recebido-input {
     display: block;
     width: 48px;
