@@ -2,11 +2,16 @@
 'use strict';
 function garantirModalEdicaoProdutoMapa() {
     let modal = document.getElementById("mapas-produto-modal");
+    if (modal && modal.dataset.modalFornecedorProduto !== "1") {
+        modal.remove();
+        modal = null;
+    }
     if (modal) return modal;
 
     modal = document.createElement("div");
     modal.id = "mapas-produto-modal";
     modal.className = "mapas-produto-modal";
+    modal.dataset.modalFornecedorProduto = "1";
     modal.hidden = true;
     modal.innerHTML = `
         <div class="mapas-produto-modal-dialog" role="dialog" aria-modal="true" aria-labelledby="mapas-produto-modal-titulo">

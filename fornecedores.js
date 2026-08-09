@@ -174,7 +174,7 @@ function garantirFichaProdutoMapaFornecedor() {
 function garantirFornecedoresProdutoModal() {
     if (window.FornecedoresProdutoModal) return Promise.resolve();
     if (!__fornecedoresProdutoPromessa) {
-        __fornecedoresProdutoPromessa = carregarScriptAdmin("fornecedores-produto-modal.js?v=20260730-fecho-fundo");
+        __fornecedoresProdutoPromessa = carregarScriptAdmin("fornecedores-produto-modal.js?v=20260809-botao-guardar");
     }
     return __fornecedoresProdutoPromessa;
 }
