@@ -40,7 +40,6 @@ const MAPAS_FORNECEDORES_STORAGE_KEY = FORNECEDORES_STORAGE_KEY;
 function sincronizarPonteProdutoMapaFornecedor() {
     mapasClient = fornecedoresClient;
     mapasProdutos = fornecedorProdutos;
-    if (!fornecedorVendas3MesesIndice) carregarVendas3MesesFornecedor();
 }
 
 function formatarEuroMapa(valor) {
@@ -117,10 +116,10 @@ async function carregarVendas3MesesFornecedor(forcar = false) {
     fornecedorVendas3MesesPromessa = (async () => {
         const indice = { porId: new Map(), porSku: new Map() };
         try {
-            if (!mapasClient) throw new Error("Supabase indisponível.");
+            if (!fornecedoresClient) throw new Error("Supabase indisponível.");
             const desde = new Date();
             desde.setMonth(desde.getMonth() - 3);
-            const { data, error } = await mapasClient
+            const { data, error } = await fornecedoresClient
                 .from("encomendas")
                 .select("produtos,created_at")
                 .gte("created_at", desde.toISOString())
