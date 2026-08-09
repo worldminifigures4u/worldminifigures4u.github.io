@@ -302,6 +302,31 @@ function montarSecaoMediaEdicaoMapa(campos, produto) {
     atualizarPreviewImagensEdicaoMapa();
 }
 
+function obterExtensaoEditorProdutoMapa() {
+    const extensao = window.FornecedoresProdutoEditorExt;
+    return extensao && typeof extensao === "object" ? extensao : null;
+}
+
+function montarSecoesExtraEdicaoMapa(campos, produto, modo) {
+    const extensao = obterExtensaoEditorProdutoMapa();
+    if (!extensao || typeof extensao.montarSecao !== "function") return;
+    extensao.montarSecao(campos, produto, modo, {
+        criarSecaoEdicaoMapa,
+        criarInputEdicaoMapa,
+        criarTextareaEdicaoMapa,
+        criarSelectEdicaoMapa,
+        criarCheckboxEdicaoMapa
+    });
+}
+
+function lerFornecedoresEditadosMapa(produtoAtual) {
+    const extensao = obterExtensaoEditorProdutoMapa();
+    if (!extensao || typeof extensao.lerFornecedores !== "function") {
+        return produtoAtual?.fornecedores || {};
+    }
+    return extensao.lerFornecedores(produtoAtual) || {};
+}
+
 async function enriquecerMediaProdutoMapa(produto) {
     const atual = {
         ...produto,
@@ -1037,6 +1062,7 @@ function preencherFormularioProdutoMapa(produto, modo = "editar") {
     campos.appendChild(secaoDetalhes);
 
     montarSecaoMediaEdicaoMapa(campos, produto);
+    montarSecoesExtraEdicaoMapa(campos, produto, modo);
 
     const nomeInput = modal.querySelector("#mapas-editar-nome");
     const skuInput = modal.querySelector("#mapas-editar-sku");
@@ -1164,7 +1190,7 @@ function lerProdutoEditadoMapa() {
         imagens: imagensCampo
             ? obterUrlsImagensEdicaoMapa()
             : normalizarImagensMapa(produtoAtual?.imagens),
-        fornecedores: produtoAtual?.fornecedores || {},
+        fornecedores: lerFornecedoresEditadosMapa(produtoAtual),
         ativo: document.getElementById("mapas-editar-ativo").checked
     };
     if (!produto.nome || !produto.sku || !produto.tema || !Number.isFinite(produto.preco) || produto.preco < 0 || !Number.isFinite(produto.preco_compra) || produto.preco_compra < 0 || !Number.isFinite(produto.peso) || produto.peso < 1 || !Number.isFinite(produto.stock)) {
@@ -1271,6 +1297,7 @@ async function guardarEdicaoProdutoMapa(evento) {
 window.MapasProdutoModal = {
   abrirFicha: abrirFichaProdutoMapa,
   abrirEdicao: abrirEdicaoProdutoMapa,
+  abrirEditar: abrirEdicaoProdutoMapa,
   abrirCriacao: abrirCriacaoProdutoMapa,
   fechar: fecharEdicaoProdutoMapa,
   guardar: guardarEdicaoProdutoMapa

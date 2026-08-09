@@ -83,6 +83,68 @@ function atualizarResultadosMapa() {
     renderizarSelecionadosFornecedor();
 }
 
+function instalarExtensaoEditorProdutoFornecedor() {
+    window.FornecedoresProdutoEditorExt = {
+        montarSecao(campos, produto) {
+            const blocoFornecedores = criarSecaoEdicaoMapa("Fornecedores", "mapas-produto-fornecedores");
+            obterCamposProdutoFornecedor().forEach(({ chave, rotulo }) => {
+                criarBlocoHistoricoFornecedorFicha(
+                    blocoFornecedores,
+                    `mapas-editar-fornecedor-${chave}`,
+                    rotulo,
+                    obterFornecedorPorChaveProduto(produto, chave)
+                );
+            });
+            campos.appendChild(blocoFornecedores);
+        },
+        lerFornecedores(produtoAtual) {
+            const fornecedores = {};
+            obterCamposProdutoFornecedor().forEach(({ chave }) => {
+                const input = document.getElementById(`mapas-editar-fornecedor-${chave}`);
+                const valor = input?.value.trim() || "";
+                const limparHistorico = input?.dataset.historicoLimpo === "1";
+                const historicoEditado = input?.dataset.historicoEditado === "1";
+                if (limparHistorico && !valor) return;
+
+                let historicoCustom = null;
+                if (historicoEditado || limparHistorico) {
+                    try {
+                        historicoCustom = limparHistorico
+                            ? []
+                            : JSON.parse(input?.dataset.historicoJson || "[]");
+                        if (!Array.isArray(historicoCustom)) historicoCustom = [];
+                    } catch (_) {
+                        historicoCustom = [];
+                    }
+                }
+
+                const anterior = limparHistorico
+                    ? ""
+                    : (historicoCustom
+                        ? { estado: valor, historico: historicoCustom }
+                        : obterFornecedorPorChaveProduto(produtoAtual, chave));
+                const parsed = parseValorMarcacaoFornecedorInput(valor, anterior);
+                if (parsed === "" || parsed == null) return;
+
+                if (historicoCustom) {
+                    const reconstruido = reconstruirMarcacaoHistoricoFornecedor(historicoCustom);
+                    if (!historicoCustom.length && !valor) return;
+                    fornecedores[chave] = {
+                        estado: valor || reconstruido.estado || "",
+                        historico: historicoCustom,
+                        datas: reconstruido.datas || [],
+                        desde: reconstruido.desde || null
+                    };
+                    if (!fornecedores[chave].estado && !fornecedores[chave].historico.length) return;
+                } else {
+                    fornecedores[chave] = parsed;
+                }
+            });
+            return fornecedores;
+        }
+    };
+}
+
 function carregarScriptAdmin(src) {
     return new Promise(function (resolve, reject) {
         const existente = document.querySelector('script[data-admin-chunk="' + src + '"]');
@@ -164,9 +226,10 @@ function obterVendidos3MesesFornecedor(produto) {
 
 function garantirFichaProdutoMapaFornecedor() {
     sincronizarPonteProdutoMapaFornecedor();
+    instalarExtensaoEditorProdutoFornecedor();
     if (window.MapasProdutoModal) return Promise.resolve();
     if (!__fornecedoresFichaProdutoPromessa) {
-        __fornecedoresFichaProdutoPromessa = carregarScriptAdmin("mapas-produto-modal.js?v=20260807-esconder-ex");
+        __fornecedoresFichaProdutoPromessa = carregarScriptAdmin("mapas-produto-modal.js?v=20260809-editor-unificado");
     }
     return __fornecedoresFichaProdutoPromessa;
 }
@@ -196,28 +259,16 @@ function garantirFornecedoresPrintReceive() {
 }
 
 async function abrirEdicaoProdutoMapa() {
-    await garantirFornecedoresProdutoModal();
-    return window.FornecedoresProdutoModal.abrir.apply(null, arguments);
+    await garantirFichaProdutoMapaFornecedor();
+    sincronizarPonteProdutoMapaFornecedor();
+    const abrir = window.MapasProdutoModal?.abrirEditar || window.MapasProdutoModal?.abrirEdicao;
+    return abrir?.apply(window.MapasProdutoModal, arguments);
 }
 
 async function abrirFichaProdutoMapaFornecedor(produtoId) {
     await garantirFichaProdutoMapaFornecedor();
     sincronizarPonteProdutoMapaFornecedor();
-    const resultado = await window.MapasProdutoModal.abrirFicha(produtoId);
-    const botaoEditar = document.getElementById("mapas-produto-passar-editar");
-    if (botaoEditar && botaoEditar.dataset.fornecedoresEditarCompleto !== "1") {
-        botaoEditar.dataset.fornecedoresEditarCompleto = "1";
-        botaoEditar.addEventListener("click", (evento) => {
-            evento.preventDefault();
-            evento.stopImmediatePropagation();
-            const id = document.getElementById("mapas-produto-modal")?.dataset.produtoId
-                || document.getElementById("mapas-editar-id")?.value
-                || "";
-            window.MapasProdutoModal?.fechar?.();
-            if (id) abrirEdicaoProdutoMapa(id);
-        }, true);
-    }
-    return resultado;
+    return window.MapasProdutoModal.abrirFicha(produtoId);
 }
 
 async function abrirEdicaoPedidoFornecedor() {
