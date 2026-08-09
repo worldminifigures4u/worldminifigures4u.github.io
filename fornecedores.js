@@ -166,7 +166,6 @@ function carregarScriptAdmin(src) {
     });
 }
 
-var __fornecedoresProdutoPromessa = null;
 var __fornecedoresFichaProdutoPromessa = null;
 var __fornecedoresEdicaoPromessa = null;
 var __fornecedoresPrintPromessa = null;
@@ -232,14 +231,6 @@ function garantirFichaProdutoMapaFornecedor() {
         __fornecedoresFichaProdutoPromessa = carregarScriptAdmin("mapas-produto-modal.js?v=20260809-editor-unificado");
     }
     return __fornecedoresFichaProdutoPromessa;
-}
-
-function garantirFornecedoresProdutoModal() {
-    if (window.FornecedoresProdutoModal) return Promise.resolve();
-    if (!__fornecedoresProdutoPromessa) {
-        __fornecedoresProdutoPromessa = carregarScriptAdmin("fornecedores-produto-modal.js?v=20260809-botao-guardar");
-    }
-    return __fornecedoresProdutoPromessa;
 }
 
 function garantirFornecedoresEdicaoPedido() {
@@ -3946,7 +3937,6 @@ async function iniciarFornecedoresAdmin() {
         renderizarPedidosFornecedores();
         const prefetch = function () {
             garantirFornecedoresEdicaoPedido().catch(() => {});
-            garantirFornecedoresProdutoModal().catch(() => {});
             garantirFornecedoresPrintReceive().catch(() => {});
         };
         if ('requestIdleCallback' in window) window.requestIdleCallback(prefetch, { timeout: 4000 });
