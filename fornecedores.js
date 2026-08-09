@@ -3485,12 +3485,12 @@ function renderizarPedidoFornecedorProdutosTabela(caixa, pedido) {
         if (faltaOs > 0) {
             const osSpan = document.createElement("span");
             osSpan.className = "fornecedor-ajuste-os ativo";
-            osSpan.textContent = `OS/Falta: ${faltaOs}${item.quantidade_original ? ` de ${Number(item.quantidade_original || 0)}` : ""}`;
+            osSpan.textContent = "OS";
             origemCelula.appendChild(osSpan);
         } else if (emEx) {
             const exSpan = document.createElement("span");
             exSpan.className = "fornecedor-ajuste-ex ativo";
-            exSpan.textContent = "EX (preço alto)";
+            exSpan.textContent = "EX";
             origemCelula.appendChild(exSpan);
         }
         linha.appendChild(origemCelula);
@@ -3536,7 +3536,7 @@ function criarDetalhesPedidoFornecedor(pedido) {
             if (faltaOs > 0) linhaProduto.classList.add("tem-os");
             linhaProduto.appendChild(criarImagemFornecedor(produtoAtual, "fornecedor-miniatura pequena"));
             const info = criarElementoPedidoFornecedor("div", "fornecedor-info");
-            info.innerHTML = `<strong>${escaparHtmlFornecedor(item.nome)}</strong><span class="fornecedor-identificadores">Ref. ${escaparHtmlFornecedor(item.referencia || "-")} | SKU ${escaparHtmlFornecedor(item.sku || "-")}</span><span>Pedido: ${Number(item.quantidade || 0)} | Recebido: ${recebido} | Stock atual: ${Number(produtoAtual.stock || 0)}</span>${faltaOs > 0 ? `<span class="fornecedor-ajuste-os ativo">OS/Falta: ${faltaOs}${item.quantidade_original ? ` de ${Number(item.quantidade_original || 0)}` : ""}</span>` : (emExCartao ? `<span class="fornecedor-ajuste-ex ativo">EX (preço alto)</span>` : "")}`;
+            info.innerHTML = `<strong>${escaparHtmlFornecedor(item.nome)}</strong><span class="fornecedor-identificadores">Ref. ${escaparHtmlFornecedor(item.referencia || "-")} | SKU ${escaparHtmlFornecedor(item.sku || "-")}</span><span>Pedido: ${Number(item.quantidade || 0)} | Recebido: ${recebido} | Stock atual: ${Number(produtoAtual.stock || 0)}</span>${faltaOs > 0 ? `<span class="fornecedor-ajuste-os ativo">OS</span>` : (emExCartao ? `<span class="fornecedor-ajuste-ex ativo">EX</span>` : "")}`;
             const input = document.createElement("input");
             input.type = "number";
             input.min = "0";

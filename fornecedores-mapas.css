@@ -52,9 +52,9 @@ body.pagina-fornecedores-admin{ margin:0; padding-left:0; padding-right:0; paddi
         .fornecedor-info strong{ color:#fff; line-height:1.2; }
         .fornecedor-info span{ color:#cfcfcf; font-size:13px; }
         .fornecedor-ajuste-os{ color:#bdbdbd !important; font-size:12px !important; font-weight:700; }
-        .fornecedor-ajuste-os.ativo{ color:#ffc400 !important; }
+        .fornecedor-ajuste-os.ativo{ color:#ff4d4d !important; }
         .fornecedor-ajuste-ex{ color:#bdbdbd !important; font-size:12px !important; font-weight:700; }
-        .fornecedor-ajuste-ex.ativo{ color:#7ec8ff !important; }
+        .fornecedor-ajuste-ex.ativo{ color:#ff9c33 !important; }
         .fornecedor-identificadores{ color:#18c4ff !important; font-weight:700; }
         .fornecedor-stock{ color:#fff !important; font-weight:700; }
         .fornecedor-stock.sem-stock{ color:#ff4d4d !important; }
@@ -2019,11 +2019,11 @@ body.pagina-mapas-admin > main.fornecedores-admin {
 }
 
 .mapas-produto-historico-rececoes-tabela tr.mapas-produto-historico-os td {
-    color: #b8862f;
+    color: #ff4d4d;
 }
 
 .mapas-produto-historico-rececoes-tabela tr.mapas-produto-historico-ex td {
-    color: #7ec8ff;
+    color: #ff9c33;
 }
 
 .mapas-produto-upload-bloco {
