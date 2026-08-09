@@ -3339,10 +3339,10 @@ function obterValorOrdenacaoItemPedidoFornecedor(item, coluna) {
     if (coluna === "stock") return Number(produtoAtual?.stock || 0);
     if (coluna === "origem") {
         const faltaOs = Math.max(0, Number(item?.falta_os || 0));
-        const partes = [];
-        if (faltaOs > 0) partes.push("OS/Falta");
-        if (item?.origem_ajuste) partes.push(obterTextoOrigemAjustePedidoFornecedor(item.origem_ajuste));
-        return partes.join(" ") || "-";
+        const emEx = Boolean(item?.marcado_ex) || String(item?.estado_fornecedor || "").trim().toUpperCase() === "EX";
+        if (faltaOs > 0) return 2;
+        if (emEx) return 1;
+        return 0;
     }
     return item?.nome || "";
 }
@@ -3493,14 +3493,6 @@ function renderizarPedidoFornecedorProdutosTabela(caixa, pedido) {
             exSpan.textContent = "EX (preço alto)";
             origemCelula.appendChild(exSpan);
         }
-        if (item.origem_ajuste) {
-            const origemSpan = document.createElement("span");
-            origemSpan.className = "fornecedor-ajuste-os";
-            origemSpan.textContent = item.data_ajuste
-                ? formatarDataPedidoFornecedor(item.data_ajuste)
-                : obterTextoOrigemAjustePedidoFornecedor(item.origem_ajuste);
-            origemCelula.appendChild(origemSpan);
-        }
         linha.appendChild(origemCelula);
 
         const qtdCelula = document.createElement("td");
@@ -3544,7 +3536,7 @@ function criarDetalhesPedidoFornecedor(pedido) {
             if (faltaOs > 0) linhaProduto.classList.add("tem-os");
             linhaProduto.appendChild(criarImagemFornecedor(produtoAtual, "fornecedor-miniatura pequena"));
             const info = criarElementoPedidoFornecedor("div", "fornecedor-info");
-            info.innerHTML = `<strong>${escaparHtmlFornecedor(item.nome)}</strong><span class="fornecedor-identificadores">Ref. ${escaparHtmlFornecedor(item.referencia || "-")} | SKU ${escaparHtmlFornecedor(item.sku || "-")}</span><span>Pedido: ${Number(item.quantidade || 0)} | Recebido: ${recebido} | Stock atual: ${Number(produtoAtual.stock || 0)}</span>${faltaOs > 0 ? `<span class="fornecedor-ajuste-os ativo">OS/Falta: ${faltaOs}${item.quantidade_original ? ` de ${Number(item.quantidade_original || 0)}` : ""}</span>` : (emExCartao ? `<span class="fornecedor-ajuste-ex ativo">EX (preço alto)</span>` : "")}${item.origem_ajuste ? `<span class="fornecedor-ajuste-os">${escaparHtmlFornecedor(obterTextoOrigemAjustePedidoFornecedor(item.origem_ajuste))}</span>` : ""}`;
+            info.innerHTML = `<strong>${escaparHtmlFornecedor(item.nome)}</strong><span class="fornecedor-identificadores">Ref. ${escaparHtmlFornecedor(item.referencia || "-")} | SKU ${escaparHtmlFornecedor(item.sku || "-")}</span><span>Pedido: ${Number(item.quantidade || 0)} | Recebido: ${recebido} | Stock atual: ${Number(produtoAtual.stock || 0)}</span>${faltaOs > 0 ? `<span class="fornecedor-ajuste-os ativo">OS/Falta: ${faltaOs}${item.quantidade_original ? ` de ${Number(item.quantidade_original || 0)}` : ""}</span>` : (emExCartao ? `<span class="fornecedor-ajuste-ex ativo">EX (preço alto)</span>` : "")}`;
             const input = document.createElement("input");
             input.type = "number";
             input.min = "0";
