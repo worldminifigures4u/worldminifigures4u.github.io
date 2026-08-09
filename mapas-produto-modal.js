@@ -1036,13 +1036,8 @@ function preencherFormularioProdutoMapa(produto, modo = "editar") {
     }
     campos.appendChild(secaoIdentificacao);
 
-    const secaoEstado = criarSecaoEdicaoMapa("Estado", "mapas-produto-secao-marcas");
-    criarCheckboxEdicaoMapa(secaoEstado, "mapas-editar-ativo", "Produto ativo", produto.ativo !== false);
-    criarCheckboxEdicaoMapa(secaoEstado, "mapas-editar-top", "Top", Boolean(String(produto.top || "").trim()));
-    criarCheckboxEdicaoMapa(secaoEstado, "mapas-editar-arquivado", "Arquivado", Boolean(produto.arquivado));
-    criarCheckboxEdicaoMapa(secaoEstado, "mapas-editar-descontinuado", "Descontinuado", Boolean(produto.descontinuado));
-    criarCheckboxEdicaoMapa(secaoEstado, "mapas-editar-novidade", "Novidade", modo === "criar" ? true : Boolean(produto.novidade));
-    campos.appendChild(secaoEstado);
+    const linhaDetalhesEstado = document.createElement("div");
+    linhaDetalhesEstado.className = "mapas-produto-linha-detalhes-estado";
 
     const secaoDetalhes = criarSecaoEdicaoMapa("Detalhes", "mapas-produto-secao-detalhes");
     criarInputEdicaoMapa(secaoDetalhes, "mapas-editar-stock", "Stock", Number(produto.stock || 0), "number", { required: true, step: 1 });
@@ -1054,7 +1049,17 @@ function preencherFormularioProdutoMapa(produto, modo = "editar") {
         { valor: "sim", texto: "sim" },
         { valor: "não", texto: "não" }
     ]);
-    campos.appendChild(secaoDetalhes);
+    linhaDetalhesEstado.appendChild(secaoDetalhes);
+
+    const secaoEstado = criarSecaoEdicaoMapa("Estado", "mapas-produto-secao-marcas");
+    criarCheckboxEdicaoMapa(secaoEstado, "mapas-editar-ativo", "Produto ativo", produto.ativo !== false);
+    criarCheckboxEdicaoMapa(secaoEstado, "mapas-editar-top", "Top", Boolean(String(produto.top || "").trim()));
+    criarCheckboxEdicaoMapa(secaoEstado, "mapas-editar-arquivado", "Arquivado", Boolean(produto.arquivado));
+    criarCheckboxEdicaoMapa(secaoEstado, "mapas-editar-descontinuado", "Descontinuado", Boolean(produto.descontinuado));
+    criarCheckboxEdicaoMapa(secaoEstado, "mapas-editar-novidade", "Novidade", modo === "criar" ? true : Boolean(produto.novidade));
+    linhaDetalhesEstado.appendChild(secaoEstado);
+
+    campos.appendChild(linhaDetalhesEstado);
 
     montarSecaoMediaEdicaoMapa(campos, produto);
     montarSecoesExtraEdicaoMapa(campos, produto, modo);

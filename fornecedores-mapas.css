@@ -1901,6 +1901,17 @@ body.pagina-mapas-admin > main.fornecedores-admin {
     text-align: center;
 }
 
+.mapas-produto-linha-detalhes-estado {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(160px, 260px);
+    gap: 14px;
+    align-items: start;
+}
+
+.mapas-produto-linha-detalhes-estado .mapas-produto-secao {
+    margin: 0;
+}
+
 .mapas-produto-ficha-topo .mapas-produto-secao-identificacao,
 .mapas-produto-ficha-topo .mapas-produto-secao-detalhes,
 .mapas-produto-ficha-topo .mapas-produto-secao-media,
@@ -2604,6 +2615,10 @@ body.mapas-produto-modal-aberto {
 
     .mapas-produto-ficha-topo,
     .mapas-produto-ficha-topo.mapas-produto-ficha-topo-com-obs {
+        grid-template-columns: 1fr;
+    }
+
+    .mapas-produto-linha-detalhes-estado {
         grid-template-columns: 1fr;
     }
 
