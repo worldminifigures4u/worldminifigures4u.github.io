@@ -798,18 +798,6 @@ function criarBadgeLeituraMapa(secao, rotulo, ativo) {
     return badge;
 }
 
-function montarSecaoMediaLeituraMapa(campos, produto) {
-    const observacoes = String(produto.observacoes || "").trim();
-    if (!observacoes) return;
-
-    const secao = criarSecaoEdicaoMapa("Observações", "mapas-produto-secao-media");
-    const texto = document.createElement("p");
-    texto.className = "mapas-produto-observacoes-leitura";
-    texto.textContent = observacoes;
-    secao.appendChild(texto);
-    campos.appendChild(secao);
-}
-
 function criarFotoPrincipalFichaMapa(produto) {
     const imagens = normalizarImagensMapa(produto.imagens);
     const figura = document.createElement("figure");
@@ -866,6 +854,17 @@ function preencherFichaProdutoMapa(produto) {
     criarCampoLeituraMapa(secaoDetalhes, "Lego", textoLegoMapa(produto.lego) || "por verificar");
     topo.appendChild(secaoDetalhes);
 
+    const observacoesTexto = String(produto.observacoes || "").trim();
+    if (observacoesTexto) {
+        topo.classList.add("mapas-produto-ficha-topo-com-obs");
+        const secaoObsLeitura = criarSecaoEdicaoMapa("Observações", "mapas-produto-secao-media");
+        const textoObs = document.createElement("p");
+        textoObs.className = "mapas-produto-observacoes-leitura";
+        textoObs.textContent = observacoesTexto;
+        secaoObsLeitura.appendChild(textoObs);
+        topo.appendChild(secaoObsLeitura);
+    }
+
     const secaoMarcas = criarSecaoEdicaoMapa("Marcas", "mapas-produto-secao-marcas");
     const flagsLista = document.createElement("div");
     flagsLista.className = "mapas-produto-leitura-badges mapas-produto-leitura-badges-vertical";
@@ -880,7 +879,6 @@ function preencherFichaProdutoMapa(produto) {
     topo.appendChild(secaoMarcas);
     campos.appendChild(topo);
 
-    montarSecaoMediaLeituraMapa(campos, produto);
     montarSecaoHistoricoRececoesMapa(campos, produto);
     montarSecaoHistoricoVendasMapa(campos, produto);
 }
