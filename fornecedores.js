@@ -54,6 +54,10 @@ function textoLegoMapa(valor) {
     return "por verificar";
 }
 
+function normalizarSkuMapa(valor) {
+    return normalizarSkuFornecedor(valor);
+}
+
 function definirStatusMapa(texto, erro = false) {
     definirStatusFornecedor(texto, erro);
 }
@@ -228,7 +232,7 @@ function garantirFichaProdutoMapaFornecedor() {
     instalarExtensaoEditorProdutoFornecedor();
     if (window.MapasProdutoModal) return Promise.resolve();
     if (!__fornecedoresFichaProdutoPromessa) {
-        __fornecedoresFichaProdutoPromessa = carregarScriptAdmin("mapas-produto-modal.js?v=20260809-editor-unificado");
+        __fornecedoresFichaProdutoPromessa = carregarScriptAdmin("mapas-produto-modal.js?v=20260809-fix-observacoes");
     }
     return __fornecedoresFichaProdutoPromessa;
 }

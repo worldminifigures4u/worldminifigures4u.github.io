@@ -593,9 +593,6 @@ function renderizarHistoricoEncomendasFornecedorMapa(conteudo, produto, pedidos)
 
 function montarSecaoHistoricoRececoesMapa(campos, produto) {
     const secao = criarSecaoEdicaoMapa("Histórico a fornecedores", "mapas-produto-secao-media mapas-produto-secao-historico");
-    const ajuda = document.createElement("p");
-    ajuda.className = "mapas-produto-ajuda-media";
-    ajuda.textContent = "Encomendas a fornecedores em que esta figura foi pedida (incluindo as ainda encomendadas).";
     const conteudo = document.createElement("div");
     conteudo.className = "mapas-produto-historico-rececoes";
     conteudo.id = "mapas-produto-historico-rececoes";
@@ -604,7 +601,7 @@ function montarSecaoHistoricoRececoesMapa(campos, produto) {
     loading.className = "mapas-produto-ajuda-media";
     loading.textContent = "A carregar histórico...";
     conteudo.appendChild(loading);
-    secao.append(ajuda, conteudo);
+    secao.append(conteudo);
     campos.appendChild(secao);
 
     const produtoId = String(produto.id || "");
@@ -759,9 +756,6 @@ function renderizarHistoricoVendasMapa(conteudo, produto, encomendas) {
 
 function montarSecaoHistoricoVendasMapa(campos, produto) {
     const secao = criarSecaoEdicaoMapa("Histórico de vendas", "mapas-produto-secao-media mapas-produto-secao-historico");
-    const ajuda = document.createElement("p");
-    ajuda.className = "mapas-produto-ajuda-media";
-    ajuda.textContent = "Encomendas de clientes em que esta figura saiu.";
     const conteudo = document.createElement("div");
     conteudo.className = "mapas-produto-historico-vendas";
     conteudo.id = "mapas-produto-historico-vendas";
@@ -770,7 +764,7 @@ function montarSecaoHistoricoVendasMapa(campos, produto) {
     loading.className = "mapas-produto-ajuda-media";
     loading.textContent = "A carregar histórico...";
     conteudo.appendChild(loading);
-    secao.append(ajuda, conteudo);
+    secao.append(conteudo);
     campos.appendChild(secao);
 
     const produtoId = String(produto.id || "");
@@ -1042,6 +1036,7 @@ function preencherFormularioProdutoMapa(produto, modo = "editar") {
             });
         });
     }
+    criarCheckboxEdicaoMapa(secaoIdentificacao, "mapas-editar-ativo", "Produto ativo", produto.ativo !== false);
     criarCheckboxEdicaoMapa(secaoIdentificacao, "mapas-editar-top", "Top", Boolean(String(produto.top || "").trim()));
     criarCheckboxEdicaoMapa(secaoIdentificacao, "mapas-editar-arquivado", "Arquivado", Boolean(produto.arquivado));
     criarCheckboxEdicaoMapa(secaoIdentificacao, "mapas-editar-descontinuado", "Descontinuado", Boolean(produto.descontinuado));
@@ -1058,7 +1053,6 @@ function preencherFormularioProdutoMapa(produto, modo = "editar") {
         { valor: "sim", texto: "sim" },
         { valor: "não", texto: "não" }
     ]);
-    criarCheckboxEdicaoMapa(secaoDetalhes, "mapas-editar-ativo", "Produto ativo", produto.ativo !== false);
     campos.appendChild(secaoDetalhes);
 
     montarSecaoMediaEdicaoMapa(campos, produto);

@@ -127,6 +127,7 @@ begin
       'subtema', coalesce(produto.subtema, ''),
       'imagens', produto.imagens,
       'stock', coalesce(produto.stock, 0),
+      'observacoes', coalesce(produto.observacoes, ''),
       'fornecedores', coalesce(produto.fornecedores, '{}'::jsonb),
       'ativo', coalesce(produto.ativo, true)
     ) order by produto.nome)
