@@ -3492,6 +3492,11 @@ function renderizarPedidoFornecedorProdutosTabela(caixa, pedido) {
             exSpan.className = "fornecedor-ajuste-ex ativo";
             exSpan.textContent = item.data_os ? `EX (${formatarDataOsCurtaFornecedor(item.data_os)})` : "EX";
             origemCelula.appendChild(exSpan);
+        } else if (item.origem_ajuste) {
+            const adicionadoSpan = document.createElement("span");
+            adicionadoSpan.className = "fornecedor-ajuste-os";
+            adicionadoSpan.textContent = item.data_ajuste ? formatarDataPedidoFornecedor(item.data_ajuste) : "Adicionado depois";
+            origemCelula.appendChild(adicionadoSpan);
         }
         linha.appendChild(origemCelula);
 
