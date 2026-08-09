@@ -30,6 +30,7 @@ var fornecedorPedidoAlvoJuntar = null;
 var mapasClient = null;
 var mapasProdutos = [];
 var fornecedorVendas3MesesIndice = null;
+var fornecedorVendas3MesesVersao = 0;
 var fornecedorVendas3MesesPromessa = null;
 var mapasEncomendasFornecedorCache = null;
 var mapasEncomendasFornecedorPromessa = null;
@@ -138,6 +139,7 @@ async function carregarVendas3MesesFornecedor(forcar = false) {
             console.warn("Não foi possível carregar vendas dos últimos 3 meses.", erro);
         }
         fornecedorVendas3MesesIndice = indice;
+        fornecedorVendas3MesesVersao += 1;
         return indice;
     })();
 
@@ -2372,6 +2374,7 @@ function criarTheadTabelaEncomendaFornecedor() {
 function renderizarResultadosFornecedorTabelaEncomenda(caixa, resultados) {
     caixa.classList.add("fornecedor-resultados-mapa");
     const limiteResultados = 250;
+    const versaoVendas3mAoRenderizar = fornecedorVendas3MesesVersao;
 
     atualizarResumoEncomendaFornecedor({
         totalFiltrados: resultados.length,
@@ -2472,9 +2475,15 @@ function renderizarResultadosFornecedorTabelaEncomenda(caixa, resultados) {
 
     carregarVendas3MesesFornecedor().then((indice) => {
         if (!indice) return;
+        if (fornecedorVendas3MesesVersao === versaoVendas3mAoRenderizar) {
+            // Dados iguais aos que já tínhamos quando esta tabela foi desenhada
+            // (veio do cache) - nada mudou, não faz sentido voltar a renderizar.
+            return;
+        }
         if (fornecedorMapaOrdenacao.coluna === "vendidos3m") {
             // A ordenação foi feita antes dos dados chegarem (todos a 0) - agora que já
-            // temos os valores reais, é preciso voltar a renderizar para ordenar bem.
+            // temos os valores reais pela primeira vez, é preciso voltar a renderizar
+            // para ordenar bem.
             renderizarResultadosFornecedor();
             return;
         }
