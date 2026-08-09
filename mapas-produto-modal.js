@@ -865,7 +865,7 @@ function preencherFichaProdutoMapa(produto) {
         topo.appendChild(secaoObsLeitura);
     }
 
-    const secaoMarcas = criarSecaoEdicaoMapa("Marcas", "mapas-produto-secao-marcas");
+    const secaoMarcas = criarSecaoEdicaoMapa("Estado", "mapas-produto-secao-marcas");
     const flagsLista = document.createElement("div");
     flagsLista.className = "mapas-produto-leitura-badges mapas-produto-leitura-badges-vertical";
     secaoMarcas.appendChild(flagsLista);
@@ -1034,12 +1034,15 @@ function preencherFormularioProdutoMapa(produto, modo = "editar") {
             });
         });
     }
-    criarCheckboxEdicaoMapa(secaoIdentificacao, "mapas-editar-ativo", "Produto ativo", produto.ativo !== false);
-    criarCheckboxEdicaoMapa(secaoIdentificacao, "mapas-editar-top", "Top", Boolean(String(produto.top || "").trim()));
-    criarCheckboxEdicaoMapa(secaoIdentificacao, "mapas-editar-arquivado", "Arquivado", Boolean(produto.arquivado));
-    criarCheckboxEdicaoMapa(secaoIdentificacao, "mapas-editar-descontinuado", "Descontinuado", Boolean(produto.descontinuado));
-    criarCheckboxEdicaoMapa(secaoIdentificacao, "mapas-editar-novidade", "Novidade", modo === "criar" ? true : Boolean(produto.novidade));
     campos.appendChild(secaoIdentificacao);
+
+    const secaoEstado = criarSecaoEdicaoMapa("Estado", "mapas-produto-secao-marcas");
+    criarCheckboxEdicaoMapa(secaoEstado, "mapas-editar-ativo", "Produto ativo", produto.ativo !== false);
+    criarCheckboxEdicaoMapa(secaoEstado, "mapas-editar-top", "Top", Boolean(String(produto.top || "").trim()));
+    criarCheckboxEdicaoMapa(secaoEstado, "mapas-editar-arquivado", "Arquivado", Boolean(produto.arquivado));
+    criarCheckboxEdicaoMapa(secaoEstado, "mapas-editar-descontinuado", "Descontinuado", Boolean(produto.descontinuado));
+    criarCheckboxEdicaoMapa(secaoEstado, "mapas-editar-novidade", "Novidade", modo === "criar" ? true : Boolean(produto.novidade));
+    campos.appendChild(secaoEstado);
 
     const secaoDetalhes = criarSecaoEdicaoMapa("Detalhes", "mapas-produto-secao-detalhes");
     criarInputEdicaoMapa(secaoDetalhes, "mapas-editar-stock", "Stock", Number(produto.stock || 0), "number", { required: true, step: 1 });
