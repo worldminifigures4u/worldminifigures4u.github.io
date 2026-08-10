@@ -20,7 +20,7 @@ var fornecedorPedidos = carregarPedidosFornecedores();
 var fornecedorFichas = carregarFichasFornecedores();
 var fornecedorMapaOrdenacao = { coluna: "stock", direcao: "asc" };
 var fornecedorPedidoItensOrdenacao = { coluna: "nome", direcao: "asc" };
-var fornecedorResumoEncomenda = { totalFiltrados: 0, apresentados: 0, limite: 250 };
+var fornecedorResumoEncomenda = { totalFiltrados: 0, apresentados: 0, limite: Infinity };
 var fornecedorRenderizacaoPendente = null;
 var FORNECEDOR_LISTA_MAX_CARACTERES = 30000;
 var FORNECEDOR_LISTA_MAX_LINHAS = 500;
@@ -2419,7 +2419,7 @@ function criarTheadTabelaEncomendaFornecedor() {
 
 function renderizarResultadosFornecedorTabelaEncomenda(caixa, resultados) {
     caixa.classList.add("fornecedor-resultados-mapa");
-    const limiteResultados = 250;
+    const limiteResultados = Infinity;
     const versaoVendas3mAoRenderizar = fornecedorVendas3MesesVersao;
 
     atualizarResumoEncomendaFornecedor({
