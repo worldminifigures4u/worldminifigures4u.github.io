@@ -853,7 +853,7 @@ function preencherFichaProdutoMapa(produto) {
     criarCampoLeituraMapa(secaoDetalhes, "Peso (g)", Number(produto.peso || PESO_PADRAO_PRODUTO_GRAMAS || 10));
     criarCampoLeituraMapa(secaoDetalhes, "Lego", textoLegoMapa(produto.lego) || "por verificar");
     if (Number(produto.unidades_por_embalagem || 1) > 1) {
-        criarCampoLeituraMapa(secaoDetalhes, "Unidades/embalagem", Number(produto.unidades_por_embalagem));
+        criarCampoLeituraMapa(secaoDetalhes, "Unid./embalagem", Number(produto.unidades_por_embalagem));
     }
     topo.appendChild(secaoDetalhes);
 
