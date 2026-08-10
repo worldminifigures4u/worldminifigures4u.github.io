@@ -232,7 +232,7 @@ function garantirFichaProdutoMapaFornecedor() {
     instalarExtensaoEditorProdutoFornecedor();
     if (window.MapasProdutoModal) return Promise.resolve();
     if (!__fornecedoresFichaProdutoPromessa) {
-        __fornecedoresFichaProdutoPromessa = carregarScriptAdmin("mapas-produto-modal.js?v=20260809-secao-estado");
+        __fornecedoresFichaProdutoPromessa = carregarScriptAdmin("mapas-produto-modal.js?v=20260810-unidades-embalagem");
     }
     return __fornecedoresFichaProdutoPromessa;
 }
@@ -248,7 +248,7 @@ function garantirFornecedoresEdicaoPedido() {
 function garantirFornecedoresPrintReceive() {
     if (window.FornecedoresPrintReceive) return Promise.resolve();
     if (!__fornecedoresPrintPromessa) {
-        __fornecedoresPrintPromessa = carregarScriptAdmin("fornecedores-print-receive.js?v=20260721-split");
+        __fornecedoresPrintPromessa = carregarScriptAdmin("fornecedores-print-receive.js?v=20260810-unidades-embalagem");
     }
     return __fornecedoresPrintPromessa;
 }

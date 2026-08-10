@@ -237,7 +237,7 @@ async function receberPedidoFornecedor(id) {
 
         renderizarResultadosFornecedor();
         renderizarPedidosFornecedores();
-        const unidades = aplicado.reduce((soma, item) => soma + Math.max(0, Number(item.quantidade || 0)), 0);
+        const unidades = aplicado.reduce((soma, item) => soma + Math.max(0, Number(item.quantidade_stock ?? item.quantidade ?? 0)), 0);
         const avisoTeto = aplicado.some(item => Number(item.solicitada || 0) > Number(item.quantidade || 0))
             ? ' Quantidades acima do pendente foram ignoradas.'
             : '';

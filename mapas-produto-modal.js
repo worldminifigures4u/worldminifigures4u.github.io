@@ -852,6 +852,9 @@ function preencherFichaProdutoMapa(produto) {
     criarCampoLeituraMapa(secaoDetalhes, "preço venda", `${formatarEuroMapa(produto.preco)} €`);
     criarCampoLeituraMapa(secaoDetalhes, "Peso (g)", Number(produto.peso || PESO_PADRAO_PRODUTO_GRAMAS || 10));
     criarCampoLeituraMapa(secaoDetalhes, "Lego", textoLegoMapa(produto.lego) || "por verificar");
+    if (Number(produto.unidades_por_embalagem || 1) > 1) {
+        criarCampoLeituraMapa(secaoDetalhes, "Unidades/embalagem", Number(produto.unidades_por_embalagem));
+    }
     topo.appendChild(secaoDetalhes);
 
     const observacoesTexto = String(produto.observacoes || "").trim();
@@ -1049,6 +1052,7 @@ function preencherFormularioProdutoMapa(produto, modo = "editar") {
         { valor: "sim", texto: "sim" },
         { valor: "não", texto: "não" }
     ]);
+    criarInputEdicaoMapa(secaoDetalhes, "mapas-editar-unidades-por-embalagem", "Unidades por embalagem", Number(produto.unidades_por_embalagem || 1), "number", { required: true, min: 1, step: 1 });
     linhaDetalhesEstado.appendChild(secaoDetalhes);
 
     const secaoEstado = criarSecaoEdicaoMapa("Estado", "mapas-produto-secao-marcas");
@@ -1182,6 +1186,7 @@ function lerProdutoEditadoMapa() {
         preco: Number(document.getElementById("mapas-editar-preco").value),
         peso: Number(document.getElementById("mapas-editar-peso").value || 10),
         stock: Math.floor(Number(document.getElementById("mapas-editar-stock").value || 0)),
+        unidades_por_embalagem: Math.max(1, Math.floor(Number(document.getElementById("mapas-editar-unidades-por-embalagem")?.value || 1))),
         tema: document.getElementById("mapas-editar-tema").value.trim(),
         subtema: document.getElementById("mapas-editar-subtema").value.trim() || "semsubtema",
         observacoes: observacoesCampo

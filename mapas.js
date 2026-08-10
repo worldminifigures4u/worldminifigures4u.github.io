@@ -61,7 +61,7 @@ var __mapasProdutoModalPromessa = null;
 function garantirMapasProdutoModal() {
     if (window.MapasProdutoModal) return Promise.resolve();
     if (!__mapasProdutoModalPromessa) {
-        __mapasProdutoModalPromessa = carregarScriptAdmin("mapas-produto-modal.js?v=20260809-secao-estado");
+        __mapasProdutoModalPromessa = carregarScriptAdmin("mapas-produto-modal.js?v=20260810-unidades-embalagem");
     }
     return __mapasProdutoModalPromessa;
 }
@@ -269,6 +269,7 @@ function normalizarProdutoMapa(produto) {
         tema: produto.tema || "",
         subtema: produto.subtema || "",
         stock: Number.isFinite(Number(produto.stock)) ? Math.floor(Number(produto.stock)) : 0,
+        unidades_por_embalagem: Math.max(1, Number.isFinite(Number(produto.unidades_por_embalagem)) ? Math.floor(Number(produto.unidades_por_embalagem)) : 1),
         ativo: produto.ativo !== false,
         imagens: normalizarImagensMapa(produto.imagens),
         observacoes: produto.observacoes || "",
