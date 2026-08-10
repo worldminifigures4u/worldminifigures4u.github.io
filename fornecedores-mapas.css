@@ -1943,13 +1943,15 @@ body.pagina-mapas-admin > main.fornecedores-admin {
     display: grid;
     gap: 4px;
     align-content: start;
+    min-width: 0;
 }
 
 .mapas-produto-leitura-rotulo {
     color: #aaa;
     font-size: 12px;
     font-weight: 600;
-    overflow-wrap: break-word;
+    overflow-wrap: anywhere;
+    min-width: 0;
 }
 
 .mapas-produto-leitura-valor {
