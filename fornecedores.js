@@ -3427,8 +3427,8 @@ function criarDetalhesPedidoFornecedor(pedido) {
     const exportarTxt = criarElementoPedidoFornecedor("button", "wallapop-botao", "Exportar TXT");
     exportarTxt.type = "button";
     exportarTxt.addEventListener("click", () => {
-        const texto = obterTextoExportacaoPedidoFornecedor(pedido);
-        if (!texto) {
+        const temItens = (pedido.itens || []).some(item => Math.max(0, Math.floor(Number(item.quantidade || 0))) > 0);
+        if (!temItens) {
             definirStatusFornecedor("A encomenda nao tem produtos para exportar.", true);
             return;
         }
