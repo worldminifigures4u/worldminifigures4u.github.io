@@ -165,7 +165,8 @@
         ));
         secao.append(
             criarCheckboxClienteModal('Bloquear compras no site', 'bloquear_compras', cliente.bloquear_compras),
-            criarCheckboxClienteModal('Bloquear login no site', 'bloquear_conta', cliente.bloquear_conta)
+            criarCheckboxClienteModal('Bloquear login no site', 'bloquear_conta', cliente.bloquear_conta),
+            criarCheckboxClienteModal('Cliente com aviso a ler', 'tem_aviso', cliente.tem_aviso)
         );
         return secao;
     }
@@ -295,11 +296,20 @@
                     definirStatusFichaCliente('Dados guardados, mas erro nas restricoes: ' + (resultadoRestricoes.error?.message || resultadoRestricoes.data?.erro || 'sem detalhe'), true);
                     return;
                 }
+                const resultadoAviso = await fichaClient.rpc('guardar_aviso_cliente_admin', {
+                    p_cliente_id: cliente.id,
+                    p_tem_aviso: campos.get('tem_aviso') === 'on'
+                });
+                if (resultadoAviso.error || resultadoAviso.data?.sucesso === false) {
+                    definirStatusFichaCliente('Dados guardados, mas erro no aviso: ' + (resultadoAviso.error?.message || resultadoAviso.data?.erro || 'sem detalhe'), true);
+                    return;
+                }
                 dados.cliente = {
                     ...(data.cliente || cliente),
                     notas: String(campos.get('notas') || ''),
                     bloquear_compras: campos.get('bloquear_compras') === 'on',
-                    bloquear_conta: campos.get('bloquear_conta') === 'on'
+                    bloquear_conta: campos.get('bloquear_conta') === 'on',
+                    tem_aviso: campos.get('tem_aviso') === 'on'
                 };
                 const fichaAtualizada = await fichaClient.rpc('obter_ficha_cliente_por_id_admin', {
                     p_cliente_id: cliente.id

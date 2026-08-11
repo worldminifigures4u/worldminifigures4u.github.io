@@ -174,6 +174,17 @@ function criarCampoEdicaoCliente(rotulo, nome, valor, tipo = 'text', obrigatorio
     return campo;
 }
 
+function criarCheckboxEdicaoCliente(rotulo, nome, marcado = false) {
+    const campo = document.createElement('label');
+    campo.className = 'admin-cliente-formulario-campo admin-cliente-formulario-checkbox';
+    const input = document.createElement('input');
+    input.type = 'checkbox';
+    input.name = nome;
+    input.checked = Boolean(marcado);
+    campo.append(input, criarElementoEncomenda('span', '', rotulo));
+    return campo;
+}
+
 function obterPerfisFormularioCliente(formulario) {
     return Array.from(formulario.querySelectorAll('[name^="perfil_url_"]'))
         .map(input => ({ url: input.value.trim() }))
@@ -215,6 +226,7 @@ function renderizarFormularioClienteExterno(dados, secao) {
             cliente.pais || 'Portugal'
         ) || criarCampoEdicaoCliente('Pa\u00eds', 'pais', cliente.pais)
     );
+    formulario.appendChild(criarCheckboxEdicaoCliente('Cliente com aviso a ler', 'tem_aviso', cliente.tem_aviso));
     const tituloPerfis = criarElementoEncomenda('h3', 'admin-cliente-formulario-subtitulo', 'Links externos');
     formulario.appendChild(tituloPerfis);
     formulario.appendChild(criarCamposPerfisCliente(perfis));
@@ -261,7 +273,15 @@ function renderizarFormularioClienteExterno(dados, secao) {
             definirStatusFichaCliente('Dados guardados, mas erro nos links: ' + (resultadoPerfis.error?.message || resultadoPerfis.data?.erro || 'sem detalhe'), true);
             return;
         }
-        dados.cliente = data.cliente;
+        const resultadoAviso = await encomendasClient.rpc('guardar_aviso_cliente_admin', {
+            p_cliente_id: cliente.id,
+            p_tem_aviso: campos.get('tem_aviso') === 'on'
+        });
+        if (resultadoAviso.error || resultadoAviso.data?.sucesso === false) {
+            definirStatusFichaCliente('Dados guardados, mas erro no aviso: ' + (resultadoAviso.error?.message || resultadoAviso.data?.erro || 'sem detalhe'), true);
+            return;
+        }
+        dados.cliente = { ...data.cliente, tem_aviso: campos.get('tem_aviso') === 'on' };
         const fichaAtualizada = await encomendasClient.rpc('obter_ficha_cliente_por_id_admin', {
             p_cliente_id: cliente.id
         });
@@ -325,6 +345,13 @@ function renderizarFichaClienteAdmin(dados) {
             'p',
             'admin-cliente-restricoes',
             restricoes.join(' \u2022 ')
+        ));
+    }
+    if (cliente.tem_aviso) {
+        dadosPessoais.appendChild(criarElementoEncomenda(
+            'p',
+            'admin-cliente-aviso-conta',
+            '\u26a0\ufe0f Cliente com aviso a ler.'
         ));
     }
     if (cliente.auth_user_id) {
@@ -782,12 +809,12 @@ async function carregarEncomendasAdmin() {
     definirStatusEncomendas('A carregar encomendas...');
     let { data, error } = await encomendasClient
         .from('encomendas')
-        .select('*, clientes_gestao(nome_utilizador, nome)')
+        .select('*, clientes_gestao(nome_utilizador, nome, tem_aviso)')
         .order('created_at', { ascending: false });
     if (error && /nome_utilizador|schema cache/i.test(String(error.message || error.details || ''))) {
         const fallbackFicha = await encomendasClient
             .from('encomendas')
-            .select('*, clientes_gestao(nome)')
+            .select('*, clientes_gestao(nome, tem_aviso)')
             .order('created_at', { ascending: false });
         data = fallbackFicha.data;
         error = fallbackFicha.error;

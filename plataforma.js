@@ -508,7 +508,7 @@ function garantirFichaClientePlataforma() {
                 return carregarScriptAdmin('paises-cliente.js?v=20260731-wallapop-es');
             })
             .then(function () {
-                return carregarScriptAdmin('admin-ficha-cliente.js?v=20260731-wallapop-es');
+                return carregarScriptAdmin('admin-ficha-cliente.js?v=20260810-checkbox-aviso');
             })
             .then(function () {
                 window.AdminFichaCliente?.configurar({
