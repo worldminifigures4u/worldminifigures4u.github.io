@@ -20,134 +20,13 @@ var fornecedorPedidos = carregarPedidosFornecedores();
 var fornecedorFichas = carregarFichasFornecedores();
 var fornecedorMapaOrdenacao = { coluna: "stock", direcao: "asc" };
 var fornecedorPedidoItensOrdenacao = { coluna: "nome", direcao: "asc" };
-var fornecedorResumoEncomenda = { totalFiltrados: 0, apresentados: 0, limite: Infinity };
+var fornecedorResumoEncomenda = { totalFiltrados: 0, apresentados: 0, limite: 250 };
 var fornecedorRenderizacaoPendente = null;
 var FORNECEDOR_LISTA_MAX_CARACTERES = 30000;
 var FORNECEDOR_LISTA_MAX_LINHAS = 500;
 var fornecedorPedidosAbertos = new Set();
 var fornecedorPedidoAlvoJuntar = null;
 
-var mapasClient = null;
-var mapasProdutos = [];
-var fornecedorVendas3MesesIndice = null;
-var fornecedorVendas3MesesVersao = 0;
-var fornecedorVendas3MesesPromessa = null;
-var mapasEncomendasFornecedorCache = null;
-var mapasEncomendasFornecedorPromessa = null;
-var mapasVendasClienteCache = null;
-var mapasVendasClientePromessa = null;
-const MAPAS_FORNECEDORES_STORAGE_KEY = FORNECEDORES_STORAGE_KEY;
-
-function sincronizarPonteProdutoMapaFornecedor() {
-    mapasClient = fornecedoresClient;
-    mapasProdutos = fornecedorProdutos;
-}
-
-function formatarEuroMapa(valor) {
-    return formatarEuroFornecedor(valor);
-}
-
-function textoLegoMapa(valor) {
-    const texto = normalizarFornecedor(valor);
-    if (texto === "sim") return "sim";
-    if (texto === "nao" || texto === "não") return "não";
-    return "por verificar";
-}
-
-function normalizarSkuMapa(valor) {
-    return normalizarSkuFornecedor(valor);
-}
-
-function definirStatusMapa(texto, erro = false) {
-    definirStatusFornecedor(texto, erro);
-}
-
-function normalizarImagensMapa(imagens) {
-    if (Array.isArray(imagens)) return imagens.map(url => String(url || "").trim()).filter(Boolean);
-    if (typeof imagens === "string") {
-        try {
-            const parsed = JSON.parse(imagens);
-            if (Array.isArray(parsed)) return parsed.map(url => String(url || "").trim()).filter(Boolean);
-        } catch (_) {
-            return imagens.split(/[\n,]+/).map(url => url.trim()).filter(Boolean);
-        }
-    }
-    return [];
-}
-
-function normalizarProdutoMapa(produto) {
-    return produto || {};
-}
-
-function sincronizarEstadoImportacaoMapa() {}
-
-function atualizarResultadosMapa() {
-    fornecedorProdutos = mapasProdutos;
-    renderizarResultadosFornecedor();
-    renderizarSelecionadosFornecedor();
-}
-
-function instalarExtensaoEditorProdutoFornecedor() {
-    window.FornecedoresProdutoEditorExt = {
-        montarSecao(campos, produto) {
-            const blocoFornecedores = criarSecaoEdicaoMapa("Fornecedores", "mapas-produto-fornecedores");
-            obterCamposProdutoFornecedor().forEach(({ chave, rotulo }) => {
-                criarBlocoHistoricoFornecedorFicha(
-                    blocoFornecedores,
-                    `mapas-editar-fornecedor-${chave}`,
-                    rotulo,
-                    obterFornecedorPorChaveProduto(produto, chave)
-                );
-            });
-            campos.appendChild(blocoFornecedores);
-        },
-        lerFornecedores(produtoAtual) {
-            const fornecedores = {};
-            obterCamposProdutoFornecedor().forEach(({ chave }) => {
-                const input = document.getElementById(`mapas-editar-fornecedor-${chave}`);
-                const valor = input?.value.trim() || "";
-                const limparHistorico = input?.dataset.historicoLimpo === "1";
-                const historicoEditado = input?.dataset.historicoEditado === "1";
-                if (limparHistorico && !valor) return;
-
-                let historicoCustom = null;
-                if (historicoEditado || limparHistorico) {
-                    try {
-                        historicoCustom = limparHistorico
-                            ? []
-                            : JSON.parse(input?.dataset.historicoJson || "[]");
-                        if (!Array.isArray(historicoCustom)) historicoCustom = [];
-                    } catch (_) {
-                        historicoCustom = [];
-                    }
-                }
-
-                const anterior = limparHistorico
-                    ? ""
-                    : (historicoCustom
-                        ? { estado: valor, historico: historicoCustom }
-                        : obterFornecedorPorChaveProduto(produtoAtual, chave));
-                const parsed = parseValorMarcacaoFornecedorInput(valor, anterior);
-                if (parsed === "" || parsed == null) return;
-
-                if (historicoCustom) {
-                    const reconstruido = reconstruirMarcacaoHistoricoFornecedor(historicoCustom);
-                    if (!historicoCustom.length && !valor) return;
-                    fornecedores[chave] = {
-                        estado: valor || reconstruido.estado || "",
-                        historico: historicoCustom,
-                        datas: reconstruido.datas || [],
-                        desde: reconstruido.desde || null
-                    };
-                    if (!fornecedores[chave].estado && !fornecedores[chave].historico.length) return;
-                } else {
-                    fornecedores[chave] = parsed;
-                }
-            });
-            return fornecedores;
-        }
-    };
-}
 
 function carregarScriptAdmin(src) {
     return new Promise(function (resolve, reject) {
@@ -170,77 +49,22 @@ function carregarScriptAdmin(src) {
     });
 }
 
-var __fornecedoresFichaProdutoPromessa = null;
+var __fornecedoresProdutoPromessa = null;
 var __fornecedoresEdicaoPromessa = null;
 var __fornecedoresPrintPromessa = null;
 
-/** Carrega (e indexa por produto) as unidades vendidas nos últimos 3 meses, para ajudar a decidir quantidades a encomendar. */
-async function carregarVendas3MesesFornecedor(forcar = false) {
-    if (!forcar && fornecedorVendas3MesesIndice) return fornecedorVendas3MesesIndice;
-    if (!forcar && fornecedorVendas3MesesPromessa) return fornecedorVendas3MesesPromessa;
-
-    fornecedorVendas3MesesPromessa = (async () => {
-        const indice = { porId: new Map(), porSku: new Map() };
-        try {
-            if (!fornecedoresClient) throw new Error("Supabase indisponível.");
-            const desde = new Date();
-            desde.setMonth(desde.getMonth() - 3);
-            const { data, error } = await fornecedoresClient
-                .from("encomendas")
-                .select("produtos,created_at")
-                .gte("created_at", desde.toISOString())
-                .limit(2000);
-            if (error) throw error;
-            (data || []).forEach((encomenda) => {
-                (encomenda.produtos || []).forEach((item) => {
-                    const quantidade = Math.max(1, Math.floor(Number(item?.quantidade ?? item?.qtd ?? 1) || 1));
-                    const id = String(item?.id_produto || item?.produto_id || item?.id || "").trim();
-                    const sku = String(item?.sku || "").trim().toUpperCase();
-                    if (id) indice.porId.set(id, (indice.porId.get(id) || 0) + quantidade);
-                    if (sku) indice.porSku.set(sku, (indice.porSku.get(sku) || 0) + quantidade);
-                });
-            });
-        } catch (erro) {
-            console.warn("Não foi possível carregar vendas dos últimos 3 meses.", erro);
-        }
-        fornecedorVendas3MesesIndice = indice;
-        fornecedorVendas3MesesVersao += 1;
-        return indice;
-    })();
-
-    const resultado = await fornecedorVendas3MesesPromessa;
-    fornecedorVendas3MesesPromessa = null;
-    return resultado;
-}
-
-/** Unidades vendidas nos últimos 3 meses para um produto, a partir do índice já carregado. */
-function obterVendidos3MesesFornecedor(produto) {
-    if (!fornecedorVendas3MesesIndice || !produto) return 0;
-    const id = String(produto.id || "").trim();
-    if (id && fornecedorVendas3MesesIndice.porId.has(id)) {
-        return fornecedorVendas3MesesIndice.porId.get(id);
+function garantirFornecedoresProdutoModal() {
+    if (window.FornecedoresProdutoModal) return Promise.resolve();
+    if (!__fornecedoresProdutoPromessa) {
+        __fornecedoresProdutoPromessa = carregarScriptAdmin("fornecedores-produto-modal.js?v=20260730-fecho-fundo");
     }
-    const sku = String(produto.sku || "").trim().toUpperCase();
-    if (sku && fornecedorVendas3MesesIndice.porSku.has(sku)) {
-        return fornecedorVendas3MesesIndice.porSku.get(sku);
-    }
-    return 0;
-}
-
-function garantirFichaProdutoMapaFornecedor() {
-    sincronizarPonteProdutoMapaFornecedor();
-    instalarExtensaoEditorProdutoFornecedor();
-    if (window.MapasProdutoModal) return Promise.resolve();
-    if (!__fornecedoresFichaProdutoPromessa) {
-        __fornecedoresFichaProdutoPromessa = carregarScriptAdmin("mapas-produto-modal.js?v=20260810-unidades-embalagem");
-    }
-    return __fornecedoresFichaProdutoPromessa;
+    return __fornecedoresProdutoPromessa;
 }
 
 function garantirFornecedoresEdicaoPedido() {
     if (window.FornecedoresEdicaoPedido) return Promise.resolve();
     if (!__fornecedoresEdicaoPromessa) {
-        __fornecedoresEdicaoPromessa = carregarScriptAdmin("fornecedores-edicao-pedido.js?v=20260807-data-ex");
+        __fornecedoresEdicaoPromessa = carregarScriptAdmin("fornecedores-edicao-pedido.js?v=20260730-fecho-fundo");
     }
     return __fornecedoresEdicaoPromessa;
 }
@@ -248,22 +72,14 @@ function garantirFornecedoresEdicaoPedido() {
 function garantirFornecedoresPrintReceive() {
     if (window.FornecedoresPrintReceive) return Promise.resolve();
     if (!__fornecedoresPrintPromessa) {
-        __fornecedoresPrintPromessa = carregarScriptAdmin("fornecedores-print-receive.js?v=20260810-unidades-embalagem");
+        __fornecedoresPrintPromessa = carregarScriptAdmin("fornecedores-print-receive.js?v=20260721-split");
     }
     return __fornecedoresPrintPromessa;
 }
 
 async function abrirEdicaoProdutoMapa() {
-    await garantirFichaProdutoMapaFornecedor();
-    sincronizarPonteProdutoMapaFornecedor();
-    const abrir = window.MapasProdutoModal?.abrirEditar || window.MapasProdutoModal?.abrirEdicao;
-    return abrir?.apply(window.MapasProdutoModal, arguments);
-}
-
-async function abrirFichaProdutoMapaFornecedor(produtoId) {
-    await garantirFichaProdutoMapaFornecedor();
-    sincronizarPonteProdutoMapaFornecedor();
-    return window.MapasProdutoModal.abrirFicha(produtoId);
+    await garantirFornecedoresProdutoModal();
+    return window.FornecedoresProdutoModal.abrir.apply(null, arguments);
 }
 
 async function abrirEdicaoPedidoFornecedor() {
@@ -690,12 +506,7 @@ function normalizarItemPedidoFornecedor(item) {
         quantidade,
         Math.floor(Number(item.quantidade_original ?? item.quantidade_inicial ?? quantidade) || quantidade)
     );
-    const estadoFornecedorNormalizado = String(item.estado_fornecedor || '').trim().toUpperCase();
-    const marcadoEx = Boolean(item.marcado_ex) || estadoFornecedorNormalizado === 'EX';
-    // item.falta_os pode ser 0 de forma legítima (ex: artigo marcado EX) - "??" só usa o
-    // valor calculado quando falta_os é mesmo null/undefined, não quando é 0 explícito.
-    const faltaOsBruto = item.falta_os ?? (marcadoEx ? 0 : Math.max(0, quantidadeOriginal - quantidade));
-    const faltaOs = Math.max(0, Math.floor(Number(faltaOsBruto) || 0));
+    const faltaOs = Math.max(0, Math.floor(Number(item.falta_os || Math.max(0, quantidadeOriginal - quantidade)) || 0));
     const precoCusto = Number(item.preco_custo ?? item.custo ?? item.preco_compra ?? item.preco_fornecedor ?? item.preco ?? 0);
     return {
         ...item,
@@ -705,9 +516,7 @@ function normalizarItemPedidoFornecedor(item) {
         data_os: item.data_os || null,
         preco_custo: Number.isFinite(precoCusto) ? Math.max(0, precoCusto) : 0,
         estado_fornecedor: item.estado_fornecedor || (faltaOs > 0 ? 'OS' : ''),
-        marcado_ex: marcadoEx,
-        origem_ajuste: item.origem_ajuste || '',
-        data_ajuste: item.data_ajuste || null
+        origem_ajuste: item.origem_ajuste || ''
     };
 }
 
@@ -806,7 +615,6 @@ function serializarItemPedidoFornecedor(item) {
         data_os: normalizado.data_os || null,
         estado_fornecedor: String(normalizado.estado_fornecedor || ''),
         origem_ajuste: String(normalizado.origem_ajuste || ''),
-        data_ajuste: normalizado.data_ajuste || null,
         recebido: Math.max(0, Math.floor(Number(normalizado.recebido || 0))),
         novidade: obterBooleanoProdutoFornecedor(normalizado.novidade),
         stock_no_momento: (() => {
@@ -1733,7 +1541,6 @@ function obterValorOrdenacaoFornecedor(item, coluna) {
         const selecionado = fornecedorSelecao.find(sel => String(sel.id) === String(produto.id));
         return Number(selecionado?.quantidade || 0);
     }
-    if (coluna === "vendidos3m") return obterVendidos3MesesFornecedor(produto);
     return produto.nome || "";
 }
 
@@ -2384,7 +2191,6 @@ function criarTheadTabelaEncomendaFornecedor() {
         ["Chegar", "mapas-col-pendente", "pendente"],
         ["Prev.", "mapas-col-previsto", "previsto"],
         ["Qtd", "mapas-col-qtd", "qtd"],
-        ["Vend. 3m", "mapas-col-vendidos-3m", "vendidos3m"],
     ].forEach(([texto, classe, coluna]) => {
         const th = document.createElement("th");
         th.className = `${classe} mapas-th-ordenavel`;
@@ -2419,8 +2225,7 @@ function criarTheadTabelaEncomendaFornecedor() {
 
 function renderizarResultadosFornecedorTabelaEncomenda(caixa, resultados) {
     caixa.classList.add("fornecedor-resultados-mapa");
-    const limiteResultados = Infinity;
-    const versaoVendas3mAoRenderizar = fornecedorVendas3MesesVersao;
+    const limiteResultados = 250;
 
     atualizarResumoEncomendaFornecedor({
         totalFiltrados: resultados.length,
@@ -2469,9 +2274,9 @@ function renderizarResultadosFornecedorTabelaEncomenda(caixa, resultados) {
         nomeBotao.type = "button";
         nomeBotao.className = "mapas-produto-nome-botao";
         nomeBotao.textContent = atual.nome || "Produto sem nome";
-        nomeBotao.title = "Abrir ficha do produto";
+        nomeBotao.title = "Editar produto";
         nomeBotao.tabIndex = -1;
-        nomeBotao.addEventListener("click", () => abrirFichaProdutoMapaFornecedor(atual.id));
+        nomeBotao.addEventListener("click", () => abrirEdicaoProdutoMapa(atual.id));
         nomeCelula.appendChild(nomeBotao);
         linha.appendChild(nomeCelula);
 
@@ -2506,43 +2311,12 @@ function renderizarResultadosFornecedorTabelaEncomenda(caixa, resultados) {
         qtdCelula.appendChild(input);
         linha.appendChild(qtdCelula);
 
-        const vendidos3mCelula = document.createElement("td");
-        vendidos3mCelula.className = "mapas-col-vendidos-3m";
-        vendidos3mCelula.textContent = String(obterVendidos3MesesFornecedor(atual));
-        vendidos3mCelula.title = "Unidades vendidas nos últimos 3 meses";
-        linha.appendChild(vendidos3mCelula);
-
         tbody.appendChild(linha);
     });
 
     tabela.appendChild(tbody);
     envoltorio.appendChild(tabela);
     caixa.appendChild(envoltorio);
-
-    carregarVendas3MesesFornecedor().then((indice) => {
-        if (!indice) return;
-        if (fornecedorVendas3MesesVersao === versaoVendas3mAoRenderizar) {
-            // Dados iguais aos que já tínhamos quando esta tabela foi desenhada
-            // (veio do cache) - nada mudou, não faz sentido voltar a renderizar.
-            return;
-        }
-        if (fornecedorMapaOrdenacao.coluna === "vendidos3m") {
-            // A ordenação foi feita antes dos dados chegarem (todos a 0) - agora que já
-            // temos os valores reais pela primeira vez, é preciso voltar a renderizar
-            // para ordenar bem.
-            renderizarResultadosFornecedor();
-            return;
-        }
-        // Os dados de vendas chegam de forma assíncrona - atualiza as células já
-        // desenhadas assim que estiverem disponíveis, sem re-renderizar a tabela toda.
-        tbody.querySelectorAll("tr").forEach((tr, indiceLinha) => {
-            const produtoLinha = resultadosOrdenados[indiceLinha]?.produto;
-            const celula = tr.querySelector(".mapas-col-vendidos-3m");
-            if (produtoLinha && celula) {
-                celula.textContent = String(obterVendidos3MesesFornecedor(produtoLinha));
-            }
-        });
-    });
 }
 
 function renderizarResultadosFornecedor() {
@@ -2731,9 +2505,9 @@ function renderizarSelecionadosFornecedorTabela(caixa) {
         nomeBotao.type = "button";
         nomeBotao.className = "mapas-produto-nome-botao";
         nomeBotao.textContent = atual.nome || "Produto sem nome";
-        nomeBotao.title = "Abrir ficha do produto";
+        nomeBotao.title = "Editar produto";
         nomeBotao.tabIndex = -1;
-        nomeBotao.addEventListener("click", () => abrirFichaProdutoMapaFornecedor(atual.id));
+        nomeBotao.addEventListener("click", () => abrirEdicaoProdutoMapa(atual.id));
         nomeCelula.appendChild(nomeBotao);
         linha.appendChild(nomeCelula);
 
@@ -3140,8 +2914,7 @@ async function sincronizarHistoricoPedidosFornecedor(itens, fornecedorNome, opco
     for (const item of (itens || [])) {
         const quantidade = Math.max(0, Number(item?.quantidade || 0));
         const faltaOs = Math.max(0, Number(item?.falta_os || 0));
-        const estadoFornecedorItem = String(item?.estado_fornecedor || "").trim().toUpperCase();
-        if (quantidade <= 0 && faltaOs <= 0 && !item?.marcado_ex && estadoFornecedorItem !== "OS" && estadoFornecedorItem !== "EX") {
+        if (quantidade <= 0 && faltaOs <= 0 && String(item?.estado_fornecedor || "").trim().toUpperCase() !== "OS") {
             continue;
         }
 
@@ -3157,7 +2930,6 @@ async function sincronizarHistoricoPedidosFornecedor(itens, fornecedorNome, opco
         const anterior = mapaAnterior.get(chaveItemHistoricoPedidoFornecedor(item));
         const eraOs = itemPedidoEstavaOsFornecedor(anterior);
         const agoraOs = faltaOs > 0 || String(item.estado_fornecedor || "").trim().toUpperCase() === "OS";
-        const agoraEx = Boolean(item?.marcado_ex) || String(item.estado_fornecedor || "").trim().toUpperCase() === "EX";
 
         let fornecedores = obterObjetoFornecedoresProduto(produtoAtual);
         const chaveNormalizada = normalizarChaveFornecedor(fornecedorNome);
@@ -3197,21 +2969,6 @@ async function sincronizarHistoricoPedidosFornecedor(itens, fornecedorNome, opco
                     }
                     if (marcacaoAtual.estado.toUpperCase() !== "OS") {
                         atual = aplicarMarcacaoAtualAposConfirmar(atual, "OS", agora);
-                    }
-                }
-                alterou = true;
-            } else if (agoraEx) {
-                // EX (preço demasiado caro no fornecedor) - mesma lógica da OS, mas sem
-                // zerar a quantidade a receber.
-                const encomendaJaConfirmada = estadoPedidoFornecedorEhEncomendada(opcoes.estadoPedido)
-                    || estadoPedidoFornecedorEhRecebida(opcoes.estadoPedido);
-                if (encomendaJaConfirmada) {
-                    const marcacaoAtual = normalizarMarcacaoFornecedor(atual);
-                    if (!marcacaoAtual.historico.length) {
-                        atual = acrescentarHistoricoFornecedor(atual, "ex", opcoes.dataPedido || agora);
-                    }
-                    if (marcacaoAtual.estado.toUpperCase() !== "EX") {
-                        atual = aplicarMarcacaoAtualAposConfirmar(atual, "EX", agora);
                     }
                 }
                 alterou = true;
@@ -3325,7 +3082,6 @@ function atualizarBotaoJuntarSelecaoFornecedor() {
     if (!botao || !estaPaginaFornecedoresUnificada()) return;
 
     sincronizarPedidoAlvoJuntarSelecaoFornecedor();
-    atualizarSelectAlvoJuntarSelecaoFornecedor();
     const pedido = obterPedidoAlvoJuntarSelecaoFornecedor();
     const temSelecao = fornecedorSelecao.length > 0;
     const podeJuntar = temSelecao && Boolean(pedido);
@@ -3335,47 +3091,9 @@ function atualizarBotaoJuntarSelecaoFornecedor() {
     if (!temSelecao) {
         botao.title = "Selecione primeiro produtos na lista acima.";
     } else if (!pedido) {
-        botao.title = "Escolha acima a encomenda existente onde pretende juntar a seleção.";
+        botao.title = "Abra acima a encomenda existente onde pretende juntar a seleção.";
     } else {
         botao.title = `Juntar seleção à encomenda ${obterTextoCodigoPedidoFornecedor(pedido)}.`;
-    }
-}
-
-/** Preenche o seletor "Juntar a..." com as encomendas existentes e sincroniza o valor escolhido. */
-function atualizarSelectAlvoJuntarSelecaoFornecedor() {
-    const select = document.getElementById("fornecedor-alvo-juntar-select");
-    if (!select) return;
-    const pedidosOrdenados = [...fornecedorPedidos].sort((a, b) => {
-        const dataA = new Date(obterDataExibicaoPedidoFornecedor(a) || 0).getTime() || 0;
-        const dataB = new Date(obterDataExibicaoPedidoFornecedor(b) || 0).getTime() || 0;
-        return dataB - dataA;
-    });
-    const valorAtual = fornecedorPedidoAlvoJuntar || "";
-    select.replaceChildren();
-    const optionVazia = document.createElement("option");
-    optionVazia.value = "";
-    optionVazia.textContent = "Juntar a...";
-    select.appendChild(optionVazia);
-    pedidosOrdenados.forEach((pedido) => {
-        const option = document.createElement("option");
-        option.value = String(pedido.id);
-        option.textContent = `${obterTextoCodigoPedidoFornecedor(pedido)} · ${pedido.fornecedor || "Fornecedor"} (${pedido.estado || "A preparar"})`;
-        select.appendChild(option);
-    });
-    select.value = valorAtual;
-    if (select.value !== valorAtual) {
-        // A encomenda alvo já não existe na lista (ex: foi apagada) - repor vazio.
-        select.value = "";
-    }
-    if (!select.dataset.ligado) {
-        select.dataset.ligado = "1";
-        select.addEventListener("change", () => {
-            const id = select.value;
-            fornecedorPedidosAbertos.clear();
-            if (id) fornecedorPedidosAbertos.add(id);
-            fornecedorPedidoAlvoJuntar = id || null;
-            renderizarPedidosFornecedores();
-        });
     }
 }
 
@@ -3405,22 +3123,18 @@ async function adicionarSelecaoAoPedidoFornecedor(id) {
     fornecedorSelecao.forEach(selecionado => {
         const existente = encontrarItemPedidoFornecedor(itens, selecionado);
         const quantidade = Math.max(1, Math.floor(Number(selecionado.quantidade) || 1));
-        const agora = dataOsAgoraFornecedor();
         itensExportar.push(criarItemFornecedorAPartirSelecao(selecionado, existente ? 'reforco' : 'substituicao'));
         if (existente) {
             existente.quantidade = Math.max(0, Number(existente.quantidade || 0)) + quantidade;
             existente.quantidade_original = Math.max(0, Number(existente.quantidade_original || existente.quantidade || 0)) + quantidade;
             existente.origem_ajuste = existente.origem_ajuste || 'reforco';
-            existente.data_ajuste = existente.data_ajuste || agora;
             const precoCusto = Math.max(0, Number(selecionado.preco_custo ?? selecionado.custo ?? 0) || 0);
             if (precoCusto > 0) {
                 existente.preco_custo = precoCusto;
                 existente.preco = precoCusto;
             }
         } else {
-            const novoItem = criarItemFornecedorAPartirSelecao(selecionado, 'substituicao');
-            novoItem.data_ajuste = agora;
-            itens.push(serializarItemPedidoFornecedor(novoItem));
+            itens.push(serializarItemPedidoFornecedor(criarItemFornecedorAPartirSelecao(selecionado, 'substituicao')));
         }
     });
 
@@ -3475,14 +3189,10 @@ function obterValorOrdenacaoItemPedidoFornecedor(item, coluna) {
     if (coluna === "stock") return Number(produtoAtual?.stock || 0);
     if (coluna === "origem") {
         const faltaOs = Math.max(0, Number(item?.falta_os || 0));
-        const emEx = Boolean(item?.marcado_ex) || String(item?.estado_fornecedor || "").trim().toUpperCase() === "EX";
-        if (faltaOs > 0) return 3000000000000;
-        if (emEx) return 2000000000000;
-        if (item?.origem_ajuste) {
-            const timestamp = item?.data_ajuste ? new Date(item.data_ajuste).getTime() : 0;
-            return 1000000000000 + (Number.isFinite(timestamp) ? timestamp : 0);
-        }
-        return 0;
+        const partes = [];
+        if (faltaOs > 0) partes.push("OS/Falta");
+        if (item?.origem_ajuste) partes.push(obterTextoOrigemAjustePedidoFornecedor(item.origem_ajuste));
+        return partes.join(" ") || "-";
     }
     return item?.nome || "";
 }
@@ -3586,10 +3296,10 @@ function renderizarPedidoFornecedorProdutosTabela(caixa, pedido) {
         nomeBotao.type = "button";
         nomeBotao.className = "mapas-produto-nome-botao";
         nomeBotao.textContent = item.nome || "Produto sem nome";
-        nomeBotao.title = "Abrir ficha do produto";
+        nomeBotao.title = "Editar produto";
         nomeBotao.tabIndex = -1;
         if (produtoAtual?.id) {
-            nomeBotao.addEventListener("click", () => abrirFichaProdutoMapaFornecedor(produtoAtual.id));
+            nomeBotao.addEventListener("click", () => abrirEdicaoProdutoMapa(produtoAtual.id));
         } else {
             nomeBotao.disabled = true;
         }
@@ -3621,23 +3331,19 @@ function renderizarPedidoFornecedorProdutosTabela(caixa, pedido) {
 
         const origemCelula = document.createElement("td");
         origemCelula.className = "mapas-col-origem-ajuste";
-        const emEx = Boolean(item.marcado_ex) || String(item.estado_fornecedor || "").trim().toUpperCase() === "EX";
         if (faltaOs > 0) {
             const osSpan = document.createElement("span");
             osSpan.className = "fornecedor-ajuste-os ativo";
-            osSpan.textContent = item.data_os ? `OS (${formatarDataOsCurtaFornecedor(item.data_os)})` : "OS";
+            osSpan.textContent = `OS/Falta: ${faltaOs}${item.quantidade_original ? ` de ${Number(item.quantidade_original || 0)}` : ""}`;
             origemCelula.appendChild(osSpan);
-        } else if (emEx) {
-            const exSpan = document.createElement("span");
-            exSpan.className = "fornecedor-ajuste-ex ativo";
-            exSpan.textContent = item.data_os ? `EX (${formatarDataOsCurtaFornecedor(item.data_os)})` : "EX";
-            origemCelula.appendChild(exSpan);
-        } else if (item.origem_ajuste) {
-            const adicionadoSpan = document.createElement("span");
-            adicionadoSpan.className = "fornecedor-ajuste-os";
-            adicionadoSpan.textContent = item.data_ajuste ? formatarDataPedidoFornecedor(item.data_ajuste) : "Adicionado depois";
-            origemCelula.appendChild(adicionadoSpan);
         }
+        if (item.origem_ajuste) {
+            const origemSpan = document.createElement("span");
+            origemSpan.className = "fornecedor-ajuste-os";
+            origemSpan.textContent = obterTextoOrigemAjustePedidoFornecedor(item.origem_ajuste);
+            origemCelula.appendChild(origemSpan);
+        }
+        if (!origemCelula.childElementCount) origemCelula.textContent = "-";
         linha.appendChild(origemCelula);
 
         const qtdCelula = document.createElement("td");
@@ -3676,12 +3382,11 @@ function criarDetalhesPedidoFornecedor(pedido) {
             const recebido = Number(item.recebido || 0);
             const restante = Math.max(0, Number(item.quantidade || 0) - recebido);
             const faltaOs = Math.max(0, Number(item.falta_os || 0));
-            const emExCartao = Boolean(item.marcado_ex) || String(item.estado_fornecedor || "").trim().toUpperCase() === "EX";
             const linhaProduto = criarElementoPedidoFornecedor("div", "fornecedor-pedido-linha");
             if (faltaOs > 0) linhaProduto.classList.add("tem-os");
             linhaProduto.appendChild(criarImagemFornecedor(produtoAtual, "fornecedor-miniatura pequena"));
             const info = criarElementoPedidoFornecedor("div", "fornecedor-info");
-            info.innerHTML = `<strong>${escaparHtmlFornecedor(item.nome)}</strong><span class="fornecedor-identificadores">Ref. ${escaparHtmlFornecedor(item.referencia || "-")} | SKU ${escaparHtmlFornecedor(item.sku || "-")}</span><span>Pedido: ${Number(item.quantidade || 0)} | Recebido: ${recebido} | Stock atual: ${Number(produtoAtual.stock || 0)}</span>${faltaOs > 0 ? `<span class="fornecedor-ajuste-os ativo">${item.data_os ? `OS (${formatarDataOsCurtaFornecedor(item.data_os)})` : "OS"}</span>` : (emExCartao ? `<span class="fornecedor-ajuste-ex ativo">${item.data_os ? `EX (${formatarDataOsCurtaFornecedor(item.data_os)})` : "EX"}</span>` : "")}`;
+            info.innerHTML = `<strong>${escaparHtmlFornecedor(item.nome)}</strong><span class="fornecedor-identificadores">Ref. ${escaparHtmlFornecedor(item.referencia || "-")} | SKU ${escaparHtmlFornecedor(item.sku || "-")}</span><span>Pedido: ${Number(item.quantidade || 0)} | Recebido: ${recebido} | Stock atual: ${Number(produtoAtual.stock || 0)}</span>${faltaOs > 0 ? `<span class="fornecedor-ajuste-os ativo">OS/Falta: ${faltaOs}${item.quantidade_original ? ` de ${Number(item.quantidade_original || 0)}` : ""}</span>` : ""}${item.origem_ajuste ? `<span class="fornecedor-ajuste-os">${escaparHtmlFornecedor(obterTextoOrigemAjustePedidoFornecedor(item.origem_ajuste))}</span>` : ""}`;
             const input = document.createElement("input");
             input.type = "number";
             input.min = "0";
@@ -3785,10 +3490,7 @@ function fecharModalPedidoFornecedor() {
     modal.hidden = true;
     modal.dataset.pedidoId = "";
     document.body.classList.remove("fornecedor-pedido-modal-aberto");
-    // Não limpar fornecedorPedidosAbertos aqui: a encomenda continua a ser o
-    // "alvo" para o botão "Juntar seleção a encomenda existente" mesmo depois
-    // de fechar o modal, para poderes descer, escolher figuras, e só depois
-    // juntar - sem teres de reabrir a encomenda outra vez.
+    fornecedorPedidosAbertos.clear();
     renderizarPedidosFornecedores();
 }
 
@@ -3893,18 +3595,17 @@ function renderizarPedidosFornecedores() {
 
         const linha = criarElementoPedidoFornecedor("div", "admin-encomenda-linha fornecedor-pedido-linha-cabecalho");
         const resumo = `${totaisPedido.itens} artigo(s) | ${totaisPedido.quantidade} unidade(s) | ${totaisPedido.pendente} por receber${totaisPedido.os > 0 ? ` | ${totaisPedido.os} OS` : ""}`;
-        const blocoEstado = criarElementoPedidoFornecedor("span", "fornecedor-pedido-estado-bloco");
-        blocoEstado.appendChild(criarElementoPedidoFornecedor("span", `estado-encomenda ${obterClasseBadgeEstadoPedidoFornecedor(pedido.estado)}`, pedido.estado || "A preparar"));
-        if (alvoJuntar) {
-            blocoEstado.appendChild(criarElementoPedidoFornecedor("span", "fornecedor-pedido-destino-selecao", "Destino seleção"));
-        }
         linha.append(
             criarElementoPedidoFornecedor("strong", "admin-encomenda-codigo", obterTextoCodigoPedidoFornecedor(pedido)),
             criarElementoPedidoFornecedor("span", "admin-encomenda-data", formatarDataPedidoFornecedor(obterDataExibicaoPedidoFornecedor(pedido))),
             criarElementoPedidoFornecedor("span", "fornecedor-pedido-fornecedor-nome", pedido.fornecedor || "Fornecedor"),
             criarElementoPedidoFornecedor("span", "fornecedor-pedido-resumo", resumo),
-            blocoEstado
+            criarElementoPedidoFornecedor("span", `estado-encomenda ${obterClasseBadgeEstadoPedidoFornecedor(pedido.estado)}`, pedido.estado || "A preparar")
         );
+        if (alvoJuntar) {
+            linha.classList.add("com-destino-selecao");
+            linha.appendChild(criarElementoPedidoFornecedor("span", "fornecedor-pedido-destino-selecao", "Destino seleção"));
+        }
         cabecalho.append(linha, criarElementoPedidoFornecedor("span", "admin-encomenda-seta", "▾"));
 
         card.appendChild(cabecalho);
@@ -3941,6 +3642,7 @@ async function iniciarFornecedoresAdmin() {
         renderizarPedidosFornecedores();
         const prefetch = function () {
             garantirFornecedoresEdicaoPedido().catch(() => {});
+            garantirFornecedoresProdutoModal().catch(() => {});
             garantirFornecedoresPrintReceive().catch(() => {});
         };
         if ('requestIdleCallback' in window) window.requestIdleCallback(prefetch, { timeout: 4000 });

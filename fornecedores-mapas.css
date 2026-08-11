@@ -52,9 +52,7 @@ body.pagina-fornecedores-admin{ margin:0; padding-left:0; padding-right:0; paddi
         .fornecedor-info strong{ color:#fff; line-height:1.2; }
         .fornecedor-info span{ color:#cfcfcf; font-size:13px; }
         .fornecedor-ajuste-os{ color:#bdbdbd !important; font-size:12px !important; font-weight:700; }
-        .fornecedor-ajuste-os.ativo{ color:#ff4d4d !important; }
-        .fornecedor-ajuste-ex{ color:#bdbdbd !important; font-size:12px !important; font-weight:700; }
-        .fornecedor-ajuste-ex.ativo{ color:#ff9c33 !important; }
+        .fornecedor-ajuste-os.ativo{ color:#ffc400 !important; }
         .fornecedor-identificadores{ color:#18c4ff !important; font-weight:700; }
         .fornecedor-stock{ color:#fff !important; font-weight:700; }
         .fornecedor-stock.sem-stock{ color:#ff4d4d !important; }
@@ -79,7 +77,6 @@ body.pagina-fornecedores-admin{ margin:0; padding-left:0; padding-right:0; paddi
         .fornecedor-acoes-encomenda{ gap:10px; }
         .fornecedor-acoes-encomenda .wallapop-botao{ border:1px solid #444; }
         .fornecedor-acoes-encomenda .wallapop-botao-destaque{ border:1px solid #ffc400; }
-        .fornecedor-alvo-juntar-select{ min-height:42px; box-sizing:border-box; border:1px solid #444; border-radius:7px; background:#242424; color:#fff; padding:0 10px; font-weight:700; max-width:220px; }
         .fornecedores-cabecalho-lista{ display:flex; gap:12px; align-items:center; margin-bottom:12px; flex-wrap:wrap; }
         .fornecedores-cabecalho-titulo-filtro{ display:flex; align-items:center; gap:12px; flex-wrap:wrap; min-width:0; }
         .fornecedores-cabecalho-lista h2{ margin:0; }
@@ -210,12 +207,8 @@ body.pagina-fornecedores-admin{ margin:0; padding-left:0; padding-right:0; paddi
             grid-template-columns:minmax(0,0.68fr) minmax(0,0.88fr) minmax(0,0.92fr) minmax(0,1.15fr) auto;
             column-gap:12px;
         }
-        .fornecedor-pedido-estado-bloco{
-            display:flex;
-            align-items:center;
-            gap:6px;
-            justify-self:end;
-            min-width:0;
+        .fornecedor-pedido-cabecalho .admin-encomenda-linha.fornecedor-pedido-linha-cabecalho.com-destino-selecao{
+            grid-template-columns:minmax(0,0.62fr) minmax(0,0.82fr) minmax(0,0.86fr) minmax(0,1fr) auto auto;
         }
         .fornecedor-pedido-destino-selecao{
             justify-self:end;
@@ -443,7 +436,6 @@ body.pagina-fornecedores-admin{ margin:0; padding-left:0; padding-right:0; paddi
         .fornecedor-edicao-recebido-info{ display:grid; gap:4px; color:#ddd; font-weight:700; font-size:12px; min-width:0; }
         .fornecedor-edicao-recebido-info span{ min-height:36px; display:flex; align-items:center; border:1px solid #333; border-radius:6px; background:#1a1a1a; color:#aaa; padding:8px; box-sizing:border-box; }
         .fornecedor-edicao-marcar-os,
-        .fornecedor-edicao-marcar-ex,
         .fornecedor-edicao-remover{
             display:flex !important;
             align-items:center;
@@ -451,13 +443,10 @@ body.pagina-fornecedores-admin{ margin:0; padding-left:0; padding-right:0; paddi
             white-space:nowrap;
             min-height:36px;
             font-size:12px;
-            grid-column:span 1;
+            grid-column:span 2;
         }
-        .fornecedor-edicao-remover{ grid-column:span 2; }
         .fornecedor-edicao-marcar-os{ color:#f0c36d; }
-        .fornecedor-edicao-marcar-ex{ color:#7ec8ff; }
         .fornecedor-edicao-marcar-os input,
-        .fornecedor-edicao-marcar-ex input,
         .fornecedor-edicao-remover input{ width:auto; }
         .fornecedor-edicao-status{ min-height:20px; }
         body.fornecedor-edicao-modal-aberto{ overflow:hidden; }
@@ -484,7 +473,6 @@ body.pagina-fornecedores-admin{ margin:0; padding-left:0; padding-right:0; paddi
                 grid-template-columns:repeat(2,minmax(0,1fr));
             }
             .fornecedor-edicao-marcar-os,
-            .fornecedor-edicao-marcar-ex,
             .fornecedor-edicao-remover{ grid-column:span 1; }
             .fornecedor-miniatura,.fornecedor-miniatura.pequena{ width:86px; height:86px; }
         }
@@ -1282,7 +1270,6 @@ body.pagina-mapas-admin > main.fornecedores-admin {
 .mapas-col-pendente { width: 88px; }
 .mapas-col-previsto { width: 88px; }
 .mapas-col-qtd { width: 82px; }
-.mapas-col-vendidos-3m { width: 74px; text-align: center; color: #9fdcff; font-weight: 700; }
 
 .pagina-mapas-admin .mapas-col-foto {
     width: 64px;
@@ -1650,6 +1637,11 @@ body.pagina-mapas-admin > main.fornecedores-admin {
     margin-top: 2px;
 }
 
+.pagina-fornecedores-unificada .fornecedor-pedido-produtos .fornecedor-tabela-encomenda tbody tr.tem-os td {
+    background: #211c12 !important;
+    border-color: #80612d;
+}
+
 .pagina-fornecedores-unificada .fornecedor-pedido-produtos .fornecedor-recebido-input {
     display: block;
     width: 48px;
@@ -1869,10 +1861,6 @@ body.pagina-mapas-admin > main.fornecedores-admin {
     align-items: stretch;
 }
 
-.mapas-produto-ficha-topo.mapas-produto-ficha-topo-com-obs {
-    grid-template-columns: 180px minmax(0, 1fr) minmax(0, 0.85fr) minmax(0, 0.85fr) minmax(118px, 140px);
-}
-
 .mapas-produto-foto-principal {
     margin: 0;
     display: flex;
@@ -1901,20 +1889,8 @@ body.pagina-mapas-admin > main.fornecedores-admin {
     text-align: center;
 }
 
-.mapas-produto-linha-detalhes-estado {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) minmax(160px, 260px);
-    gap: 14px;
-    align-items: start;
-}
-
-.mapas-produto-linha-detalhes-estado .mapas-produto-secao {
-    margin: 0;
-}
-
 .mapas-produto-ficha-topo .mapas-produto-secao-identificacao,
 .mapas-produto-ficha-topo .mapas-produto-secao-detalhes,
-.mapas-produto-ficha-topo .mapas-produto-secao-media,
 .mapas-produto-ficha-topo .mapas-produto-secao-marcas {
     margin: 0;
 }
@@ -1943,15 +1919,12 @@ body.pagina-mapas-admin > main.fornecedores-admin {
     display: grid;
     gap: 4px;
     align-content: start;
-    min-width: 0;
 }
 
 .mapas-produto-leitura-rotulo {
     color: #aaa;
     font-size: 12px;
     font-weight: 600;
-    overflow-wrap: anywhere;
-    min-width: 0;
 }
 
 .mapas-produto-leitura-valor {
@@ -2034,11 +2007,7 @@ body.pagina-mapas-admin > main.fornecedores-admin {
 }
 
 .mapas-produto-historico-rececoes-tabela tr.mapas-produto-historico-os td {
-    color: #ff4d4d;
-}
-
-.mapas-produto-historico-rececoes-tabela tr.mapas-produto-historico-ex td {
-    color: #ff9c33;
+    color: #b8862f;
 }
 
 .mapas-produto-upload-bloco {
@@ -2304,15 +2273,6 @@ body.pagina-mapas-admin > main.fornecedores-admin {
 
 .mapas-produto-form-grid textarea {
     resize: vertical;
-}
-
-.mapas-produto-form-grid input:-webkit-autofill,
-.mapas-produto-fornecedores input:-webkit-autofill,
-.mapas-produto-form-grid input:-webkit-autofill:hover,
-.mapas-produto-form-grid input:-webkit-autofill:focus {
-    -webkit-text-fill-color: #fff;
-    box-shadow: 0 0 0 1000px #242424 inset;
-    transition: background-color 9999s ease-in-out 0s;
 }
 
 #mapas-editar-imagens {
@@ -2616,12 +2576,7 @@ body.mapas-produto-modal-aberto {
         grid-template-columns: 1fr;
     }
 
-    .mapas-produto-ficha-topo,
-    .mapas-produto-ficha-topo.mapas-produto-ficha-topo-com-obs {
-        grid-template-columns: 1fr;
-    }
-
-    .mapas-produto-linha-detalhes-estado {
+    .mapas-produto-ficha-topo {
         grid-template-columns: 1fr;
     }
 
