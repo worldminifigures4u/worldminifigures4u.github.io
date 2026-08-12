@@ -1591,6 +1591,88 @@ function criarBlocoHistoricoFornecedorFicha(form, id, rotulo, valor) {
     return input;
 }
 
+function obterNomesFornecedoresEditorProduto(produto) {
+    const nomes = [];
+    const vistos = new Set();
+    const adicionar = (nome) => {
+        const texto = String(nome || "").trim();
+        const chave = normalizarChaveFornecedor(texto);
+        if (!texto || !chave || vistos.has(chave)) return;
+        vistos.add(chave);
+        nomes.push(texto);
+    };
+    fornecedorFichas
+        .filter((ficha) => ficha?.ativo !== false)
+        .forEach((ficha) => adicionar(ficha.nome));
+    Object.keys(obterObjetoFornecedoresProduto(produto)).forEach(adicionar);
+    return nomes;
+}
+
+function obterValorFornecedorPorNomeEditor(produto, nome) {
+    const fornecedores = obterObjetoFornecedoresProduto(produto);
+    const chaveNormalizada = normalizarChaveFornecedor(nome);
+    const chave = Object.keys(fornecedores).find((item) => normalizarChaveFornecedor(item) === chaveNormalizada);
+    return chave ? fornecedores[chave] : "";
+}
+
+function montarSecaoFornecedoresProdutoEditor(campos, produto) {
+    const nomes = obterNomesFornecedoresEditorProduto(produto);
+    if (!nomes.length) return;
+    const secao = criarSecaoEdicaoMapa("Fornecedores", "mapas-produto-secao-media mapas-produto-fornecedores");
+    nomes.forEach((nome) => {
+        const chave = normalizarChaveFornecedor(nome);
+        const input = criarBlocoHistoricoFornecedorFicha(
+            secao,
+            `mapas-editar-fornecedor-${chave}`,
+            nome,
+            obterValorFornecedorPorNomeEditor(produto, nome)
+        );
+        input.dataset.fornecedorNome = nome;
+        input.dataset.fornecedorChave = chave;
+    });
+    campos.appendChild(secao);
+}
+
+function lerFornecedoresProdutoEditor(produtoAtual) {
+    const fornecedores = obterObjetoFornecedoresProduto(produtoAtual);
+    document.querySelectorAll(".mapas-produto-fornecedores input[data-fornecedor-chave]").forEach((input) => {
+        const nome = input.dataset.fornecedorNome || "";
+        const chaveNormalizada = input.dataset.fornecedorChave || normalizarChaveFornecedor(nome);
+        if (!chaveNormalizada) return;
+        const chaveExistente = Object.keys(fornecedores).find((chave) => normalizarChaveFornecedor(chave) === chaveNormalizada);
+        const chave = chaveExistente || nome || chaveNormalizada;
+        const anterior = chaveExistente ? fornecedores[chaveExistente] : "";
+        let valor = parseValorMarcacaoFornecedorInput(input.value, anterior);
+        if (valor && typeof valor === "object" && input.dataset.historicoEditado === "1") {
+            let historico = [];
+            try {
+                historico = JSON.parse(input.dataset.historicoJson || "[]");
+            } catch (_) {
+                historico = [];
+            }
+            valor = {
+                ...valor,
+                historico,
+                datas: historico.filter((item) => item?.tipo === "os").map((item) => item.data).filter(Boolean),
+                desde: historico[0]?.data || null
+            };
+        }
+        const temValor = valor && (
+            typeof valor !== "object"
+            || String(valor.estado || "").trim()
+            || (Array.isArray(valor.historico) && valor.historico.length)
+        );
+        if (temValor) fornecedores[chave] = valor;
+        else delete fornecedores[chave];
+    });
+    return fornecedores;
+}
+
+window.FornecedoresProdutoEditorExt = {
+    montarSecao: montarSecaoFornecedoresProdutoEditor,
+    lerFornecedores: lerFornecedoresProdutoEditor
+};
+
 function obterFornecedorMarcacaoFiltro(fornecedorEncomenda) {
     const select = document.getElementById("fornecedor-filtro-marcacao-fornecedor");
     const escolha = select?.value || "mesmo";
