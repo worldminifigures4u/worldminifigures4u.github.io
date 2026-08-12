@@ -1240,10 +1240,17 @@ function formatarResumoHistoricoFornecedor(historico, estadoAtual = "") {
 
 function normalizarMarcacaoFornecedor(valor) {
     const historico = obterHistoricoFornecedor(valor);
-    const estadoObjeto = valor && typeof valor === "object" && !Array.isArray(valor)
+    let estadoObjeto = valor && typeof valor === "object" && !Array.isArray(valor)
         ? String(valor.estado || "").trim()
         : (historico.length ? "" : String(valor ?? "").trim());
-    // Marcação atual = campo estado; não herda automaticamente do histórico
+    // Se nao houver estado atual, a ultima linha do historico define a marcacao visivel.
+    if (!estadoObjeto && historico.length) {
+        const ultimo = historico[historico.length - 1];
+        const tipoUltimo = normalizarTipoHistoricoFornecedor(ultimo?.tipo);
+        if (tipoUltimo === "os" || tipoUltimo === "encomendada_os") estadoObjeto = "OS";
+        else if (tipoUltimo === "encomendada") estadoObjeto = "Encomendada";
+        else if (tipoUltimo === "solicitada") estadoObjeto = "Solicitada";
+    }
     const estado = estadoObjeto;
     const estadoUpper = estado.toUpperCase();
 
