@@ -2972,9 +2972,19 @@ async function sincronizarHistoricoPedidosFornecedor(itens, fornecedorNome, opco
                     }
                 }
                 alterou = true;
-            } else if (!anterior && quantidade > 0) {
-                atual = acrescentarHistoricoFornecedor(atual, "solicitada", agora);
-                alterou = true;
+            } else if (quantidade > 0) {
+                const marcacaoAtual = normalizarMarcacaoFornecedor(atual);
+                const encomendaJaConfirmada = estadoPedidoFornecedorEhEncomendada(opcoes.estadoPedido)
+                    || estadoPedidoFornecedorEhRecebida(opcoes.estadoPedido);
+                const estadoDisponivel = encomendaJaConfirmada ? "Encomendada" : "Solicitada";
+                if (!anterior) {
+                    atual = acrescentarHistoricoFornecedor(atual, encomendaJaConfirmada ? "encomendada" : "solicitada", agora);
+                    alterou = true;
+                }
+                if (marcacaoAtual.estado.toUpperCase() === "OS" || marcacaoAtual.estado.toUpperCase() === "EX") {
+                    atual = aplicarMarcacaoAtualAposConfirmar(atual, estadoDisponivel, agora);
+                    alterou = true;
+                }
             }
         } else if (modo === "confirmar") {
             // A preparar → Encomendada
