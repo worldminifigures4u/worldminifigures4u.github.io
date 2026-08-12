@@ -63,12 +63,12 @@ function garantirFornecedoresProdutoModal() {
     if (window.FornecedoresProdutoModal) return Promise.resolve();
     if (!__fornecedoresProdutoPromessa) {
         prepararContextoProdutoFornecedor();
-        __fornecedoresProdutoPromessa = carregarScriptAdmin("mapas-produto-modal.js?v=20260812-lego-fornecedores")
+        __fornecedoresProdutoPromessa = carregarScriptAdmin("mapas-produto-modal.js?v=20260812-ficha-primeiro-fornecedores")
             .then(function () {
                 window.FornecedoresProdutoModal = {
                     abrir: function () {
                         prepararContextoProdutoFornecedor();
-                        return window.MapasProdutoModal.abrirEdicao.apply(null, arguments);
+                        return window.MapasProdutoModal.abrirFicha.apply(null, arguments);
                     },
                     fechar: function () {
                         return window.MapasProdutoModal.fechar.apply(null, arguments);
