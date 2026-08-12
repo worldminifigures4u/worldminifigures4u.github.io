@@ -1772,7 +1772,7 @@ body.pagina-mapas-admin > main.fornecedores-admin {
 .mapas-produto-modal {
     position: fixed;
     inset: 0;
-    z-index: 10000;
+    z-index: 10020;
     display: grid;
     place-items: center;
     padding: 18px;
@@ -1867,6 +1867,13 @@ body.pagina-mapas-admin > main.fornecedores-admin {
 
 .mapas-produto-secao-identificacao {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.mapas-produto-linha-detalhes-estado {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(180px, 240px);
+    gap: 14px;
+    min-width: 0;
 }
 
 .mapas-produto-secao-media {
@@ -2599,6 +2606,7 @@ body.mapas-produto-modal-aberto {
     }
 
     .mapas-produto-form-grid,
+    .mapas-produto-linha-detalhes-estado,
     .mapas-produto-secao,
     .mapas-produto-secao-media,
     .mapas-produto-fornecedores {
