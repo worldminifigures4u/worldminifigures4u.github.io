@@ -30,8 +30,8 @@ var mapasClient = null;
 var mapasProdutos = [];
 var mapasEncomendasFornecedorCache = null;
 var mapasEncomendasFornecedorPromessa = null;
-var mapasVendasClienteCache = null;
-var mapasVendasClientePromessa = null;
+var fornecedorVendasRecentesCache = null;
+var fornecedorVendasRecentesPromessa = null;
 
 
 function carregarScriptAdmin(src) {
@@ -63,7 +63,7 @@ function garantirFornecedoresProdutoModal() {
     if (window.FornecedoresProdutoModal) return Promise.resolve();
     if (!__fornecedoresProdutoPromessa) {
         prepararContextoProdutoFornecedor();
-        __fornecedoresProdutoPromessa = carregarScriptAdmin("mapas-produto-modal.js?v=20260812-historico-vendas-codigo-origem")
+        __fornecedoresProdutoPromessa = carregarScriptAdmin("mapas-produto-modal.js?v=20260812-historico-vendas-cache-separada")
             .then(function () {
                 window.FornecedoresProdutoModal = {
                     abrir: function () {
@@ -1842,10 +1842,10 @@ function normalizarEncomendaClienteFornecedor(encomenda) {
 }
 
 async function carregarVendasClienteFornecedor(forcar = false) {
-    if (!forcar && Array.isArray(mapasVendasClienteCache)) return mapasVendasClienteCache;
-    if (!forcar && mapasVendasClientePromessa) return mapasVendasClientePromessa;
+    if (!forcar && Array.isArray(fornecedorVendasRecentesCache)) return fornecedorVendasRecentesCache;
+    if (!forcar && fornecedorVendasRecentesPromessa) return fornecedorVendasRecentesPromessa;
 
-    mapasVendasClientePromessa = (async () => {
+    fornecedorVendasRecentesPromessa = (async () => {
         try {
             if (!fornecedoresClient) throw new Error("Supabase indisponivel.");
             const { data, error } = await fornecedoresClient
@@ -1854,18 +1854,18 @@ async function carregarVendasClienteFornecedor(forcar = false) {
                 .order("created_at", { ascending: false })
                 .limit(2000);
             if (error) throw error;
-            mapasVendasClienteCache = (data || []).map(normalizarEncomendaClienteFornecedor).filter(Boolean);
-            return mapasVendasClienteCache;
+            fornecedorVendasRecentesCache = (data || []).map(normalizarEncomendaClienteFornecedor).filter(Boolean);
+            return fornecedorVendasRecentesCache;
         } catch (erro) {
             console.warn("Historico de vendas indisponivel para fornecedores.", erro);
-            mapasVendasClienteCache = [];
-            return mapasVendasClienteCache;
+            fornecedorVendasRecentesCache = [];
+            return fornecedorVendasRecentesCache;
         } finally {
-            mapasVendasClientePromessa = null;
+            fornecedorVendasRecentesPromessa = null;
         }
     })();
 
-    return mapasVendasClientePromessa;
+    return fornecedorVendasRecentesPromessa;
 }
 
 function produtoCorrespondeVendaFornecedor(produto, item) {
@@ -1886,9 +1886,9 @@ function obterQuantidadeVendaFornecedor(item) {
 }
 
 function obterVendasRecentesProdutoFornecedor(produto) {
-    if (!Array.isArray(mapasVendasClienteCache)) return 0;
+    if (!Array.isArray(fornecedorVendasRecentesCache)) return 0;
     const limite = Date.now() - (90 * 24 * 60 * 60 * 1000);
-    return mapasVendasClienteCache.reduce((total, encomenda) => {
+    return fornecedorVendasRecentesCache.reduce((total, encomenda) => {
         const data = Date.parse(encomenda.criado_em || "");
         if (!data || data < limite) return total;
         if (normalizarEstadoPedidoFornecedor(encomenda.estado) === "cancelada") return total;
@@ -1900,9 +1900,9 @@ function obterVendasRecentesProdutoFornecedor(produto) {
 
 function criarIndiceVendasRecentesFornecedor() {
     const indice = new Map();
-    if (!Array.isArray(mapasVendasClienteCache)) return indice;
+    if (!Array.isArray(fornecedorVendasRecentesCache)) return indice;
     const limite = Date.now() - (90 * 24 * 60 * 60 * 1000);
-    mapasVendasClienteCache.forEach((encomenda, indiceEncomenda) => {
+    fornecedorVendasRecentesCache.forEach((encomenda, indiceEncomenda) => {
         const data = Date.parse(encomenda.criado_em || "");
         if (!data || data < limite) return;
         if (normalizarEstadoPedidoFornecedor(encomenda.estado) === "cancelada") return;
