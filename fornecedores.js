@@ -26,6 +26,12 @@ var FORNECEDOR_LISTA_MAX_CARACTERES = 30000;
 var FORNECEDOR_LISTA_MAX_LINHAS = 500;
 var fornecedorPedidosAbertos = new Set();
 var fornecedorPedidoAlvoJuntar = null;
+var mapasClient = null;
+var mapasProdutos = [];
+var mapasEncomendasFornecedorCache = null;
+var mapasEncomendasFornecedorPromessa = null;
+var mapasVendasClienteCache = null;
+var mapasVendasClientePromessa = null;
 
 
 function carregarScriptAdmin(src) {
@@ -56,7 +62,19 @@ var __fornecedoresPrintPromessa = null;
 function garantirFornecedoresProdutoModal() {
     if (window.FornecedoresProdutoModal) return Promise.resolve();
     if (!__fornecedoresProdutoPromessa) {
-        __fornecedoresProdutoPromessa = carregarScriptAdmin("fornecedores-produto-modal.js?v=20260730-fecho-fundo");
+        prepararContextoProdutoFornecedor();
+        __fornecedoresProdutoPromessa = carregarScriptAdmin("mapas-produto-modal.js?v=20260810-unidades-embalagem")
+            .then(function () {
+                window.FornecedoresProdutoModal = {
+                    abrir: function () {
+                        prepararContextoProdutoFornecedor();
+                        return window.MapasProdutoModal.abrirEdicao.apply(null, arguments);
+                    },
+                    fechar: function () {
+                        return window.MapasProdutoModal.fechar.apply(null, arguments);
+                    }
+                };
+            });
     }
     return __fornecedoresProdutoPromessa;
 }
@@ -80,6 +98,12 @@ function garantirFornecedoresPrintReceive() {
 async function abrirEdicaoProdutoMapa() {
     await garantirFornecedoresProdutoModal();
     return window.FornecedoresProdutoModal.abrir.apply(null, arguments);
+}
+
+function fecharEdicaoProdutoMapa() {
+    if (window.FornecedoresProdutoModal?.fechar) {
+        return window.FornecedoresProdutoModal.fechar.apply(null, arguments);
+    }
 }
 
 async function abrirEdicaoPedidoFornecedor() {
@@ -151,6 +175,108 @@ function definirStatusFornecedor(texto, erro = false) {
     el.textContent = texto || '';
     el.classList.remove('status-erro', 'status-sucesso', 'status-aviso', 'status-neutro', 'status-discreto');
     el.classList.add(erro ? 'status-erro' : 'status-sucesso');
+}
+
+function prepararContextoProdutoFornecedor() {
+    mapasClient = fornecedoresClient;
+    mapasProdutos = fornecedorProdutos;
+}
+
+function normalizarMapa(texto) {
+    return String(texto || "")
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .toLowerCase()
+        .trim();
+}
+
+function valorBooleanoMapa(valor) {
+    return obterBooleanoProdutoFornecedor(valor);
+}
+
+function normalizarImagensMapa(imagens) {
+    if (!imagens) return [];
+    let lista = imagens;
+    if (typeof imagens === "string") {
+        try {
+            lista = JSON.parse(imagens);
+        } catch (_) {
+            lista = imagens.split(/[\n,;]+/);
+        }
+    }
+    if (!Array.isArray(lista)) return [];
+    return lista
+        .map((item) => {
+            if (typeof item === "string") return item.trim();
+            if (item && typeof item === "object") return String(item.url || item.secure_url || item.src || "").trim();
+            return String(item || "").trim();
+        })
+        .filter(Boolean);
+}
+
+function normalizarProdutoMapa(produto) {
+    const normalizado = {
+        id: produto.id,
+        referencia: produto.referencia || "",
+        lego: produto.lego || "",
+        sku: produto.sku || "",
+        nome: produto.nome || "",
+        preco: Number(produto.preco || 0),
+        preco_compra: Number(produto.preco_compra || 0),
+        top: produto.top || "",
+        arquivado: valorBooleanoMapa(produto.arquivado),
+        descontinuado: valorBooleanoMapa(produto.descontinuado),
+        novidade: valorBooleanoMapa(produto.novidade),
+        peso: Number(produto.peso || 10),
+        tema: produto.tema || "",
+        subtema: produto.subtema || "",
+        stock: Number.isFinite(Number(produto.stock)) ? Math.floor(Number(produto.stock)) : 0,
+        unidades_por_embalagem: Math.max(1, Number.isFinite(Number(produto.unidades_por_embalagem)) ? Math.floor(Number(produto.unidades_por_embalagem)) : 1),
+        ativo: produto.ativo !== false,
+        imagens: normalizarImagensMapa(produto.imagens),
+        observacoes: produto.observacoes || "",
+        fornecedores: produto.fornecedores || {}
+    };
+    normalizado.pesquisa = normalizarMapa([
+        normalizado.nome,
+        normalizado.referencia,
+        normalizado.sku,
+        normalizado.tema,
+        normalizado.subtema
+    ].join(" "));
+    return normalizado;
+}
+
+function gerarSkuProduto(nomeProduto, produtosExistentes = []) {
+    const base = String(nomeProduto || "PROD")
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .toUpperCase()
+        .replace(/[^A-Z0-9]+/g, "")
+        .slice(0, 6) || "PROD";
+    const usados = new Set((produtosExistentes || []).map((produto) => String(produto?.sku || "").toUpperCase()));
+    let indice = 1;
+    let sku = base;
+    while (usados.has(sku)) {
+        indice += 1;
+        sku = `${base}${indice}`;
+    }
+    return sku;
+}
+
+function definirStatusMapa(texto, erro = false) {
+    definirStatusFornecedor(texto, erro);
+}
+
+function sincronizarEstadoImportacaoMapa() {
+    fornecedorProdutos = mapasProdutos;
+}
+
+function atualizarResultadosMapa() {
+    sincronizarEstadoImportacaoMapa();
+    renderizarResultadosFornecedor();
+    renderizarSelecionadosFornecedor();
+    renderizarPedidosFornecedores();
 }
 
 function carregarSelecaoFornecedor() {
