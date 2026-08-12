@@ -1,5 +1,37 @@
 (function () {
 'use strict';
+let temporizadorPopupEdicaoFornecedor = null;
+
+function mostrarPopupEdicaoFornecedor(tipo, mensagem) {
+    const modal = document.getElementById("fornecedor-edicao-modal");
+    if (!modal || modal.hidden || !mensagem) return;
+    const dialog = modal.querySelector(".fornecedor-edicao-dialog") || modal;
+    let popup = modal.querySelector("#fornecedor-edicao-popup");
+    if (!popup) {
+        popup = document.createElement("div");
+        popup.id = "fornecedor-edicao-popup";
+        popup.className = "fornecedor-edicao-popup";
+        popup.setAttribute("role", "alert");
+        dialog.appendChild(popup);
+    }
+    popup.textContent = mensagem;
+    popup.className = `fornecedor-edicao-popup ${tipo === "erro" ? "erro" : tipo === "aviso" ? "aviso" : "sucesso"}`;
+    popup.hidden = false;
+    window.clearTimeout(temporizadorPopupEdicaoFornecedor);
+    temporizadorPopupEdicaoFornecedor = window.setTimeout(() => {
+        popup.hidden = true;
+    }, tipo === "erro" ? 5200 : 3600);
+}
+
+function definirStatusEdicaoFornecedor(status, tipo, mensagem) {
+    if (status) {
+        status.textContent = mensagem;
+        status.classList.remove("status-erro", "status-sucesso", "status-aviso", "status-neutro");
+        status.classList.add(tipo === "erro" ? "status-erro" : tipo === "aviso" ? "status-aviso" : "status-sucesso");
+    }
+    mostrarPopupEdicaoFornecedor(tipo, mensagem);
+}
+
 function analisarLinhaListaFinalFornecedor(linha, numeroLinha) {
     const partes = dividirLinhaListaFinalFornecedor(linha).map(parte => String(parte || "").trim()).filter(Boolean);
     if (!partes.length) return null;
@@ -309,32 +341,23 @@ function aplicarListaFinalNaEdicaoFornecedor() {
     const status = modal.querySelector("#fornecedor-edicao-status");
     const texto = String(area?.value || "");
     if (texto.length > FORNECEDOR_LISTA_MAX_CARACTERES) {
-        if (status) {
-            status.textContent = `A lista é demasiado grande. Limite: ${FORNECEDOR_LISTA_MAX_CARACTERES.toLocaleString('pt-PT')} caracteres.`;
-            status.classList.remove('status-aviso', 'status-sucesso', 'status-neutro');
-            status.classList.add('status-erro');
-        }
+        definirStatusEdicaoFornecedor(status, "erro", `A lista é demasiado grande. Limite: ${FORNECEDOR_LISTA_MAX_CARACTERES.toLocaleString('pt-PT')} caracteres.`);
         return;
     }
     if (texto.split(/\r?\n/).filter(linha => linha.trim()).length > FORNECEDOR_LISTA_MAX_LINHAS) {
-        if (status) {
-            status.textContent = `A lista tem demasiadas linhas. Limite: ${FORNECEDOR_LISTA_MAX_LINHAS} referências por colagem.`;
-            status.classList.remove('status-aviso', 'status-sucesso', 'status-neutro');
-            status.classList.add('status-erro');
-        }
+        definirStatusEdicaoFornecedor(status, "erro", `A lista tem demasiadas linhas. Limite: ${FORNECEDOR_LISTA_MAX_LINHAS} referências por colagem.`);
         return;
     }
 
     const pedido = obterPedidoEdicaoFornecedor(modal);
-    if (!pedido) return;
+    if (!pedido) {
+        definirStatusEdicaoFornecedor(status, "erro", "Encomenda não encontrada para aplicar a lista.");
+        return;
+    }
 
     const { itens, erros, foraCatalogo, unidades } = processarLinhasListaFinalFornecedor(texto);
     if (!itens.length) {
-        if (status) {
-            status.textContent = erros.length ? erros.join("; ") : "Cole a lista final do fornecedor antes de aplicar.";
-            status.classList.remove('status-aviso', 'status-sucesso', 'status-neutro');
-            status.classList.add('status-erro');
-        }
+        definirStatusEdicaoFornecedor(status, "erro", erros.length ? erros.join("; ") : "Cole a lista final do fornecedor antes de aplicar.");
         return;
     }
 
@@ -347,14 +370,14 @@ function aplicarListaFinalNaEdicaoFornecedor() {
         });
     }
 
-    if (status) {
-        const avisos = [];
-        if (foraCatalogo.length) avisos.push(`${foraCatalogo.length} referência(s) fora do catálogo incluída(s): ${foraCatalogo.join(", ")}`);
-        if (erros.length) avisos.push(erros.join("; "));
-        status.textContent = `Lista aplicada: ${itens.length} linha(s), ${unidades} unidade(s).${avisos.length ? " " + avisos.join(" | ") : ""}`;
-        status.classList.remove("status-erro", "status-sucesso", "status-aviso", "status-neutro");
-        status.classList.add(avisos.length ? "status-aviso" : "status-sucesso");
-    }
+    const avisos = [];
+    if (foraCatalogo.length) avisos.push(`${foraCatalogo.length} referência(s) fora do catálogo incluída(s): ${foraCatalogo.join(", ")}`);
+    if (erros.length) avisos.push(erros.join("; "));
+    definirStatusEdicaoFornecedor(
+        status,
+        avisos.length ? "aviso" : "sucesso",
+        `Lista aplicada: ${itens.length} linha(s), ${unidades} unidade(s).${avisos.length ? " " + avisos.join(" | ") : ""}`
+    );
 }
 
 function limparListaFinalEdicaoFornecedor() {
@@ -439,29 +462,17 @@ function aplicarListaOsNaEdicaoFornecedor() {
     const texto = String(area?.value || "");
 
     if (texto.length > FORNECEDOR_LISTA_MAX_CARACTERES) {
-        if (status) {
-            status.textContent = `A lista OS é demasiado grande. Limite: ${FORNECEDOR_LISTA_MAX_CARACTERES.toLocaleString("pt-PT")} caracteres.`;
-            status.classList.remove("status-aviso", "status-sucesso", "status-neutro");
-            status.classList.add("status-erro");
-        }
+        definirStatusEdicaoFornecedor(status, "erro", `A lista OS é demasiado grande. Limite: ${FORNECEDOR_LISTA_MAX_CARACTERES.toLocaleString("pt-PT")} caracteres.`);
         return;
     }
     if (texto.split(/\r?\n/).filter((linha) => linha.trim()).length > FORNECEDOR_LISTA_MAX_LINHAS) {
-        if (status) {
-            status.textContent = `A lista OS tem demasiadas linhas. Limite: ${FORNECEDOR_LISTA_MAX_LINHAS} referências por colagem.`;
-            status.classList.remove("status-aviso", "status-sucesso", "status-neutro");
-            status.classList.add("status-erro");
-        }
+        definirStatusEdicaoFornecedor(status, "erro", `A lista OS tem demasiadas linhas. Limite: ${FORNECEDOR_LISTA_MAX_LINHAS} referências por colagem.`);
         return;
     }
 
     const { itens, erros } = processarLinhasListaOsFornecedor(texto);
     if (!itens.length) {
-        if (status) {
-            status.textContent = erros.length ? erros.join("; ") : "Cole a lista OS do fornecedor antes de aplicar.";
-            status.classList.remove("status-aviso", "status-sucesso", "status-neutro");
-            status.classList.add("status-erro");
-        }
+        definirStatusEdicaoFornecedor(status, "erro", erros.length ? erros.join("; ") : "Cole a lista OS do fornecedor antes de aplicar.");
         return;
     }
 
@@ -485,24 +496,26 @@ function aplicarListaOsNaEdicaoFornecedor() {
         }
     });
 
-    if (status) {
-        const avisos = [];
-        if (naoEncontradas.length) {
-            avisos.push(`${naoEncontradas.length} não estão nesta encomenda: ${naoEncontradas.join(", ")}`);
-        }
-        if (erros.length) avisos.push(erros.join("; "));
-        if (!aplicadas.length) {
-            status.textContent = avisos.length
-                ? `Nenhuma figura OS aplicada. ${avisos.join(" | ")}`
-                : "Nenhuma figura da lista OS coincide com esta encomenda.";
-            status.classList.remove("status-aviso", "status-sucesso", "status-neutro");
-            status.classList.add("status-erro");
-            return;
-        }
-        status.textContent = `${aplicadas.length} figura(s) marcada(s) como OS (removidas do a receber).${avisos.length ? " " + avisos.join(" | ") : ""}`;
-        status.classList.remove("status-erro", "status-sucesso", "status-aviso", "status-neutro");
-        status.classList.add(avisos.length ? "status-aviso" : "status-sucesso");
+    const avisos = [];
+    if (naoEncontradas.length) {
+        avisos.push(`${naoEncontradas.length} não estão nesta encomenda: ${naoEncontradas.join(", ")}`);
     }
+    if (erros.length) avisos.push(erros.join("; "));
+    if (!aplicadas.length) {
+        definirStatusEdicaoFornecedor(
+            status,
+            "erro",
+            avisos.length
+                ? `Nenhuma figura OS aplicada. ${avisos.join(" | ")}`
+                : "Nenhuma figura da lista OS coincide com esta encomenda."
+        );
+        return;
+    }
+    definirStatusEdicaoFornecedor(
+        status,
+        avisos.length ? "aviso" : "sucesso",
+        `${aplicadas.length} figura(s) marcada(s) como OS (removidas do a receber).${avisos.length ? " " + avisos.join(" | ") : ""}`
+    );
 }
 
 
