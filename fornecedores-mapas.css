@@ -377,6 +377,79 @@ body.pagina-fornecedores-admin{ margin:0; padding-left:0; padding-right:0; paddi
             background:#222;
         }
         body.fornecedor-pedido-modal-aberto{ overflow:hidden; }
+        .fornecedor-escolher-pedido-modal[hidden]{ display:none; }
+        .fornecedor-escolher-pedido-modal{
+            position:fixed;
+            inset:0;
+            z-index:10020;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            padding:18px;
+            background:rgba(0,0,0,.78);
+        }
+        .fornecedor-escolher-pedido-dialog{
+            width:min(980px, calc(100vw - 28px));
+            max-height:88vh;
+            display:flex;
+            flex-direction:column;
+            overflow:hidden;
+            border:1px solid #444;
+            border-radius:8px;
+            background:#141414;
+            color:#fff;
+            box-shadow:0 22px 70px rgba(0,0,0,.58);
+        }
+        .fornecedor-escolher-pedido-topo{
+            flex:0 0 auto;
+            display:flex;
+            align-items:center;
+            justify-content:space-between;
+            gap:12px;
+            padding:14px 16px;
+            border-bottom:1px solid #333;
+            background:#101010;
+        }
+        .fornecedor-escolher-pedido-topo h3{
+            margin:0;
+            color:#ffc400;
+            font-size:20px;
+            line-height:1.25;
+        }
+        .fornecedor-escolher-pedido-lista{
+            min-height:0;
+            overflow:auto;
+            display:flex;
+            flex-direction:column;
+            gap:8px;
+            padding:14px;
+        }
+        .fornecedor-escolher-pedido-opcao{
+            width:100%;
+            display:grid;
+            grid-template-columns:minmax(120px, 1fr) minmax(110px, .8fr) minmax(130px, 1fr) minmax(220px, 1.4fr) minmax(120px, .8fr);
+            align-items:center;
+            gap:10px;
+            min-height:44px;
+            padding:10px 12px;
+            border:1px solid #333;
+            border-radius:6px;
+            background:#1b1b1b;
+            color:#fff;
+            text-align:left;
+            font:inherit;
+            cursor:pointer;
+        }
+        .fornecedor-escolher-pedido-opcao:hover,
+        .fornecedor-escolher-pedido-opcao:focus-visible{
+            border-color:#ffc400;
+            outline:none;
+            background:#242424;
+        }
+        .fornecedor-escolher-pedido-opcao strong{
+            color:#ffc400;
+        }
+        body.fornecedor-escolher-pedido-modal-aberto{ overflow:hidden; }
         .fornecedor-pedido-produtos.admin-encomenda-produtos{ margin-top:0; padding-top:0; border-top:0; }
         .fornecedor-pedidos.admin-encomendas-lista{
             display:flex;

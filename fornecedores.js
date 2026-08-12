@@ -65,7 +65,7 @@ function garantirFornecedoresProdutoModal() {
     if (window.FornecedoresProdutoModal) return Promise.resolve();
     if (!__fornecedoresProdutoPromessa) {
         prepararContextoProdutoFornecedor();
-        __fornecedoresProdutoPromessa = carregarScriptAdmin("mapas-produto-modal.js?v=20260812-historico-vendas-vars-modal")
+        __fornecedoresProdutoPromessa = carregarScriptAdmin("mapas-produto-modal.js?v=20260812-escolher-encomenda-juntar")
             .then(function () {
                 window.FornecedoresProdutoModal = {
                     abrir: function () {
@@ -3445,19 +3445,33 @@ function obterPedidoAlvoJuntarSelecaoFornecedor() {
     return fornecedorPedidos.find(pedido => String(pedido.id) === fornecedorPedidoAlvoJuntar) || null;
 }
 
+function obterPedidosDisponiveisParaJuntarFornecedor() {
+    return fornecedorPedidos
+        .filter(pedido => pedido && normalizarEstadoPedidoFornecedor(pedido.estado) !== "cancelada")
+        .slice()
+        .sort((a, b) => {
+            const dataA = Date.parse(obterDataExibicaoPedidoFornecedor(a) || a.criado_em || 0) || 0;
+            const dataB = Date.parse(obterDataExibicaoPedidoFornecedor(b) || b.criado_em || 0) || 0;
+            return dataB - dataA;
+        });
+}
+
 function atualizarBotaoJuntarSelecaoFornecedor() {
     const botao = document.getElementById("btn-juntar-selecao-fornecedor");
     if (!botao || !estaPaginaFornecedoresUnificada()) return;
 
     sincronizarPedidoAlvoJuntarSelecaoFornecedor();
-    const pedido = obterPedidoAlvoJuntarSelecaoFornecedor();
+    let pedido = obterPedidoAlvoJuntarSelecaoFornecedor();
     const temSelecao = fornecedorSelecao.length > 0;
-    const podeJuntar = temSelecao && Boolean(pedido);
+    const temPedidos = obterPedidosDisponiveisParaJuntarFornecedor().length > 0;
+    const podeJuntar = temSelecao && temPedidos;
 
     botao.disabled = !podeJuntar;
 
     if (!temSelecao) {
         botao.title = "Selecione primeiro produtos na lista acima.";
+    } else if (!temPedidos) {
+        botao.title = "Ainda nao existe encomenda a fornecedor onde juntar a selecao.";
     } else if (!pedido) {
         botao.title = "Abra acima a encomenda existente onde pretende juntar a seleção.";
     } else {
@@ -3465,9 +3479,77 @@ function atualizarBotaoJuntarSelecaoFornecedor() {
     }
 }
 
+function escolherPedidoParaJuntarSelecaoFornecedor() {
+    return new Promise(resolve => {
+        const pedidos = obterPedidosDisponiveisParaJuntarFornecedor();
+        if (!pedidos.length) {
+            resolve(null);
+            return;
+        }
+
+        const modal = document.createElement("div");
+        modal.className = "fornecedor-escolher-pedido-modal";
+        modal.setAttribute("role", "dialog");
+        modal.setAttribute("aria-modal", "true");
+        modal.setAttribute("aria-labelledby", "fornecedor-escolher-pedido-titulo");
+
+        const dialog = criarElementoPedidoFornecedor("div", "fornecedor-escolher-pedido-dialog");
+        const topo = criarElementoPedidoFornecedor("div", "fornecedor-escolher-pedido-topo");
+        const titulo = criarElementoPedidoFornecedor("h3", "", "Escolher encomenda");
+        titulo.id = "fornecedor-escolher-pedido-titulo";
+        const fechar = criarElementoPedidoFornecedor("button", "fornecedor-edicao-fechar", "x");
+        fechar.type = "button";
+        fechar.setAttribute("aria-label", "Fechar escolha de encomenda");
+        topo.append(titulo, fechar);
+
+        const lista = criarElementoPedidoFornecedor("div", "fornecedor-escolher-pedido-lista");
+        const fecharModal = pedido => {
+            modal.remove();
+            document.body.classList.remove("fornecedor-escolher-pedido-modal-aberto");
+            resolve(pedido || null);
+        };
+
+        pedidos.forEach(pedido => {
+            const totais = (pedido.itens || []).reduce((acc, item) => {
+                acc.itens += 1;
+                acc.quantidade += Math.max(0, Number(item.quantidade || 0));
+                acc.recebido += Math.max(0, Number(item.recebido || 0));
+                return acc;
+            }, { itens: 0, quantidade: 0, recebido: 0 });
+            const botao = criarElementoPedidoFornecedor("button", "fornecedor-escolher-pedido-opcao");
+            botao.type = "button";
+            botao.append(
+                criarElementoPedidoFornecedor("strong", "", obterTextoCodigoPedidoFornecedor(pedido)),
+                criarElementoPedidoFornecedor("span", "", formatarDataPedidoFornecedor(obterDataExibicaoPedidoFornecedor(pedido))),
+                criarElementoPedidoFornecedor("span", "", pedido.fornecedor || "Fornecedor"),
+                criarElementoPedidoFornecedor("span", "", `${totais.itens} artigo(s) | ${totais.quantidade} unidade(s) | ${Math.max(0, totais.quantidade - totais.recebido)} por receber`),
+                criarElementoPedidoFornecedor("span", `estado-encomenda ${obterClasseBadgeEstadoPedidoFornecedor(pedido.estado)}`, pedido.estado || "A preparar")
+            );
+            botao.addEventListener("click", () => fecharModal(pedido));
+            lista.appendChild(botao);
+        });
+
+        fechar.addEventListener("click", () => fecharModal(null));
+        modal.addEventListener("click", evento => {
+            if (evento.target === modal) fecharModal(null);
+        });
+        modal.addEventListener("keydown", evento => {
+            if (evento.key === "Escape") fecharModal(null);
+        });
+
+        dialog.append(topo, lista);
+        modal.appendChild(dialog);
+        document.body.appendChild(modal);
+        document.body.classList.add("fornecedor-escolher-pedido-modal-aberto");
+        lista.querySelector("button")?.focus();
+    });
+}
+
 async function juntarSelecaoAEncomendaExistenteFornecedor() {
     sincronizarPedidoAlvoJuntarSelecaoFornecedor();
-    const pedido = obterPedidoAlvoJuntarSelecaoFornecedor();
+    const escolhido = await escolherPedidoParaJuntarSelecaoFornecedor();
+    const pedido = escolhido || obterPedidoAlvoJuntarSelecaoFornecedor();
+    if (escolhido) fornecedorPedidoAlvoJuntar = String(escolhido.id);
     if (!pedido) {
         definirStatusFornecedor("Abra acima a encomenda existente onde pretende juntar a seleção.", true);
         return;
@@ -3934,7 +4016,7 @@ function renderizarPedidosFornecedores() {
 
     pedidos.forEach(pedido => {
         const aberto = fornecedorPedidosAbertos.has(String(pedido.id));
-        const alvoJuntar = String(pedido.id) === fornecedorPedidoAlvoJuntar && aberto;
+        const alvoJuntar = String(pedido.id) === fornecedorPedidoAlvoJuntar;
         const totaisPedido = (pedido.itens || []).reduce((totais, item) => {
             const quantidade = Math.max(0, Number(item.quantidade || 0));
             const recebido = Math.max(0, Number(item.recebido || 0));
