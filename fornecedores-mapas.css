@@ -1782,7 +1782,9 @@ body.pagina-mapas-admin > main.fornecedores-admin {
 .mapas-produto-modal-dialog {
     width: min(1040px, 100%);
     max-height: 92vh;
-    overflow: auto;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
     border: 1px solid #444;
     border-radius: 8px;
     background: #141414;
@@ -1842,6 +1844,8 @@ body.pagina-mapas-admin > main.fornecedores-admin {
 }
 
 .mapas-produto-form {
+    min-height: 0;
+    overflow: auto;
     padding: 16px;
 }
 
