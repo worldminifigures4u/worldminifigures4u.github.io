@@ -1295,6 +1295,7 @@ body.pagina-mapas-admin > main.fornecedores-admin {
 .mapas-col-pendente { width: 88px; }
 .mapas-col-previsto { width: 88px; }
 .mapas-col-qtd { width: 82px; }
+.mapas-col-vendas-3m { width: 64px; }
 
 .pagina-mapas-admin .mapas-col-foto {
     width: 64px;
@@ -1466,10 +1467,21 @@ body.pagina-mapas-admin > main.fornecedores-admin {
 .pagina-fornecedores-unificada :is(.fornecedor-resultados, .fornecedor-selecionados, .fornecedor-pedido-produtos) .fornecedor-tabela-encomenda .mapas-col-stock,
 .pagina-fornecedores-unificada :is(.fornecedor-resultados, .fornecedor-selecionados, .fornecedor-pedido-produtos) .fornecedor-tabela-encomenda .mapas-col-pendente,
 .pagina-fornecedores-unificada :is(.fornecedor-resultados, .fornecedor-selecionados, .fornecedor-pedido-produtos) .fornecedor-tabela-encomenda .mapas-col-previsto,
-.pagina-fornecedores-unificada :is(.fornecedor-resultados, .fornecedor-selecionados, .fornecedor-pedido-produtos) .fornecedor-tabela-encomenda .mapas-col-qtd {
+.pagina-fornecedores-unificada :is(.fornecedor-resultados, .fornecedor-selecionados, .fornecedor-pedido-produtos) .fornecedor-tabela-encomenda .mapas-col-qtd,
+.pagina-fornecedores-unificada .fornecedor-resultados .fornecedor-tabela-encomenda .mapas-col-vendas-3m {
     width: 1%;
     white-space: nowrap;
     text-align: center;
+}
+
+.pagina-fornecedores-unificada .fornecedor-resultados .fornecedor-tabela-encomenda .mapas-col-vendas-3m {
+    color: #ddd;
+    font-weight: 800;
+    font-variant-numeric: tabular-nums;
+}
+
+.pagina-fornecedores-unificada .fornecedor-resultados .fornecedor-tabela-encomenda .mapas-col-vendas-3m.com-vendas-recentes {
+    color: #29b6f6;
 }
 
 .pagina-fornecedores-unificada :is(.fornecedor-resultados, .fornecedor-selecionados, .fornecedor-pedido-produtos) .fornecedor-tabela-encomenda .mapas-col-ref,
@@ -2523,7 +2535,8 @@ body.mapas-produto-modal-aberto {
 .fornecedor-tabela-encomenda[data-coluna-ativa="stock"] td.mapas-col-stock,
 .fornecedor-tabela-encomenda[data-coluna-ativa="pendente"] td.mapas-col-pendente,
 .fornecedor-tabela-encomenda[data-coluna-ativa="previsto"] td.mapas-col-previsto,
-.fornecedor-tabela-encomenda[data-coluna-ativa="qtd"] td.mapas-col-qtd {
+.fornecedor-tabela-encomenda[data-coluna-ativa="qtd"] td.mapas-col-qtd,
+.fornecedor-tabela-encomenda[data-coluna-ativa="vendas_3m"] td.mapas-col-vendas-3m {
     box-shadow: inset 1px 0 0 rgba(255, 196, 0, .5), inset -1px 0 0 rgba(255, 196, 0, .5);
 }
 
@@ -2539,7 +2552,8 @@ body.mapas-produto-modal-aberto {
 .fornecedor-tabela-encomenda[data-coluna-ativa="stock"] tbody tr:first-child td.mapas-col-stock,
 .fornecedor-tabela-encomenda[data-coluna-ativa="pendente"] tbody tr:first-child td.mapas-col-pendente,
 .fornecedor-tabela-encomenda[data-coluna-ativa="previsto"] tbody tr:first-child td.mapas-col-previsto,
-.fornecedor-tabela-encomenda[data-coluna-ativa="qtd"] tbody tr:first-child td.mapas-col-qtd {
+.fornecedor-tabela-encomenda[data-coluna-ativa="qtd"] tbody tr:first-child td.mapas-col-qtd,
+.fornecedor-tabela-encomenda[data-coluna-ativa="vendas_3m"] tbody tr:first-child td.mapas-col-vendas-3m {
     box-shadow: inset 1px 0 0 rgba(255, 196, 0, .5), inset -1px 0 0 rgba(255, 196, 0, .5), inset 0 2px 0 rgba(255, 196, 0, .5);
 }
 
@@ -2555,7 +2569,8 @@ body.mapas-produto-modal-aberto {
 .fornecedor-tabela-encomenda[data-coluna-ativa="stock"] tbody tr:last-child td.mapas-col-stock,
 .fornecedor-tabela-encomenda[data-coluna-ativa="pendente"] tbody tr:last-child td.mapas-col-pendente,
 .fornecedor-tabela-encomenda[data-coluna-ativa="previsto"] tbody tr:last-child td.mapas-col-previsto,
-.fornecedor-tabela-encomenda[data-coluna-ativa="qtd"] tbody tr:last-child td.mapas-col-qtd {
+.fornecedor-tabela-encomenda[data-coluna-ativa="qtd"] tbody tr:last-child td.mapas-col-qtd,
+.fornecedor-tabela-encomenda[data-coluna-ativa="vendas_3m"] tbody tr:last-child td.mapas-col-vendas-3m {
     box-shadow: inset 1px 0 0 rgba(255, 196, 0, .5), inset -1px 0 0 rgba(255, 196, 0, .5), inset 0 -2px 0 rgba(255, 196, 0, .5);
 }
 

@@ -1752,6 +1752,7 @@ function obterValorOrdenacaoFornecedor(item, coluna) {
     if (coluna === "peso") return Number(produto.peso || 0);
     if (coluna === "pendente") return obterPendentesProdutoFornecedor(produto);
     if (coluna === "previsto") return Number(produto.stock || 0) + obterPendentesProdutoFornecedor(produto);
+    if (coluna === "vendas_3m") return obterVendasRecentesProdutoFornecedor(produto);
     if (coluna === "qtd") {
         const selecionado = fornecedorSelecao.find(sel => String(sel.id) === String(produto.id));
         return Number(selecionado?.quantidade || 0);
@@ -1781,7 +1782,7 @@ function compararProdutosFornecedor(a, b, ordenacao) {
     if (coluna === "stock") {
         return compararProdutosPorColunaFornecedor(a, b, "stock", direcao);
     }
-    if (["nome", "sku", "ref", "top", "pendente", "previsto", "qtd"].includes(coluna)) {
+    if (["nome", "sku", "ref", "top", "pendente", "previsto", "qtd", "vendas_3m"].includes(coluna)) {
         return compararProdutosPorColunaFornecedor(a, b, coluna, direcao);
     }
 
@@ -1816,6 +1817,85 @@ function obterProdutoParaPedidoFornecedor(item, listaProdutos = fornecedorProdut
             || correspondeReferenciaListaFornecedor(item.sku, produto.sku);
         return mesmaReferencia || mesmoNome;
     }) || null;
+}
+
+function obterProdutosEncomendaClienteFornecedor(encomenda) {
+    let produtos = encomenda?.produtos || encomenda?.artigos || [];
+    if (typeof produtos === "string") {
+        try {
+            produtos = JSON.parse(produtos);
+        } catch (_) {
+            produtos = [];
+        }
+    }
+    return Array.isArray(produtos) ? produtos : [];
+}
+
+function normalizarEncomendaClienteFornecedor(encomenda) {
+    if (!encomenda) return null;
+    return {
+        id: encomenda.id || "",
+        estado: encomenda.estado || "",
+        criado_em: encomenda.created_at || encomenda.criado_em || "",
+        produtos: obterProdutosEncomendaClienteFornecedor(encomenda)
+    };
+}
+
+async function carregarVendasClienteFornecedor(forcar = false) {
+    if (!forcar && Array.isArray(mapasVendasClienteCache)) return mapasVendasClienteCache;
+    if (!forcar && mapasVendasClientePromessa) return mapasVendasClientePromessa;
+
+    mapasVendasClientePromessa = (async () => {
+        try {
+            if (!fornecedoresClient) throw new Error("Supabase indisponivel.");
+            const { data, error } = await fornecedoresClient
+                .from("encomendas")
+                .select("id,estado,created_at,produtos")
+                .order("created_at", { ascending: false })
+                .limit(2000);
+            if (error) throw error;
+            mapasVendasClienteCache = (data || []).map(normalizarEncomendaClienteFornecedor).filter(Boolean);
+            return mapasVendasClienteCache;
+        } catch (erro) {
+            console.warn("Historico de vendas indisponivel para fornecedores.", erro);
+            mapasVendasClienteCache = [];
+            return mapasVendasClienteCache;
+        } finally {
+            mapasVendasClientePromessa = null;
+        }
+    })();
+
+    return mapasVendasClientePromessa;
+}
+
+function produtoCorrespondeVendaFornecedor(produto, item) {
+    if (!produto || !item) return false;
+    const produtoId = String(produto.id || "").trim();
+    const itemId = String(item.id_produto || item.produto_id || item.id || "").trim();
+    if (produtoId && itemId && produtoId === itemId) return true;
+    const produtoSku = String(produto.sku || "").trim().toUpperCase();
+    const itemSku = String(item.sku || "").trim().toUpperCase();
+    if (produtoSku && itemSku && produtoSku === itemSku) return true;
+    return correspondeReferenciaListaFornecedor(produto.referencia, item.referencia)
+        || correspondeReferenciaListaFornecedor(produto.referencia, item.sku)
+        || correspondeReferenciaListaFornecedor(produto.sku, item.referencia);
+}
+
+function obterQuantidadeVendaFornecedor(item) {
+    return Math.max(1, Math.floor(Number(item?.quantidade ?? item?.qtd ?? 1) || 1));
+}
+
+function obterVendasRecentesProdutoFornecedor(produto) {
+    if (!Array.isArray(mapasVendasClienteCache)) return 0;
+    const limite = Date.now() - (90 * 24 * 60 * 60 * 1000);
+    return mapasVendasClienteCache.reduce((total, encomenda) => {
+        const data = Date.parse(encomenda.criado_em || "");
+        if (!data || data < limite) return total;
+        if (normalizarEstadoPedidoFornecedor(encomenda.estado) === "cancelada") return total;
+        return total + obterProdutosEncomendaClienteFornecedor(encomenda)
+            .filter((item) => produtoCorrespondeVendaFornecedor(produto, item))
+            .reduce((subtotal, item) => subtotal + obterQuantidadeVendaFornecedor(item), 0);
+    }, 0);
 }
 
 function produtoPassaFiltroTopFornecedor(produto, filtroTop) {
@@ -2366,7 +2446,7 @@ function sincronizarLargurasColunasTabelaEncomendaFornecedor() {
         const linhas = [...corpo.querySelectorAll("tbody tr")];
         if (!ths.length || !linhas.length) return;
 
-        const minimos = [58, 88, 68, 42, 52, 52, 56];
+        const minimos = [58, 88, 68, 42, 52, 52, 56, 56];
         const larguras = ths.map((_, indice) => minimos[indice] || 0);
 
         linhas.forEach((linha) => {
@@ -2406,6 +2486,7 @@ function criarTheadTabelaEncomendaFornecedor() {
         ["Chegar", "mapas-col-pendente", "pendente"],
         ["Prev.", "mapas-col-previsto", "previsto"],
         ["Qtd", "mapas-col-qtd", "qtd"],
+        ["3M", "mapas-col-vendas-3m", "vendas_3m"],
     ].forEach(([texto, classe, coluna]) => {
         const th = document.createElement("th");
         th.className = `${classe} mapas-th-ordenavel`;
@@ -2525,6 +2606,11 @@ function renderizarResultadosFornecedorTabelaEncomenda(caixa, resultados) {
         ligarSelecaoLinhaQuantidadeMapa(input);
         qtdCelula.appendChild(input);
         linha.appendChild(qtdCelula);
+
+        const vendasRecentes = obterVendasRecentesProdutoFornecedor(atual);
+        const vendasCelula = criarCelulaMapaFornecedor(vendasRecentes, `mapas-col-vendas-3m ${vendasRecentes > 0 ? "com-vendas-recentes" : ""}`);
+        vendasCelula.title = "Unidades vendidas nos ultimos 3 meses";
+        linha.appendChild(vendasCelula);
 
         tbody.appendChild(linha);
     });
@@ -3859,6 +3945,7 @@ async function iniciarFornecedoresAdmin() {
         renderizarFornecedoresGuardados();
         preencherFormularioFichaFornecedor();
         await carregarCatalogoFornecedores();
+        await carregarVendasClienteFornecedor();
         await carregarPedidosFornecedoresRemotos();
         bloqueio.hidden = true;
         document.getElementById('fornecedores-aplicacao').hidden = false;
