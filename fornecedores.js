@@ -30,6 +30,8 @@ var mapasClient = null;
 var mapasProdutos = [];
 var mapasEncomendasFornecedorCache = null;
 var mapasEncomendasFornecedorPromessa = null;
+var mapasVendasClienteCache = null;
+var mapasVendasClientePromessa = null;
 var fornecedorVendasRecentesCache = null;
 var fornecedorVendasRecentesPromessa = null;
 
@@ -63,7 +65,7 @@ function garantirFornecedoresProdutoModal() {
     if (window.FornecedoresProdutoModal) return Promise.resolve();
     if (!__fornecedoresProdutoPromessa) {
         prepararContextoProdutoFornecedor();
-        __fornecedoresProdutoPromessa = carregarScriptAdmin("mapas-produto-modal.js?v=20260812-historico-vendas-cache-separada")
+        __fornecedoresProdutoPromessa = carregarScriptAdmin("mapas-produto-modal.js?v=20260812-historico-vendas-vars-modal")
             .then(function () {
                 window.FornecedoresProdutoModal = {
                     abrir: function () {
