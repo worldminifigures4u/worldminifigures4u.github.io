@@ -1902,12 +1902,19 @@ function criarIndiceVendasRecentesFornecedor() {
     const indice = new Map();
     if (!Array.isArray(mapasVendasClienteCache)) return indice;
     const limite = Date.now() - (90 * 24 * 60 * 60 * 1000);
-    mapasVendasClienteCache.forEach((encomenda) => {
+    mapasVendasClienteCache.forEach((encomenda, indiceEncomenda) => {
         const data = Date.parse(encomenda.criado_em || "");
         if (!data || data < limite) return;
         if (normalizarEstadoPedidoFornecedor(encomenda.estado) === "cancelada") return;
-        obterProdutosEncomendaClienteFornecedor(encomenda).forEach((item) => {
+        obterProdutosEncomendaClienteFornecedor(encomenda).forEach((item, indiceItem) => {
             const quantidade = obterQuantidadeVendaFornecedor(item);
+            const itemKey = [
+                encomenda.id || indiceEncomenda,
+                item.id_produto || item.produto_id || item.id || "",
+                item.sku || "",
+                item.referencia || "",
+                indiceItem
+            ].join("|");
             [
                 item.id_produto,
                 item.produto_id,
@@ -1917,7 +1924,8 @@ function criarIndiceVendasRecentesFornecedor() {
             ].forEach((valor) => {
                 const chave = normalizarReferenciaListaFornecedor(valor);
                 if (!chave) return;
-                indice.set(chave, (indice.get(chave) || 0) + quantidade);
+                if (!indice.has(chave)) indice.set(chave, []);
+                indice.get(chave).push({ itemKey, quantidade });
             });
         });
     });
@@ -1932,8 +1940,13 @@ function obterVendasRecentesProdutoPorIndiceFornecedor(produto, indice) {
         normalizarReferenciaListaFornecedor(produto.referencia)
     ].filter(Boolean));
     let total = 0;
+    const contados = new Set();
     chaves.forEach((chave) => {
-        total += Number(indice.get(chave) || 0);
+        (indice.get(chave) || []).forEach((entrada) => {
+            if (!entrada?.itemKey || contados.has(entrada.itemKey)) return;
+            contados.add(entrada.itemKey);
+            total += Number(entrada.quantidade || 0);
+        });
     });
     return total;
 }
