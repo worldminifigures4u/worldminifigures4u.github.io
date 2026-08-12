@@ -16,6 +16,19 @@ function textoLegoProdutoModal(valor) {
     return "";
 }
 
+function formatarEuroProdutoModal(valor) {
+    return Number(valor || 0).toLocaleString("pt-PT", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+
+function normalizarSkuProdutoModal(valor) {
+    return String(valor || "")
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .trim()
+        .toUpperCase()
+        .replace(/[^A-Z0-9]/g, "");
+}
+
 function criarInputEdicaoMapa(form, id, rotulo, valor, tipo = "text", opcoes = {}) {
     const label = document.createElement("label");
     label.setAttribute("for", id);
@@ -750,7 +763,7 @@ function renderizarHistoricoVendasMapa(conteudo, produto, encomendas) {
             encomenda.cliente || "—",
             encomenda.origem || "Site",
             String(quantidade),
-            `${formatarEuroMapa(subtotal)} €`,
+            `${formatarEuroProdutoModal(subtotal)} €`,
             encomenda.estado || "—"
         ].forEach((valor) => {
             const td = document.createElement("td");
@@ -864,8 +877,8 @@ function preencherFichaProdutoMapa(produto) {
         Number(produto.stock || 0),
         { classeValor: Number(produto.stock || 0) <= 0 ? "sem-stock" : "" }
     );
-    criarCampoLeituraMapa(secaoDetalhes, "preço compra", `${formatarEuroMapa(produto.preco_compra)} €`);
-    criarCampoLeituraMapa(secaoDetalhes, "preço venda", `${formatarEuroMapa(produto.preco)} €`);
+    criarCampoLeituraMapa(secaoDetalhes, "preço compra", `${formatarEuroProdutoModal(produto.preco_compra)} €`);
+    criarCampoLeituraMapa(secaoDetalhes, "preço venda", `${formatarEuroProdutoModal(produto.preco)} €`);
     criarCampoLeituraMapa(secaoDetalhes, "Peso (g)", Number(produto.peso || PESO_PADRAO_PRODUTO_GRAMAS || 10));
     criarCampoLeituraMapa(secaoDetalhes, "Lego", textoLegoProdutoModal(produto.lego) || "por verificar");
     if (Number(produto.unidades_por_embalagem || 1) > 1) {
@@ -1192,7 +1205,7 @@ function lerProdutoEditadoMapa() {
     const produto = {
         nome: document.getElementById("mapas-editar-nome").value.trim(),
         referencia: document.getElementById("mapas-editar-referencia").value.trim(),
-        sku: normalizarSkuMapa(document.getElementById("mapas-editar-sku").value),
+        sku: normalizarSkuProdutoModal(document.getElementById("mapas-editar-sku").value),
         lego: document.getElementById("mapas-editar-lego").value,
         top: document.getElementById("mapas-editar-top").checked ? "sim" : "",
         arquivado: document.getElementById("mapas-editar-arquivado").checked,
