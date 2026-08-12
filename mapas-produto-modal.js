@@ -657,13 +657,58 @@ function obterPrecoItemVendaMapa(item) {
     return Number(item?.preco_unitario ?? item?.preco ?? item?.valor_unitario ?? 0) || 0;
 }
 
+function obterPrimeiroTextoEncomendaMapa(encomenda, campos) {
+    for (const campo of campos) {
+        const valor = String(encomenda?.[campo] ?? "").trim();
+        if (valor) return valor;
+    }
+    return "";
+}
+
+function obterCodigoEncomendaClienteMapa(encomenda) {
+    return obterPrimeiroTextoEncomendaMapa(encomenda, [
+        "codigo_encomenda",
+        "codigo",
+        "numero_encomenda",
+        "numero",
+        "referencia_encomenda",
+        "referencia_externa",
+        "referencia"
+    ]);
+}
+
+function obterOrigemEncomendaClienteMapa(encomenda) {
+    const origem = obterPrimeiroTextoEncomendaMapa(encomenda, ["origem"]);
+    if (origem && normalizarTextoProdutoMapa(origem) !== "site") return origem;
+
+    const plataforma = obterPrimeiroTextoEncomendaMapa(encomenda, [
+        "plataforma",
+        "canal",
+        "canal_venda",
+        "origem_venda",
+        "marketplace"
+    ]);
+    if (plataforma) return plataforma;
+
+    const plataformaPorMetodo = obterPrimeiroTextoEncomendaMapa(encomenda, [
+        "metodo_pagamento",
+        "metodo_envio_nome"
+    ]);
+    const metodoNormalizado = normalizarTextoProdutoMapa(plataformaPorMetodo);
+    if (["wallapop", "vinted", "olx", "todocoleccion"].includes(metodoNormalizado)) {
+        return plataformaPorMetodo;
+    }
+
+    return origem || "Site";
+}
+
 function normalizarEncomendaClienteMapa(encomenda) {
     if (!encomenda) return null;
     return {
         id: encomenda.id || "",
-        codigo: encomenda.codigo_encomenda || encomenda.codigo || "",
+        codigo: obterCodigoEncomendaClienteMapa(encomenda),
         cliente: encomenda.nome_cliente || "",
-        origem: encomenda.origem || "Site",
+        origem: obterOrigemEncomendaClienteMapa(encomenda),
         estado: encomenda.estado || "",
         criado_em: encomenda.created_at || encomenda.criado_em || "",
         produtos: obterProdutosEncomendaClienteMapa(encomenda)
@@ -683,7 +728,7 @@ async function carregarVendasClienteMapa(forcar = false) {
             if (!mapasClient) throw new Error("Supabase indisponível.");
             const { data, error } = await mapasClient
                 .from("encomendas")
-                .select("id,codigo_encomenda,nome_cliente,origem,estado,created_at,produtos")
+                .select("*")
                 .order("created_at", { ascending: false })
                 .limit(1000);
             if (error) throw error;
