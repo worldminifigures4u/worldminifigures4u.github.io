@@ -1752,7 +1752,7 @@ function obterValorOrdenacaoFornecedor(item, coluna) {
     if (coluna === "peso") return Number(produto.peso || 0);
     if (coluna === "pendente") return obterPendentesProdutoFornecedor(produto);
     if (coluna === "previsto") return Number(produto.stock || 0) + obterPendentesProdutoFornecedor(produto);
-    if (coluna === "vendas_3m") return obterVendasRecentesProdutoFornecedor(produto);
+    if (coluna === "vendas_3m") return Number(item.vendas_3m ?? obterVendasRecentesProdutoFornecedor(produto));
     if (coluna === "qtd") {
         const selecionado = fornecedorSelecao.find(sel => String(sel.id) === String(produto.id));
         return Number(selecionado?.quantidade || 0);
@@ -1896,6 +1896,46 @@ function obterVendasRecentesProdutoFornecedor(produto) {
             .filter((item) => produtoCorrespondeVendaFornecedor(produto, item))
             .reduce((subtotal, item) => subtotal + obterQuantidadeVendaFornecedor(item), 0);
     }, 0);
+}
+
+function criarIndiceVendasRecentesFornecedor() {
+    const indice = new Map();
+    if (!Array.isArray(mapasVendasClienteCache)) return indice;
+    const limite = Date.now() - (90 * 24 * 60 * 60 * 1000);
+    mapasVendasClienteCache.forEach((encomenda) => {
+        const data = Date.parse(encomenda.criado_em || "");
+        if (!data || data < limite) return;
+        if (normalizarEstadoPedidoFornecedor(encomenda.estado) === "cancelada") return;
+        obterProdutosEncomendaClienteFornecedor(encomenda).forEach((item) => {
+            const quantidade = obterQuantidadeVendaFornecedor(item);
+            [
+                item.id_produto,
+                item.produto_id,
+                item.id,
+                item.sku,
+                item.referencia
+            ].forEach((valor) => {
+                const chave = normalizarReferenciaListaFornecedor(valor);
+                if (!chave) return;
+                indice.set(chave, (indice.get(chave) || 0) + quantidade);
+            });
+        });
+    });
+    return indice;
+}
+
+function obterVendasRecentesProdutoPorIndiceFornecedor(produto, indice) {
+    if (!indice?.size) return 0;
+    const chaves = new Set([
+        normalizarReferenciaListaFornecedor(produto.id),
+        normalizarReferenciaListaFornecedor(produto.sku),
+        normalizarReferenciaListaFornecedor(produto.referencia)
+    ].filter(Boolean));
+    let total = 0;
+    chaves.forEach((chave) => {
+        total += Number(indice.get(chave) || 0);
+    });
+    return total;
 }
 
 function produtoPassaFiltroTopFornecedor(produto, filtroTop) {
@@ -2551,7 +2591,7 @@ function renderizarResultadosFornecedorTabelaEncomenda(caixa, resultados) {
         .sort((a, b) => compararProdutosPorColunaFornecedor(a, b, fornecedorMapaOrdenacao.coluna, fornecedorMapaOrdenacao.direcao))
         .slice(0, limiteResultados);
 
-    resultadosOrdenados.forEach(({ produto }) => {
+    resultadosOrdenados.forEach(({ produto, vendas_3m }) => {
         const atual = produto;
         const linha = document.createElement("tr");
         const stockNumero = Number(atual.stock || 0);
@@ -2607,7 +2647,7 @@ function renderizarResultadosFornecedorTabelaEncomenda(caixa, resultados) {
         qtdCelula.appendChild(input);
         linha.appendChild(qtdCelula);
 
-        const vendasRecentes = obterVendasRecentesProdutoFornecedor(atual);
+        const vendasRecentes = Number(vendas_3m || 0);
         const vendasCelula = criarCelulaMapaFornecedor(vendasRecentes, `mapas-col-vendas-3m ${vendasRecentes > 0 ? "com-vendas-recentes" : ""}`);
         vendasCelula.title = "Unidades vendidas nos ultimos 3 meses";
         linha.appendChild(vendasCelula);
@@ -2634,11 +2674,13 @@ function renderizarResultadosFornecedor() {
 
     const { termo, fornecedor, fornecedorMarcacao, filtroFornecedor, filtroTop, filtroArquivado, filtroDescontinuado, ordenacao } = obterControlosResultadosFornecedor();
     caixa.replaceChildren();
+    const indiceVendasRecentes = criarIndiceVendasRecentesFornecedor();
 
     const resultados = fornecedorProdutos
         .map((produto) => ({
             produto,
             score: calcularScoreResultadoFornecedor(produto, termo),
+            vendas_3m: obterVendasRecentesProdutoPorIndiceFornecedor(produto, indiceVendasRecentes),
         }))
         .filter((item) => (
             (!termo || item.score < 99)
