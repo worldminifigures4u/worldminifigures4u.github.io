@@ -1,5 +1,21 @@
 (function () {
 'use strict';
+
+function normalizarTextoProdutoMapa(valor) {
+    return String(valor || "")
+        .trim()
+        .toLowerCase()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "");
+}
+
+function textoLegoProdutoModal(valor) {
+    const texto = normalizarTextoProdutoMapa(valor);
+    if (texto === "sim") return "sim";
+    if (texto === "nao") return "não";
+    return "";
+}
+
 function criarInputEdicaoMapa(form, id, rotulo, valor, tipo = "text", opcoes = {}) {
     const label = document.createElement("label");
     label.setAttribute("for", id);
@@ -851,7 +867,7 @@ function preencherFichaProdutoMapa(produto) {
     criarCampoLeituraMapa(secaoDetalhes, "preço compra", `${formatarEuroMapa(produto.preco_compra)} €`);
     criarCampoLeituraMapa(secaoDetalhes, "preço venda", `${formatarEuroMapa(produto.preco)} €`);
     criarCampoLeituraMapa(secaoDetalhes, "Peso (g)", Number(produto.peso || PESO_PADRAO_PRODUTO_GRAMAS || 10));
-    criarCampoLeituraMapa(secaoDetalhes, "Lego", textoLegoMapa(produto.lego) || "por verificar");
+    criarCampoLeituraMapa(secaoDetalhes, "Lego", textoLegoProdutoModal(produto.lego) || "por verificar");
     if (Number(produto.unidades_por_embalagem || 1) > 1) {
         criarCampoLeituraMapa(secaoDetalhes, "Unid/emb.", Number(produto.unidades_por_embalagem));
     }
@@ -1047,7 +1063,7 @@ function preencherFormularioProdutoMapa(produto, modo = "editar") {
     criarInputEdicaoMapa(secaoDetalhes, "mapas-editar-preco-compra", "preço compra", Number(produto.preco_compra || 0).toFixed(2), "number", { min: 0, step: "0.01" });
     criarInputEdicaoMapa(secaoDetalhes, "mapas-editar-preco", "preço venda", Number(produto.preco || 0).toFixed(2), "number", { required: true, min: 0, step: "0.01" });
     criarInputEdicaoMapa(secaoDetalhes, "mapas-editar-peso", "Peso (g)", Number(produto.peso || PESO_PADRAO_PRODUTO_GRAMAS || 10), "number", { required: true, min: 1, step: 1 });
-    criarSelectEdicaoMapa(secaoDetalhes, "mapas-editar-lego", "Lego", textoLegoMapa(produto.lego), [
+    criarSelectEdicaoMapa(secaoDetalhes, "mapas-editar-lego", "Lego", textoLegoProdutoModal(produto.lego), [
         { valor: "", texto: "por verificar" },
         { valor: "sim", texto: "sim" },
         { valor: "não", texto: "não" }
