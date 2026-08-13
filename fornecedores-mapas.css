@@ -2332,6 +2332,75 @@ body.pagina-mapas-admin > main.fornecedores-admin {
     box-shadow: none;
 }
 
+.mapas-produto-fornecedores-leitura {
+    margin-top: 2px;
+}
+
+.mapas-produto-fornecedores-leitura-lista {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 8px;
+}
+
+.mapas-produto-fornecedor-leitura {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 6px 10px;
+    align-items: center;
+    min-width: 0;
+    padding: 8px 10px;
+    border: 1px solid #333;
+    border-radius: 6px;
+    background: #171717;
+}
+
+.mapas-produto-fornecedor-leitura-nome {
+    min-width: 0;
+    color: #fff;
+    font-size: 13px;
+    font-weight: 800;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.mapas-produto-fornecedor-leitura-estado {
+    color: #fff;
+    font-size: 13px;
+    font-weight: 800;
+    white-space: nowrap;
+}
+
+.mapas-produto-fornecedor-leitura-detalhe {
+    grid-column: 1 / -1;
+    color: #aaa;
+    font-size: 11px;
+    font-weight: 700;
+}
+
+.mapas-produto-fornecedor-leitura.tipo-os,
+.mapas-produto-fornecedor-leitura.tipo-encomendada_os {
+    border-color: rgba(255, 196, 0, 0.55);
+    background: rgba(255, 196, 0, 0.08);
+}
+
+.mapas-produto-fornecedor-leitura.tipo-os .mapas-produto-fornecedor-leitura-estado,
+.mapas-produto-fornecedor-leitura.tipo-encomendada_os .mapas-produto-fornecedor-leitura-estado {
+    color: #ffc400;
+}
+
+.mapas-produto-fornecedor-leitura.tipo-ex .mapas-produto-fornecedor-leitura-estado {
+    color: #ff8a8a;
+}
+
+.mapas-produto-fornecedor-leitura.tipo-solicitada .mapas-produto-fornecedor-leitura-estado {
+    color: #8ec7ff;
+}
+
+.mapas-produto-fornecedor-leitura.tipo-encomendada .mapas-produto-fornecedor-leitura-estado {
+    color: #7ddea0;
+}
+
 .mapas-produto-preview-leitura {
     pointer-events: none;
 }

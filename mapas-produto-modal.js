@@ -490,6 +490,105 @@ function obterObjetoFornecedoresProdutoMapa(produto) {
         : {};
 }
 
+function normalizarTipoHistoricoFornecedorMapa(tipo) {
+    const texto = String(tipo || "").trim().toLowerCase();
+    if (texto === "os" || texto === "sem_stock" || texto === "sem stock") return "os";
+    if (texto === "ex" || texto === "esgotada" || texto === "esgotado") return "ex";
+    if (texto === "solicitada" || texto === "solicitado") return "solicitada";
+    if (texto === "encomendada" || texto === "encomendado") return "encomendada";
+    if (texto === "encomendada_os" || texto === "encomendado_os") return "encomendada_os";
+    return texto || "info";
+}
+
+function obterHistoricoFornecedorMapa(valor) {
+    if (!valor || typeof valor !== "object" || Array.isArray(valor)) return [];
+    const lista = Array.isArray(valor.historico) ? valor.historico : [];
+    return lista
+        .map((item) => ({
+            tipo: normalizarTipoHistoricoFornecedorMapa(item?.tipo),
+            data: String(item?.data || "").trim()
+        }))
+        .filter((item) => item.tipo || item.data);
+}
+
+function formatarDataFornecedorLeituraMapa(valor) {
+    const texto = String(valor || "").trim();
+    if (!texto) return "";
+    const partesIso = texto.match(/^(\d{4})-(\d{2})-(\d{2})/);
+    if (partesIso) return `${partesIso[3]}/${partesIso[2]}/${partesIso[1]}`;
+    return texto;
+}
+
+function rotuloHistoricoFornecedorLeituraMapa(tipo) {
+    const normalizado = normalizarTipoHistoricoFornecedorMapa(tipo);
+    if (normalizado === "os") return "OS";
+    if (normalizado === "ex") return "EX";
+    if (normalizado === "solicitada") return "Solicitada";
+    if (normalizado === "encomendada") return "Encomendada";
+    if (normalizado === "encomendada_os") return "Encomendada / OS";
+    return "Marcacao";
+}
+
+function normalizarMarcacaoFornecedorLeituraMapa(valor) {
+    const historico = obterHistoricoFornecedorMapa(valor);
+    let estado = valor && typeof valor === "object" && !Array.isArray(valor)
+        ? String(valor.estado || valor.marcacao || valor.status || "").trim()
+        : (historico.length ? "" : String(valor ?? "").trim());
+
+    if (!estado && historico.length) {
+        const ultimo = historico[historico.length - 1];
+        const tipoUltimo = normalizarTipoHistoricoFornecedorMapa(ultimo?.tipo);
+        if (tipoUltimo === "os" || tipoUltimo === "encomendada_os") estado = "OS";
+        else if (tipoUltimo === "ex") estado = "EX";
+        else if (tipoUltimo === "encomendada") estado = "Encomendada";
+        else if (tipoUltimo === "solicitada") estado = "Solicitada";
+    }
+
+    const upper = estado.toUpperCase();
+    let tipo = "disponivel";
+    let texto = estado;
+    if (upper === "OS" || upper.startsWith("OS")) {
+        tipo = "os";
+        texto = "OS";
+    } else if (upper === "EX") {
+        tipo = "ex";
+        texto = "EX";
+    } else if (upper === "SOLICITADA" || upper === "SOLICITADO") {
+        tipo = "solicitada";
+        texto = "Solicitada";
+    } else if (upper === "ENCOMENDADA" || upper === "ENCOMENDADO" || /^-?\d+(?:[,.]\d+)?$/.test(estado)) {
+        tipo = "encomendada";
+        texto = estado || "Encomendada";
+    } else if (estado) {
+        tipo = "info";
+        texto = estado;
+    }
+
+    const ultimoHistorico = historico[historico.length - 1] || null;
+    return {
+        tipo,
+        texto,
+        historico,
+        detalhe: ultimoHistorico
+            ? `${rotuloHistoricoFornecedorLeituraMapa(ultimoHistorico.tipo)} ${formatarDataFornecedorLeituraMapa(ultimoHistorico.data)}`.trim()
+            : ""
+    };
+}
+
+function obterMarcacoesFornecedoresLeituraMapa(produto) {
+    return Object.entries(obterObjetoFornecedoresProdutoMapa(produto))
+        .map(([nome, valor]) => ({
+            nome: String(nome || "").trim(),
+            marcacao: normalizarMarcacaoFornecedorLeituraMapa(valor)
+        }))
+        .filter((item) =>
+            item.nome
+            && item.marcacao.tipo !== "disponivel"
+            && String(item.marcacao.texto || "").trim()
+        )
+        .sort((a, b) => a.nome.localeCompare(b.nome, "pt", { sensitivity: "base" }));
+}
+
 /** Data da marcação Encomendada na ficha (a que o utilizador vê no mapa), se existir. */
 function obterDataMarcacaoEncomendadaMapa(produto, fornecedorNome) {
     const chaveAlvo = normalizarChaveFornecedorMapa(fornecedorNome);
@@ -871,6 +970,40 @@ function criarBadgeLeituraMapa(secao, rotulo, ativo) {
     return badge;
 }
 
+function montarSecaoFornecedoresLeituraMapa(campos, produto) {
+    const marcacoes = obterMarcacoesFornecedoresLeituraMapa(produto);
+    if (!marcacoes.length) return;
+
+    const secao = criarSecaoEdicaoMapa("Fornecedores", "mapas-produto-secao-media mapas-produto-fornecedores-leitura");
+    const lista = document.createElement("div");
+    lista.className = "mapas-produto-fornecedores-leitura-lista";
+
+    marcacoes.forEach(({ nome, marcacao }) => {
+        const item = document.createElement("div");
+        item.className = `mapas-produto-fornecedor-leitura tipo-${marcacao.tipo}`;
+
+        const fornecedor = document.createElement("strong");
+        fornecedor.className = "mapas-produto-fornecedor-leitura-nome";
+        fornecedor.textContent = nome;
+
+        const estado = document.createElement("span");
+        estado.className = "mapas-produto-fornecedor-leitura-estado";
+        estado.textContent = marcacao.texto;
+
+        item.append(fornecedor, estado);
+        if (marcacao.detalhe) {
+            const detalhe = document.createElement("small");
+            detalhe.className = "mapas-produto-fornecedor-leitura-detalhe";
+            detalhe.textContent = marcacao.detalhe;
+            item.appendChild(detalhe);
+        }
+        lista.appendChild(item);
+    });
+
+    secao.appendChild(lista);
+    campos.appendChild(secao);
+}
+
 function criarFotoPrincipalFichaMapa(produto) {
     const imagens = normalizarImagensMapa(produto.imagens);
     const figura = document.createElement("figure");
@@ -955,6 +1088,7 @@ function preencherFichaProdutoMapa(produto) {
     topo.appendChild(secaoMarcas);
     campos.appendChild(topo);
 
+    montarSecaoFornecedoresLeituraMapa(campos, produto);
     montarSecaoHistoricoRececoesMapa(campos, produto);
     montarSecaoHistoricoVendasMapa(campos, produto);
 }
