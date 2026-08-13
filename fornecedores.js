@@ -2336,8 +2336,6 @@ function obterPendentesProdutoFornecedor(produto) {
 }
 
 function obterPendentesDetalhadosProdutoFornecedor(produto) {
-    const idProduto = String(produto?.id || "");
-    const skuProduto = String(produto?.sku || "").trim().toUpperCase();
     const pedidosAbertos = fornecedorPedidos.filter(pedido =>
         pedido
         && pedido.estado !== "Recebida"
@@ -2348,9 +2346,7 @@ function obterPendentesDetalhadosProdutoFornecedor(produto) {
     const detalhes = [];
     const total = pedidosAbertos.reduce((soma, pedido) => {
         return soma + pedido.itens.reduce((subtotal, item) => {
-            const mesmoId = idProduto && String(item.id || item.produto_id || "") === idProduto;
-            const mesmoSku = skuProduto && String(item.sku || "").trim().toUpperCase() === skuProduto;
-            if (!mesmoId && !mesmoSku) return subtotal;
+            if (!itensPedidoFornecedorCorrespondem(item, produto)) return subtotal;
             const quantidade = Math.max(0, Number(item.quantidade || 0));
             const recebido = Math.max(0, Number(item.recebido || 0));
             const pendente = Math.max(0, quantidade - recebido);
