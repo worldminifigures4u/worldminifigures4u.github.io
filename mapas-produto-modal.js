@@ -636,10 +636,43 @@ function obterLinhasEncomendaFornecedorProdutoMapa(produto, pedidos) {
     return linhas;
 }
 
+function obterTimestampFornecedorMapa(valor) {
+    const texto = String(valor || "").trim();
+    if (!texto) return 0;
+    const iso = Date.parse(texto);
+    if (!Number.isNaN(iso)) return iso;
+    const partes = texto.match(/^(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{4})/);
+    if (!partes) return 0;
+    const data = new Date(Number(partes[3]), Number(partes[2]) - 1, Number(partes[1]));
+    return Number.isNaN(data.getTime()) ? 0 : data.getTime();
+}
+
+function obterLinhasHistoricoMarcacoesFornecedorMapa(produto) {
+    const linhas = [];
+    Object.entries(obterObjetoFornecedoresProdutoMapa(produto)).forEach(([fornecedorNome, valor]) => {
+        const fornecedor = String(fornecedorNome || "").trim();
+        if (!fornecedor) return;
+        obterHistoricoFornecedorMapa(valor).forEach((item) => {
+            const tipo = normalizarTipoHistoricoFornecedorMapa(item.tipo);
+            if (!item.data && !tipo) return;
+            linhas.push({
+                origem: "marcacao",
+                dataRef: item.data || "",
+                fornecedor,
+                tipo,
+                estadoTexto: rotuloHistoricoFornecedorLeituraMapa(tipo)
+            });
+        });
+    });
+    return linhas;
+}
+
 function formatarDataEncomendaFornecedorMapa(valor) {
     if (!valor) return "—";
     const texto = String(valor).trim();
     const isoDia = texto.match(/^(\d{4})-(\d{2})-(\d{2})/);
+    const diaMesAno = texto.match(/^(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{4})/);
+    if (diaMesAno) return `${diaMesAno[1].padStart(2, "0")}/${diaMesAno[2].padStart(2, "0")}/${diaMesAno[3]}`;
     if (isoDia) return `${isoDia[3]}/${isoDia[2]}/${isoDia[1]}`;
     const data = new Date(texto);
     return Number.isNaN(data.getTime()) ? "—" : data.toLocaleDateString("pt-PT");
@@ -647,12 +680,16 @@ function formatarDataEncomendaFornecedorMapa(valor) {
 
 function renderizarHistoricoEncomendasFornecedorMapa(conteudo, produto, pedidos) {
     if (!conteudo) return;
-    const linhas = obterLinhasEncomendaFornecedorProdutoMapa(produto, pedidos).filter(({ item }) => {
+    const linhasEncomendas = obterLinhasEncomendaFornecedorProdutoMapa(produto, pedidos).filter(({ item }) => {
         const faltaOs = Math.max(0, Math.floor(Number(item?.falta_os || 0)));
         const emEx = Boolean(item?.marcado_ex) || String(item?.estado_fornecedor || "").trim().toUpperCase() === "EX";
         // EX (preço alto) não deve aparecer aqui - só interessa mostrar quando é OS.
         return faltaOs > 0 || !emEx;
     });
+    const linhas = [
+        ...linhasEncomendas.map((linha) => ({ ...linha, origem: "encomenda" })),
+        ...obterLinhasHistoricoMarcacoesFornecedorMapa(produto)
+    ].sort((a, b) => obterTimestampFornecedorMapa(b.dataRef) - obterTimestampFornecedorMapa(a.dataRef));
     conteudo.replaceChildren();
 
     if (!linhas.length) {
@@ -675,8 +712,33 @@ function renderizarHistoricoEncomendasFornecedorMapa(conteudo, produto, pedidos)
     thead.appendChild(linhaCabecalho);
 
     const tbody = document.createElement("tbody");
-    linhas.forEach(({ pedido, item, pedidoQtd, recebido, dataRef }) => {
+    linhas.forEach((linha) => {
         const tr = document.createElement("tr");
+        if (linha.origem === "marcacao") {
+            if (linha.tipo === "os" || linha.tipo === "encomendada_os") {
+                tr.classList.add("mapas-produto-historico-os");
+            } else if (linha.tipo === "ex") {
+                tr.classList.add("mapas-produto-historico-ex");
+            } else {
+                tr.classList.add("mapas-produto-historico-pendente");
+            }
+            [
+                formatarDataEncomendaFornecedorMapa(linha.dataRef),
+                "—",
+                linha.fornecedor || "—",
+                "—",
+                "—",
+                linha.estadoTexto || "—"
+            ].forEach((valor) => {
+                const td = document.createElement("td");
+                td.textContent = valor;
+                tr.appendChild(td);
+            });
+            tbody.appendChild(tr);
+            return;
+        }
+
+        const { pedido, item, pedidoQtd, recebido, dataRef } = linha;
         const faltaOs = Math.max(0, Math.floor(Number(item?.falta_os || 0)));
         const emFalta = faltaOs > 0;
         const emEx = Boolean(item?.marcado_ex) || String(item?.estado_fornecedor || "").trim().toUpperCase() === "EX";
