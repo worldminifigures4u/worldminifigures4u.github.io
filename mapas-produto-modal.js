@@ -860,6 +860,23 @@ function formatarDataEncomendaFornecedorMapa(valor) {
     return Number.isNaN(data.getTime()) ? "—" : data.toLocaleDateString("pt-PT");
 }
 
+function obterTipoLinhaEncomendaFornecedorMapa(linha) {
+    const faltaOs = Math.max(0, Math.floor(Number(linha?.item?.falta_os || 0)));
+    if (faltaOs > 0) return "os";
+    const emEx = Boolean(linha?.item?.marcado_ex) || String(linha?.item?.estado_fornecedor || "").trim().toUpperCase() === "EX";
+    if (emEx) return "ex";
+    const estado = String(linha?.pedido?.estado || "").trim().toLowerCase();
+    if (estado.includes("solicit")) return "solicitada";
+    return "encomendada";
+}
+
+function obterChaveHistoricoFornecedorMapa(dataRef, fornecedor, tipo) {
+    const data = formatarDataEncomendaFornecedorMapa(dataRef);
+    const fornecedorChave = normalizarChaveFornecedorMapa(fornecedor);
+    const tipoChave = normalizarTipoHistoricoFornecedorMapa(tipo);
+    return `${data}|${fornecedorChave}|${tipoChave}`;
+}
+
 function renderizarHistoricoEncomendasFornecedorMapa(conteudo, produto, pedidos) {
     if (!conteudo) return;
     const linhasEncomendas = obterLinhasEncomendaFornecedorProdutoMapa(produto, pedidos).filter(({ item }) => {
@@ -868,9 +885,15 @@ function renderizarHistoricoEncomendasFornecedorMapa(conteudo, produto, pedidos)
         // EX (preço alto) não deve aparecer aqui - só interessa mostrar quando é OS.
         return faltaOs > 0 || !emEx;
     });
+    const chavesLinhasCompletas = new Set(linhasEncomendas.map((linha) =>
+        obterChaveHistoricoFornecedorMapa(linha.dataRef, linha.pedido?.fornecedor, obterTipoLinhaEncomendaFornecedorMapa(linha))
+    ));
+    const linhasMarcacoes = obterLinhasHistoricoMarcacoesFornecedorMapa(produto).filter((linha) =>
+        !chavesLinhasCompletas.has(obterChaveHistoricoFornecedorMapa(linha.dataRef, linha.fornecedor, linha.tipo))
+    );
     const linhas = [
         ...linhasEncomendas.map((linha) => ({ ...linha, origem: "encomenda" })),
-        ...obterLinhasHistoricoMarcacoesFornecedorMapa(produto)
+        ...linhasMarcacoes
     ].sort((a, b) => obterTimestampFornecedorMapa(b.dataRef) - obterTimestampFornecedorMapa(a.dataRef));
     conteudo.replaceChildren();
 
