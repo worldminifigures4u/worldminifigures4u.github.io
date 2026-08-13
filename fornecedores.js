@@ -2598,6 +2598,16 @@ function atualizarResumoEncomendaFornecedor(opcoes = {}) {
     }
     texto.textContent = textoProdutos;
 
+    const centro = alvo.querySelector(".fornecedor-resumo-encomenda-centro");
+    let unidades = document.getElementById("fornecedor-resumo-encomenda-unidades");
+    if (!unidades) {
+        unidades = document.createElement("span");
+        unidades.id = "fornecedor-resumo-encomenda-unidades";
+        unidades.className = "fornecedor-resumo-encomenda-unidades";
+        (centro || alvo).appendChild(unidades);
+    }
+    unidades.textContent = obterTextoTotalUnidadesEncomendaFornecedor();
+
     let acoesLimite = document.getElementById("fornecedor-resumo-limite-acoes");
     if (!acoesLimite) {
         acoesLimite = document.createElement("span");
@@ -2622,19 +2632,17 @@ function atualizarResumoEncomendaFornecedor(opcoes = {}) {
             renderizarResultadosFornecedor();
         });
         acoesLimite.append(mostrarMais, mostrarTodos);
-        alvo.querySelector(".fornecedor-resumo-encomenda-centro")?.appendChild(acoesLimite) || alvo.appendChild(acoesLimite);
+    }
+    if (centro && unidades.parentElement === centro) {
+        centro.insertBefore(acoesLimite, unidades);
+    } else if (centro) {
+        centro.appendChild(acoesLimite);
+    } else {
+        alvo.appendChild(acoesLimite);
     }
     const temMais = totalFiltrados > limite;
     acoesLimite.hidden = !temMais;
 
-    let unidades = document.getElementById("fornecedor-resumo-encomenda-unidades");
-    if (!unidades) {
-        unidades = document.createElement("span");
-        unidades.id = "fornecedor-resumo-encomenda-unidades";
-        unidades.className = "fornecedor-resumo-encomenda-unidades";
-        alvo.appendChild(unidades);
-    }
-    unidades.textContent = obterTextoTotalUnidadesEncomendaFornecedor();
     atualizarTotalFigurasEncomendaFornecedor();
     atualizarBotaoJuntarSelecaoFornecedor();
 }
