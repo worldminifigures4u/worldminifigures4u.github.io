@@ -2616,9 +2616,8 @@ function atualizarResumoEncomendaFornecedor(opcoes = {}) {
         });
         acoesLimite.append(mostrarMais, mostrarTodos);
     }
-    if (centro && unidades.parentElement === centro) {
-        centro.insertBefore(acoesLimite, unidades);
-    } else if (centro) {
+    const centro = alvo.querySelector(".fornecedor-resumo-encomenda-centro");
+    if (centro) {
         centro.appendChild(acoesLimite);
     } else {
         alvo.appendChild(acoesLimite);
