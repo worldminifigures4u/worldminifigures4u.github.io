@@ -95,7 +95,13 @@ body.pagina-fornecedores-admin{ margin:0; padding-left:0; padding-right:0; paddi
         }
         .fornecedores-cabecalho-acoes{ display:flex; gap:8px; align-items:center; justify-content:flex-end; flex-wrap:wrap; }
         .fornecedores-link-mapas{ display:inline-flex; align-items:center; justify-content:center; min-height:40px; box-sizing:border-box; text-decoration:none; padding:10px 14px; }
-        .fornecedores-grid-unificada{ grid-template-columns:minmax(0,1fr); min-width:0; }
+        .fornecedores-grid-unificada{
+            grid-template-columns:minmax(760px,1.35fr) minmax(440px,.85fr);
+            gap:16px;
+            min-width:0;
+        }
+        .pagina-fornecedores-unificada .fornecedores-painel-mapa{ order:1; min-width:0; }
+        .pagina-fornecedores-unificada .fornecedores-painel-lista{ order:2; min-width:0; }
         .pagina-fornecedores-unificada .fornecedores-admin{ max-width:1680px; min-width:0; }
         .pagina-fornecedores-unificada .fornecedores-painel,
         .pagina-fornecedores-unificada .fornecedor-pedidos.admin-encomendas-lista,
@@ -206,7 +212,12 @@ body.pagina-fornecedores-admin{ margin:0; padding-left:0; padding-right:0; paddi
             font:inherit;
         }
         .pagina-fornecedores-unificada .fornecedor-resultados{ display:block; max-height:calc(52vh - 8px); overflow:auto; overscroll-behavior:contain; padding-right:0; border:0; border-radius:0; background:#101010; }
-        .pagina-fornecedores-unificada .fornecedor-pedidos{ max-height:none; }
+        .pagina-fornecedores-unificada .fornecedor-pedidos{
+            max-height:calc(100vh - 220px);
+            overflow:auto;
+            overscroll-behavior:contain;
+            scrollbar-gutter:stable;
+        }
         .fornecedor-ficha-box{ margin:14px 0 8px; padding:12px; border:1px solid #333; border-radius:8px; background:#101010; }
         .fornecedor-ficha-box summary{ color:#ffc400; font-weight:900; cursor:pointer; }
         .fornecedor-ficha-form{ display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; margin-top:12px; }
@@ -607,8 +618,13 @@ body.pagina-fornecedores-admin{ margin:0; padding-left:0; padding-right:0; paddi
             }
             .fornecedor-pedido-resumo{ display:none; }
         }
-        @media (max-width:900px){
+        @media (max-width:1220px){
             .fornecedores-grid{ grid-template-columns:1fr; }
+            .pagina-fornecedores-unificada .fornecedores-grid-unificada{ grid-template-columns:minmax(0,1fr); }
+            .pagina-fornecedores-unificada .fornecedores-painel-mapa,
+            .pagina-fornecedores-unificada .fornecedores-painel-lista{ order:initial; }
+        }
+        @media (max-width:900px){
             .fornecedor-lista-controles:not(.fornecedor-controles-unificados){ grid-template-columns:1fr; }
             .pagina-fornecedores-unificada .fornecedor-lista-controles.fornecedor-controles-unificados{ flex-wrap:wrap; }
             .fornecedor-produto,.fornecedor-item,.fornecedor-pedido-linha,.fornecedor-edicao-grid,.fornecedor-ficha-form{ grid-template-columns:1fr; }
