@@ -1767,44 +1767,57 @@ body.pagina-mapas-admin > main.fornecedores-admin {
 
 .pagina-fornecedores-unificada .fornecedores-coluna-direita .fornecedor-pedido-cabecalho {
     padding: 8px 10px;
+    align-items: stretch;
+    overflow: visible;
 }
 
 .pagina-fornecedores-unificada .fornecedores-coluna-direita .fornecedor-pedido-cabecalho .admin-encomenda-linha.fornecedor-pedido-linha-cabecalho,
 .pagina-fornecedores-unificada .fornecedores-coluna-direita .fornecedor-pedido-cabecalho .admin-encomenda-linha.fornecedor-pedido-linha-cabecalho.com-destino-selecao {
-    grid-template-columns: minmax(78px, .8fr) minmax(84px, .8fr) minmax(96px, 1fr) minmax(86px, auto);
+    grid-template-columns: minmax(0, 1fr) auto;
     grid-template-areas:
-        "codigo data fornecedor estado"
-        "resumo resumo destino destino";
+        "codigo estado"
+        "data fornecedor"
+        "resumo resumo"
+        "destino destino";
+    align-items: center;
+    min-height: 0;
+    row-gap: 3px;
+    column-gap: 8px;
 }
 
 .pagina-fornecedores-unificada .fornecedores-coluna-direita .fornecedor-pedido-cabecalho .admin-encomenda-linha.fornecedor-pedido-linha-cabecalho {
-    grid-template-columns: minmax(78px, .8fr) minmax(84px, .8fr) minmax(96px, 1fr) minmax(86px, auto);
+    grid-template-columns: minmax(0, 1fr) auto;
     grid-template-areas:
-        "codigo data fornecedor estado"
-        "resumo resumo resumo resumo";
-    row-gap: 4px;
+        "codigo estado"
+        "data fornecedor"
+        "resumo resumo";
+    row-gap: 3px;
     column-gap: 8px;
 }
 
 .pagina-fornecedores-unificada .fornecedores-coluna-direita .fornecedor-pedido-linha-cabecalho .admin-encomenda-codigo {
     grid-area: codigo;
-    font-size: 16px;
+    font-size: 15px;
+    line-height: 1.15;
 }
 
 .pagina-fornecedores-unificada .fornecedores-coluna-direita .fornecedor-pedido-linha-cabecalho .admin-encomenda-data {
     grid-area: data;
-    font-size: 13px;
+    font-size: 12px;
+    line-height: 1.15;
 }
 
 .pagina-fornecedores-unificada .fornecedores-coluna-direita .fornecedor-pedido-fornecedor-nome {
     grid-area: fornecedor;
-    font-size: 15px;
+    justify-self: end;
+    font-size: 13px;
+    line-height: 1.15;
 }
 
 .pagina-fornecedores-unificada .fornecedores-coluna-direita .fornecedor-pedido-resumo {
     grid-area: resumo;
     max-width: 100%;
-    font-size: 12px;
+    font-size: 11px;
     line-height: 1.2;
 }
 
