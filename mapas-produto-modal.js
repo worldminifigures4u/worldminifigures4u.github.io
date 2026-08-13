@@ -775,6 +775,11 @@ function formatarDataVendaMapa(encomenda) {
     return Number.isNaN(data.getTime()) ? "—" : data.toLocaleDateString("pt-PT");
 }
 
+function vendaCanceladaMapa(encomenda) {
+    const estado = normalizarTextoProdutoMapa(encomenda?.estado);
+    return estado === "cancelado" || estado === "cancelada";
+}
+
 function renderizarHistoricoVendasMapa(conteudo, produto, encomendas) {
     if (!conteudo) return;
     const linhas = obterLinhasVendaProdutoMapa(produto, encomendas);
@@ -821,10 +826,11 @@ function renderizarHistoricoVendasMapa(conteudo, produto, encomendas) {
     tabela.append(thead, tbody);
     conteudo.appendChild(tabela);
 
-    const totalUnidades = linhas.reduce((soma, linha) => soma + linha.quantidade, 0);
+    const linhasValidas = linhas.filter(linha => !vendaCanceladaMapa(linha.encomenda));
+    const totalUnidades = linhasValidas.reduce((soma, linha) => soma + linha.quantidade, 0);
     const resumo = document.createElement("p");
     resumo.className = "mapas-produto-ajuda-media";
-    resumo.textContent = `${linhas.length} encomenda(s) · ${totalUnidades} unidade(s) vendida(s)`;
+    resumo.textContent = `${linhasValidas.length} encomenda(s) · ${totalUnidades} unidade(s) vendida(s)`;
     conteudo.appendChild(resumo);
 }
 
