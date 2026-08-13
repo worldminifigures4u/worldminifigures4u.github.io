@@ -1290,7 +1290,7 @@ window.AdminEncomendaVista = (function () {
     function emitirFaturaMoloniEmSegundoPlano(encomenda, opcoes = {}) {
         const codigo = encomenda.codigo_encomenda || "";
         setTimeout(async () => {
-            hooks.definirStatus(`A emitir fatura-recibo Moloni para ${codigo}...`);
+            hooks.definirStatus(`A emitir fatura-recibo Moloni para ${codigo}...`, "processando");
             try {
                 if (!encomenda.data_pagamento) {
                     try {
@@ -1329,7 +1329,7 @@ window.AdminEncomendaVista = (function () {
             const codigo = encomenda.codigo_encomenda || "";
             if (!window.confirm(`Emitir fatura-recibo Moloni para a encomenda ${codigo}?`)) return;
             botao.disabled = true;
-            hooks.definirStatus(`A emitir fatura-recibo Moloni para ${codigo}...`);
+            hooks.definirStatus(`A emitir fatura-recibo Moloni para ${codigo}...`, "processando");
             try {
                 const fatura = await emitirFaturaMoloni(encomenda, { forcarEmissao: true });
                 if (fatura?.sucesso) {

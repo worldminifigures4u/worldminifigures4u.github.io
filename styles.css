@@ -453,6 +453,7 @@ body{
         }
 
         .msg-sucesso { color: #28a745; }
+        .msg-processando { color: var(--cor-acao-principal, #ffc107); }
         .msg-erro { color: #ff4d4d; }
 
         .texto-principal{

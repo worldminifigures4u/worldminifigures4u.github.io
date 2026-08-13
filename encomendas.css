@@ -1352,6 +1352,7 @@ body.pagina-encomendas-admin{
         }
 
         .admin-encomendas > .wallapop-status.msg-sucesso{ color:#28a745; }
+        .admin-encomendas > .wallapop-status.msg-processando{ color:var(--cor-acao-principal, #ffc107); }
         .admin-encomendas > .wallapop-status.msg-erro{ color:#ff4d4d; }
 
         @media(max-width:760px){

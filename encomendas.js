@@ -61,11 +61,14 @@ function obterNomeTituloEncomendaAdmin(encomenda) {
     return AdminEncomendaVista.obterNomeTituloEncomenda(encomenda);
 }
 
-function definirStatusEncomendas(texto, erro = false) {
+function definirStatusEncomendas(texto, estado = false) {
     const status = document.getElementById('status-encomendas-admin');
+    const erro = estado === true || estado === 'erro';
+    const processando = estado === 'processando';
     status.textContent = texto || '';
     status.classList.toggle('msg-erro', erro);
-    status.classList.toggle('msg-sucesso', Boolean(texto) && !erro);
+    status.classList.toggle('msg-processando', Boolean(texto) && processando);
+    status.classList.toggle('msg-sucesso', Boolean(texto) && !erro && !processando);
     if (texto) {
         status.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     }
