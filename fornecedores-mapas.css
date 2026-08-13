@@ -1729,11 +1729,19 @@ body.pagina-mapas-admin > main.fornecedores-admin {
     margin-top: 0;
 }
 
-.pagina-fornecedores-unificada .fornecedor-selecionados-bloco .fornecedor-selecionados-titulo {
-    margin: 0;
+.pagina-fornecedores-unificada .fornecedor-selecionados-cabecalho {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    flex-wrap: wrap;
     padding: 10px 12px;
     border-bottom: 1px solid #333;
     background: #151515;
+}
+
+.pagina-fornecedores-unificada .fornecedor-selecionados-bloco .fornecedor-selecionados-titulo {
+    margin: 0;
     color: #fff;
     font-size: 14px;
     text-align: center;

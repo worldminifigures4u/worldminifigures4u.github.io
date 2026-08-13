@@ -2561,7 +2561,7 @@ function atualizarTotalFigurasEncomendaFornecedor() {
     const alvo = document.getElementById("fornecedor-total-figuras-encomenda");
     if (!alvo || !estaPaginaFornecedoresUnificada()) return;
     alvo.textContent = obterTextoTotalFigurasEncomendaFornecedor();
-    alvo.hidden = fornecedorSelecao.length === 0;
+    alvo.hidden = false;
 }
 
 function atualizarResumoEncomendaFornecedor(opcoes = {}) {
