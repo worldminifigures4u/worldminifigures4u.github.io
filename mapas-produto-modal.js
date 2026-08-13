@@ -336,9 +336,156 @@ function obterExtensaoEditorProdutoMapa() {
     return extensao && typeof extensao === "object" ? extensao : null;
 }
 
+function obterEstadoFornecedorEdicaoMapa(valor) {
+    if (valor && typeof valor === "object" && !Array.isArray(valor)) {
+        const estado = String(valor.estado || valor.marcacao || valor.status || "").trim();
+        if (estado) return estado;
+        const historico = obterHistoricoFornecedorMapa(valor);
+        if (historico.length) {
+            const ultimo = historico[historico.length - 1];
+            const tipo = normalizarTipoHistoricoFornecedorMapa(ultimo.tipo);
+            if (tipo === "os" || tipo === "encomendada_os") return "OS";
+            if (tipo === "ex") return "EX";
+            if (tipo === "encomendada") return "Encomendada";
+            if (tipo === "solicitada") return "Solicitada";
+        }
+        return "";
+    }
+    return String(valor ?? "").trim();
+}
+
+function obterNomesFornecedoresFallbackMapa(produto) {
+    return Object.keys(obterObjetoFornecedoresProdutoMapa(produto))
+        .map((nome) => String(nome || "").trim())
+        .filter(Boolean)
+        .sort((a, b) => a.localeCompare(b, "pt", { sensitivity: "base" }));
+}
+
+function criarBlocoFornecedorFallbackMapa(form, id, rotulo, valor) {
+    let historicoAtual = obterHistoricoFornecedorMapa(valor).map((item) => ({
+        tipo: item.tipo,
+        data: item.data || null
+    }));
+
+    const bloco = document.createElement("div");
+    bloco.className = "mapas-produto-campo mapas-produto-fornecedor-historico";
+
+    const cabecalho = document.createElement("div");
+    cabecalho.className = "mapas-produto-fornecedor-cabecalho";
+    const titulo = document.createElement("strong");
+    titulo.className = "mapas-produto-fornecedor-titulo";
+    titulo.textContent = rotulo;
+    cabecalho.appendChild(titulo);
+
+    const botaoLimpar = document.createElement("button");
+    botaoLimpar.type = "button";
+    botaoLimpar.className = "mapas-produto-fornecedor-limpar-historico";
+    botaoLimpar.textContent = "Limpar histórico";
+    botaoLimpar.disabled = !historicoAtual.length;
+    cabecalho.appendChild(botaoLimpar);
+    bloco.appendChild(cabecalho);
+
+    const lista = document.createElement("ul");
+    lista.className = "fornecedor-historico-lista";
+
+    const label = document.createElement("label");
+    label.setAttribute("for", id);
+    label.className = "mapas-produto-fornecedor-marcacao-atual";
+    label.textContent = "Marcação atual";
+    const input = document.createElement("input");
+    input.id = id;
+    input.name = id;
+    input.type = "text";
+    input.value = obterEstadoFornecedorEdicaoMapa(valor);
+    input.placeholder = "OS, EX, Solicitada, Encomendada ou vazio";
+    input.dataset.historicoEditado = "0";
+    input.dataset.historicoLimpo = "0";
+    input.dataset.historicoJson = JSON.stringify(historicoAtual);
+    label.appendChild(input);
+
+    const sincronizarHistoricoInput = () => {
+        input.dataset.historicoEditado = "1";
+        input.dataset.historicoLimpo = historicoAtual.length ? "0" : "1";
+        input.dataset.historicoJson = JSON.stringify(historicoAtual);
+        botaoLimpar.disabled = !historicoAtual.length;
+    };
+
+    const renderizarLista = () => {
+        lista.replaceChildren();
+        if (!historicoAtual.length) {
+            const vazio = document.createElement("li");
+            vazio.className = "fornecedor-historico-vazio";
+            vazio.textContent = "Sem histórico de encomendas neste fornecedor.";
+            lista.appendChild(vazio);
+            return;
+        }
+        historicoAtual.forEach((item, indice) => {
+            const li = document.createElement("li");
+            li.className = `fornecedor-historico-item tipo-${item.tipo || "info"}`;
+            const data = document.createElement("span");
+            data.className = "fornecedor-historico-data";
+            data.textContent = formatarDataFornecedorLeituraMapa(item.data) || "sem data";
+            const estado = document.createElement("span");
+            estado.className = "fornecedor-historico-estado";
+            estado.textContent = rotuloHistoricoFornecedorLeituraMapa(item.tipo);
+            const apagar = document.createElement("button");
+            apagar.type = "button";
+            apagar.className = "fornecedor-historico-apagar";
+            apagar.setAttribute("aria-label", `Apagar linha ${rotuloHistoricoFornecedorLeituraMapa(item.tipo)}`);
+            apagar.title = "Apagar esta linha";
+            apagar.textContent = "×";
+            apagar.addEventListener("click", () => {
+                const rotuloLinha = `${formatarDataFornecedorLeituraMapa(item.data) || "sem data"} - ${rotuloHistoricoFornecedorLeituraMapa(item.tipo)}`;
+                if (!window.confirm(`Apagar esta linha do histórico de ${rotulo}?\n\n${rotuloLinha}\n\nSó fica definitivo ao guardar o produto.`)) {
+                    return;
+                }
+                historicoAtual = historicoAtual.filter((_, i) => i !== indice);
+                sincronizarHistoricoInput();
+                renderizarLista();
+            });
+            li.append(data, estado, apagar);
+            lista.appendChild(li);
+        });
+    };
+
+    botaoLimpar.addEventListener("click", () => {
+        if (!window.confirm(`Limpar o histórico de ${rotulo} nesta ficha?\n\nA marcação atual também fica vazia. Só fica definitivo ao guardar o produto.`)) {
+            return;
+        }
+        historicoAtual = [];
+        input.value = "";
+        sincronizarHistoricoInput();
+        renderizarLista();
+    });
+
+    renderizarLista();
+    bloco.append(lista, label);
+    form.appendChild(bloco);
+    return input;
+}
+
+function montarSecaoFornecedoresFallbackMapa(campos, produto) {
+    const nomes = obterNomesFornecedoresFallbackMapa(produto);
+    if (!nomes.length) return;
+
+    const fornecedores = obterObjetoFornecedoresProdutoMapa(produto);
+    const secao = criarSecaoEdicaoMapa("Fornecedores", "mapas-produto-secao-media mapas-produto-fornecedores mapas-produto-fornecedores-fallback");
+    nomes.forEach((nome) => {
+        const chave = normalizarChaveFornecedorMapa(nome);
+        const valor = fornecedores[nome];
+        const input = criarBlocoFornecedorFallbackMapa(secao, `mapas-editar-fornecedor-fallback-${chave}`, nome, valor);
+        input.dataset.fornecedorNome = nome;
+        input.dataset.fornecedorChave = chave;
+    });
+    campos.appendChild(secao);
+}
+
 function montarSecoesExtraEdicaoMapa(campos, produto, modo) {
     const extensao = obterExtensaoEditorProdutoMapa();
-    if (!extensao || typeof extensao.montarSecao !== "function") return;
+    if (!extensao || typeof extensao.montarSecao !== "function") {
+        montarSecaoFornecedoresFallbackMapa(campos, produto, modo);
+        return;
+    }
     extensao.montarSecao(campos, produto, modo, {
         criarSecaoEdicaoMapa,
         criarInputEdicaoMapa,
@@ -348,10 +495,45 @@ function montarSecoesExtraEdicaoMapa(campos, produto, modo) {
     });
 }
 
+function lerFornecedoresFallbackMapa(produtoAtual) {
+    const fornecedores = { ...obterObjetoFornecedoresProdutoMapa(produtoAtual) };
+    document.querySelectorAll(".mapas-produto-fornecedores-fallback input[data-fornecedor-chave]").forEach((input) => {
+        const nome = String(input.dataset.fornecedorNome || "").trim();
+        if (!nome) return;
+        const chaveNormalizada = normalizarChaveFornecedorMapa(nome);
+        const chaveExistente = Object.keys(fornecedores).find((chave) =>
+            normalizarChaveFornecedorMapa(chave) === chaveNormalizada
+        );
+        const chave = chaveExistente || nome;
+        const anterior = fornecedores[chave];
+        const estado = String(input.value || "").trim();
+        let historico = Array.isArray(anterior?.historico) ? anterior.historico : [];
+        if (input.dataset.historicoEditado === "1") {
+            try {
+                historico = JSON.parse(input.dataset.historicoJson || "[]");
+            } catch (_) {
+                historico = [];
+            }
+        }
+        if (anterior && typeof anterior === "object" && !Array.isArray(anterior)) {
+            if (estado || historico.length) {
+                fornecedores[chave] = { ...anterior, estado, historico };
+            } else {
+                delete fornecedores[chave];
+            }
+        } else if (estado) {
+            fornecedores[chave] = estado;
+        } else {
+            delete fornecedores[chave];
+        }
+    });
+    return fornecedores;
+}
+
 function lerFornecedoresEditadosMapa(produtoAtual) {
     const extensao = obterExtensaoEditorProdutoMapa();
     if (!extensao || typeof extensao.lerFornecedores !== "function") {
-        return produtoAtual?.fornecedores || {};
+        return lerFornecedoresFallbackMapa(produtoAtual);
     }
     return extensao.lerFornecedores(produtoAtual) || {};
 }
