@@ -100,8 +100,21 @@ body.pagina-fornecedores-admin{ margin:0; padding-left:0; padding-right:0; paddi
             gap:16px;
             min-width:0;
         }
-        .pagina-fornecedores-unificada .fornecedores-painel-mapa{ order:1; min-width:0; }
-        .pagina-fornecedores-unificada .fornecedores-painel-lista{ order:2; min-width:0; }
+        .pagina-fornecedores-unificada .fornecedores-painel-mapa{
+            grid-column:1;
+            grid-row:1 / span 2;
+            min-width:0;
+        }
+        .pagina-fornecedores-unificada .fornecedor-selecionados-bloco{
+            grid-column:2;
+            grid-row:1;
+            min-width:0;
+        }
+        .pagina-fornecedores-unificada .fornecedores-painel-lista{
+            grid-column:2;
+            grid-row:2;
+            min-width:0;
+        }
         .pagina-fornecedores-unificada .fornecedores-admin{ max-width:1680px; min-width:0; }
         .pagina-fornecedores-unificada .fornecedores-painel,
         .pagina-fornecedores-unificada .fornecedor-pedidos.admin-encomendas-lista,
@@ -622,7 +635,11 @@ body.pagina-fornecedores-admin{ margin:0; padding-left:0; padding-right:0; paddi
             .fornecedores-grid{ grid-template-columns:1fr; }
             .pagina-fornecedores-unificada .fornecedores-grid-unificada{ grid-template-columns:minmax(0,1fr); }
             .pagina-fornecedores-unificada .fornecedores-painel-mapa,
-            .pagina-fornecedores-unificada .fornecedores-painel-lista{ order:initial; }
+            .pagina-fornecedores-unificada .fornecedor-selecionados-bloco,
+            .pagina-fornecedores-unificada .fornecedores-painel-lista{
+                grid-column:auto;
+                grid-row:auto;
+            }
         }
         @media (max-width:900px){
             .fornecedor-lista-controles:not(.fornecedor-controles-unificados){ grid-template-columns:1fr; }
@@ -1646,7 +1663,7 @@ body.pagina-mapas-admin > main.fornecedores-admin {
 }
 
 .pagina-fornecedores-unificada .fornecedor-selecionados-bloco {
-    margin-top: 16px;
+    margin-top: 0;
 }
 
 .pagina-fornecedores-unificada .fornecedor-selecionados-bloco .fornecedor-selecionados-titulo {
