@@ -435,7 +435,7 @@ function criarSelectFiltroMarcacaoFornecedor(valorAtual) {
     select.className = "fornecedor-filtro-marcacao-fornecedor-linha";
     const opcaoMesma = document.createElement("option");
     opcaoMesma.value = "mesmo";
-    opcaoMesma.textContent = "Encomenda";
+    opcaoMesma.textContent = "Fornecedor selecionado";
     select.appendChild(opcaoMesma);
     fornecedorFichas
         .filter(ficha => ficha.ativo)
@@ -547,7 +547,7 @@ function renderizarFornecedoresGuardados() {
         selectMarcacao.replaceChildren();
         const opcaoMesma = document.createElement("option");
         opcaoMesma.value = "mesmo";
-        opcaoMesma.textContent = "Encomenda";
+        opcaoMesma.textContent = "Fornecedor selecionado";
         selectMarcacao.appendChild(opcaoMesma);
         fornecedorFichas
             .filter(ficha => ficha.ativo)
