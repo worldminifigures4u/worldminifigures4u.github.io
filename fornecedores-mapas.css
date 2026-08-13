@@ -877,21 +877,6 @@ body.pagina-mapas-admin > main.fornecedores-admin {
     color: var(--fp-texto-suave);
 }
 
-.pagina-fornecedores-unificada .fornecedor-resumo-encomenda-unidades {
-    box-sizing: border-box;
-    min-height: var(--fp-altura-campo);
-    height: var(--fp-altura-campo);
-    padding: 7px 12px;
-    border: var(--fp-borda-ui);
-    border-radius: var(--fp-raio-ui);
-    background: var(--fp-fundo-campo);
-    color: var(--fp-cor-destaque);
-    font-size: var(--fp-fonte-ui);
-    font-weight: 700;
-    line-height: 1.15;
-    box-shadow: none;
-}
-
 .pagina-fornecedores-unificada .fornecedor-selecionados-titulo {
     font-size: var(--fp-fonte-ui);
     font-weight: 800;
@@ -1060,25 +1045,6 @@ body.pagina-mapas-admin > main.fornecedores-admin {
     flex: 0 0 auto;
     text-align: center;
     white-space: nowrap;
-}
-
-.fornecedor-resumo-encomenda-unidades {
-    display: inline-flex;
-    align-items: center;
-    box-sizing: border-box;
-    min-height: 36px;
-    height: 36px;
-    flex: 0 0 auto;
-    padding: 7px 12px;
-    border: 1px solid #444;
-    border-radius: 6px;
-    background: #242424;
-    color: #ffc400;
-    font-size: 12px;
-    font-weight: 800;
-    line-height: 1.15;
-    white-space: nowrap;
-    box-shadow: none;
 }
 
 .pagina-mapas-admin .fornecedor-resultados {

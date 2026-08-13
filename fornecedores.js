@@ -2544,13 +2544,6 @@ function obterTotalUnidadesEncomendaFornecedor() {
     return fornecedorSelecao.reduce((soma, item) => soma + Math.max(0, Number(item.quantidade || 0)), 0);
 }
 
-function obterTextoTotalUnidadesEncomendaFornecedor() {
-    const unidades = obterTotalUnidadesEncomendaFornecedor();
-    if (unidades === 0) return "Encomenda actual: 0 unidades";
-    if (unidades === 1) return "Encomenda actual: 1 unidade";
-    return `Encomenda actual: ${unidades} unidades`;
-}
-
 function obterTextoTotalFigurasEncomendaFornecedor() {
     const total = obterTotalUnidadesEncomendaFornecedor();
     if (total === 1) return "1 figura";
@@ -2597,16 +2590,6 @@ function atualizarResumoEncomendaFornecedor(opcoes = {}) {
         alvo.querySelector(".fornecedor-resumo-encomenda-centro")?.appendChild(texto) || alvo.appendChild(texto);
     }
     texto.textContent = textoProdutos;
-
-    const centro = alvo.querySelector(".fornecedor-resumo-encomenda-centro");
-    let unidades = document.getElementById("fornecedor-resumo-encomenda-unidades");
-    if (!unidades) {
-        unidades = document.createElement("span");
-        unidades.id = "fornecedor-resumo-encomenda-unidades";
-        unidades.className = "fornecedor-resumo-encomenda-unidades";
-        (centro || alvo).appendChild(unidades);
-    }
-    unidades.textContent = obterTextoTotalUnidadesEncomendaFornecedor();
 
     let acoesLimite = document.getElementById("fornecedor-resumo-limite-acoes");
     if (!acoesLimite) {
