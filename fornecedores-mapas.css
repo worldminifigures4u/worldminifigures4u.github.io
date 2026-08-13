@@ -655,6 +655,8 @@ body.pagina-fornecedores-admin{ margin:0; padding-left:0; padding-right:0; paddi
                 grid-column:1;
             }
             .fornecedor-produto,.fornecedor-item,.fornecedor-pedido-linha,.fornecedor-edicao-grid,.fornecedor-ficha-form{ grid-template-columns:1fr; }
+            .pagina-fornecedores-unificada .fornecedor-controles-unificados .fornecedor-filtros-marcacao-bloco{ grid-template-columns:minmax(0,1fr) 42px; }
+            .pagina-fornecedores-unificada .fornecedor-controles-unificados .fornecedor-filtro-marcacao-linha{ grid-template-columns:minmax(0,1fr) minmax(0,1fr) 42px; }
             .fornecedor-edicao-produto{
                 grid-template-columns:48px minmax(0,1fr);
             }
@@ -724,6 +726,30 @@ body.pagina-mapas-admin > main.fornecedores-admin {
 
 .pagina-fornecedores-unificada .fornecedor-controles-unificados .fornecedor-filtros-marcacao-bloco {
     grid-column: 2 / -1;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 42px;
+    align-items: end;
+    gap: 8px;
+    width: 100%;
+}
+
+.pagina-fornecedores-unificada .fornecedor-controles-unificados .fornecedor-filtros-marcacao {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 8px;
+    width: 100%;
+}
+
+.pagina-fornecedores-unificada .fornecedor-controles-unificados .fornecedor-filtro-marcacao-linha {
+    display: grid;
+    grid-template-columns: minmax(220px, 1fr) minmax(170px, .75fr) 42px;
+    align-items: end;
+    gap: 8px;
+    min-width: 0;
+    width: 100%;
+}
+
+.pagina-fornecedores-unificada .fornecedor-controles-unificados .fornecedor-filtro-marcacao-linha .fornecedor-controle-filtro-compacto {
     width: 100%;
 }
 
