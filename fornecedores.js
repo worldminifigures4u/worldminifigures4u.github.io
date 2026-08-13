@@ -800,6 +800,21 @@ function itensPedidoFornecedorCorrespondem(itemA, itemB) {
     return Boolean(nomeA && nomeB && nomeA === nomeB);
 }
 
+function itemPedidoCorrespondeProdutoFornecedor(item, produto) {
+    if (!item || !produto) return false;
+
+    const idProduto = String(produto.id || "").trim();
+    const idItem = String(item.id || item.produto_id || "").trim();
+    if (idProduto && idItem && idProduto === idItem) return true;
+
+    if (correspondeReferenciaListaFornecedor(item.sku, produto.sku)) return true;
+    if (correspondeReferenciaListaFornecedor(item.referencia, produto.referencia)) return true;
+
+    const nomeItem = normalizarFornecedor(item.nome);
+    const nomeProduto = normalizarFornecedor(produto.nome);
+    return Boolean(nomeItem && nomeProduto && nomeItem === nomeProduto);
+}
+
 function encontrarItemPedidoFornecedor(itens, selecionado) {
     if (!selecionado) return null;
     return (itens || []).find(item => itensPedidoFornecedorCorrespondem(item, selecionado)) || null;
@@ -2346,7 +2361,7 @@ function obterPendentesDetalhadosProdutoFornecedor(produto) {
     const detalhes = [];
     const total = pedidosAbertos.reduce((soma, pedido) => {
         return soma + pedido.itens.reduce((subtotal, item) => {
-            if (!itensPedidoFornecedorCorrespondem(item, produto)) return subtotal;
+            if (!itemPedidoCorrespondeProdutoFornecedor(item, produto)) return subtotal;
             const quantidade = Math.max(0, Number(item.quantidade || 0));
             const recebido = Math.max(0, Number(item.recebido || 0));
             const pendente = Math.max(0, quantidade - recebido);
