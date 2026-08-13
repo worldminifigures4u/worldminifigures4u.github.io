@@ -848,6 +848,23 @@ function itemPedidoCorrespondeProdutoFornecedor(item, produto) {
     return correspondeReferenciaListaFornecedor(item.referencia, produto.referencia);
 }
 
+function corrigirItemPedidoComCatalogoFornecedor(item) {
+    if (!item) return item;
+    const produtos = obterProdutosPorReferenciaFornecedor(item.referencia);
+    if (produtos.length !== 1) return item;
+    const produto = produtos[0];
+    return {
+        ...item,
+        id: String(produto.id || item.id || ""),
+        nome: String(produto.nome || item.nome || ""),
+        sku: String(produto.sku || item.sku || ""),
+        referencia: String(produto.referencia || item.referencia || ""),
+        tema: String(produto.tema || item.tema || ""),
+        subtema: String(produto.subtema || item.subtema || ""),
+        imagens: Array.isArray(produto.imagens) && produto.imagens.length ? produto.imagens : item.imagens
+    };
+}
+
 function encontrarItemPedidoFornecedor(itens, selecionado) {
     if (!selecionado) return null;
     return (itens || []).find(item => itensPedidoFornecedorCorrespondem(item, selecionado)) || null;
@@ -882,7 +899,7 @@ function fundirItemPedidoFornecedor(destino, origem) {
 function consolidarItensPedidoFornecedor(itens) {
     const consolidados = [];
     (itens || []).forEach(item => {
-        const serializado = serializarItemPedidoFornecedor(item);
+        const serializado = corrigirItemPedidoComCatalogoFornecedor(serializarItemPedidoFornecedor(item));
         if (!serializado) return;
         const existente = consolidados.find(atual => itensPedidoFornecedorCorrespondem(atual, serializado));
         if (!existente) {
@@ -890,6 +907,7 @@ function consolidarItensPedidoFornecedor(itens) {
             return;
         }
         fundirItemPedidoFornecedor(existente, serializado);
+        Object.assign(existente, corrigirItemPedidoComCatalogoFornecedor(existente));
     });
     return consolidados;
 }
