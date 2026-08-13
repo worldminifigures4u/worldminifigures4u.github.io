@@ -2982,3 +2982,89 @@ body.mapas-produto-modal-aberto {
     margin:0;
     color:#bbb;
 }
+
+.pagina-fornecedores-unificada .fornecedores-coluna-direita .fornecedor-pedidos.admin-encomendas-lista {
+    display: grid;
+    gap: 8px;
+}
+
+.pagina-fornecedores-unificada .fornecedores-coluna-direita .fornecedor-pedido-card {
+    overflow: visible;
+}
+
+.pagina-fornecedores-unificada .fornecedores-coluna-direita .fornecedor-pedido-cabecalho {
+    display: block;
+    min-height: 0;
+    padding: 9px 10px;
+    overflow: visible;
+}
+
+.pagina-fornecedores-unificada .fornecedores-coluna-direita .fornecedor-pedido-cabecalho .admin-encomenda-linha.fornecedor-pedido-linha-cabecalho,
+.pagina-fornecedores-unificada .fornecedores-coluna-direita .fornecedor-pedido-cabecalho .admin-encomenda-linha.fornecedor-pedido-linha-cabecalho.com-destino-selecao {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas:
+        "codigo estado"
+        "data fornecedor"
+        "resumo resumo"
+        "destino destino";
+    gap: 4px 10px;
+    align-items: center;
+    min-height: 0;
+    overflow: visible;
+}
+
+.pagina-fornecedores-unificada .fornecedores-coluna-direita .fornecedor-pedido-linha-cabecalho .admin-encomenda-codigo {
+    grid-area: codigo;
+    min-width: 0;
+    font-size: 14px;
+    line-height: 1.15;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.pagina-fornecedores-unificada .fornecedores-coluna-direita .fornecedor-pedido-linha-cabecalho .admin-encomenda-data {
+    grid-area: data;
+    min-width: 0;
+    font-size: 11px;
+    line-height: 1.15;
+    color: #cfcfcf;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.pagina-fornecedores-unificada .fornecedores-coluna-direita .fornecedor-pedido-fornecedor-nome {
+    grid-area: fornecedor;
+    justify-self: end;
+    min-width: 0;
+    max-width: 100%;
+    font-size: 12px;
+    line-height: 1.15;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.pagina-fornecedores-unificada .fornecedores-coluna-direita .fornecedor-pedido-resumo {
+    grid-area: resumo;
+    min-width: 0;
+    font-size: 11px;
+    line-height: 1.25;
+    white-space: normal;
+    overflow: visible;
+}
+
+.pagina-fornecedores-unificada .fornecedores-coluna-direita .fornecedor-pedido-linha-cabecalho .estado-encomenda {
+    grid-area: estado;
+    justify-self: end;
+    max-width: 140px;
+    min-height: 22px;
+    padding: 3px 7px;
+    font-size: 11px;
+    line-height: 1.1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
