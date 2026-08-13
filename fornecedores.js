@@ -21,6 +21,7 @@ var fornecedorFichas = carregarFichasFornecedores();
 var fornecedorMapaOrdenacao = { coluna: "stock", direcao: "asc" };
 var fornecedorPedidoItensOrdenacao = { coluna: "nome", direcao: "asc" };
 var fornecedorResumoEncomenda = { totalFiltrados: 0, apresentados: 0, limite: 250 };
+var FORNECEDOR_RESULTADOS_INCREMENTO = 250;
 var fornecedorRenderizacaoPendente = null;
 var FORNECEDOR_LISTA_MAX_CARACTERES = 30000;
 var FORNECEDOR_LISTA_MAX_LINHAS = 500;
@@ -2597,6 +2598,35 @@ function atualizarResumoEncomendaFornecedor(opcoes = {}) {
     }
     texto.textContent = textoProdutos;
 
+    let acoesLimite = document.getElementById("fornecedor-resumo-limite-acoes");
+    if (!acoesLimite) {
+        acoesLimite = document.createElement("span");
+        acoesLimite.id = "fornecedor-resumo-limite-acoes";
+        acoesLimite.className = "fornecedor-resumo-limite-acoes";
+        const mostrarMais = document.createElement("button");
+        mostrarMais.type = "button";
+        mostrarMais.id = "fornecedor-mostrar-mais";
+        mostrarMais.className = "fornecedor-resumo-limite-botao";
+        mostrarMais.textContent = "Mostrar mais";
+        mostrarMais.addEventListener("click", () => {
+            fornecedorResumoEncomenda.limite += FORNECEDOR_RESULTADOS_INCREMENTO;
+            renderizarResultadosFornecedor();
+        });
+        const mostrarTodos = document.createElement("button");
+        mostrarTodos.type = "button";
+        mostrarTodos.id = "fornecedor-mostrar-todos";
+        mostrarTodos.className = "fornecedor-resumo-limite-botao";
+        mostrarTodos.textContent = "Mostrar todos";
+        mostrarTodos.addEventListener("click", () => {
+            fornecedorResumoEncomenda.limite = Number.MAX_SAFE_INTEGER;
+            renderizarResultadosFornecedor();
+        });
+        acoesLimite.append(mostrarMais, mostrarTodos);
+        alvo.querySelector(".fornecedor-resumo-encomenda-centro")?.appendChild(acoesLimite) || alvo.appendChild(acoesLimite);
+    }
+    const temMais = totalFiltrados > limite;
+    acoesLimite.hidden = !temMais;
+
     let unidades = document.getElementById("fornecedor-resumo-encomenda-unidades");
     if (!unidades) {
         unidades = document.createElement("span");
@@ -2790,7 +2820,7 @@ function criarTheadTabelaEncomendaFornecedor() {
 
 function renderizarResultadosFornecedorTabelaEncomenda(caixa, resultados) {
     caixa.classList.add("fornecedor-resultados-mapa");
-    const limiteResultados = 250;
+    const limiteResultados = Math.max(FORNECEDOR_RESULTADOS_INCREMENTO, Number(fornecedorResumoEncomenda.limite || FORNECEDOR_RESULTADOS_INCREMENTO));
 
     atualizarResumoEncomendaFornecedor({
         totalFiltrados: resultados.length,
