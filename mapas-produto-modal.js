@@ -383,17 +383,9 @@ async function enriquecerMediaProdutoMapa(produto) {
 
 function produtoCorrespondeItemRececaoMapa(produto, item) {
     if (!produto || !item) return false;
-    const produtoId = String(produto.id || "").trim();
-    const itemId = String(item.id || item.id_produto || item.produto_id || "").trim();
-    const produtoSku = String(produto.sku || "").trim().toUpperCase();
-    const itemSku = String(item.sku || "").trim().toUpperCase();
     const produtoRef = String(produto.referencia || "").trim().toUpperCase();
     const itemRef = String(item.referencia || "").trim().toUpperCase();
-    return Boolean(
-        (produtoId && itemId && produtoId === itemId)
-        || (produtoSku && itemSku && produtoSku === itemSku)
-        || (produtoRef && itemRef && produtoRef === itemRef)
-    );
+    return Boolean(produtoRef && itemRef && produtoRef === itemRef);
 }
 
 /** Vendas: só ID (preferência) ou SKU. Nunca referência (ex. "Personalizado" partilhada). */
