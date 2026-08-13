@@ -330,8 +330,7 @@ function montarLinhaEdicaoProdutoFornecedor(pedido, item, indice) {
 
 function linhaEdicaoContemReferenciaFornecedor(linha, referencia) {
     if (!referencia) return false;
-    return correspondeReferenciaListaFornecedor(linha.dataset.referencia, referencia)
-        || correspondeReferenciaListaFornecedor(linha.dataset.sku, referencia);
+    return correspondeReferenciaListaFornecedor(linha.dataset.referencia, referencia);
 }
 
 function aplicarListaFinalNaEdicaoFornecedor() {
@@ -724,6 +723,12 @@ async function guardarEdicaoPedidoFornecedor(evento) {
         status.classList.remove('status-aviso', 'status-sucesso', 'status-neutro');
         status.classList.add('status-erro');
         status.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+        return;
+    }
+
+    if (typeof confirmarReferenciasItensFornecedor === "function"
+        && !confirmarReferenciasItensFornecedor(itens, "guardar a encomenda")) {
+        definirStatusEdicaoFornecedor(status, "aviso", "Guardar cancelado para rever as referencias.");
         return;
     }
 

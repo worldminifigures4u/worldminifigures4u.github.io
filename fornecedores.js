@@ -84,7 +84,7 @@ function garantirFornecedoresProdutoModal() {
 function garantirFornecedoresEdicaoPedido() {
     if (window.FornecedoresEdicaoPedido) return Promise.resolve();
     if (!__fornecedoresEdicaoPromessa) {
-        __fornecedoresEdicaoPromessa = carregarScriptAdmin("fornecedores-edicao-pedido.js?v=20260812-popup-listas-fornecedor");
+        __fornecedoresEdicaoPromessa = carregarScriptAdmin("fornecedores-edicao-pedido.js?v=20260813-referencia-segura");
     }
     return __fornecedoresEdicaoPromessa;
 }
@@ -92,7 +92,7 @@ function garantirFornecedoresEdicaoPedido() {
 function garantirFornecedoresPrintReceive() {
     if (window.FornecedoresPrintReceive) return Promise.resolve();
     if (!__fornecedoresPrintPromessa) {
-        __fornecedoresPrintPromessa = carregarScriptAdmin("fornecedores-print-receive.js?v=20260721-split");
+        __fornecedoresPrintPromessa = carregarScriptAdmin("fornecedores-print-receive.js?v=20260813-referencia-segura");
     }
     return __fornecedoresPrintPromessa;
 }
@@ -785,34 +785,67 @@ function obterChaveItemPedidoFornecedor(item) {
 
 function itensPedidoFornecedorCorrespondem(itemA, itemB) {
     if (!itemA || !itemB) return false;
+    return correspondeReferenciaListaFornecedor(itemA.referencia, itemB.referencia);
+}
 
-    const idA = String(itemA.id || '').trim();
-    const idB = String(itemB.id || '').trim();
-    if (idA && idB && idA === idB) return true;
+function obterProdutosPorReferenciaFornecedor(referencia, listaProdutos = fornecedorProdutos) {
+    const referenciaNormalizada = normalizarReferenciaListaFornecedor(referencia);
+    if (!referenciaNormalizada) return [];
+    return (listaProdutos || []).filter(produto =>
+        correspondeReferenciaListaFornecedor(produto?.referencia, referencia)
+    );
+}
 
-    if (correspondeReferenciaListaFornecedor(itemA.referencia, itemB.referencia)) return true;
-    if (correspondeReferenciaListaFornecedor(itemA.referencia, itemB.sku)) return true;
-    if (correspondeReferenciaListaFornecedor(itemA.sku, itemB.referencia)) return true;
-    if (correspondeReferenciaListaFornecedor(itemA.sku, itemB.sku)) return true;
+function validarReferenciasItensFornecedor(itens, opcoes = {}) {
+    const avisos = [];
+    const verificarCatalogo = opcoes.catalogo !== false;
+    const refsNaLista = new Map();
 
-    const nomeA = normalizarFornecedor(itemA.nome);
-    const nomeB = normalizarFornecedor(itemB.nome);
-    return Boolean(nomeA && nomeB && nomeA === nomeB);
+    (itens || []).forEach(item => {
+        const nome = String(item?.nome || "Produto sem nome").trim();
+        const referencia = String(item?.referencia || "").trim();
+        const chave = normalizarReferenciaListaFornecedor(referencia);
+        if (!chave) {
+            avisos.push(`${nome}: sem Ref.`);
+            return;
+        }
+        if (!refsNaLista.has(chave)) refsNaLista.set(chave, []);
+        refsNaLista.get(chave).push(nome);
+
+        if (verificarCatalogo) {
+            const produtos = obterProdutosPorReferenciaFornecedor(referencia);
+            if (!produtos.length) {
+                avisos.push(`${referencia}: nao existe no catalogo`);
+            } else if (produtos.length > 1) {
+                const nomes = produtos.map(produto => produto.nome || "sem nome").slice(0, 4).join(", ");
+                avisos.push(`${referencia}: existe em ${produtos.length} fichas (${nomes})`);
+            }
+        }
+    });
+
+    refsNaLista.forEach((nomes, referencia) => {
+        const unicos = [...new Set(nomes)];
+        if (unicos.length > 1) {
+            avisos.push(`${referencia}: repetida na selecao (${unicos.slice(0, 4).join(", ")})`);
+        }
+    });
+
+    return avisos;
+}
+
+function confirmarReferenciasItensFornecedor(itens, contexto = "continuar") {
+    const avisos = validarReferenciasItensFornecedor(itens);
+    if (!avisos.length) return true;
+    const linhas = avisos.slice(0, 8).join("\n- ");
+    const extra = avisos.length > 8 ? `\n... e mais ${avisos.length - 8}` : "";
+    return window.confirm(
+        `Atenção: encontrei possível problema nas referências antes de ${contexto}.\n\n- ${linhas}${extra}\n\nOK para continuar mesmo assim. Cancelar para rever.`
+    );
 }
 
 function itemPedidoCorrespondeProdutoFornecedor(item, produto) {
     if (!item || !produto) return false;
-
-    const idProduto = String(produto.id || "").trim();
-    const idItem = String(item.id || item.produto_id || "").trim();
-    if (idProduto && idItem && idProduto === idItem) return true;
-
-    if (correspondeReferenciaListaFornecedor(item.sku, produto.sku)) return true;
-    if (correspondeReferenciaListaFornecedor(item.referencia, produto.referencia)) return true;
-
-    const nomeItem = normalizarFornecedor(item.nome);
-    const nomeProduto = normalizarFornecedor(produto.nome);
-    return Boolean(nomeItem && nomeProduto && nomeItem === nomeProduto);
+    return correspondeReferenciaListaFornecedor(item.referencia, produto.referencia);
 }
 
 function encontrarItemPedidoFornecedor(itens, selecionado) {
@@ -1960,18 +1993,13 @@ function obterProdutoAtual(id) {
 
 function obterProdutoParaPedidoFornecedor(item, listaProdutos = fornecedorProdutos) {
     if (!item) return null;
-    const porId = listaProdutos.find(produto => String(produto.id) === String(item.id));
-    if (porId) return porId;
+    const porReferencia = obterProdutosPorReferenciaFornecedor(item.referencia, listaProdutos);
+    if (porReferencia.length === 1) return porReferencia[0];
 
-    const nomeItem = normalizarFornecedor(item.nome);
-    return listaProdutos.find(produto => {
-        const mesmoNome = nomeItem && normalizarFornecedor(produto.nome) === nomeItem;
-        const mesmaReferencia = correspondeReferenciaListaFornecedor(item.referencia, produto.referencia)
-            || correspondeReferenciaListaFornecedor(item.referencia, produto.sku)
-            || correspondeReferenciaListaFornecedor(item.sku, produto.referencia)
-            || correspondeReferenciaListaFornecedor(item.sku, produto.sku);
-        return mesmaReferencia || mesmoNome;
-    }) || null;
+    if (!String(item.referencia || "").trim()) {
+        return listaProdutos.find(produto => String(produto.id) === String(item.id)) || null;
+    }
+    return null;
 }
 
 function obterProdutosEncomendaClienteFornecedor(encomenda) {
@@ -2181,10 +2209,8 @@ function correspondeReferenciaListaFornecedor(referenciaA, referenciaB) {
 
 function encontrarProdutoListaFinalFornecedor(referencia) {
     if (!String(referencia || "").trim()) return null;
-    return fornecedorProdutos.find(item =>
-        correspondeReferenciaListaFornecedor(referencia, item.referencia)
-        || correspondeReferenciaListaFornecedor(referencia, item.sku)
-    ) || null;
+    const produtos = obterProdutosPorReferenciaFornecedor(referencia);
+    return produtos.length === 1 ? produtos[0] : null;
 }
 
 function criarItemFornecedorAPartirListaFinal(analisada, produto = null) {
@@ -3228,6 +3254,7 @@ async function criarPedidoFornecedor() {
         preco: Number(item.preco_custo ?? item.custo ?? 0) || 0,
         imagens: item.imagens || []
     }));
+    if (!confirmarReferenciasItensFornecedor(itens, "criar a encomenda")) return;
 
     try {
         definirStatusFornecedor('A criar encomenda no Supabase...');
@@ -3419,7 +3446,8 @@ function definirEventoFornecedorNoProduto(produto, fornecedorNome, tipo, data = 
 }
 
 function chaveItemHistoricoPedidoFornecedor(item) {
-    return String(item?.id || item?.sku || item?.referencia || "").trim().toUpperCase();
+    return normalizarReferenciaListaFornecedor(item?.referencia)
+        || String(item?.id || item?.sku || "").trim().toUpperCase();
 }
 
 function itemPedidoEstavaOsFornecedor(item) {
@@ -3571,16 +3599,17 @@ async function sincronizarPrecoCompraProdutosFornecedor(itens) {
         const precoCompra = Math.max(0, Number(item?.preco_custo ?? item?.preco_compra ?? item?.custo ?? 0) || 0);
         if (precoCompra <= 0) return;
         const produtoAtual = obterProdutoParaPedidoFornecedor(item);
-        const chave = String(produtoAtual?.id || item?.id || item?.sku || item?.referencia || "").trim();
+        const chave = normalizarReferenciaListaFornecedor(produtoAtual?.referencia || item?.referencia);
         if (!chave) return;
         porProduto.set(chave, { item, produtoAtual, precoCompra });
     });
 
     let atualizados = 0;
     for (const { item, produtoAtual, precoCompra } of porProduto.values()) {
+        if (!produtoAtual?.id) continue;
         const { data, error } = await fornecedoresClient.rpc("atualizar_preco_compra_produto_admin", {
-            p_id: produtoAtual?.id || item.id || null,
-            p_sku: produtoAtual?.sku || item.sku || null,
+            p_id: produtoAtual.id,
+            p_sku: null,
             p_referencia: produtoAtual?.referencia || item.referencia || null,
             p_preco_compra: precoCompra
         });
@@ -3588,9 +3617,7 @@ async function sincronizarPrecoCompraProdutosFornecedor(itens) {
         const idAtualizado = String(data?.id || produtoAtual?.id || item.id || "");
         fornecedorProdutos = fornecedorProdutos.map(produto => {
             const mesmoId = idAtualizado && String(produto.id || "") === idAtualizado;
-            const mesmoSku = !idAtualizado && String(produto.sku || "").trim().toUpperCase() === String(item.sku || "").trim().toUpperCase();
-            const mesmaRef = !idAtualizado && String(produto.referencia || "").trim().toUpperCase() === String(item.referencia || "").trim().toUpperCase();
-            return mesmoId || mesmoSku || mesmaRef ? { ...produto, preco_compra: precoCompra } : produto;
+            return mesmoId ? { ...produto, preco_compra: precoCompra } : produto;
         });
         fornecedorSelecao = fornecedorSelecao.map(produto =>
             String(produto.id || "") === idAtualizado ? { ...produto, preco_compra: precoCompra } : produto
@@ -3735,6 +3762,7 @@ async function adicionarSelecaoAoPedidoFornecedor(id) {
         definirStatusFornecedor('Escolha primeiro os produtos e depois junte a selecao a esta encomenda.', true);
         return;
     }
+    if (!confirmarReferenciasItensFornecedor(fornecedorSelecao, "juntar a selecao a uma encomenda")) return;
     const total = fornecedorSelecao.reduce((soma, item) => soma + Math.max(1, Math.floor(Number(item.quantidade) || 1)), 0);
     if (!window.confirm(`Adicionar ${total} unidade(s) selecionada(s) a ${obterTextoCodigoPedidoFornecedor(pedido)}?`)) return;
 

@@ -176,15 +176,49 @@ async function receberPedidoFornecedor(id) {
     const idPedido = String(id || '');
     if (!idPedido || receberStockFornecedorEmCurso.has(idPedido)) return;
 
-    const pedido = fornecedorPedidos.find(item => String(item.id) === idPedido);
+    let pedido = fornecedorPedidos.find(item => String(item.id) === idPedido);
     if (!pedido) return;
+    if (typeof confirmarReferenciasItensFornecedor === "function"
+        && !confirmarReferenciasItensFornecedor(pedido.itens || [], "receber stock")) {
+        definirStatusFornecedor("Rececao cancelada para rever as referencias.", true);
+        return;
+    }
     const linhas = Array.from(document.querySelectorAll(`.fornecedor-recebido-input[data-pedido="${CSS.escape(idPedido)}"]`));
-    const rececoes = linhas.map(input => {
+    const quantidadesPorReferencia = new Map();
+    linhas.forEach(input => {
         const produtoId = input.dataset.produto;
         const itemPedido = (pedido.itens || []).find(item => String(item.id) === String(produtoId));
+        const chave = normalizarReferenciaListaFornecedor(itemPedido?.referencia);
+        if (!chave) return;
         const pendente = Math.max(0, Number(itemPedido?.quantidade || 0) - Number(itemPedido?.recebido || 0));
         const quantidade = Math.min(pendente, Math.max(0, Math.floor(Number(input.value) || 0)));
-        return { produto_id: produtoId, quantidade };
+        if (quantidade > 0) quantidadesPorReferencia.set(chave, quantidade);
+    });
+    const itensCorrigidos = (pedido.itens || []).map(item => {
+        const produtoAtual = obterProdutoParaPedidoFornecedor(item);
+        if (!produtoAtual?.id || String(produtoAtual.id) === String(item.id)) return item;
+        return {
+            ...item,
+            id: produtoAtual.id,
+            nome: produtoAtual.nome || item.nome,
+            sku: produtoAtual.sku || item.sku || "",
+            referencia: produtoAtual.referencia || item.referencia || "",
+            tema: produtoAtual.tema || item.tema || "",
+            subtema: produtoAtual.subtema || item.subtema || "",
+            imagens: produtoAtual.imagens || item.imagens || []
+        };
+    });
+    const corrigiuIds = itensCorrigidos.some((item, indice) => String(item.id || "") !== String((pedido.itens || [])[indice]?.id || ""));
+    if (corrigiuIds) {
+        definirStatusFornecedor("A corrigir ligacao dos produtos pela referencia antes de receber stock...");
+        pedido = await atualizarPedidoFornecedor(idPedido, { itens: itensCorrigidos });
+    }
+    const rececoes = (pedido.itens || []).map(itemPedido => {
+        const chave = normalizarReferenciaListaFornecedor(itemPedido?.referencia);
+        const pendente = Math.max(0, Number(itemPedido?.quantidade || 0) - Number(itemPedido?.recebido || 0));
+        const quantidade = Math.min(pendente, Math.max(0, Math.floor(Number(quantidadesPorReferencia.get(chave) || 0))));
+        const produtoAtual = obterProdutoParaPedidoFornecedor(itemPedido);
+        return { produto_id: produtoAtual?.id || itemPedido.id, quantidade };
     }).filter(item => item.quantidade > 0);
     if (!rececoes.length) {
         definirStatusFornecedor('Indique pelo menos uma quantidade recebida (dentro do pendente).', true);
