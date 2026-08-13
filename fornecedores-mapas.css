@@ -1735,8 +1735,91 @@ body.pagina-mapas-admin > main.fornecedores-admin {
     border-bottom: 1px solid #333;
     background: #151515;
     color: #fff;
-    font-size: 16px;
+    font-size: 14px;
     text-align: center;
+}
+
+.pagina-fornecedores-unificada .fornecedores-coluna-direita .fornecedores-cabecalho-lista {
+    margin-bottom: 10px;
+}
+
+.pagina-fornecedores-unificada .fornecedores-coluna-direita .fornecedores-cabecalho-titulo-filtro {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(140px, 180px);
+    gap: 10px;
+    align-items: center;
+    width: 100%;
+}
+
+.pagina-fornecedores-unificada .fornecedores-coluna-direita #fornecedores-encomendas {
+    margin: 0;
+    min-width: 0;
+    font-size: 18px;
+    line-height: 1.15;
+}
+
+.pagina-fornecedores-unificada .fornecedores-coluna-direita .fornecedor-filtro-estado-select {
+    width: 100%;
+    min-height: 36px;
+    padding: 8px 28px 8px 12px;
+    font-size: 13px;
+}
+
+.pagina-fornecedores-unificada .fornecedores-coluna-direita .fornecedor-pedido-cabecalho {
+    padding: 8px 10px;
+}
+
+.pagina-fornecedores-unificada .fornecedores-coluna-direita .fornecedor-pedido-cabecalho .admin-encomenda-linha.fornecedor-pedido-linha-cabecalho,
+.pagina-fornecedores-unificada .fornecedores-coluna-direita .fornecedor-pedido-cabecalho .admin-encomenda-linha.fornecedor-pedido-linha-cabecalho.com-destino-selecao {
+    grid-template-columns: minmax(78px, .8fr) minmax(84px, .8fr) minmax(96px, 1fr) minmax(86px, auto);
+    grid-template-areas:
+        "codigo data fornecedor estado"
+        "resumo resumo destino destino";
+}
+
+.pagina-fornecedores-unificada .fornecedores-coluna-direita .fornecedor-pedido-cabecalho .admin-encomenda-linha.fornecedor-pedido-linha-cabecalho {
+    grid-template-columns: minmax(78px, .8fr) minmax(84px, .8fr) minmax(96px, 1fr) minmax(86px, auto);
+    grid-template-areas:
+        "codigo data fornecedor estado"
+        "resumo resumo resumo resumo";
+    row-gap: 4px;
+    column-gap: 8px;
+}
+
+.pagina-fornecedores-unificada .fornecedores-coluna-direita .fornecedor-pedido-linha-cabecalho .admin-encomenda-codigo {
+    grid-area: codigo;
+    font-size: 16px;
+}
+
+.pagina-fornecedores-unificada .fornecedores-coluna-direita .fornecedor-pedido-linha-cabecalho .admin-encomenda-data {
+    grid-area: data;
+    font-size: 13px;
+}
+
+.pagina-fornecedores-unificada .fornecedores-coluna-direita .fornecedor-pedido-fornecedor-nome {
+    grid-area: fornecedor;
+    font-size: 15px;
+}
+
+.pagina-fornecedores-unificada .fornecedores-coluna-direita .fornecedor-pedido-resumo {
+    grid-area: resumo;
+    max-width: 100%;
+    font-size: 12px;
+    line-height: 1.2;
+}
+
+.pagina-fornecedores-unificada .fornecedores-coluna-direita .fornecedor-pedido-linha-cabecalho .estado-encomenda {
+    grid-area: estado;
+    font-size: 11px;
+    padding: 2px 6px;
+}
+
+.pagina-fornecedores-unificada .fornecedores-coluna-direita .fornecedor-pedido-destino-selecao {
+    grid-area: destino;
+    justify-self: end;
+    max-width: 100%;
+    font-size: 10px;
+    padding: 2px 6px;
 }
 
 .pagina-fornecedores-unificada .fornecedor-selecionados-bloco .fornecedor-selecionados {
