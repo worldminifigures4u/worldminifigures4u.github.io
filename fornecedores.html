@@ -19,7 +19,7 @@
     <link rel="apple-touch-icon" href="fp-ring-favicon-192.png">
     <link rel="stylesheet" href="styles.css?v=20260721-rodape-800">
     <link rel="stylesheet" href="styles-admin.css?v=20260717-portes-cab">
-    <link rel="stylesheet" href="fornecedores-mapas.css?v=20260812-escolher-encomenda-juntar">
+    <link rel="stylesheet" href="fornecedores-mapas.css?v=20260813-filtros-marcacao-linhas">
     <link rel="stylesheet" href="admin-cliente.css?v=20260812-fornecedores-ficha-cliente" media="print" data-async-css>
     <link rel="stylesheet" href="styles-tema.css?v=20260721-sem-underline" media="print" data-async-css>
     <link rel="stylesheet" href="admin-imagem.css?v=20260628-css-split-admin-imagem" media="print" data-async-css>
@@ -103,13 +103,13 @@
                             <button type="button" id="btn-editar-fornecedor-selecionado" class="fornecedor-btn-editar-ficha">Editar</button>
                         </span>
                     </label>
-                    <label class="fornecedor-controle-filtro-compacto" for="fornecedor-filtro-marcacao-fornecedor" title="Fornecedor de onde ler a marcação OS/EX">
+                    <label class="fornecedor-controle-filtro-compacto" for="fornecedor-filtro-marcacao-fornecedor" title="Fornecedor de onde ler a marcação OS/EX" hidden>
                         Marcação de
                         <select id="fornecedor-filtro-marcacao-fornecedor">
                             <option value="mesmo">Encomenda</option>
                         </select>
                     </label>
-                    <label class="fornecedor-controle-filtro-compacto" for="fornecedor-filtro-marcacao" title="Disponivel inclui vazio, Encomendada e Solicitada (exclui OS/EX)">
+                    <label class="fornecedor-controle-filtro-compacto" for="fornecedor-filtro-marcacao" title="Disponivel inclui vazio, Encomendada e Solicitada (exclui OS/EX)" hidden>
                         Marcação
                         <select id="fornecedor-filtro-marcacao">
                             <option value="todos">Todos</option>
@@ -119,6 +119,10 @@
                             <option value="disponivel" selected>Disponivel</option>
                         </select>
                     </label>
+                    <div class="fornecedor-filtros-marcacao-bloco" aria-label="Filtros de marcacao por fornecedor">
+                        <div id="fornecedor-filtros-marcacao" class="fornecedor-filtros-marcacao"></div>
+                        <button type="button" id="btn-adicionar-filtro-marcacao" class="fornecedor-btn-filtro-marcacao" title="Adicionar linha de filtro">+</button>
+                    </div>
                     <label class="fornecedor-controle-filtro-compacto" for="fornecedor-filtro-top" title="Filtro Top">
                         Top
                         <select id="fornecedor-filtro-top">
@@ -217,7 +221,7 @@
     </div>
 <script src="supabase-cdn.js?v=20260711-leve" defer></script>
 <script src="app-config.js?v=20260730-fecho-fundo" defer></script>
-    <script src="fornecedores.js?v=20260813-historico-sem-canceladas" defer></script>
+    <script src="fornecedores.js?v=20260813-filtros-marcacao-linhas" defer></script>
 <script src="campo-limpar.js?v=20260720-sem-x-cliente" defer></script>
 <script src="inline-listeners-base.js?v=20260725-logo-hq" defer></script>
 <script src="inline-listeners-admin.js?v=20260713-r25" defer></script>

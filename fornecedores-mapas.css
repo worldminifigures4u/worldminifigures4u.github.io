@@ -128,6 +128,55 @@ body.pagina-fornecedores-admin{ margin:0; padding-left:0; padding-right:0; paddi
             min-width:0;
             font-size:inherit;
         }
+        .pagina-fornecedores-unificada .fornecedor-filtros-marcacao-bloco{
+            flex:0 1 auto;
+            display:flex;
+            align-items:flex-end;
+            gap:6px;
+            min-width:0;
+            max-width:100%;
+        }
+        .pagina-fornecedores-unificada .fornecedor-filtros-marcacao{
+            display:flex;
+            align-items:flex-end;
+            gap:6px;
+            flex-wrap:wrap;
+            min-width:0;
+        }
+        .pagina-fornecedores-unificada .fornecedor-filtro-marcacao-linha{
+            display:flex;
+            align-items:flex-end;
+            gap:6px;
+            min-width:0;
+        }
+        .pagina-fornecedores-unificada .fornecedor-filtro-marcacao-linha .fornecedor-controle-filtro-compacto{
+            display:grid;
+            gap:5px;
+        }
+        .pagina-fornecedores-unificada .fornecedor-btn-filtro-marcacao,
+        .pagina-fornecedores-unificada .fornecedor-btn-remover-filtro-marcacao{
+            width:42px;
+            min-width:42px;
+            height:42px;
+            border:var(--fp-borda-ui, 1px solid #444);
+            border-radius:var(--fp-raio-ui, 6px);
+            background:var(--fp-fundo-campo, #242424);
+            color:var(--fp-texto-campo, #fff);
+            font-size:18px;
+            font-weight:900;
+            cursor:pointer;
+        }
+        .pagina-fornecedores-unificada .fornecedor-btn-filtro-marcacao{
+            border-color:var(--fp-cor-destaque, #ffc400);
+            color:var(--fp-cor-destaque, #ffc400);
+        }
+        .pagina-fornecedores-unificada .fornecedor-btn-remover-filtro-marcacao{
+            color:#ff6b6b;
+        }
+        .pagina-fornecedores-unificada .fornecedor-btn-remover-filtro-marcacao:disabled{
+            opacity:.35;
+            cursor:not-allowed;
+        }
         .pagina-fornecedores-unificada .fornecedor-controle-filtro-compacto select{
             width:auto;
             max-width:100%;
