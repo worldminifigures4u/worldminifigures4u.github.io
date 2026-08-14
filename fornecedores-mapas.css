@@ -1716,21 +1716,45 @@ body.pagina-mapas-admin > main.fornecedores-admin {
     table-layout: fixed;
 }
 
+.pagina-fornecedores-unificada .fornecedor-selecionados .fornecedor-tabela-encomenda th,
+.pagina-fornecedores-unificada .fornecedor-selecionados .fornecedor-tabela-encomenda td {
+    padding-left: 4px;
+    padding-right: 4px;
+}
+
 .pagina-fornecedores-unificada .fornecedor-selecionados .fornecedor-tabela-encomenda .mapas-col-foto {
-    width: 52px;
+    width: 44px;
     min-width: 0;
 }
 
+.pagina-fornecedores-unificada .fornecedor-selecionados .fornecedor-tabela-encomenda .mapas-col-foto .fornecedor-produto-foto,
+.pagina-fornecedores-unificada .fornecedor-selecionados .fornecedor-tabela-encomenda .mapas-col-foto .fornecedor-miniatura {
+    width: 40px;
+    height: 40px;
+}
+
 .pagina-fornecedores-unificada .fornecedor-selecionados .fornecedor-tabela-encomenda .mapas-col-ref {
-    width: 74px;
+    width: 66px;
 }
 
 .pagina-fornecedores-unificada .fornecedor-selecionados .fornecedor-tabela-encomenda .mapas-col-qtd {
-    width: 58px;
+    width: 50px;
+}
+
+.pagina-fornecedores-unificada .fornecedor-selecionados .fornecedor-tabela-encomenda .mapa-quantidade-input {
+    width: 42px;
+    padding-left: 0;
+    padding-right: 0;
 }
 
 .pagina-fornecedores-unificada .fornecedor-selecionados .fornecedor-tabela-encomenda .mapas-col-remover {
-    width: 44px;
+    width: 34px;
+}
+
+.pagina-fornecedores-unificada .fornecedor-selecionados .fornecedor-remover-linha {
+    width: 28px;
+    min-width: 28px;
+    height: 28px;
 }
 
 .pagina-fornecedores-unificada .fornecedor-selecionados-cabecalho {
