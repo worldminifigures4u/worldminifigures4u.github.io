@@ -2320,6 +2320,16 @@ function obterAlturaCabecalhoFixoFornecedor() {
     return header ? header.getBoundingClientRect().height : 0;
 }
 
+function ajustarAlturaScrollResultadosFornecedor() {
+    const caixaResultados = document.getElementById("fornecedor-resultados");
+    if (!caixaResultados || !estaPaginaFornecedoresUnificada()) return;
+
+    const margemFundo = 14;
+    const topoResultados = caixaResultados.getBoundingClientRect().top;
+    const alturaDisponivel = Math.max(260, window.innerHeight - topoResultados - margemFundo);
+    caixaResultados.style.maxHeight = `${Math.floor(alturaDisponivel)}px`;
+}
+
 function ajustarVistaEncomendaFornecedor() {
     if (!estaPaginaFornecedoresUnificada()) return;
 
@@ -2341,6 +2351,8 @@ function ajustarVistaEncomendaFornecedor() {
     const scrollY = Math.max(0, Math.min(scrollParaControles, scrollParaTitulo));
 
     window.scrollTo({ top: scrollY, behavior: "smooth" });
+    window.setTimeout(ajustarAlturaScrollResultadosFornecedor, 180);
+    window.setTimeout(ajustarAlturaScrollResultadosFornecedor, 360);
 }
 
 function obterCaixaScrollQuantidadeMapa(input) {
@@ -4437,3 +4449,4 @@ ligarEventoFornecedor('btn-atualizar-catalogo-fornecedor', 'click', async () => 
     }
 });
 window.addEventListener('load', iniciarFornecedoresAdmin);
+window.addEventListener('resize', ajustarAlturaScrollResultadosFornecedor);
