@@ -2320,39 +2320,26 @@ function obterAlturaCabecalhoFixoFornecedor() {
     return header ? header.getBoundingClientRect().height : 0;
 }
 
-function ajustarAlturaScrollResultadosFornecedor() {
-    const caixaResultados = document.getElementById("fornecedor-resultados");
-    if (!caixaResultados || !estaPaginaFornecedoresUnificada()) return;
-
-    const margemFundo = 14;
-    const topoResultados = caixaResultados.getBoundingClientRect().top;
-    const alturaDisponivel = Math.max(260, window.innerHeight - topoResultados - margemFundo);
-    caixaResultados.style.maxHeight = `${Math.floor(alturaDisponivel)}px`;
-}
-
 function ajustarVistaEncomendaFornecedor() {
     if (!estaPaginaFornecedoresUnificada()) return;
 
     const caixaResultados = document.getElementById("fornecedor-resultados");
     if (caixaResultados) caixaResultados.scrollTop = 0;
 
-    const controles = document.querySelector(".fornecedor-controles-unificados");
-    const tituloSelecionados = document.querySelector(".fornecedor-selecionados-titulo");
-    if (!controles || !tituloSelecionados) return;
+    if (!caixaResultados) return;
 
     const headerAltura = obterAlturaCabecalhoFixoFornecedor();
     const margemTopo = 8;
     const margemFundo = 20;
 
-    const controlesTop = controles.getBoundingClientRect().top + window.scrollY;
-    const tituloBottom = tituloSelecionados.getBoundingClientRect().bottom + window.scrollY;
-    const scrollParaControles = controlesTop - headerAltura - margemTopo;
-    const scrollParaTitulo = tituloBottom - window.innerHeight + margemFundo;
-    const scrollY = Math.max(0, Math.min(scrollParaControles, scrollParaTitulo));
+    const resultadosRect = caixaResultados.getBoundingClientRect();
+    const resultadosTop = resultadosRect.top + window.scrollY;
+    const resultadosBottom = resultadosRect.bottom + window.scrollY;
+    const scrollParaVerTopo = resultadosTop - headerAltura - margemTopo;
+    const scrollParaVerFundo = resultadosBottom - window.innerHeight + margemFundo;
+    const scrollY = Math.max(0, Math.min(scrollParaVerTopo, Math.max(0, scrollParaVerFundo)));
 
     window.scrollTo({ top: scrollY, behavior: "smooth" });
-    window.setTimeout(ajustarAlturaScrollResultadosFornecedor, 180);
-    window.setTimeout(ajustarAlturaScrollResultadosFornecedor, 360);
 }
 
 function obterCaixaScrollQuantidadeMapa(input) {
@@ -4449,4 +4436,3 @@ ligarEventoFornecedor('btn-atualizar-catalogo-fornecedor', 'click', async () => 
     }
 });
 window.addEventListener('load', iniciarFornecedoresAdmin);
-window.addEventListener('resize', ajustarAlturaScrollResultadosFornecedor);
