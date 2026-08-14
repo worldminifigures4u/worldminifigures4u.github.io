@@ -3137,6 +3137,13 @@ body.mapas-produto-modal-aberto {
     white-space: nowrap;
 }
 
+.pagina-fornecedores-unificada .fornecedor-resumo-encomenda-centro .fornecedor-btn-ajustar-vista {
+    align-self: center;
+    min-height: 30px;
+    padding: 5px 12px;
+    font-size: 12px;
+}
+
 .pagina-fornecedores-unificada .fornecedor-resumo-limite-botao:hover,
 .pagina-fornecedores-unificada .fornecedor-resumo-limite-botao:focus-visible {
     background: #ffc400;

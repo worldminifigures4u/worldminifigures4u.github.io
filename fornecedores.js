@@ -2617,10 +2617,13 @@ function atualizarResumoEncomendaFornecedor(opcoes = {}) {
         acoesLimite.append(mostrarMais, mostrarTodos);
     }
     const centro = alvo.querySelector(".fornecedor-resumo-encomenda-centro");
+    const botaoAjustar = document.getElementById("btn-fornecedor-ajustar-vista");
     if (centro) {
         centro.appendChild(acoesLimite);
+        if (botaoAjustar) centro.appendChild(botaoAjustar);
     } else {
         alvo.appendChild(acoesLimite);
+        if (botaoAjustar) alvo.appendChild(botaoAjustar);
     }
     const temMais = totalFiltrados > limite;
     acoesLimite.hidden = !temMais;
