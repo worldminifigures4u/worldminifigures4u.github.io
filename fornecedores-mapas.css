@@ -731,6 +731,10 @@ body.pagina-mapas-admin > main.fornecedores-admin {
     gap: 8px;
 }
 
+.pagina-fornecedores-unificada .fornecedor-controles-unificados [hidden] {
+    display: none !important;
+}
+
 .pagina-fornecedores-unificada .fornecedor-controles-unificados .fornecedor-seletor-label {
     grid-area: fornecedor;
     max-width: none;
