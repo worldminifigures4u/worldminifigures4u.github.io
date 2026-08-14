@@ -476,7 +476,7 @@ function renderizarLinhasFiltroMarcacaoFornecedor(filtros = null) {
 
         const grupoFornecedor = document.createElement("label");
         grupoFornecedor.className = "fornecedor-controle-filtro-compacto";
-        grupoFornecedor.textContent = "Fornecedor";
+        grupoFornecedor.textContent = "Ver marcacao em";
         grupoFornecedor.appendChild(criarSelectFiltroMarcacaoFornecedor(filtro.fornecedor));
 
         const grupoMarcacao = document.createElement("label");
