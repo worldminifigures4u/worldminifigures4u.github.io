@@ -2175,8 +2175,8 @@ body.pagina-mapas-admin > main.fornecedores-admin {
 
 .pagina-fornecedores-unificada .mapas-produto-nome-botao:hover,
 .pagina-fornecedores-unificada .mapas-produto-nome-botao:focus-visible {
-    color: #ffc400;
-    text-decoration: none;
+    color: #ffc400 !important;
+    text-decoration: none !important;
 }
 
 .mapas-produto-modal[hidden] {
