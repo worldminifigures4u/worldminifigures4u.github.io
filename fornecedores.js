@@ -3065,7 +3065,6 @@ function renderizarSelecionadosFornecedorTabela(caixa) {
         ["Ref.", "mapas-col-ref", "ref"],
         ["Stock", "mapas-col-stock", "stock"],
         ["Qtd", "mapas-col-qtd", "qtd"],
-        ["Preço", "mapas-col-preco", "preco"],
         ["", "mapas-col-remover", ""],
     ].forEach(([texto, classe, coluna]) => {
         const th = document.createElement("th");
@@ -3131,22 +3130,6 @@ function renderizarSelecionadosFornecedorTabela(caixa) {
         qtd.addEventListener("blur", () => definirQuantidadeFornecedor(atual.id, qtd.value));
         qtdCelula.appendChild(qtd);
         linha.appendChild(qtdCelula);
-
-        const precoCelula = document.createElement("td");
-        precoCelula.className = "mapas-col-preco";
-        const precoCustoInput = document.createElement("input");
-        precoCustoInput.type = "number";
-        precoCustoInput.min = "0";
-        precoCustoInput.step = "0.01";
-        precoCustoInput.inputMode = "decimal";
-        precoCustoInput.className = "mapa-quantidade-input mapa-preco-input";
-        precoCustoInput.dataset.semLimparCampo = "1";
-        precoCustoInput.value = Number(item.preco_custo ?? item.custo ?? 0).toFixed(2);
-        precoCustoInput.setAttribute("aria-label", `preço compra de ${atual.nome || "produto"}`);
-        precoCustoInput.addEventListener("change", () => definirPrecoCustoFornecedor(atual.id, precoCustoInput.value));
-        precoCustoInput.addEventListener("blur", () => definirPrecoCustoFornecedor(atual.id, precoCustoInput.value));
-        precoCelula.appendChild(precoCustoInput);
-        linha.appendChild(precoCelula);
 
         const removerCelula = document.createElement("td");
         removerCelula.className = "mapas-col-remover";

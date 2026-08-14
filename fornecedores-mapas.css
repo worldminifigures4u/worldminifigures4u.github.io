@@ -1706,6 +1706,34 @@ body.pagina-mapas-admin > main.fornecedores-admin {
     margin-top: 0;
 }
 
+.pagina-fornecedores-unificada .fornecedor-selecionados .fornecedor-tabela-wrapper-centro {
+    display: block;
+    overflow-x: hidden;
+}
+
+.pagina-fornecedores-unificada .fornecedor-selecionados .fornecedor-tabela-encomenda {
+    width: 100%;
+    table-layout: fixed;
+}
+
+.pagina-fornecedores-unificada .fornecedor-selecionados .fornecedor-tabela-encomenda .mapas-col-foto {
+    width: 52px;
+    min-width: 0;
+}
+
+.pagina-fornecedores-unificada .fornecedor-selecionados .fornecedor-tabela-encomenda .mapas-col-ref {
+    width: 74px;
+}
+
+.pagina-fornecedores-unificada .fornecedor-selecionados .fornecedor-tabela-encomenda .mapas-col-stock,
+.pagina-fornecedores-unificada .fornecedor-selecionados .fornecedor-tabela-encomenda .mapas-col-qtd {
+    width: 58px;
+}
+
+.pagina-fornecedores-unificada .fornecedor-selecionados .fornecedor-tabela-encomenda .mapas-col-remover {
+    width: 44px;
+}
+
 .pagina-fornecedores-unificada .fornecedor-selecionados-cabecalho {
     display: flex;
     align-items: center;
