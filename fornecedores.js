@@ -2554,6 +2554,17 @@ function atualizarTotalFigurasEncomendaFornecedor() {
     alvo.hidden = false;
 }
 
+function atualizarBotoesAcaoEncomendaFornecedor() {
+    if (!estaPaginaFornecedoresUnificada()) return;
+    const temSelecao = fornecedorSelecao.length > 0;
+    const botaoLimpar = document.getElementById("btn-limpar-fornecedor");
+    const botaoCriar = document.getElementById("btn-criar-fornecedor");
+    const botaoJuntar = document.getElementById("btn-juntar-selecao-fornecedor");
+    if (botaoLimpar) botaoLimpar.disabled = false;
+    if (botaoCriar) botaoCriar.disabled = false;
+    if (botaoJuntar) botaoJuntar.disabled = !temSelecao;
+}
+
 function atualizarResumoEncomendaFornecedor(opcoes = {}) {
     const alvo = document.getElementById("fornecedor-resumo-encomenda");
     if (!alvo || !estaPaginaFornecedoresUnificada()) return;
@@ -2629,6 +2640,7 @@ function atualizarResumoEncomendaFornecedor(opcoes = {}) {
     acoesLimite.hidden = !temMais;
 
     atualizarTotalFigurasEncomendaFornecedor();
+    atualizarBotoesAcaoEncomendaFornecedor();
     atualizarBotaoJuntarSelecaoFornecedor();
 }
 
@@ -3242,7 +3254,11 @@ function renderizarSelecionadosFornecedor() {
 }
 
 function limparSelecaoFornecedor() {
-    if (!fornecedorSelecao.length) return;
+    if (!fornecedorSelecao.length) {
+        definirStatusFornecedor('A lista ja esta vazia.');
+        atualizarResumoEncomendaFornecedor();
+        return;
+    }
     if (!window.confirm('Limpar todos os produtos da encomenda a fornecedor?')) return;
     fornecedorSelecao = [];
     guardarSelecaoFornecedor();
@@ -3682,16 +3698,16 @@ function atualizarBotaoJuntarSelecaoFornecedor() {
     let pedido = obterPedidoAlvoJuntarSelecaoFornecedor();
     const temSelecao = fornecedorSelecao.length > 0;
     const temPedidos = obterPedidosDisponiveisParaJuntarFornecedor().length > 0;
-    const podeJuntar = temSelecao && temPedidos;
+    const podeJuntar = temSelecao;
 
     botao.disabled = !podeJuntar;
 
     if (!temSelecao) {
         botao.title = "Selecione primeiro produtos na lista acima.";
     } else if (!temPedidos) {
-        botao.title = "Ainda nao existe encomenda a fornecedor onde juntar a selecao.";
+        botao.title = "Ainda nao existe encomenda a fornecedor onde juntar a seleção.";
     } else if (!pedido) {
-        botao.title = "Abra acima a encomenda existente onde pretende juntar a seleção.";
+        botao.title = "Escolher encomenda existente onde juntar a seleção.";
     } else {
         botao.title = `Juntar seleção à encomenda ${obterTextoCodigoPedidoFornecedor(pedido)}.`;
     }
@@ -3764,6 +3780,11 @@ function escolherPedidoParaJuntarSelecaoFornecedor() {
 }
 
 async function juntarSelecaoAEncomendaExistenteFornecedor() {
+    if (!fornecedorSelecao.length) {
+        definirStatusFornecedor('Escolha primeiro os produtos e depois junte a selecao a uma encomenda.', true);
+        atualizarResumoEncomendaFornecedor();
+        return;
+    }
     sincronizarPedidoAlvoJuntarSelecaoFornecedor();
     const escolhido = await escolherPedidoParaJuntarSelecaoFornecedor();
     const pedido = escolhido || obterPedidoAlvoJuntarSelecaoFornecedor();
