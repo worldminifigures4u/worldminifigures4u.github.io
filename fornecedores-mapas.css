@@ -721,11 +721,13 @@ body.pagina-mapas-admin > main.fornecedores-admin {
 
 .pagina-fornecedores-unificada .fornecedor-controles-unificados .fornecedor-seletor-label {
     grid-column: 1;
+    grid-row: 2;
     max-width: none;
 }
 
 .pagina-fornecedores-unificada .fornecedor-controles-unificados .fornecedor-filtros-marcacao-bloco {
     grid-column: 2 / -1;
+    grid-row: 2;
     display: grid;
     grid-template-columns: minmax(0, 1fr) 42px;
     align-items: end;
@@ -755,19 +757,17 @@ body.pagina-mapas-admin > main.fornecedores-admin {
 
 .pagina-fornecedores-unificada .fornecedor-controles-unificados label[for="fornecedor-filtro-top"] {
     grid-column: 1;
+    grid-row: 1;
 }
 
 .pagina-fornecedores-unificada .fornecedor-controles-unificados label[for="fornecedor-filtro-arquivado"] {
     grid-column: 2;
+    grid-row: 1;
 }
 
 .pagina-fornecedores-unificada .fornecedor-controles-unificados label[for="fornecedor-filtro-descontinuado"] {
     grid-column: 3;
-}
-
-.pagina-fornecedores-unificada .fornecedor-controles-unificados .fornecedor-btn-ajustar-vista {
-    grid-column: 4 / 6;
-    justify-self: start;
+    grid-row: 1;
 }
 
 .pagina-fornecedores-unificada {
