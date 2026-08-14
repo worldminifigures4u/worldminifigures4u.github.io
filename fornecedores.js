@@ -2893,6 +2893,7 @@ function renderizarResultadosFornecedorTabelaEncomenda(caixa, resultados) {
         input.className = "mapa-quantidade-input";
         input.setAttribute("aria-label", `Quantidade de ${atual.nome || "produto"}`);
         input.addEventListener("keydown", tratarTeclaQuantidadeMapa);
+        input.addEventListener("input", () => definirQuantidadeMapaFornecedor(atual, input.value));
         input.addEventListener("change", () => definirQuantidadeMapaFornecedor(atual, input.value));
         input.addEventListener("blur", () => definirQuantidadeMapaFornecedor(atual, input.value));
         ligarSelecaoLinhaQuantidadeMapa(input);
@@ -3146,7 +3147,10 @@ function renderizarSelecionadosFornecedorTabela(caixa) {
 
 function renderizarSelecionadosFornecedor() {
     const caixa = document.getElementById("fornecedor-selecionados");
-    if (!caixa) return;
+    if (!caixa) {
+        atualizarResumoEncomendaFornecedor();
+        return;
+    }
     caixa.replaceChildren();
 
     if (!fornecedorSelecao.length) {
