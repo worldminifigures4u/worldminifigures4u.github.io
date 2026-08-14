@@ -2544,9 +2544,7 @@ function obterTotalUnidadesEncomendaFornecedor() {
 }
 
 function obterTextoTotalFigurasEncomendaFornecedor() {
-    const total = obterTotalUnidadesEncomendaFornecedor();
-    if (total === 1) return "1 figura";
-    return `${total} figuras`;
+    return String(obterTotalUnidadesEncomendaFornecedor());
 }
 
 function atualizarTotalFigurasEncomendaFornecedor() {
@@ -2617,12 +2615,15 @@ function atualizarResumoEncomendaFornecedor(opcoes = {}) {
     }
     const centro = alvo.querySelector(".fornecedor-resumo-encomenda-centro");
     const botaoAjustar = document.getElementById("btn-fornecedor-ajustar-vista");
+    const totalFiguras = document.getElementById("fornecedor-total-figuras-encomenda");
     if (centro) {
         centro.appendChild(acoesLimite);
         if (botaoAjustar) centro.appendChild(botaoAjustar);
+        if (totalFiguras) centro.appendChild(totalFiguras);
     } else {
         alvo.appendChild(acoesLimite);
         if (botaoAjustar) alvo.appendChild(botaoAjustar);
+        if (totalFiguras) alvo.appendChild(totalFiguras);
     }
     const temMais = totalFiltrados > limite;
     acoesLimite.hidden = !temMais;

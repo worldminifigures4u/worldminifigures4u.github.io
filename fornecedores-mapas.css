@@ -1871,14 +1871,14 @@ body.pagina-mapas-admin > main.fornecedores-admin {
     padding: 2px 6px;
 }
 
-.pagina-fornecedores-unificada .fornecedor-selecionados-bloco .fornecedor-selecionados {
-    display: block;
+.pagina-fornecedores-unificada .fornecedor-acoes-encomenda-bloco {
     margin-top: 0;
-    padding: 8px 0 4px;
+    border: 1px solid #333;
+    border-radius: 8px;
     background: #101010;
 }
 
-.pagina-fornecedores-unificada .fornecedor-selecionados-bloco .fornecedor-acoes-encomenda {
+.pagina-fornecedores-unificada .fornecedor-acoes-encomenda-bloco .fornecedor-acoes-encomenda {
     display: flex;
     flex-wrap: wrap;
     justify-content: center;
@@ -1886,11 +1886,10 @@ body.pagina-mapas-admin > main.fornecedores-admin {
     gap: 10px;
     margin: 0;
     padding: 10px 12px 14px;
-    border-top: 1px solid #333;
     background: #101010;
 }
 
-.pagina-fornecedores-unificada .fornecedor-selecionados-bloco .fornecedor-acoes-encomenda .wallapop-botao {
+.pagina-fornecedores-unificada .fornecedor-acoes-encomenda-bloco .fornecedor-acoes-encomenda .wallapop-botao {
     flex: 1 1 150px;
     width: auto;
     min-width: 0;
@@ -1899,7 +1898,7 @@ body.pagina-mapas-admin > main.fornecedores-admin {
     font-size: 13px;
 }
 
-.pagina-fornecedores-unificada .fornecedor-selecionados-bloco .fornecedor-acoes-encomenda #btn-juntar-selecao-fornecedor {
+.pagina-fornecedores-unificada .fornecedor-acoes-encomenda-bloco .fornecedor-acoes-encomenda #btn-juntar-selecao-fornecedor {
     flex-basis: 220px;
     max-width: 100%;
     white-space: normal;
@@ -1907,7 +1906,7 @@ body.pagina-mapas-admin > main.fornecedores-admin {
     text-align: center;
 }
 
-.pagina-fornecedores-unificada .fornecedor-selecionados-bloco .fornecedor-acoes-encomenda #btn-juntar-selecao-fornecedor:disabled {
+.pagina-fornecedores-unificada .fornecedor-acoes-encomenda-bloco .fornecedor-acoes-encomenda #btn-juntar-selecao-fornecedor:disabled {
     opacity: 0.45;
     cursor: not-allowed;
 }
@@ -1923,14 +1922,16 @@ body.pagina-mapas-admin > main.fornecedores-admin {
 .pagina-fornecedores-unificada .fornecedor-total-figuras-encomenda {
     display: inline-flex;
     align-items: center;
+    justify-content: center;
     flex: 0 0 auto;
-    margin-left: 4px;
-    padding: 6px 12px;
+    min-width: 36px;
+    margin-left: 0;
+    padding: 5px 10px;
     border: 1px solid #444;
     border-radius: 6px;
     background: #1a1a1a;
     color: #ffc400;
-    font-size: 13px;
+    font-size: 12px;
     font-weight: 800;
     white-space: nowrap;
 }
