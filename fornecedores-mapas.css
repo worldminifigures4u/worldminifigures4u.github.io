@@ -3149,23 +3149,26 @@ body.mapas-produto-modal-aberto {
 }
 
 .pagina-fornecedores-unificada .fornecedores-coluna-direita .fornecedor-pedido-cabecalho {
+    position: relative;
     display: block;
     min-height: 0;
-    padding: 9px 10px;
+    padding: 9px 28px 9px 10px;
     overflow: visible;
 }
 
 .pagina-fornecedores-unificada .fornecedores-coluna-direita .fornecedor-pedido-cabecalho .admin-encomenda-linha.fornecedor-pedido-linha-cabecalho,
 .pagina-fornecedores-unificada .fornecedores-coluna-direita .fornecedor-pedido-cabecalho .admin-encomenda-linha.fornecedor-pedido-linha-cabecalho.com-destino-selecao {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-columns: minmax(0, 1fr);
     grid-template-areas:
-        "codigo estado"
-        "data fornecedor"
-        "resumo resumo"
-        "destino destino";
-    gap: 4px 10px;
-    align-items: center;
+        "codigo"
+        "data"
+        "fornecedor"
+        "estado"
+        "resumo"
+        "destino";
+    gap: 4px;
+    align-items: start;
     min-height: 0;
     overflow: visible;
 }
@@ -3193,7 +3196,7 @@ body.mapas-produto-modal-aberto {
 
 .pagina-fornecedores-unificada .fornecedores-coluna-direita .fornecedor-pedido-fornecedor-nome {
     grid-area: fornecedor;
-    justify-self: end;
+    justify-self: start;
     min-width: 0;
     max-width: 100%;
     font-size: 12px;
@@ -3214,8 +3217,8 @@ body.mapas-produto-modal-aberto {
 
 .pagina-fornecedores-unificada .fornecedores-coluna-direita .fornecedor-pedido-linha-cabecalho .estado-encomenda {
     grid-area: estado;
-    justify-self: end;
-    max-width: 140px;
+    justify-self: start;
+    max-width: 100%;
     min-height: 22px;
     padding: 3px 7px;
     font-size: 11px;
@@ -3223,6 +3226,12 @@ body.mapas-produto-modal-aberto {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+}
+
+.pagina-fornecedores-unificada .fornecedores-coluna-direita .fornecedor-pedido-cabecalho .admin-encomenda-seta {
+    position: absolute;
+    right: 10px;
+    bottom: 8px;
 }
 
 .pagina-fornecedores-unificada .fornecedor-resumo-limite-acoes {
