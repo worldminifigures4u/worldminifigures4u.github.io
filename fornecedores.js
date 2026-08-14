@@ -3063,7 +3063,6 @@ function renderizarSelecionadosFornecedorTabela(caixa) {
         ["", "mapas-col-foto", ""],
         ["Nome", "mapas-col-nome", "nome"],
         ["Ref.", "mapas-col-ref", "ref"],
-        ["Stock", "mapas-col-stock", "stock"],
         ["Qtd", "mapas-col-qtd", "qtd"],
         ["", "mapas-col-remover", ""],
     ].forEach(([texto, classe, coluna]) => {
@@ -3084,7 +3083,6 @@ function renderizarSelecionadosFornecedorTabela(caixa) {
     const tbody = document.createElement("tbody");
     fornecedorSelecao.forEach((item) => {
         const atual = obterProdutoAtual(item.id) || item;
-        const stockNumero = Number(atual.stock || 0);
         const linha = document.createElement("tr");
 
         const fotoCelula = document.createElement("td");
@@ -3108,11 +3106,6 @@ function renderizarSelecionadosFornecedorTabela(caixa) {
         refCelula.className = "mapas-col-ref";
         refCelula.textContent = atual.referencia || "-";
         linha.appendChild(refCelula);
-
-        linha.appendChild(criarCelulaMapaFornecedor(
-            stockNumero,
-            `mapas-col-stock mapa-stock-celula ${stockNumero <= 0 ? "sem-stock" : ""}`
-        ));
 
         const qtdCelula = document.createElement("td");
         qtdCelula.className = "mapas-col-qtd";
