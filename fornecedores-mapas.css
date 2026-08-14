@@ -1989,6 +1989,51 @@ body.pagina-mapas-admin > main.fornecedores-admin {
     top: auto;
 }
 
+.pagina-fornecedores-unificada .fornecedor-selecionados .fornecedor-tabela-encomenda {
+    min-width: 0;
+}
+
+.pagina-fornecedores-unificada .fornecedor-selecionados .fornecedor-tabela-encomenda th,
+.pagina-fornecedores-unificada .fornecedor-selecionados .fornecedor-tabela-encomenda td {
+    box-sizing: border-box;
+    padding-left: 3px;
+    padding-right: 3px;
+}
+
+.pagina-fornecedores-unificada .fornecedor-selecionados .fornecedor-tabela-encomenda .mapas-col-foto {
+    width: 38px;
+    min-width: 0;
+}
+
+.pagina-fornecedores-unificada .fornecedor-selecionados .fornecedor-tabela-encomenda .mapas-col-foto .fornecedor-produto-foto,
+.pagina-fornecedores-unificada .fornecedor-selecionados .fornecedor-tabela-encomenda .mapas-col-foto .fornecedor-miniatura {
+    width: 34px;
+    height: 34px;
+}
+
+.pagina-fornecedores-unificada .fornecedor-selecionados .fornecedor-tabela-encomenda .mapas-col-ref {
+    width: 58px;
+}
+
+.pagina-fornecedores-unificada .fornecedor-selecionados .fornecedor-tabela-encomenda .mapas-col-qtd {
+    width: 48px;
+}
+
+.pagina-fornecedores-unificada .fornecedor-selecionados .fornecedor-tabela-encomenda .mapa-quantidade-input {
+    width: 38px;
+}
+
+.pagina-fornecedores-unificada .fornecedor-selecionados .fornecedor-tabela-encomenda .mapas-col-remover {
+    width: 30px;
+}
+
+.pagina-fornecedores-unificada .fornecedor-selecionados .fornecedor-remover-linha {
+    width: 24px;
+    min-width: 24px;
+    height: 24px;
+    font-size: 16px;
+}
+
 .pagina-fornecedores-unificada .fornecedor-pedido-produtos .mapas-col-pedido-qtd,
 .pagina-fornecedores-unificada .fornecedor-pedido-produtos .mapas-col-recebido-qtd,
 .pagina-fornecedores-unificada .fornecedor-pedido-produtos .mapas-col-stock-atual,
