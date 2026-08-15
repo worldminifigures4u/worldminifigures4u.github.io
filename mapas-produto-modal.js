@@ -1025,7 +1025,6 @@ function obterChaveHistoricoFornecedorMapa(dataRef, fornecedor, tipo) {
 
 function renderizarHistoricoEncomendasFornecedorMapa(conteudo, produto, pedidos) {
     if (!conteudo) return;
-    const removerLinhaHistorico = obterAcaoRemoverHistoricoFornecedorMapa();
     const linhasEncomendas = obterLinhasEncomendaFornecedorProdutoMapa(produto, pedidos).filter(({ item }) => {
         const faltaOs = Math.max(0, Math.floor(Number(item?.falta_os || 0)));
         const emEx = Boolean(item?.marcado_ex) || String(item?.estado_fornecedor || "").trim().toUpperCase() === "EX";
@@ -1054,12 +1053,6 @@ function renderizarHistoricoEncomendasFornecedorMapa(conteudo, produto, pedidos)
         th.textContent = rotulo;
         linhaCabecalho.appendChild(th);
     });
-    if (removerLinhaHistorico) {
-        const th = document.createElement("th");
-        th.className = "mapas-produto-historico-acoes";
-        th.textContent = "";
-        linhaCabecalho.appendChild(th);
-    }
     thead.appendChild(linhaCabecalho);
 
     const tbody = document.createElement("tbody");
@@ -1085,11 +1078,6 @@ function renderizarHistoricoEncomendasFornecedorMapa(conteudo, produto, pedidos)
                 td.textContent = valor;
                 tr.appendChild(td);
             });
-            if (removerLinhaHistorico) {
-                const td = document.createElement("td");
-                td.className = "mapas-produto-historico-acoes";
-                tr.appendChild(td);
-            }
             tbody.appendChild(tr);
             return;
         }
@@ -1122,41 +1110,6 @@ function renderizarHistoricoEncomendasFornecedorMapa(conteudo, produto, pedidos)
             td.textContent = valor;
             tr.appendChild(td);
         });
-        if (removerLinhaHistorico) {
-            const td = document.createElement("td");
-            td.className = "mapas-produto-historico-acoes";
-            const apagar = document.createElement("button");
-            apagar.type = "button";
-            apagar.className = "fornecedor-historico-apagar mapas-produto-historico-apagar";
-            apagar.textContent = "×";
-            apagar.title = "Remover esta linha da encomenda";
-            apagar.setAttribute("aria-label", `Remover ${produto.nome || "produto"} da encomenda ${pedido.codigo || pedido.referencia || ""}`);
-            apagar.addEventListener("click", async () => {
-                const codigoPedido = pedido.codigo || pedido.referencia || "esta encomenda";
-                if (!window.confirm(`Remover ${produto.nome || "este produto"} da encomenda ${codigoPedido}?\n\nIsto apaga a linha do histórico a fornecedores.`)) {
-                    return;
-                }
-                apagar.disabled = true;
-                try {
-                    await removerLinhaHistorico({
-                        pedidoId: pedido.id,
-                        pedidoCodigo: codigoPedido,
-                        itemReferencia: item.referencia || produto.referencia || "",
-                        produtoId: produto.id || "",
-                        produtoNome: produto.nome || "",
-                        produtoReferencia: produto.referencia || ""
-                    });
-                    const pedidosAtualizados = await carregarEncomendasFornecedorMapa(true);
-                    renderizarHistoricoEncomendasFornecedorMapa(conteudo, produto, pedidosAtualizados);
-                } catch (erro) {
-                    console.error(erro);
-                    window.alert("Não foi possível remover esta linha: " + (erro.message || "erro desconhecido"));
-                    apagar.disabled = false;
-                }
-            });
-            td.appendChild(apagar);
-            tr.appendChild(td);
-        }
         tbody.appendChild(tr);
     });
 
