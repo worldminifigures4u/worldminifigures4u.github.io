@@ -1066,6 +1066,13 @@ body.pagina-mapas-admin > main.fornecedores-admin {
     color: #fff;
 }
 
+.pagina-fornecedores-unificada .fornecedor-acoes-encomenda-resumo #btn-juntar-selecao-fornecedor:hover:not(:disabled),
+.pagina-fornecedores-unificada .fornecedor-acoes-encomenda-resumo #btn-juntar-selecao-fornecedor:focus-visible:not(:disabled) {
+    border-color: #00aeea;
+    background: #0574a8;
+    color: #fff;
+}
+
 .pagina-mapas-admin .fornecedor-resultados {
     border: 1px solid #333;
     border-radius: 8px;
