@@ -540,26 +540,11 @@ function aplicarFiltrosQueryProdutos(query, filtros) {
     let consulta = query.eq('ativo', true).eq('arquivado', false);
 
     if (filtros.pesquisa) {
-        const pesquisa = escaparFiltroIlikePostgrest(filtros.pesquisa);
-        return consulta.or([
-            `nome.ilike.%${pesquisa}%`,
-            `sku.ilike.%${pesquisa}%`,
-            `tema.ilike.%${pesquisa}%`,
-            `subtema.ilike.%${pesquisa}%`
-        ].join(','));
+        return consulta.ilike('nome', `%${filtros.pesquisa}%`);
     }
     if (filtros.tema) consulta = consulta.eq('tema', filtros.tema);
     if (filtros.subtema) consulta = consulta.eq('subtema', filtros.subtema);
     return consulta;
-}
-
-function escaparFiltroIlikePostgrest(valor) {
-    return String(valor || '')
-        .trim()
-        .replace(/\\/g, '\\\\')
-        .replace(/%/g, '\\%')
-        .replace(/_/g, '\\_')
-        .replace(/,/g, '\\,');
 }
 
 function deveBaralharPrimeiraPaginaVitrine(filtros) {
