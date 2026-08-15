@@ -3262,6 +3262,7 @@ function limparSelecaoFornecedor() {
     if (!window.confirm('Limpar todos os produtos da encomenda a fornecedor?')) return;
     fornecedorSelecao = [];
     guardarSelecaoFornecedor();
+    renderizarResultadosFornecedor();
     renderizarSelecionadosFornecedor();
     definirStatusFornecedor('Lista limpa.');
 }
