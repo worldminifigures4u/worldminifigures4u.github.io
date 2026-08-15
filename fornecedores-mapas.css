@@ -3284,38 +3284,6 @@ body.mapas-produto-modal-aberto {
     bottom: 8px;
 }
 
-.pagina-fornecedores-unificada .fornecedor-resumo-limite-acoes {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    min-width: 0;
-}
-
-.pagina-fornecedores-unificada .fornecedor-resumo-limite-acoes[hidden] {
-    display: none;
-}
-
-.pagina-fornecedores-unificada .fornecedor-resumo-limite-botao {
-    min-height: 30px;
-    padding: 5px 9px;
-    border: 1px solid rgba(255, 196, 0, .55);
-    border-radius: 6px;
-    background: #101010;
-    color: #ffc400;
-    font: inherit;
-    font-size: 11px;
-    font-weight: 800;
-    cursor: pointer;
-    white-space: nowrap;
-}
-
-.pagina-fornecedores-unificada .fornecedor-resumo-limite-botao:hover,
-.pagina-fornecedores-unificada .fornecedor-resumo-limite-botao:focus-visible {
-    background: #ffc400;
-    color: #000;
-    outline: none;
-}
-
 .pagina-fornecedores-unificada .fornecedor-tabela-encomenda-bloco .fornecedor-resultados,
 .pagina-fornecedores-unificada .fornecedor-resultados {
     max-height: none;

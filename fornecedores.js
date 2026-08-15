@@ -22,7 +22,9 @@ var fornecedorMapaOrdenacao = { coluna: "stock", direcao: "asc" };
 var fornecedorPedidoItensOrdenacao = { coluna: "nome", direcao: "asc" };
 var fornecedorResumoEncomenda = { totalFiltrados: 0, apresentados: 0, limite: 250 };
 var FORNECEDOR_RESULTADOS_INCREMENTO = 250;
+var FORNECEDOR_RESULTADOS_LIMIAR_SCROLL = 900;
 var fornecedorRenderizacaoPendente = null;
+var fornecedorCarregamentoScrollPendente = false;
 var FORNECEDOR_LISTA_MAX_CARACTERES = 30000;
 var FORNECEDOR_LISTA_MAX_LINHAS = 500;
 var fornecedorPedidosAbertos = new Set();
@@ -2451,11 +2453,6 @@ function ligarSelecaoLinhaQuantidadeMapa(input) {
     input.addEventListener("blur", () => definirSelecaoLinhaQuantidadeMapa(input, false));
 }
 
-function obterAlturaCabecalhoFixoFornecedor() {
-    const header = document.querySelector(".cabecalho-site-admin");
-    return header ? header.getBoundingClientRect().height : 0;
-}
-
 function obterCaixaScrollQuantidadeMapa(input) {
     return input?.closest("#fornecedor-resultados, #fornecedor-selecionados") || null;
 }
@@ -2713,42 +2710,13 @@ function atualizarResumoEncomendaFornecedor(opcoes = {}) {
     }
     texto.textContent = textoProdutos;
 
-    let acoesLimite = document.getElementById("fornecedor-resumo-limite-acoes");
-    if (!acoesLimite) {
-        acoesLimite = document.createElement("span");
-        acoesLimite.id = "fornecedor-resumo-limite-acoes";
-        acoesLimite.className = "fornecedor-resumo-limite-acoes";
-        const mostrarMais = document.createElement("button");
-        mostrarMais.type = "button";
-        mostrarMais.id = "fornecedor-mostrar-mais";
-        mostrarMais.className = "fornecedor-resumo-limite-botao";
-        mostrarMais.textContent = "Mostrar mais";
-        mostrarMais.addEventListener("click", () => {
-            fornecedorResumoEncomenda.limite += FORNECEDOR_RESULTADOS_INCREMENTO;
-            renderizarResultadosFornecedor();
-        });
-        const mostrarTodos = document.createElement("button");
-        mostrarTodos.type = "button";
-        mostrarTodos.id = "fornecedor-mostrar-todos";
-        mostrarTodos.className = "fornecedor-resumo-limite-botao";
-        mostrarTodos.textContent = "Mostrar todos";
-        mostrarTodos.addEventListener("click", () => {
-            fornecedorResumoEncomenda.limite = Number.MAX_SAFE_INTEGER;
-            renderizarResultadosFornecedor();
-        });
-        acoesLimite.append(mostrarMais, mostrarTodos);
-    }
     const centro = alvo.querySelector(".fornecedor-resumo-encomenda-centro");
     const totalFiguras = document.getElementById("fornecedor-total-figuras-encomenda");
     if (centro) {
-        centro.appendChild(acoesLimite);
         if (totalFiguras) centro.appendChild(totalFiguras);
     } else {
-        alvo.appendChild(acoesLimite);
         if (totalFiguras) alvo.appendChild(totalFiguras);
     }
-    const temMais = totalFiltrados > limite;
-    acoesLimite.hidden = !temMais;
 
     atualizarTotalFigurasEncomendaFornecedor();
     atualizarBotoesAcaoEncomendaFornecedor();
@@ -2924,6 +2892,7 @@ function criarTheadTabelaEncomendaFornecedor() {
                     coluna,
                     direcao: mesmaColuna && fornecedorMapaOrdenacao.direcao === "asc" ? "desc" : "asc"
                 };
+                reiniciarLimiteResultadosFornecedor();
                 renderizarResultadosFornecedor();
             });
         }
@@ -3034,6 +3003,7 @@ function renderizarResultadosFornecedorTabelaEncomenda(caixa, resultados) {
     tabela.appendChild(tbody);
     envoltorio.appendChild(tabela);
     caixa.appendChild(envoltorio);
+    verificarCarregamentoProgressivoFornecedor();
 }
 
 function renderizarResultadosFornecedor() {
@@ -3131,7 +3101,12 @@ function renderizarResultadosFornecedor() {
     });
 }
 
+function reiniciarLimiteResultadosFornecedor() {
+    fornecedorResumoEncomenda.limite = FORNECEDOR_RESULTADOS_INCREMENTO;
+}
+
 function agendarRenderizacaoResultadosFornecedor() {
+    reiniciarLimiteResultadosFornecedor();
     if (fornecedorRenderizacaoPendente) {
         clearTimeout(fornecedorRenderizacaoPendente);
     }
@@ -3139,6 +3114,26 @@ function agendarRenderizacaoResultadosFornecedor() {
         fornecedorRenderizacaoPendente = null;
         renderizarResultadosFornecedor();
     }, 120);
+}
+
+function verificarCarregamentoProgressivoFornecedor() {
+    if (!estaPaginaFornecedoresUnificada()) return;
+    if (fornecedorCarregamentoScrollPendente) return;
+    if (fornecedorResumoEncomenda.totalFiltrados <= fornecedorResumoEncomenda.limite) return;
+
+    const caixa = document.getElementById("fornecedor-resultados");
+    if (!caixa) return;
+    const distanciaAteFim = caixa.getBoundingClientRect().bottom - window.innerHeight;
+    if (distanciaAteFim > FORNECEDOR_RESULTADOS_LIMIAR_SCROLL) return;
+
+    fornecedorCarregamentoScrollPendente = true;
+    const reagendar = window.requestAnimationFrame || ((callback) => window.setTimeout(callback, 16));
+    reagendar(() => {
+        fornecedorCarregamentoScrollPendente = false;
+        if (fornecedorResumoEncomenda.totalFiltrados <= fornecedorResumoEncomenda.limite) return;
+        fornecedorResumoEncomenda.limite += FORNECEDOR_RESULTADOS_INCREMENTO;
+        renderizarResultadosFornecedor();
+    });
 }
 
 function adicionarProdutoFornecedor(produto, quantidade = 1) {
@@ -4513,6 +4508,7 @@ function ligarEventoFornecedor(id, evento, handler) {
 ligarBloqueioScrollExternoListaFornecedor();
 ligarStickyInfoFornecedor();
 ligarFiltrosMarcacaoFornecedor();
+window.addEventListener("scroll", verificarCarregamentoProgressivoFornecedor, { passive: true });
 ligarEventoFornecedor('fornecedor-pesquisa', 'input', agendarRenderizacaoResultadosFornecedor);
 ligarEventoFornecedor('fornecedor-nome', 'change', agendarRenderizacaoResultadosFornecedor);
 ligarEventoFornecedor('fornecedor-ordenacao-stock', 'change', agendarRenderizacaoResultadosFornecedor);
