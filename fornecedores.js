@@ -2456,28 +2456,6 @@ function obterAlturaCabecalhoFixoFornecedor() {
     return header ? header.getBoundingClientRect().height : 0;
 }
 
-function ajustarVistaEncomendaFornecedor() {
-    if (!estaPaginaFornecedoresUnificada()) return;
-
-    const caixaResultados = document.getElementById("fornecedor-resultados");
-    if (caixaResultados) caixaResultados.scrollTop = 0;
-
-    if (!caixaResultados) return;
-
-    const headerAltura = obterAlturaCabecalhoFixoFornecedor();
-    const margemTopo = 8;
-    const margemFundo = 20;
-
-    const resultadosRect = caixaResultados.getBoundingClientRect();
-    const resultadosTop = resultadosRect.top + window.scrollY;
-    const resultadosBottom = resultadosRect.bottom + window.scrollY;
-    const scrollParaVerTopo = resultadosTop - headerAltura - margemTopo;
-    const scrollParaVerFundo = resultadosBottom - window.innerHeight + margemFundo;
-    const scrollY = Math.max(0, Math.min(scrollParaVerTopo, Math.max(0, scrollParaVerFundo)));
-
-    window.scrollTo({ top: scrollY, behavior: "smooth" });
-}
-
 function obterCaixaScrollQuantidadeMapa(input) {
     return input?.closest("#fornecedor-resultados, #fornecedor-selecionados") || null;
 }
@@ -2761,15 +2739,12 @@ function atualizarResumoEncomendaFornecedor(opcoes = {}) {
         acoesLimite.append(mostrarMais, mostrarTodos);
     }
     const centro = alvo.querySelector(".fornecedor-resumo-encomenda-centro");
-    const botaoAjustar = document.getElementById("btn-fornecedor-ajustar-vista");
     const totalFiguras = document.getElementById("fornecedor-total-figuras-encomenda");
     if (centro) {
         centro.appendChild(acoesLimite);
-        if (botaoAjustar) centro.appendChild(botaoAjustar);
         if (totalFiguras) centro.appendChild(totalFiguras);
     } else {
         alvo.appendChild(acoesLimite);
-        if (botaoAjustar) alvo.appendChild(botaoAjustar);
         if (totalFiguras) alvo.appendChild(totalFiguras);
     }
     const temMais = totalFiltrados > limite;
@@ -4547,7 +4522,6 @@ ligarEventoFornecedor('btn-adicionar-filtro-marcacao', 'click', adicionarLinhaFi
 ligarEventoFornecedor('fornecedor-filtro-top', 'change', agendarRenderizacaoResultadosFornecedor);
 ligarEventoFornecedor('fornecedor-filtro-arquivado', 'change', agendarRenderizacaoResultadosFornecedor);
 ligarEventoFornecedor('fornecedor-filtro-descontinuado', 'change', agendarRenderizacaoResultadosFornecedor);
-ligarEventoFornecedor('btn-fornecedor-ajustar-vista', 'click', ajustarVistaEncomendaFornecedor);
 ligarEventoFornecedor('btn-limpar-fornecedor', 'click', limparSelecaoFornecedor);
 ligarEventoFornecedor('btn-juntar-selecao-fornecedor', 'click', juntarSelecaoAEncomendaExistenteFornecedor);
 ligarEventoFornecedor('btn-criar-fornecedor', 'click', criarPedidoFornecedor);

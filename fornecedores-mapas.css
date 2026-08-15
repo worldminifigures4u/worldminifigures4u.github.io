@@ -658,8 +658,7 @@ body.pagina-fornecedores-admin{ margin:0; padding-left:0; padding-right:0; paddi
             .pagina-fornecedores-unificada .fornecedor-controles-unificados .fornecedor-filtros-marcacao-bloco,
             .pagina-fornecedores-unificada .fornecedor-controles-unificados label[for="fornecedor-filtro-top"],
             .pagina-fornecedores-unificada .fornecedor-controles-unificados label[for="fornecedor-filtro-arquivado"],
-            .pagina-fornecedores-unificada .fornecedor-controles-unificados label[for="fornecedor-filtro-descontinuado"],
-            .pagina-fornecedores-unificada .fornecedor-controles-unificados .fornecedor-btn-ajustar-vista{
+            .pagina-fornecedores-unificada .fornecedor-controles-unificados label[for="fornecedor-filtro-descontinuado"]{
                 grid-column:1;
             }
             .fornecedor-produto,.fornecedor-item,.fornecedor-pedido-linha,.fornecedor-edicao-grid,.fornecedor-ficha-form{ grid-template-columns:1fr; }
@@ -954,29 +953,6 @@ body.pagina-mapas-admin > main.fornecedores-admin {
 
 .pagina-fornecedores-unificada .fornecedor-acoes-encomenda .wallapop-botao-destaque {
     border: 1px solid var(--fp-cor-destaque);
-}
-
-.pagina-fornecedores-unificada .fornecedor-btn-ajustar-vista {
-    flex: 0 0 auto;
-    align-self: flex-end;
-    min-height: var(--fp-altura-campo);
-    padding: 7px 14px;
-    border: 1px solid #0d8fbf;
-    border-radius: var(--fp-raio-ui);
-    background: #18c4ff;
-    color: #081018;
-    font-size: var(--fp-fonte-ui);
-    font-weight: 800;
-    white-space: nowrap;
-    cursor: pointer;
-}
-
-.pagina-fornecedores-unificada .fornecedor-btn-ajustar-vista:hover,
-.pagina-fornecedores-unificada .fornecedor-btn-ajustar-vista:focus-visible {
-    background: #47d1ff;
-    border-color: #47d1ff;
-    outline: none;
-    box-shadow: var(--fp-foco-campo);
 }
 
 .pagina-mapas-admin .fornecedor-resultados,
@@ -3331,13 +3307,6 @@ body.mapas-produto-modal-aberto {
     font-weight: 800;
     cursor: pointer;
     white-space: nowrap;
-}
-
-.pagina-fornecedores-unificada .fornecedor-resumo-encomenda-centro .fornecedor-btn-ajustar-vista {
-    align-self: center;
-    min-height: 30px;
-    padding: 5px 12px;
-    font-size: 12px;
 }
 
 .pagina-fornecedores-unificada .fornecedor-resumo-limite-botao:hover,
