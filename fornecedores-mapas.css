@@ -1061,23 +1061,17 @@ body.pagina-mapas-admin > main.fornecedores-admin {
 
 .pagina-fornecedores-unificada .fornecedor-acoes-encomenda-resumo #btn-limpar-fornecedor:hover:not(:disabled),
 .pagina-fornecedores-unificada .fornecedor-acoes-encomenda-resumo #btn-limpar-fornecedor:focus-visible:not(:disabled) {
-    border-color: #ff4d4d;
-    background: #8b1d1d;
-    color: #fff;
+    color: #ff4d4d;
 }
 
 .pagina-fornecedores-unificada .fornecedor-acoes-encomenda-resumo #btn-juntar-selecao-fornecedor:hover:not(:disabled),
 .pagina-fornecedores-unificada .fornecedor-acoes-encomenda-resumo #btn-juntar-selecao-fornecedor:focus-visible:not(:disabled) {
-    border-color: #00aeea;
-    background: #0574a8;
-    color: #fff;
+    color: #00aeea;
 }
 
 .pagina-fornecedores-unificada .fornecedor-acoes-encomenda-resumo #btn-criar-fornecedor:hover:not(:disabled),
 .pagina-fornecedores-unificada .fornecedor-acoes-encomenda-resumo #btn-criar-fornecedor:focus-visible:not(:disabled) {
-    border-color: #39d353;
-    background: #1f7a32;
-    color: #fff;
+    color: #39d353;
 }
 
 .pagina-mapas-admin .fornecedor-resultados {
