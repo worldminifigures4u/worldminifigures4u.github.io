@@ -2364,11 +2364,8 @@ body.pagina-mapas-admin > main.fornecedores-admin {
     gap: 8px;
     align-items: center;
     min-width: 0;
-    padding: 6px 8px;
-    border: 1px solid rgba(255, 196, 0, 0.45);
-    border-radius: 6px;
-    background: rgba(255, 196, 0, 0.08);
-    color: #ffc400;
+    padding: 2px 0;
+    color: #fff;
     font-size: 12px;
     font-weight: 800;
 }
@@ -2382,6 +2379,7 @@ body.pagina-mapas-admin > main.fornecedores-admin {
 }
 
 .mapas-produto-os-item span {
+    color: #ff4d4d;
     white-space: nowrap;
 }
 
@@ -2514,13 +2512,13 @@ body.pagina-mapas-admin > main.fornecedores-admin {
 
 .mapas-produto-fornecedor-leitura.tipo-os,
 .mapas-produto-fornecedor-leitura.tipo-encomendada_os {
-    border-color: rgba(255, 196, 0, 0.55);
-    background: rgba(255, 196, 0, 0.08);
+    border-color: #333;
+    background: #171717;
 }
 
 .mapas-produto-fornecedor-leitura.tipo-os .mapas-produto-fornecedor-leitura-estado,
 .mapas-produto-fornecedor-leitura.tipo-encomendada_os .mapas-produto-fornecedor-leitura-estado {
-    color: #ffc400;
+    color: #ff4d4d;
 }
 
 .mapas-produto-fornecedor-leitura.tipo-ex .mapas-produto-fornecedor-leitura-estado {
