@@ -3305,7 +3305,7 @@ body.mapas-produto-modal-aberto {
 }
 
 body.pagina-fornecedores-admin.pagina-fornecedores-unificada {
-    --fornecedor-info-sticky-topo: calc(var(--cabecalho-offset, 128px) + 6px);
+    --fornecedor-info-sticky-topo: calc(var(--cabecalho-offset, 128px) + 19px);
     --fornecedor-controles-sticky-altura: 0px;
 }
 
