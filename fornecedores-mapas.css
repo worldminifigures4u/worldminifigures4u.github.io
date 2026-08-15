@@ -3303,3 +3303,25 @@ body.mapas-produto-modal-aberto {
     min-width: 0;
     box-sizing: border-box;
 }
+
+body.pagina-fornecedores-admin.pagina-fornecedores-unificada {
+    --fornecedor-info-sticky-topo: calc(var(--cabecalho-offset, 128px) + 6px);
+    --fornecedor-controles-sticky-altura: 0px;
+}
+
+.pagina-fornecedores-unificada .fornecedor-lista-controles.mapas-lista-controles.fornecedor-controles-unificados {
+    position: sticky;
+    top: var(--fornecedor-info-sticky-topo);
+    z-index: 40;
+    margin-top: 0;
+    padding: 10px 0 12px;
+    background: #141414;
+    border-bottom: 1px solid #333;
+    box-shadow: 0 8px 14px rgba(0, 0, 0, .34);
+}
+
+.pagina-fornecedores-unificada .fornecedor-resumo-encomenda {
+    top: calc(var(--fornecedor-info-sticky-topo) + var(--fornecedor-controles-sticky-altura));
+    z-index: 39;
+    box-shadow: 0 8px 14px rgba(0, 0, 0, .28);
+}

@@ -4329,6 +4329,7 @@ async function iniciarFornecedoresAdmin() {
         await carregarPedidosFornecedoresRemotos();
         bloqueio.hidden = true;
         document.getElementById('fornecedores-aplicacao').hidden = false;
+        atualizarAlturaStickyControlesFornecedor();
         renderizarResultadosFornecedor();
         renderizarSelecionadosFornecedor();
         renderizarPedidosFornecedores();
@@ -4355,6 +4356,7 @@ function ligarBloqueioScrollExternoListaFornecedor() {
 
         const delta = evento.deltaY;
         if (delta === 0) return;
+        if (caixa.scrollHeight <= caixa.clientHeight + 1) return;
 
         const { scrollTop, scrollHeight, clientHeight } = caixa;
         const noTopo = scrollTop <= 0;
@@ -4366,6 +4368,30 @@ function ligarBloqueioScrollExternoListaFornecedor() {
     }, { passive: false });
 }
 
+function atualizarAlturaStickyControlesFornecedor() {
+    if (!estaPaginaFornecedoresUnificada()) return;
+    const controles = document.querySelector(".fornecedor-controles-unificados");
+    if (!controles) return;
+
+    const altura = Math.ceil(controles.getBoundingClientRect().height);
+    document.body.style.setProperty("--fornecedor-controles-sticky-altura", `${altura}px`);
+}
+
+function ligarStickyInfoFornecedor() {
+    if (!estaPaginaFornecedoresUnificada()) return;
+    const controles = document.querySelector(".fornecedor-controles-unificados");
+    if (!controles || controles.dataset.stickyInfoLigado === "1") return;
+
+    controles.dataset.stickyInfoLigado = "1";
+    atualizarAlturaStickyControlesFornecedor();
+    window.addEventListener("resize", atualizarAlturaStickyControlesFornecedor);
+
+    if ("ResizeObserver" in window) {
+        const observador = new ResizeObserver(atualizarAlturaStickyControlesFornecedor);
+        observador.observe(controles);
+    }
+}
+
 function ligarEventoFornecedor(id, evento, handler) {
     const elemento = document.getElementById(id);
     if (elemento) {
@@ -4374,6 +4400,7 @@ function ligarEventoFornecedor(id, evento, handler) {
 }
 
 ligarBloqueioScrollExternoListaFornecedor();
+ligarStickyInfoFornecedor();
 ligarFiltrosMarcacaoFornecedor();
 ligarEventoFornecedor('fornecedor-pesquisa', 'input', agendarRenderizacaoResultadosFornecedor);
 ligarEventoFornecedor('fornecedor-nome', 'change', agendarRenderizacaoResultadosFornecedor);
