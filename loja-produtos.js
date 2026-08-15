@@ -6,6 +6,7 @@ const PRODUTOS_POR_PAGINA_SERVIDOR = 48;
 const TAMANHO_PAGINA_METADADOS = 1000;
 const CACHE_TEMAS_LOJA_CHAVE = 'figures-planet-loja-temas-v2';
 const CACHE_TEMAS_LOJA_TTL_MS = 30 * 60 * 1000;
+const USAR_CACHE_TEMAS_LOJA = false;
 const CAMPOS_PRODUTO_LOJA = 'id, sku, nome, preco, peso, tema, subtema, imagens, ativo, descontinuado';
 let produtosVitrineAtual = [];
 let produtosFiltradosAtual = [];
@@ -539,11 +540,26 @@ function aplicarFiltrosQueryProdutos(query, filtros) {
     let consulta = query.eq('ativo', true).eq('arquivado', false);
 
     if (filtros.pesquisa) {
-        return consulta.ilike('nome', `%${filtros.pesquisa}%`);
+        const pesquisa = escaparFiltroIlikePostgrest(filtros.pesquisa);
+        return consulta.or([
+            `nome.ilike.%${pesquisa}%`,
+            `sku.ilike.%${pesquisa}%`,
+            `tema.ilike.%${pesquisa}%`,
+            `subtema.ilike.%${pesquisa}%`
+        ].join(','));
     }
     if (filtros.tema) consulta = consulta.eq('tema', filtros.tema);
     if (filtros.subtema) consulta = consulta.eq('subtema', filtros.subtema);
     return consulta;
+}
+
+function escaparFiltroIlikePostgrest(valor) {
+    return String(valor || '')
+        .trim()
+        .replace(/\\/g, '\\\\')
+        .replace(/%/g, '\\%')
+        .replace(/_/g, '\\_')
+        .replace(/,/g, '\\,');
 }
 
 function deveBaralharPrimeiraPaginaVitrine(filtros) {
@@ -610,7 +626,7 @@ async function buscarProdutosLojaIntervalo(cliente, filtros, inicio, fimInclusiv
 }
 
 async function carregarMetadadosTemasLoja() {
-    let metadados = lerCacheTemasLoja();
+    let metadados = USAR_CACHE_TEMAS_LOJA ? lerCacheTemasLoja() : null;
 
     if (!metadados?.length) {
         const cliente = obterClienteProdutosLoja();
@@ -639,7 +655,7 @@ async function carregarMetadadosTemasLoja() {
             inicio += TAMANHO_PAGINA_METADADOS;
         }
 
-        guardarCacheTemasLoja(metadados);
+        if (USAR_CACHE_TEMAS_LOJA) guardarCacheTemasLoja(metadados);
     }
 
     construirMapaTemasLoja(metadados);

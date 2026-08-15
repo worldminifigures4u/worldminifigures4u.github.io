@@ -1808,7 +1808,7 @@ function abrirCriacaoProdutoMapa() {
         stock: 0,
         tema: "",
         subtema: "",
-        ativo: false,
+        ativo: true,
         imagens: [],
         observacoes: "",
         fornecedores: {}
