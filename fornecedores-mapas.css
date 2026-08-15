@@ -3273,3 +3273,33 @@ body.mapas-produto-modal-aberto {
     color: #000;
     outline: none;
 }
+
+.pagina-fornecedores-unificada .fornecedor-tabela-encomenda-bloco .fornecedor-resultados,
+.pagina-fornecedores-unificada .fornecedor-resultados {
+    max-height: none;
+    overflow: visible;
+    scrollbar-gutter: auto;
+    overscroll-behavior: auto;
+}
+
+.pagina-fornecedores-unificada .fornecedor-resultados .mapas-tabela-wrapper,
+.pagina-fornecedores-unificada .fornecedor-resultados .fornecedor-tabela-wrapper-centro {
+    overflow: visible;
+}
+
+.pagina-fornecedores-unificada .fornecedores-coluna-direita .fornecedores-painel-lista,
+.pagina-fornecedores-unificada .fornecedores-coluna-direita .fornecedor-pedidos,
+.pagina-fornecedores-unificada .fornecedores-coluna-direita .fornecedor-pedidos.admin-encomendas-lista {
+    max-height: none;
+    overflow: visible;
+    scrollbar-gutter: auto;
+    overscroll-behavior: auto;
+}
+
+.pagina-fornecedores-unificada .fornecedores-coluna-direita .fornecedor-pedido-card,
+.pagina-fornecedores-unificada .fornecedores-coluna-direita .fornecedor-pedido-cabecalho,
+.pagina-fornecedores-unificada .fornecedores-coluna-direita .fornecedor-pedido-linha-cabecalho {
+    max-width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+}
