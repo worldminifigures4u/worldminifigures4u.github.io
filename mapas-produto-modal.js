@@ -883,6 +883,32 @@ function obterMarcacoesFornecedoresLeituraMapa(produto) {
         .sort((a, b) => a.nome.localeCompare(b.nome, "pt", { sensitivity: "base" }));
 }
 
+function obterDataOsFornecedorLeituraMapa(marcacao) {
+    const historico = Array.isArray(marcacao?.historico) ? marcacao.historico : [];
+    for (let i = historico.length - 1; i >= 0; i -= 1) {
+        const item = historico[i];
+        const tipo = normalizarTipoHistoricoFornecedorMapa(item?.tipo);
+        if ((tipo === "os" || tipo === "encomendada_os") && item?.data) {
+            return formatarDataFornecedorLeituraMapa(item.data);
+        }
+    }
+    return "";
+}
+
+function obterOsFornecedoresLeituraMapa(produto) {
+    return Object.entries(obterObjetoFornecedoresProdutoMapa(produto))
+        .map(([nome, valor]) => ({
+            nome: String(nome || "").trim(),
+            marcacao: normalizarMarcacaoFornecedorLeituraMapa(valor)
+        }))
+        .filter((item) => item.nome && (item.marcacao.tipo === "os" || item.marcacao.tipo === "encomendada_os"))
+        .map((item) => ({
+            nome: item.nome,
+            data: obterDataOsFornecedorLeituraMapa(item.marcacao)
+        }))
+        .sort((a, b) => a.nome.localeCompare(b.nome, "pt", { sensitivity: "base" }));
+}
+
 function temLinhaEncomendaFornecedorProdutoMapa(produto, fornecedorNome) {
     const fornecedorChave = normalizarChaveFornecedorMapa(fornecedorNome);
     if (!fornecedorChave) return false;
@@ -1431,6 +1457,36 @@ function montarSecaoFornecedoresLeituraMapa(campos, produto) {
     campos.appendChild(secao);
 }
 
+function montarSecaoOsFornecedoresLeituraMapa(produto) {
+    const secao = criarSecaoEdicaoMapa("OS fornecedores", "mapas-produto-secao-os-fornecedores");
+    const marcacoesOs = obterOsFornecedoresLeituraMapa(produto);
+    if (!marcacoesOs.length) {
+        const vazio = document.createElement("p");
+        vazio.className = "mapas-produto-os-vazio";
+        vazio.textContent = "Sem OS";
+        secao.appendChild(vazio);
+        return secao;
+    }
+
+    const lista = document.createElement("div");
+    lista.className = "mapas-produto-os-lista";
+    marcacoesOs.forEach(({ nome, data }) => {
+        const item = document.createElement("div");
+        item.className = "mapas-produto-os-item";
+
+        const fornecedor = document.createElement("strong");
+        fornecedor.textContent = nome;
+
+        const estado = document.createElement("span");
+        estado.textContent = data ? `OS ${data}` : "OS";
+
+        item.append(fornecedor, estado);
+        lista.appendChild(item);
+    });
+    secao.appendChild(lista);
+    return secao;
+}
+
 function criarFotoPrincipalFichaMapa(produto) {
     const imagens = normalizarImagensMapa(produto.imagens);
     const figura = document.createElement("figure");
@@ -1489,6 +1545,8 @@ function preencherFichaProdutoMapa(produto) {
         criarCampoLeituraMapa(secaoDetalhes, "Unid/emb.", Number(produto.unidades_por_embalagem));
     }
     topo.appendChild(secaoDetalhes);
+
+    topo.appendChild(montarSecaoOsFornecedoresLeituraMapa(produto));
 
     const observacoesTexto = String(produto.observacoes || "").trim();
     if (observacoesTexto) {

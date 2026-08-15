@@ -66,7 +66,7 @@ function garantirFornecedoresProdutoModal() {
     if (window.FornecedoresProdutoModal) return Promise.resolve();
     if (!__fornecedoresProdutoPromessa) {
         prepararContextoProdutoFornecedor();
-        __fornecedoresProdutoPromessa = carregarScriptAdmin("mapas-produto-modal.js?v=20260815-historico-real")
+        __fornecedoresProdutoPromessa = carregarScriptAdmin("mapas-produto-modal.js?v=20260815-os-fornecedores-topo")
             .then(function () {
                 window.FornecedoresProdutoModal = {
                     abrir: function () {
