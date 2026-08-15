@@ -874,9 +874,21 @@ function obterMarcacoesFornecedoresLeituraMapa(produto) {
         .filter((item) =>
             item.nome
             && item.marcacao.tipo !== "disponivel"
+            && (
+                (item.marcacao.tipo !== "solicitada" && item.marcacao.tipo !== "encomendada")
+                || temLinhaEncomendaFornecedorProdutoMapa(produto, item.nome)
+            )
             && String(item.marcacao.texto || "").trim()
         )
         .sort((a, b) => a.nome.localeCompare(b.nome, "pt", { sensitivity: "base" }));
+}
+
+function temLinhaEncomendaFornecedorProdutoMapa(produto, fornecedorNome) {
+    const fornecedorChave = normalizarChaveFornecedorMapa(fornecedorNome);
+    if (!fornecedorChave) return false;
+    const pedidos = mapasEncomendasFornecedorCache || obterEncomendasFornecedorLocaisMapa();
+    return obterLinhasEncomendaFornecedorProdutoMapa(produto, pedidos)
+        .some((linha) => normalizarChaveFornecedorMapa(linha.pedido?.fornecedor) === fornecedorChave);
 }
 
 /** Data da marcação Encomendada na ficha (a que o utilizador vê no mapa), se existir. */
@@ -994,15 +1006,8 @@ function renderizarHistoricoEncomendasFornecedorMapa(conteudo, produto, pedidos)
         // EX (preço alto) não deve aparecer aqui - só interessa mostrar quando é OS.
         return faltaOs > 0 || !emEx;
     });
-    const chavesLinhasCompletas = new Set(linhasEncomendas.map((linha) =>
-        obterChaveHistoricoFornecedorMapa(linha.dataRef, linha.pedido?.fornecedor, obterTipoLinhaEncomendaFornecedorMapa(linha))
-    ));
-    const linhasMarcacoes = obterLinhasHistoricoMarcacoesFornecedorMapa(produto).filter((linha) =>
-        !chavesLinhasCompletas.has(obterChaveHistoricoFornecedorMapa(linha.dataRef, linha.fornecedor, linha.tipo))
-    );
     const linhas = [
-        ...linhasEncomendas.map((linha) => ({ ...linha, origem: "encomenda" })),
-        ...linhasMarcacoes
+        ...linhasEncomendas.map((linha) => ({ ...linha, origem: "encomenda" }))
     ].sort((a, b) => obterTimestampFornecedorMapa(b.dataRef) - obterTimestampFornecedorMapa(a.dataRef));
     conteudo.replaceChildren();
 
