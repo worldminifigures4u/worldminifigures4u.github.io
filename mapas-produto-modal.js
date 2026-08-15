@@ -1,6 +1,9 @@
 (function () {
 'use strict';
 
+let mapasFornecedoresFichasCache = null;
+let mapasFornecedoresFichasPromessa = null;
+
 function normalizarTextoProdutoMapa(valor) {
     return String(valor || "")
         .trim()
@@ -343,6 +346,40 @@ function obterAcaoRemoverHistoricoFornecedorMapa() {
         : null;
 }
 
+async function carregarFichasFornecedoresMapa(forcar = false) {
+    if (!forcar && Array.isArray(mapasFornecedoresFichasCache)) {
+        return mapasFornecedoresFichasCache;
+    }
+    if (!forcar && mapasFornecedoresFichasPromessa) {
+        return mapasFornecedoresFichasPromessa;
+    }
+
+    mapasFornecedoresFichasPromessa = (async () => {
+        try {
+            if (!mapasClient) throw new Error("Supabase indisponível.");
+            const { data, error } = await mapasClient
+                .from("fornecedores_admin")
+                .select("nome,ativo")
+                .order("nome", { ascending: true });
+            if (error) throw error;
+            mapasFornecedoresFichasCache = Array.isArray(data)
+                ? data.map((item) => ({
+                    nome: String(item?.nome || "").trim(),
+                    ativo: item?.ativo !== false
+                })).filter((item) => item.nome)
+                : [];
+            return mapasFornecedoresFichasCache;
+        } catch (erro) {
+            console.warn("Não foi possível carregar fichas de fornecedores para o editor.", erro);
+            mapasFornecedoresFichasCache = [];
+            return mapasFornecedoresFichasCache;
+        } finally {
+            mapasFornecedoresFichasPromessa = null;
+        }
+    })();
+    return mapasFornecedoresFichasPromessa;
+}
+
 function obterEstadoFornecedorEdicaoMapa(valor) {
     if (valor && typeof valor === "object" && !Array.isArray(valor)) {
         const estado = String(valor.estado || valor.marcacao || valor.status || "").trim();
@@ -362,13 +399,28 @@ function obterEstadoFornecedorEdicaoMapa(valor) {
 }
 
 function obterNomesFornecedoresFallbackMapa(produto) {
-    return Object.keys(obterObjetoFornecedoresProdutoMapa(produto))
-        .map((nome) => String(nome || "").trim())
-        .filter(Boolean)
-        .sort((a, b) => a.localeCompare(b, "pt", { sensitivity: "base" }));
+    const nomes = [];
+    const vistos = new Set();
+    const adicionar = (nome) => {
+        const texto = String(nome || "").trim();
+        const chave = normalizarChaveFornecedorMapa(texto);
+        if (!texto || !chave || vistos.has(chave)) return;
+        vistos.add(chave);
+        nomes.push(texto);
+    };
+    (mapasFornecedoresFichasCache || [])
+        .filter((ficha) => ficha?.ativo !== false)
+        .forEach((ficha) => adicionar(ficha.nome));
+    (mapasEncomendasFornecedorCache || obterEncomendasFornecedorLocaisMapa()).forEach((pedido) => {
+        if ((pedido.itens || []).some((item) => produtoCorrespondeItemRececaoMapa(produto, item))) {
+            adicionar(pedido.fornecedor);
+        }
+    });
+    Object.keys(obterObjetoFornecedoresProdutoMapa(produto)).forEach(adicionar);
+    return nomes.sort((a, b) => a.localeCompare(b, "pt", { sensitivity: "base" }));
 }
 
-function criarBlocoFornecedorFallbackMapa(form, id, rotulo, valor) {
+function criarBlocoFornecedorFallbackMapa(form, id, rotulo, valor, opcoes = {}) {
     let historicoAtual = obterHistoricoFornecedorMapa(valor).map((item) => ({
         tipo: item.tipo,
         data: item.data || null
@@ -467,8 +519,57 @@ function criarBlocoFornecedorFallbackMapa(form, id, rotulo, valor) {
 
     renderizarLista();
     bloco.append(lista, label);
+    if (opcoes.produto) {
+        montarHistoricoEncomendasFornecedorFallbackMapa(bloco, opcoes.produto, rotulo);
+    }
     form.appendChild(bloco);
     return input;
+}
+
+function obterTextoEstadoLinhaHistoricoFornecedorMapa(linha) {
+    const faltaOs = Math.max(0, Math.floor(Number(linha?.item?.falta_os || 0)));
+    if (faltaOs > 0) return `OS: ${faltaOs}`;
+    const estadoItem = String(linha?.item?.estado_fornecedor || "").trim();
+    if (estadoItem) return estadoItem;
+    return linha?.pedido?.estado || "—";
+}
+
+function montarHistoricoEncomendasFornecedorFallbackMapa(bloco, produto, fornecedorNome) {
+    const fornecedorChave = normalizarChaveFornecedorMapa(fornecedorNome);
+    const pedidos = mapasEncomendasFornecedorCache || obterEncomendasFornecedorLocaisMapa();
+    const linhas = obterLinhasEncomendaFornecedorProdutoMapa(produto, pedidos)
+        .filter((linha) => normalizarChaveFornecedorMapa(linha.pedido?.fornecedor) === fornecedorChave);
+    if (!linhas.length) return;
+
+    const titulo = document.createElement("span");
+    titulo.className = "fornecedor-historico-encomendas-titulo";
+    titulo.textContent = "Linhas em encomendas";
+    bloco.appendChild(titulo);
+
+    const lista = document.createElement("ul");
+    lista.className = "fornecedor-historico-lista fornecedor-historico-encomendas-lista";
+
+    linhas.forEach((linha) => {
+        const li = document.createElement("li");
+        li.className = "fornecedor-historico-item fornecedor-historico-item-encomenda";
+        const data = document.createElement("span");
+        data.className = "fornecedor-historico-data";
+        data.textContent = formatarDataEncomendaFornecedorMapa(linha.dataRef) || "sem data";
+
+        const resumo = document.createElement("span");
+        resumo.className = "fornecedor-historico-estado";
+        const codigo = linha.pedido?.codigo || linha.pedido?.referencia || "Sem código";
+        resumo.textContent = `${codigo} · pedido ${linha.pedidoQtd} · recebido ${linha.recebido} · ${obterTextoEstadoLinhaHistoricoFornecedorMapa(linha)}`;
+
+        const acao = document.createElement("span");
+        acao.className = "fornecedor-historico-sem-acao";
+        acao.textContent = "";
+
+        li.append(data, resumo, acao);
+        lista.appendChild(li);
+    });
+
+    bloco.appendChild(lista);
 }
 
 function montarSecaoFornecedoresFallbackMapa(campos, produto) {
@@ -480,7 +581,7 @@ function montarSecaoFornecedoresFallbackMapa(campos, produto) {
     nomes.forEach((nome) => {
         const chave = normalizarChaveFornecedorMapa(nome);
         const valor = fornecedores[nome];
-        const input = criarBlocoFornecedorFallbackMapa(secao, `mapas-editar-fornecedor-fallback-${chave}`, nome, valor);
+        const input = criarBlocoFornecedorFallbackMapa(secao, `mapas-editar-fornecedor-fallback-${chave}`, nome, valor, { produto });
         input.dataset.fornecedorNome = nome;
         input.dataset.fornecedorChave = chave;
     });
@@ -1628,6 +1729,10 @@ async function abrirFichaProdutoMapa(produtoId) {
     modal.hidden = false;
     document.body.classList.add("mapas-produto-modal-aberto");
 
+    await Promise.all([
+        carregarFichasFornecedoresMapa(false),
+        carregarEncomendasFornecedorMapa(false)
+    ]);
     const produto = await enriquecerMediaProdutoMapa(produtoBase);
     if (modal.dataset.vistaToken !== token) return;
     mapasProdutos = mapasProdutos.map((item) =>
@@ -1655,6 +1760,10 @@ async function abrirEdicaoProdutoMapa(produtoId) {
     modal.hidden = false;
     document.body.classList.add("mapas-produto-modal-aberto");
 
+    await Promise.all([
+        carregarFichasFornecedoresMapa(false),
+        carregarEncomendasFornecedorMapa(false)
+    ]);
     const produto = await enriquecerMediaProdutoMapa(produtoBase);
     if (modal.dataset.vistaToken !== token) return;
     mapasProdutos = mapasProdutos.map((item) =>
