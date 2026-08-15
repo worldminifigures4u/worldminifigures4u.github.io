@@ -1458,7 +1458,7 @@ function montarSecaoFornecedoresLeituraMapa(campos, produto) {
 }
 
 function montarSecaoOsFornecedoresLeituraMapa(produto) {
-    const secao = criarSecaoEdicaoMapa("OS fornecedores", "mapas-produto-secao-os-fornecedores");
+    const secao = criarSecaoEdicaoMapa("Fornecedores", "mapas-produto-secao-os-fornecedores");
     const marcacoesOs = obterOsFornecedoresLeituraMapa(produto);
     if (!marcacoesOs.length) {
         const vazio = document.createElement("p");
