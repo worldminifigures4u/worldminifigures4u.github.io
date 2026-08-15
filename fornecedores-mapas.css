@@ -2522,6 +2522,18 @@ body.pagina-mapas-admin > main.fornecedores-admin {
     color: #eee;
 }
 
+.mapas-produto-historico-rececoes-tabela .mapas-produto-historico-acoes {
+    width: 38px;
+    min-width: 38px;
+    padding-left: 4px;
+    padding-right: 4px;
+    text-align: center;
+}
+
+.mapas-produto-historico-apagar {
+    margin: 0 auto;
+}
+
 .mapas-produto-historico-rececoes-tabela tr.mapas-produto-historico-pendente td {
     color: #7ed321;
 }

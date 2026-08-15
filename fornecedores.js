@@ -66,7 +66,7 @@ function garantirFornecedoresProdutoModal() {
     if (window.FornecedoresProdutoModal) return Promise.resolve();
     if (!__fornecedoresProdutoPromessa) {
         prepararContextoProdutoFornecedor();
-        __fornecedoresProdutoPromessa = carregarScriptAdmin("mapas-produto-modal.js?v=20260813-historico-sem-duplicados")
+        __fornecedoresProdutoPromessa = carregarScriptAdmin("mapas-produto-modal.js?v=20260815-historico-remover")
             .then(function () {
                 window.FornecedoresProdutoModal = {
                     abrir: function () {
@@ -1867,9 +1867,29 @@ function lerFornecedoresProdutoEditor(produtoAtual) {
     return fornecedores;
 }
 
+async function removerLinhaHistoricoEncomendaFornecedorProduto(dados) {
+    const pedidoId = String(dados?.pedidoId || "").trim();
+    const referencia = String(dados?.itemReferencia || dados?.produtoReferencia || "").trim();
+    if (!pedidoId || !referencia) {
+        throw new Error("Linha sem encomenda ou referência.");
+    }
+    const pedido = fornecedorPedidos.find(item => String(item.id) === pedidoId);
+    if (!pedido) {
+        throw new Error("Encomenda não encontrada.");
+    }
+    const itens = serializarItensPedidoFornecedor(pedido.itens || []);
+    const restantes = itens.filter(item => !correspondeReferenciaListaFornecedor(item.referencia, referencia));
+    if (restantes.length === itens.length) {
+        throw new Error("Produto não encontrado nesta encomenda.");
+    }
+    const atualizado = await atualizarPedidoFornecedor(pedidoId, { itens: restantes });
+    return atualizado;
+}
+
 window.FornecedoresProdutoEditorExt = {
     montarSecao: montarSecaoFornecedoresProdutoEditor,
-    lerFornecedores: lerFornecedoresProdutoEditor
+    lerFornecedores: lerFornecedoresProdutoEditor,
+    removerLinhaHistoricoEncomenda: removerLinhaHistoricoEncomendaFornecedorProduto
 };
 
 function obterFornecedorMarcacaoFiltro(fornecedorEncomenda) {
