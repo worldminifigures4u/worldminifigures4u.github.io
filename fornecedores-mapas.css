@@ -3336,14 +3336,7 @@ body.pagina-fornecedores-admin.pagina-fornecedores-unificada {
 }
 
 .pagina-fornecedores-unificada .fornecedor-lista-controles.mapas-lista-controles.fornecedor-controles-unificados::before {
-    content: "";
-    position: absolute;
-    left: 0;
-    right: 0;
-    bottom: 100%;
-    height: 28px;
-    background: #141414;
-    pointer-events: none;
+    content: none;
 }
 
 .pagina-fornecedores-unificada .fornecedor-resumo-encomenda {
