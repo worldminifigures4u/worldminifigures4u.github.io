@@ -1045,18 +1045,18 @@ body.pagina-mapas-admin > main.fornecedores-admin {
 }
 
 .pagina-fornecedores-unificada .fornecedor-acoes-encomenda-resumo .wallapop-botao {
-    min-height: 32px;
+    min-height: 30px;
     width: auto;
-    min-width: 104px;
-    padding: 6px 12px;
-    font-size: 12px;
+    min-width: 76px;
+    padding: 5px 9px;
+    font-size: 11px;
     white-space: nowrap;
 }
 
 .pagina-fornecedores-unificada .fornecedor-acoes-encomenda-resumo #btn-juntar-selecao-fornecedor {
-    min-width: 220px;
-    white-space: normal;
-    line-height: 1.15;
+    min-width: 92px;
+    white-space: nowrap;
+    line-height: 1;
 }
 
 .pagina-mapas-admin .fornecedor-resultados {
