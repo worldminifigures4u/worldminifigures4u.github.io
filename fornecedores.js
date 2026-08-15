@@ -1674,7 +1674,7 @@ function classificarValorFornecedor(valor) {
     return { tipo: marcacao.tipo, texto: marcacao.texto };
 }
 
-function criarBlocoHistoricoFornecedorFicha(form, id, rotulo, valor) {
+function criarBlocoHistoricoFornecedorFicha(form, id, rotulo, valor, opcoes = {}) {
     const marcacao = normalizarMarcacaoFornecedor(valor);
     let historicoAtual = (marcacao.historico || []).map((item) => ({
         tipo: item.tipo,
@@ -1775,6 +1775,9 @@ function criarBlocoHistoricoFornecedorFicha(form, id, rotulo, valor) {
 
     renderizarLista();
     bloco.append(lista, label);
+    if (opcoes.produto) {
+        montarHistoricoEncomendasFornecedorEditor(bloco, opcoes.produto, rotulo);
+    }
 
     botaoLimpar.addEventListener("click", () => {
         if (!window.confirm(`Limpar o histórico de ${rotulo} nesta ficha?\n\nA marcação atual também fica vazia. Só fica definitivo ao guardar o produto.`)) {
@@ -1790,6 +1793,113 @@ function criarBlocoHistoricoFornecedorFicha(form, id, rotulo, valor) {
     return input;
 }
 
+function produtoCorrespondeItemHistoricoFornecedorEditor(produto, item) {
+    const produtoRef = String(produto?.referencia || "").trim();
+    const itemRef = String(item?.referencia || "").trim();
+    return Boolean(produtoRef && itemRef && correspondeReferenciaListaFornecedor(produtoRef, itemRef));
+}
+
+function obterDataHistoricoPedidoFornecedorEditor(pedido) {
+    return pedido?.data_encomendada || pedido?.criado_em || pedido?.atualizado_em || "";
+}
+
+function obterLinhasHistoricoEncomendasFornecedorEditor(produto, fornecedorNome) {
+    const fornecedorChave = normalizarChaveFornecedor(fornecedorNome);
+    if (!produto?.referencia || !fornecedorChave) return [];
+    const linhas = [];
+    fornecedorPedidos.forEach((pedido) => {
+        if (normalizarChaveFornecedor(pedido?.fornecedor) !== fornecedorChave) return;
+        (pedido.itens || []).forEach((item) => {
+            if (!produtoCorrespondeItemHistoricoFornecedorEditor(produto, item)) return;
+            const pedidoQtd = Math.max(0, Math.floor(Number(item?.quantidade || 0)));
+            if (pedidoQtd <= 0) return;
+            linhas.push({
+                pedido,
+                item,
+                pedidoQtd,
+                recebido: Math.max(0, Math.floor(Number(item?.recebido || 0))),
+                data: obterDataHistoricoPedidoFornecedorEditor(pedido)
+            });
+        });
+    });
+    return linhas.sort((a, b) => {
+        const dataA = Date.parse(a.data || 0) || 0;
+        const dataB = Date.parse(b.data || 0) || 0;
+        return dataB - dataA;
+    });
+}
+
+function obterTextoEstadoLinhaHistoricoFornecedorEditor(linha) {
+    const faltaOs = Math.max(0, Math.floor(Number(linha?.item?.falta_os || 0)));
+    if (faltaOs > 0) return `OS: ${faltaOs}`;
+    const estadoItem = String(linha?.item?.estado_fornecedor || "").trim();
+    if (estadoItem) return estadoItem;
+    return linha?.pedido?.estado || "—";
+}
+
+function montarHistoricoEncomendasFornecedorEditor(bloco, produto, fornecedorNome) {
+    const linhas = obterLinhasHistoricoEncomendasFornecedorEditor(produto, fornecedorNome);
+    if (!linhas.length) return;
+
+    const titulo = document.createElement("span");
+    titulo.className = "fornecedor-historico-encomendas-titulo";
+    titulo.textContent = "Linhas em encomendas";
+    bloco.appendChild(titulo);
+
+    const lista = document.createElement("ul");
+    lista.className = "fornecedor-historico-lista fornecedor-historico-encomendas-lista";
+
+    linhas.forEach((linha) => {
+        const li = document.createElement("li");
+        li.className = "fornecedor-historico-item fornecedor-historico-item-encomenda";
+        const data = document.createElement("span");
+        data.className = "fornecedor-historico-data";
+        data.textContent = linha.data ? formatarDataPedidoFornecedor(linha.data) : "sem data";
+
+        const resumo = document.createElement("span");
+        resumo.className = "fornecedor-historico-estado";
+        const codigo = obterTextoCodigoPedidoFornecedor(linha.pedido);
+        resumo.textContent = `${codigo} · pedido ${linha.pedidoQtd} · recebido ${linha.recebido} · ${obterTextoEstadoLinhaHistoricoFornecedorEditor(linha)}`;
+
+        const apagar = document.createElement("button");
+        apagar.type = "button";
+        apagar.className = "fornecedor-historico-apagar";
+        apagar.title = "Remover esta linha da encomenda";
+        apagar.setAttribute("aria-label", `Remover linha ${codigo}`);
+        apagar.textContent = "×";
+        apagar.addEventListener("click", async () => {
+            if (!window.confirm(`Remover ${produto.nome || "este produto"} da encomenda ${codigo}?\n\nIsto apaga esta linha do histórico a fornecedores.`)) {
+                return;
+            }
+            apagar.disabled = true;
+            try {
+                await removerLinhaHistoricoEncomendaFornecedorProduto({
+                    pedidoId: linha.pedido.id,
+                    pedidoCodigo: codigo,
+                    itemReferencia: linha.item.referencia || produto.referencia,
+                    produtoId: produto.id || "",
+                    produtoNome: produto.nome || "",
+                    produtoReferencia: produto.referencia || ""
+                });
+                li.remove();
+                if (!lista.children.length) {
+                    titulo.remove();
+                    lista.remove();
+                }
+            } catch (erro) {
+                console.error(erro);
+                window.alert("Não foi possível remover esta linha: " + (erro.message || "erro desconhecido"));
+                apagar.disabled = false;
+            }
+        });
+
+        li.append(data, resumo, apagar);
+        lista.appendChild(li);
+    });
+
+    bloco.appendChild(lista);
+}
+
 function obterNomesFornecedoresEditorProduto(produto) {
     const nomes = [];
     const vistos = new Set();
@@ -1803,6 +1913,11 @@ function obterNomesFornecedoresEditorProduto(produto) {
     fornecedorFichas
         .filter((ficha) => ficha?.ativo !== false)
         .forEach((ficha) => adicionar(ficha.nome));
+    fornecedorPedidos.forEach((pedido) => {
+        if ((pedido.itens || []).some((item) => produtoCorrespondeItemHistoricoFornecedorEditor(produto, item))) {
+            adicionar(pedido.fornecedor);
+        }
+    });
     Object.keys(obterObjetoFornecedoresProduto(produto)).forEach(adicionar);
     return nomes;
 }
@@ -1824,7 +1939,8 @@ function montarSecaoFornecedoresProdutoEditor(campos, produto) {
             secao,
             `mapas-editar-fornecedor-${chave}`,
             nome,
-            obterValorFornecedorPorNomeEditor(produto, nome)
+            obterValorFornecedorPorNomeEditor(produto, nome),
+            { produto }
         );
         input.dataset.fornecedorNome = nome;
         input.dataset.fornecedorChave = chave;

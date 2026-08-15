@@ -2881,6 +2881,18 @@ body.pagina-mapas-admin > main.fornecedores-admin {
     overflow: auto;
 }
 
+.fornecedor-historico-encomendas-titulo {
+    display: block;
+    margin-top: 8px;
+    color: #ffc400;
+    font-size: 12px;
+    font-weight: 800;
+}
+
+.fornecedor-historico-encomendas-lista {
+    margin-top: 6px;
+}
+
 .fornecedor-historico-item {
     display: grid;
     grid-template-columns: minmax(110px, auto) minmax(0, 1fr) auto;
@@ -2891,6 +2903,11 @@ body.pagina-mapas-admin > main.fornecedores-admin {
     border-radius: 6px;
     background: #1f1f1f;
     font-size: 13px;
+}
+
+.fornecedor-historico-item-encomenda {
+    background: #201d12;
+    border-color: #6d5600;
 }
 
 .fornecedor-historico-data {
