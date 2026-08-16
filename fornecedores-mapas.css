@@ -827,7 +827,8 @@ body.pagina-mapas-admin > main.fornecedores-admin {
     --fp-cabecalho-tabela-acento: rgba(255, 196, 0, 0.42);
 }
 
-.pagina-fornecedores-unificada .fornecedor-controles-unificados label {
+.pagina-fornecedores-unificada .fornecedor-controles-unificados label,
+.pagina-fornecedores-unificada .fornecedor-filtros-marcacao-extra label {
     gap: 4px;
     font-size: var(--fp-fonte-ui-pequena);
     font-weight: 700;
@@ -844,6 +845,8 @@ body.pagina-mapas-admin > main.fornecedores-admin {
 
 .pagina-fornecedores-unificada .fornecedor-controles-unificados input,
 .pagina-fornecedores-unificada .fornecedor-controles-unificados select,
+.pagina-fornecedores-unificada .fornecedor-filtros-marcacao-extra input,
+.pagina-fornecedores-unificada .fornecedor-filtros-marcacao-extra select,
 .pagina-fornecedores-unificada .fornecedor-resumo-pesquisa .fornecedor-pesquisa-compacta {
     min-height: var(--fp-altura-campo);
     box-sizing: border-box;
@@ -884,6 +887,8 @@ body.pagina-mapas-admin > main.fornecedores-admin {
 
 .pagina-fornecedores-unificada .fornecedor-controles-unificados input:focus,
 .pagina-fornecedores-unificada .fornecedor-controles-unificados select:focus,
+.pagina-fornecedores-unificada .fornecedor-filtros-marcacao-extra input:focus,
+.pagina-fornecedores-unificada .fornecedor-filtros-marcacao-extra select:focus,
 .pagina-fornecedores-unificada .fornecedor-filtro-estado-select:focus,
 .pagina-fornecedores-unificada .fornecedor-resumo-pesquisa .fornecedor-pesquisa-compacta:focus {
     border-color: var(--fp-cor-destaque);
