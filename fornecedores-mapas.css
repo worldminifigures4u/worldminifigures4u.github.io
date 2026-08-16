@@ -649,10 +649,10 @@ body.pagina-fornecedores-admin{ margin:0; padding-left:0; padding-right:0; paddi
                 grid-template-columns:minmax(0,1fr);
                 grid-template-areas:
                     "fornecedor"
+                    "marcacoes"
                     "top"
                     "arquivado"
-                    "descontinuado"
-                    "marcacoes";
+                    "descontinuado";
             }
             .pagina-fornecedores-unificada .fornecedor-controles-unificados .fornecedor-seletor-label,
             .pagina-fornecedores-unificada .fornecedor-controles-unificados .fornecedor-filtros-marcacao-bloco,
@@ -721,10 +721,9 @@ body.pagina-mapas-admin > main.fornecedores-admin {
 
 .pagina-fornecedores-unificada .fornecedor-lista-controles.mapas-lista-controles.fornecedor-controles-unificados {
     display: grid;
-    grid-template-columns: minmax(360px, 1.2fr) minmax(130px, .55fr) minmax(150px, .6fr) minmax(150px, .6fr);
+    grid-template-columns: minmax(260px, 1fr) minmax(320px, 1.3fr) minmax(110px, .5fr) minmax(120px, .55fr) minmax(140px, .6fr);
     grid-template-areas:
-        "fornecedor top arquivado descontinuado"
-        "marcacoes marcacoes marcacoes marcacoes";
+        "fornecedor marcacoes top arquivado descontinuado";
     align-items: end;
     gap: 8px;
 }
