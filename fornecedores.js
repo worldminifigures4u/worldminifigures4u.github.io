@@ -414,7 +414,9 @@ function obterOpcoesMarcacaoFornecedor() {
 }
 
 function obterFiltrosMarcacaoFornecedor(incluirNeutros = true) {
-    const linhas = Array.from(document.querySelectorAll("#fornecedor-filtros-marcacao .fornecedor-filtro-marcacao-linha"));
+    const linhas = Array.from(document.querySelectorAll(
+        "#fornecedor-filtros-marcacao .fornecedor-filtro-marcacao-linha, #fornecedor-filtros-marcacao-extra .fornecedor-filtro-marcacao-linha"
+    ));
     const filtros = linhas.map(linha => ({
         fornecedor: linha.querySelector(".fornecedor-filtro-marcacao-fornecedor-linha")?.value || "mesmo",
         marcacao: linha.querySelector(".fornecedor-filtro-marcacao-estado-linha")?.value || "todos"
@@ -466,11 +468,13 @@ function criarSelectEstadoMarcacaoFornecedor(valorAtual) {
 }
 
 function renderizarLinhasFiltroMarcacaoFornecedor(filtros = null) {
-    const caixa = document.getElementById("fornecedor-filtros-marcacao");
-    if (!caixa) return;
+    const caixaPrincipal = document.getElementById("fornecedor-filtros-marcacao");
+    const caixaExtra = document.getElementById("fornecedor-filtros-marcacao-extra");
+    if (!caixaPrincipal || !caixaExtra) return;
     const atuais = filtros || obterFiltrosMarcacaoFornecedor(true);
     const linhas = atuais.length ? atuais : [{ fornecedor: "mesmo", marcacao: "disponivel" }];
-    caixa.replaceChildren();
+    caixaPrincipal.replaceChildren();
+    caixaExtra.replaceChildren();
 
     linhas.forEach((filtro, indice) => {
         const linha = document.createElement("div");
@@ -496,14 +500,15 @@ function renderizarLinhasFiltroMarcacaoFornecedor(filtros = null) {
             fornecedorEscondido.className = "fornecedor-filtro-marcacao-fornecedor-linha";
             fornecedorEscondido.value = "mesmo";
             linha.append(fornecedorEscondido, grupoMarcacao, remover);
+            caixaPrincipal.appendChild(linha);
         } else {
             const grupoFornecedor = document.createElement("label");
             grupoFornecedor.className = "fornecedor-controle-filtro-compacto";
             grupoFornecedor.textContent = "Fornecedor";
             grupoFornecedor.appendChild(criarSelectFiltroMarcacaoFornecedor(filtro.fornecedor));
             linha.append(grupoFornecedor, grupoMarcacao, remover);
+            caixaExtra.appendChild(linha);
         }
-        caixa.appendChild(linha);
     });
 }
 
@@ -515,19 +520,24 @@ function adicionarLinhaFiltroMarcacaoFornecedor() {
 }
 
 function ligarFiltrosMarcacaoFornecedor() {
-    const caixa = document.getElementById("fornecedor-filtros-marcacao");
-    if (caixa) {
+    const ligarCaixa = caixa => {
+        if (!caixa) return;
         caixa.addEventListener("change", agendarRenderizacaoResultadosFornecedor);
         caixa.addEventListener("click", evento => {
             const botao = evento.target.closest(".fornecedor-btn-remover-filtro-marcacao");
             if (!botao) return;
             const linha = botao.closest(".fornecedor-filtro-marcacao-linha");
-            if (!linha || caixa.querySelectorAll(".fornecedor-filtro-marcacao-linha").length <= 1) return;
+            const totalLinhas = document.querySelectorAll(
+                "#fornecedor-filtros-marcacao .fornecedor-filtro-marcacao-linha, #fornecedor-filtros-marcacao-extra .fornecedor-filtro-marcacao-linha"
+            ).length;
+            if (!linha || totalLinhas <= 1) return;
             linha.remove();
             renderizarLinhasFiltroMarcacaoFornecedor(obterFiltrosMarcacaoFornecedor(true));
             agendarRenderizacaoResultadosFornecedor();
         });
-    }
+    };
+    ligarCaixa(document.getElementById("fornecedor-filtros-marcacao"));
+    ligarCaixa(document.getElementById("fornecedor-filtros-marcacao-extra"));
     document.querySelector('label[for="fornecedor-filtro-marcacao-fornecedor"]')?.setAttribute("hidden", "");
     document.querySelector('label[for="fornecedor-filtro-marcacao"]')?.setAttribute("hidden", "");
 }
