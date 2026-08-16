@@ -15,7 +15,7 @@ body.pagina-fornecedores-admin{ margin:0; padding-left:0; padding-right:0; paddi
         .fornecedor-lista-controles{ display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; margin:10px 0 12px; }
         .fornecedor-lista-controles label{ display:grid; gap:5px; color:#ddd; font-weight:700; }
         .fornecedor-lista-controles select{ width:100%; box-sizing:border-box; border:1px solid #444; border-radius:6px; background:#242424; color:#fff; padding:10px 12px; font:inherit; }
-        .fornecedor-seletor-linha{ display:grid; grid-template-columns:max-content auto; gap:8px; align-items:center; }
+        .fornecedor-seletor-linha{ display:grid; grid-template-columns:minmax(0,1fr) auto; gap:8px; align-items:center; }
         .fornecedor-btn-editar-ficha{
             min-height:42px;
             padding:10px 12px;
@@ -195,7 +195,7 @@ body.pagina-fornecedores-admin{ margin:0; padding-left:0; padding-right:0; paddi
             cursor:not-allowed;
         }
         .pagina-fornecedores-unificada .fornecedor-controle-filtro-compacto select{
-            width:auto;
+            width:100%;
             max-width:100%;
             box-sizing:border-box;
             padding:10px 28px 10px 12px;
@@ -213,10 +213,9 @@ body.pagina-fornecedores-admin{ margin:0; padding-left:0; padding-right:0; paddi
             font:inherit;
         }
         .pagina-fornecedores-unificada .fornecedor-controles-unificados .fornecedor-seletor-linha select{
-            width:auto;
+            width:100%;
             padding:10px 12px;
             font:inherit;
-            field-sizing:content;
         }
         .pagina-fornecedores-unificada .fornecedor-controles-unificados input,
         .pagina-fornecedores-unificada .fornecedor-controles-unificados select{
@@ -723,7 +722,7 @@ body.pagina-mapas-admin > main.fornecedores-admin {
 
 .pagina-fornecedores-unificada .fornecedor-lista-controles.mapas-lista-controles.fornecedor-controles-unificados {
     display: grid;
-    grid-template-columns: max-content max-content max-content max-content max-content;
+    grid-template-columns: minmax(260px, 1fr) minmax(320px, 1.3fr) minmax(110px, .5fr) minmax(120px, .55fr) minmax(140px, .6fr);
     grid-template-areas:
         "fornecedor marcacoes top arquivado descontinuado";
     align-items: end;
@@ -737,40 +736,40 @@ body.pagina-mapas-admin > main.fornecedores-admin {
 .pagina-fornecedores-unificada .fornecedor-controles-unificados .fornecedor-seletor-label {
     grid-area: fornecedor;
     max-width: none;
-    width: max-content;
+    width: 100%;
 }
 
 .pagina-fornecedores-unificada .fornecedor-controles-unificados .fornecedor-filtros-marcacao-bloco {
     grid-area: marcacoes;
     display: grid;
-    grid-template-columns: max-content 42px;
+    grid-template-columns: minmax(0, 1fr) 42px;
     align-items: end;
     gap: 8px;
-    width: max-content;
+    width: 100%;
 }
 
 .pagina-fornecedores-unificada .fornecedor-controles-unificados .fornecedor-filtros-marcacao {
     display: grid;
-    grid-template-columns: max-content;
+    grid-template-columns: minmax(0, 1fr);
     gap: 8px;
-    width: max-content;
+    width: 100%;
 }
 
 .pagina-fornecedores-unificada .fornecedor-controles-unificados .fornecedor-filtro-marcacao-linha {
     display: grid;
-    grid-template-columns: max-content max-content 42px;
+    grid-template-columns: minmax(260px, 1fr) minmax(180px, .55fr) 42px;
     align-items: end;
     gap: 8px;
     min-width: 0;
-    width: max-content;
+    width: 100%;
 }
 
 .pagina-fornecedores-unificada .fornecedor-controles-unificados .fornecedor-filtro-marcacao-linha.fornecedor-filtro-marcacao-linha-simples {
-    grid-template-columns: max-content 42px;
+    grid-template-columns: minmax(180px, 1fr) 42px;
 }
 
 .pagina-fornecedores-unificada .fornecedor-controles-unificados .fornecedor-filtro-marcacao-linha .fornecedor-controle-filtro-compacto {
-    width: max-content;
+    width: 100%;
 }
 
 .pagina-fornecedores-unificada .fornecedor-controles-unificados label[for="fornecedor-filtro-top"] {
