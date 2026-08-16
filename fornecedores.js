@@ -499,7 +499,7 @@ function renderizarLinhasFiltroMarcacaoFornecedor(filtros = null) {
         } else {
             const grupoFornecedor = document.createElement("label");
             grupoFornecedor.className = "fornecedor-controle-filtro-compacto";
-            grupoFornecedor.textContent = "Ver marcacao em";
+            grupoFornecedor.textContent = "Fornecedor";
             grupoFornecedor.appendChild(criarSelectFiltroMarcacaoFornecedor(filtro.fornecedor));
             linha.append(grupoFornecedor, grupoMarcacao, remover);
         }
