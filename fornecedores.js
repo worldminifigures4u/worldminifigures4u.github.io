@@ -474,12 +474,9 @@ function renderizarLinhasFiltroMarcacaoFornecedor(filtros = null) {
 
     linhas.forEach((filtro, indice) => {
         const linha = document.createElement("div");
-        linha.className = "fornecedor-filtro-marcacao-linha";
-
-        const grupoFornecedor = document.createElement("label");
-        grupoFornecedor.className = "fornecedor-controle-filtro-compacto";
-        grupoFornecedor.textContent = "Ver marcacao em";
-        grupoFornecedor.appendChild(criarSelectFiltroMarcacaoFornecedor(filtro.fornecedor));
+        linha.className = indice === 0
+            ? "fornecedor-filtro-marcacao-linha fornecedor-filtro-marcacao-linha-simples"
+            : "fornecedor-filtro-marcacao-linha";
 
         const grupoMarcacao = document.createElement("label");
         grupoMarcacao.className = "fornecedor-controle-filtro-compacto";
@@ -493,7 +490,19 @@ function renderizarLinhasFiltroMarcacaoFornecedor(filtros = null) {
         remover.title = "Remover linha de filtro";
         remover.disabled = linhas.length <= 1;
 
-        linha.append(grupoFornecedor, grupoMarcacao, remover);
+        if (indice === 0) {
+            const fornecedorEscondido = document.createElement("input");
+            fornecedorEscondido.type = "hidden";
+            fornecedorEscondido.className = "fornecedor-filtro-marcacao-fornecedor-linha";
+            fornecedorEscondido.value = "mesmo";
+            linha.append(fornecedorEscondido, grupoMarcacao, remover);
+        } else {
+            const grupoFornecedor = document.createElement("label");
+            grupoFornecedor.className = "fornecedor-controle-filtro-compacto";
+            grupoFornecedor.textContent = "Ver marcacao em";
+            grupoFornecedor.appendChild(criarSelectFiltroMarcacaoFornecedor(filtro.fornecedor));
+            linha.append(grupoFornecedor, grupoMarcacao, remover);
+        }
         caixa.appendChild(linha);
     });
 }
