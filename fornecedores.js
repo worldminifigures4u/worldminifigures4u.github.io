@@ -4423,6 +4423,15 @@ function renderizarPedidosFornecedores() {
             linha.classList.add("com-destino-selecao");
             linha.appendChild(criarElementoPedidoFornecedor("span", "fornecedor-pedido-destino-selecao", "Destino seleção"));
         }
+        const imprimirRapido = criarElementoPedidoFornecedor("button", "wallapop-botao fornecedor-pedido-imprimir-rapido", "Imprimir");
+        imprimirRapido.type = "button";
+        imprimirRapido.title = `Imprimir encomenda ${obterTextoCodigoPedidoFornecedor(pedido)}`;
+        imprimirRapido.addEventListener("click", evento => {
+            evento.stopPropagation();
+            imprimirPedidoFornecedor(pedido.id);
+        });
+        imprimirRapido.addEventListener("keydown", evento => evento.stopPropagation());
+        linha.appendChild(imprimirRapido);
         cabecalho.append(linha, criarElementoPedidoFornecedor("span", "admin-encomenda-seta", "▾"));
 
         card.appendChild(cabecalho);

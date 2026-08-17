@@ -277,12 +277,18 @@ body.pagina-fornecedores-admin{ margin:0; padding-left:0; padding-right:0; paddi
             max-width:100%;
         }
         .fornecedor-pedido-cabecalho .admin-encomenda-linha.fornecedor-pedido-linha-cabecalho{
-            grid-template-columns:minmax(70px,.72fr) minmax(82px,.82fr) minmax(92px,.95fr) minmax(0,1.35fr) minmax(96px,auto);
+            grid-template-columns:minmax(70px,.72fr) minmax(82px,.82fr) minmax(92px,.95fr) minmax(0,1.35fr) minmax(96px,auto) minmax(72px,auto);
             column-gap:8px;
         }
         .fornecedor-pedido-cabecalho .admin-encomenda-linha.fornecedor-pedido-linha-cabecalho.com-destino-selecao{
-            grid-template-columns:minmax(70px,.68fr) minmax(82px,.78fr) minmax(90px,.9fr) minmax(0,1.15fr) minmax(88px,auto) minmax(72px,auto);
+            grid-template-columns:minmax(70px,.68fr) minmax(82px,.78fr) minmax(90px,.9fr) minmax(0,1.15fr) minmax(88px,auto) minmax(72px,auto) minmax(72px,auto);
             column-gap:8px;
+        }
+        .fornecedor-pedido-imprimir-rapido{
+            justify-self:end;
+            padding:4px 10px;
+            font-size:12px;
+            white-space:nowrap;
         }
         .fornecedor-pedido-destino-selecao{
             justify-self:end;
@@ -1865,7 +1871,8 @@ body.pagina-mapas-admin > main.fornecedores-admin {
         "codigo estado"
         "data fornecedor"
         "resumo resumo"
-        "destino destino";
+        "destino destino"
+        "imprimir imprimir";
     align-items: center;
     min-height: 0;
     row-gap: 3px;
@@ -1877,7 +1884,8 @@ body.pagina-mapas-admin > main.fornecedores-admin {
     grid-template-areas:
         "codigo estado"
         "data fornecedor"
-        "resumo resumo";
+        "resumo resumo"
+        "imprimir imprimir";
     row-gap: 3px;
     column-gap: 8px;
 }
@@ -1920,6 +1928,13 @@ body.pagina-mapas-admin > main.fornecedores-admin {
     max-width: 100%;
     font-size: 10px;
     padding: 2px 6px;
+}
+
+.pagina-fornecedores-unificada .fornecedores-coluna-direita .fornecedor-pedido-imprimir-rapido {
+    grid-area: imprimir;
+    justify-self: end;
+    font-size: 11px;
+    padding: 3px 9px;
 }
 
 .pagina-fornecedores-unificada .fornecedor-acoes-encomenda-resumo #btn-juntar-selecao-fornecedor:disabled {
@@ -3256,7 +3271,8 @@ body.mapas-produto-modal-aberto {
         "fornecedor"
         "estado"
         "resumo"
-        "destino";
+        "destino"
+        "imprimir";
     gap: 4px;
     align-items: start;
     min-height: 0;
