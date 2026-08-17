@@ -438,10 +438,6 @@ function obterFiltrosMarcacaoFornecedor(incluirNeutros = true) {
 function criarSelectFiltroMarcacaoFornecedor(valorAtual) {
     const select = document.createElement("select");
     select.className = "fornecedor-filtro-marcacao-fornecedor-linha";
-    const opcaoMesma = document.createElement("option");
-    opcaoMesma.value = "mesmo";
-    opcaoMesma.textContent = "Fornecedor selecionado";
-    select.appendChild(opcaoMesma);
     fornecedorFichas
         .filter(ficha => ficha.ativo)
         .forEach(ficha => {
@@ -450,7 +446,8 @@ function criarSelectFiltroMarcacaoFornecedor(valorAtual) {
             option.textContent = ficha.nome;
             select.appendChild(option);
         });
-    select.value = Array.from(select.options).some(option => option.value === valorAtual) ? valorAtual : "mesmo";
+    const valorPadrao = select.options[0]?.value || "";
+    select.value = Array.from(select.options).some(option => option.value === valorAtual) ? valorAtual : valorPadrao;
     return select;
 }
 
@@ -514,7 +511,11 @@ function renderizarLinhasFiltroMarcacaoFornecedor(filtros = null) {
 
 function adicionarLinhaFiltroMarcacaoFornecedor() {
     const filtros = obterFiltrosMarcacaoFornecedor(true);
-    filtros.push({ fornecedor: "mesmo", marcacao: "todos" });
+    const atual = document.getElementById("fornecedor-nome")?.value || "";
+    const jaUsados = new Set(filtros.map(filtro => filtro.fornecedor).concat(atual));
+    const fornecedores = fornecedorFichas.filter(ficha => ficha.ativo).map(ficha => ficha.nome);
+    const proximo = fornecedores.find(nome => !jaUsados.has(nome)) || fornecedores[0] || "";
+    filtros.push({ fornecedor: proximo, marcacao: "todos" });
     renderizarLinhasFiltroMarcacaoFornecedor(filtros);
     agendarRenderizacaoResultadosFornecedor();
 }
