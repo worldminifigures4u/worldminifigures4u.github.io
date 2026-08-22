@@ -670,6 +670,16 @@ function obterOpcaoEnvioPadraoPlataforma(plataforma) {
     return null;
 }
 
+function obterOpcaoInPostTodocoleccionFallback(peso) {
+    const tabela = (typeof TABELA_PORTES_POR_PESO !== 'undefined' && TABELA_PORTES_POR_PESO)
+        ? TABELA_PORTES_POR_PESO
+        : {};
+    const zonaEspanha = tabela.espanha || [];
+    const opcoesEspanha = (zonaEspanha.find(linha => peso <= linha.ate) || zonaEspanha[zonaEspanha.length - 1])?.opcoes || [];
+    return opcoesEspanha.find(opcao => opcao.id === 'inpost_registado')
+        || { id: 'inpost_registado', nome: 'InPost Registado', valor: peso > 1000 ? 5.81 : 5.12 };
+}
+
 function obterOpcoesEnvioPlataforma(regiao, peso) {
     const plataforma = obterPlataformaAtual();
     const padrao = obterOpcaoEnvioPadraoPlataforma(plataforma);
@@ -685,9 +695,12 @@ function obterOpcoesEnvioPlataforma(regiao, peso) {
     const zona = tabela[zonaEnvio] || tabela.portugal || [];
     if (!zona.length) return [{ ...ENTREGA_MAO_PLATAFORMA }];
     const opcoes = (zona.find(linha => peso <= linha.ate) || zona[zona.length - 1]).opcoes || [];
-    const filtradas = plataforma === 'Todocoleccion'
+    let filtradas = plataforma === 'Todocoleccion'
         ? opcoes.filter(opcao => opcao.id === 'ctt_registado' || opcao.id === 'inpost_registado')
         : opcoes;
+    if (plataforma === 'Todocoleccion' && !filtradas.some(opcao => opcao.id === 'inpost_registado')) {
+        filtradas = [...filtradas, obterOpcaoInPostTodocoleccionFallback(peso)];
+    }
     return [...filtradas, { ...ENTREGA_MAO_PLATAFORMA }];
 }
 
