@@ -1588,6 +1588,9 @@ window.AdminEncomendaVista = (function () {
             if (estado === "Concluído" && typeof opcoes.fecharAoConcluir === "function") {
                 opcoes.fecharAoConcluir(encomenda);
             }
+            if (estado === "Pago" && estadoAnterior !== "Pago" && typeof opcoes.fecharAoPagar === "function") {
+                opcoes.fecharAoPagar(encomenda);
+            }
             if (emitirFaturaDepois) {
                 emitirFaturaMoloniEmSegundoPlano(encomenda, { forcarEmissao: forcarEmissaoFatura });
             }

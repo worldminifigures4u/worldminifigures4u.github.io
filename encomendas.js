@@ -481,7 +481,8 @@ function abrirModalEncomendaAdmin(encomenda) {
     conteudo.replaceChildren(AdminEncomendaVista.criarCardEncomenda(encomenda, {
         modoModal: true,
         abrirCliente: abrirFichaClienteAdmin,
-        fecharAoConcluir: fecharModalEncomendaAdmin
+        fecharAoConcluir: fecharModalEncomendaAdmin,
+        fecharAoPagar: fecharModalEncomendaAdmin
     }));
     if (titulo) titulo.textContent = `Encomenda ${encomenda.codigo_encomenda || encomenda.id || ''}`.trim();
     modal.hidden = false;
