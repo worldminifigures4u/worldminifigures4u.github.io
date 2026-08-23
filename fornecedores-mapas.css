@@ -1868,7 +1868,7 @@ body.pagina-mapas-admin > main.fornecedores-admin {
 .pagina-fornecedores-unificada .fornecedores-coluna-direita .fornecedor-pedido-cabecalho .admin-encomenda-linha.fornecedor-pedido-linha-cabecalho.com-destino-selecao {
     grid-template-columns: minmax(0, 1fr) auto;
     grid-template-areas:
-        "codigo estado"
+        "codigo fornecedor"
         "data fornecedor"
         "resumo resumo"
         "destino destino"
@@ -1882,7 +1882,7 @@ body.pagina-mapas-admin > main.fornecedores-admin {
 .pagina-fornecedores-unificada .fornecedores-coluna-direita .fornecedor-pedido-cabecalho .admin-encomenda-linha.fornecedor-pedido-linha-cabecalho {
     grid-template-columns: minmax(0, 1fr) auto;
     grid-template-areas:
-        "codigo estado"
+        "codigo fornecedor"
         "data fornecedor"
         "resumo resumo"
         "imprimir imprimir";
@@ -1914,12 +1914,6 @@ body.pagina-mapas-admin > main.fornecedores-admin {
     max-width: 100%;
     font-size: 11px;
     line-height: 1.2;
-}
-
-.pagina-fornecedores-unificada .fornecedores-coluna-direita .fornecedor-pedido-linha-cabecalho .estado-encomenda {
-    grid-area: estado;
-    font-size: 11px;
-    padding: 2px 6px;
 }
 
 .pagina-fornecedores-unificada .fornecedores-coluna-direita .fornecedor-pedido-destino-selecao {

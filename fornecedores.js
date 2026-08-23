@@ -4416,8 +4416,7 @@ function renderizarPedidosFornecedores() {
             criarElementoPedidoFornecedor("strong", "admin-encomenda-codigo", obterTextoCodigoPedidoFornecedor(pedido)),
             criarElementoPedidoFornecedor("span", "admin-encomenda-data", formatarDataPedidoFornecedor(obterDataExibicaoPedidoFornecedor(pedido))),
             criarElementoPedidoFornecedor("span", "fornecedor-pedido-fornecedor-nome", pedido.fornecedor || "Fornecedor"),
-            criarElementoPedidoFornecedor("span", "fornecedor-pedido-resumo", resumo),
-            criarElementoPedidoFornecedor("span", `estado-encomenda ${obterClasseBadgeEstadoPedidoFornecedor(pedido.estado)}`, pedido.estado || "A preparar")
+            criarElementoPedidoFornecedor("span", "fornecedor-pedido-resumo", resumo)
         );
         if (alvoJuntar) {
             linha.classList.add("com-destino-selecao");
