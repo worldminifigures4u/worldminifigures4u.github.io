@@ -68,7 +68,7 @@ function garantirFornecedoresProdutoModal() {
     if (window.FornecedoresProdutoModal) return Promise.resolve();
     if (!__fornecedoresProdutoPromessa) {
         prepararContextoProdutoFornecedor();
-        __fornecedoresProdutoPromessa = carregarScriptAdmin("mapas-produto-modal.js?v=20260815-produto-inativo")
+        __fornecedoresProdutoPromessa = carregarScriptAdmin("mapas-produto-modal.js?v=20260824-data-historico-criacao")
             .then(function () {
                 window.FornecedoresProdutoModal = {
                     abrir: function () {
@@ -95,7 +95,7 @@ function garantirFornecedoresEdicaoPedido() {
 function garantirFornecedoresPrintReceive() {
     if (window.FornecedoresPrintReceive) return Promise.resolve();
     if (!__fornecedoresPrintPromessa) {
-        __fornecedoresPrintPromessa = carregarScriptAdmin("fornecedores-print-receive.js?v=20260813-referencia-segura");
+        __fornecedoresPrintPromessa = carregarScriptAdmin("fornecedores-print-receive.js?v=20260824-data-historico-criacao");
     }
     return __fornecedoresPrintPromessa;
 }
@@ -788,6 +788,7 @@ function normalizarItemPedidoFornecedor(item) {
         quantidade_original: quantidadeOriginal,
         falta_os: faltaOs,
         data_os: item.data_os || null,
+        data_recebida: item.data_recebida || item.recebido_em || null,
         preco_custo: Number.isFinite(precoCusto) ? Math.max(0, precoCusto) : 0,
         estado_fornecedor: item.estado_fornecedor || (faltaOs > 0 ? 'OS' : ''),
         origem_ajuste: item.origem_ajuste || ''
@@ -953,6 +954,7 @@ function serializarItemPedidoFornecedor(item) {
         quantidade_original: Math.max(0, Math.floor(Number(normalizado.quantidade_original || normalizado.quantidade || 0))),
         falta_os: Math.max(0, Math.floor(Number(normalizado.falta_os || 0))),
         data_os: normalizado.data_os || null,
+        data_recebida: normalizado.data_recebida || null,
         estado_fornecedor: String(normalizado.estado_fornecedor || ''),
         origem_ajuste: String(normalizado.origem_ajuste || ''),
         recebido: Math.max(0, Math.floor(Number(normalizado.recebido || 0))),
@@ -1822,7 +1824,11 @@ function produtoCorrespondeItemHistoricoFornecedorEditor(produto, item) {
 }
 
 function obterDataHistoricoPedidoFornecedorEditor(pedido) {
-    return pedido?.data_encomendada || pedido?.criado_em || pedido?.atualizado_em || "";
+    return pedido?.criado_em || pedido?.created_at || pedido?.data || "";
+}
+
+function obterDataHistoricoItemFornecedorEditor(pedido, item, pedidoQtd, recebido) {
+    return obterDataHistoricoPedidoFornecedorEditor(pedido);
 }
 
 function obterLinhasHistoricoEncomendasFornecedorEditor(produto, fornecedorNome) {
@@ -1835,12 +1841,13 @@ function obterLinhasHistoricoEncomendasFornecedorEditor(produto, fornecedorNome)
             if (!produtoCorrespondeItemHistoricoFornecedorEditor(produto, item)) return;
             const pedidoQtd = Math.max(0, Math.floor(Number(item?.quantidade || 0)));
             if (pedidoQtd <= 0) return;
+            const recebido = Math.max(0, Math.floor(Number(item?.recebido || 0)));
             linhas.push({
                 pedido,
                 item,
                 pedidoQtd,
-                recebido: Math.max(0, Math.floor(Number(item?.recebido || 0))),
-                data: obterDataHistoricoPedidoFornecedorEditor(pedido)
+                recebido,
+                data: obterDataHistoricoItemFornecedorEditor(pedido, item, pedidoQtd, recebido)
             });
         });
     });

@@ -938,10 +938,11 @@ function obterDataMarcacaoEncomendadaMapa(produto, fornecedorNome) {
 }
 
 function obterDataLinhaEncomendaFornecedorMapa(produto, pedido) {
-    if (pedido?.data_encomendada) return pedido.data_encomendada;
-    const marcacao = obterDataMarcacaoEncomendadaMapa(produto, pedido?.fornecedor);
-    if (marcacao) return marcacao;
-    return pedido?.criado_em || "";
+    return pedido?.criado_em || pedido?.created_at || pedido?.data || "";
+}
+
+function obterDataHistoricoItemFornecedorMapa(produto, pedido, item, pedidoQtd, recebido) {
+    return obterDataLinhaEncomendaFornecedorMapa(produto, pedido);
 }
 
 function obterLinhasEncomendaFornecedorProdutoMapa(produto, pedidos) {
@@ -952,7 +953,7 @@ function obterLinhasEncomendaFornecedorProdutoMapa(produto, pedidos) {
             const pedidoQtd = obterQuantidadePedidaItemFornecedorMapa(item);
             if (pedidoQtd <= 0) return;
             const recebido = Math.max(0, Math.floor(Number(item.recebido || 0)));
-            const dataRef = obterDataLinhaEncomendaFornecedorMapa(produto, pedido);
+            const dataRef = obterDataHistoricoItemFornecedorMapa(produto, pedido, item, pedidoQtd, recebido);
             linhas.push({ pedido, item, pedidoQtd, recebido, dataRef });
         });
     });
