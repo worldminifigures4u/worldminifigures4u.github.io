@@ -73,6 +73,11 @@ function obterChaveDia(encomenda) {
     return `${data.getFullYear()}-${String(data.getMonth() + 1).padStart(2, '0')}-${String(data.getDate()).padStart(2, '0')}`;
 }
 
+function obterChaveDiaAtualEstatisticas() {
+    const data = new Date();
+    return `${data.getFullYear()}-${String(data.getMonth() + 1).padStart(2, '0')}-${String(data.getDate()).padStart(2, '0')}`;
+}
+
 function obterChaveMes(encomenda) {
     const chaveDia = obterChaveDia(encomenda);
     if (chaveDia === 'Sem data') return 'Sem data';
@@ -394,13 +399,9 @@ function definirPeriodoInicial() {
     definirTipoInputPeriodo(periodo);
 
     if (periodo === 'dia') {
-        const dias = estatisticasEncomendas
-            .map(obterChaveDia)
-            .filter(chave => /^\d{4}-\d{2}-\d{2}$/.test(chave))
-            .sort();
-        if (!dias.length) return;
-        document.getElementById('estatisticas-data-inicio').value = dias[0];
-        document.getElementById('estatisticas-data-fim').value = dias[dias.length - 1];
+        const hoje = obterChaveDiaAtualEstatisticas();
+        document.getElementById('estatisticas-data-inicio').value = hoje;
+        document.getElementById('estatisticas-data-fim').value = hoje;
         return;
     }
 
