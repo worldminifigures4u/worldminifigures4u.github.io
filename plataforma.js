@@ -1093,8 +1093,26 @@ function obterCandidatosLinhaListaPlataforma(textoOriginal) {
     });
 
     return [...mapa.values()]
-        .sort((a, b) => b.pontuacao - a.pontuacao || String(a.produto.nome).localeCompare(String(b.produto.nome), 'pt'))
+        .sort(compararCandidatosListaPlataforma)
         .slice(0, 8);
+}
+
+function compararCandidatosListaPlataforma(a, b) {
+    const diferencaPontuacao = b.pontuacao - a.pontuacao;
+    if (Math.abs(diferencaPontuacao) > 0.0001) return diferencaPontuacao;
+
+    const nomeA = normalizarTextoWallapop(a?.produto?.nome);
+    const nomeB = normalizarTextoWallapop(b?.produto?.nome);
+    if (nomeA && nomeA === nomeB) {
+        const stockA = Number(a?.produto?.stock || 0);
+        const stockB = Number(b?.produto?.stock || 0);
+        const stockPositivoA = stockA > 0 ? 1 : 0;
+        const stockPositivoB = stockB > 0 ? 1 : 0;
+        if (stockPositivoA !== stockPositivoB) return stockPositivoB - stockPositivoA;
+        if (stockA !== stockB) return stockB - stockA;
+    }
+
+    return String(a?.produto?.nome || '').localeCompare(String(b?.produto?.nome || ''), 'pt');
 }
 
 function resumirAnaliseListaPlataforma(linhas) {
