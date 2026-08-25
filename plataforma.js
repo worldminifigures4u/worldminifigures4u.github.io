@@ -84,6 +84,10 @@ function ehPlataformaEstiloAnuncio(plataforma) {
     return plataforma === 'Wallapop' || plataforma === 'Vinted';
 }
 
+function plataformaGeraImagensFicheiro(plataforma) {
+    return ehPlataformaEstiloAnuncio(plataforma) || plataforma === 'WhatsApp';
+}
+
 function atualizarBarraPerfilPlataforma(opcoes = {}) {
     const aviso = document.getElementById('plataforma-perfil-detetado');
     if (!aviso) return;
@@ -886,12 +890,13 @@ function atualizarResumoPlataforma() {
 function atualizarModoPlataforma() {
     const plataforma = obterPlataformaAtual();
     const anuncio = ehPlataformaEstiloAnuncio(plataforma);
+    const geraImagens = plataformaGeraImagensFicheiro(plataforma);
     const olx = plataforma === 'OLX';
     const todocoleccion = plataforma === 'Todocoleccion';
     document.getElementById('label-cliente-plataforma').textContent = 'Nome de utilizador';
     document.getElementById('wallapop-nome-cliente').placeholder = `Nome ou utilizador no ${plataforma}`;
     document.getElementById('plataforma-envio').hidden = false;
-    document.getElementById('wallapop-folha-escala').hidden = !anuncio;
+    document.getElementById('wallapop-folha-escala').hidden = !geraImagens;
     document.getElementById('plataforma-resumo').hidden = true;
     const linhaEnvio = document.getElementById('plataforma-envio-linha');
     const blocoPais = document.getElementById('plataforma-pais-envio-bloco');
@@ -902,15 +907,15 @@ function atualizarModoPlataforma() {
         : (anuncio ? `An\u00fancio ${plataforma}` : `Ficheiro ${plataforma}`);
     document.getElementById('plataforma-resumo-texto').textContent = olx
         ? 'Ser\u00e3o criados dois TXT: um para enviar ao cliente e outro para a gest\u00e3o interna.'
-        : (anuncio
-            ? 'Ser\u00e3o criados o PNG do an\u00fancio e o TXT da encomenda.'
+        : (geraImagens
+            ? 'Ser\u00e3o criados o PNG com as figuras e o TXT da encomenda.'
             : `Ser\u00e1 criado um TXT interno ${todocoleccion ? 'com quantidade, nome e SKU separados por tabula\u00e7\u00f5es.' : 'da encomenda.'}`);
     document.getElementById('btn-descarregar-wallapop').textContent = anuncio
         ? 'Guardar an\u00fancio'
         : (olx ? 'Guardar ficheiros OLX' : `Guardar ficheiro ${plataforma}`);
     atualizarBotaoRegistoPlataforma();
-    document.getElementById('plataforma-ajuda-ficheiros').textContent = anuncio
-        ? 'Ao guardar, ser\u00e3o criados o PNG e o TXT dentro da pasta da encomenda.'
+    document.getElementById('plataforma-ajuda-ficheiros').textContent = geraImagens
+        ? 'Ao guardar, ser\u00e3o criados o PNG com as figuras e o TXT dentro da pasta da encomenda.'
         : 'Ao guardar, escolhe a pasta de destino. Dentro dela ser\u00e1 criada uma pasta com o nome da encomenda.';
     marcarWallapopPorRegistar();
     atualizarOpcoesEnvioPlataforma();
@@ -2562,7 +2567,7 @@ async function descarregarImagemWallapop() {
         // O picker tem de abrir ainda no clique do utilizador.
         const pastaBase = await obterPastaBaseWallapop();
 
-        definirStatusWallapop('A gerar as imagens do anúncio...');
+        definirStatusWallapop('A gerar as imagens...');
         await garantirHtml2CanvasPlataforma();
         const paginasItens = dividirItensWallapop(itensFicheiros);
         if (!paginasItens.length) throw new Error('Nao existem folhas para exportar.');
@@ -2607,7 +2612,7 @@ async function descarregarImagemWallapop() {
 
 async function guardarFicheirosPlataforma() {
     const plataforma = obterPlataformaParaFicheiros();
-    if (ehPlataformaEstiloAnuncio(plataforma)) {
+    if (plataformaGeraImagensFicheiro(plataforma)) {
         await descarregarImagemWallapop();
         return;
     }
