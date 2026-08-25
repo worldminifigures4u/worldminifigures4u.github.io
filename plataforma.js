@@ -3023,6 +3023,7 @@ async function registarEncomendaWallapop() {
 
     let plataforma = obterPlataformaAtual();
     const eraEdicao = Boolean(encomendaPlataformaEmEdicao);
+    const plataformaOriginalEdicao = encomendaPlataformaEmEdicao?.origem || '';
     const botao = document.getElementById('btn-registar-wallapop');
     const campoPerfil = document.getElementById('plataforma-link-perfil');
     let linkPerfil = campoPerfil.value.trim();
@@ -3048,9 +3049,10 @@ async function registarEncomendaWallapop() {
             document.getElementById('plataforma-link-perfil').focus();
             return;
         }
-        if (!encomendaPlataformaEmEdicao && perfil.plataforma !== plataforma) {
+        if (perfil.plataforma !== plataforma) {
             const seletorPlataforma = document.getElementById('plataforma-tipo');
-            if (seletorPlataforma && !seletorPlataforma.disabled) {
+            const podeConverterEdicao = eraEdicao && plataformaOriginalEdicao === 'WhatsApp';
+            if (seletorPlataforma && (!seletorPlataforma.disabled || podeConverterEdicao)) {
                 seletorPlataforma.value = perfil.plataforma;
                 atualizarModoPlataforma();
                 plataforma = perfil.plataforma;
@@ -3184,6 +3186,29 @@ async function registarEncomendaWallapop() {
         let avisoPerfil = '';
 
         const encomendaId = String(data.encomenda?.id || encomendaPlataformaEmEdicao?.id || '');
+        if (encomendaId && eraEdicao && plataformaOriginalEdicao && plataformaOriginalEdicao !== plataforma) {
+            const origemAtualizada = ehPlataformaEstiloAnuncio(plataforma)
+                ? {
+                    origem: plataforma,
+                    metodo_pagamento: plataforma,
+                    regiao_envio: plataforma.toLowerCase(),
+                    metodo_envio: plataforma.toLowerCase(),
+                    metodo_envio_nome: plataforma,
+                    referencia_externa: null
+                }
+                : {
+                    origem: plataforma,
+                    metodo_pagamento: plataforma
+                };
+            const { error: erroOrigem } = await wallapopClient
+                .from('encomendas')
+                .update(origemAtualizada)
+                .eq('id', encomendaId);
+            if (erroOrigem) {
+                console.error('Erro ao atualizar origem da encomenda:', erroOrigem);
+                avisoPerfil += ` A encomenda foi guardada, mas continuou marcada como ${plataformaOriginalEdicao}.`;
+            }
+        }
         const metodoEnvio = obterEnvioPlataforma().id;
         if (encomendaId && !ehPlataformaEstiloAnuncio(obterPlataformaAtual()) && !metodoEnvioEntregaMaoPlataforma(metodoEnvio)) {
             const codigoSeguimento = document.getElementById('plataforma-codigo-seguimento')?.value.trim() || '';
