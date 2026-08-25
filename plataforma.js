@@ -372,6 +372,14 @@ function obterDadosClientePlataforma() {
     };
 }
 
+function obterTelefoneWhatsappAtualPlataforma() {
+    return fichaClientePlataformaAtual?.cliente?.telefone
+        || document.getElementById('plataforma-telefone-cliente')?.value.trim()
+        || encomendaPlataformaEmEdicao?.telefone_cliente
+        || encomendaPlataformaEmEdicao?.referencia_externa
+        || '';
+}
+
 function limparDadosClientePlataforma() {
     ['plataforma-telefone-cliente', 'plataforma-morada-cliente', 'plataforma-cp-cliente', 'plataforma-cidade-cliente'].forEach(id => {
         const campo = document.getElementById(id);
@@ -2882,6 +2890,8 @@ async function carregarEncomendaPlataformaPorCodigo(codigo) {
         codigo_encomenda: encomenda.codigo_encomenda,
         origem: encomenda.origem,
         estado: encomenda.estado,
+        telefone_cliente: encomenda.telefone_cliente || '',
+        referencia_externa: encomenda.referencia_externa || '',
         quantidades_originais: Object.fromEntries(produtosEncomenda.map(item => [
             String(item.id_produto || item.id || ''),
             Math.max(1, Number(item.quantidade) || 1)
@@ -2897,11 +2907,11 @@ async function carregarEncomendaPlataformaPorCodigo(codigo) {
     atualizarModoPlataforma();
     document.getElementById('wallapop-nome-encomenda').value = encomenda.nome_cliente || '';
     document.getElementById('wallapop-nome-cliente').value = '';
+    document.getElementById('plataforma-telefone-cliente').value = encomenda.telefone_cliente || encomenda.referencia_externa || '';
     document.getElementById('plataforma-link-perfil').value = encomenda.origem === 'WhatsApp'
         ? (encomenda.telefone_cliente || encomenda.referencia_externa || '')
         : (encomenda.perfil_externo_url || '');
     atualizarPerfilExternoPlataforma();
-    document.getElementById('plataforma-telefone-cliente').value = encomenda.telefone_cliente || '';
     document.getElementById('plataforma-morada-cliente').value = encomenda.morada_cliente || '';
     document.getElementById('plataforma-cp-cliente').value = encomenda.cp_cliente || '';
     document.getElementById('plataforma-cidade-cliente').value = encomenda.cidade_cliente || '';
@@ -3002,14 +3012,24 @@ function novaEncomendaPlataforma() {
 async function registarEncomendaWallapop() {
     if (registoPlataformaEmCurso) return;
 
-    const plataforma = obterPlataformaAtual();
+    let plataforma = obterPlataformaAtual();
     const eraEdicao = Boolean(encomendaPlataformaEmEdicao);
     const botao = document.getElementById('btn-registar-wallapop');
-    const linkPerfil = document.getElementById('plataforma-link-perfil').value.trim();
+    const campoPerfil = document.getElementById('plataforma-link-perfil');
+    let linkPerfil = campoPerfil.value.trim();
+
+    if (!linkPerfil && eraEdicao && plataforma === 'WhatsApp') {
+        const telefoneWhatsapp = obterTelefoneWhatsappAtualPlataforma();
+        if (telefoneWhatsapp) {
+            campoPerfil.value = telefoneWhatsapp;
+            linkPerfil = telefoneWhatsapp;
+            atualizarPerfilExternoPlataforma();
+        }
+    }
 
     if (!linkPerfil) {
         definirStatusWallapop('Cole primeiro o link do perfil ou o número WhatsApp do cliente.', true);
-        document.getElementById('plataforma-link-perfil').focus();
+        campoPerfil.focus();
         return;
     }
     if (linkPerfil) {
