@@ -1896,7 +1896,7 @@ window.AdminEncomendaVista = (function () {
             gravarAlteracoesPendentes();
         });
         const origem = normalizar(encomenda.origem);
-        const plataformaExterna = ["wallapop", "vinted", "olx", "todocoleccion"].includes(origem);
+        const plataformaExterna = ["wallapop", "vinted", "olx", "todocoleccion", "whatsapp"].includes(origem);
         const podeEditar = plataformaExterna
             && !estadoRepostoNormalizado(encomenda.estado)
             && encomenda.codigo_encomenda;

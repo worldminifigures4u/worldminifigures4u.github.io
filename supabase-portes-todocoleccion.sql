@@ -55,6 +55,7 @@ begin
     when 'vinted' then 'Vinted'
     when 'olx' then 'OLX'
     when 'todocoleccion' then 'Todocoleccion'
+    when 'whatsapp' then 'WhatsApp'
     else null
   end;
 
@@ -167,6 +168,12 @@ begin
       raise exception 'Selecione o metodo de envio Todocoleccion';
     end if;
     v_portes := greatest(0, round(coalesce(p_portes, 0)::numeric, 2));
+  elsif v_plataforma = 'WhatsApp' then
+    if nullif(trim(coalesce(p_metodo_envio, '')), '') is null
+       or nullif(trim(coalesce(p_metodo_envio_nome, '')), '') is null then
+      raise exception 'Selecione o metodo de envio WhatsApp';
+    end if;
+    v_portes := greatest(0, round(coalesce(p_portes, 0)::numeric, 2));
   else
     v_portes := 0;
   end if;
@@ -194,9 +201,9 @@ begin
     v_produtos,
     v_produtos_texto,
     v_produtos_texto,
-    case when v_plataforma in ('OLX', 'Todocoleccion') then coalesce(nullif(trim(p_regiao_envio), ''), 'portugal') else lower(v_plataforma) end,
-    case when v_plataforma in ('OLX', 'Todocoleccion') then trim(p_metodo_envio) else lower(v_plataforma) end,
-    case when v_plataforma in ('OLX', 'Todocoleccion') then trim(p_metodo_envio_nome) else v_plataforma end,
+    case when v_plataforma in ('OLX', 'Todocoleccion', 'WhatsApp') then coalesce(nullif(trim(p_regiao_envio), ''), 'portugal') else lower(v_plataforma) end,
+    case when v_plataforma in ('OLX', 'Todocoleccion', 'WhatsApp') then trim(p_metodo_envio) else lower(v_plataforma) end,
+    case when v_plataforma in ('OLX', 'Todocoleccion', 'WhatsApp') then trim(p_metodo_envio_nome) else v_plataforma end,
     v_portes,
     v_peso_total,
     v_total,
@@ -292,7 +299,7 @@ begin
   if not found then
     raise exception 'Encomenda nao encontrada';
   end if;
-  if lower(coalesce(v_encomenda.origem, 'site')) not in ('wallapop', 'vinted', 'olx', 'todocoleccion') then
+  if lower(coalesce(v_encomenda.origem, 'site')) not in ('wallapop', 'vinted', 'olx', 'todocoleccion', 'whatsapp') then
     raise exception 'Esta encomenda nao pertence a uma plataforma externa';
   end if;
   if lower(coalesce(v_encomenda.estado, '')) = 'cancelado' then
@@ -432,6 +439,12 @@ begin
       raise exception 'Selecione o metodo de envio Todocoleccion';
     end if;
     v_portes := greatest(0, round(coalesce(p_portes, 0)::numeric, 2));
+  elsif upper(v_encomenda.origem) = 'WHATSAPP' then
+    if nullif(trim(coalesce(p_metodo_envio, '')), '') is null
+       or nullif(trim(coalesce(p_metodo_envio_nome, '')), '') is null then
+      raise exception 'Selecione o metodo de envio WhatsApp';
+    end if;
+    v_portes := greatest(0, round(coalesce(p_portes, 0)::numeric, 2));
   end if;
 
   if upper(v_encomenda.origem) = 'TODOCOLECCION' and p_total is not null then
@@ -445,11 +458,11 @@ begin
       produtos = v_produtos,
       produtos_texto = v_produtos_texto,
       produtos_texto_cliente = v_produtos_texto,
-      regiao_envio = case when upper(v_encomenda.origem) in ('OLX', 'TODOCOLECCION')
+      regiao_envio = case when upper(v_encomenda.origem) in ('OLX', 'TODOCOLECCION', 'WHATSAPP')
         then coalesce(nullif(trim(p_regiao_envio), ''), 'portugal') else lower(v_encomenda.origem) end,
-      metodo_envio = case when upper(v_encomenda.origem) in ('OLX', 'TODOCOLECCION')
+      metodo_envio = case when upper(v_encomenda.origem) in ('OLX', 'TODOCOLECCION', 'WHATSAPP')
         then trim(p_metodo_envio) else lower(v_encomenda.origem) end,
-      metodo_envio_nome = case when upper(v_encomenda.origem) in ('OLX', 'TODOCOLECCION')
+      metodo_envio_nome = case when upper(v_encomenda.origem) in ('OLX', 'TODOCOLECCION', 'WHATSAPP')
         then trim(p_metodo_envio_nome) else v_encomenda.origem end,
       portes = v_portes,
       peso_total = v_peso_total,

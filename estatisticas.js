@@ -109,6 +109,7 @@ function obterPlataformaEncomenda(encomenda) {
     if (normalizada === 'vinted') return 'Vinted';
     if (normalizada === 'olx') return 'OLX';
     if (normalizada === 'todocoleccion') return 'Todocoleccion';
+    if (normalizada === 'whatsapp') return 'WhatsApp';
     return origem;
 }
 

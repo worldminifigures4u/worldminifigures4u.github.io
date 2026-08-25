@@ -101,8 +101,8 @@
         <section class="wallapop-preview-wrap" aria-label="Dados da plataforma">
             <div class="wallapop-preview-acoes">
                 <div class="wallapop-dados-encomenda">
-                    <label for="plataforma-link-perfil">Link do perfil do cliente</label>
-                    <input type="url" id="plataforma-link-perfil" placeholder="Cole o link do perfil Wallapop, Vinted, OLX ou Todocoleccion" autocomplete="off" required>
+                    <label for="plataforma-link-perfil">Link do perfil ou WhatsApp</label>
+                    <input type="text" id="plataforma-link-perfil" placeholder="Cole o link do perfil ou o número WhatsApp" autocomplete="off" required>
                     <div class="loaded-client-bar" id="plataforma-perfil-detetado" hidden></div>
 
                     <label for="wallapop-nome-encomenda" hidden>Nome do Cliente</label>
@@ -117,6 +117,7 @@
                         <option value="Vinted">Vinted</option>
                         <option value="OLX">OLX</option>
                         <option value="Todocoleccion">Todocoleccion</option>
+                        <option value="WhatsApp">WhatsApp</option>
                     </select>
 
                     <p class="plataforma-edicao" id="plataforma-edicao" hidden></p>
@@ -234,7 +235,7 @@
 <script src="supabase-cdn.js?v=20260711-leve" defer></script>
 <script src="app-config.js?v=20260730-fecho-fundo" defer></script>
 <script src="app-portes.js?v=20260728-inpost-nome" defer></script>
-    <script src="plataforma.js?v=20260824-duplicados-com-stock" defer></script>
+    <script src="plataforma.js?v=20260825-whatsapp-perfil" defer></script>
 <script src="campo-limpar.js?v=20260720-sem-x-cliente" defer></script>
 <script src="inline-listeners-base.js?v=20260725-logo-hq" defer></script>
 <script src="inline-listeners-admin.js?v=20260713-r25" defer></script>

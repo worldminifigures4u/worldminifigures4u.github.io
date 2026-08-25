@@ -29,6 +29,17 @@ function obterTextoOpcaoSelecionada(selectId) {
 function analisarLinkPerfilPlataforma(valor) {
     const texto = String(valor || '').trim();
     if (!texto) return null;
+
+    const telefoneWhatsapp = analisarTelefoneWhatsappPlataforma(texto);
+    if (telefoneWhatsapp) {
+        return {
+            plataforma: 'WhatsApp',
+            utilizador: telefoneWhatsapp,
+            telefone: telefoneWhatsapp,
+            url: ''
+        };
+    }
+
     let url;
     try { url = new URL(texto); }
     catch (_) { return { erro: 'O link do perfil n\u00e3o \u00e9 v\u00e1lido.' }; }
@@ -50,13 +61,23 @@ function analisarLinkPerfilPlataforma(valor) {
         { plataforma: 'Todocoleccion', valido: dominioValido('todocoleccion.net'), expressao: /\/usuario\/([^/?#]+)$/i }
     ];
     const regra = regras.find(item => item.valido && item.expressao.test(caminho));
-    if (!regra) return { erro: 'Link n\u00e3o reconhecido. Use um perfil Wallapop, Vinted, OLX ou Todocoleccion.' };
+    if (!regra) return { erro: 'Link n\u00e3o reconhecido. Use um perfil Wallapop, Vinted, OLX, Todocoleccion ou um número WhatsApp.' };
     const correspondencia = caminho.match(regra.expressao);
     return {
         plataforma: regra.plataforma,
         utilizador: correspondencia?.[1] || '',
         url: url.href
     };
+}
+
+function analisarTelefoneWhatsappPlataforma(valor) {
+    const texto = String(valor || '').trim();
+    if (!texto || /^https?:\/\//i.test(texto)) return '';
+    const compacto = texto.replace(/[()\s.-]/g, '');
+    if (!/^\+?\d{9,15}$/.test(compacto)) return '';
+    const digitos = compacto.replace(/\D/g, '');
+    if (digitos.length < 9 || digitos.length > 15) return '';
+    return compacto.startsWith('+') ? `+${digitos}` : digitos;
 }
 
 function ehPlataformaEstiloAnuncio(plataforma) {
@@ -120,6 +141,12 @@ function atualizarPerfilExternoPlataforma() {
         atualizarModoPlataforma();
     }
     document.getElementById('wallapop-nome-cliente').value = perfilExternoDetetado.utilizador;
+    if (perfilExternoDetetado.plataforma === 'WhatsApp') {
+        document.getElementById('wallapop-nome-encomenda').value = perfilExternoDetetado.utilizador;
+        document.getElementById('plataforma-telefone-cliente').value = perfilExternoDetetado.telefone || perfilExternoDetetado.utilizador;
+        fichaClientePlataformaAtual = null;
+        renderizarFichaClientePlataforma(null);
+    }
     if (!seletor?.disabled) {
         aplicarPaisEnvioPredefinidoPlataforma();
     }
@@ -286,7 +313,8 @@ const PAIS_ENVIO_PREDEFINIDO_POR_PLATAFORMA = {
     Wallapop: 'espanha',
     OLX: 'portugal',
     Vinted: 'franca',
-    Todocoleccion: 'espanha'
+    Todocoleccion: 'espanha',
+    WhatsApp: 'portugal'
 };
 
 function obterPaisEnvioPredefinidoPorPlataforma(plataforma) {
@@ -331,7 +359,7 @@ function obterPaisEnvioSelecionadoPlataforma() {
 function obterDadosClientePlataforma() {
     const plataforma = obterPlataformaAtual();
     const paisSeletor = obterPaisEnvioSelecionadoPlataforma();
-    if (plataforma !== 'OLX' && plataforma !== 'Todocoleccion') {
+    if (plataforma !== 'OLX' && plataforma !== 'Todocoleccion' && plataforma !== 'WhatsApp') {
         return { telefone: '', morada: '', cp: '', cidade: '', pais: paisSeletor };
     }
     const cliente = fichaClientePlataformaAtual?.cliente || {};
@@ -606,6 +634,12 @@ async function carregarFichaClientePorPerfilPlataforma() {
         limparDadosClientePlataforma();
         return null;
     }
+    if (perfilExternoDetetado.plataforma === 'WhatsApp') {
+        fichaClientePlataformaAtual = null;
+        document.getElementById('plataforma-telefone-cliente').value = perfilExternoDetetado.telefone || perfilExternoDetetado.utilizador;
+        renderizarFichaClientePlataforma(null);
+        return { sucesso: false, whatsapp: true };
+    }
     definirStatusWallapop('');
     const { data, error } = await wallapopClient.rpc('obter_ficha_cliente_por_perfil_admin', {
         p_url_perfil: linkPerfil
@@ -681,7 +715,7 @@ function obterOpcaoInPostTodocoleccionFallback(peso) {
 }
 
 function obterOpcoesEnvioPlataforma(regiao, peso) {
-    const plataforma = obterPlataformaAtual();
+    let plataforma = obterPlataformaAtual();
     const padrao = obterOpcaoEnvioPadraoPlataforma(plataforma);
     if (padrao) return [padrao, { ...ENTREGA_MAO_PLATAFORMA }];
 
@@ -798,7 +832,7 @@ function atualizarOpcoesEnvioPlataforma() {
         select.appendChild(option);
     });
     let preferido = '';
-    if (plataforma === 'OLX' || plataforma === 'Todocoleccion') {
+    if (plataforma === 'OLX' || plataforma === 'Todocoleccion' || plataforma === 'WhatsApp') {
         preferido = opcoes.find(opcao => opcao.id === 'ctt_registado')?.id || '';
     } else {
         preferido = obterOpcaoEnvioPadraoPlataforma(plataforma)?.id || '';
@@ -845,6 +879,7 @@ function atualizarModoPlataforma() {
     const plataforma = obterPlataformaAtual();
     const anuncio = ehPlataformaEstiloAnuncio(plataforma);
     const olx = plataforma === 'OLX';
+    const todocoleccion = plataforma === 'Todocoleccion';
     document.getElementById('label-cliente-plataforma').textContent = 'Nome de utilizador';
     document.getElementById('wallapop-nome-cliente').placeholder = `Nome ou utilizador no ${plataforma}`;
     document.getElementById('plataforma-envio').hidden = false;
@@ -856,15 +891,15 @@ function atualizarModoPlataforma() {
     if (blocoPais) blocoPais.hidden = false;
     document.getElementById('plataforma-resumo-titulo').textContent = olx
         ? 'Ficheiros OLX'
-        : (anuncio ? `An\u00fancio ${plataforma}` : 'Ficheiro Todocoleccion');
+        : (anuncio ? `An\u00fancio ${plataforma}` : `Ficheiro ${plataforma}`);
     document.getElementById('plataforma-resumo-texto').textContent = olx
         ? 'Ser\u00e3o criados dois TXT: um para enviar ao cliente e outro para a gest\u00e3o interna.'
         : (anuncio
             ? 'Ser\u00e3o criados o PNG do an\u00fancio e o TXT da encomenda.'
-            : 'Ser\u00e1 criado um TXT interno com quantidade, nome e SKU separados por tabula\u00e7\u00f5es.');
+            : `Ser\u00e1 criado um TXT interno ${todocoleccion ? 'com quantidade, nome e SKU separados por tabula\u00e7\u00f5es.' : 'da encomenda.'}`);
     document.getElementById('btn-descarregar-wallapop').textContent = anuncio
         ? 'Guardar an\u00fancio'
-        : (olx ? 'Guardar ficheiros OLX' : 'Guardar ficheiro Todocoleccion');
+        : (olx ? 'Guardar ficheiros OLX' : `Guardar ficheiro ${plataforma}`);
     atualizarBotaoRegistoPlataforma();
     document.getElementById('plataforma-ajuda-ficheiros').textContent = anuncio
         ? 'Ao guardar, ser\u00e3o criados o PNG e o TXT dentro da pasta da encomenda.'
@@ -2592,7 +2627,7 @@ async function guardarFicheirosPlataforma() {
             definirStatusWallapop(`Pasta "${nomeEncomenda}" guardada com os dois ficheiros OLX.`);
         } else {
             await escreverFicheiroWallapop(pastaEncomenda, `${nomeEncomenda}.txt`, criarTextoInternoPlataforma());
-            definirStatusWallapop(`Ficheiro Todocoleccion guardado na pasta "${nomeEncomenda}".`);
+            definirStatusWallapop(`Ficheiro ${plataforma} guardado na pasta "${nomeEncomenda}".`);
         }
     } catch (error) {
         console.error(error);
@@ -2971,7 +3006,7 @@ async function registarEncomendaWallapop() {
     const linkPerfil = document.getElementById('plataforma-link-perfil').value.trim();
 
     if (!linkPerfil) {
-        definirStatusWallapop('Cole primeiro o link do perfil do cliente.', true);
+        definirStatusWallapop('Cole primeiro o link do perfil ou o número WhatsApp do cliente.', true);
         document.getElementById('plataforma-link-perfil').focus();
         return;
     }
@@ -2982,12 +3017,26 @@ async function registarEncomendaWallapop() {
             document.getElementById('plataforma-link-perfil').focus();
             return;
         }
+        if (!encomendaPlataformaEmEdicao && perfil.plataforma !== plataforma) {
+            const seletorPlataforma = document.getElementById('plataforma-tipo');
+            if (seletorPlataforma && !seletorPlataforma.disabled) {
+                seletorPlataforma.value = perfil.plataforma;
+                atualizarModoPlataforma();
+                plataforma = perfil.plataforma;
+            }
+        }
         if (perfil.plataforma !== plataforma) {
             definirStatusWallapop(`O link pertence a ${perfil.plataforma}, mas a encomenda est\u00e1 em ${plataforma}.`, true);
             return;
         }
         perfilExternoDetetado = perfil;
-        if (!fichaClientePlataformaAtual) {
+        if (perfil.plataforma === 'WhatsApp') {
+            document.getElementById('wallapop-nome-encomenda').value = perfil.utilizador;
+            document.getElementById('wallapop-nome-cliente').value = perfil.utilizador;
+            document.getElementById('plataforma-telefone-cliente').value = perfil.telefone || perfil.utilizador;
+            fichaClientePlataformaAtual = null;
+            renderizarFichaClientePlataforma(null);
+        } else if (!fichaClientePlataformaAtual) {
             const ficha = await carregarFichaClientePorPerfilPlataforma();
             if (!ficha) {
                 document.getElementById('plataforma-link-perfil').focus();
@@ -3061,7 +3110,7 @@ async function registarEncomendaWallapop() {
         const parametros = {
             p_itens: obterItensEncomendaWallapop(),
             p_nome_cliente: nomeCliente,
-            p_referencia_externa: null,
+            p_referencia_externa: plataforma === 'WhatsApp' ? (dadosCliente.telefone || null) : null,
             p_regiao_envio: envio.regiao || null,
             p_metodo_envio: envio.id || null,
             p_metodo_envio_nome: envio.nome || null,
@@ -3114,7 +3163,7 @@ async function registarEncomendaWallapop() {
             }
         }
 
-        if (linkPerfil) {
+        if (linkPerfil && plataforma !== 'WhatsApp') {
             const associacao = await wallapopClient.rpc('associar_perfil_encomenda_admin', {
                 p_encomenda_id: String(data.encomenda?.id || encomendaPlataformaEmEdicao?.id),
                 p_url_perfil: linkPerfil
