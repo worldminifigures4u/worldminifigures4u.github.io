@@ -45,6 +45,8 @@ declare
   v_peso_total numeric := 0;
   v_codigo text;
   v_encomenda public.encomendas%rowtype;
+  v_cliente_gestao_id uuid;
+  v_telefone_normalizado text;
 begin
   if not public.is_admin() then
     raise exception 'Acesso reservado ao administrador';
@@ -189,14 +191,24 @@ begin
     exit when not exists (select 1 from public.encomendas where codigo_encomenda = v_codigo);
   end loop;
 
+  v_telefone_normalizado := regexp_replace(coalesce(p_telefone_cliente, ''), '\D', '', 'g');
+  if length(v_telefone_normalizado) >= 9 then
+    select cg.id into v_cliente_gestao_id
+    from public.clientes_gestao cg
+    where regexp_replace(coalesce(cg.telefone, ''), '\D', '', 'g') = v_telefone_normalizado
+    order by cg.updated_at desc nulls last, cg.created_at desc nulls last
+    limit 1;
+  end if;
+
   insert into public.encomendas (
-    codigo_encomenda, id_cliente, nome_cliente, produtos, produtos_texto,
+    codigo_encomenda, id_cliente, cliente_gestao_id, nome_cliente, produtos, produtos_texto,
     produtos_texto_cliente, regiao_envio, metodo_envio, metodo_envio_nome,
     portes, peso_total, total, metodo_pagamento, estado, origem, referencia_externa,
     telefone_cliente, morada_cliente, cp_cliente, cidade_cliente, pais_cliente
   ) values (
     v_codigo,
     null,
+    v_cliente_gestao_id,
     trim(p_nome_cliente),
     v_produtos,
     v_produtos_texto,
@@ -280,6 +292,8 @@ declare
   v_portes numeric := 0;
   v_total numeric := 0;
   v_peso_total numeric := 0;
+  v_cliente_gestao_id uuid;
+  v_telefone_normalizado text;
 begin
   if not public.is_admin() then
     raise exception 'Acesso reservado ao administrador';
@@ -453,8 +467,18 @@ begin
     v_total := v_subtotal + v_portes;
   end if;
 
+  v_telefone_normalizado := regexp_replace(coalesce(p_telefone_cliente, ''), '\D', '', 'g');
+  if length(v_telefone_normalizado) >= 9 then
+    select cg.id into v_cliente_gestao_id
+    from public.clientes_gestao cg
+    where regexp_replace(coalesce(cg.telefone, ''), '\D', '', 'g') = v_telefone_normalizado
+    order by cg.updated_at desc nulls last, cg.created_at desc nulls last
+    limit 1;
+  end if;
+
   update public.encomendas
   set nome_cliente = trim(p_nome_cliente),
+      cliente_gestao_id = coalesce(v_encomenda.cliente_gestao_id, v_cliente_gestao_id),
       produtos = v_produtos,
       produtos_texto = v_produtos_texto,
       produtos_texto_cliente = v_produtos_texto,
