@@ -242,6 +242,67 @@ grant execute on function public.criar_encomenda_plataforma_admin(
   text, jsonb, text, text, text, text, text, numeric, text, text, text, text, text, numeric
 ) to authenticated;
 
+create or replace function public.obter_encomenda_plataforma_admin(
+  p_codigo_encomenda text
+)
+returns jsonb
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_encomenda public.encomendas%rowtype;
+  v_catalogo jsonb;
+begin
+  if not public.is_admin() then
+    raise exception 'Acesso reservado ao administrador';
+  end if;
+
+  select * into v_encomenda
+  from public.encomendas
+  where upper(codigo_encomenda) = upper(trim(p_codigo_encomenda))
+  limit 1;
+
+  if not found then
+    return jsonb_build_object('sucesso', false, 'erro', 'Encomenda nao encontrada');
+  end if;
+  if lower(coalesce(v_encomenda.origem, 'site')) not in ('wallapop', 'vinted', 'olx', 'todocoleccion', 'whatsapp') then
+    return jsonb_build_object('sucesso', false, 'erro', 'A encomenda nao pertence a uma plataforma externa');
+  end if;
+  if lower(coalesce(v_encomenda.estado, '')) = 'cancelado' then
+    return jsonb_build_object('sucesso', false, 'erro', 'Uma encomenda cancelada nao pode ser editada');
+  end if;
+
+  select coalesce(jsonb_agg(jsonb_build_object(
+    'id', produto.id::text,
+    'referencia', produto.referencia,
+    'sku', produto.sku,
+    'nome', produto.nome,
+    'preco', coalesce(produto.preco, 0),
+    'peso', coalesce(produto.peso, 10),
+    'imagens', produto.imagens,
+    'stock', coalesce(produto.stock, 0),
+    'ativo', coalesce(produto.ativo, true)
+  ) order by itens.ordem), '[]'::jsonb)
+  into v_catalogo
+  from jsonb_array_elements(v_encomenda.produtos) with ordinality as itens(item, ordem)
+  join public.produtos as produto
+    on produto.id::text = coalesce(nullif(itens.item->>'id_produto', ''), nullif(itens.item->>'id', ''));
+
+  return jsonb_build_object(
+    'sucesso', true,
+    'encomenda', to_jsonb(v_encomenda),
+    'catalogo_itens', v_catalogo
+  );
+end;
+$$;
+
+revoke execute on function public.obter_encomenda_plataforma_admin(text)
+from public, anon;
+
+grant execute on function public.obter_encomenda_plataforma_admin(text)
+to authenticated;
+
 drop function if exists public.atualizar_encomenda_plataforma_admin(
   text, jsonb, text, text, text, text, text, numeric
 );

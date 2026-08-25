@@ -2897,7 +2897,9 @@ async function carregarEncomendaPlataformaPorCodigo(codigo) {
     atualizarModoPlataforma();
     document.getElementById('wallapop-nome-encomenda').value = encomenda.nome_cliente || '';
     document.getElementById('wallapop-nome-cliente').value = '';
-    document.getElementById('plataforma-link-perfil').value = encomenda.perfil_externo_url || '';
+    document.getElementById('plataforma-link-perfil').value = encomenda.origem === 'WhatsApp'
+        ? (encomenda.telefone_cliente || encomenda.referencia_externa || '')
+        : (encomenda.perfil_externo_url || '');
     atualizarPerfilExternoPlataforma();
     document.getElementById('plataforma-telefone-cliente').value = encomenda.telefone_cliente || '';
     document.getElementById('plataforma-morada-cliente').value = encomenda.morada_cliente || '';
