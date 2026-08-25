@@ -1585,10 +1585,11 @@ window.AdminEncomendaVista = (function () {
                     `Estado da encomenda ${encomenda.codigo_encomenda || ""} atualizado.${limpeza}${reposicao}${recuperacao}${seguimento}`
                 );
             }
-            if (estado === "Concluído" && typeof opcoes.fecharAoConcluir === "function") {
+            if (typeof opcoes.fecharAoAlterarEstado === "function") {
+                opcoes.fecharAoAlterarEstado(encomenda);
+            } else if (estado === "Concluído" && typeof opcoes.fecharAoConcluir === "function") {
                 opcoes.fecharAoConcluir(encomenda);
-            }
-            if (estado === "Pago" && estadoAnterior !== "Pago" && typeof opcoes.fecharAoPagar === "function") {
+            } else if (estado === "Pago" && estadoAnterior !== "Pago" && typeof opcoes.fecharAoPagar === "function") {
                 opcoes.fecharAoPagar(encomenda);
             }
             if (emitirFaturaDepois) {

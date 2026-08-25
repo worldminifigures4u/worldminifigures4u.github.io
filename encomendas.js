@@ -481,6 +481,7 @@ function abrirModalEncomendaAdmin(encomenda) {
     conteudo.replaceChildren(AdminEncomendaVista.criarCardEncomenda(encomenda, {
         modoModal: true,
         abrirCliente: abrirFichaClienteAdmin,
+        fecharAoAlterarEstado: fecharModalEncomendaAdmin,
         fecharAoConcluir: fecharModalEncomendaAdmin,
         fecharAoPagar: fecharModalEncomendaAdmin
     }));
