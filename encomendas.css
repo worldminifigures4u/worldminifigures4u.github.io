@@ -326,6 +326,12 @@ body.pagina-encomendas-admin{
             background:#6c1f7d;
         }
 
+        .admin-encomenda-linha .admin-encomenda-origem.plataforma-whatsapp{
+            border-color:#25d366;
+            color:#25d366;
+            background:transparent;
+        }
+
         .admin-encomenda-linha .admin-encomenda-cliente-link{
             justify-self:start;
             width:max-content;
