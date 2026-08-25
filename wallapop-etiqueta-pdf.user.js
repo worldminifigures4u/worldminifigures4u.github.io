@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         Wallapop etiqueta - PDF
 // @namespace    figuresplanet
-// @version      5.6
-// @description  Guarda etiqueta Wallapop em PDF A4 com nome da encomenda (imagem) ou PDF a 90% (etiqueta CTT)
+// @version      5.7
+// @description  Guarda etiqueta Wallapop em PDF A4 com nome da encomenda em tamanho compacto
 // @match        https://*.wallapop.com/*
 // @match        https://wallapop-delivery-labels.wallapop.com/*
 // @match        https://figuresplanet.com/plataforma.html*
@@ -23,8 +23,8 @@
 
   const A4_LARGURA_MM = 210;
   const A4_ALTURA_MM = 297;
-  const FRACAO_ALTURA_ETIQUETA = 0.25;
-  const FRACAO_TAMANHO_PDF_ETIQUETA = 0.9;
+  const FRACAO_ALTURA_ETIQUETA = 0.16;
+  const FRACAO_TAMANHO_PDF_ETIQUETA = 0.7;
   const MARGEM_TOPO_MM = 30;
   const MARGEM_PDF_IMPRESSAO_MM = 5;
 
