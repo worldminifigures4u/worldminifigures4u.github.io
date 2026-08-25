@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Wallapop etiqueta - PDF
 // @namespace    figuresplanet
-// @version      5.8
+// @version      5.9
 // @description  Guarda etiqueta Wallapop em PDF A4 com nome da encomenda em tamanho compacto
 // @match        https://*.wallapop.com/*
 // @match        https://wallapop-delivery-labels.wallapop.com/*
@@ -17,9 +17,12 @@
 (function () {
   'use strict';
 
-  const STORAGE_NOME = 'fp_wallapop_cliente';
-  const STORAGE_TS = 'fp_wallapop_cliente_ts';
-  const EXPIRACAO_MS = 30 * 60 * 1000;
+  const STORAGE_NOME_WALLAPOP = 'fp_wallapop_cliente_wallapop';
+  const STORAGE_TS_WALLAPOP = 'fp_wallapop_cliente_wallapop_ts';
+  const STORAGE_NOME_FIGURESPLANET = 'fp_wallapop_cliente_figuresplanet';
+  const STORAGE_TS_FIGURESPLANET = 'fp_wallapop_cliente_figuresplanet_ts';
+  const EXPIRACAO_WALLAPOP_MS = 5 * 60 * 1000;
+  const EXPIRACAO_FIGURESPLANET_MS = 30 * 60 * 1000;
 
   const A4_LARGURA_MM = 210;
   const A4_ALTURA_MM = 297;
@@ -63,18 +66,28 @@
     return null;
   }
 
-  function guardarNomeCliente() {
+  function guardarNomeComChave(nome, chaveNome, chaveTs) {
+    const seguro = nomeFicheiroSeguro(String(nome || ''));
+    if (!seguro) return false;
+    GM_setValue(chaveNome, seguro);
+    GM_setValue(chaveTs, Date.now());
+    return true;
+  }
+
+  function limparNomeWallapop() {
+    GM_setValue(STORAGE_NOME_WALLAPOP, '');
+    GM_setValue(STORAGE_TS_WALLAPOP, 0);
+  }
+
+  function guardarNomeCliente({ limparSeFalhar = false } = {}) {
     const nome = extrairNomeCliente();
-    if (!nome) return;
-    GM_setValue(STORAGE_NOME, nome);
-    GM_setValue(STORAGE_TS, Date.now());
+    if (guardarNomeComChave(nome, STORAGE_NOME_WALLAPOP, STORAGE_TS_WALLAPOP)) return true;
+    if (limparSeFalhar) limparNomeWallapop();
+    return false;
   }
 
   function guardarNomeEtiqueta(nome) {
-    const seguro = nomeFicheiroSeguro(String(nome || ''));
-    if (!seguro) return;
-    GM_setValue(STORAGE_NOME, seguro);
-    GM_setValue(STORAGE_TS, Date.now());
+    guardarNomeComChave(nome, STORAGE_NOME_FIGURESPLANET, STORAGE_TS_FIGURESPLANET);
   }
 
   function obterNomeEncomendaFiguresPlanet() {
@@ -88,11 +101,22 @@
     guardarNomeEtiqueta(obterNomeEncomendaFiguresPlanet());
   }
 
+  function obterValorRecente(chaveNome, chaveTs, expiracaoMs) {
+    const nome = GM_getValue(chaveNome, '');
+    const ts = GM_getValue(chaveTs, 0);
+    if (!nome || Date.now() - ts > expiracaoMs) return '';
+    return nome;
+  }
+
   function obterNomeEtiqueta() {
-    const nome = GM_getValue(STORAGE_NOME, '');
-    const ts = GM_getValue(STORAGE_TS, 0);
-    if (!nome || Date.now() - ts > EXPIRACAO_MS) return 'Etiqueta';
-    return `Etiqueta - ${nome}`;
+    const nomeWallapop = obterValorRecente(STORAGE_NOME_WALLAPOP, STORAGE_TS_WALLAPOP, EXPIRACAO_WALLAPOP_MS);
+    const nomeFiguresPlanet = obterValorRecente(
+      STORAGE_NOME_FIGURESPLANET,
+      STORAGE_TS_FIGURESPLANET,
+      EXPIRACAO_FIGURESPLANET_MS
+    );
+    const nome = nomeWallapop || nomeFiguresPlanet;
+    return nome ? `Etiqueta - ${nome}` : 'Etiqueta';
   }
 
   function obterNomePdf() {
@@ -107,7 +131,7 @@
       (e) => {
         const alvo = e.target.closest('button, a, [role="button"]');
         if (alvo && /mostrar etiqueta/i.test(alvo.textContent || '')) {
-          guardarNomeCliente();
+          guardarNomeCliente({ limparSeFalhar: true });
         }
       },
       true
