@@ -46,6 +46,7 @@ declare
   v_codigo text;
   v_encomenda public.encomendas%rowtype;
   v_cliente_gestao_id uuid;
+  v_cliente_nome text;
   v_telefone_normalizado text;
 begin
   if not public.is_admin() then
@@ -193,7 +194,8 @@ begin
 
   v_telefone_normalizado := regexp_replace(coalesce(p_telefone_cliente, ''), '\D', '', 'g');
   if length(v_telefone_normalizado) >= 9 then
-    select cg.id into v_cliente_gestao_id
+    select cg.id, coalesce(nullif(trim(cg.nome_utilizador), ''), nullif(trim(cg.nome), ''))
+    into v_cliente_gestao_id, v_cliente_nome
     from public.clientes_gestao cg
     where regexp_replace(coalesce(cg.telefone, ''), '\D', '', 'g') = v_telefone_normalizado
     order by cg.updated_at desc nulls last, cg.created_at desc nulls last
@@ -209,7 +211,7 @@ begin
     v_codigo,
     null,
     v_cliente_gestao_id,
-    trim(p_nome_cliente),
+    coalesce(v_cliente_nome, trim(p_nome_cliente)),
     v_produtos,
     v_produtos_texto,
     v_produtos_texto,
@@ -354,6 +356,7 @@ declare
   v_total numeric := 0;
   v_peso_total numeric := 0;
   v_cliente_gestao_id uuid;
+  v_cliente_nome text;
   v_telefone_normalizado text;
 begin
   if not public.is_admin() then
@@ -530,15 +533,24 @@ begin
 
   v_telefone_normalizado := regexp_replace(coalesce(p_telefone_cliente, ''), '\D', '', 'g');
   if length(v_telefone_normalizado) >= 9 then
-    select cg.id into v_cliente_gestao_id
+    select cg.id, coalesce(nullif(trim(cg.nome_utilizador), ''), nullif(trim(cg.nome), ''))
+    into v_cliente_gestao_id, v_cliente_nome
     from public.clientes_gestao cg
     where regexp_replace(coalesce(cg.telefone, ''), '\D', '', 'g') = v_telefone_normalizado
     order by cg.updated_at desc nulls last, cg.created_at desc nulls last
     limit 1;
   end if;
 
+  if v_cliente_nome is null and v_encomenda.cliente_gestao_id is not null then
+    select coalesce(nullif(trim(cg.nome_utilizador), ''), nullif(trim(cg.nome), ''))
+    into v_cliente_nome
+    from public.clientes_gestao cg
+    where cg.id = v_encomenda.cliente_gestao_id
+    limit 1;
+  end if;
+
   update public.encomendas
-  set nome_cliente = trim(p_nome_cliente),
+  set nome_cliente = coalesce(v_cliente_nome, trim(p_nome_cliente)),
       cliente_gestao_id = coalesce(v_encomenda.cliente_gestao_id, v_cliente_gestao_id),
       produtos = v_produtos,
       produtos_texto = v_produtos_texto,

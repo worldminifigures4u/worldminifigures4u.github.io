@@ -146,10 +146,14 @@ function atualizarPerfilExternoPlataforma() {
     }
     document.getElementById('wallapop-nome-cliente').value = perfilExternoDetetado.utilizador;
     if (perfilExternoDetetado.plataforma === 'WhatsApp') {
-        document.getElementById('wallapop-nome-encomenda').value = perfilExternoDetetado.utilizador;
-        document.getElementById('plataforma-telefone-cliente').value = perfilExternoDetetado.telefone || perfilExternoDetetado.utilizador;
-        fichaClientePlataformaAtual = null;
-        renderizarFichaClientePlataforma(null);
+        const campoNome = document.getElementById('wallapop-nome-encomenda');
+        const campoTelefone = document.getElementById('plataforma-telefone-cliente');
+        const telefone = perfilExternoDetetado.telefone || perfilExternoDetetado.utilizador;
+        if (!encomendaPlataformaEmEdicao && !campoNome.value.trim()) {
+            campoNome.value = perfilExternoDetetado.utilizador;
+        }
+        if (!campoTelefone.value.trim()) campoTelefone.value = telefone;
+        if (!fichaClientePlataformaAtual) renderizarFichaClientePlataforma(null);
     }
     if (!seletor?.disabled) {
         aplicarPaisEnvioPredefinidoPlataforma();
@@ -3058,11 +3062,14 @@ async function registarEncomendaWallapop() {
         }
         perfilExternoDetetado = perfil;
         if (perfil.plataforma === 'WhatsApp') {
-            document.getElementById('wallapop-nome-encomenda').value = perfil.utilizador;
-            document.getElementById('wallapop-nome-cliente').value = perfil.utilizador;
-            document.getElementById('plataforma-telefone-cliente').value = perfil.telefone || perfil.utilizador;
-            fichaClientePlataformaAtual = null;
-            renderizarFichaClientePlataforma(null);
+            const campoNome = document.getElementById('wallapop-nome-encomenda');
+            const campoUtilizador = document.getElementById('wallapop-nome-cliente');
+            const campoTelefone = document.getElementById('plataforma-telefone-cliente');
+            const telefone = perfil.telefone || perfil.utilizador;
+            if (!eraEdicao && !campoNome.value.trim()) campoNome.value = perfil.utilizador;
+            if (!campoUtilizador.value.trim()) campoUtilizador.value = perfil.utilizador;
+            if (!campoTelefone.value.trim()) campoTelefone.value = telefone;
+            if (!fichaClientePlataformaAtual) renderizarFichaClientePlataforma(null);
         } else if (!fichaClientePlataformaAtual) {
             const ficha = await carregarFichaClientePorPerfilPlataforma();
             if (!ficha) {
