@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Wallapop etiqueta - PDF
 // @namespace    figuresplanet
-// @version      5.7
+// @version      5.8
 // @description  Guarda etiqueta Wallapop em PDF A4 com nome da encomenda em tamanho compacto
 // @match        https://*.wallapop.com/*
 // @match        https://wallapop-delivery-labels.wallapop.com/*
@@ -170,12 +170,12 @@
     const embed = document.querySelector('embed[type="application/pdf"], object[type="application/pdf"]');
     if (embed?.src) return embed.src.split('#')[0];
     const img = document.querySelector('img');
-    return img ? img.src.split('#')[0] : location.href.split('#')[0];
+    return img ? (img.currentSrc || img.src).split('#')[0] : location.href.split('#')[0];
   }
 
   async function obterBytesEtiqueta() {
     const url = obterUrlEtiqueta();
-    const res = await fetch(url, { credentials: 'include' });
+    const res = await fetch(url, { credentials: 'include', cache: 'no-store' });
     if (!res.ok) throw new Error('fetch');
     const bytes = await res.arrayBuffer();
     const contentType = res.headers.get('content-type') || '';
