@@ -50,11 +50,18 @@ html.admin-light-mode body.cabecalho-com-admin .admin-theme-toggle{
 html.admin-light-mode body.cabecalho-com-admin :is(
     .wallapop-editor,
     .wallapop-preview,
+    .wallapop-preview-acoes,
+    .wallapop-dados-encomenda,
+    .wallapop-preview-folha-cartao,
     .plataforma-admin,
     .plataforma-bloco,
     .plataforma-resumo,
+    .plataforma-envio,
+    .plataforma-portes-manual,
+    .plataforma-totais,
     .plataforma-cliente-ficha,
     .plataforma-importar-lista,
+    .plataforma-lista-notas-bloco,
     .admin-encomenda-linha,
     .admin-encomenda-modal,
     .admin-encomenda-dialogo,
@@ -122,7 +129,8 @@ html.admin-light-mode body.cabecalho-com-admin :is(
     .admin-encomendas-contagem,
     .admin-encomendas-resumo span,
     .plataforma-produto-stock,
-    .plataforma-produto-identificadores
+    .plataforma-produto-identificadores,
+    .wallapop-dados-encomenda > label
 ){
     color:#56616f !important;
 }
