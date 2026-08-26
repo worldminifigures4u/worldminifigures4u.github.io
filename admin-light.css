@@ -310,6 +310,17 @@ html.admin-light-mode body.cabecalho-com-admin .mapas-contador-item span{
 }
 
 html.admin-light-mode body.cabecalho-com-admin :is(
+    .mapas-celula-nome:hover,
+    .mapas-produto-nome-botao:hover,
+    .mapas-produto-nome-botao:focus-visible,
+    .pagina-fornecedores-unificada .mapas-produto-nome-botao:hover,
+    .pagina-fornecedores-unificada .mapas-produto-nome-botao:focus-visible
+){
+    color:#0f5e9c !important;
+    text-decoration-color:rgba(15, 94, 156, .45) !important;
+}
+
+html.admin-light-mode body.cabecalho-com-admin :is(
     tbody tr:hover,
     .fornecedor-tabela-encomenda tbody tr:hover,
     .admin-encomenda-card:hover,
