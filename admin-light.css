@@ -275,6 +275,25 @@ html.admin-light-mode body.cabecalho-com-admin.pagina-mapas-admin .mapas-produto
     border-bottom-color:#f0c442 !important;
 }
 
+html.admin-light-mode body.cabecalho-com-admin :is(
+    .mapas-produto-foto,
+    .mapas-produto-foto-vazia,
+    .mapas-col-foto .fornecedor-produto-foto,
+    .fornecedor-tabela-encomenda .mapas-col-foto .fornecedor-produto-foto,
+    .fornecedor-miniatura
+){
+    background:#f8fafc !important;
+    border-color:#b9c5d2 !important;
+}
+
+html.admin-light-mode body.cabecalho-com-admin :is(
+    .mapas-col-foto .fornecedor-produto-foto img,
+    .fornecedor-tabela-encomenda .mapas-col-foto .fornecedor-produto-foto img,
+    .fornecedor-miniatura.pequena
+){
+    background:transparent !important;
+}
+
 html.admin-light-mode body.cabecalho-com-admin .mapas-contador-item.destaque{
     background:#fff6d6 !important;
     border-color:#f0c442 !important;
