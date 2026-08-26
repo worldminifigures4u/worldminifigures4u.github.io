@@ -314,14 +314,11 @@ html.admin-light-mode body.cabecalho-com-admin .mapas-contador-item span{
 }
 
 html.admin-light-mode body.cabecalho-com-admin :is(
-    .admin-encomenda-cliente-link,
     .mapas-celula-nome:hover,
     .mapas-produto-nome-botao:hover,
     .mapas-produto-nome-botao:focus-visible,
     .pagina-fornecedores-unificada .mapas-produto-nome-botao:hover,
     .pagina-fornecedores-unificada .mapas-produto-nome-botao:focus-visible,
-    .admin-encomenda-cliente-link:hover,
-    .admin-encomenda-cliente-link:focus-visible,
     .admin-encomendas-vendas-figura-codigo:hover,
     .admin-encomendas-vendas-figura-codigo:focus-visible,
     .clientes-historico-codigo:hover,
@@ -337,9 +334,11 @@ html.admin-light-mode body.cabecalho-com-admin :is(
     text-decoration-color:rgba(15, 94, 156, .45) !important;
 }
 
-html.admin-light-mode body.cabecalho-com-admin .admin-encomenda-cliente-link:not(:hover):not(:focus-visible){
+html.admin-light-mode body.cabecalho-com-admin .admin-encomenda-cliente-link,
+html.admin-light-mode body.cabecalho-com-admin .admin-encomenda-cliente-link:hover,
+html.admin-light-mode body.cabecalho-com-admin .admin-encomenda-cliente-link:focus-visible{
     color:#17202a !important;
-    text-decoration-color:rgba(15, 94, 156, .35) !important;
+    text-decoration:none !important;
 }
 
 html.admin-light-mode body.cabecalho-com-admin :is(
