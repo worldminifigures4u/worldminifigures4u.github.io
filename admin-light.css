@@ -79,6 +79,9 @@ html.admin-light-mode body.cabecalho-com-admin :is(
     .mapas-tabela-wrapper,
     .mapas-tabela-scroll-topo,
     .mapas-colunas-opcoes,
+    .estatisticas-metricas article,
+    .estatisticas-barra-trilho,
+    .estatisticas-tabela-scroll,
     .admin-encomenda-card,
     .admin-encomenda-cabecalho,
     .admin-encomenda-linha,
@@ -322,9 +325,55 @@ html.admin-light-mode body.cabecalho-com-admin :is(
     .fornecedor-resumo-encomenda,
     .fornecedor-resumo-encomenda-texto,
     .fornecedor-pedido-resumo,
-    .fornecedor-pedido-fornecedor-nome
+    .fornecedor-pedido-fornecedor-nome,
+    .estatisticas-barra,
+    .estatisticas-barra-label,
+    .estatisticas-barra-valor,
+    .estatisticas-linha,
+    .estatisticas-linha small,
+    .estatisticas-linha span,
+    .estatisticas-vazio
 ){
     color:#17202a !important;
+}
+
+html.admin-light-mode body.cabecalho-com-admin .estatisticas-metricas article{
+    background:#ffffff !important;
+    border-color:#d8e0ea !important;
+    box-shadow:0 8px 24px rgba(17, 24, 39, .07) !important;
+}
+
+html.admin-light-mode body.cabecalho-com-admin .estatisticas-metricas span{
+    color:#56616f !important;
+}
+
+html.admin-light-mode body.cabecalho-com-admin .estatisticas-metricas strong{
+    color:#17202a !important;
+}
+
+html.admin-light-mode body.cabecalho-com-admin .estatisticas-barra-trilho{
+    background:#dfe6ee !important;
+}
+
+html.admin-light-mode body.cabecalho-com-admin .estatisticas-barra-preenchimento{
+    background:#f0b400 !important;
+}
+
+html.admin-light-mode body.cabecalho-com-admin .estatisticas-linha{
+    border-color:#d8e0ea !important;
+}
+
+html.admin-light-mode body.cabecalho-com-admin .estatisticas-tabela-scroll{
+    scrollbar-color:#b7c3d0 #eef2f6 !important;
+}
+
+html.admin-light-mode body.cabecalho-com-admin .estatisticas-tabela-scroll::-webkit-scrollbar-track{
+    background:#eef2f6 !important;
+}
+
+html.admin-light-mode body.cabecalho-com-admin .estatisticas-tabela-scroll::-webkit-scrollbar-thumb{
+    background:#b7c3d0 !important;
+    border-color:#eef2f6 !important;
 }
 
 html.admin-light-mode body.cabecalho-com-admin .fornecedor-tabela-encomenda thead th{
