@@ -171,7 +171,14 @@ html.admin-light-mode body.cabecalho-com-admin :is(
 }
 
 html.admin-light-mode body.cabecalho-com-admin .wallapop-botao,
-html.admin-light-mode body.cabecalho-com-admin .btn-admin-secundario{
+html.admin-light-mode body.cabecalho-com-admin .btn-admin-secundario,
+html.admin-light-mode body.cabecalho-com-admin .mapas-copiar-lista,
+html.admin-light-mode body.cabecalho-com-admin .mapas-colunas-painel > summary,
+html.admin-light-mode body.cabecalho-com-admin .fornecedor-btn-editar-ficha,
+html.admin-light-mode body.cabecalho-com-admin .fornecedor-btn-filtro-marcacao,
+html.admin-light-mode body.cabecalho-com-admin .admin-encomenda-editar,
+html.admin-light-mode body.cabecalho-com-admin .admin-encomenda-gravar,
+html.admin-light-mode body.cabecalho-com-admin .portes-tab{
     background:#ffffff !important;
     border-color:#aeb9c6 !important;
     color:#17202a !important;
@@ -181,9 +188,29 @@ html.admin-light-mode body.cabecalho-com-admin .btn-admin-secundario{
 html.admin-light-mode body.cabecalho-com-admin .wallapop-botao:hover,
 html.admin-light-mode body.cabecalho-com-admin .wallapop-botao:focus-visible,
 html.admin-light-mode body.cabecalho-com-admin .btn-admin-secundario:hover,
-html.admin-light-mode body.cabecalho-com-admin .btn-admin-secundario:focus-visible{
+html.admin-light-mode body.cabecalho-com-admin .btn-admin-secundario:focus-visible,
+html.admin-light-mode body.cabecalho-com-admin .mapas-copiar-lista:hover,
+html.admin-light-mode body.cabecalho-com-admin .mapas-copiar-lista:focus-visible,
+html.admin-light-mode body.cabecalho-com-admin .mapas-colunas-painel > summary:hover,
+html.admin-light-mode body.cabecalho-com-admin .mapas-colunas-painel > summary:focus-visible,
+html.admin-light-mode body.cabecalho-com-admin .fornecedor-btn-editar-ficha:hover,
+html.admin-light-mode body.cabecalho-com-admin .fornecedor-btn-editar-ficha:focus-visible,
+html.admin-light-mode body.cabecalho-com-admin .fornecedor-btn-filtro-marcacao:hover,
+html.admin-light-mode body.cabecalho-com-admin .fornecedor-btn-filtro-marcacao:focus-visible,
+html.admin-light-mode body.cabecalho-com-admin .admin-encomenda-editar:hover,
+html.admin-light-mode body.cabecalho-com-admin .admin-encomenda-editar:focus-visible,
+html.admin-light-mode body.cabecalho-com-admin .admin-encomenda-gravar:hover,
+html.admin-light-mode body.cabecalho-com-admin .admin-encomenda-gravar:focus-visible,
+html.admin-light-mode body.cabecalho-com-admin .portes-tab:hover,
+html.admin-light-mode body.cabecalho-com-admin .portes-tab:focus-visible{
     border-color:#ffc107 !important;
     color:#8a6100 !important;
+}
+
+html.admin-light-mode body.cabecalho-com-admin .portes-tab.ativa{
+    background:#fff6d6 !important;
+    border-color:#f0c442 !important;
+    color:#4a3700 !important;
 }
 
 html.admin-light-mode body.cabecalho-com-admin .wallapop-botao-registar{
@@ -199,14 +226,17 @@ html.admin-light-mode body.cabecalho-com-admin .wallapop-botao-registar:focus-vi
     color:#0b5b27 !important;
 }
 
-html.admin-light-mode body.cabecalho-com-admin .wallapop-botao-destaque{
+html.admin-light-mode body.cabecalho-com-admin .wallapop-botao-destaque,
+html.admin-light-mode body.cabecalho-com-admin .btn-acao-cliente{
     background:#fff6d6 !important;
     border:1px solid #f0c442 !important;
     color:#4a3700 !important;
 }
 
 html.admin-light-mode body.cabecalho-com-admin .wallapop-botao-destaque:hover,
-html.admin-light-mode body.cabecalho-com-admin .wallapop-botao-destaque:focus-visible{
+html.admin-light-mode body.cabecalho-com-admin .wallapop-botao-destaque:focus-visible,
+html.admin-light-mode body.cabecalho-com-admin .btn-acao-cliente:hover,
+html.admin-light-mode body.cabecalho-com-admin .btn-acao-cliente:focus-visible{
     background:#ffefb0 !important;
     border-color:#d6a300 !important;
     color:#2f2300 !important;
@@ -235,8 +265,60 @@ html.admin-light-mode body.cabecalho-com-admin #btn-limpar-wallapop:focus-visibl
 }
 
 html.admin-light-mode body.cabecalho-com-admin :is(
+    .admin-encomenda-apagar,
+    .admin-encomenda-anexo-apagar,
+    .clientes-botao-apagar,
+    .fornecedor-ficha-apagar,
+    .fornecedor-btn-remover-filtro-marcacao,
+    .mapas-produto-historico-apagar,
+    .fornecedor-historico-apagar,
+    .mapas-produto-fornecedor-limpar-historico,
+    .btn-logout
+){
+    background:#fff1f1 !important;
+    border:1px solid #e2a7a7 !important;
+    color:#a52828 !important;
+    box-shadow:0 2px 8px rgba(120, 20, 20, .08) !important;
+}
+
+html.admin-light-mode body.cabecalho-com-admin :is(
+    .admin-encomenda-apagar,
+    .admin-encomenda-anexo-apagar,
+    .clientes-botao-apagar,
+    .fornecedor-ficha-apagar,
+    .fornecedor-btn-remover-filtro-marcacao,
+    .mapas-produto-historico-apagar,
+    .fornecedor-historico-apagar,
+    .mapas-produto-fornecedor-limpar-historico,
+    .btn-logout
+):hover:not(:disabled),
+html.admin-light-mode body.cabecalho-com-admin :is(
+    .admin-encomenda-apagar,
+    .admin-encomenda-anexo-apagar,
+    .clientes-botao-apagar,
+    .fornecedor-ficha-apagar,
+    .fornecedor-btn-remover-filtro-marcacao,
+    .mapas-produto-historico-apagar,
+    .fornecedor-historico-apagar,
+    .mapas-produto-fornecedor-limpar-historico,
+    .btn-logout
+):focus-visible:not(:disabled){
+    background:#ffe5e5 !important;
+    border-color:#cf7474 !important;
+    color:#7f1d1d !important;
+}
+
+html.admin-light-mode body.cabecalho-com-admin :is(button, .wallapop-botao, summary):disabled,
+html.admin-light-mode body.cabecalho-com-admin :is(button, .wallapop-botao, summary)[aria-disabled="true"]{
+    opacity:.48 !important;
+    box-shadow:none !important;
+    cursor:not-allowed !important;
+}
+
+html.admin-light-mode body.cabecalho-com-admin :is(
     .wallapop-botao-destaque,
-    .wallapop-botao-registar
+    .wallapop-botao-registar,
+    .btn-acao-cliente
 ){
     box-shadow:0 3px 10px rgba(17, 24, 39, .08) !important;
 }
