@@ -73,6 +73,12 @@ html.admin-light-mode body.cabecalho-com-admin :is(
     .fornecedor-pedido-card,
     .fornecedor-pedido-cabecalho,
     .fornecedor-pedido-linha-cabecalho,
+    .mapas-contador-filtros,
+    .mapas-contador-item,
+    .mapas-tabela-resumo,
+    .mapas-tabela-wrapper,
+    .mapas-tabela-scroll-topo,
+    .mapas-colunas-opcoes,
     .admin-encomenda-card,
     .admin-encomenda-cabecalho,
     .admin-encomenda-linha,
@@ -147,6 +153,22 @@ html.admin-light-mode body.cabecalho-com-admin :is(
 }
 
 html.admin-light-mode body.cabecalho-com-admin :is(
+    .mapas-tabela-wrapper,
+    .mapas-tabela-scroll-topo
+){
+    scrollbar-color:#b7c3d0 #eef2f6 !important;
+}
+
+html.admin-light-mode body.cabecalho-com-admin .mapas-tabela-scroll-topo::-webkit-scrollbar-track{
+    background:#eef2f6 !important;
+}
+
+html.admin-light-mode body.cabecalho-com-admin .mapas-tabela-scroll-topo::-webkit-scrollbar-thumb{
+    background:#b7c3d0 !important;
+    border-color:#eef2f6 !important;
+}
+
+html.admin-light-mode body.cabecalho-com-admin :is(
     input:not([type="checkbox"]):not([type="radio"]),
     select,
     textarea
@@ -213,6 +235,56 @@ html.admin-light-mode body.cabecalho-com-admin :is(
 ){
     background:#ffffff !important;
     border-color:#d8e0ea !important;
+}
+
+html.admin-light-mode body.cabecalho-com-admin .mapas-produtos-tabela{
+    background:#ffffff !important;
+    color:#17202a !important;
+}
+
+html.admin-light-mode body.cabecalho-com-admin .mapas-produtos-tabela th{
+    background:#e9eef5 !important;
+    border-color:#d8e0ea !important;
+    border-bottom-color:#f0c442 !important;
+    color:#3c4652 !important;
+    box-shadow:none !important;
+}
+
+html.admin-light-mode body.cabecalho-com-admin .mapas-produtos-tabela td,
+html.admin-light-mode body.cabecalho-com-admin .mapas-produtos-tabela tbody tr:nth-child(even) td,
+html.admin-light-mode body.cabecalho-com-admin.pagina-mapas-admin .mapas-produtos-tabela.mapas-com-foto .mapas-col-foto,
+html.admin-light-mode body.cabecalho-com-admin.pagina-mapas-admin .mapas-produtos-tabela.mapas-com-foto tbody tr:nth-child(even) .mapas-col-foto,
+html.admin-light-mode body.cabecalho-com-admin.pagina-mapas-admin .mapas-produtos-tabela.mapas-com-foto tbody tr:nth-child(odd) .mapas-col-foto{
+    background:#ffffff !important;
+    border-color:#d8e0ea !important;
+    color:#17202a !important;
+}
+
+html.admin-light-mode body.cabecalho-com-admin .mapas-produtos-tabela tbody tr:hover td,
+html.admin-light-mode body.cabecalho-com-admin.pagina-mapas-admin .mapas-produtos-tabela.mapas-com-foto tbody tr:hover .mapas-col-foto{
+    background:#f7f9fc !important;
+}
+
+html.admin-light-mode body.cabecalho-com-admin .mapas-produtos-tabela tbody tr.mapa-linha-quantidade-ativa td,
+html.admin-light-mode body.cabecalho-com-admin.pagina-mapas-admin .mapas-produtos-tabela.mapas-com-foto tbody tr.mapa-linha-quantidade-ativa .mapas-col-foto{
+    background:#fff6d6 !important;
+    border-top-color:#f0c442 !important;
+    border-bottom-color:#f0c442 !important;
+}
+
+html.admin-light-mode body.cabecalho-com-admin .mapas-contador-item.destaque{
+    background:#fff6d6 !important;
+    border-color:#f0c442 !important;
+    color:#4a3700 !important;
+}
+
+html.admin-light-mode body.cabecalho-com-admin .mapas-contador-item strong,
+html.admin-light-mode body.cabecalho-com-admin .mapas-contador-item.destaque strong{
+    color:#17202a !important;
+}
+
+html.admin-light-mode body.cabecalho-com-admin .mapas-contador-item span{
+    color:#56616f !important;
 }
 
 html.admin-light-mode body.cabecalho-com-admin :is(
