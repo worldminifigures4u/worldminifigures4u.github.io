@@ -68,6 +68,7 @@ html.admin-light-mode body.cabecalho-com-admin :is(
     .admin-encomendas-resumo div,
     .admin-cliente-dialogo,
     .admin-cliente-secao,
+    .clientes-lista,
     .clientes-lista-item,
     .clientes-ficha,
     .clientes-ficha-campo,
@@ -89,6 +90,47 @@ html.admin-light-mode body.cabecalho-com-admin :is(
     border-color:#d8e0ea !important;
     color:#17202a !important;
     box-shadow:0 8px 24px rgba(17, 24, 39, .07);
+}
+
+html.admin-light-mode body.cabecalho-com-admin :is(
+    .clientes-lista,
+    .fornecedor-resultados,
+    .fornecedor-selecionados,
+    .fornecedor-pedido-produtos,
+    .fornecedor-encomendas-lista
+){
+    scrollbar-color:#b7c3d0 #eef2f6 !important;
+}
+
+html.admin-light-mode body.cabecalho-com-admin :is(
+    .clientes-lista,
+    .fornecedor-resultados,
+    .fornecedor-selecionados,
+    .fornecedor-pedido-produtos,
+    .fornecedor-encomendas-lista
+)::-webkit-scrollbar-track{
+    background:#eef2f6 !important;
+}
+
+html.admin-light-mode body.cabecalho-com-admin :is(
+    .clientes-lista,
+    .fornecedor-resultados,
+    .fornecedor-selecionados,
+    .fornecedor-pedido-produtos,
+    .fornecedor-encomendas-lista
+)::-webkit-scrollbar-thumb{
+    background:#b7c3d0 !important;
+    border-color:#eef2f6 !important;
+}
+
+html.admin-light-mode body.cabecalho-com-admin :is(
+    .clientes-lista,
+    .fornecedor-resultados,
+    .fornecedor-selecionados,
+    .fornecedor-pedido-produtos,
+    .fornecedor-encomendas-lista
+)::-webkit-scrollbar-thumb:hover{
+    background:#95a3b3 !important;
 }
 
 html.admin-light-mode body.cabecalho-com-admin :is(
