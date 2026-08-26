@@ -450,12 +450,8 @@ async function iniciarEstatisticasAdmin() {
         await window.carregarScriptSupabase();
         if (typeof supabase === 'undefined') throw new Error('A biblioteca Supabase não carregou.');
         estatisticasClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-        const { data: { user }, error } = await estatisticasClient.auth.getUser();
-        if (error || !user || !ADMIN_EMAILS.includes(String(user.email || '').toLowerCase())) {
-            bloqueio.textContent = 'Acesso reservado ao administrador. A regressar à conta...';
-            setTimeout(() => window.location.replace('conta.html'), 1400);
-            return;
-        }
+        const user = await validarAdminRapido(estatisticasClient, bloqueio);
+        if (!user) return;
         mostrarNavegacaoAdminValidada();
         bloqueio.hidden = true;
         document.getElementById('estatisticas-aplicacao').hidden = false;

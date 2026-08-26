@@ -703,12 +703,8 @@ async function iniciarPainelGestao() {
     }
 
     gestaoClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-    const { data: { user }, error } = await gestaoClient.auth.getUser();
-    if (error || !user || !ADMIN_EMAILS.includes(String(user.email || '').toLowerCase())) {
-        if (bloqueio) bloqueio.textContent = 'Acesso reservado ao administrador. A regressar à conta...';
-        setTimeout(() => window.location.replace('conta.html'), 1400);
-        return;
-    }
+    const user = await validarAdminRapido(gestaoClient, bloqueio);
+    if (!user) return;
 
     if (typeof mostrarNavegacaoAdminValidada === 'function') {
         mostrarNavegacaoAdminValidada();

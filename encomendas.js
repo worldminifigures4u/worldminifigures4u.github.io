@@ -878,12 +878,8 @@ async function iniciarPainelEncomendas() {
         if (typeof supabase === 'undefined') throw new Error('A biblioteca Supabase não carregou.');
         encomendasClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
         configurarVistaEncomendasAdmin();
-        const { data: { user }, error } = await encomendasClient.auth.getUser();
-        if (error || !user || !ADMIN_EMAILS.includes(String(user.email || '').toLowerCase())) {
-            bloqueio.textContent = 'Acesso reservado ao administrador. A regressar à conta...';
-            setTimeout(() => window.location.replace('conta.html'), 1400);
-            return;
-        }
+        const user = await validarAdminRapido(encomendasClient, bloqueio);
+        if (!user) return;
         mostrarNavegacaoAdminValidada();
         bloqueio.hidden = true;
         document.getElementById('encomendas-aplicacao').hidden = false;

@@ -804,11 +804,8 @@ async function iniciarMapas() {
         await window.carregarScriptSupabase();
         if (typeof supabase === "undefined") throw new Error("A biblioteca Supabase nao carregou.");
         mapasClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-        const { data: { user }, error } = await mapasClient.auth.getUser();
-        if (error || !user || !ADMIN_EMAILS.includes(String(user.email || "").toLowerCase())) {
-            document.getElementById("fornecedores-bloqueio").textContent = "Acesso reservado ao administrador.";
-            return;
-        }
+        const user = await validarAdminRapido(mapasClient, document.getElementById("fornecedores-bloqueio"));
+        if (!user) return;
         mostrarNavegacaoAdminValidada();
         document.getElementById("fornecedores-bloqueio").hidden = true;
         document.getElementById("fornecedores-aplicacao").hidden = false;

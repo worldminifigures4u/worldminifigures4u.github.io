@@ -492,14 +492,12 @@ async function iniciarPainelPortes(opcoes = {}) {
     portesClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
     if (!opcoes.jaAutenticado) {
-        const { data: { user }, error } = await portesClient.auth.getUser();
-        if (error || !user || !ADMIN_EMAILS.includes(String(user.email || '').toLowerCase())) {
+        const user = await validarAdminRapido(portesClient, embutido ? null : bloqueio);
+        if (!user) {
             if (embutido) {
                 definirStatusPortes('Acesso reservado ao administrador.');
                 return;
             }
-            if (bloqueio) bloqueio.textContent = 'Acesso reservado ao administrador. A regressar à conta...';
-            setTimeout(() => window.location.replace('conta.html'), 1400);
             return;
         }
     }
