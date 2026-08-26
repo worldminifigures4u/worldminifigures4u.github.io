@@ -62,6 +62,17 @@ html.admin-light-mode body.cabecalho-com-admin :is(
     .plataforma-cliente-ficha,
     .plataforma-importar-lista,
     .plataforma-lista-notas-bloco,
+    .fornecedor-lista-controles,
+    .fornecedor-controles-unificados,
+    .fornecedor-filtros-marcacao-extra,
+    .fornecedor-resumo-encomenda,
+    .fornecedor-tabela-encomenda-bloco,
+    .fornecedor-resultados,
+    .fornecedor-selecionados,
+    .fornecedor-pedidos,
+    .fornecedor-pedido-card,
+    .fornecedor-pedido-cabecalho,
+    .fornecedor-pedido-linha-cabecalho,
     .admin-encomenda-card,
     .admin-encomenda-cabecalho,
     .admin-encomenda-linha,
@@ -190,6 +201,10 @@ html.admin-light-mode body.cabecalho-com-admin :is(thead th, .admin-encomendas-v
 
 html.admin-light-mode body.cabecalho-com-admin :is(
     tbody tr,
+    .fornecedor-tabela-encomenda,
+    .fornecedor-tabela-encomenda tbody tr,
+    .fornecedor-tabela-encomenda td,
+    .fornecedor-tabela-cabecalho-fixo,
     .admin-encomenda-card,
     .admin-encomenda-cabecalho,
     .admin-encomendas-vendas-figura-linha,
@@ -202,6 +217,7 @@ html.admin-light-mode body.cabecalho-com-admin :is(
 
 html.admin-light-mode body.cabecalho-com-admin :is(
     tbody tr:hover,
+    .fornecedor-tabela-encomenda tbody tr:hover,
     .admin-encomenda-card:hover,
     .admin-encomenda-cabecalho:hover,
     .admin-encomendas-vendas-figura-linha:hover,
@@ -221,6 +237,38 @@ html.admin-light-mode body.cabecalho-com-admin :is(
     .admin-encomenda-seta
 ){
     color:#17202a !important;
+}
+
+html.admin-light-mode body.cabecalho-com-admin :is(
+    .fornecedor-tabela-encomenda td,
+    .fornecedor-tabela-encomenda .mapas-col-ref,
+    .fornecedor-tabela-encomenda .mapas-col-stock,
+    .fornecedor-tabela-encomenda .mapas-col-pendente,
+    .fornecedor-tabela-encomenda .mapas-col-previsto,
+    .fornecedor-tabela-encomenda .mapas-col-qtd,
+    .fornecedor-tabela-encomenda .mapas-col-vendas-3m,
+    .fornecedor-resumo-encomenda,
+    .fornecedor-resumo-encomenda-texto,
+    .fornecedor-pedido-resumo,
+    .fornecedor-pedido-fornecedor-nome
+){
+    color:#17202a !important;
+}
+
+html.admin-light-mode body.cabecalho-com-admin .fornecedor-tabela-encomenda thead th{
+    background:#e9eef5 !important;
+    border-color:#d8e0ea !important;
+    border-bottom-color:#f0c442 !important;
+    color:#3c4652 !important;
+    box-shadow:none !important;
+}
+
+html.admin-light-mode body.cabecalho-com-admin :is(
+    .fornecedor-tabela-encomenda[data-coluna-ativa] td,
+    .fornecedor-tabela-encomenda[data-coluna-ativa] tbody tr:first-child td,
+    .fornecedor-tabela-encomenda[data-coluna-ativa] tbody tr:last-child td
+){
+    border-color:#d8e0ea !important;
 }
 
 html.admin-light-mode body.cabecalho-com-admin :is(
