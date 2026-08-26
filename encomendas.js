@@ -498,7 +498,7 @@ function abrirModalEncomendaAdmin(encomenda) {
     AdminEncomendaVista.carregarImagensParaEncomendas([encomenda])
         .then(() => {
             if (carregamentoId !== carregamentoImagensModalId || modal.hidden) return;
-            renderizarModal();
+            AdminEncomendaVista.atualizarMiniaturasProdutos(conteudo);
         })
         .catch(error => console.warn('Imagens da encomenda indisponiveis.', error));
 }

@@ -548,6 +548,9 @@ window.AdminEncomendaVista = (function () {
         const url = obterImagemProduto(item);
         const botao = criarElemento("button", "admin-encomenda-produto-foto");
         botao.type = "button";
+        botao.dataset.produtoId = String(item.id_produto || item.id || "");
+        botao.dataset.sku = String(item.sku || "");
+        botao.dataset.nome = String(item.nome || "Produto");
         botao.title = url ? "Ampliar fotografia" : "Produto sem fotografia";
         botao.disabled = !url;
         const imagem = document.createElement("img");
@@ -559,9 +562,33 @@ window.AdminEncomendaVista = (function () {
             imagem.src = SEM_IMAGEM;
             botao.disabled = true;
         };
-        if (url) botao.addEventListener("click", () => abrirImagemProduto(url, item.nome));
+        if (url) botao.onclick = () => abrirImagemProduto(url, item.nome);
         botao.appendChild(imagem);
         return botao;
+    }
+
+    function atualizarMiniaturasProdutos(raiz = document) {
+        raiz.querySelectorAll(".admin-encomenda-produto-foto").forEach(botao => {
+            const item = {
+                id_produto: botao.dataset.produtoId || "",
+                id: botao.dataset.produtoId || "",
+                sku: botao.dataset.sku || "",
+                nome: botao.dataset.nome || "Produto"
+            };
+            const url = obterImagemProduto(item);
+            const imagem = botao.querySelector("img");
+            if (!imagem || !url) return;
+            imagem.onerror = () => {
+                imagem.onerror = null;
+                imagem.src = SEM_IMAGEM;
+                botao.disabled = true;
+            };
+            imagem.src = otimizarMiniatura(url);
+            imagem.alt = item.nome;
+            botao.title = "Ampliar fotografia";
+            botao.disabled = false;
+            botao.onclick = () => abrirImagemProduto(url, item.nome);
+        });
     }
 
     function pastaAnexos(encomenda) {
@@ -2096,6 +2123,7 @@ window.AdminEncomendaVista = (function () {
         carregarContagensAnexosLista,
         atualizarContagemAnexosLista,
         carregarImagensParaEncomendas,
+        atualizarMiniaturasProdutos,
         limparCacheImagens,
         formatarEuro,
         formatarData,

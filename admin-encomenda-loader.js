@@ -21,7 +21,7 @@
         if (!promessaVista) {
             promessaVista = carregarScript('morada-formato.js?v=20260713-morada-formatada')
                 .then(function () {
-                    return carregarScript('admin-encomenda-vista.js?v=20260825-fechar-estado-modal');
+                    return carregarScript('admin-encomenda-vista.js?v=20260826-miniaturas-sem-piscar');
                 });
         }
         return promessaVista;
