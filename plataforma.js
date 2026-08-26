@@ -1757,32 +1757,14 @@ function obterStockDisponivelPlataforma(produto) {
 }
 
 function confirmarStockNegativoPlataforma(produto, quantidadePretendida) {
-    const disponivel = obterStockDisponivelPlataforma(produto);
-    if (disponivel === null || quantidadePretendida <= disponivel) return true;
-    const stockAtual = Number(produto.stock);
-    const reserved = obterQuantidadeOriginalPlataforma(produto.id);
-    const stockResultante = Number.isFinite(stockAtual)
-        ? stockAtual - (quantidadePretendida - reserved)
-        : null;
-    const confirmado = window.confirm(
-        `O produto "${produto.nome}" nao tem stock suficiente registado.\n\n` +
-        `Stock registado: ${Number.isFinite(stockAtual) ? stockAtual : '?'}\n` +
-        `Quantidade pretendida: ${quantidadePretendida}\n` +
-        (stockResultante !== null ? `Stock apos encomenda: ${stockResultante}\n\n` : '\n') +
-        'Confirmas que queres adicionar mesmo assim? O stock pode ficar negativo.\n' +
-        'Quando receberes a encomenda do fornecedor, o stock soma a esse valor (ex.: -1 + 5 = 4).'
-    );
-    if (confirmado) stockNegativoConfirmado.add(String(produto.id));
-    return confirmado;
+    if (produto?.id) stockNegativoConfirmado.add(String(produto.id));
+    return true;
 }
 
 function confirmarFaltasStockPlataforma() {
-    for (const item of wallapopItens) {
-        const disponivel = obterStockDisponivelPlataforma(item);
-        if (disponivel === null || item.quantidade <= disponivel) continue;
-        if (stockNegativoConfirmado.has(String(item.id))) continue;
-        if (!confirmarStockNegativoPlataforma(item, item.quantidade)) return false;
-    }
+    wallapopItens.forEach(item => {
+        if (item?.id) stockNegativoConfirmado.add(String(item.id));
+    });
     return true;
 }
 
@@ -2661,7 +2643,7 @@ function obterItensEncomendaWallapop() {
         id_produto: String(item.id),
         quantidade: Math.max(1, Number(item.quantidade) || 1),
         ordem: indice,
-        permitir_stock_negativo: stockNegativoConfirmado.has(String(item.id))
+        permitir_stock_negativo: true
     }));
 }
 

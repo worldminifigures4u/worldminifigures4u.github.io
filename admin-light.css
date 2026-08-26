@@ -94,6 +94,10 @@ html.admin-light-mode body.cabecalho-com-admin :is(
     .admin-encomendas-resumo div,
     .admin-cliente-dialogo,
     .admin-cliente-secao,
+    .admin-cliente-campo,
+    .admin-cliente-resumo,
+    .admin-cliente-historico,
+    .admin-cliente-historico-linha,
     .clientes-lista,
     .clientes-lista-item,
     .clientes-ficha,
@@ -120,6 +124,8 @@ html.admin-light-mode body.cabecalho-com-admin :is(
 
 html.admin-light-mode body.cabecalho-com-admin :is(
     .clientes-lista,
+    .admin-cliente-dialogo,
+    .admin-cliente-historico,
     .fornecedor-resultados,
     .fornecedor-selecionados,
     .fornecedor-pedido-produtos,
@@ -130,6 +136,8 @@ html.admin-light-mode body.cabecalho-com-admin :is(
 
 html.admin-light-mode body.cabecalho-com-admin :is(
     .clientes-lista,
+    .admin-cliente-dialogo,
+    .admin-cliente-historico,
     .fornecedor-resultados,
     .fornecedor-selecionados,
     .fornecedor-pedido-produtos,
@@ -140,6 +148,8 @@ html.admin-light-mode body.cabecalho-com-admin :is(
 
 html.admin-light-mode body.cabecalho-com-admin :is(
     .clientes-lista,
+    .admin-cliente-dialogo,
+    .admin-cliente-historico,
     .fornecedor-resultados,
     .fornecedor-selecionados,
     .fornecedor-pedido-produtos,
@@ -151,6 +161,8 @@ html.admin-light-mode body.cabecalho-com-admin :is(
 
 html.admin-light-mode body.cabecalho-com-admin :is(
     .clientes-lista,
+    .admin-cliente-dialogo,
+    .admin-cliente-historico,
     .fornecedor-resultados,
     .fornecedor-selecionados,
     .fornecedor-pedido-produtos,
@@ -218,6 +230,38 @@ html.admin-light-mode body.cabecalho-com-admin :is(
     .wallapop-dados-encomenda > label
 ){
     color:#56616f !important;
+}
+
+html.admin-light-mode body.cabecalho-com-admin :is(
+    .admin-cliente-campo strong,
+    .admin-cliente-vazio,
+    .admin-cliente-carregar
+){
+    color:#56616f !important;
+}
+
+html.admin-light-mode body.cabecalho-com-admin :is(
+    .admin-cliente-campo span,
+    .admin-cliente-historico-linha,
+    .admin-cliente-notas-consulta
+){
+    color:#17202a !important;
+}
+
+html.admin-light-mode body.cabecalho-com-admin .admin-cliente-historico-linha{
+    border-color:#d8e0ea !important;
+}
+
+html.admin-light-mode body.cabecalho-com-admin .admin-cliente-perfil{
+    background:#ffffff !important;
+    border-color:#aeb9c6 !important;
+    color:#17202a !important;
+}
+
+html.admin-light-mode body.cabecalho-com-admin .admin-cliente-perfil:hover,
+html.admin-light-mode body.cabecalho-com-admin .admin-cliente-perfil:focus-visible{
+    border-color:#8fb3d9 !important;
+    color:#0f5e9c !important;
 }
 
 html.admin-light-mode body.cabecalho-com-admin :is(table, thead, tbody, tr, th, td){
