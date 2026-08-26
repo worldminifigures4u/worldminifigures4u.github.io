@@ -1,0 +1,185 @@
+html.admin-light-mode,
+html.admin-light-mode body.cabecalho-com-admin{
+    color-scheme:light;
+    background:#f3f5f8 !important;
+    color:#17202a !important;
+}
+
+html.admin-light-mode body.cabecalho-com-admin{
+    --cor-texto-principal:#17202a;
+    --cor-texto-secundario:#56616f;
+    --cor-menu-fundo:#e8edf3;
+    --cor-menu-texto:#17202a;
+    --cor-botao-secundario-texto:#17202a;
+    --cor-botao-secundario-borda:#aeb9c6;
+    --cor-ativo-texto:#111111;
+}
+
+html.admin-light-mode body.cabecalho-com-admin .cabecalho-site-admin,
+html.admin-light-mode body.cabecalho-com-admin .cabecalho-loja{
+    background:#ffffff !important;
+    border-color:#d9e1ea !important;
+    box-shadow:0 6px 18px rgba(17, 24, 39, .08);
+}
+
+html.admin-light-mode body.cabecalho-com-admin .navegacao-admin-cabecalho{
+    border-color:#d9e1ea !important;
+}
+
+html.admin-light-mode body.cabecalho-com-admin .acao-cabecalho{
+    background:#e8edf3 !important;
+    color:#17202a !important;
+    border-color:transparent !important;
+}
+
+html.admin-light-mode body.cabecalho-com-admin .acao-cabecalho:hover,
+html.admin-light-mode body.cabecalho-com-admin .acao-cabecalho:focus-visible,
+html.admin-light-mode body.cabecalho-com-admin .acao-cabecalho.ativa,
+html.admin-light-mode body.cabecalho-com-admin .acao-cabecalho.ativa:hover,
+html.admin-light-mode body.cabecalho-com-admin .acao-cabecalho.ativa:focus-visible{
+    background:#fff8d8 !important;
+    color:#111111 !important;
+    border-color:#ffc107 !important;
+}
+
+html.admin-light-mode body.cabecalho-com-admin .admin-theme-toggle{
+    border-color:#c6d0dc !important;
+    background:#ffffff !important;
+}
+
+html.admin-light-mode body.cabecalho-com-admin :is(
+    .wallapop-editor,
+    .wallapop-preview,
+    .plataforma-admin,
+    .plataforma-bloco,
+    .plataforma-resumo,
+    .plataforma-cliente-ficha,
+    .plataforma-importar-lista,
+    .admin-encomenda-linha,
+    .admin-encomenda-modal,
+    .admin-encomenda-dialogo,
+    .admin-encomendas-resumo div,
+    .admin-cliente-dialogo,
+    .admin-cliente-secao,
+    .clientes-lista-item,
+    .clientes-ficha,
+    .clientes-ficha-campo,
+    .fornecedores-card,
+    .fornecedores-painel,
+    .fornecedor-lista-final-box,
+    .fornecedor-resultado-item,
+    .fornecedores-modal-conteudo,
+    .mapas-card,
+    .mapas-painel,
+    .mapas-modal-conteudo,
+    .estatisticas-card,
+    .estatisticas-painel,
+    .gestao-card,
+    .gestao-painel,
+    fieldset
+){
+    background:#ffffff !important;
+    border-color:#d8e0ea !important;
+    color:#17202a !important;
+    box-shadow:0 8px 24px rgba(17, 24, 39, .07);
+}
+
+html.admin-light-mode body.cabecalho-com-admin :is(
+    input:not([type="checkbox"]):not([type="radio"]),
+    select,
+    textarea
+){
+    background:#ffffff !important;
+    border-color:#b9c5d2 !important;
+    color:#17202a !important;
+}
+
+html.admin-light-mode body.cabecalho-com-admin :is(input, textarea)::placeholder{
+    color:#7b8794 !important;
+}
+
+html.admin-light-mode body.cabecalho-com-admin :is(
+    h1,
+    h2,
+    h3,
+    h4,
+    legend,
+    .admin-encomenda-cliente-nome,
+    .clientes-lista-nome,
+    .mapas-produto-nome-botao,
+    .wallapop-resultado-info strong,
+    .wallapop-selecionado-info strong,
+    .item-admin-produto strong
+){
+    color:#17202a !important;
+}
+
+html.admin-light-mode body.cabecalho-com-admin :is(
+    label,
+    small,
+    .ajuda-admin,
+    .clientes-lista-meta,
+    .admin-encomendas-contagem,
+    .admin-encomendas-resumo span,
+    .plataforma-produto-stock,
+    .plataforma-produto-identificadores
+){
+    color:#56616f !important;
+}
+
+html.admin-light-mode body.cabecalho-com-admin :is(table, thead, tbody, tr, th, td){
+    border-color:#d8e0ea !important;
+}
+
+html.admin-light-mode body.cabecalho-com-admin :is(thead th, .admin-encomendas-vendas-figura-cabecalho){
+    background:#e9eef5 !important;
+    color:#3c4652 !important;
+}
+
+html.admin-light-mode body.cabecalho-com-admin :is(
+    tbody tr,
+    .admin-encomendas-vendas-figura-linha,
+    .wallapop-resultado,
+    .wallapop-selecionado
+){
+    background:#ffffff !important;
+    border-color:#d8e0ea !important;
+}
+
+html.admin-light-mode body.cabecalho-com-admin :is(
+    tbody tr:hover,
+    .admin-encomendas-vendas-figura-linha:hover,
+    .wallapop-resultado:hover
+){
+    background:#f7f9fc !important;
+}
+
+html.admin-light-mode body.cabecalho-com-admin :is(
+    .modal-overlay,
+    .admin-encomenda-overlay,
+    .admin-cliente-overlay
+){
+    background:rgba(17, 24, 39, .38) !important;
+}
+
+html.admin-light-mode body.cabecalho-com-admin .wallapop-botao,
+html.admin-light-mode body.cabecalho-com-admin .btn-admin-secundario{
+    background:#ffffff !important;
+    border-color:#aeb9c6 !important;
+    color:#17202a !important;
+}
+
+html.admin-light-mode body.cabecalho-com-admin .wallapop-botao:hover,
+html.admin-light-mode body.cabecalho-com-admin .wallapop-botao:focus-visible,
+html.admin-light-mode body.cabecalho-com-admin .btn-admin-secundario:hover,
+html.admin-light-mode body.cabecalho-com-admin .btn-admin-secundario:focus-visible{
+    border-color:#ffc107 !important;
+    color:#8a6100 !important;
+}
+
+html.admin-light-mode body.cabecalho-com-admin :is(
+    .wallapop-botao-destaque,
+    .wallapop-botao-registar
+){
+    box-shadow:none !important;
+}
