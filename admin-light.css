@@ -89,6 +89,7 @@ html.admin-light-mode body.cabecalho-com-admin :is(
     .admin-encomenda-cabecalho,
     .admin-encomenda-linha,
     .admin-encomenda-modal,
+    .admin-encomenda-modal-dialogo,
     .admin-encomenda-dialogo,
     .admin-encomendas-resumo div,
     .admin-cliente-dialogo,
@@ -457,6 +458,78 @@ html.admin-light-mode body.cabecalho-com-admin :is(
     .admin-cliente-overlay
 ){
     background:rgba(17, 24, 39, .38) !important;
+}
+
+html.admin-light-mode body.cabecalho-com-admin .admin-encomenda-modal{
+    background:rgba(17, 24, 39, .34) !important;
+}
+
+html.admin-light-mode body.cabecalho-com-admin .admin-encomenda-modal-dialogo{
+    background:#ffffff !important;
+    border-color:#cfd8e3 !important;
+    color:#17202a !important;
+    box-shadow:0 22px 55px rgba(17, 24, 39, .18) !important;
+}
+
+html.admin-light-mode body.cabecalho-com-admin .admin-encomenda-modal-topo{
+    background:#ffffff !important;
+    color:#17202a !important;
+}
+
+html.admin-light-mode body.cabecalho-com-admin .admin-encomenda-modal-conteudo .admin-encomenda-card{
+    background:#ffffff !important;
+    color:#17202a !important;
+}
+
+html.admin-light-mode body.cabecalho-com-admin :is(
+    .admin-encomenda-detalhes,
+    .admin-encomenda-dados,
+    .admin-encomenda-produtos,
+    .admin-encomenda-gestao,
+    .admin-encomenda-produto,
+    .admin-encomenda-total-linha
+){
+    background:#ffffff !important;
+    border-color:#d8e0ea !important;
+    color:#17202a !important;
+}
+
+html.admin-light-mode body.cabecalho-com-admin :is(
+    .admin-encomenda-dados label,
+    .admin-encomenda-dados span,
+    .admin-encomenda-produto-tema,
+    .admin-encomenda-produto-subtema,
+    .admin-encomenda-gestao-status,
+    .admin-encomenda-anexos-vazio,
+    .admin-encomenda-anexos-aviso
+){
+    color:#56616f !important;
+}
+
+html.admin-light-mode body.cabecalho-com-admin .admin-encomenda-anexos-conteudo{
+    background:#f7f9fc !important;
+    color:#17202a !important;
+}
+
+html.admin-light-mode body.cabecalho-com-admin .admin-encomenda-estado-caixa{
+    background:#ffffff !important;
+    border-color:#aeb9c6 !important;
+    color-scheme:light !important;
+}
+
+html.admin-light-mode body.cabecalho-com-admin .admin-encomenda-estado-caixa select{
+    color:#17202a !important;
+    color-scheme:light !important;
+}
+
+html.admin-light-mode body.cabecalho-com-admin .admin-encomenda-estado-caixa select option{
+    background-color:#ffffff !important;
+    color:#17202a !important;
+}
+
+html.admin-light-mode body.cabecalho-com-admin .admin-encomenda-produto-foto{
+    background:#f8fafc !important;
+    border-color:#b9c5d2 !important;
 }
 
 html.admin-light-mode body.cabecalho-com-admin .wallapop-botao,
