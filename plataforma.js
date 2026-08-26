@@ -1757,14 +1757,26 @@ function obterStockDisponivelPlataforma(produto) {
 }
 
 function confirmarStockNegativoPlataforma(produto, quantidadePretendida) {
-    if (produto?.id) stockNegativoConfirmado.add(String(produto.id));
+    const disponivel = obterStockDisponivelPlataforma(produto);
+    const produtoId = produto?.id ? String(produto.id) : '';
+    if (disponivel === null || quantidadePretendida <= disponivel || stockNegativoConfirmado.has(produtoId)) {
+        return true;
+    }
+    const nome = produto?.nome || 'esta figura';
+    const mensagem = disponivel > 0
+        ? `${nome} tem stock ${disponivel} e estás a tentar vender ${quantidadePretendida}. Queres avançar e deixar stock negativo?`
+        : `${nome} não tem stock disponível. Queres avançar e deixar stock negativo?`;
+    if (!window.confirm(mensagem)) return false;
+    if (produtoId) stockNegativoConfirmado.add(produtoId);
     return true;
 }
 
 function confirmarFaltasStockPlataforma() {
-    wallapopItens.forEach(item => {
-        if (item?.id) stockNegativoConfirmado.add(String(item.id));
-    });
+    for (const item of wallapopItens) {
+        if (!confirmarStockNegativoPlataforma(item, Math.max(1, Number(item.quantidade) || 1))) {
+            return false;
+        }
+    }
     return true;
 }
 
