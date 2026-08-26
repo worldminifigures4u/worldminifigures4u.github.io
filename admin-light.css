@@ -511,6 +511,38 @@ html.admin-light-mode body.cabecalho-com-admin .admin-encomenda-anexos-conteudo{
     color:#17202a !important;
 }
 
+html.admin-light-mode body.cabecalho-com-admin :is(
+    .admin-encomenda-anexo,
+    .admin-encomenda-anexo-pendente,
+    .admin-encomenda-anexos-ficheiro,
+    .input-upload-admin
+){
+    background:#ffffff !important;
+    border-color:#c8d2dd !important;
+    color:#17202a !important;
+}
+
+html.admin-light-mode body.cabecalho-com-admin .admin-encomenda-anexo span{
+    color:#17202a !important;
+}
+
+html.admin-light-mode body.cabecalho-com-admin .admin-encomenda-anexo-pendente{
+    background:#f7f9fc !important;
+    border-style:dashed !important;
+}
+
+html.admin-light-mode body.cabecalho-com-admin .admin-encomenda-anexo .wallapop-botao{
+    background:#ffffff !important;
+    border-color:#aeb9c6 !important;
+    color:#17202a !important;
+}
+
+html.admin-light-mode body.cabecalho-com-admin .admin-encomenda-anexo .wallapop-botao:hover,
+html.admin-light-mode body.cabecalho-com-admin .admin-encomenda-anexo .wallapop-botao:focus-visible{
+    border-color:#8fb3d9 !important;
+    color:#0f5e9c !important;
+}
+
 html.admin-light-mode body.cabecalho-com-admin .admin-encomenda-estado-caixa{
     background:#ffffff !important;
     border-color:#aeb9c6 !important;
