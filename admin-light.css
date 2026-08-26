@@ -10,6 +10,9 @@ html.admin-light-mode body.cabecalho-com-admin{
     --cor-texto-secundario:#56616f;
     --cor-menu-fundo:#e8edf3;
     --cor-menu-texto:#17202a;
+    --cor-acao-principal:#0f5e9c;
+    --cor-acao-principal-hover:#0b4f85;
+    --fp-cor-destaque:#0f5e9c;
     --cor-botao-secundario-texto:#17202a;
     --cor-botao-secundario-borda:#aeb9c6;
     --cor-ativo-texto:#111111;
@@ -314,7 +317,19 @@ html.admin-light-mode body.cabecalho-com-admin :is(
     .mapas-produto-nome-botao:hover,
     .mapas-produto-nome-botao:focus-visible,
     .pagina-fornecedores-unificada .mapas-produto-nome-botao:hover,
-    .pagina-fornecedores-unificada .mapas-produto-nome-botao:focus-visible
+    .pagina-fornecedores-unificada .mapas-produto-nome-botao:focus-visible,
+    .admin-encomenda-cliente-link:hover,
+    .admin-encomenda-cliente-link:focus-visible,
+    .admin-encomendas-vendas-figura-codigo:hover,
+    .admin-encomendas-vendas-figura-codigo:focus-visible,
+    .clientes-historico-codigo:hover,
+    .clientes-historico-codigo:focus-visible,
+    .plataforma-cliente-ficha-abrir:hover,
+    .plataforma-cliente-ficha-abrir:focus-visible,
+    .fornecedor-escolher-pedido-opcao:hover,
+    .fornecedor-escolher-pedido-opcao:focus-visible,
+    .mapas-th-ordenavel button:not(:disabled):hover,
+    .mapas-th-ordenavel button:not(:disabled):focus-visible
 ){
     color:#0f5e9c !important;
     text-decoration-color:rgba(15, 94, 156, .45) !important;
@@ -471,8 +486,8 @@ html.admin-light-mode body.cabecalho-com-admin .admin-encomenda-gravar:hover,
 html.admin-light-mode body.cabecalho-com-admin .admin-encomenda-gravar:focus-visible,
 html.admin-light-mode body.cabecalho-com-admin .portes-tab:hover,
 html.admin-light-mode body.cabecalho-com-admin .portes-tab:focus-visible{
-    border-color:#ffc107 !important;
-    color:#8a6100 !important;
+    border-color:#8fb3d9 !important;
+    color:#0f5e9c !important;
 }
 
 html.admin-light-mode body.cabecalho-com-admin .portes-tab.ativa{
