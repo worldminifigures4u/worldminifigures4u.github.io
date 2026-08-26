@@ -62,6 +62,8 @@ html.admin-light-mode body.cabecalho-com-admin :is(
     .plataforma-cliente-ficha,
     .plataforma-importar-lista,
     .plataforma-lista-notas-bloco,
+    .admin-encomenda-card,
+    .admin-encomenda-cabecalho,
     .admin-encomenda-linha,
     .admin-encomenda-modal,
     .admin-encomenda-dialogo,
@@ -188,6 +190,8 @@ html.admin-light-mode body.cabecalho-com-admin :is(thead th, .admin-encomendas-v
 
 html.admin-light-mode body.cabecalho-com-admin :is(
     tbody tr,
+    .admin-encomenda-card,
+    .admin-encomenda-cabecalho,
     .admin-encomendas-vendas-figura-linha,
     .wallapop-resultado,
     .wallapop-selecionado
@@ -198,10 +202,33 @@ html.admin-light-mode body.cabecalho-com-admin :is(
 
 html.admin-light-mode body.cabecalho-com-admin :is(
     tbody tr:hover,
+    .admin-encomenda-card:hover,
+    .admin-encomenda-cabecalho:hover,
     .admin-encomendas-vendas-figura-linha:hover,
     .wallapop-resultado:hover
 ){
     background:#f7f9fc !important;
+}
+
+html.admin-light-mode body.cabecalho-com-admin .admin-encomenda-card.prioritaria,
+html.admin-light-mode body.cabecalho-com-admin .admin-encomenda-card.prioritaria.aberta{
+    border-color:#f0c442 !important;
+}
+
+html.admin-light-mode body.cabecalho-com-admin :is(
+    .admin-encomenda-codigo,
+    .admin-encomenda-prioridade,
+    .admin-encomenda-seta
+){
+    color:#17202a !important;
+}
+
+html.admin-light-mode body.cabecalho-com-admin :is(
+    .admin-encomenda-data,
+    .admin-encomenda-anexos-contagem,
+    .admin-encomenda-anexos-contagem.sem-anexos
+){
+    color:#6b7684 !important;
 }
 
 html.admin-light-mode body.cabecalho-com-admin :is(
