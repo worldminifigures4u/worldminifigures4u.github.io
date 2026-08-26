@@ -20,6 +20,7 @@ const ESTADOS_ENCOMENDA = [
 
 let encomendasClient = null;
 let encomendasAdmin = [];
+let carregamentoComplementarEncomendasId = 0;
 
 const ENCOMENDAS_SEM_IMAGEM = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(
     '<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120"><rect width="100%" height="100%" fill="#222"/><text x="50%" y="50%" text-anchor="middle" dominant-baseline="middle" fill="#888" font-family="Arial" font-size="13">Sem foto</text></svg>'
@@ -812,6 +813,7 @@ function atualizarResumoEncomendas() {
 
 async function carregarEncomendasAdmin() {
     definirStatusEncomendas('A carregar encomendas...');
+    const carregamentoId = ++carregamentoComplementarEncomendasId;
     let { data, error } = await encomendasClient
         .from('encomendas')
         .select('*, clientes_gestao(nome_utilizador, nome, tem_aviso)')
@@ -834,11 +836,23 @@ async function carregarEncomendasAdmin() {
     }
     if (error) throw error;
     encomendasAdmin = data || [];
-    await preencherNomesUtilizadorPorPerfil();
-    await carregarImagensProdutosEncomendas();
     atualizarResumoEncomendas();
     renderizarEncomendasAdmin();
     definirStatusEncomendas('');
+    carregarDadosComplementaresEncomendasAdmin(carregamentoId);
+}
+
+async function carregarDadosComplementaresEncomendasAdmin(carregamentoId) {
+    try {
+        await preencherNomesUtilizadorPorPerfil();
+        if (carregamentoId !== carregamentoComplementarEncomendasId) return;
+        renderizarEncomendasAdmin();
+        await carregarImagensProdutosEncomendas();
+        if (carregamentoId !== carregamentoComplementarEncomendasId) return;
+        renderizarEncomendasAdmin();
+    } catch (error) {
+        console.warn('Dados complementares das encomendas indisponiveis.', error);
+    }
 }
 
 async function carregarImagensProdutosEncomendas() {
