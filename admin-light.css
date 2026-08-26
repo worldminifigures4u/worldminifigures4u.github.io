@@ -194,6 +194,7 @@ html.admin-light-mode body.cabecalho-com-admin :is(
     h3,
     h4,
     legend,
+    .admin-encomenda-cliente-link,
     .admin-encomenda-cliente-nome,
     .clientes-lista-nome,
     .mapas-produto-nome-botao,
@@ -313,6 +314,7 @@ html.admin-light-mode body.cabecalho-com-admin .mapas-contador-item span{
 }
 
 html.admin-light-mode body.cabecalho-com-admin :is(
+    .admin-encomenda-cliente-link,
     .mapas-celula-nome:hover,
     .mapas-produto-nome-botao:hover,
     .mapas-produto-nome-botao:focus-visible,
@@ -333,6 +335,11 @@ html.admin-light-mode body.cabecalho-com-admin :is(
 ){
     color:#0f5e9c !important;
     text-decoration-color:rgba(15, 94, 156, .45) !important;
+}
+
+html.admin-light-mode body.cabecalho-com-admin .admin-encomenda-cliente-link:not(:hover):not(:focus-visible){
+    color:#17202a !important;
+    text-decoration-color:rgba(15, 94, 156, .35) !important;
 }
 
 html.admin-light-mode body.cabecalho-com-admin :is(
