@@ -21,6 +21,7 @@ const ESTADOS_ENCOMENDA = [
 let encomendasClient = null;
 let encomendasAdmin = [];
 let carregamentoComplementarEncomendasId = 0;
+let carregamentoImagensModalId = 0;
 
 const ENCOMENDAS_SEM_IMAGEM = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(
     '<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120"><rect width="100%" height="100%" fill="#222"/><text x="50%" y="50%" text-anchor="middle" dominant-baseline="middle" fill="#888" font-family="Arial" font-size="13">Sem foto</text></svg>'
@@ -467,6 +468,7 @@ function fecharModalEncomendaAdmin() {
     const modal = document.getElementById('admin-encomenda-modal');
     const conteudo = document.getElementById('admin-encomenda-modal-conteudo');
     if (!modal || !conteudo) return;
+    carregamentoImagensModalId += 1;
     conteudo.querySelector('.admin-encomenda-card')?._limparAlturaNotas?.();
     modal.hidden = true;
     conteudo.replaceChildren();
@@ -474,22 +476,31 @@ function fecharModalEncomendaAdmin() {
 }
 
 function abrirModalEncomendaAdmin(encomenda) {
+    const carregamentoId = ++carregamentoImagensModalId;
     const modal = document.getElementById('admin-encomenda-modal');
     const conteudo = document.getElementById('admin-encomenda-modal-conteudo');
     const titulo = document.getElementById('admin-encomenda-modal-titulo');
     if (!modal || !conteudo) return;
 
-    conteudo.replaceChildren(AdminEncomendaVista.criarCardEncomenda(encomenda, {
+    const renderizarModal = () => conteudo.replaceChildren(AdminEncomendaVista.criarCardEncomenda(encomenda, {
         modoModal: true,
         abrirCliente: abrirFichaClienteAdmin,
         fecharAoAlterarEstado: fecharModalEncomendaAdmin,
         fecharAoConcluir: fecharModalEncomendaAdmin,
         fecharAoPagar: fecharModalEncomendaAdmin
     }));
+
+    renderizarModal();
     if (titulo) titulo.textContent = `Encomenda ${encomenda.codigo_encomenda || encomenda.id || ''}`.trim();
     modal.hidden = false;
     document.body.classList.add('admin-encomenda-modal-aberto');
     document.getElementById('admin-encomenda-modal-fechar')?.focus();
+    AdminEncomendaVista.carregarImagensParaEncomendas([encomenda])
+        .then(() => {
+            if (carregamentoId !== carregamentoImagensModalId || modal.hidden) return;
+            renderizarModal();
+        })
+        .catch(error => console.warn('Imagens da encomenda indisponiveis.', error));
 }
 
 function obterUrlPerfilEncomenda(encomenda) {

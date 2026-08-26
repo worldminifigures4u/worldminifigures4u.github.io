@@ -23,7 +23,7 @@
                 return carregarScript('paises-cliente.js?v=20260731-wallapop-es');
             })
             .then(function () {
-                return carregarScript('encomendas.js?v=20260826-carregamento-rapido');
+                return carregarScript('encomendas.js?v=20260826-fotos-modal-rapido');
             });
 
         return promessaEncomendasJs;
