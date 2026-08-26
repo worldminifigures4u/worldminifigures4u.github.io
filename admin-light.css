@@ -175,6 +175,7 @@ html.admin-light-mode body.cabecalho-com-admin .btn-admin-secundario{
     background:#ffffff !important;
     border-color:#aeb9c6 !important;
     color:#17202a !important;
+    box-shadow:0 2px 8px rgba(17, 24, 39, .08) !important;
 }
 
 html.admin-light-mode body.cabecalho-com-admin .wallapop-botao:hover,
@@ -185,9 +186,57 @@ html.admin-light-mode body.cabecalho-com-admin .btn-admin-secundario:focus-visib
     color:#8a6100 !important;
 }
 
+html.admin-light-mode body.cabecalho-com-admin .wallapop-botao-registar{
+    background:#e9f8ef !important;
+    border:1px solid #7bd99a !important;
+    color:#126b32 !important;
+}
+
+html.admin-light-mode body.cabecalho-com-admin .wallapop-botao-registar:hover,
+html.admin-light-mode body.cabecalho-com-admin .wallapop-botao-registar:focus-visible{
+    background:#dff5e8 !important;
+    border-color:#2eb85c !important;
+    color:#0b5b27 !important;
+}
+
+html.admin-light-mode body.cabecalho-com-admin .wallapop-botao-destaque{
+    background:#fff6d6 !important;
+    border:1px solid #f0c442 !important;
+    color:#4a3700 !important;
+}
+
+html.admin-light-mode body.cabecalho-com-admin .wallapop-botao-destaque:hover,
+html.admin-light-mode body.cabecalho-com-admin .wallapop-botao-destaque:focus-visible{
+    background:#ffefb0 !important;
+    border-color:#d6a300 !important;
+    color:#2f2300 !important;
+}
+
+html.admin-light-mode body.cabecalho-com-admin #btn-analisar-lista-produtos{
+    border-color:#8fb3d9 !important;
+    color:#1c4f7d !important;
+}
+
+html.admin-light-mode body.cabecalho-com-admin #btn-analisar-lista-produtos:hover,
+html.admin-light-mode body.cabecalho-com-admin #btn-analisar-lista-produtos:focus-visible{
+    border-color:#4b8fca !important;
+    color:#123f66 !important;
+}
+
+html.admin-light-mode body.cabecalho-com-admin #btn-limpar-wallapop{
+    border-color:#c8d2dd !important;
+    color:#263241 !important;
+}
+
+html.admin-light-mode body.cabecalho-com-admin #btn-limpar-wallapop:hover,
+html.admin-light-mode body.cabecalho-com-admin #btn-limpar-wallapop:focus-visible{
+    border-color:#d7a3a3 !important;
+    color:#a52828 !important;
+}
+
 html.admin-light-mode body.cabecalho-com-admin :is(
     .wallapop-botao-destaque,
     .wallapop-botao-registar
 ){
-    box-shadow:none !important;
+    box-shadow:0 3px 10px rgba(17, 24, 39, .08) !important;
 }
