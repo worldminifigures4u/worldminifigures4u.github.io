@@ -1477,13 +1477,6 @@ window.AdminEncomendaVista = (function () {
         }
 
         let codigoSeguimentoPendente = null;
-        if (estado === "Enviado" && estadoAnterior !== "Enviado" && envioExigeCodigoSeguimento(encomenda)) {
-            codigoSeguimentoPendente = pedirCodigoSeguimento(encomenda);
-            if (!codigoSeguimentoPendente) {
-                select.value = estadoAnterior;
-                return;
-            }
-        }
 
         select.disabled = true;
         hooks.definirStatus("A atualizar o estado...");
