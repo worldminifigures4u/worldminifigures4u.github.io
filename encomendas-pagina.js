@@ -23,7 +23,7 @@
                 return carregarScript('paises-cliente.js?v=20260731-wallapop-es');
             })
             .then(function () {
-                return carregarScript('encomendas.js?v=20260826-miniaturas-sem-piscar');
+                return carregarScript('encomendas.js?v=20260827-concluir-lote-moloni');
             });
 
         return promessaEncomendasJs;

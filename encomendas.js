@@ -22,6 +22,8 @@ let encomendasClient = null;
 let encomendasAdmin = [];
 let carregamentoComplementarEncomendasId = 0;
 let carregamentoImagensModalId = 0;
+let encomendasSelecionadasLote = new Set();
+let loteEncomendasEmProcessamento = false;
 
 const ENCOMENDAS_SEM_IMAGEM = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(
     '<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120"><rect width="100%" height="100%" fill="#222"/><text x="50%" y="50%" text-anchor="middle" dominant-baseline="middle" fill="#888" font-family="Arial" font-size="13">Sem foto</text></svg>'
@@ -458,10 +460,11 @@ async function abrirFichaClienteAdmin(encomenda) {
 }
 
 function criarCardEncomenda(encomenda) {
-    return AdminEncomendaVista.criarCardEncomenda(encomenda, {
+    const card = AdminEncomendaVista.criarCardEncomenda(encomenda, {
         abrirCliente: abrirFichaClienteAdmin,
         abrirEncomenda: abrirModalEncomendaAdmin
     });
+    return prepararCardSelecaoLoteEncomenda(card, encomenda);
 }
 
 function fecharModalEncomendaAdmin() {
@@ -762,6 +765,128 @@ function encomendasFiltradasAdmin() {
     return filtradas;
 }
 
+function loteEncomendasAtivo() {
+    const estado = document.getElementById('filtro-estado-encomendas-admin')?.value;
+    return estado === 'Enviado' && !obterTermoPesquisaFiguraAdmin();
+}
+
+function obterEncomendasLoteVisiveis() {
+    if (!loteEncomendasAtivo()) return [];
+    return encomendasFiltradasAdmin().filter(encomenda => estadoNormalizadoEncomenda(encomenda.estado) === 'Enviado');
+}
+
+function obterIdEncomendaLote(encomenda) {
+    return String(encomenda?.id || '');
+}
+
+function atualizarAcoesLoteEncomendas() {
+    const barra = document.getElementById('acoes-lote-encomendas');
+    const selecionarTodas = document.getElementById('selecionar-encomendas-visiveis');
+    const contagem = document.getElementById('contagem-encomendas-selecionadas');
+    const botao = document.getElementById('concluir-encomendas-selecionadas');
+    if (!barra || !selecionarTodas || !contagem || !botao) return;
+
+    const visiveis = obterEncomendasLoteVisiveis();
+    const idsVisiveis = new Set(visiveis.map(obterIdEncomendaLote).filter(Boolean));
+    for (const id of [...encomendasSelecionadasLote]) {
+        if (!idsVisiveis.has(id)) encomendasSelecionadasLote.delete(id);
+    }
+
+    const totalSelecionadas = [...encomendasSelecionadasLote].filter(id => idsVisiveis.has(id)).length;
+    barra.hidden = !loteEncomendasAtivo() || !visiveis.length;
+    selecionarTodas.checked = Boolean(visiveis.length) && totalSelecionadas === visiveis.length;
+    selecionarTodas.indeterminate = totalSelecionadas > 0 && totalSelecionadas < visiveis.length;
+    selecionarTodas.disabled = loteEncomendasEmProcessamento || !visiveis.length;
+    contagem.textContent = `${totalSelecionadas} selecionada${totalSelecionadas === 1 ? '' : 's'}`;
+    botao.disabled = loteEncomendasEmProcessamento || totalSelecionadas === 0;
+}
+
+function prepararCardSelecaoLoteEncomenda(card, encomenda) {
+    if (!loteEncomendasAtivo() || estadoNormalizadoEncomenda(encomenda.estado) !== 'Enviado') return card;
+    const id = obterIdEncomendaLote(encomenda);
+    if (!id) return card;
+
+    card.classList.add('com-selecao-lote');
+    const label = criarElementoEncomenda('label', 'admin-encomenda-selecao-lote');
+    label.title = 'Selecionar para concluir em lote';
+    const checkbox = document.createElement('input');
+    checkbox.type = 'checkbox';
+    checkbox.checked = encomendasSelecionadasLote.has(id);
+    checkbox.disabled = loteEncomendasEmProcessamento;
+    checkbox.setAttribute('aria-label', `Selecionar encomenda ${encomenda.codigo_encomenda || id}`);
+    checkbox.addEventListener('click', evento => evento.stopPropagation());
+    checkbox.addEventListener('keydown', evento => evento.stopPropagation());
+    checkbox.addEventListener('change', evento => {
+        evento.stopPropagation();
+        if (checkbox.checked) encomendasSelecionadasLote.add(id);
+        else encomendasSelecionadasLote.delete(id);
+        atualizarAcoesLoteEncomendas();
+    });
+    label.addEventListener('click', evento => evento.stopPropagation());
+    label.appendChild(checkbox);
+    card.appendChild(label);
+    return card;
+}
+
+function selecionarEncomendasVisiveisLote(selecionar) {
+    obterEncomendasLoteVisiveis().forEach(encomenda => {
+        const id = obterIdEncomendaLote(encomenda);
+        if (!id) return;
+        if (selecionar) encomendasSelecionadasLote.add(id);
+        else encomendasSelecionadasLote.delete(id);
+    });
+    renderizarEncomendasAdmin();
+}
+
+async function concluirEncomendasSelecionadas() {
+    const selecionadas = obterEncomendasLoteVisiveis()
+        .filter(encomenda => encomendasSelecionadasLote.has(obterIdEncomendaLote(encomenda)));
+    if (!selecionadas.length || loteEncomendasEmProcessamento) return;
+
+    const total = selecionadas.length;
+    const confirmado = window.confirm(
+        `Concluir ${total} encomenda${total === 1 ? '' : 's'} selecionada${total === 1 ? '' : 's'}?\n\nSerão emitidos automaticamente os recibos Moloni quando ainda não existirem.`
+    );
+    if (!confirmado) return;
+
+    loteEncomendasEmProcessamento = true;
+    atualizarAcoesLoteEncomendas();
+    let concluidas = 0;
+    let erros = 0;
+
+    for (const encomenda of selecionadas) {
+        const codigo = encomenda.codigo_encomenda || encomenda.id || '';
+        definirStatusEncomendas(`A concluir ${codigo} e emitir recibo Moloni...`, 'processando');
+        const estadoAnterior = estadoNormalizadoEncomenda(encomenda.estado);
+        const selectVirtual = {
+            value: 'Concluído',
+            dataset: { estadoAtual: estadoAnterior },
+            disabled: false
+        };
+        const ok = await AdminEncomendaVista.atualizarEstado(encomenda, 'Concluído', selectVirtual, {
+            semConfirmacaoConclusao: true,
+            emitirFaturaMoloni: true,
+            forcarEmissaoFatura: true,
+            aguardarFaturaMoloni: true
+        });
+        if (ok) {
+            concluidas += 1;
+            encomendasSelecionadasLote.delete(obterIdEncomendaLote(encomenda));
+        } else {
+            erros += 1;
+        }
+    }
+
+    loteEncomendasEmProcessamento = false;
+    renderizarEncomendasAdmin();
+    atualizarResumoEncomendas();
+    if (erros) {
+        definirStatusEncomendas(`Concluídas ${concluidas} de ${total}. ${erros} ficaram por concluir ou emitir no Moloni.`, true);
+    } else {
+        definirStatusEncomendas(`${concluidas} encomenda${concluidas === 1 ? '' : 's'} concluída${concluidas === 1 ? '' : 's'} com recibo Moloni automático.`);
+    }
+}
+
 function renderizarEncomendasAdmin() {
     const lista = document.getElementById('lista-encomendas-admin');
     const pesquisaFigura = Boolean(obterTermoPesquisaFiguraAdmin());
@@ -771,6 +896,7 @@ function renderizarEncomendasAdmin() {
             lista.hidden = true;
             lista.replaceChildren();
         }
+        atualizarAcoesLoteEncomendas();
         renderizarVendasFiguraAdmin();
         return;
     }
@@ -780,10 +906,12 @@ function renderizarEncomendasAdmin() {
     const filtradas = encomendasFiltradasAdmin();
     lista.replaceChildren();
     if (!filtradas.length) {
+        atualizarAcoesLoteEncomendas();
         lista.appendChild(criarElementoEncomenda('p', 'admin-encomendas-vazio', 'Nenhuma encomenda encontrada.'));
         return;
     }
     filtradas.forEach(encomenda => lista.appendChild(criarCardEncomenda(encomenda)));
+    atualizarAcoesLoteEncomendas();
     AdminEncomendaVista.carregarContagensAnexosLista(filtradas).catch(console.warn);
 }
 
@@ -898,6 +1026,10 @@ async function iniciarPainelEncomendas() {
 document.getElementById('pesquisa-encomendas-admin').addEventListener('input', renderizarEncomendasAdmin);
 document.getElementById('pesquisa-figura-encomendas-admin').addEventListener('input', renderizarEncomendasAdmin);
 document.getElementById('filtro-estado-encomendas-admin').addEventListener('change', renderizarEncomendasAdmin);
+document.getElementById('selecionar-encomendas-visiveis')?.addEventListener('change', evento => {
+    selecionarEncomendasVisiveisLote(evento.currentTarget.checked);
+});
+document.getElementById('concluir-encomendas-selecionadas')?.addEventListener('click', concluirEncomendasSelecionadas);
 document.getElementById('admin-imagem-modal-fechar').addEventListener('click', fecharImagemProdutoEncomenda);
 document.getElementById('admin-encomenda-modal-fechar')?.addEventListener('click', fecharModalEncomendaAdmin);
 document.getElementById('admin-cliente-fechar').addEventListener('click', fecharFichaClienteAdmin);

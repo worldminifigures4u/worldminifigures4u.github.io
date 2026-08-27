@@ -1425,7 +1425,7 @@ window.AdminEncomendaVista = (function () {
         const dataPagamentoIso = atualizarDataPagamentoFlag ? new Date().toISOString() : null;
         let reporStock = true;
 
-        if (estado === "Concluído" && estadoAnterior !== "Concluído") {
+        if (estado === "Concluído" && estadoAnterior !== "Concluído" && opcoes.semConfirmacaoConclusao !== true) {
             const codigo = encomenda.codigo_encomenda || "";
             let avisoFatura = "";
             if (podeEmitirFaturaMoloni(encomenda)) {
@@ -1620,13 +1620,15 @@ window.AdminEncomendaVista = (function () {
             let emitirFaturaDepois = false;
             let forcarEmissaoFatura = false;
             if (estado === "Concluído" && estadoAnterior !== "Concluído" && podeEmitirFaturaMoloni(encomenda)) {
-                let emitirFatura = deveEmitirFaturaMoloniAutomaticamente(encomenda);
-                if (encomendaFaturaMoloniOpcional(encomenda)) {
+                let emitirFatura = opcoes.emitirFaturaMoloni === true
+                    ? true
+                    : deveEmitirFaturaMoloniAutomaticamente(encomenda);
+                if (!emitirFatura && encomendaFaturaMoloniOpcional(encomenda)) {
                     emitirFatura = await pedirEmissaoFaturaMoloni(encomenda);
                 }
                 if (emitirFatura) {
                     emitirFaturaDepois = true;
-                    forcarEmissaoFatura = encomendaFaturaMoloniOpcional(encomenda);
+                    forcarEmissaoFatura = opcoes.forcarEmissaoFatura === true || encomendaFaturaMoloniOpcional(encomenda);
                 }
             }
             if (erroAnexos) {
@@ -1655,11 +1657,23 @@ window.AdminEncomendaVista = (function () {
                 opcoes.fecharAoPagar(encomenda);
             }
             if (emitirFaturaDepois) {
-                emitirFaturaMoloniEmSegundoPlano(encomenda, { forcarEmissao: forcarEmissaoFatura });
+                if (opcoes.aguardarFaturaMoloni === true) {
+                    const fatura = await emitirFaturaMoloni(encomenda, { forcarEmissao: forcarEmissaoFatura });
+                    if (fatura?.sucesso) {
+                        const numeroFatura = fatura.numero && String(fatura.numero) !== "0"
+                            ? ` n. ${fatura.numero}`
+                            : " (rascunho)";
+                        hooks.definirStatus(`Fatura-recibo Moloni${numeroFatura} criada para ${encomenda.codigo_encomenda || ""}.`);
+                    }
+                } else {
+                    emitirFaturaMoloniEmSegundoPlano(encomenda, { forcarEmissao: forcarEmissaoFatura });
+                }
             }
+            return true;
         } catch (error) {
             select.value = estadoAnterior;
             hooks.definirStatus("Erro ao atualizar estado: " + detalheErro(error), true);
+            return false;
         } finally {
             select.disabled = false;
         }
@@ -2159,6 +2173,7 @@ window.AdminEncomendaVista = (function () {
         atualizarContagemAnexosLista,
         carregarImagensParaEncomendas,
         atualizarMiniaturasProdutos,
+        atualizarEstado,
         limparCacheImagens,
         formatarEuro,
         formatarData,
