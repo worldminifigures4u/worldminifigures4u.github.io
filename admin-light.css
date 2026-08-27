@@ -65,6 +65,8 @@ html.admin-light-mode body.cabecalho-com-admin :is(
     .plataforma-cliente-ficha,
     .plataforma-importar-lista,
     .plataforma-lista-notas-bloco,
+    .plataforma-lista-dialogo,
+    .plataforma-lista-linha,
     .fornecedor-lista-controles,
     .fornecedor-controles-unificados,
     .fornecedor-filtros-marcacao-extra,
@@ -230,6 +232,70 @@ html.admin-light-mode body.cabecalho-com-admin :is(
     .wallapop-dados-encomenda > label
 ){
     color:#56616f !important;
+}
+
+html.admin-light-mode body.cabecalho-com-admin .plataforma-lista-modal{
+    background:rgba(17, 24, 39, .36) !important;
+}
+
+html.admin-light-mode body.cabecalho-com-admin .plataforma-lista-dialogo{
+    background:#ffffff !important;
+    border-color:#cfd8e3 !important;
+    color:#17202a !important;
+    box-shadow:0 22px 55px rgba(17, 24, 39, .18) !important;
+}
+
+html.admin-light-mode body.cabecalho-com-admin .plataforma-lista-topo h2{
+    color:#17202a !important;
+}
+
+html.admin-light-mode body.cabecalho-com-admin .plataforma-lista-dialogo > p,
+html.admin-light-mode body.cabecalho-com-admin .plataforma-lista-resumo{
+    color:#334155 !important;
+}
+
+html.admin-light-mode body.cabecalho-com-admin .plataforma-lista-revisao{
+    scrollbar-color:#b7c3d0 #eef2f6 !important;
+}
+
+html.admin-light-mode body.cabecalho-com-admin .plataforma-lista-revisao::-webkit-scrollbar-track{
+    background:#eef2f6 !important;
+}
+
+html.admin-light-mode body.cabecalho-com-admin .plataforma-lista-revisao::-webkit-scrollbar-thumb{
+    background:#b7c3d0 !important;
+    border-color:#eef2f6 !important;
+}
+
+html.admin-light-mode body.cabecalho-com-admin .plataforma-lista-linha{
+    background:#f8fafc !important;
+    border-color:#22c55e !important;
+    color:#17202a !important;
+    box-shadow:none !important;
+}
+
+html.admin-light-mode body.cabecalho-com-admin .plataforma-lista-linha.estado-sugerida{
+    border-left-color:#f59e0b !important;
+}
+
+html.admin-light-mode body.cabecalho-com-admin .plataforma-lista-linha.estado-rever{
+    border-left-color:#ef4444 !important;
+}
+
+html.admin-light-mode body.cabecalho-com-admin .plataforma-lista-linha.estado-repetida{
+    border-left-color:#f97316 !important;
+}
+
+html.admin-light-mode body.cabecalho-com-admin .plataforma-lista-original span{
+    color:#17202a !important;
+}
+
+html.admin-light-mode body.cabecalho-com-admin .plataforma-lista-original strong{
+    color:#b45309 !important;
+}
+
+html.admin-light-mode body.cabecalho-com-admin .plataforma-lista-original small{
+    color:#64748b !important;
 }
 
 html.admin-light-mode body.cabecalho-com-admin :is(
