@@ -1157,6 +1157,11 @@ body.pagina-encomendas-admin{
             user-select:none;
         }
 
+        .admin-encomenda-produto-quantidade{
+            color:#ff5252;
+            font-weight:900;
+        }
+
         .admin-encomenda-produto-marcacao-penultimo{
             margin-left:18px;
         }
