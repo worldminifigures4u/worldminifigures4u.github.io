@@ -171,7 +171,8 @@ begin
         'sku', produto.sku,
         'imagens', produto.imagens,
         'tema', produto.tema,
-        'subtema', produto.subtema
+        'subtema', produto.subtema,
+        'observacoes', coalesce(produto.observacoes, '')
       )
       order by produto.id
     ),

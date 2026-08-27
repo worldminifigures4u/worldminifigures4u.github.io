@@ -653,7 +653,10 @@ begin
       'id', produto.id::text,
       'referencia', produto.referencia,
       'sku', produto.sku,
-      'imagens', produto.imagens
+      'imagens', produto.imagens,
+      'tema', produto.tema,
+      'subtema', produto.subtema,
+      'observacoes', coalesce(produto.observacoes, '')
     ) order by produto.id),
     '[]'::jsonb
   )

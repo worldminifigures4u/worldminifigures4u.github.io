@@ -543,6 +543,7 @@ html.admin-light-mode body.cabecalho-com-admin :is(
     .admin-encomenda-dados span,
     .admin-encomenda-produto-tema,
     .admin-encomenda-produto-subtema,
+    .admin-encomenda-produto-observacoes,
     .admin-encomenda-gestao-status,
     .admin-encomenda-anexos-vazio,
     .admin-encomenda-anexos-aviso

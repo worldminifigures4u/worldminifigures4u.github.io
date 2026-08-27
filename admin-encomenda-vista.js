@@ -41,6 +41,8 @@ window.AdminEncomendaVista = (function () {
     let temasProdutosPorSku = new Map();
     let subtemasProdutos = new Map();
     let subtemasProdutosPorSku = new Map();
+    let observacoesProdutos = new Map();
+    let observacoesProdutosPorSku = new Map();
 
     function configurar(opcoes = {}) {
         if (opcoes.client) client = opcoes.client;
@@ -521,6 +523,14 @@ window.AdminEncomendaVista = (function () {
             || subtemasProdutosPorSku.get(String(item.sku || "").toUpperCase())
             || "";
         return formatarSubtemaProduto(subtema);
+    }
+
+    function obterObservacoesProduto(item) {
+        const observacoes = item.observacoes
+            || observacoesProdutos.get(String(item.id_produto || item.id || ""))
+            || observacoesProdutosPorSku.get(String(item.sku || "").toUpperCase())
+            || "";
+        return String(observacoes).trim();
     }
 
     function abrirImagemProduto(url, nome) {
@@ -2018,6 +2028,7 @@ window.AdminEncomendaVista = (function () {
             linhaProduto.append(
                 criarElemento("span", "admin-encomenda-produto-quantidade", `${quantidade}x`),
                 criarElemento("strong", "admin-encomenda-produto-nome", item.nome || "Produto"),
+                criarElemento("span", "admin-encomenda-produto-observacoes", obterObservacoesProduto(item) || "—"),
                 criarMiniaturaProduto(item),
                 criarElemento("span", "admin-encomenda-produto-tema", obterTemaProduto(item)),
                 criarElemento("span", "admin-encomenda-produto-subtema", obterSubtemaProduto(item)),
@@ -2088,6 +2099,12 @@ window.AdminEncomendaVista = (function () {
         if (subtema) {
             if (id) subtemasProdutos.set(id, subtema);
             if (skuChave) subtemasProdutosPorSku.set(skuChave, subtema);
+        }
+
+        const observacoes = String(produto.observacoes || "").trim();
+        if (observacoes) {
+            if (id) observacoesProdutos.set(id, observacoes);
+            if (skuChave) observacoesProdutosPorSku.set(skuChave, observacoes);
         }
 
         const imagem = obterPrimeiraImagem(produto.imagens);
@@ -2163,6 +2180,8 @@ window.AdminEncomendaVista = (function () {
         temasProdutosPorSku = new Map();
         subtemasProdutos = new Map();
         subtemasProdutosPorSku = new Map();
+        observacoesProdutos = new Map();
+        observacoesProdutosPorSku = new Map();
     }
 
     return {
