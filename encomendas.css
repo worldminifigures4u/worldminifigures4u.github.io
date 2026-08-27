@@ -1245,6 +1245,20 @@ body.pagina-encomendas-admin{
             font-weight:700;
         }
 
+        .admin-encomenda-portes-input{
+            width:86px;
+            padding:3px 7px;
+            border:1px solid #3a4a55;
+            border-radius:6px;
+            background:#151515;
+            color:#cfd8dc;
+            font-size:14px;
+            font-weight:700;
+            text-align:right;
+            font-family:inherit;
+            box-sizing:border-box;
+        }
+
         .admin-encomenda-total-rotulo{
             color:#29b6f6;
             font-size:18px;
@@ -1265,7 +1279,8 @@ body.pagina-encomendas-admin{
             box-sizing:border-box;
         }
 
-        .admin-encomenda-total-input:focus{
+        .admin-encomenda-total-input:focus,
+        .admin-encomenda-portes-input:focus{
             outline:none;
             border-color:#29b6f6;
             box-shadow:0 0 0 2px rgba(41, 182, 246, 0.2);
@@ -1290,7 +1305,8 @@ body.pagina-encomendas-admin{
             box-shadow:0 0 0 2px rgba(255, 196, 0, 0.18);
         }
 
-        .admin-encomenda-total-input:disabled{
+        .admin-encomenda-total-input:disabled,
+        .admin-encomenda-portes-input:disabled{
             opacity:.7;
         }
 

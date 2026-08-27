@@ -608,6 +608,23 @@ html.admin-light-mode body.cabecalho-com-admin .admin-encomenda-produto-foto{
     border-color:#b9c5d2 !important;
 }
 
+html.admin-light-mode body.cabecalho-com-admin :is(
+    .admin-encomenda-portes-input,
+    .admin-encomenda-total-input
+){
+    background:#ffffff !important;
+    border-color:#b9c5d2 !important;
+    color:#17202a !important;
+}
+
+html.admin-light-mode body.cabecalho-com-admin :is(
+    .admin-encomenda-portes-input,
+    .admin-encomenda-total-input
+):focus{
+    border-color:#8fb3d9 !important;
+    box-shadow:0 0 0 2px rgba(15, 94, 156, .14) !important;
+}
+
 html.admin-light-mode body.cabecalho-com-admin .wallapop-botao,
 html.admin-light-mode body.cabecalho-com-admin .btn-admin-secundario,
 html.admin-light-mode body.cabecalho-com-admin .mapas-copiar-lista,

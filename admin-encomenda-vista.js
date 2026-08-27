@@ -1061,38 +1061,47 @@ window.AdminEncomendaVista = (function () {
         return Number(valor || 0).toFixed(2).replace(".", ",") + " €";
     }
 
-    async function atualizarTotalEncomenda(encomenda, total, input, card, opcoes = {}) {
+    async function atualizarValoresEncomenda(encomenda, portes, total, inputs, card, opcoes = {}) {
         const silencioso = opcoes.silencioso === true;
-        input.disabled = true;
-        if (!silencioso) hooks.definirStatus("A guardar total...");
+        const campos = Array.isArray(inputs) ? inputs : [inputs].filter(Boolean);
+        campos.forEach(input => { input.disabled = true; });
+        if (!silencioso) hooks.definirStatus("A guardar valores...");
         try {
-            const { data, error } = await obterClient().rpc("atualizar_total_encomenda_admin", {
+            const { data, error } = await obterClient().rpc("atualizar_valores_encomenda_admin", {
                 p_encomenda_id: String(encomenda.id),
+                p_portes: portes,
                 p_total: total
             });
             if (error || data?.sucesso === false) {
-                throw error || new Error(data?.erro || "Não foi possível guardar o total.");
+                throw error || new Error(data?.erro || "Não foi possível guardar os valores.");
             }
+            const portesGuardados = Number(data?.portes ?? portes);
             const totalGuardado = Number(data?.total ?? total);
-            sincronizarEncomendaNaLista(encomenda, { total: totalGuardado });
-            input.value = formatarEuroInput(totalGuardado);
+            sincronizarEncomendaNaLista(encomenda, { portes: portesGuardados, total: totalGuardado });
+            const inputPortes = campos.find(input => input?.classList?.contains("admin-encomenda-portes-input"));
+            const inputTotal = campos.find(input => input?.classList?.contains("admin-encomenda-total-input"));
+            if (inputPortes) inputPortes.value = formatarEuroInput(portesGuardados);
+            if (inputTotal) inputTotal.value = formatarEuroInput(totalGuardado);
             const valorLinha = card.querySelector(".admin-encomenda-valor-linha");
             if (valorLinha) valorLinha.textContent = formatarEuro(totalGuardado);
+            const portesLinha = card.querySelector(".admin-encomenda-portes-valor");
+            if (portesLinha) portesLinha.textContent = formatarEuro(portesGuardados);
             atualizarListaAposAlteracaoEncomenda();
-            if (!silencioso) hooks.definirStatus(`Total da encomenda atualizado para ${formatarEuro(totalGuardado)}.`);
+            if (!silencioso) hooks.definirStatus("Valores da encomenda atualizados.");
             return true;
         } catch (error) {
-            input.value = formatarEuroInput(encomenda.total);
-            if (!silencioso) {
-                hooks.definirStatus(
-                    "Erro ao guardar total: " + detalheErro(error)
-                    + ". Execute o SQL atualizado do painel de encomendas no Supabase.",
-                    true
-                );
-            }
+            const inputPortes = campos.find(input => input?.classList?.contains("admin-encomenda-portes-input"));
+            const inputTotal = campos.find(input => input?.classList?.contains("admin-encomenda-total-input"));
+            if (inputPortes) inputPortes.value = formatarEuroInput(encomenda.portes);
+            if (inputTotal) inputTotal.value = formatarEuroInput(encomenda.total);
+            hooks.definirStatus(
+                "Erro ao guardar valores: " + detalheErro(error)
+                + ". Execute o SQL atualizado do painel de encomendas no Supabase.",
+                true
+            );
             return false;
         } finally {
-            input.disabled = false;
+            campos.forEach(input => { input.disabled = false; });
         }
     }
 
@@ -1102,9 +1111,18 @@ window.AdminEncomendaVista = (function () {
 
         const totalGrupo = criarElemento("div", "admin-encomenda-total-grupo");
         const portesGrupo = criarElemento("div", "admin-encomenda-portes-grupo");
+        const inputPortes = document.createElement("input");
+        inputPortes.type = "text";
+        inputPortes.className = "admin-encomenda-portes-input";
+        inputPortes.inputMode = "decimal";
+        inputPortes.autocomplete = "off";
+        inputPortes.spellcheck = false;
+        let portesGuardados = Number(encomenda.portes) || 0;
+        inputPortes.value = formatarEuroInput(portesGuardados);
+        inputPortes.title = "Editar portes da encomenda";
         portesGrupo.append(
             criarElemento("span", "admin-encomenda-portes-rotulo", "Portes:"),
-            criarElemento("strong", "admin-encomenda-portes-valor", formatarEuro(encomenda.portes))
+            inputPortes
         );
         totalGrupo.appendChild(portesGrupo);
         totalGrupo.appendChild(criarElemento("span", "admin-encomenda-total-rotulo", "Total:"));
@@ -1114,37 +1132,59 @@ window.AdminEncomendaVista = (function () {
         input.inputMode = "decimal";
         input.autocomplete = "off";
         input.spellcheck = false;
-        let valorGuardado = Number(encomenda.total);
-        input.value = formatarEuroInput(valorGuardado);
+        let totalGuardado = Number(encomenda.total) || 0;
+        input.value = formatarEuroInput(totalGuardado);
         input.title = "Editar valor total da encomenda";
-        input.addEventListener("click", evento => evento.stopPropagation());
-        input.addEventListener("keydown", evento => evento.stopPropagation());
-        input.addEventListener("keydown", evento => {
-            if (evento.key !== "Enter") return;
-            evento.preventDefault();
-            input.blur();
+        [inputPortes, input].forEach(campo => {
+            campo.addEventListener("click", evento => evento.stopPropagation());
+            campo.addEventListener("keydown", evento => evento.stopPropagation());
+            campo.addEventListener("keydown", evento => {
+                if (evento.key !== "Enter") return;
+                evento.preventDefault();
+                campo.blur();
+            });
         });
 
         function reverter() {
-            input.value = formatarEuroInput(valorGuardado);
+            inputPortes.value = formatarEuroInput(portesGuardados);
+            input.value = formatarEuroInput(totalGuardado);
         }
 
         function temAlteracao() {
+            const portes = parseEuroInput(inputPortes.value);
             const total = parseEuroInput(input.value);
-            return !Number.isNaN(total) && total !== valorGuardado;
+            return (!Number.isNaN(portes) && portes !== portesGuardados)
+                || (!Number.isNaN(total) && total !== totalGuardado);
         }
 
         async function guardar() {
+            const portes = parseEuroInput(inputPortes.value);
             const total = parseEuroInput(input.value);
-            if (Number.isNaN(total)) {
+            if (Number.isNaN(portes) || Number.isNaN(total)) {
                 reverter();
                 return false;
             }
-            if (total === valorGuardado) return true;
-            const ok = await atualizarTotalEncomenda(encomenda, total, input, card, { silencioso: true });
-            if (ok) valorGuardado = Number(encomenda.total);
+            if (portes === portesGuardados && total === totalGuardado) return true;
+            const ok = await atualizarValoresEncomenda(encomenda, portes, total, [inputPortes, input], card, { silencioso: true });
+            if (ok) {
+                portesGuardados = Number(encomenda.portes) || 0;
+                totalGuardado = Number(encomenda.total) || 0;
+            }
             return ok;
         }
+
+        inputPortes.addEventListener("blur", () => {
+            const portes = parseEuroInput(inputPortes.value);
+            if (Number.isNaN(portes)) {
+                reverter();
+                return;
+            }
+            const totalAtual = parseEuroInput(input.value);
+            if (!Number.isNaN(totalAtual) && totalAtual === totalGuardado) {
+                input.value = formatarEuroInput((totalGuardado - portesGuardados) + portes);
+            }
+            inputPortes.value = formatarEuroInput(portes);
+        });
 
         input.addEventListener("blur", () => {
             const total = parseEuroInput(input.value);
