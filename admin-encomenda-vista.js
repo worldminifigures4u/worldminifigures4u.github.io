@@ -2026,10 +2026,10 @@ window.AdminEncomendaVista = (function () {
             refUltimo.atual = celulaUltimo;
 
             linhaProduto.append(
+                criarMiniaturaProduto(item),
                 criarElemento("span", "admin-encomenda-produto-quantidade", `${quantidade}x`),
                 criarElemento("strong", "admin-encomenda-produto-nome", item.nome || "Produto"),
                 criarElemento("span", "admin-encomenda-produto-observacoes", obterObservacoesProduto(item) || "—"),
-                criarMiniaturaProduto(item),
                 criarElemento("span", "admin-encomenda-produto-tema", obterTemaProduto(item)),
                 criarElemento("span", "admin-encomenda-produto-subtema", obterSubtemaProduto(item)),
                 criarElemento("span", "admin-encomenda-produto-referencia", obterReferenciaProduto(item) || "—"),

@@ -1140,7 +1140,7 @@ body.pagina-encomendas-admin{
             padding:5px 0;
             border-bottom:1px solid #272727;
             display:grid;
-            grid-template-columns:44px minmax(132px, 1.05fr) minmax(118px, .95fr) 58px minmax(82px, .9fr) minmax(82px, .9fr) 90px 70px minmax(112px, auto) minmax(84px, auto);
+            grid-template-columns:58px 44px minmax(132px, 1.05fr) minmax(118px, .95fr) minmax(82px, .9fr) minmax(82px, .9fr) 90px 70px minmax(112px, auto) minmax(84px, auto);
             gap:10px;
             align-items:center;
             font-size:13px;
@@ -1541,7 +1541,7 @@ body.pagina-encomendas-admin{
                 height:auto;
             }
             .admin-encomenda-produto{
-                grid-template-columns:36px minmax(0, 1fr) 52px 64px minmax(108px, auto) minmax(78px, auto);
+                grid-template-columns:52px 36px minmax(0, 1fr) 64px minmax(108px, auto) minmax(78px, auto);
             }
             .admin-encomenda-produto-referencia,
             .admin-encomenda-produto-tema,
