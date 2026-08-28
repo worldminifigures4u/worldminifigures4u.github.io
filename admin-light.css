@@ -1357,3 +1357,66 @@ html.admin-light-mode body.cabecalho-com-admin .mapas-produto-historico-rececoes
 html.admin-light-mode body.cabecalho-com-admin .mapas-produto-historico-rececoes-tabela td{
     border-color:#d5dee9 !important;
 }
+
+html.admin-light-mode body.cabecalho-com-admin .mapas-produto-fornecedor-historico{
+    background:#f8fafc !important;
+    border-color:#d7dee8 !important;
+    color:#182231 !important;
+}
+
+html.admin-light-mode body.cabecalho-com-admin :is(
+    .mapas-produto-fornecedor-titulo,
+    .fornecedor-historico-item,
+    .fornecedor-historico-item-encomenda
+){
+    color:#111827 !important;
+}
+
+html.admin-light-mode body.cabecalho-com-admin :is(
+    .fornecedor-historico-lista,
+    .fornecedor-historico-item
+){
+    background:transparent !important;
+}
+
+html.admin-light-mode body.cabecalho-com-admin .fornecedor-historico-item{
+    border-color:#d7dee8 !important;
+    background:#ffffff !important;
+}
+
+html.admin-light-mode body.cabecalho-com-admin .fornecedor-historico-item-encomenda{
+    background:#fff8df !important;
+    border-color:#e0b42b !important;
+}
+
+html.admin-light-mode body.cabecalho-com-admin :is(
+    .fornecedor-historico-data,
+    .fornecedor-historico-vazio,
+    .fornecedor-historico-encomendas-titulo,
+    .mapas-produto-fornecedor-marcacao-atual
+){
+    color:#475569 !important;
+}
+
+html.admin-light-mode body.cabecalho-com-admin .fornecedor-historico-estado{
+    color:#334155 !important;
+}
+
+html.admin-light-mode body.cabecalho-com-admin :is(
+    .fornecedor-historico-item.tipo-os,
+    .fornecedor-historico-item.tipo-encomendada_os
+) .fornecedor-historico-estado{
+    color:#ff4d4f !important;
+}
+
+html.admin-light-mode body.cabecalho-com-admin .mapas-produto-fornecedor-limpar-historico{
+    background:#fff7f7 !important;
+    border-color:#e6b0b0 !important;
+    color:#8a1f1f !important;
+}
+
+html.admin-light-mode body.cabecalho-com-admin .mapas-produto-fornecedor-limpar-historico:hover:not(:disabled){
+    background:#ffecec !important;
+    border-color:#d96b6b !important;
+    color:#7f1d1d !important;
+}
