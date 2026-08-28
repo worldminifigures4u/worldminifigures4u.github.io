@@ -766,17 +766,20 @@ function encomendasFiltradasAdmin() {
 }
 
 function loteEncomendasAtivo() {
-    const estado = document.getElementById('filtro-estado-encomendas-admin')?.value;
-    return estado === 'Enviado' && !obterTermoPesquisaFiguraAdmin();
+    return !obterTermoPesquisaFiguraAdmin();
 }
 
 function obterEncomendasLoteVisiveis() {
     if (!loteEncomendasAtivo()) return [];
-    return encomendasFiltradasAdmin().filter(encomenda => estadoNormalizadoEncomenda(encomenda.estado) === 'Enviado');
+    return encomendasFiltradasAdmin();
 }
 
 function obterIdEncomendaLote(encomenda) {
     return String(encomenda?.id || '');
+}
+
+function encomendaPodeConcluirLote(encomenda) {
+    return estadoNormalizadoEncomenda(encomenda?.estado) === 'Enviado';
 }
 
 function obterTotalEncomendaLote(encomenda) {
@@ -797,7 +800,9 @@ function atualizarAcoesLoteEncomendas() {
         if (!idsVisiveis.has(id)) encomendasSelecionadasLote.delete(id);
     }
 
-    const totalSelecionadas = [...encomendasSelecionadasLote].filter(id => idsVisiveis.has(id)).length;
+    const selecionadasVisiveis = visiveis.filter(encomenda => encomendasSelecionadasLote.has(obterIdEncomendaLote(encomenda)));
+    const totalSelecionadas = selecionadasVisiveis.length;
+    const selecionadasConcluiveis = selecionadasVisiveis.filter(encomendaPodeConcluirLote);
     const totalSelecionado = visiveis.reduce((soma, encomenda) => {
         return encomendasSelecionadasLote.has(obterIdEncomendaLote(encomenda))
             ? soma + obterTotalEncomendaLote(encomenda)
@@ -809,17 +814,18 @@ function atualizarAcoesLoteEncomendas() {
     selecionarTodas.disabled = loteEncomendasEmProcessamento || !visiveis.length;
     contagem.textContent = `${totalSelecionadas} selecionada${totalSelecionadas === 1 ? '' : 's'}`;
     if (total) total.textContent = formatarEuroEncomenda(totalSelecionado);
-    botao.disabled = loteEncomendasEmProcessamento || totalSelecionadas === 0;
+    botao.disabled = loteEncomendasEmProcessamento || totalSelecionadas === 0 || selecionadasConcluiveis.length !== totalSelecionadas;
+    botao.title = botao.disabled && totalSelecionadas ? 'Só pode concluir em lote encomendas enviadas.' : '';
 }
 
 function prepararCardSelecaoLoteEncomenda(card, encomenda) {
-    if (!loteEncomendasAtivo() || estadoNormalizadoEncomenda(encomenda.estado) !== 'Enviado') return card;
+    if (!loteEncomendasAtivo()) return card;
     const id = obterIdEncomendaLote(encomenda);
     if (!id) return card;
 
     card.classList.add('com-selecao-lote');
     const label = criarElementoEncomenda('label', 'admin-encomenda-selecao-lote');
-    label.title = 'Selecionar para concluir em lote';
+    label.title = 'Selecionar encomenda';
     const checkbox = document.createElement('input');
     checkbox.type = 'checkbox';
     checkbox.checked = encomendasSelecionadasLote.has(id);
@@ -851,7 +857,8 @@ function selecionarEncomendasVisiveisLote(selecionar) {
 
 async function concluirEncomendasSelecionadas() {
     const selecionadas = obterEncomendasLoteVisiveis()
-        .filter(encomenda => encomendasSelecionadasLote.has(obterIdEncomendaLote(encomenda)));
+        .filter(encomenda => encomendasSelecionadasLote.has(obterIdEncomendaLote(encomenda)))
+        .filter(encomendaPodeConcluirLote);
     if (!selecionadas.length || loteEncomendasEmProcessamento) return;
 
     const total = selecionadas.length;
