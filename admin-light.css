@@ -1174,3 +1174,51 @@ html.admin-light-mode body.cabecalho-com-admin :is(
 ){
     color:#1f2937 !important;
 }
+
+html.admin-light-mode body.cabecalho-com-admin .estado-encomenda{
+    background:#f3f6fa !important;
+    border-color:#cbd5e1 !important;
+    color:#263241 !important;
+}
+
+html.admin-light-mode body.cabecalho-com-admin .estado-a-aguardar-pagamento{
+    background:#fff7df !important;
+    border-color:#e5bd4c !important;
+    color:#7a5200 !important;
+}
+
+html.admin-light-mode body.cabecalho-com-admin .estado-pago{
+    background:#eaf8ef !important;
+    border-color:#78c995 !important;
+    color:#166534 !important;
+}
+
+html.admin-light-mode body.cabecalho-com-admin .estado-concluido{
+    background:#e7f5ee !important;
+    border-color:#66b889 !important;
+    color:#14532d !important;
+}
+
+html.admin-light-mode body.cabecalho-com-admin .estado-em-preparacao{
+    background:#fff2cf !important;
+    border-color:#d8a92f !important;
+    color:#7a4b00 !important;
+}
+
+html.admin-light-mode body.cabecalho-com-admin .estado-enviado{
+    background:#e7f3ff !important;
+    border-color:#75b6e8 !important;
+    color:#075985 !important;
+}
+
+html.admin-light-mode body.cabecalho-com-admin .estado-cancelado{
+    background:#fff1f1 !important;
+    border-color:#e39a9a !important;
+    color:#991b1b !important;
+}
+
+html.admin-light-mode body.cabecalho-com-admin .estado-devolvido{
+    background:#eef2ff !important;
+    border-color:#a8b6f2 !important;
+    color:#3730a3 !important;
+}
