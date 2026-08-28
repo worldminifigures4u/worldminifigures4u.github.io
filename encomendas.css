@@ -217,9 +217,7 @@ body.pagina-encomendas-admin{
             display:flex;
             align-items:center;
             justify-content:flex-end;
-            gap:8px;
             margin:8px 0 6px;
-            flex-wrap:nowrap;
         }
 
         .admin-encomendas-lote[hidden]{

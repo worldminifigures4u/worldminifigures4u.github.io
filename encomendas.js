@@ -792,7 +792,7 @@ function atualizarAcoesLoteEncomendas() {
     const contagem = document.getElementById('contagem-encomendas-selecionadas');
     const total = document.getElementById('total-encomendas-selecionadas');
     const botao = document.getElementById('concluir-encomendas-selecionadas');
-    if (!barra || !selecionarTodas || !contagem || !botao) return;
+    if (!barra || !total) return;
 
     const visiveis = obterEncomendasLoteVisiveis();
     const idsVisiveis = new Set(visiveis.map(obterIdEncomendaLote).filter(Boolean));
@@ -809,13 +809,17 @@ function atualizarAcoesLoteEncomendas() {
             : soma;
     }, 0);
     barra.hidden = !loteEncomendasAtivo() || !visiveis.length;
-    selecionarTodas.checked = Boolean(visiveis.length) && totalSelecionadas === visiveis.length;
-    selecionarTodas.indeterminate = totalSelecionadas > 0 && totalSelecionadas < visiveis.length;
-    selecionarTodas.disabled = loteEncomendasEmProcessamento || !visiveis.length;
-    contagem.textContent = `${totalSelecionadas} selecionada${totalSelecionadas === 1 ? '' : 's'}`;
-    if (total) total.textContent = formatarEuroEncomenda(totalSelecionado);
-    botao.disabled = loteEncomendasEmProcessamento || totalSelecionadas === 0 || selecionadasConcluiveis.length !== totalSelecionadas;
-    botao.title = botao.disabled && totalSelecionadas ? 'Só pode concluir em lote encomendas enviadas.' : '';
+    if (selecionarTodas) {
+        selecionarTodas.checked = Boolean(visiveis.length) && totalSelecionadas === visiveis.length;
+        selecionarTodas.indeterminate = totalSelecionadas > 0 && totalSelecionadas < visiveis.length;
+        selecionarTodas.disabled = loteEncomendasEmProcessamento || !visiveis.length;
+    }
+    if (contagem) contagem.textContent = `${totalSelecionadas} selecionada${totalSelecionadas === 1 ? '' : 's'}`;
+    total.textContent = formatarEuroEncomenda(totalSelecionado);
+    if (botao) {
+        botao.disabled = loteEncomendasEmProcessamento || totalSelecionadas === 0 || selecionadasConcluiveis.length !== totalSelecionadas;
+        botao.title = botao.disabled && totalSelecionadas ? 'Só pode concluir em lote encomendas enviadas.' : '';
+    }
 }
 
 function prepararCardSelecaoLoteEncomenda(card, encomenda) {
