@@ -452,6 +452,12 @@ html.admin-light-mode body.cabecalho-com-admin .admin-encomenda-cliente-link:foc
     text-decoration:none !important;
 }
 
+html.admin-light-mode body.cabecalho-com-admin .admin-encomenda-linha .admin-encomenda-origem.plataforma-olx{
+    background:#17202a !important;
+    border-color:#17202a !important;
+    color:#ffffff !important;
+}
+
 html.admin-light-mode body.cabecalho-com-admin :is(
     tbody tr:hover,
     .fornecedor-tabela-encomenda tbody tr:hover,
