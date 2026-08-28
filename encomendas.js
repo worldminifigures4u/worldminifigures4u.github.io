@@ -17,11 +17,15 @@ const ESTADOS_ENCOMENDA = [
     'Devolvido',
     'Cancelado'
 ];
+const ENCOMENDAS_CONCLUIDAS_POR_PAGINA = 60;
 
 let encomendasClient = null;
 let encomendasAdmin = [];
 let carregamentoComplementarEncomendasId = 0;
 let carregamentoImagensModalId = 0;
+let totalConcluidasServidor = null;
+let carregandoMaisConcluidas = false;
+let todasConcluidasCarregadas = false;
 
 const ENCOMENDAS_SEM_IMAGEM = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(
     '<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120"><rect width="100%" height="100%" fill="#222"/><text x="50%" y="50%" text-anchor="middle" dominant-baseline="middle" fill="#888" font-family="Arial" font-size="13">Sem foto</text></svg>'
@@ -771,6 +775,11 @@ function obterEncomendasLoteVisiveis() {
     return encomendasFiltradasAdmin();
 }
 
+function filtroEstadoPermiteTotalEncomendas() {
+    const estado = document.getElementById('filtro-estado-encomendas-admin')?.value || ENCOMENDAS_ESTADO_INICIAL;
+    return estado !== 'todos' && estado !== 'Concluído';
+}
+
 function obterTotalEncomendaLote(encomenda) {
     return Number(encomenda?.total ?? encomenda?.valor_total ?? 0) || 0;
 }
@@ -782,7 +791,7 @@ function atualizarAcoesLoteEncomendas() {
 
     const visiveis = obterEncomendasLoteVisiveis();
     const totalVisivel = visiveis.reduce((soma, encomenda) => soma + obterTotalEncomendaLote(encomenda), 0);
-    barra.hidden = !loteEncomendasAtivo() || !visiveis.length;
+    barra.hidden = !loteEncomendasAtivo() || !visiveis.length || !filtroEstadoPermiteTotalEncomendas();
     total.textContent = formatarEuroEncomenda(totalVisivel);
 }
 
@@ -812,16 +821,40 @@ function renderizarEncomendasAdmin() {
     filtradas.forEach(encomenda => lista.appendChild(criarCardEncomenda(encomenda)));
     atualizarAcoesLoteEncomendas();
     AdminEncomendaVista.carregarContagensAnexosLista(filtradas).catch(console.warn);
+    verificarCarregamentoConcluidasScroll();
 }
 
 function obterCodigoEncomendaUrlAdmin() {
     return String(new URLSearchParams(window.location.search).get('encomenda') || '').trim();
 }
 
-function abrirEncomendaAdminPorCodigo(codigo) {
+async function carregarEncomendaAdminPorCodigo(codigo) {
+    const alvo = String(codigo || '').trim();
+    if (!alvo) return null;
+    const existente = encomendasAdmin.find(item => String(item.codigo_encomenda || '').trim().toUpperCase() === alvo.toUpperCase());
+    if (existente) return existente;
+
+    try {
+        const { data } = await consultarEncomendasAdmin(
+            query => query.eq('codigo_encomenda', alvo),
+            { inicio: 0, fim: 0 }
+        );
+        const encomenda = Array.isArray(data) ? data[0] : null;
+        if (encomenda && !encomendasAdmin.some(item => String(item.id) === String(encomenda.id))) {
+            encomendasAdmin = [encomenda, ...encomendasAdmin].sort(ordenarEncomendasRecentes);
+        }
+        return encomenda || null;
+    } catch (error) {
+        console.warn('Nao foi possivel carregar a encomenda por codigo.', error);
+        return null;
+    }
+}
+
+async function abrirEncomendaAdminPorCodigo(codigo) {
     const alvo = String(codigo || '').trim();
     if (!alvo) return false;
 
+    await carregarEncomendaAdminPorCodigo(alvo);
     const pesquisa = document.getElementById('pesquisa-encomendas-admin');
     const filtro = document.getElementById('filtro-estado-encomendas-admin');
     if (pesquisa) pesquisa.value = alvo;
@@ -841,43 +874,111 @@ function abrirEncomendaAdminPorCodigo(codigo) {
 
 function atualizarResumoEncomendas() {
     const contar = estado => encomendasAdmin.filter(item => estadoNormalizadoEncomenda(item.estado) === estado).length;
-    document.getElementById('encomendas-total').textContent = encomendasAdmin.length;
+    const concluidas = Number.isFinite(totalConcluidasServidor) ? totalConcluidasServidor : contar('Concluído');
+    const totalSemConcluidas = encomendasAdmin.filter(item => estadoNormalizadoEncomenda(item.estado) !== 'Concluído').length;
+    document.getElementById('encomendas-total').textContent = totalSemConcluidas + concluidas;
     document.getElementById('encomendas-pendentes').textContent = contar('A aguardar pagamento');
     document.getElementById('encomendas-pagas').textContent = contar('Pago');
     document.getElementById('encomendas-preparacao').textContent = contar('Em preparação');
     document.getElementById('encomendas-enviadas').textContent = contar('Enviado');
-    document.getElementById('encomendas-concluidas').textContent = contar('Concluído');
+    document.getElementById('encomendas-concluidas').textContent = concluidas;
+}
+
+function erroPermiteFallbackEncomendasAdmin(error) {
+    return /nome_utilizador|clientes_gestao|relationship|schema cache/i.test(String(error?.message || error?.details || ''));
+}
+
+async function consultarEncomendasAdmin(aplicarFiltros, opcoes = {}) {
+    const seletores = [
+        '*, clientes_gestao(nome_utilizador, nome, tem_aviso)',
+        '*, clientes_gestao(nome, tem_aviso)',
+        '*'
+    ];
+    let ultimoErro = null;
+
+    for (const seletor of seletores) {
+        let query = encomendasClient
+            .from('encomendas')
+            .select(seletor, opcoes.comContagem ? { count: 'exact' } : undefined);
+        query = aplicarFiltros(query).order('created_at', { ascending: false });
+        if (Number.isInteger(opcoes.inicio) && Number.isInteger(opcoes.fim)) {
+            query = query.range(opcoes.inicio, opcoes.fim);
+        }
+        const resposta = await query;
+        if (!resposta.error) return resposta;
+        ultimoErro = resposta.error;
+        if (!erroPermiteFallbackEncomendasAdmin(resposta.error)) break;
+    }
+
+    throw ultimoErro;
+}
+
+function ordenarEncomendasRecentes(a, b) {
+    const dataA = new Date(a?.created_at).getTime();
+    const dataB = new Date(b?.created_at).getTime();
+    return (Number.isNaN(dataB) ? 0 : dataB) - (Number.isNaN(dataA) ? 0 : dataA);
+}
+
+function sincronizarEstadoPaginacaoConcluidas() {
+    const carregadas = encomendasAdmin.filter(item => estadoNormalizadoEncomenda(item.estado) === 'Concluído').length;
+    todasConcluidasCarregadas = Number.isFinite(totalConcluidasServidor)
+        ? carregadas >= totalConcluidasServidor
+        : false;
+}
+
+async function carregarPaginaConcluidasAdmin(inicio = 0) {
+    const fim = inicio + ENCOMENDAS_CONCLUIDAS_POR_PAGINA - 1;
+    const resposta = await consultarEncomendasAdmin(
+        query => query.eq('estado', 'Concluído'),
+        { inicio, fim, comContagem: inicio === 0 }
+    );
+    if (inicio === 0 && Number.isFinite(resposta.count)) {
+        totalConcluidasServidor = resposta.count;
+    }
+    return resposta.data || [];
 }
 
 async function carregarEncomendasAdmin() {
     definirStatusEncomendas('A carregar encomendas...');
     const carregamentoId = ++carregamentoComplementarEncomendasId;
-    let { data, error } = await encomendasClient
-        .from('encomendas')
-        .select('*, clientes_gestao(nome_utilizador, nome, tem_aviso)')
-        .order('created_at', { ascending: false });
-    if (error && /nome_utilizador|schema cache/i.test(String(error.message || error.details || ''))) {
-        const fallbackFicha = await encomendasClient
-            .from('encomendas')
-            .select('*, clientes_gestao(nome, tem_aviso)')
-            .order('created_at', { ascending: false });
-        data = fallbackFicha.data;
-        error = fallbackFicha.error;
-    }
-    if (error && /clientes_gestao|relationship|schema cache/i.test(String(error.message || error.details || ''))) {
-        const fallback = await encomendasClient
-            .from('encomendas')
-            .select('*')
-            .order('created_at', { ascending: false });
-        data = fallback.data;
-        error = fallback.error;
-    }
-    if (error) throw error;
-    encomendasAdmin = data || [];
+    const [{ data: ativas }, concluidas] = await Promise.all([
+        consultarEncomendasAdmin(query => query.neq('estado', 'Concluído')),
+        carregarPaginaConcluidasAdmin(0)
+    ]);
+    encomendasAdmin = [...(ativas || []), ...concluidas].sort(ordenarEncomendasRecentes);
+    sincronizarEstadoPaginacaoConcluidas();
     atualizarResumoEncomendas();
     renderizarEncomendasAdmin();
     definirStatusEncomendas('');
     carregarDadosComplementaresEncomendasAdmin(carregamentoId);
+}
+
+async function carregarMaisEncomendasConcluidasAdmin() {
+    if (carregandoMaisConcluidas || todasConcluidasCarregadas) return;
+    if ((document.getElementById('filtro-estado-encomendas-admin')?.value || '') !== 'Concluído') return;
+    carregandoMaisConcluidas = true;
+    try {
+        const carregadas = encomendasAdmin.filter(item => estadoNormalizadoEncomenda(item.estado) === 'Concluído').length;
+        const mais = await carregarPaginaConcluidasAdmin(carregadas);
+        if (mais.length) {
+            const idsExistentes = new Set(encomendasAdmin.map(item => String(item.id)));
+            encomendasAdmin = [...encomendasAdmin, ...mais.filter(item => !idsExistentes.has(String(item.id)))]
+                .sort(ordenarEncomendasRecentes);
+        }
+        sincronizarEstadoPaginacaoConcluidas();
+        renderizarEncomendasAdmin();
+    } catch (error) {
+        console.warn('Nao foi possivel carregar mais encomendas concluidas.', error);
+    } finally {
+        carregandoMaisConcluidas = false;
+    }
+}
+
+function verificarCarregamentoConcluidasScroll() {
+    if ((document.getElementById('filtro-estado-encomendas-admin')?.value || '') !== 'Concluído') return;
+    if (todasConcluidasCarregadas || carregandoMaisConcluidas) return;
+    const distanciaFundo = document.documentElement.scrollHeight - (window.innerHeight + window.scrollY);
+    if (distanciaFundo < 650) carregarMaisEncomendasConcluidasAdmin();
 }
 
 async function carregarDadosComplementaresEncomendasAdmin(carregamentoId) {
@@ -914,7 +1015,7 @@ async function iniciarPainelEncomendas() {
         if (filtroEstado) filtroEstado.value = ENCOMENDAS_ESTADO_INICIAL;
         await carregarEncomendasAdmin();
         const codigoUrl = obterCodigoEncomendaUrlAdmin();
-        if (codigoUrl) abrirEncomendaAdminPorCodigo(codigoUrl);
+        if (codigoUrl) await abrirEncomendaAdminPorCodigo(codigoUrl);
     } catch (error) {
         console.error(error);
         bloqueio.hidden = false;
@@ -925,6 +1026,7 @@ async function iniciarPainelEncomendas() {
 document.getElementById('pesquisa-encomendas-admin').addEventListener('input', renderizarEncomendasAdmin);
 document.getElementById('pesquisa-figura-encomendas-admin').addEventListener('input', renderizarEncomendasAdmin);
 document.getElementById('filtro-estado-encomendas-admin').addEventListener('change', renderizarEncomendasAdmin);
+window.addEventListener('scroll', verificarCarregamentoConcluidasScroll, { passive: true });
 document.getElementById('admin-imagem-modal-fechar').addEventListener('click', fecharImagemProdutoEncomenda);
 document.getElementById('admin-encomenda-modal-fechar')?.addEventListener('click', fecharModalEncomendaAdmin);
 document.getElementById('admin-cliente-fechar').addEventListener('click', fecharFichaClienteAdmin);
