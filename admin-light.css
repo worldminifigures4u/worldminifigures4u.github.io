@@ -1114,3 +1114,63 @@ html.admin-light-mode body.cabecalho-com-admin :is(
     border-color:#d6dfeb !important;
     color:#405064 !important;
 }
+
+html.admin-light-mode body.cabecalho-com-admin{
+    --cor-texto-secundario:#374151;
+}
+
+html.admin-light-mode body.cabecalho-com-admin :is(
+    h1,
+    h2,
+    h3,
+    h4,
+    legend,
+    strong,
+    .admin-encomenda-cliente-link,
+    .admin-encomenda-cliente-nome,
+    .clientes-lista-nome,
+    .mapas-produto-nome-botao,
+    .wallapop-resultado-info strong,
+    .wallapop-selecionado-info strong,
+    .item-admin-produto strong
+){
+    color:#111827 !important;
+}
+
+html.admin-light-mode body.cabecalho-com-admin :is(
+    label,
+    small,
+    time,
+    .ajuda-admin,
+    .clientes-lista-meta,
+    .admin-encomendas-contagem,
+    .admin-encomendas-resumo span,
+    .admin-encomenda-data,
+    .admin-encomenda-anexos-contagem,
+    .admin-encomenda-info-label,
+    .admin-encomenda-info-valor,
+    .plataforma-produto-stock,
+    .plataforma-produto-identificadores,
+    .wallapop-dados-encomenda > label,
+    .mapas-contador-item span,
+    .estatisticas-card small,
+    .fornecedor-pedido-meta
+){
+    color:#374151 !important;
+}
+
+html.admin-light-mode body.cabecalho-com-admin :is(
+    input,
+    textarea
+)::placeholder{
+    color:#64748b !important;
+    opacity:1 !important;
+}
+
+html.admin-light-mode body.cabecalho-com-admin :is(
+    .admin-encomenda-estado-badge,
+    .estado-badge,
+    .admin-encomenda-estado-caixa select
+){
+    color:#1f2937 !important;
+}
