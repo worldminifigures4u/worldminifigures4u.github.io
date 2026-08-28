@@ -458,6 +458,12 @@ html.admin-light-mode body.cabecalho-com-admin .admin-encomenda-linha .admin-enc
     color:#ffffff !important;
 }
 
+html.admin-light-mode body.cabecalho-com-admin .admin-encomendas-lote-total{
+    background:#eef7ff !important;
+    border-color:#b6d8f3 !important;
+    color:#0f5e9c !important;
+}
+
 html.admin-light-mode body.cabecalho-com-admin :is(
     tbody tr:hover,
     .fornecedor-tabela-encomenda tbody tr:hover,

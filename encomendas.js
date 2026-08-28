@@ -779,10 +779,15 @@ function obterIdEncomendaLote(encomenda) {
     return String(encomenda?.id || '');
 }
 
+function obterTotalEncomendaLote(encomenda) {
+    return Number(encomenda?.total ?? encomenda?.valor_total ?? 0) || 0;
+}
+
 function atualizarAcoesLoteEncomendas() {
     const barra = document.getElementById('acoes-lote-encomendas');
     const selecionarTodas = document.getElementById('selecionar-encomendas-visiveis');
     const contagem = document.getElementById('contagem-encomendas-selecionadas');
+    const total = document.getElementById('total-encomendas-selecionadas');
     const botao = document.getElementById('concluir-encomendas-selecionadas');
     if (!barra || !selecionarTodas || !contagem || !botao) return;
 
@@ -793,11 +798,17 @@ function atualizarAcoesLoteEncomendas() {
     }
 
     const totalSelecionadas = [...encomendasSelecionadasLote].filter(id => idsVisiveis.has(id)).length;
+    const totalSelecionado = visiveis.reduce((soma, encomenda) => {
+        return encomendasSelecionadasLote.has(obterIdEncomendaLote(encomenda))
+            ? soma + obterTotalEncomendaLote(encomenda)
+            : soma;
+    }, 0);
     barra.hidden = !loteEncomendasAtivo() || !visiveis.length;
     selecionarTodas.checked = Boolean(visiveis.length) && totalSelecionadas === visiveis.length;
     selecionarTodas.indeterminate = totalSelecionadas > 0 && totalSelecionadas < visiveis.length;
     selecionarTodas.disabled = loteEncomendasEmProcessamento || !visiveis.length;
     contagem.textContent = `${totalSelecionadas} selecionada${totalSelecionadas === 1 ? '' : 's'}`;
+    if (total) total.textContent = formatarEuroEncomenda(totalSelecionado);
     botao.disabled = loteEncomendasEmProcessamento || totalSelecionadas === 0;
 }
 

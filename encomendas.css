@@ -217,8 +217,9 @@ body.pagina-encomendas-admin{
             display:flex;
             align-items:center;
             justify-content:flex-end;
-            gap:12px;
+            gap:8px;
             margin:8px 0 6px;
+            flex-wrap:nowrap;
         }
 
         .admin-encomendas-lote[hidden]{
@@ -245,16 +246,30 @@ body.pagina-encomendas-admin{
         }
 
         .admin-encomendas-lote-contagem{
-            color:#29b6f6;
-            font-size:13px;
+            color:var(--cor-texto-secundario, #bdbdbd);
+            font-size:12px;
             font-weight:800;
+            white-space:nowrap;
+        }
+
+        .admin-encomendas-lote-total{
+            min-width:82px;
+            padding:5px 10px;
+            border:1px solid #3f5362;
+            border-radius:6px;
+            color:#29b6f6;
+            background:rgba(41, 182, 246, .08);
+            font-size:13px;
+            font-weight:900;
+            text-align:right;
             white-space:nowrap;
         }
 
         .admin-encomendas-lote-concluir{
             min-height:32px;
-            padding:6px 12px;
-            font-size:13px;
+            padding:6px 10px;
+            font-size:12px;
+            white-space:nowrap;
         }
 
         .admin-encomendas-lista[hidden]{
@@ -332,8 +347,8 @@ body.pagina-encomendas-admin{
             flex:1;
             min-width:0;
             display:grid;
-            grid-template-columns:68px 130px 84px minmax(120px, 1fr) 76px 148px 72px 88px;
-            column-gap:16px;
+            grid-template-columns:68px 118px 78px minmax(110px, 1fr) 76px 128px 68px 82px;
+            column-gap:12px;
             align-items:center;
         }
 
