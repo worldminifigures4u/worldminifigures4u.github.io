@@ -371,7 +371,6 @@ function renderizarEstatisticas() {
         ...item,
         quantidade: item.encomendas
     })), { limite: 10, formatarLabel: formatarMesEstatisticas, rotuloQuantidade: 'enc.' });
-    renderizarTabela('estatisticas-figuras', dados.figurasReceita, { limite: 100 });
     renderizarTabela('estatisticas-ticket-plataformas', dados.ticketPlataformas.map(item => ({
         ...item,
         receita: item.receita / Math.max(1, item.encomendas),
