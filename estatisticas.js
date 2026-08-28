@@ -130,10 +130,6 @@ function obterEstadoNormalizadoEstatisticas(encomenda) {
     return normalizarTextoEstatisticas(obterEstadoEncomenda(encomenda));
 }
 
-function encomendaCancelada(encomenda) {
-    return obterEstadoNormalizadoEstatisticas(encomenda) === 'cancelado';
-}
-
 function encomendaContaNosTotais(encomenda) {
     return ESTATISTICAS_ESTADOS_TOTAIS.has(obterEstadoNormalizadoEstatisticas(encomenda));
 }
@@ -161,9 +157,14 @@ function obterTotalItensEncomenda(encomenda) {
     }, 0);
 }
 
-function obterTotalEncomenda(encomenda) {
+function obterTotalComPortesEncomenda(encomenda) {
     const total = Number(encomenda.total ?? encomenda.valor_total ?? 0) || 0;
     return total > 0 ? total : obterTotalItensEncomenda(encomenda);
+}
+
+function obterTotalEncomenda(encomenda, filtro = {}) {
+    if (filtro.total === 'com-portes') return obterTotalComPortesEncomenda(encomenda);
+    return obterTotalItensEncomenda(encomenda);
 }
 
 function obterNomeFigura(item) {
@@ -176,7 +177,7 @@ function obterFiltroData() {
         inicio: document.getElementById('estatisticas-data-inicio').value,
         fim: document.getElementById('estatisticas-data-fim').value,
         plataforma: document.getElementById('estatisticas-filtro-plataforma').value,
-        canceladas: document.getElementById('estatisticas-filtro-canceladas').value
+        total: document.getElementById('estatisticas-filtro-total')?.value || 'sem-portes'
     };
 }
 
@@ -193,10 +194,7 @@ function filtrarEncomendasEstatisticas() {
     return estatisticasEncomendas.filter(encomenda => {
         if (!encomendaDentroDoPeriodo(encomenda, filtro)) return false;
         if (filtro.plataforma !== 'todas' && obterPlataformaEncomenda(encomenda) !== filtro.plataforma) return false;
-        const cancelada = encomendaCancelada(encomenda);
-        if (filtro.canceladas === 'excluir') return encomendaContaNosTotais(encomenda);
-        if (filtro.canceladas === 'apenas') return cancelada;
-        return encomendaContaNosTotais(encomenda) || cancelada;
+        return encomendaContaNosTotais(encomenda);
     });
 }
 
@@ -289,7 +287,7 @@ function renderizarTabela(id, itens, opcoes = {}) {
     });
 }
 
-function calcularEstatisticas(encomendas) {
+function calcularEstatisticas(encomendas, filtro = {}) {
     const dias = new Map();
     const diasSemana = new Map(ESTATISTICAS_DIAS_SEMANA.map(dia => [dia.chave, { chave: dia.chave, receita: 0, quantidade: 0, encomendas: 0 }]));
     const meses = new Map();
@@ -304,7 +302,7 @@ function calcularEstatisticas(encomendas) {
     let somaPrecoFiguras = 0;
 
     encomendas.forEach(encomenda => {
-        const total = obterTotalEncomenda(encomenda);
+        const total = obterTotalEncomenda(encomenda, filtro);
         const produtos = obterProdutosEstatisticas(encomenda);
         const quantidadeEncomenda = produtos.reduce((soma, item) => soma + obterQuantidadeItem(item), 0);
         const plataforma = obterPlataformaEncomenda(encomenda);
@@ -350,8 +348,9 @@ function calcularEstatisticas(encomendas) {
 }
 
 function renderizarEstatisticas() {
+    const filtro = obterFiltroData();
     const encomendas = filtrarEncomendasEstatisticas();
-    const dados = calcularEstatisticas(encomendas);
+    const dados = calcularEstatisticas(encomendas, filtro);
 
     document.getElementById('estatisticas-total-vendido').textContent = formatarEuroEstatisticas(dados.totalVendido);
     document.getElementById('estatisticas-numero-encomendas').textContent = formatarNumeroEstatisticas(dados.numeroEncomendas);
@@ -470,7 +469,7 @@ document.getElementById('estatisticas-filtro-periodo').addEventListener('change'
 document.getElementById('estatisticas-data-inicio').addEventListener('change', renderizarEstatisticas);
 document.getElementById('estatisticas-data-fim').addEventListener('change', renderizarEstatisticas);
 document.getElementById('estatisticas-filtro-plataforma').addEventListener('change', renderizarEstatisticas);
-document.getElementById('estatisticas-filtro-canceladas').addEventListener('change', renderizarEstatisticas);
+document.getElementById('estatisticas-filtro-total').addEventListener('change', renderizarEstatisticas);
 document.getElementById('btn-atualizar-estatisticas').addEventListener('click', async () => {
     try { await carregarEncomendasEstatisticas(); }
     catch (error) { definirStatusEstatisticas('Erro ao carregar estatísticas: ' + (error.message || 'sem detalhe'), true); }
