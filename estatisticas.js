@@ -1,12 +1,3 @@
-const ESTATISTICAS_PRECO_FAIXAS = [
-    { rotulo: "0-2,99 €", min: 0, max: 2.99 },
-    { rotulo: "3-4,99 €", min: 3, max: 4.99 },
-    { rotulo: "5-7,99 €", min: 5, max: 7.99 },
-    { rotulo: "8-11,99 €", min: 8, max: 11.99 },
-    { rotulo: "12-19,99 €", min: 12, max: 19.99 },
-    { rotulo: "20 €+", min: 20, max: Infinity }
-];
-
 const ESTATISTICAS_DIAS_SEMANA = [
     { chave: 1, rotulo: "Segunda-feira" },
     { chave: 2, rotulo: "Terça-feira" },
@@ -219,10 +210,6 @@ function adicionarFigura(mapa, item) {
     mapa.set(nome, atual);
 }
 
-function obterFaixaPreco(preco) {
-    return ESTATISTICAS_PRECO_FAIXAS.find(faixa => preco >= faixa.min && preco <= faixa.max)?.rotulo || 'Sem preço';
-}
-
 function ordenarPorReceita(lista) {
     return [...lista].sort((a, b) => b.receita - a.receita || b.quantidade - a.quantidade || String(a.chave).localeCompare(String(b.chave)));
 }
@@ -295,7 +282,6 @@ function calcularEstatisticas(encomendas, filtro = {}) {
     const plataformas = new Map();
     const estados = new Map();
     const figuras = new Map();
-    const faixasPreco = new Map(ESTATISTICAS_PRECO_FAIXAS.map(faixa => [faixa.rotulo, { chave: faixa.rotulo, receita: 0, quantidade: 0, encomendas: 0 }]));
 
     let totalVendido = 0;
     let unidadesVendidas = 0;
@@ -324,7 +310,6 @@ function calcularEstatisticas(encomendas, filtro = {}) {
             const receita = quantidade * preco;
             somaPrecoFiguras += receita;
             adicionarFigura(figuras, item);
-            adicionarGrupo(faixasPreco, obterFaixaPreco(preco), receita, quantidade, 0);
         });
     });
 
@@ -341,7 +326,6 @@ function calcularEstatisticas(encomendas, filtro = {}) {
         estados: ordenarPorReceita([...estados.values()]),
         figurasReceita: ordenarPorReceita([...figuras.values()]),
         figurasQuantidade: ordenarPorQuantidade([...figuras.values()]),
-        faixasPreco: [...faixasPreco.values()],
         melhoresMeses: ordenarPorReceita([...meses.values()]),
         ticketPlataformas: [...plataformas.values()].sort((a, b) => (b.receita / Math.max(1, b.encomendas)) - (a.receita / Math.max(1, a.encomendas)))
     };
@@ -363,7 +347,6 @@ function renderizarEstatisticas() {
     renderizarBarras('estatisticas-meses', dados.meses, { formatarLabel: formatarMesEstatisticas, mostrarEncomendas: true, limite: 18 });
     renderizarBarras('estatisticas-anos', dados.anos, { mostrarEncomendas: true, limite: 10 });
     renderizarBarras('estatisticas-plataformas', dados.plataformas, { mostrarEncomendas: true, limite: 10 });
-    renderizarBarras('estatisticas-faixas-preco', dados.faixasPreco, { valorCampo: 'quantidade', limite: 8 });
     renderizarBarras('estatisticas-estados', dados.estados, { mostrarEncomendas: true, limite: 8 });
     renderizarTabela('estatisticas-top-receita', dados.figurasReceita, { limite: 10 });
     renderizarTabela('estatisticas-top-quantidade', dados.figurasQuantidade, { limite: 10 });
