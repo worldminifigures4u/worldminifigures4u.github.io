@@ -58,6 +58,10 @@
     padding-right: 8px;
 }
 
+.estatisticas-filtros input[type="month"] {
+    text-transform: capitalize;
+}
+
 .estatisticas-filtros input[type="date"]::-webkit-calendar-picker-indicator,
 .estatisticas-filtros input[type="month"]::-webkit-calendar-picker-indicator {
     cursor: pointer;

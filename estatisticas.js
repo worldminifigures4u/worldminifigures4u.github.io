@@ -37,12 +37,17 @@ function formatarNumeroEstatisticas(valor) {
     return Number(valor || 0).toLocaleString('pt-PT');
 }
 
+function capitalizarPrimeiraLetraEstatisticas(texto) {
+    const valor = String(texto || '');
+    return valor ? valor.charAt(0).toUpperCase() + valor.slice(1) : valor;
+}
+
 function formatarMesEstatisticas(chave) {
     const partes = String(chave || '').split('-');
     if (partes.length !== 2) return chave || 'Sem data';
     const data = new Date(Number(partes[0]), Number(partes[1]) - 1, 1);
     if (Number.isNaN(data.getTime())) return chave;
-    return new Intl.DateTimeFormat('pt-PT', { month: 'short', year: 'numeric' }).format(data);
+    return capitalizarPrimeiraLetraEstatisticas(new Intl.DateTimeFormat('pt-PT', { month: 'short', year: 'numeric' }).format(data));
 }
 
 function formatarDiaEstatisticas(chave) {
