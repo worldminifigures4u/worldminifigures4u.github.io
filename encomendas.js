@@ -22,8 +22,6 @@ let encomendasClient = null;
 let encomendasAdmin = [];
 let carregamentoComplementarEncomendasId = 0;
 let carregamentoImagensModalId = 0;
-let encomendasSelecionadasLote = new Set();
-let loteEncomendasEmProcessamento = false;
 
 const ENCOMENDAS_SEM_IMAGEM = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(
     '<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120"><rect width="100%" height="100%" fill="#222"/><text x="50%" y="50%" text-anchor="middle" dominant-baseline="middle" fill="#888" font-family="Arial" font-size="13">Sem foto</text></svg>'
@@ -460,11 +458,10 @@ async function abrirFichaClienteAdmin(encomenda) {
 }
 
 function criarCardEncomenda(encomenda) {
-    const card = AdminEncomendaVista.criarCardEncomenda(encomenda, {
+    return AdminEncomendaVista.criarCardEncomenda(encomenda, {
         abrirCliente: abrirFichaClienteAdmin,
         abrirEncomenda: abrirModalEncomendaAdmin
     });
-    return prepararCardSelecaoLoteEncomenda(card, encomenda);
 }
 
 function fecharModalEncomendaAdmin() {
@@ -774,139 +771,19 @@ function obterEncomendasLoteVisiveis() {
     return encomendasFiltradasAdmin();
 }
 
-function obterIdEncomendaLote(encomenda) {
-    return String(encomenda?.id || '');
-}
-
-function encomendaPodeConcluirLote(encomenda) {
-    return estadoNormalizadoEncomenda(encomenda?.estado) === 'Enviado';
-}
-
 function obterTotalEncomendaLote(encomenda) {
     return Number(encomenda?.total ?? encomenda?.valor_total ?? 0) || 0;
 }
 
 function atualizarAcoesLoteEncomendas() {
     const barra = document.getElementById('acoes-lote-encomendas');
-    const selecionarTodas = document.getElementById('selecionar-encomendas-visiveis');
-    const contagem = document.getElementById('contagem-encomendas-selecionadas');
     const total = document.getElementById('total-encomendas-selecionadas');
-    const botao = document.getElementById('concluir-encomendas-selecionadas');
     if (!barra || !total) return;
 
     const visiveis = obterEncomendasLoteVisiveis();
-    const idsVisiveis = new Set(visiveis.map(obterIdEncomendaLote).filter(Boolean));
-    for (const id of [...encomendasSelecionadasLote]) {
-        if (!idsVisiveis.has(id)) encomendasSelecionadasLote.delete(id);
-    }
-
-    const selecionadasVisiveis = visiveis.filter(encomenda => encomendasSelecionadasLote.has(obterIdEncomendaLote(encomenda)));
-    const totalSelecionadas = selecionadasVisiveis.length;
-    const selecionadasConcluiveis = selecionadasVisiveis.filter(encomendaPodeConcluirLote);
-    const totalSelecionado = visiveis.reduce((soma, encomenda) => {
-        return encomendasSelecionadasLote.has(obterIdEncomendaLote(encomenda))
-            ? soma + obterTotalEncomendaLote(encomenda)
-            : soma;
-    }, 0);
+    const totalVisivel = visiveis.reduce((soma, encomenda) => soma + obterTotalEncomendaLote(encomenda), 0);
     barra.hidden = !loteEncomendasAtivo() || !visiveis.length;
-    if (selecionarTodas) {
-        selecionarTodas.checked = Boolean(visiveis.length) && totalSelecionadas === visiveis.length;
-        selecionarTodas.indeterminate = totalSelecionadas > 0 && totalSelecionadas < visiveis.length;
-        selecionarTodas.disabled = loteEncomendasEmProcessamento || !visiveis.length;
-    }
-    if (contagem) contagem.textContent = `${totalSelecionadas} selecionada${totalSelecionadas === 1 ? '' : 's'}`;
-    total.textContent = formatarEuroEncomenda(totalSelecionado);
-    if (botao) {
-        botao.disabled = loteEncomendasEmProcessamento || totalSelecionadas === 0 || selecionadasConcluiveis.length !== totalSelecionadas;
-        botao.title = botao.disabled && totalSelecionadas ? 'Só pode concluir em lote encomendas enviadas.' : '';
-    }
-}
-
-function prepararCardSelecaoLoteEncomenda(card, encomenda) {
-    if (!loteEncomendasAtivo()) return card;
-    const id = obterIdEncomendaLote(encomenda);
-    if (!id) return card;
-
-    card.classList.add('com-selecao-lote');
-    const label = criarElementoEncomenda('label', 'admin-encomenda-selecao-lote');
-    label.title = 'Selecionar encomenda';
-    const checkbox = document.createElement('input');
-    checkbox.type = 'checkbox';
-    checkbox.checked = encomendasSelecionadasLote.has(id);
-    checkbox.disabled = loteEncomendasEmProcessamento;
-    checkbox.setAttribute('aria-label', `Selecionar encomenda ${encomenda.codigo_encomenda || id}`);
-    checkbox.addEventListener('click', evento => evento.stopPropagation());
-    checkbox.addEventListener('keydown', evento => evento.stopPropagation());
-    checkbox.addEventListener('change', evento => {
-        evento.stopPropagation();
-        if (checkbox.checked) encomendasSelecionadasLote.add(id);
-        else encomendasSelecionadasLote.delete(id);
-        atualizarAcoesLoteEncomendas();
-    });
-    label.addEventListener('click', evento => evento.stopPropagation());
-    label.appendChild(checkbox);
-    card.appendChild(label);
-    return card;
-}
-
-function selecionarEncomendasVisiveisLote(selecionar) {
-    obterEncomendasLoteVisiveis().forEach(encomenda => {
-        const id = obterIdEncomendaLote(encomenda);
-        if (!id) return;
-        if (selecionar) encomendasSelecionadasLote.add(id);
-        else encomendasSelecionadasLote.delete(id);
-    });
-    renderizarEncomendasAdmin();
-}
-
-async function concluirEncomendasSelecionadas() {
-    const selecionadas = obterEncomendasLoteVisiveis()
-        .filter(encomenda => encomendasSelecionadasLote.has(obterIdEncomendaLote(encomenda)))
-        .filter(encomendaPodeConcluirLote);
-    if (!selecionadas.length || loteEncomendasEmProcessamento) return;
-
-    const total = selecionadas.length;
-    const confirmado = window.confirm(
-        `Concluir ${total} encomenda${total === 1 ? '' : 's'} selecionada${total === 1 ? '' : 's'}?\n\nSerão emitidos automaticamente os recibos Moloni quando ainda não existirem.`
-    );
-    if (!confirmado) return;
-
-    loteEncomendasEmProcessamento = true;
-    atualizarAcoesLoteEncomendas();
-    let concluidas = 0;
-    let erros = 0;
-
-    for (const encomenda of selecionadas) {
-        const codigo = encomenda.codigo_encomenda || encomenda.id || '';
-        definirStatusEncomendas(`A concluir ${codigo} e emitir recibo Moloni...`, 'processando');
-        const estadoAnterior = estadoNormalizadoEncomenda(encomenda.estado);
-        const selectVirtual = {
-            value: 'Concluído',
-            dataset: { estadoAtual: estadoAnterior },
-            disabled: false
-        };
-        const ok = await AdminEncomendaVista.atualizarEstado(encomenda, 'Concluído', selectVirtual, {
-            semConfirmacaoConclusao: true,
-            emitirFaturaMoloni: true,
-            forcarEmissaoFatura: true,
-            aguardarFaturaMoloni: true
-        });
-        if (ok) {
-            concluidas += 1;
-            encomendasSelecionadasLote.delete(obterIdEncomendaLote(encomenda));
-        } else {
-            erros += 1;
-        }
-    }
-
-    loteEncomendasEmProcessamento = false;
-    renderizarEncomendasAdmin();
-    atualizarResumoEncomendas();
-    if (erros) {
-        definirStatusEncomendas(`Concluídas ${concluidas} de ${total}. ${erros} ficaram por concluir ou emitir no Moloni.`, true);
-    } else {
-        definirStatusEncomendas(`${concluidas} encomenda${concluidas === 1 ? '' : 's'} concluída${concluidas === 1 ? '' : 's'} com recibo Moloni automático.`);
-    }
+    total.textContent = formatarEuroEncomenda(totalVisivel);
 }
 
 function renderizarEncomendasAdmin() {
@@ -1048,10 +925,6 @@ async function iniciarPainelEncomendas() {
 document.getElementById('pesquisa-encomendas-admin').addEventListener('input', renderizarEncomendasAdmin);
 document.getElementById('pesquisa-figura-encomendas-admin').addEventListener('input', renderizarEncomendasAdmin);
 document.getElementById('filtro-estado-encomendas-admin').addEventListener('change', renderizarEncomendasAdmin);
-document.getElementById('selecionar-encomendas-visiveis')?.addEventListener('change', evento => {
-    selecionarEncomendasVisiveisLote(evento.currentTarget.checked);
-});
-document.getElementById('concluir-encomendas-selecionadas')?.addEventListener('click', concluirEncomendasSelecionadas);
 document.getElementById('admin-imagem-modal-fechar').addEventListener('click', fecharImagemProdutoEncomenda);
 document.getElementById('admin-encomenda-modal-fechar')?.addEventListener('click', fecharModalEncomendaAdmin);
 document.getElementById('admin-cliente-fechar').addEventListener('click', fecharFichaClienteAdmin);

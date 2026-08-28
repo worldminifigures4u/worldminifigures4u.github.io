@@ -224,32 +224,6 @@ body.pagina-encomendas-admin{
             display:none !important;
         }
 
-        .admin-encomendas-lote-selecionar{
-            display:flex;
-            align-items:center;
-            gap:7px;
-            color:var(--cor-texto-secundario, #bdbdbd);
-            font-size:13px;
-            font-weight:700;
-            cursor:pointer;
-        }
-
-        .admin-encomendas-lote-selecionar input,
-        .admin-encomenda-selecao-lote input{
-            width:17px;
-            height:17px;
-            margin:0;
-            accent-color:#ffc107;
-            cursor:pointer;
-        }
-
-        .admin-encomendas-lote-contagem{
-            color:var(--cor-texto-secundario, #bdbdbd);
-            font-size:12px;
-            font-weight:800;
-            white-space:nowrap;
-        }
-
         .admin-encomendas-lote-total{
             min-width:82px;
             padding:5px 10px;
@@ -260,13 +234,6 @@ body.pagina-encomendas-admin{
             font-size:13px;
             font-weight:900;
             text-align:right;
-            white-space:nowrap;
-        }
-
-        .admin-encomendas-lote-concluir{
-            min-height:32px;
-            padding:6px 10px;
-            font-size:12px;
             white-space:nowrap;
         }
 
@@ -291,20 +258,6 @@ body.pagina-encomendas-admin{
             border-radius:6px;
             background:#111;
             overflow:hidden;
-        }
-
-        .admin-encomenda-card.com-selecao-lote .admin-encomenda-cabecalho{
-            padding-left:44px;
-        }
-
-        .admin-encomenda-selecao-lote{
-            position:absolute;
-            left:14px;
-            top:50%;
-            z-index:2;
-            display:flex;
-            align-items:center;
-            transform:translateY(-50%);
         }
 
         .admin-encomenda-card.aberta{
