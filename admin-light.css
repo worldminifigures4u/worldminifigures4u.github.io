@@ -1232,3 +1232,46 @@ html.admin-light-mode body.cabecalho-com-admin .admin-encomenda-produto.marcado-
     background:#fff6e8 !important;
     box-shadow:inset 4px 0 0 #f59e0b !important;
 }
+
+html.admin-light-mode body.cabecalho-com-admin .plataforma-stock-modal{
+    background:rgba(15, 23, 42, .34) !important;
+}
+
+html.admin-light-mode body.cabecalho-com-admin .plataforma-stock-dialogo{
+    background:#fbfcfe !important;
+    border-color:#d7dee8 !important;
+    color:#182231 !important;
+    box-shadow:0 22px 55px rgba(31, 41, 55, .18) !important;
+}
+
+html.admin-light-mode body.cabecalho-com-admin .plataforma-stock-dialogo h2{
+    color:#111827 !important;
+}
+
+html.admin-light-mode body.cabecalho-com-admin .plataforma-stock-dialogo p{
+    color:#1f2937 !important;
+}
+
+html.admin-light-mode body.cabecalho-com-admin .plataforma-stock-resumo-bloco{
+    background:#f8fafc !important;
+    border-color:#d7dee8 !important;
+    color:#182231 !important;
+}
+
+html.admin-light-mode body.cabecalho-com-admin .plataforma-stock-resumo-bloco h3{
+    color:#334155 !important;
+}
+
+html.admin-light-mode body.cabecalho-com-admin .plataforma-stock-resumo-lista{
+    color:#1f2937 !important;
+}
+
+html.admin-light-mode body.cabecalho-com-admin .plataforma-stock-resumo-vazio{
+    color:#64748b !important;
+}
+
+html.admin-light-mode body.cabecalho-com-admin .plataforma-stock-incorreto{
+    background:#fff7f7 !important;
+    border-color:#e39a9a !important;
+    color:#991b1b !important;
+}
