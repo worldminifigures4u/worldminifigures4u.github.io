@@ -856,3 +856,261 @@ html.admin-light-mode body.cabecalho-com-admin :is(
 ){
     box-shadow:0 3px 10px rgba(17, 24, 39, .08) !important;
 }
+
+/* Ajuste final do modo claro: menos branco/preto puro e foco mais suave. */
+html.admin-light-mode,
+html.admin-light-mode body.cabecalho-com-admin{
+    background:#eef2f6 !important;
+    color:#182231 !important;
+}
+
+html.admin-light-mode body.cabecalho-com-admin{
+    --cor-texto-principal:#182231;
+    --cor-texto-secundario:#667085;
+    --cor-menu-fundo:#e7edf4;
+    --cor-menu-texto:#182231;
+    --cor-acao-principal:#256d9f;
+    --cor-acao-principal-hover:#1f5e89;
+    --fp-cor-destaque:#256d9f;
+    --cor-botao-secundario-texto:#182231;
+    --cor-botao-secundario-borda:#c3ccd8;
+    --cor-ativo-texto:#182231;
+}
+
+html.admin-light-mode body.cabecalho-com-admin .cabecalho-site-admin,
+html.admin-light-mode body.cabecalho-com-admin .cabecalho-loja{
+    background:#fbfcfe !important;
+    border-color:#d7dee8 !important;
+    box-shadow:0 4px 14px rgba(31, 41, 55, .055) !important;
+}
+
+html.admin-light-mode body.cabecalho-com-admin .acao-cabecalho{
+    background:#e7edf4 !important;
+    border-color:#dbe3ed !important;
+    color:#182231 !important;
+}
+
+html.admin-light-mode body.cabecalho-com-admin .acao-cabecalho:hover,
+html.admin-light-mode body.cabecalho-com-admin .acao-cabecalho:focus-visible,
+html.admin-light-mode body.cabecalho-com-admin .acao-cabecalho.ativa,
+html.admin-light-mode body.cabecalho-com-admin .acao-cabecalho.ativa:hover,
+html.admin-light-mode body.cabecalho-com-admin .acao-cabecalho.ativa:focus-visible{
+    background:#fff4c2 !important;
+    border-color:#e0b42b !important;
+    color:#182231 !important;
+}
+
+html.admin-light-mode body.cabecalho-com-admin :is(
+    .wallapop-editor,
+    .wallapop-preview,
+    .wallapop-preview-acoes,
+    .wallapop-dados-encomenda,
+    .wallapop-preview-folha-cartao,
+    .plataforma-admin,
+    .plataforma-bloco,
+    .plataforma-resumo,
+    .plataforma-envio,
+    .plataforma-portes-manual,
+    .plataforma-totais,
+    .plataforma-cliente-ficha,
+    .plataforma-importar-lista,
+    .plataforma-lista-notas-bloco,
+    .plataforma-lista-dialogo,
+    .fornecedor-lista-controles,
+    .fornecedor-controles-unificados,
+    .fornecedor-filtros-marcacao-extra,
+    .fornecedor-resumo-encomenda,
+    .fornecedor-tabela-encomenda-bloco,
+    .fornecedor-resultados,
+    .fornecedor-selecionados,
+    .fornecedor-pedidos,
+    .fornecedor-pedido-card,
+    .fornecedor-pedido-cabecalho,
+    .fornecedor-pedido-linha-cabecalho,
+    .mapas-contador-filtros,
+    .mapas-contador-item,
+    .mapas-tabela-resumo,
+    .mapas-tabela-wrapper,
+    .mapas-tabela-scroll-topo,
+    .mapas-colunas-opcoes,
+    .estatisticas-metricas article,
+    .estatisticas-barra-trilho,
+    .estatisticas-tabela-scroll,
+    .admin-encomenda-card,
+    .admin-encomenda-cabecalho,
+    .admin-encomenda-linha,
+    .admin-encomenda-modal,
+    .admin-encomenda-modal-dialogo,
+    .admin-encomenda-dialogo,
+    .admin-encomendas-resumo div,
+    .admin-cliente-dialogo,
+    .admin-cliente-secao,
+    .admin-cliente-campo,
+    .admin-cliente-resumo,
+    .admin-cliente-historico,
+    .clientes-lista,
+    .clientes-lista-item,
+    .clientes-ficha,
+    .clientes-ficha-campo,
+    .fornecedores-card,
+    .fornecedores-painel,
+    .fornecedor-lista-final-box,
+    .fornecedor-resultado-item,
+    .fornecedores-modal-conteudo,
+    .mapas-card,
+    .mapas-painel,
+    .mapas-modal-conteudo,
+    .estatisticas-card,
+    .estatisticas-painel,
+    .gestao-card,
+    .gestao-painel,
+    .portes-card,
+    .portes-painel,
+    fieldset
+){
+    background:#fbfcfe !important;
+    border-color:#d7dee8 !important;
+    color:#182231 !important;
+    box-shadow:0 6px 18px rgba(31, 41, 55, .055) !important;
+}
+
+html.admin-light-mode body.cabecalho-com-admin :is(
+    input:not([type="checkbox"]):not([type="radio"]),
+    select,
+    textarea
+){
+    background:#fbfcfe !important;
+    border-color:#c3ccd8 !important;
+    color:#182231 !important;
+    box-shadow:none !important;
+}
+
+html.admin-light-mode body.cabecalho-com-admin :is(
+    input:not([type="checkbox"]):not([type="radio"]),
+    select,
+    textarea
+):focus,
+html.admin-light-mode body.cabecalho-com-admin :is(
+    input:not([type="checkbox"]):not([type="radio"]),
+    select,
+    textarea
+):focus-visible{
+    outline:none !important;
+    border-color:#8aa8c3 !important;
+    box-shadow:0 0 0 2px rgba(37, 109, 159, .12) !important;
+}
+
+html.admin-light-mode body.cabecalho-com-admin :is(button, summary, a):focus-visible{
+    outline:none !important;
+    box-shadow:0 0 0 2px rgba(37, 109, 159, .14) !important;
+}
+
+html.admin-light-mode body.cabecalho-com-admin :is(input, textarea)::placeholder{
+    color:#7a8797 !important;
+}
+
+html.admin-light-mode body.cabecalho-com-admin :is(
+    table,
+    thead th,
+    .admin-encomendas-vendas-figura-cabecalho,
+    .mapas-produtos-tabela thead th,
+    .fornecedor-tabela-encomenda thead th
+){
+    border-color:#d5dee9 !important;
+}
+
+html.admin-light-mode body.cabecalho-com-admin :is(
+    thead th,
+    .admin-encomendas-vendas-figura-cabecalho,
+    .mapas-produtos-tabela thead th,
+    .fornecedor-tabela-encomenda thead th
+){
+    background:#edf2f8 !important;
+    color:#374151 !important;
+}
+
+html.admin-light-mode body.cabecalho-com-admin :is(
+    .admin-encomenda-cabecalho,
+    .admin-encomenda-linha,
+    .admin-encomendas-vendas-figura-linha,
+    .plataforma-lista-linha,
+    .wallapop-resultado,
+    .wallapop-selecionado,
+    .clientes-lista-item,
+    .admin-cliente-historico-linha,
+    .fornecedor-pedido-card,
+    .fornecedor-pedido-linha,
+    .fornecedor-resultado-item
+){
+    background:#fdfefe !important;
+    border-color:#d9e1ea !important;
+}
+
+html.admin-light-mode body.cabecalho-com-admin :is(
+    .mapas-produtos-tabela tbody tr:nth-child(even) td,
+    .fornecedor-tabela-encomenda tbody tr:nth-child(even) td,
+    .admin-encomendas-vendas-figura-linha:nth-child(even)
+){
+    background:#f7f9fc !important;
+}
+
+html.admin-light-mode body.cabecalho-com-admin :is(
+    .admin-encomenda-cabecalho:hover,
+    .plataforma-lista-linha:hover,
+    .wallapop-resultado:hover,
+    .wallapop-selecionado:hover,
+    .clientes-lista-item:hover,
+    .fornecedor-resultado-item:hover,
+    .mapas-produtos-tabela tbody tr:hover td,
+    .fornecedor-tabela-encomenda tbody tr:hover td
+){
+    background:#eef5fb !important;
+}
+
+html.admin-light-mode body.cabecalho-com-admin :is(
+    .admin-encomenda-produto-foto,
+    .mapas-produto-foto,
+    .fornecedor-produto-foto,
+    .wallapop-resultado-img,
+    .wallapop-selecionado-img
+){
+    background:#f3f6fa !important;
+    border-color:#c8d2dd !important;
+}
+
+html.admin-light-mode body.cabecalho-com-admin :is(
+    .admin-encomenda-estado-caixa,
+    .admin-encomenda-lote-total,
+    .admin-encomendas-total-filtrado
+){
+    background:#f8fafc !important;
+    border-color:#c3ccd8 !important;
+}
+
+html.admin-light-mode body.cabecalho-com-admin .admin-encomenda-card.prioritaria{
+    border-color:#e1bd49 !important;
+    box-shadow:0 5px 16px rgba(194, 140, 0, .10) !important;
+}
+
+html.admin-light-mode body.cabecalho-com-admin :is(
+    .msg-sucesso,
+    .mensagem-sucesso
+){
+    color:#16803a !important;
+}
+
+html.admin-light-mode body.cabecalho-com-admin :is(
+    .msg-erro,
+    .mensagem-erro
+){
+    color:#b42318 !important;
+}
+
+html.admin-light-mode body.cabecalho-com-admin :is(
+    .admin-encomenda-estado-badge,
+    .estado-badge
+){
+    background:#f6f8fb !important;
+    border-color:#d6dfeb !important;
+    color:#405064 !important;
+}
