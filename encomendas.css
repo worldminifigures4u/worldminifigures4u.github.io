@@ -225,14 +225,19 @@ body.pagina-encomendas-admin{
         }
 
         .admin-encomendas-lote-total{
-            min-width:82px;
-            padding:5px 10px;
-            border:1px solid #3f5362;
+            min-width:126px;
+            min-height:42px;
+            padding:9px 10px;
+            border:1px solid #555;
             border-radius:6px;
             color:#29b6f6;
-            background:rgba(41, 182, 246, .08);
+            background:#222;
             font-size:13px;
             font-weight:900;
+            display:flex;
+            align-items:center;
+            justify-content:flex-end;
+            box-sizing:border-box;
             text-align:right;
             white-space:nowrap;
         }

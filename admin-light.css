@@ -459,9 +459,9 @@ html.admin-light-mode body.cabecalho-com-admin .admin-encomenda-linha .admin-enc
 }
 
 html.admin-light-mode body.cabecalho-com-admin .admin-encomendas-lote-total{
-    background:#eef7ff !important;
-    border-color:#b6d8f3 !important;
-    color:#0f5e9c !important;
+    background:#ffffff !important;
+    border-color:#b9c5d6 !important;
+    color:#009fe3 !important;
 }
 
 html.admin-light-mode body.cabecalho-com-admin :is(
