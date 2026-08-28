@@ -1275,3 +1275,85 @@ html.admin-light-mode body.cabecalho-com-admin .plataforma-stock-incorreto{
     border-color:#e39a9a !important;
     color:#991b1b !important;
 }
+
+html.admin-light-mode body.cabecalho-com-admin .mapas-produto-modal{
+    background:rgba(15, 23, 42, .34) !important;
+}
+
+html.admin-light-mode body.cabecalho-com-admin .mapas-produto-modal-dialog,
+html.admin-light-mode body.cabecalho-com-admin .mapas-produto-modal-topo,
+html.admin-light-mode body.cabecalho-com-admin .mapas-produto-form{
+    background:#fbfcfe !important;
+    border-color:#d7dee8 !important;
+    color:#182231 !important;
+}
+
+html.admin-light-mode body.cabecalho-com-admin .mapas-produto-modal-dialog{
+    box-shadow:0 22px 55px rgba(31, 41, 55, .18) !important;
+}
+
+html.admin-light-mode body.cabecalho-com-admin .mapas-produto-modal-topo h3{
+    color:#111827 !important;
+}
+
+html.admin-light-mode body.cabecalho-com-admin :is(
+    .mapas-produto-secao,
+    .mapas-produto-foto-principal,
+    .mapas-produto-fornecedor-leitura,
+    .mapas-produto-historico-rececoes-tabela,
+    .mapas-produto-upload-bloco
+){
+    background:#f8fafc !important;
+    border-color:#d7dee8 !important;
+    color:#182231 !important;
+}
+
+html.admin-light-mode body.cabecalho-com-admin .mapas-produto-fornecedores-leitura-lista .mapas-produto-fornecedor-leitura,
+html.admin-light-mode body.cabecalho-com-admin .mapas-produto-fornecedor-leitura.tipo-os,
+html.admin-light-mode body.cabecalho-com-admin .mapas-produto-fornecedor-leitura.tipo-encomendada_os{
+    background:#f8fafc !important;
+    border-color:#d7dee8 !important;
+}
+
+html.admin-light-mode body.cabecalho-com-admin :is(
+    .mapas-produto-leitura-valor,
+    .mapas-produto-os-item,
+    .mapas-produto-os-item strong,
+    .mapas-produto-fornecedor-leitura-nome,
+    .mapas-produto-historico-rececoes-tabela td
+){
+    color:#111827 !important;
+}
+
+html.admin-light-mode body.cabecalho-com-admin :is(
+    .mapas-produto-leitura-rotulo,
+    .mapas-produto-os-vazio,
+    .mapas-produto-fornecedor-leitura-detalhe,
+    .fornecedor-historico-vazio,
+    .mapas-produto-observacoes-leitura,
+    .mapas-produto-foto-principal-vazia
+){
+    color:#475569 !important;
+}
+
+html.admin-light-mode body.cabecalho-com-admin .mapas-produto-leitura-badge{
+    background:#eef2f6 !important;
+    border-color:#cbd5e1 !important;
+    color:#64748b !important;
+}
+
+html.admin-light-mode body.cabecalho-com-admin .mapas-produto-leitura-badge.ativo{
+    background:#fff4c2 !important;
+    border-color:#e0b42b !important;
+    color:#7a5200 !important;
+}
+
+html.admin-light-mode body.cabecalho-com-admin .mapas-produto-historico-rececoes-tabela th{
+    background:#edf2f8 !important;
+    border-color:#d5dee9 !important;
+    color:#374151 !important;
+}
+
+html.admin-light-mode body.cabecalho-com-admin .mapas-produto-historico-rececoes-tabela td{
+    border-color:#d5dee9 !important;
+}
