@@ -1222,3 +1222,13 @@ html.admin-light-mode body.cabecalho-com-admin .estado-devolvido{
     border-color:#a8b6f2 !important;
     color:#3730a3 !important;
 }
+
+html.admin-light-mode body.cabecalho-com-admin .admin-encomenda-produto.marcado-ultimo{
+    background:#fff0f0 !important;
+    box-shadow:inset 4px 0 0 #ff4d4f !important;
+}
+
+html.admin-light-mode body.cabecalho-com-admin .admin-encomenda-produto.marcado-penultimo{
+    background:#fff6e8 !important;
+    box-shadow:inset 4px 0 0 #f59e0b !important;
+}
