@@ -1358,6 +1358,14 @@ html.admin-light-mode body.cabecalho-com-admin .mapas-produto-historico-rececoes
     border-color:#d5dee9 !important;
 }
 
+html.admin-light-mode body.cabecalho-com-admin .mapas-produto-historico-rececoes-tabela tr.mapas-produto-historico-pendente td{
+    color:#16a34a !important;
+}
+
+html.admin-light-mode body.cabecalho-com-admin .mapas-produto-historico-rececoes-tabela tr.mapas-produto-historico-os td{
+    color:#b42318 !important;
+}
+
 html.admin-light-mode body.cabecalho-com-admin .mapas-produto-fornecedor-historico{
     background:#f8fafc !important;
     border-color:#d7dee8 !important;
