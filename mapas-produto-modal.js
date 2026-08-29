@@ -876,7 +876,7 @@ function obterMarcacoesFornecedoresLeituraMapa(produto) {
             && item.marcacao.tipo !== "disponivel"
             && (
                 (item.marcacao.tipo !== "solicitada" && item.marcacao.tipo !== "encomendada")
-                || temLinhaEncomendaFornecedorProdutoMapa(produto, item.nome)
+                || temLinhaPendenteEncomendaFornecedorProdutoMapa(produto, item.nome)
             )
             && String(item.marcacao.texto || "").trim()
         )
@@ -915,6 +915,17 @@ function temLinhaEncomendaFornecedorProdutoMapa(produto, fornecedorNome) {
     const pedidos = mapasEncomendasFornecedorCache || obterEncomendasFornecedorLocaisMapa();
     return obterLinhasEncomendaFornecedorProdutoMapa(produto, pedidos)
         .some((linha) => normalizarChaveFornecedorMapa(linha.pedido?.fornecedor) === fornecedorChave);
+}
+
+function temLinhaPendenteEncomendaFornecedorProdutoMapa(produto, fornecedorNome) {
+    const fornecedorChave = normalizarChaveFornecedorMapa(fornecedorNome);
+    if (!fornecedorChave) return false;
+    const pedidos = mapasEncomendasFornecedorCache || obterEncomendasFornecedorLocaisMapa();
+    return obterLinhasEncomendaFornecedorProdutoMapa(produto, pedidos)
+        .some((linha) =>
+            normalizarChaveFornecedorMapa(linha.pedido?.fornecedor) === fornecedorChave
+            && Math.max(0, Number(linha.recebido || 0)) < Math.max(0, Number(linha.pedidoQtd || 0))
+        );
 }
 
 /** Data da marcação Encomendada na ficha (a que o utilizador vê no mapa), se existir. */
