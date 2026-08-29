@@ -1472,6 +1472,8 @@ html.admin-light-mode body.cabecalho-com-admin :is(
 }
 
 html.admin-light-mode body.cabecalho-com-admin .wallapop-pagina-cabecalho{
+    background:#ffffff !important;
     color:#111827 !important;
     border-color:#d7dee8 !important;
+    box-shadow:none !important;
 }
