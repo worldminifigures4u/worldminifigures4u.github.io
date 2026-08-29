@@ -1428,3 +1428,16 @@ html.admin-light-mode body.cabecalho-com-admin .mapas-produto-fornecedor-limpar-
     border-color:#d96b6b !important;
     color:#7f1d1d !important;
 }
+
+html.admin-light-mode body.cabecalho-com-admin .wallapop-folha-escala{
+    background:#fbfcfe !important;
+}
+
+html.admin-light-mode body.cabecalho-com-admin .wallapop-folha{
+    background:transparent !important;
+}
+
+html.admin-light-mode body.cabecalho-com-admin .wallapop-pagina{
+    background:#ffffff !important;
+    box-shadow:0 8px 24px rgba(31, 41, 55, .12) !important;
+}
