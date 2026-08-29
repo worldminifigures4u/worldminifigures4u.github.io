@@ -63,6 +63,19 @@ body.pagina-clientes-admin{
     color:#000;
 }
 
+html:not(.admin-light-mode) .clientes-admin #btn-criar-cliente.wallapop-botao-destaque{
+    border-color:#d6a820;
+    background:#d6a820;
+    color:#111;
+}
+
+html:not(.admin-light-mode) .clientes-admin #btn-criar-cliente.wallapop-botao-destaque:hover,
+html:not(.admin-light-mode) .clientes-admin #btn-criar-cliente.wallapop-botao-destaque:focus-visible{
+    border-color:#e5bb42;
+    background:#e5bb42;
+    color:#111;
+}
+
 .clientes-pesquisa{
     display:grid;
     grid-template-columns:1fr;
