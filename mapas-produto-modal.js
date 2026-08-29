@@ -673,8 +673,17 @@ async function enriquecerMediaProdutoMapa(produto) {
 
 function produtoCorrespondeItemRececaoMapa(produto, item) {
     if (!produto || !item) return false;
+    const produtoId = String(produto.id || "").trim();
+    const itemId = String(item.id_produto || item.produto_id || item.id || "").trim();
+    if (produtoId && itemId && produtoId === itemId) return true;
+
+    const produtoSku = String(produto.sku || "").trim().toUpperCase();
+    const itemSku = String(item.sku || "").trim().toUpperCase();
+    if (produtoSku && itemSku && produtoSku === itemSku) return true;
+
     const produtoRef = String(produto.referencia || "").trim().toUpperCase();
     const itemRef = String(item.referencia || "").trim().toUpperCase();
+    if (["PERSONALIZADO", "PERSONALIZADA", "CUSTOM"].includes(produtoRef)) return false;
     return Boolean(produtoRef && itemRef && produtoRef === itemRef);
 }
 
