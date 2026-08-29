@@ -93,20 +93,29 @@ window.AdminEncomendaVista = (function () {
         return texto;
     }
 
+    function obterPrimeiroUltimoNomeCliente(valor) {
+        const partes = String(valor || "").trim().split(/\s+/).filter(Boolean);
+        if (!partes.length) return "";
+        if (partes.length === 1) return partes[0];
+        return `${partes[0]} ${partes[partes.length - 1]}`;
+    }
+
     function obterNomeTituloEncomenda(encomenda) {
-        const candidatos = [
-            encomenda?.clientes_gestao?.nome_utilizador,
-            encomenda?.cliente_gestao?.nome_utilizador,
-            encomenda?.nome_utilizador_cliente,
-            encomenda?.clientes_gestao?.nome,
-            encomenda?.cliente_gestao?.nome,
-            encomenda?.nome_cliente
-        ];
-        for (const candidato of candidatos) {
-            const nome = formatarNomeTituloEncomenda(candidato);
-            if (nome) return nome;
+        const nick = formatarNomeTituloEncomenda(
+            encomenda?.clientes_gestao?.nome_utilizador
+            || encomenda?.cliente_gestao?.nome_utilizador
+            || encomenda?.nome_utilizador_cliente
+        );
+        const nomeCurto = obterPrimeiroUltimoNomeCliente(
+            encomenda?.clientes_gestao?.nome
+            || encomenda?.cliente_gestao?.nome
+            || encomenda?.nome_cliente
+        );
+
+        if (nick && nomeCurto && normalizar(nick) !== normalizar(nomeCurto)) {
+            return `${nick} · ${nomeCurto}`;
         }
-        return "";
+        return nick || nomeCurto || "";
     }
 
     function normalizarTextoEnvio(valor) {
