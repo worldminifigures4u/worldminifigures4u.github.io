@@ -628,6 +628,27 @@ function renderizarFichaClientePlataforma(dados) {
     linha.appendChild(direita);
 
     caixa.appendChild(linha);
+    if (cliente.tem_aviso) {
+        const aviso = document.createElement('button');
+        aviso.type = 'button';
+        aviso.className = 'plataforma-cliente-aviso-preparacao';
+        aviso.title = cliente.id ? 'Abrir ficha do cliente' : 'Aviso do cliente';
+        if (cliente.id) {
+            aviso.addEventListener('click', abrirFichaClientePlataformaModal);
+        } else {
+            aviso.disabled = true;
+        }
+
+        const titulo = document.createElement('strong');
+        titulo.textContent = 'Ler aviso antes de preparar';
+        aviso.appendChild(titulo);
+
+        const textoAviso = String(cliente.notas || '').trim();
+        const texto = document.createElement('span');
+        texto.textContent = textoAviso || 'Este cliente tem um aviso ativo na ficha.';
+        aviso.appendChild(texto);
+        caixa.appendChild(aviso);
+    }
     caixa.hidden = false;
     atualizarBarraPerfilPlataforma({ fichaCarregada: true });
 }

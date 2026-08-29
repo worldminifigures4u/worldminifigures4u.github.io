@@ -1178,6 +1178,45 @@ body.pagina-wallapop{
     border-color:rgba(245, 166, 35, 0.55);
 }
 
+.plataforma-cliente-aviso-preparacao{
+    display:grid;
+    gap:4px;
+    width:100%;
+    margin:8px 0 0;
+    padding:10px 12px;
+    border:1px solid rgba(255, 77, 85, 0.55);
+    border-radius:7px;
+    background:rgba(255, 77, 85, 0.14);
+    color:#ffd7d9;
+    font:inherit;
+    line-height:1.35;
+    text-align:left;
+    cursor:pointer;
+}
+
+.plataforma-cliente-aviso-preparacao:disabled{
+    cursor:default;
+}
+
+.plataforma-cliente-aviso-preparacao strong{
+    color:#ff4d55;
+    font-size:13px;
+    font-weight:800;
+}
+
+.plataforma-cliente-aviso-preparacao span{
+    color:inherit;
+    font-size:13px;
+    white-space:pre-wrap;
+}
+
+.plataforma-cliente-aviso-preparacao:not(:disabled):hover,
+.plataforma-cliente-aviso-preparacao:not(:disabled):focus-visible{
+    background:rgba(255, 77, 85, 0.2);
+    border-color:rgba(255, 77, 85, 0.75);
+    outline:none;
+}
+
 .plataforma-cliente-ficha-nome{
     color:var(--cor-texto-principal, #fff);
     font-size:14px;
@@ -1215,6 +1254,22 @@ body.pagina-wallapop{
     stroke-width:2;
     stroke-linecap:round;
     stroke-linejoin:round;
+}
+
+html.admin-light-mode .plataforma-cliente-aviso-preparacao{
+    background:#fff1f2;
+    border-color:#fb7185;
+    color:#7f1d1d;
+}
+
+html.admin-light-mode .plataforma-cliente-aviso-preparacao strong{
+    color:#be123c;
+}
+
+html.admin-light-mode .plataforma-cliente-aviso-preparacao:not(:disabled):hover,
+html.admin-light-mode .plataforma-cliente-aviso-preparacao:not(:disabled):focus-visible{
+    background:#ffe4e6;
+    border-color:#f43f5e;
 }
 
 @media (max-width: 700px){
