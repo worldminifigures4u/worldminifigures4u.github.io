@@ -217,6 +217,7 @@ body.pagina-encomendas-admin{
             display:flex;
             align-items:center;
             justify-content:flex-end;
+            gap:8px;
             margin:0;
         }
 
@@ -240,6 +241,17 @@ body.pagina-encomendas-admin{
             box-sizing:border-box;
             text-align:right;
             white-space:nowrap;
+        }
+
+        .admin-encomendas-lote-concluir{
+            min-height:42px;
+            padding:9px 12px;
+            border-radius:6px;
+            white-space:nowrap;
+        }
+
+        .admin-encomendas-lote-concluir[hidden]{
+            display:none !important;
         }
 
         .admin-encomendas-lista[hidden]{
@@ -306,6 +318,27 @@ body.pagina-encomendas-admin{
             grid-template-columns:68px 118px 78px minmax(110px, 1fr) 76px 128px 68px 82px;
             column-gap:12px;
             align-items:center;
+        }
+
+        .admin-encomenda-linha-com-selecao{
+            grid-template-columns:22px 68px 118px 78px minmax(110px, 1fr) 76px 128px 68px 82px;
+        }
+
+        .admin-encomenda-selecao-lote{
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            width:18px;
+            height:18px;
+            cursor:pointer;
+        }
+
+        .admin-encomenda-selecao-lote input{
+            width:17px;
+            height:17px;
+            margin:0;
+            accent-color:#29b6f6;
+            cursor:pointer;
         }
 
         .admin-encomenda-codigo{

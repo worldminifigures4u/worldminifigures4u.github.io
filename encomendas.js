@@ -26,6 +26,7 @@ let carregamentoImagensModalId = 0;
 let totalConcluidasServidor = null;
 let carregandoMaisConcluidas = false;
 let todasConcluidasCarregadas = false;
+let encomendasSelecionadasLote = new Set();
 
 const ENCOMENDAS_SEM_IMAGEM = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(
     '<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120"><rect width="100%" height="100%" fill="#222"/><text x="50%" y="50%" text-anchor="middle" dominant-baseline="middle" fill="#888" font-family="Arial" font-size="13">Sem foto</text></svg>'
@@ -462,10 +463,43 @@ async function abrirFichaClienteAdmin(encomenda) {
 }
 
 function criarCardEncomenda(encomenda) {
-    return AdminEncomendaVista.criarCardEncomenda(encomenda, {
+    const card = AdminEncomendaVista.criarCardEncomenda(encomenda, {
         abrirCliente: abrirFichaClienteAdmin,
         abrirEncomenda: abrirModalEncomendaAdmin
     });
+    acrescentarSelecaoLoteEncomenda(card, encomenda);
+    return card;
+}
+
+function podeSelecionarEncomendaLote(encomenda) {
+    return estadoNormalizadoEncomenda(encomenda?.estado) === 'Enviado'
+        && document.getElementById('filtro-estado-encomendas-admin')?.value === 'Enviado'
+        && !obterTermoPesquisaFiguraAdmin();
+}
+
+function acrescentarSelecaoLoteEncomenda(card, encomenda) {
+    if (!podeSelecionarEncomendaLote(encomenda)) return;
+    const linha = card.querySelector('.admin-encomenda-linha');
+    if (!linha) return;
+
+    const id = String(encomenda.id);
+    const controlo = criarElementoEncomenda('label', 'admin-encomenda-selecao-lote');
+    const input = document.createElement('input');
+    input.type = 'checkbox';
+    input.checked = encomendasSelecionadasLote.has(id);
+    input.setAttribute('aria-label', `Selecionar encomenda ${encomenda.codigo_encomenda || id}`);
+    input.addEventListener('click', evento => evento.stopPropagation());
+    input.addEventListener('keydown', evento => evento.stopPropagation());
+    input.addEventListener('change', evento => {
+        evento.stopPropagation();
+        if (input.checked) encomendasSelecionadasLote.add(id);
+        else encomendasSelecionadasLote.delete(id);
+        atualizarAcoesLoteEncomendas();
+    });
+    controlo.addEventListener('click', evento => evento.stopPropagation());
+    controlo.appendChild(input);
+    linha.classList.add('admin-encomenda-linha-com-selecao');
+    linha.prepend(controlo);
 }
 
 function fecharModalEncomendaAdmin() {
@@ -787,12 +821,63 @@ function obterTotalEncomendaLote(encomenda) {
 function atualizarAcoesLoteEncomendas() {
     const barra = document.getElementById('acoes-lote-encomendas');
     const total = document.getElementById('total-encomendas-selecionadas');
+    const botaoConcluir = document.getElementById('btn-concluir-encomendas-selecionadas');
     if (!barra || !total) return;
 
     const visiveis = obterEncomendasLoteVisiveis();
-    const totalVisivel = visiveis.reduce((soma, encomenda) => soma + obterTotalEncomendaLote(encomenda), 0);
+    const estado = document.getElementById('filtro-estado-encomendas-admin')?.value || ENCOMENDAS_ESTADO_INICIAL;
+    const idsVisiveis = new Set(visiveis.map(encomenda => String(encomenda.id)));
+    encomendasSelecionadasLote = new Set([...encomendasSelecionadasLote].filter(id => idsVisiveis.has(id)));
+    const selecionaveis = estado === 'Enviado';
+    const selecionadas = selecionaveis
+        ? visiveis.filter(encomenda => encomendasSelecionadasLote.has(String(encomenda.id)))
+        : [];
+    const baseTotal = selecionaveis ? selecionadas : visiveis;
+    const totalVisivel = baseTotal.reduce((soma, encomenda) => soma + obterTotalEncomendaLote(encomenda), 0);
     barra.hidden = !loteEncomendasAtivo() || !visiveis.length || !filtroEstadoPermiteTotalEncomendas();
     total.textContent = formatarEuroEncomenda(totalVisivel);
+    if (botaoConcluir) {
+        botaoConcluir.hidden = !selecionaveis || !selecionadas.length;
+        botaoConcluir.textContent = selecionadas.length === 1 ? 'Concluir selecionada' : 'Concluir selecionadas';
+    }
+}
+
+async function concluirEncomendasSelecionadas() {
+    const selecionadas = encomendasFiltradasAdmin()
+        .filter(encomenda => encomendasSelecionadasLote.has(String(encomenda.id)))
+        .filter(encomenda => estadoNormalizadoEncomenda(encomenda.estado) === 'Enviado');
+    if (!selecionadas.length) return;
+
+    const total = selecionadas.reduce((soma, encomenda) => soma + obterTotalEncomendaLote(encomenda), 0);
+    const confirmado = window.confirm(
+        `Concluir ${selecionadas.length} encomenda(s) selecionada(s), eliminar os anexos e emitir os recibos no Moloni?\n\nTotal: ${formatarEuroEncomenda(total)}`
+    );
+    if (!confirmado) return;
+
+    const botao = document.getElementById('btn-concluir-encomendas-selecionadas');
+    if (botao) botao.disabled = true;
+    definirStatusEncomendas(`A concluir ${selecionadas.length} encomenda(s) selecionada(s)...`, 'processando');
+
+    let concluidas = 0;
+    for (const encomenda of selecionadas) {
+        const selectTemporario = document.createElement('select');
+        selectTemporario.value = estadoNormalizadoEncomenda(encomenda.estado);
+        selectTemporario.dataset.estadoAtual = selectTemporario.value;
+        const ok = await AdminEncomendaVista.atualizarEstado(encomenda, 'Concluído', selectTemporario, {
+            semConfirmacaoConclusao: true,
+            emitirFaturaMoloni: true,
+            forcarEmissaoFatura: true,
+            aguardarFaturaMoloni: true
+        });
+        if (ok) {
+            concluidas += 1;
+            encomendasSelecionadasLote.delete(String(encomenda.id));
+        }
+    }
+
+    if (botao) botao.disabled = false;
+    renderizarEncomendasAdmin();
+    definirStatusEncomendas(`${concluidas} encomenda(s) concluída(s).`);
 }
 
 function renderizarEncomendasAdmin() {
@@ -1026,6 +1111,7 @@ async function iniciarPainelEncomendas() {
 document.getElementById('pesquisa-encomendas-admin').addEventListener('input', renderizarEncomendasAdmin);
 document.getElementById('pesquisa-figura-encomendas-admin').addEventListener('input', renderizarEncomendasAdmin);
 document.getElementById('filtro-estado-encomendas-admin').addEventListener('change', renderizarEncomendasAdmin);
+document.getElementById('btn-concluir-encomendas-selecionadas')?.addEventListener('click', concluirEncomendasSelecionadas);
 window.addEventListener('scroll', verificarCarregamentoConcluidasScroll, { passive: true });
 document.getElementById('admin-imagem-modal-fechar').addEventListener('click', fecharImagemProdutoEncomenda);
 document.getElementById('admin-encomenda-modal-fechar')?.addEventListener('click', fecharModalEncomendaAdmin);
