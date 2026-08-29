@@ -1972,12 +1972,6 @@ function renderizarSelecionadosWallapop() {
         contentor.appendChild(linha);
     });
 
-    if (!wallapopItens.length) {
-        const vazio = document.createElement('p');
-        vazio.className = 'wallapop-status';
-        vazio.textContent = 'A lista está vazia.';
-        contentor.appendChild(vazio);
-    }
     atualizarOpcoesEnvioPlataforma();
     atualizarContagemFigurasPlataforma();
 }
