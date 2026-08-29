@@ -714,11 +714,8 @@ function renderizarVendasFiguraAdmin() {
     painel.replaceChildren();
 
     if (resumo) {
-        resumo.hidden = false;
-        const totalUnidades = vendas.reduce((total, venda) => total + venda.quantidade, 0);
-        resumo.textContent = vendas.length
-            ? `${vendas.length} encomenda(s) com "${termo}" · ${totalUnidades} unidade(s) vendida(s)`
-            : `Nenhuma venda encontrada para "${termo}".`;
+        resumo.hidden = true;
+        resumo.textContent = '';
     }
 
     if (!vendas.length) {
