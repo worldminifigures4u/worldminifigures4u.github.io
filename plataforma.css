@@ -685,6 +685,29 @@ body.pagina-wallapop{
             line-height:1.2;
         }
 
+        html:not(.admin-light-mode) .wallapop-preview-folha-cartao .wallapop-folha-escala{
+            background:#101010;
+            border:1px solid #2b2b2b;
+        }
+
+        html:not(.admin-light-mode) .wallapop-preview-folha-cartao .wallapop-pagina{
+            background:#161616;
+            color:#f4f4f4;
+            box-shadow:inset 0 0 0 1px #303030, 0 8px 28px rgba(0,0,0,.45);
+        }
+
+        html:not(.admin-light-mode) .wallapop-preview-folha-cartao .wallapop-pagina-cabecalho,
+        html:not(.admin-light-mode) .wallapop-preview-folha-cartao .wallapop-pagina-rodape,
+        html:not(.admin-light-mode) .wallapop-preview-folha-cartao .wallapop-pagina-total{
+            border-color:#333;
+            color:#f4f4f4;
+        }
+
+        html:not(.admin-light-mode) .wallapop-preview-folha-cartao .wallapop-linha,
+        html:not(.admin-light-mode) .wallapop-preview-folha-cartao .wallapop-vazio{
+            color:#d7dde7;
+        }
+
 
         .wallapop-lista{
             display:block;
