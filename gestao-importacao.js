@@ -13,7 +13,7 @@ function normalizarCabecalhoStock(valor) {
         .toLowerCase();
 }
 
-const COLUNAS_CATALOGO_BASE = new Set(['lego', 'nome', 'preco', 'sku', 'top', 'arquivado', 'arquivada', 'arquivados', 'arquivadas', 'archived', 'descontinuado', 'descontinuada', 'descontinuados', 'descontinuadas', 'discontinued', 'novidade', 'nova', 'novo', 'stock', 'tema', 'subtema', 'peso', 'referencia']);
+const COLUNAS_CATALOGO_BASE = new Set(['lego', 'nome', 'preco', 'preco_compra', 'preco compra', 'sku', 'top', 'arquivado', 'arquivada', 'arquivados', 'arquivadas', 'archived', 'descontinuado', 'descontinuada', 'descontinuados', 'descontinuadas', 'discontinued', 'novidade', 'nova', 'novo', 'stock', 'tema', 'subtema', 'peso', 'referencia']);
 const FORNECEDORES_IMPORTACAO = [
     { chave:'lote50', nome:'Lote 50' },
     { chave:'ruishengtu', nome:'Ruishengtu' },
@@ -492,6 +492,7 @@ async function extrairProdutosCatalogoDoFicheiro(conteudo, { preservarStock = fa
         lego:obterIndiceColuna(cabecalhos, 'lego', false),
         nome:obterIndiceColuna(cabecalhos, 'nome'),
         preco:obterIndiceColuna(cabecalhos, 'preco'),
+        preco_compra:obterIndiceColuna(cabecalhos, ['preco_compra', 'preco compra'], false),
         sku:obterIndiceColuna(cabecalhos, 'sku'),
         top:obterIndiceColuna(cabecalhos, 'top', false),
         arquivado:obterIndiceColuna(cabecalhos, ['arquivado', 'arquivada', 'arquivados', 'arquivadas', 'archived'], false),
@@ -519,6 +520,7 @@ async function extrairProdutosCatalogoDoFicheiro(conteudo, { preservarStock = fa
         const novidade = colunas.novidade >= 0 ? obterBooleanoImportacao(linha[colunas.novidade]) : false;
         const referencia = colunas.referencia >= 0 ? String(linha[colunas.referencia] || '').trim() : '';
         const preco = Number(linha[colunas.preco]);
+        const precoCompra = colunas.preco_compra >= 0 ? Number(linha[colunas.preco_compra]) : 0;
         const stockBruto = colunas.stock >= 0 ? Number(linha[colunas.stock]) : 0;
         const stock = preservarStock ? 0 : stockBruto;
         const tema = String(linha[colunas.tema] || '').trim();
@@ -531,7 +533,7 @@ async function extrairProdutosCatalogoDoFicheiro(conteudo, { preservarStock = fa
         }
 
         const stockValido = preservarStock || (Number.isInteger(stockBruto) && stockBruto >= 0);
-        if(!nome || !sku || !tema || !Number.isFinite(preco) || preco < 0 || !stockValido || !Number.isFinite(peso) || peso < 1 || produtosPorSku.has(sku)) {
+        if(!nome || !sku || !tema || !Number.isFinite(preco) || preco < 0 || !Number.isFinite(precoCompra) || precoCompra < 0 || !stockValido || !Number.isFinite(peso) || peso < 1 || produtosPorSku.has(sku)) {
             invalidos.push(indice + primeiraLinhaDados);
             return;
         }
@@ -540,6 +542,7 @@ async function extrairProdutosCatalogoDoFicheiro(conteudo, { preservarStock = fa
             lego,
             nome,
             preco,
+            preco_compra: precoCompra,
             sku,
             top,
             arquivado,

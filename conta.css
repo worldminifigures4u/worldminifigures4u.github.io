@@ -539,6 +539,27 @@ body[data-page="conta"] #form-alterar-password{
     max-width:460px;
 }
 
+.conta-exportar-mapas{
+    display:grid;
+    gap:12px;
+    max-width:520px;
+}
+
+.conta-exportar-mapas p{
+    margin:0;
+    color:#777;
+    font-size:14px;
+    line-height:1.45;
+}
+
+body[data-page="conta"].cabecalho-com-admin .conta-exportar-mapas p{
+    color:rgba(255, 255, 255, 0.72);
+}
+
+html.admin-light-mode body[data-page="conta"].cabecalho-com-admin .conta-exportar-mapas p{
+    color:#475569;
+}
+
 body[data-page="conta"] #form-editar-dados-cliente,
 body[data-page="conta"] #form-alterar-password{
     width:100%;

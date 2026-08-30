@@ -668,6 +668,142 @@ function ligarElementoConta(id, evento, handler) {
     if (elemento) elemento.addEventListener(evento, handler);
 }
 
+function escaparCsvConta(valor) {
+    const texto = valor === null || valor === undefined ? '' : String(valor);
+    return '"' + texto.replace(/"/g, '""') + '"';
+}
+
+function numeroCsvConta(valor, casas = 2) {
+    const numero = Number(valor || 0);
+    return Number.isFinite(numero) ? numero.toFixed(casas) : (0).toFixed(casas);
+}
+
+function inteiroCsvConta(valor) {
+    const numero = Number(valor || 0);
+    return Number.isFinite(numero) ? String(Math.max(0, Math.round(numero))) : '0';
+}
+
+function booleanoCsvConta(valor) {
+    return valor ? 'sim' : '';
+}
+
+function obterMarcacaoFornecedorCsvConta(fornecedores, chave, nome) {
+    const dados = fornecedores && typeof fornecedores === 'object' ? fornecedores : {};
+    const valor = dados[chave] ?? dados[nome] ?? dados[String(nome || '').toLowerCase()];
+    if (!valor) return '';
+    if (typeof valor === 'string') return valor;
+    if (typeof valor === 'object') {
+        return valor.estado || valor.texto || valor.marcacao || '';
+    }
+    return String(valor);
+}
+
+async function carregarProdutosExportacaoMapasConta() {
+    const produtos = [];
+    let inicio = 0;
+    const tamanhoPagina = 1000;
+    while (true) {
+        const resposta = await dbClient.rpc('listar_produtos_admin', { p_limite: tamanhoPagina, p_offset: inicio });
+        if (resposta.error) throw resposta.error;
+        const pagina = Array.isArray(resposta.data) ? resposta.data : [];
+        produtos.push(...pagina);
+        if (pagina.length < tamanhoPagina) break;
+        inicio += tamanhoPagina;
+    }
+    return produtos;
+}
+
+function criarCsvMapasConta(produtos) {
+    const fornecedores = [
+        ['Lote 50', 'lote50'],
+        ['Ruishengtu', 'ruishengtu'],
+        ['Leguoguo', 'leguoguo'],
+        ['Chuangyaoke', 'chuangyaoke'],
+        ['Kopf', 'kopf'],
+        ['Brixtoy', 'brixtoy']
+    ];
+    const colunas = [
+        'lego',
+        'nome',
+        'preco',
+        'preco_compra',
+        'sku',
+        'top',
+        'arquivado',
+        'descontinuado',
+        'novidade',
+        'referencia',
+        'stock',
+        'tema',
+        'subtema',
+        'peso',
+        ...fornecedores.map(([nome]) => nome)
+    ];
+
+    const linhas = [colunas.map(escaparCsvConta).join(',')];
+    produtos.forEach((produto) => {
+        const linha = [
+            produto.lego || '',
+            produto.nome || '',
+            numeroCsvConta(produto.preco),
+            numeroCsvConta(produto.preco_compra),
+            produto.sku || '',
+            produto.top || '',
+            booleanoCsvConta(produto.arquivado),
+            booleanoCsvConta(produto.descontinuado),
+            booleanoCsvConta(produto.novidade),
+            produto.referencia || '',
+            inteiroCsvConta(produto.stock),
+            produto.tema || '',
+            produto.subtema || '',
+            inteiroCsvConta(produto.peso || 10),
+            ...fornecedores.map(([nome, chave]) => obterMarcacaoFornecedorCsvConta(produto.fornecedores, chave, nome))
+        ];
+        linhas.push(linha.map(escaparCsvConta).join(','));
+    });
+
+    return '\uFEFF' + linhas.join('\r\n') + '\r\n';
+}
+
+function descarregarCsvMapasConta(csv) {
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    const data = new Date().toISOString().slice(0, 10);
+    link.href = url;
+    link.download = `mapas-catalogo-${data}.csv`;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    URL.revokeObjectURL(url);
+}
+
+async function exportarMapasCsvConta() {
+    const status = document.getElementById('status-exportar-mapas');
+    const botao = document.getElementById('btn-exportar-mapas-csv');
+    try {
+        if (typeof garantirDbClient === 'function') {
+            dbClient = await garantirDbClient();
+        }
+        const { data: { user }, error } = await dbClient.auth.getUser();
+        if (error || !user || !utilizadorAdmin(user)) {
+            throw new Error('Apenas o administrador pode exportar os mapas.');
+        }
+
+        if (botao) botao.disabled = true;
+        mostrarMensagem(status, 'A preparar CSV...');
+        const produtos = await carregarProdutosExportacaoMapasConta();
+        const csv = criarCsvMapasConta(produtos);
+        descarregarCsvMapasConta(csv);
+        mostrarMensagem(status, `${produtos.length} produto(s) exportado(s) em CSV.`, 'msg-sucesso');
+    } catch (erro) {
+        console.error('Erro ao exportar mapas:', erro);
+        mostrarMensagem(status, erro.message || 'Não foi possível exportar os mapas.', 'msg-erro');
+    } finally {
+        if (botao) botao.disabled = false;
+    }
+}
+
 function obterSeccaoContaValida(alvo) {
     const pretendida = String(alvo || '').trim();
     const secoes = Array.from(document.querySelectorAll('[data-conta-seccao]'));
@@ -711,6 +847,9 @@ function ligarContaCliente() {
         form.addEventListener('submit', function (evento) {
             if (typeof eliminarContaUtilizador === 'function') eliminarContaUtilizador(evento);
         });
+    });
+    ligarElementoConta('btn-exportar-mapas-csv', 'click', function () {
+        exportarMapasCsvConta().catch(console.error);
     });
 
     document.querySelectorAll('[data-aba-cliente]').forEach(function (botao) {

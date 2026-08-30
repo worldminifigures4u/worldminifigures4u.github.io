@@ -22,7 +22,7 @@
     <link rel="stylesheet" href="styles.css?v=20260806-historico-folha">
     <link rel="stylesheet" href="styles-tema.css?v=20260721-sem-underline" media="print" data-async-css>
     <noscript><link rel="stylesheet" href="styles-tema.css?v=20260721-sem-underline"></noscript>
-    <link rel="stylesheet" href="conta.css?v=20260806-conta-flash-defensivo">
+    <link rel="stylesheet" href="conta.css?v=20260830-exportar-mapas">
     <script src="async-css.js?v=20260713-r25"></script>
 </head>
 <body data-page="conta" class="conta-a-verificar">
@@ -89,6 +89,7 @@
                     <button type="button" class="conta-menu-item ativa" data-seccao-conta="gestao">&#128100; Conta</button>
                     <button type="button" class="conta-menu-item" data-seccao-conta="perfil">&#128221; Dados pessoais</button>
                     <button type="button" class="conta-menu-item" data-seccao-conta="seguranca">&#128274; Segurança</button>
+                    <button type="button" class="conta-menu-item conta-admin-only" data-seccao-conta="exportar" hidden>Exportar mapas</button>
                 </nav>
 
                 <div class="conta-conteudo-dinamico">
@@ -150,6 +151,15 @@
                     <section class="historico-encomendas conta-seccao" data-conta-seccao="historico">
                         <div id="lista-historico-encomendas" class="lista-historico">
                             <p class="historico-vazio">Entre na conta para carregar o histórico.</p>
+                        </div>
+                    </section>
+
+                    <section class="historico-encomendas conta-seccao conta-admin-only" data-conta-seccao="exportar" hidden>
+                        <h2>Exportar mapas</h2>
+                        <div class="conta-exportar-mapas">
+                            <p>Exporta o catálogo em CSV com as colunas compatíveis com a importação da Gestão.</p>
+                            <button type="button" class="btn-acao-cliente" id="btn-exportar-mapas-csv">Exportar CSV</button>
+                            <div id="status-exportar-mapas" class="msg-status"></div>
                         </div>
                     </section>
 
@@ -267,9 +277,9 @@
 <script src="supabase-cdn.js?v=20260711-leve" defer></script>
 <script src="app-config.js?v=20260730-fecho-fundo" defer></script>
 <script src="app-util.js?v=20260721-erros-cliente" defer></script>
-<script src="conta-cliente-loader.js?v=20260806-conta-flash-defensivo" defer></script>
+<script src="conta-cliente-loader.js?v=20260830-exportar-mapas" defer></script>
 <script src="conta-pagina.js?v=20260806-conta-flash-defensivo" defer></script>
-<script src="app-sessao.js?v=20260806-conta-flash-defensivo" defer></script>
+<script src="app-sessao.js?v=20260830-exportar-mapas" defer></script>
 <script src="campo-limpar.js?v=20260720-sem-x-cliente" defer></script>
 <script src="inline-listeners-base.js?v=20260806-conta-flash-defensivo" defer></script>
 <script src="inline-listeners-conta.js?v=20260713-r27" defer></script>
