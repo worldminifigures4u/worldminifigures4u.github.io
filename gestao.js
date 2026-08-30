@@ -101,7 +101,7 @@ function garantirScriptImportacaoGestao() {
 
     gestaoImportacaoScriptPromessa = new Promise((resolve, reject) => {
         const script = document.createElement('script');
-        script.src = 'gestao-importacao.js?v=20260830-stock-negativo-importacao';
+        script.src = 'gestao-importacao.js?v=20260830-ficha-completa';
         script.onload = resolve;
         script.onerror = () => reject(new Error('Falha ao carregar importação administrativa.'));
         document.body.appendChild(script);
@@ -152,6 +152,11 @@ function inteiroCsvGestao(valor) {
     return Number.isFinite(numero) ? String(Math.max(0, Math.round(numero))) : '0';
 }
 
+function inteiroMinimoCsvGestao(valor, minimo = 1) {
+    const numero = Number(valor || minimo);
+    return Number.isFinite(numero) ? String(Math.max(minimo, Math.floor(numero))) : String(minimo);
+}
+
 function stockCsvGestao(valor) {
     const numero = Number(valor || 0);
     return Number.isFinite(numero) ? String(Math.floor(numero)) : '0';
@@ -159,6 +164,26 @@ function stockCsvGestao(valor) {
 
 function booleanoCsvGestao(valor) {
     return valor ? 'sim' : '';
+}
+
+function imagensCsvGestao(imagens) {
+    let lista = imagens;
+    if (typeof lista === 'string') {
+        try {
+            lista = JSON.parse(lista);
+        } catch (_) {
+            lista = String(lista).split(/[\n,]+/);
+        }
+    }
+    if (!Array.isArray(lista)) return '';
+    return lista
+        .map((item) => {
+            if (typeof item === 'string') return item.trim();
+            if (item && typeof item === 'object') return String(item.secure_url || item.url || item.src || '').trim();
+            return String(item || '').trim();
+        })
+        .filter(Boolean)
+        .join('\n');
 }
 
 function obterMarcacaoFornecedorCsvGestao(fornecedores, chave, nome) {
@@ -232,12 +257,16 @@ function criarCsvMapasGestao(produtos) {
         'preco_compra',
         'preco',
         'top',
+        'ativo',
         'arquivado',
         'descontinuado',
         'novidade',
         'lego',
         'peso',
+        'unidades_por_embalagem',
         'sku',
+        'observacoes',
+        'imagens',
         ...fornecedores.map(([nome]) => nome)
     ];
 
@@ -252,12 +281,16 @@ function criarCsvMapasGestao(produtos) {
             numeroCsvGestao(produto.preco_compra),
             numeroCsvGestao(produto.preco),
             produto.top || '',
+            booleanoCsvGestao(produto.ativo !== false),
             booleanoCsvGestao(produto.arquivado),
             booleanoCsvGestao(produto.descontinuado),
             booleanoCsvGestao(produto.novidade),
             produto.lego || '',
             inteiroCsvGestao(produto.peso || 10),
+            inteiroMinimoCsvGestao(produto.unidades_por_embalagem || 1, 1),
             produto.sku || '',
+            produto.observacoes || '',
+            imagensCsvGestao(produto.imagens),
             ...fornecedores.map(([nome, chave]) => obterMarcacaoFornecedorCsvGestao(produto.fornecedores, chave, nome))
         ];
         linhas.push(linha.map(escaparCsvGestao).join(','));

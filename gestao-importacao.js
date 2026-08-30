@@ -13,7 +13,7 @@ function normalizarCabecalhoStock(valor) {
         .toLowerCase();
 }
 
-const COLUNAS_CATALOGO_BASE = new Set(['lego', 'nome', 'preco', 'preco_compra', 'preco compra', 'sku', 'top', 'arquivado', 'arquivada', 'arquivados', 'arquivadas', 'archived', 'descontinuado', 'descontinuada', 'descontinuados', 'descontinuadas', 'discontinued', 'novidade', 'nova', 'novo', 'stock', 'tema', 'subtema', 'peso', 'referencia']);
+const COLUNAS_CATALOGO_BASE = new Set(['lego', 'nome', 'preco', 'preco_compra', 'preco compra', 'sku', 'top', 'ativo', 'ativa', 'activa', 'active', 'arquivado', 'arquivada', 'arquivados', 'arquivadas', 'archived', 'descontinuado', 'descontinuada', 'descontinuados', 'descontinuadas', 'discontinued', 'novidade', 'nova', 'novo', 'stock', 'tema', 'subtema', 'peso', 'referencia', 'unidades_por_embalagem', 'unidades por embalagem', 'unid/emb', 'unid emb', 'observacoes', 'observações', 'notas', 'imagens', 'imagens urls', 'fotos']);
 const FORNECEDORES_IMPORTACAO = [
     { chave:'lote50', nome:'Lote 50' },
     { chave:'ruishengtu', nome:'Ruishengtu' },
@@ -72,6 +72,24 @@ function valorFornecedorImportacaoValido(valor) {
 function obterBooleanoImportacao(valor) {
     const texto = normalizarCabecalhoStock(valor);
     return ['1', 'sim', 's', 'x', 'yes', 'y', 'true', 'verdadeiro'].includes(texto);
+}
+
+function obterImagensImportacao(valor) {
+    if(valor === null || valor === undefined) return [];
+    if(Array.isArray(valor)) return valor.map(item => String(item || '').trim()).filter(Boolean);
+    const texto = String(valor || '').trim();
+    if(!texto) return [];
+    try {
+        const parsed = JSON.parse(texto);
+        if(Array.isArray(parsed)) {
+            return parsed.map(item => {
+                if(typeof item === 'string') return item.trim();
+                if(item && typeof item === 'object') return String(item.secure_url || item.url || item.src || '').trim();
+                return String(item || '').trim();
+            }).filter(Boolean);
+        }
+    } catch(_) {}
+    return texto.split(/[\r\n;]+/).map(item => item.trim()).filter(Boolean);
 }
 
 function juntarValoresFornecedorImportacao(atual, novo) {
@@ -505,6 +523,7 @@ async function extrairProdutosCatalogoDoFicheiro(conteudo, { preservarStock = fa
         preco_compra:obterIndiceColuna(cabecalhos, ['preco_compra', 'preco compra'], false),
         sku:obterIndiceColuna(cabecalhos, 'sku'),
         top:obterIndiceColuna(cabecalhos, 'top', false),
+        ativo:obterIndiceColuna(cabecalhos, ['ativo', 'ativa', 'activa', 'active'], false),
         arquivado:obterIndiceColuna(cabecalhos, ['arquivado', 'arquivada', 'arquivados', 'arquivadas', 'archived'], false),
         descontinuado:obterIndiceColuna(cabecalhos, ['descontinuado', 'descontinuada', 'descontinuados', 'descontinuadas', 'discontinued'], false),
         novidade:obterIndiceColuna(cabecalhos, ['novidade', 'nova', 'novo'], false),
@@ -512,7 +531,10 @@ async function extrairProdutosCatalogoDoFicheiro(conteudo, { preservarStock = fa
         stock:obterIndiceColuna(cabecalhos, 'stock', !preservarStock),
         tema:obterIndiceColuna(cabecalhos, 'tema'),
         subtema:obterIndiceColuna(cabecalhos, 'subtema', false),
-        peso:obterIndiceColuna(cabecalhos, 'peso')
+        peso:obterIndiceColuna(cabecalhos, 'peso'),
+        unidades_por_embalagem:obterIndiceColuna(cabecalhos, ['unidades_por_embalagem', 'unidades por embalagem', 'unid/emb', 'unid emb'], false),
+        observacoes:obterIndiceColuna(cabecalhos, ['observacoes', 'observações', 'notas'], false),
+        imagens:obterIndiceColuna(cabecalhos, ['imagens', 'imagens urls', 'fotos'], false)
     };
 
     const produtosPorSku = new Map();
@@ -536,14 +558,20 @@ async function extrairProdutosCatalogoDoFicheiro(conteudo, { preservarStock = fa
         const tema = String(linha[colunas.tema] || '').trim();
         const subtema = colunas.subtema >= 0 ? String(linha[colunas.subtema] || '').trim() : '';
         const peso = Number(linha[colunas.peso]);
+        const unidadesPorEmbalagem = colunas.unidades_por_embalagem >= 0 ? Number(linha[colunas.unidades_por_embalagem] || 1) : 1;
+        const observacoes = colunas.observacoes >= 0 ? String(linha[colunas.observacoes] || '').trim() : '';
+        const imagens = colunas.imagens >= 0 ? obterImagensImportacao(linha[colunas.imagens]) : [];
         const fornecedores = extrairFornecedoresImportacao(linha, cabecalhos);
+        const ativo = preservarStock
+            ? false
+            : (colunas.ativo >= 0 ? obterBooleanoImportacao(linha[colunas.ativo]) : stock > 0);
 
         if(!preservarStock && Number.isInteger(stockBruto)) {
             totalStockLinhasFicheiro += stockBruto;
         }
 
         const stockValido = preservarStock || Number.isInteger(stockBruto);
-        if(!nome || !sku || !tema || !Number.isFinite(preco) || preco < 0 || !Number.isFinite(precoCompra) || precoCompra < 0 || !stockValido || !Number.isFinite(peso) || peso < 1 || produtosPorSku.has(sku)) {
+        if(!nome || !sku || !tema || !Number.isFinite(preco) || preco < 0 || !Number.isFinite(precoCompra) || precoCompra < 0 || !stockValido || !Number.isFinite(peso) || peso < 1 || !Number.isFinite(unidadesPorEmbalagem) || unidadesPorEmbalagem < 1 || produtosPorSku.has(sku)) {
             invalidos.push(indice + primeiraLinhaDados);
             return;
         }
@@ -563,8 +591,11 @@ async function extrairProdutosCatalogoDoFicheiro(conteudo, { preservarStock = fa
             tema,
             subtema:subtema || 'semsubtema',
             peso,
+            unidades_por_embalagem: Math.max(1, Math.floor(unidadesPorEmbalagem)),
+            observacoes,
+            imagens,
             fornecedores,
-            ativo: preservarStock ? false : stock > 0
+            ativo
         });
     });
 

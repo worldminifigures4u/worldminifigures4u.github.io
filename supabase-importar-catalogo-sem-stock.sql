@@ -2,6 +2,16 @@
 -- Ativo fica automático: stock > 0 → ativo; stock = 0 → inativo.
 -- Correr no Supabase SQL Editor.
 
+alter table public.produtos
+    add column if not exists unidades_por_embalagem integer not null default 1;
+
+alter table public.produtos
+    drop constraint if exists produtos_unidades_por_embalagem_check;
+
+alter table public.produtos
+    add constraint produtos_unidades_por_embalagem_check
+    check (unidades_por_embalagem >= 1);
+
 create or replace function public.importar_produtos_sem_stock_admin(p_produtos jsonb)
 returns jsonb
 language plpgsql
@@ -10,6 +20,7 @@ set search_path = ''
 as $$
 declare
   v_produto jsonb;
+  v_imagens json[];
   v_importados integer := 0;
   v_stock integer;
 begin
@@ -24,6 +35,10 @@ begin
   for v_produto in select value from jsonb_array_elements(p_produtos)
   loop
     v_stock := greatest(coalesce((v_produto->>'stock')::integer, 0), 0);
+    select coalesce(array_agg(to_json(trim(valor))), array[]::json[])
+    into v_imagens
+    from jsonb_array_elements_text(coalesce(v_produto->'imagens', '[]'::jsonb)) as imagens(valor)
+    where trim(valor) <> '';
 
     insert into public.produtos (
       sku,
@@ -40,6 +55,9 @@ begin
       tema,
       subtema,
       peso,
+      unidades_por_embalagem,
+      observacoes,
+      imagens,
       fornecedores,
       ativo
     ) values (
@@ -60,6 +78,9 @@ begin
       trim(v_produto->>'tema'),
       coalesce(nullif(trim(v_produto->>'subtema'), ''), 'semsubtema'),
       (v_produto->>'peso')::numeric,
+      greatest(1, coalesce(nullif(trim(coalesce(v_produto->>'unidades_por_embalagem', '')), '')::integer, 1)),
+      nullif(trim(coalesce(v_produto->>'observacoes', '')), ''),
+      v_imagens,
       coalesce(v_produto->'fornecedores', '{}'::jsonb),
       v_stock > 0
     )
@@ -76,6 +97,9 @@ begin
       tema = excluded.tema,
       subtema = excluded.subtema,
       peso = excluded.peso,
+      unidades_por_embalagem = excluded.unidades_por_embalagem,
+      observacoes = excluded.observacoes,
+      imagens = excluded.imagens,
       fornecedores = excluded.fornecedores,
       ativo = (public.produtos.stock > 0);
 

@@ -26,6 +26,16 @@ alter table public.produtos
 alter table public.produtos
   add column if not exists preco_compra numeric not null default 0;
 
+alter table public.produtos
+  add column if not exists unidades_por_embalagem integer not null default 1;
+
+alter table public.produtos
+  drop constraint if exists produtos_unidades_por_embalagem_check;
+
+alter table public.produtos
+  add constraint produtos_unidades_por_embalagem_check
+  check (unidades_por_embalagem >= 1);
+
 create or replace function public.importar_produtos_admin(p_produtos jsonb)
 returns jsonb
 language plpgsql
@@ -34,6 +44,7 @@ set search_path = ''
 as $$
 declare
   v_produto jsonb;
+  v_imagens json[];
   v_importados integer := 0;
 begin
   if not public.is_admin() then
@@ -46,8 +57,13 @@ begin
 
   for v_produto in select value from jsonb_array_elements(p_produtos)
   loop
+    select coalesce(array_agg(to_json(trim(valor))), array[]::json[])
+    into v_imagens
+    from jsonb_array_elements_text(coalesce(v_produto->'imagens', '[]'::jsonb)) as imagens(valor)
+    where trim(valor) <> '';
+
     insert into public.produtos (
-      sku, referencia, lego, nome, preco, preco_compra, top, arquivado, descontinuado, novidade, stock, tema, subtema, peso, fornecedores, ativo
+      sku, referencia, lego, nome, preco, preco_compra, top, arquivado, descontinuado, novidade, stock, tema, subtema, peso, unidades_por_embalagem, observacoes, imagens, fornecedores, ativo
     ) values (
       upper(trim(v_produto->>'sku')),
       nullif(trim(v_produto->>'referencia'), ''),
@@ -66,6 +82,9 @@ begin
       trim(v_produto->>'tema'),
       coalesce(nullif(trim(v_produto->>'subtema'), ''), 'semsubtema'),
       (v_produto->>'peso')::numeric,
+      greatest(1, coalesce(nullif(trim(coalesce(v_produto->>'unidades_por_embalagem', '')), '')::integer, 1)),
+      nullif(trim(coalesce(v_produto->>'observacoes', '')), ''),
+      v_imagens,
       coalesce(v_produto->'fornecedores', '{}'::jsonb),
       coalesce((v_produto->>'ativo')::boolean, false)
     )
@@ -83,6 +102,9 @@ begin
       tema = excluded.tema,
       subtema = excluded.subtema,
       peso = excluded.peso,
+      unidades_por_embalagem = excluded.unidades_por_embalagem,
+      observacoes = excluded.observacoes,
+      imagens = excluded.imagens,
       fornecedores = excluded.fornecedores,
       ativo = excluded.ativo;
 
@@ -123,6 +145,7 @@ begin
       'descontinuado', coalesce(produto.descontinuado, false),
       'novidade', coalesce(produto.novidade, false),
       'peso', coalesce(produto.peso, 10),
+      'unidades_por_embalagem', coalesce(produto.unidades_por_embalagem, 1),
       'tema', coalesce(produto.tema, ''),
       'subtema', coalesce(produto.subtema, ''),
       'imagens', produto.imagens,
@@ -495,6 +518,7 @@ begin
       'tema', coalesce(produto.tema, ''),
       'subtema', coalesce(produto.subtema, ''),
       'stock', coalesce(produto.stock, 0),
+      'unidades_por_embalagem', coalesce(produto.unidades_por_embalagem, 1),
       'ativo', coalesce(produto.ativo, true),
       'observacoes', coalesce(produto.observacoes, ''),
       'imagens', coalesce(to_jsonb(produto.imagens), '[]'::jsonb),
