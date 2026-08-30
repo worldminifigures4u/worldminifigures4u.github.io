@@ -9,6 +9,31 @@ function definirStatusGestao(mensagem) {
     if (status) status.textContent = mensagem || '';
 }
 
+function selecionarSeccaoGestao(seccao, atualizarHash = true) {
+    const seccaoNormalizada = seccao === 'portes' ? 'portes' : 'banners';
+    document.querySelectorAll('[data-gestao-seccao]').forEach((botao) => {
+        const ativo = botao.dataset.gestaoSeccao === seccaoNormalizada;
+        botao.classList.toggle('ativa', ativo);
+        botao.setAttribute('aria-pressed', ativo ? 'true' : 'false');
+    });
+    document.querySelectorAll('[data-gestao-painel]').forEach((painel) => {
+        const ativo = painel.dataset.gestaoPainel === seccaoNormalizada;
+        painel.hidden = !ativo;
+        painel.classList.toggle('ativa', ativo);
+    });
+    if (atualizarHash) {
+        history.replaceState(null, '', seccaoNormalizada === 'portes' ? '#portes-de-envio' : '#banners');
+    }
+}
+
+function iniciarMenuSeccoesGestao() {
+    document.querySelectorAll('[data-gestao-seccao]').forEach((botao) => {
+        botao.addEventListener('click', () => selecionarSeccaoGestao(botao.dataset.gestaoSeccao));
+    });
+    const hash = String(window.location.hash || '').toLowerCase();
+    selecionarSeccaoGestao(hash.includes('portes') ? 'portes' : 'banners', false);
+}
+
 function normalizarCorHexGestao(valor, fallback = GESTAO_COR_BRANCO) {
     const bruto = String(valor || '').trim();
     if (/^#[0-9a-fA-F]{6}$/.test(bruto)) return bruto.toLowerCase();
@@ -711,6 +736,7 @@ async function iniciarPainelGestao() {
     }
     if (bloqueio) bloqueio.hidden = true;
     if (aplicacao) aplicacao.hidden = false;
+    iniciarMenuSeccoesGestao();
 
     document.getElementById('form-novo-banner')?.addEventListener('submit', (evento) => {
         adicionarBannerGestao(evento).catch(console.error);
@@ -732,6 +758,8 @@ async function iniciarPainelGestao() {
     if (typeof window.iniciarPainelPortes === 'function') {
         try {
             await window.iniciarPainelPortes({ jaAutenticado: true, embutido: true });
+            const seccaoAtiva = document.querySelector('[data-gestao-seccao].ativa')?.dataset.gestaoSeccao || 'banners';
+            selecionarSeccaoGestao(seccaoAtiva, false);
         } catch (erroPortes) {
             console.error(erroPortes);
             const statusPortes = document.getElementById('portes-status');
