@@ -87,7 +87,7 @@ function garantirFornecedoresProdutoModal() {
 function garantirFornecedoresEdicaoPedido() {
     if (window.FornecedoresEdicaoPedido) return Promise.resolve();
     if (!__fornecedoresEdicaoPromessa) {
-        __fornecedoresEdicaoPromessa = carregarScriptAdmin("fornecedores-edicao-pedido.js?v=20260813-referencia-segura");
+        __fornecedoresEdicaoPromessa = carregarScriptAdmin("fornecedores-edicao-pedido.js?v=20260831-data-encomenda");
     }
     return __fornecedoresEdicaoPromessa;
 }
@@ -3482,7 +3482,10 @@ async function alterarEstadoPedidoFornecedor(id, estado) {
         guardarPedidosFornecedores();
         if (deveConfirmarHistoricoPedidoFornecedor(estadoAnterior, atualizado.estado)) {
             try {
-                const atualizados = await sincronizarHistoricoPedidosFornecedor(atualizado.itens || [], atualizado.fornecedor, { modo: "confirmar" });
+                const atualizados = await sincronizarHistoricoPedidosFornecedor(atualizado.itens || [], atualizado.fornecedor, {
+                    modo: "confirmar",
+                    dataPedido: atualizado.data_encomendada || atualizado.criado_em || ""
+                });
                 try {
                     await carregarCatalogoFornecedores();
                 } catch (erroCatalogo) {
@@ -3636,6 +3639,7 @@ async function sincronizarHistoricoPedidosFornecedor(itens, fornecedorNome, opco
         (opcoes.itensAnteriores || []).map((item) => [chaveItemHistoricoPedidoFornecedor(item), item])
     );
     const agora = dataOsAgoraFornecedor();
+    const dataPedido = String(opcoes.dataPedido || opcoes.dataEncomendada || "").trim() || agora;
     let atualizados = 0;
     let semProduto = 0;
 
@@ -3706,7 +3710,7 @@ async function sincronizarHistoricoPedidosFornecedor(itens, fornecedorNome, opco
                     || estadoPedidoFornecedorEhRecebida(opcoes.estadoPedido);
                 const estadoDisponivel = encomendaJaConfirmada ? "Encomendada" : "Solicitada";
                 if (!anterior) {
-                    atual = acrescentarHistoricoFornecedor(atual, encomendaJaConfirmada ? "encomendada" : "solicitada", agora);
+                    atual = acrescentarHistoricoFornecedor(atual, encomendaJaConfirmada ? "encomendada" : "solicitada", encomendaJaConfirmada ? dataPedido : agora);
                     alterou = true;
                 }
                 if (marcacaoAtual.estado.toUpperCase() === "OS" || marcacaoAtual.estado.toUpperCase() === "EX") {
@@ -3719,7 +3723,7 @@ async function sincronizarHistoricoPedidosFornecedor(itens, fornecedorNome, opco
             const parcial = quantidade > 0 && agoraOs;
             if (parcial) {
                 // Histórico: uma linha "Encomendada / OS" | Marcação atual: OS
-                atual = confirmarTentativaParcialFornecedor(atual, agora);
+                atual = confirmarTentativaParcialFornecedor(atual, dataPedido);
                 alterou = true;
             } else if (agoraOs) {
                 // Sem unidades a receber: só OS
@@ -3727,14 +3731,14 @@ async function sincronizarHistoricoPedidosFornecedor(itens, fornecedorNome, opco
                 const marcacao = normalizarMarcacaoFornecedor(atual);
                 const ultimo = marcacao.historico[marcacao.historico.length - 1];
                 if (!ultimo || ultimo.tipo !== "os") {
-                    base = corrigirUltimaTentativaParaOs(atual, agora);
+                    base = corrigirUltimaTentativaParaOs(atual, dataPedido);
                 }
-                atual = aplicarMarcacaoAtualAposConfirmar(base, "OS", agora);
+                atual = aplicarMarcacaoAtualAposConfirmar(base, "OS", dataPedido);
                 alterou = true;
             } else if (quantidade > 0) {
                 // Tudo disponível: Encomendada no histórico e na marcação atual
-                const promovido = promoverUltimaSolicitadaParaEncomendada(atual, agora);
-                atual = promovido || garantirMarcacaoEncomendadaFornecedor(atual, agora);
+                const promovido = promoverUltimaSolicitadaParaEncomendada(atual, dataPedido);
+                atual = promovido || garantirMarcacaoEncomendadaFornecedor(atual, dataPedido);
                 alterou = true;
             }
         }

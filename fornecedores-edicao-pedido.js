@@ -753,7 +753,10 @@ async function guardarEdicaoPedidoFornecedor(evento) {
             dataPedido: pedido.data_encomendada || pedido.criado_em || ''
         });
         if (deveConfirmarHistoricoPedidoFornecedor(estadoAnterior, estado)) {
-            await sincronizarHistoricoPedidosFornecedor(itens, fornecedor, { modo: "confirmar" });
+            await sincronizarHistoricoPedidosFornecedor(itens, fornecedor, {
+                modo: "confirmar",
+                dataPedido: atualizado.data_encomendada || atualizado.criado_em || pedido.data_encomendada || pedido.criado_em || ''
+            });
         }
         status.textContent = 'A atualizar preço compra nos produtos...';
         let produtosComPrecoAtualizado = 0;
