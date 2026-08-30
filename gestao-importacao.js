@@ -59,6 +59,16 @@ function obterValorFornecedorImportacao(valor) {
     return String(valor).trim();
 }
 
+function valorFornecedorImportacaoValido(valor) {
+    const texto = obterValorFornecedorImportacao(valor);
+    if(!texto) return '';
+    const normalizado = normalizarCabecalhoStock(texto);
+    if(/^-?\d+(?:[,.]\d+)?$/.test(normalizado)) return '';
+    if(['os', 'ex', 'solicitada', 'solicitado', 'encomendada', 'encomendado'].includes(normalizado)) return texto;
+    if(normalizado.includes('os') || normalizado.includes('encomendad') || normalizado.includes('solicitad')) return texto;
+    return texto;
+}
+
 function obterBooleanoImportacao(valor) {
     const texto = normalizarCabecalhoStock(valor);
     return ['1', 'sim', 's', 'x', 'yes', 'y', 'true', 'verdadeiro'].includes(texto);
@@ -75,7 +85,7 @@ function extrairFornecedoresImportacao(linha, cabecalhos) {
     cabecalhos.forEach((cabecalho, indice) => {
         const fornecedor = obterFornecedorPorCabecalhoImportacao(cabecalho);
         if(!fornecedor) return;
-        const valor = obterValorFornecedorImportacao(linha[indice]);
+        const valor = valorFornecedorImportacaoValido(linha[indice]);
         if(!valor) return;
         fornecedores[fornecedor.chave] = juntarValoresFornecedorImportacao(fornecedores[fornecedor.chave], valor);
     });

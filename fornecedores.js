@@ -1459,6 +1459,7 @@ function normalizarMarcacaoFornecedor(valor) {
     let estadoObjeto = valor && typeof valor === "object" && !Array.isArray(valor)
         ? String(valor.estado || "").trim()
         : (historico.length ? "" : String(valor ?? "").trim());
+    if (/^-?\d+(?:[,.]\d+)?$/.test(estadoObjeto)) estadoObjeto = "";
     // Se nao houver estado atual, a ultima linha do historico define a marcacao visivel.
     if (!estadoObjeto && historico.length) {
         const ultimo = historico[historico.length - 1];
@@ -1473,7 +1474,7 @@ function normalizarMarcacaoFornecedor(valor) {
     let tipo = "disponivel";
     if (estadoUpper === "OS") tipo = "os";
     else if (estadoUpper === "EX") tipo = "ex";
-    else if (estadoUpper === "ENCOMENDADA" || estadoUpper === "ENCOMENDADO" || /^-?\d+(?:[,.]\d+)?$/.test(estado)) tipo = "encomendado";
+    else if (estadoUpper === "ENCOMENDADA" || estadoUpper === "ENCOMENDADO") tipo = "encomendado";
     else if (estadoUpper === "SOLICITADA" || estadoUpper === "SOLICITADO") tipo = "solicitada";
     else if (estado) tipo = "info";
 
@@ -1492,6 +1493,7 @@ function formatarValorFornecedorParaInput(valor) {
     if (valor && typeof valor === "object" && !Array.isArray(valor)) {
         const estado = String(valor.estado || "").trim();
         if (estado) {
+            if (/^-?\d+(?:[,.]\d+)?$/.test(estado)) return "";
             const upper = estado.toUpperCase();
             if (upper === "OS") return "OS";
             if (upper === "EX") return "EX";
@@ -1514,18 +1516,17 @@ function formatarValorFornecedorParaInput(valor) {
     if (marcacao.tipo === "os") return "OS";
     if (marcacao.tipo === "ex") return "EX";
     if (marcacao.tipo === "solicitada") return "Solicitada";
-    if (marcacao.tipo === "encomendado") {
-        const bruto = String(valor ?? "").trim();
-        return /^-?\d+(?:[,.]\d+)?$/.test(bruto) ? bruto : "Encomendada";
-    }
+    if (marcacao.tipo === "encomendado") return "Encomendada";
     return marcacao.estado || "";
 }
 
 function obterEstadoMarcacaoPreservado(valor) {
     if (valor && typeof valor === "object" && !Array.isArray(valor)) {
-        return String(valor.estado || "").trim();
+        const estado = String(valor.estado || "").trim();
+        return /^-?\d+(?:[,.]\d+)?$/.test(estado) ? "" : estado;
     }
     if (valor == null || valor === "") return "";
+    if (/^-?\d+(?:[,.]\d+)?$/.test(String(valor).trim())) return "";
     const historico = obterHistoricoFornecedor(valor);
     // String antiga sem objeto: a própria string é a marcação
     if (!historico.length) return String(valor).trim();
@@ -1682,7 +1683,7 @@ function parseValorMarcacaoFornecedorInput(texto, valorAnterior) {
         return { estado: "EX", historico, desde: anterior.desde || null, datas: anterior.datas || [] };
     }
     if (/^-?\d+(?:[,.]\d+)?$/.test(valor)) {
-        return { estado: valor, historico, desde: anterior.desde || null, datas: anterior.datas || [] };
+        return historico.length ? { estado: "", historico, desde: anterior.desde || null, datas: anterior.datas || [] } : "";
     }
     if (maiusculas === "SOLICITADA" || maiusculas === "SOLICITADO") {
         return { estado: "Solicitada", historico, desde: anterior.desde || null, datas: anterior.datas || [] };
