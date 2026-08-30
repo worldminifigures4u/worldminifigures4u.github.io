@@ -56,7 +56,7 @@ async function carregarProdutosImportacaoGestao(forcar = false) {
 
     const produtos = [];
     let inicio = 0;
-    const tamanhoPagina = 1000;
+    const tamanhoPagina = 500;
     while (true) {
         const resposta = await gestaoClient.rpc('listar_produtos_admin', { p_limite: tamanhoPagina, p_offset: inicio });
         if (resposta.error) throw resposta.error;
