@@ -154,7 +154,7 @@ function inteiroCsvGestao(valor) {
 
 function stockCsvGestao(valor) {
     const numero = Number(valor || 0);
-    return Number.isFinite(numero) ? String(Math.max(0, Math.floor(numero))) : '0';
+    return Number.isFinite(numero) ? String(Math.floor(numero)) : '0';
 }
 
 function booleanoCsvGestao(valor) {
@@ -294,7 +294,12 @@ async function exportarMapasCsvGestao() {
         const csv = criarCsvMapasGestao(produtos);
         descarregarCsvMapasGestao(csv);
         const stockTotal = produtos.reduce((total, produto) => total + Number(produto.stock || 0), 0);
-        mostrarMensagem(status, `${produtos.length} produto(s) exportado(s) em CSV. Stock total: ${stockTotal}.`, 'msg-sucesso');
+        const produtosComStockNegativo = produtos.filter((produto) => Number(produto.stock || 0) < 0);
+        const stockNegativoTotal = produtosComStockNegativo.reduce((total, produto) => total + Number(produto.stock || 0), 0);
+        const avisoStockNegativo = produtosComStockNegativo.length
+            ? ` Inclui ${produtosComStockNegativo.length} produto(s) com stock negativo (${stockNegativoTotal}).`
+            : '';
+        mostrarMensagem(status, `${produtos.length} produto(s) exportado(s) em CSV. Stock total: ${stockTotal}.${avisoStockNegativo}`, 'msg-sucesso');
     } catch (erro) {
         console.error('Erro ao exportar mapas:', erro);
         mostrarMensagem(status, erro.message || 'Não foi possível exportar os mapas.', 'msg-erro');
