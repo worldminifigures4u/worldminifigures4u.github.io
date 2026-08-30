@@ -538,11 +538,11 @@ async function extrairProdutosCatalogoDoFicheiro(conteudo, { preservarStock = fa
         const peso = Number(linha[colunas.peso]);
         const fornecedores = extrairFornecedoresImportacao(linha, cabecalhos);
 
-        if(!preservarStock && Number.isInteger(stockBruto) && stockBruto >= 0) {
+        if(!preservarStock && Number.isInteger(stockBruto)) {
             totalStockLinhasFicheiro += stockBruto;
         }
 
-        const stockValido = preservarStock || (Number.isInteger(stockBruto) && stockBruto >= 0);
+        const stockValido = preservarStock || Number.isInteger(stockBruto);
         if(!nome || !sku || !tema || !Number.isFinite(preco) || preco < 0 || !Number.isFinite(precoCompra) || precoCompra < 0 || !stockValido || !Number.isFinite(peso) || peso < 1 || produtosPorSku.has(sku)) {
             invalidos.push(indice + primeiraLinhaDados);
             return;

@@ -101,7 +101,7 @@ function garantirScriptImportacaoGestao() {
 
     gestaoImportacaoScriptPromessa = new Promise((resolve, reject) => {
         const script = document.createElement('script');
-        script.src = 'gestao-importacao.js?v=20260830-fornecedores-sem-numeros';
+        script.src = 'gestao-importacao.js?v=20260830-stock-negativo-importacao';
         script.onload = resolve;
         script.onerror = () => reject(new Error('Falha ao carregar importação administrativa.'));
         document.body.appendChild(script);
@@ -224,40 +224,40 @@ function criarCsvMapasGestao(produtos) {
         ['Brixtoy', 'brixtoy']
     ];
     const colunas = [
-        'lego',
         'nome',
-        'preco',
-        'preco_compra',
-        'sku',
-        'top',
-        'arquivado',
-        'descontinuado',
-        'novidade',
         'referencia',
         'stock',
         'tema',
         'subtema',
+        'preco_compra',
+        'preco',
+        'top',
+        'arquivado',
+        'descontinuado',
+        'novidade',
+        'lego',
         'peso',
+        'sku',
         ...fornecedores.map(([nome]) => nome)
     ];
 
     const linhas = [colunas.map(escaparCsvGestao).join(',')];
     produtos.forEach((produto) => {
         const linha = [
-            produto.lego || '',
             produto.nome || '',
-            numeroCsvGestao(produto.preco),
-            numeroCsvGestao(produto.preco_compra),
-            produto.sku || '',
-            produto.top || '',
-            booleanoCsvGestao(produto.arquivado),
-            booleanoCsvGestao(produto.descontinuado),
-            booleanoCsvGestao(produto.novidade),
             produto.referencia || '',
             stockCsvGestao(produto.stock),
             produto.tema || '',
             produto.subtema || '',
+            numeroCsvGestao(produto.preco_compra),
+            numeroCsvGestao(produto.preco),
+            produto.top || '',
+            booleanoCsvGestao(produto.arquivado),
+            booleanoCsvGestao(produto.descontinuado),
+            booleanoCsvGestao(produto.novidade),
+            produto.lego || '',
             inteiroCsvGestao(produto.peso || 10),
+            produto.sku || '',
             ...fornecedores.map(([nome, chave]) => obterMarcacaoFornecedorCsvGestao(produto.fornecedores, chave, nome))
         ];
         linhas.push(linha.map(escaparCsvGestao).join(','));
