@@ -127,7 +127,7 @@ async function imprimirPedidoFornecedor(id) {
     tabela.appendChild(thead);
 
     const tbody = doc.createElement('tbody');
-    const itens = pedido.itens || [];
+    const itens = (pedido.itens || []).filter(item => Math.max(0, Math.floor(Number(item.quantidade || 0))) > 0);
     if (!itens.length) {
         const linha = doc.createElement('tr');
         const celula = doc.createElement('td');
@@ -148,7 +148,7 @@ async function imprimirPedidoFornecedor(id) {
                 produtoAtual.tema || item.tema || '',
                 subtemaProduto || subtemaItem || '',
                 produtoAtual.referencia || item.referencia || '',
-                String(item.quantidade || 0),
+                String(Math.max(0, Math.floor(Number(item.quantidade || 0)))),
                 novidade ? 'NOVA' : ''
             ];
             const linha = doc.createElement('tr');
