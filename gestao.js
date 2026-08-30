@@ -48,25 +48,44 @@ function definirEstadoProdutosImportacaoGestao() {
     window.todosOsProdutos = gestaoProdutosImportacao;
 }
 
-async function carregarProdutosImportacaoGestao(forcar = false) {
-    if (gestaoImportacaoProdutosCarregados && !forcar) {
-        definirEstadoProdutosImportacaoGestao();
-        return gestaoProdutosImportacao;
-    }
-
+async function carregarProdutosPorRpcGestao(nomeRpc) {
     const produtos = [];
     let inicio = 0;
     const tamanhoPagina = 500;
     while (true) {
-        const resposta = await gestaoClient.rpc('listar_produtos_admin', { p_limite: tamanhoPagina, p_offset: inicio });
+        const resposta = await gestaoClient.rpc(nomeRpc, { p_limite: tamanhoPagina, p_offset: inicio });
         if (resposta.error) throw resposta.error;
         const pagina = Array.isArray(resposta.data) ? resposta.data : [];
         produtos.push(...pagina);
         if (pagina.length < tamanhoPagina) break;
         inicio += tamanhoPagina;
     }
+    return produtos;
+}
 
-    gestaoProdutosImportacao = produtos;
+function normalizarProdutoImportacaoGestao(produto) {
+    const stock = Number(produto?.stock);
+    return {
+        ...produto,
+        stock: Number.isFinite(stock) ? Math.floor(stock) : 0
+    };
+}
+
+async function carregarProdutosImportacaoGestao(forcar = false) {
+    if (gestaoImportacaoProdutosCarregados && !forcar) {
+        definirEstadoProdutosImportacaoGestao();
+        return gestaoProdutosImportacao;
+    }
+
+    let produtos;
+    try {
+        produtos = await carregarProdutosPorRpcGestao('listar_produtos_mapas_admin');
+    } catch (erroMapas) {
+        console.warn('Não foi possível carregar produtos pela listagem de Mapas. A usar fallback antigo.', erroMapas);
+        produtos = await carregarProdutosPorRpcGestao('listar_produtos_admin');
+    }
+
+    gestaoProdutosImportacao = produtos.map(normalizarProdutoImportacaoGestao);
     gestaoImportacaoProdutosCarregados = true;
     definirEstadoProdutosImportacaoGestao();
     return gestaoProdutosImportacao;
@@ -274,7 +293,8 @@ async function exportarMapasCsvGestao() {
         const produtos = await carregarProdutosImportacaoGestao(true);
         const csv = criarCsvMapasGestao(produtos);
         descarregarCsvMapasGestao(csv);
-        mostrarMensagem(status, `${produtos.length} produto(s) exportado(s) em CSV.`, 'msg-sucesso');
+        const stockTotal = produtos.reduce((total, produto) => total + Number(produto.stock || 0), 0);
+        mostrarMensagem(status, `${produtos.length} produto(s) exportado(s) em CSV. Stock total: ${stockTotal}.`, 'msg-sucesso');
     } catch (erro) {
         console.error('Erro ao exportar mapas:', erro);
         mostrarMensagem(status, erro.message || 'Não foi possível exportar os mapas.', 'msg-erro');
