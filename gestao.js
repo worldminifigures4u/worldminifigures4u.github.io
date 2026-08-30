@@ -133,6 +133,11 @@ function inteiroCsvGestao(valor) {
     return Number.isFinite(numero) ? String(Math.max(0, Math.round(numero))) : '0';
 }
 
+function stockCsvGestao(valor) {
+    const numero = Number(valor || 0);
+    return Number.isFinite(numero) ? String(Math.max(0, Math.floor(numero))) : '0';
+}
+
 function booleanoCsvGestao(valor) {
     return valor ? 'sim' : '';
 }
@@ -230,7 +235,7 @@ function criarCsvMapasGestao(produtos) {
             booleanoCsvGestao(produto.descontinuado),
             booleanoCsvGestao(produto.novidade),
             produto.referencia || '',
-            inteiroCsvGestao(produto.stock),
+            stockCsvGestao(produto.stock),
             produto.tema || '',
             produto.subtema || '',
             inteiroCsvGestao(produto.peso || 10),
