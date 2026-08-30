@@ -212,33 +212,6 @@ function obterObjetoFornecedoresGestao(produto) {
     return typeof valor === 'object' && !Array.isArray(valor) ? { ...valor } : {};
 }
 
-function limparFornecedoresNumericosProdutoGestao(produto) {
-    const fornecedores = obterObjetoFornecedoresGestao(produto);
-    let alterou = false;
-    Object.keys(fornecedores).forEach((chave) => {
-        const valor = fornecedores[chave];
-        if (typeof valor === 'number' || (typeof valor === 'string' && /^-?\d+(?:[,.]\d+)?$/.test(valor.trim()))) {
-            delete fornecedores[chave];
-            alterou = true;
-            return;
-        }
-        if (valor && typeof valor === 'object' && !Array.isArray(valor)) {
-            const estado = String(valor.estado || '').trim();
-            if (/^-?\d+(?:[,.]\d+)?$/.test(estado)) {
-                const proximo = { ...valor, estado: '' };
-                const temHistorico = Array.isArray(proximo.historico) && proximo.historico.length > 0;
-                if (temHistorico) {
-                    fornecedores[chave] = proximo;
-                } else {
-                    delete fornecedores[chave];
-                }
-                alterou = true;
-            }
-        }
-    });
-    return alterou ? fornecedores : null;
-}
-
 function criarCsvMapasGestao(produtos) {
     const fornecedores = [
         ['Lote 50', 'lote50'],
@@ -341,54 +314,9 @@ async function exportarMapasCsvGestao() {
     }
 }
 
-async function limparFornecedoresNumericosGestao() {
-    const status = document.getElementById('status-exportar-mapas');
-    const botao = document.getElementById('btn-limpar-fornecedores-numericos');
-    try {
-        const { data: { user }, error } = await gestaoClient.auth.getUser();
-        if (error || !user || !utilizadorAdmin(user)) {
-            throw new Error('Apenas o administrador pode limpar estas marcações.');
-        }
-
-        if (botao) botao.disabled = true;
-        mostrarMensagem(status, 'A procurar marcações numéricas...');
-        const produtos = await carregarProdutosImportacaoGestao(true);
-        const alteracoes = produtos
-            .map((produto) => ({ produto, fornecedores: limparFornecedoresNumericosProdutoGestao(produto) }))
-            .filter((item) => item.fornecedores);
-
-        if (!alteracoes.length) {
-            mostrarMensagem(status, 'Não foram encontradas marcações numéricas nos fornecedores.', 'msg-sucesso');
-            return;
-        }
-
-        let atualizados = 0;
-        for (const item of alteracoes) {
-            const { error: erroAtualizar } = await gestaoClient.rpc('atualizar_fornecedores_produto_admin', {
-                p_id: String(item.produto.id),
-                p_fornecedores: item.fornecedores
-            });
-            if (erroAtualizar) throw erroAtualizar;
-            atualizados += 1;
-            mostrarMensagem(status, `A limpar marcações: ${atualizados}/${alteracoes.length}`);
-        }
-
-        await carregarProdutosImportacaoGestao(true);
-        mostrarMensagem(status, `${atualizados} produto(s) corrigido(s). Stock e encomendas não foram alterados.`, 'msg-sucesso');
-    } catch (erro) {
-        console.error('Erro ao limpar marcações numéricas:', erro);
-        mostrarMensagem(status, erro.message || 'Não foi possível limpar as marcações numéricas.', 'msg-erro');
-    } finally {
-        if (botao) botao.disabled = false;
-    }
-}
-
 function ligarImportacaoGestao() {
     ligarElementoImportacaoGestao('btn-exportar-mapas-csv', 'click', () => {
         exportarMapasCsvGestao().catch(console.error);
-    });
-    ligarElementoImportacaoGestao('btn-limpar-fornecedores-numericos', 'click', () => {
-        limparFornecedoresNumericosGestao().catch(console.error);
     });
     ligarElementoImportacaoGestao('admin-ficheiro-stock', 'change', function () {
         prepararImportacaoGestao().then(() => {
