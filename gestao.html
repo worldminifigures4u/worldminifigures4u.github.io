@@ -20,7 +20,7 @@
     <link rel="apple-touch-icon" href="fp-ring-favicon-192.png">
     <link rel="stylesheet" href="styles.css?v=20260721-rodape-800">
     <link rel="stylesheet" href="styles-admin.css?v=20260726-gestao">
-    <link rel="stylesheet" href="gestao.css?v=20260830-importacao">
+    <link rel="stylesheet" href="gestao.css?v=20260830-exportar-mapas">
     <link rel="stylesheet" href="admin-light.css?v=20260829-cabecalho-preview-claro">
     <link rel="stylesheet" href="portes.css?v=20260726-embutido-gestao">
     <link rel="stylesheet" href="styles-tema.css?v=20260721-sem-underline" media="print" data-async-css>
@@ -75,6 +75,7 @@
             <button type="button" class="gestao-menu-item ativa" data-gestao-seccao="banners" aria-pressed="true">Banners</button>
             <button type="button" class="gestao-menu-item" data-gestao-seccao="portes" aria-pressed="false">Portes de envio</button>
             <button type="button" class="gestao-menu-item" data-gestao-seccao="importar" aria-pressed="false">Importar</button>
+            <button type="button" class="gestao-menu-item" data-gestao-seccao="exportar" aria-pressed="false">Exportar</button>
         </nav>
 
         <div class="gestao-painel ativa" data-gestao-painel="banners">
@@ -196,6 +197,20 @@
                 </section>
             </div>
         </section>
+
+        <section class="gestao-painel gestao-importacao-painel mapas-importacao-painel" id="mapas-painel-exportacao" data-gestao-painel="exportar" aria-label="Exportar catálogo" hidden>
+            <h1>Exportar</h1>
+            <div class="mapas-importacao-corpo gestao-importacao-corpo gestao-exportacao-corpo" role="group" aria-label="Opções de exportação">
+                <section class="admin-seccao mapas-importacao-bloco gestao-exportacao-bloco" aria-label="Exportar mapas">
+                    <h3>Exportar mapas</h3>
+                    <div class="form-admin">
+                        <p class="ajuda-admin">Exporta o catálogo em CSV compatível com a importação do site.</p>
+                        <button type="button" id="btn-exportar-mapas-csv" class="btn-acao-cliente">Exportar CSV</button>
+                        <div id="status-exportar-mapas" class="msg-status"></div>
+                    </div>
+                </section>
+            </div>
+        </section>
     </main>
 
     <script src="supabase-cdn.js?v=20260711-leve" defer></script>
@@ -203,7 +218,7 @@
     <script src="app-util.js?v=20260713-r25" defer></script>
     <script src="app-sku.js?v=20260713-r25" defer></script>
     <script src="admin-theme.js?v=20260826-light-mode" defer></script>
-    <script src="gestao.js?v=20260830-importacao" defer></script>
+    <script src="gestao.js?v=20260830-exportar-mapas" defer></script>
     <script src="app-portes.js?v=20260728-inpost-nome" defer></script>
     <script src="portes.js?v=20260826-admin-rapido" defer></script>
     <script src="campo-limpar.js?v=20260720-sem-x-cliente" defer></script>

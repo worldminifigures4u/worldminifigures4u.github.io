@@ -13,7 +13,7 @@ function definirStatusGestao(mensagem) {
 }
 
 function selecionarSeccaoGestao(seccao, atualizarHash = true) {
-    const seccaoNormalizada = ['portes', 'importar'].includes(seccao) ? seccao : 'banners';
+    const seccaoNormalizada = ['portes', 'importar', 'exportar'].includes(seccao) ? seccao : 'banners';
     document.querySelectorAll('[data-gestao-seccao]').forEach((botao) => {
         const ativo = botao.dataset.gestaoSeccao === seccaoNormalizada;
         botao.classList.toggle('ativa', ativo);
@@ -27,7 +27,7 @@ function selecionarSeccaoGestao(seccao, atualizarHash = true) {
     if (atualizarHash) {
         const hash = seccaoNormalizada === 'portes'
             ? '#portes-de-envio'
-            : (seccaoNormalizada === 'importar' ? '#importar' : '#banners');
+            : (seccaoNormalizada === 'importar' ? '#importar' : (seccaoNormalizada === 'exportar' ? '#exportar' : '#banners'));
         history.replaceState(null, '', hash);
     }
     if (seccaoNormalizada === 'importar') {
@@ -40,7 +40,7 @@ function iniciarMenuSeccoesGestao() {
         botao.addEventListener('click', () => selecionarSeccaoGestao(botao.dataset.gestaoSeccao));
     });
     const hash = String(window.location.hash || '').toLowerCase();
-    selecionarSeccaoGestao(hash.includes('portes') ? 'portes' : (hash.includes('import') ? 'importar' : 'banners'), false);
+    selecionarSeccaoGestao(hash.includes('portes') ? 'portes' : (hash.includes('export') ? 'exportar' : (hash.includes('import') ? 'importar' : 'banners')), false);
 }
 
 function definirEstadoProdutosImportacaoGestao() {
@@ -118,7 +118,128 @@ function ligarElementoImportacaoGestao(id, evento, handler) {
     if (elemento) elemento.addEventListener(evento, handler);
 }
 
+function escaparCsvGestao(valor) {
+    const texto = valor === null || valor === undefined ? '' : String(valor);
+    return '"' + texto.replace(/"/g, '""') + '"';
+}
+
+function numeroCsvGestao(valor, casas = 2) {
+    const numero = Number(valor || 0);
+    return Number.isFinite(numero) ? numero.toFixed(casas) : (0).toFixed(casas);
+}
+
+function inteiroCsvGestao(valor) {
+    const numero = Number(valor || 0);
+    return Number.isFinite(numero) ? String(Math.max(0, Math.round(numero))) : '0';
+}
+
+function booleanoCsvGestao(valor) {
+    return valor ? 'sim' : '';
+}
+
+function obterMarcacaoFornecedorCsvGestao(fornecedores, chave, nome) {
+    const dados = fornecedores && typeof fornecedores === 'object' ? fornecedores : {};
+    const valor = dados[chave] ?? dados[nome] ?? dados[String(nome || '').toLowerCase()];
+    if (!valor) return '';
+    if (typeof valor === 'string') return valor;
+    if (typeof valor === 'object') {
+        return valor.estado || valor.texto || valor.marcacao || '';
+    }
+    return String(valor);
+}
+
+function criarCsvMapasGestao(produtos) {
+    const fornecedores = [
+        ['Lote 50', 'lote50'],
+        ['Ruishengtu', 'ruishengtu'],
+        ['Leguoguo', 'leguoguo'],
+        ['Chuangyaoke', 'chuangyaoke'],
+        ['Kopf', 'kopf'],
+        ['Brixtoy', 'brixtoy']
+    ];
+    const colunas = [
+        'lego',
+        'nome',
+        'preco',
+        'preco_compra',
+        'sku',
+        'top',
+        'arquivado',
+        'descontinuado',
+        'novidade',
+        'referencia',
+        'stock',
+        'tema',
+        'subtema',
+        'peso',
+        ...fornecedores.map(([nome]) => nome)
+    ];
+
+    const linhas = [colunas.map(escaparCsvGestao).join(',')];
+    produtos.forEach((produto) => {
+        const linha = [
+            produto.lego || '',
+            produto.nome || '',
+            numeroCsvGestao(produto.preco),
+            numeroCsvGestao(produto.preco_compra),
+            produto.sku || '',
+            produto.top || '',
+            booleanoCsvGestao(produto.arquivado),
+            booleanoCsvGestao(produto.descontinuado),
+            booleanoCsvGestao(produto.novidade),
+            produto.referencia || '',
+            inteiroCsvGestao(produto.stock),
+            produto.tema || '',
+            produto.subtema || '',
+            inteiroCsvGestao(produto.peso || 10),
+            ...fornecedores.map(([nome, chave]) => obterMarcacaoFornecedorCsvGestao(produto.fornecedores, chave, nome))
+        ];
+        linhas.push(linha.map(escaparCsvGestao).join(','));
+    });
+
+    return '\uFEFF' + linhas.join('\r\n') + '\r\n';
+}
+
+function descarregarCsvMapasGestao(csv) {
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    const data = new Date().toISOString().slice(0, 10);
+    link.href = url;
+    link.download = `mapas-catalogo-${data}.csv`;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    URL.revokeObjectURL(url);
+}
+
+async function exportarMapasCsvGestao() {
+    const status = document.getElementById('status-exportar-mapas');
+    const botao = document.getElementById('btn-exportar-mapas-csv');
+    try {
+        const { data: { user }, error } = await gestaoClient.auth.getUser();
+        if (error || !user || !utilizadorAdmin(user)) {
+            throw new Error('Apenas o administrador pode exportar os mapas.');
+        }
+
+        if (botao) botao.disabled = true;
+        mostrarMensagem(status, 'A preparar CSV...');
+        const produtos = await carregarProdutosImportacaoGestao(true);
+        const csv = criarCsvMapasGestao(produtos);
+        descarregarCsvMapasGestao(csv);
+        mostrarMensagem(status, `${produtos.length} produto(s) exportado(s) em CSV.`, 'msg-sucesso');
+    } catch (erro) {
+        console.error('Erro ao exportar mapas:', erro);
+        mostrarMensagem(status, erro.message || 'Não foi possível exportar os mapas.', 'msg-erro');
+    } finally {
+        if (botao) botao.disabled = false;
+    }
+}
+
 function ligarImportacaoGestao() {
+    ligarElementoImportacaoGestao('btn-exportar-mapas-csv', 'click', () => {
+        exportarMapasCsvGestao().catch(console.error);
+    });
     ligarElementoImportacaoGestao('admin-ficheiro-stock', 'change', function () {
         prepararImportacaoGestao().then(() => {
             if (typeof analisarFicheiroStockAdmin === 'function') analisarFicheiroStockAdmin(this);
