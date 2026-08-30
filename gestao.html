@@ -2,10 +2,11 @@
 <html lang="pt">
 <head>
     <meta charset="UTF-8">
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdn.jsdelivr.net; connect-src 'self' https://cdn.jsdelivr.net https://gksndzxadndrsynvzgzb.supabase.co wss://gksndzxadndrsynvzgzb.supabase.co https://api.cloudinary.com; img-src 'self' data: blob: https://res.cloudinary.com https://gksndzxadndrsynvzgzb.supabase.co; style-src 'self'; font-src 'self' data:; frame-src 'none'; object-src 'none'; base-uri 'self'; form-action 'self';">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdn.jsdelivr.net https://cdn.sheetjs.com; connect-src 'self' https://cdn.jsdelivr.net https://gksndzxadndrsynvzgzb.supabase.co wss://gksndzxadndrsynvzgzb.supabase.co https://api.cloudinary.com; img-src 'self' data: blob: https://res.cloudinary.com https://gksndzxadndrsynvzgzb.supabase.co; style-src 'self'; font-src 'self' data:; frame-src 'none'; object-src 'none'; base-uri 'self'; form-action 'self';">
     <meta name="referrer" content="strict-origin-when-cross-origin">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+    <link rel="preconnect" href="https://cdn.sheetjs.com" crossorigin>
     <link rel="preconnect" href="https://gksndzxadndrsynvzgzb.supabase.co" crossorigin>
     <link rel="preconnect" href="https://res.cloudinary.com" crossorigin>
 
@@ -19,7 +20,7 @@
     <link rel="apple-touch-icon" href="fp-ring-favicon-192.png">
     <link rel="stylesheet" href="styles.css?v=20260721-rodape-800">
     <link rel="stylesheet" href="styles-admin.css?v=20260726-gestao">
-    <link rel="stylesheet" href="gestao.css?v=20260830-seccoes">
+    <link rel="stylesheet" href="gestao.css?v=20260830-importacao">
     <link rel="stylesheet" href="admin-light.css?v=20260829-cabecalho-preview-claro">
     <link rel="stylesheet" href="portes.css?v=20260726-embutido-gestao">
     <link rel="stylesheet" href="styles-tema.css?v=20260721-sem-underline" media="print" data-async-css>
@@ -73,6 +74,7 @@
         <nav class="gestao-menu-seccoes" aria-label="Secções da gestão">
             <button type="button" class="gestao-menu-item ativa" data-gestao-seccao="banners" aria-pressed="true">Banners</button>
             <button type="button" class="gestao-menu-item" data-gestao-seccao="portes" aria-pressed="false">Portes de envio</button>
+            <button type="button" class="gestao-menu-item" data-gestao-seccao="importar" aria-pressed="false">Importar</button>
         </nav>
 
         <div class="gestao-painel ativa" data-gestao-painel="banners">
@@ -149,12 +151,59 @@
             <section class="portes-painel" id="portes-painel" aria-label="Tabela de tarifas"></section>
             <p class="wallapop-status" id="portes-status" aria-live="polite"></p>
         </section>
+
+        <section class="gestao-painel gestao-importacao-painel mapas-importacao-painel" id="mapas-painel-importacao" data-gestao-painel="importar" aria-label="Importar catálogo" hidden>
+            <h1>Importar</h1>
+            <div class="mapas-importacao-corpo gestao-importacao-corpo" role="group" aria-label="Opções de importação">
+                <section class="admin-seccao mapas-importacao-bloco" aria-label="Atualizar stock">
+                    <h3>Atualizar stock</h3>
+                    <div class="form-admin">
+                        <input class="input-upload-admin" type="file" id="admin-ficheiro-stock" accept=".ods,.xlsx,.xls">
+                        <p class="ajuda-admin">Usa só as colunas SKU e stock. Atualiza o stock dos produtos existentes e o ativo fica automático (stock &gt; 0). Não cria nem remove produtos.</p>
+                        <div id="resumo-importacao-stock" class="resumo-importacao-stock oculto"></div>
+                        <div id="detalhes-importacao-stock" class="lista-importacao-stock oculto"></div>
+                        <button type="button" id="btn-confirmar-importacao-stock" class="btn-acao-cliente" disabled>Atualizar stock</button>
+                        <div id="status-importacao-stock" class="msg-status"></div>
+                    </div>
+                </section>
+
+                <section class="admin-seccao mapas-importacao-bloco" aria-label="Atualizar catálogo excepto stock">
+                    <h3>Atualizar catálogo excepto stock</h3>
+                    <div class="form-admin">
+                        <input class="input-upload-admin" type="file" id="admin-ficheiro-catalogo-sem-stock" accept=".ods,.xlsx,.xls">
+                        <p class="ajuda-admin">Não altera stock. Ativo fica automático (stock &gt; 0). Novos entram com stock 0. Não remove produtos em falta.</p>
+                        <div id="resumo-importacao-catalogo-sem-stock" class="resumo-importacao-stock oculto"></div>
+                        <div id="detalhes-importacao-catalogo-sem-stock" class="lista-importacao-stock oculto"></div>
+                        <button type="button" id="btn-confirmar-importacao-catalogo-sem-stock" class="btn-acao-cliente" disabled>Atualizar catálogo excepto stock</button>
+                        <div id="status-importacao-catalogo-sem-stock" class="msg-status"></div>
+                    </div>
+                </section>
+
+                <section class="admin-seccao mapas-importacao-bloco" aria-label="Substituir catálogo">
+                    <h3>Substituir catálogo</h3>
+                    <div class="form-admin">
+                        <input class="input-upload-admin" type="file" id="admin-ficheiro-catalogo" accept=".ods,.xlsx,.xls">
+                        <p class="ajuda-admin">Substitui o catálogo completo (nome, preços, stock, tema, etc.). Ativo fica automático (stock &gt; 0). Faz backup antes. Produtos em falta no ficheiro são removidos.</p>
+                        <div id="resumo-importacao-catalogo" class="resumo-importacao-stock oculto"></div>
+                        <div id="detalhes-importacao-catalogo" class="lista-importacao-stock oculto"></div>
+                        <div>
+                            <label for="confirmacao-substituir-catalogo">Escreva SUBSTITUIR:</label>
+                            <input type="text" id="confirmacao-substituir-catalogo" autocomplete="off">
+                        </div>
+                        <button type="button" id="btn-confirmar-importacao-catalogo" class="btn-logout" disabled>Substituir catálogo</button>
+                        <div id="status-importacao-catalogo" class="msg-status"></div>
+                    </div>
+                </section>
+            </div>
+        </section>
     </main>
 
     <script src="supabase-cdn.js?v=20260711-leve" defer></script>
     <script src="app-config.js?v=20260826-admin-rapido" defer></script>
+    <script src="app-util.js?v=20260713-r25" defer></script>
+    <script src="app-sku.js?v=20260713-r25" defer></script>
     <script src="admin-theme.js?v=20260826-light-mode" defer></script>
-    <script src="gestao.js?v=20260830-seccoes" defer></script>
+    <script src="gestao.js?v=20260830-importacao" defer></script>
     <script src="app-portes.js?v=20260728-inpost-nome" defer></script>
     <script src="portes.js?v=20260826-admin-rapido" defer></script>
     <script src="campo-limpar.js?v=20260720-sem-x-cliente" defer></script>

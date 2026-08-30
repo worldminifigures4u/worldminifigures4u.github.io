@@ -7,7 +7,7 @@ body.pagina-gestao-admin > main.gestao-admin {
 
 .gestao-menu-seccoes {
     display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 10px;
     margin: 0 0 18px;
 }
@@ -348,12 +348,197 @@ html.admin-light-mode body.pagina-gestao-admin .gestao-menu-item:focus-visible {
     color: rgba(255, 255, 255, 0.7);
 }
 
+.gestao-importacao-painel h1 {
+    margin: 0 0 14px;
+    font-size: 1.35rem;
+    font-weight: 800;
+}
+
+.gestao-importacao-painel .mapas-importacao-corpo {
+    position: static;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 14px;
+    width: 100%;
+    max-height: none;
+    overflow: visible;
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
+}
+
+.gestao-importacao-painel .mapas-importacao-bloco {
+    display: grid;
+    gap: 10px;
+    min-width: 0;
+    margin: 0;
+    padding: 14px;
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    border-radius: 10px;
+    background: rgba(0, 0, 0, 0.22);
+}
+
+.gestao-importacao-painel .mapas-importacao-bloco h3 {
+    margin: 0;
+    color: #fff;
+    font-size: 1rem;
+}
+
+.gestao-importacao-painel .form-admin {
+    display: flex;
+    flex-direction: column;
+    gap: 9px;
+}
+
+.gestao-importacao-painel .form-admin label {
+    display: grid;
+    gap: 6px;
+    color: rgba(255, 255, 255, 0.82);
+    font-weight: 700;
+    font-size: 0.82rem;
+}
+
+.gestao-importacao-painel .form-admin input[type="text"] {
+    width: 100%;
+    box-sizing: border-box;
+    border: 1px solid rgba(255, 255, 255, 0.22);
+    border-radius: 6px;
+    background: rgba(0, 0, 0, 0.28);
+    color: #fff;
+    padding: 8px 10px;
+    font: inherit;
+}
+
+.gestao-importacao-painel .input-upload-admin {
+    width: 100%;
+    box-sizing: border-box;
+    color: rgba(255, 255, 255, 0.85);
+    font: inherit;
+}
+
+.gestao-importacao-painel .input-upload-admin::file-selector-button {
+    margin-right: 10px;
+    border: 0;
+    border-radius: 6px;
+    background: #242424;
+    color: #fff;
+    padding: 8px 12px;
+    font: inherit;
+    font-weight: 800;
+    cursor: pointer;
+}
+
+.gestao-importacao-painel .ajuda-admin {
+    margin: 0;
+    color: rgba(255, 255, 255, 0.68);
+    font-size: 0.78rem;
+    line-height: 1.35;
+}
+
+.gestao-importacao-painel .btn-acao-cliente,
+.gestao-importacao-painel .btn-logout {
+    width: fit-content;
+    border: 0;
+    border-radius: 6px;
+    padding: 9px 12px;
+    font: inherit;
+    font-weight: 800;
+    cursor: pointer;
+}
+
+.gestao-importacao-painel .btn-acao-cliente {
+    background: #ffc400;
+    color: #000;
+}
+
+.gestao-importacao-painel .btn-logout {
+    background: #7a1f1f;
+    color: #fff;
+}
+
+.gestao-importacao-painel .btn-acao-cliente:disabled,
+.gestao-importacao-painel .btn-logout:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+}
+
+.gestao-importacao-painel .resumo-importacao-stock {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+}
+
+.gestao-importacao-painel .resumo-importacao-stock div,
+.gestao-importacao-painel .lista-importacao-stock {
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    border-radius: 6px;
+    background: rgba(0, 0, 0, 0.18);
+    padding: 8px;
+}
+
+.gestao-importacao-painel .resumo-importacao-stock strong {
+    display: block;
+    color: #fff;
+    font-size: 1.05rem;
+}
+
+.gestao-importacao-painel .resumo-importacao-stock span,
+.gestao-importacao-painel .lista-importacao-stock {
+    color: rgba(255, 255, 255, 0.72);
+    font-size: 0.78rem;
+}
+
+.gestao-importacao-painel .lista-importacao-stock {
+    display: grid;
+    gap: 4px;
+    max-height: 240px;
+    overflow: auto;
+}
+
+html.admin-light-mode body.pagina-gestao-admin .gestao-importacao-painel .mapas-importacao-bloco {
+    border-color: #d7dee8;
+    background: #ffffff;
+}
+
+html.admin-light-mode body.pagina-gestao-admin .gestao-importacao-painel .mapas-importacao-bloco h3,
+html.admin-light-mode body.pagina-gestao-admin .gestao-importacao-painel .form-admin label,
+html.admin-light-mode body.pagina-gestao-admin .gestao-importacao-painel .resumo-importacao-stock strong {
+    color: #111827;
+}
+
+html.admin-light-mode body.pagina-gestao-admin .gestao-importacao-painel .ajuda-admin,
+html.admin-light-mode body.pagina-gestao-admin .gestao-importacao-painel .resumo-importacao-stock span,
+html.admin-light-mode body.pagina-gestao-admin .gestao-importacao-painel .lista-importacao-stock,
+html.admin-light-mode body.pagina-gestao-admin .gestao-importacao-painel .input-upload-admin {
+    color: #475569;
+}
+
+html.admin-light-mode body.pagina-gestao-admin .gestao-importacao-painel .form-admin input[type="text"],
+html.admin-light-mode body.pagina-gestao-admin .gestao-importacao-painel .resumo-importacao-stock div,
+html.admin-light-mode body.pagina-gestao-admin .gestao-importacao-painel .lista-importacao-stock {
+    border-color: #d7dee8;
+    background: #f8fafc;
+    color: #111827;
+}
+
+html.admin-light-mode body.pagina-gestao-admin .gestao-importacao-painel .input-upload-admin::file-selector-button {
+    border: 1px solid #c3ccd8;
+    background: #eef3f8;
+    color: #182231;
+}
+
 .wallapop-status {
     margin-top: 14px;
     min-height: 1.4em;
 }
 
 @media (max-width: 900px) {
+    .gestao-importacao-painel .mapas-importacao-corpo {
+        grid-template-columns: 1fr;
+    }
+
     .gestao-form-banner {
         grid-template-columns: 1fr 1fr;
     }

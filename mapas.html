@@ -94,50 +94,6 @@
                         <div class="mapas-colunas-opcoes" id="mapas-colunas-opcoes" role="group" aria-label="Colunas visíveis"></div>
                     </details>
                     <button type="button" id="mapas-criar-produto" class="mapas-copiar-lista">Novo</button>
-                    <details class="mapas-colunas-painel mapas-importacao-painel" id="mapas-painel-importacao">
-                        <summary>Importar</summary>
-                        <div class="mapas-importacao-corpo" role="group" aria-label="Opções de importação">
-                            <section class="admin-seccao mapas-importacao-bloco" aria-label="Atualizar stock">
-                                <h3>Atualizar stock</h3>
-                                <div class="form-admin">
-                                    <input class="input-upload-admin" type="file" id="admin-ficheiro-stock" accept=".ods,.xlsx,.xls">
-                                    <p class="ajuda-admin">Usa só as colunas SKU e stock. Atualiza o stock dos produtos existentes e o ativo fica automático (stock &gt; 0). Não cria nem remove produtos.</p>
-                                    <div id="resumo-importacao-stock" class="resumo-importacao-stock oculto"></div>
-                                    <div id="detalhes-importacao-stock" class="lista-importacao-stock oculto"></div>
-                                    <button type="button" id="btn-confirmar-importacao-stock" class="btn-acao-cliente" disabled>Atualizar stock</button>
-                                    <div id="status-importacao-stock" class="msg-status"></div>
-                                </div>
-                            </section>
-
-                            <section class="admin-seccao mapas-importacao-bloco" aria-label="Atualizar catálogo excepto stock">
-                                <h3>Atualizar catálogo excepto stock</h3>
-                                <div class="form-admin">
-                                    <input class="input-upload-admin" type="file" id="admin-ficheiro-catalogo-sem-stock" accept=".ods,.xlsx,.xls">
-                                    <p class="ajuda-admin">Não altera stock. Ativo fica automático (stock &gt; 0). Novos entram com stock 0. Não remove produtos em falta.</p>
-                                    <div id="resumo-importacao-catalogo-sem-stock" class="resumo-importacao-stock oculto"></div>
-                                    <div id="detalhes-importacao-catalogo-sem-stock" class="lista-importacao-stock oculto"></div>
-                                    <button type="button" id="btn-confirmar-importacao-catalogo-sem-stock" class="btn-acao-cliente" disabled>Atualizar catálogo excepto stock</button>
-                                    <div id="status-importacao-catalogo-sem-stock" class="msg-status"></div>
-                                </div>
-                            </section>
-
-                            <section class="admin-seccao mapas-importacao-bloco" aria-label="Substituir catálogo">
-                                <h3>Substituir catálogo</h3>
-                                <div class="form-admin">
-                                    <input class="input-upload-admin" type="file" id="admin-ficheiro-catalogo" accept=".ods,.xlsx,.xls">
-                                    <p class="ajuda-admin">Substitui o catálogo completo (nome, preços, stock, tema, etc.). Ativo fica automático (stock &gt; 0). Faz backup antes. Produtos em falta no ficheiro são removidos.</p>
-                                    <div id="resumo-importacao-catalogo" class="resumo-importacao-stock oculto"></div>
-                                    <div id="detalhes-importacao-catalogo" class="lista-importacao-stock oculto"></div>
-                                    <div>
-                                        <label for="confirmacao-substituir-catalogo">Escreva SUBSTITUIR:</label>
-                                        <input type="text" id="confirmacao-substituir-catalogo" autocomplete="off">
-                                    </div>
-                                    <button type="button" id="btn-confirmar-importacao-catalogo" class="btn-logout" disabled>Substituir catálogo</button>
-                                    <div id="status-importacao-catalogo" class="msg-status"></div>
-                                </div>
-                            </section>
-                        </div>
-                    </details>
                 </div>
                 <div id="fornecedor-resultados" class="fornecedor-resultados"></div>
             </section>

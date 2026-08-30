@@ -26,7 +26,10 @@ const FORNECEDORES_IMPORTACAO = [
 function obterFornecedoresImportacao() {
     const mapa = new Map(FORNECEDORES_IMPORTACAO.map(fornecedor => [fornecedor.nome, fornecedor]));
     try {
-        const fichas = JSON.parse(localStorage.getItem(FORNECEDORES_FICHAS_KEY) || "[]");
+        const chaveFichas = typeof FORNECEDORES_FICHAS_KEY !== 'undefined'
+            ? FORNECEDORES_FICHAS_KEY
+            : 'figures-planet-fornecedores-fichas';
+        const fichas = JSON.parse(localStorage.getItem(chaveFichas) || "[]");
         if (Array.isArray(fichas)) {
             fichas.forEach(ficha => {
                 const nome = String(ficha?.nome || "").trim();
@@ -796,4 +799,3 @@ async function confirmarImportacaoCatalogoSemStockAdmin() {
 }
 
 window.garantirXlsxAdmin = garantirXlsxAdmin;
-

@@ -1,5 +1,8 @@
 let gestaoClient = null;
 let gestaoBanners = [];
+let gestaoProdutosImportacao = [];
+let gestaoImportacaoProdutosCarregados = false;
+let gestaoImportacaoScriptPromessa = null;
 
 const GESTAO_COR_BRANCO = '#ffffff';
 const GESTAO_COR_AMARELO_LOGO = '#ffc107';
@@ -10,7 +13,7 @@ function definirStatusGestao(mensagem) {
 }
 
 function selecionarSeccaoGestao(seccao, atualizarHash = true) {
-    const seccaoNormalizada = seccao === 'portes' ? 'portes' : 'banners';
+    const seccaoNormalizada = ['portes', 'importar'].includes(seccao) ? seccao : 'banners';
     document.querySelectorAll('[data-gestao-seccao]').forEach((botao) => {
         const ativo = botao.dataset.gestaoSeccao === seccaoNormalizada;
         botao.classList.toggle('ativa', ativo);
@@ -22,7 +25,13 @@ function selecionarSeccaoGestao(seccao, atualizarHash = true) {
         painel.classList.toggle('ativa', ativo);
     });
     if (atualizarHash) {
-        history.replaceState(null, '', seccaoNormalizada === 'portes' ? '#portes-de-envio' : '#banners');
+        const hash = seccaoNormalizada === 'portes'
+            ? '#portes-de-envio'
+            : (seccaoNormalizada === 'importar' ? '#importar' : '#banners');
+        history.replaceState(null, '', hash);
+    }
+    if (seccaoNormalizada === 'importar') {
+        prepararImportacaoGestao(false).catch(console.error);
     }
 }
 
@@ -31,7 +40,123 @@ function iniciarMenuSeccoesGestao() {
         botao.addEventListener('click', () => selecionarSeccaoGestao(botao.dataset.gestaoSeccao));
     });
     const hash = String(window.location.hash || '').toLowerCase();
-    selecionarSeccaoGestao(hash.includes('portes') ? 'portes' : 'banners', false);
+    selecionarSeccaoGestao(hash.includes('portes') ? 'portes' : (hash.includes('import') ? 'importar' : 'banners'), false);
+}
+
+function definirEstadoProdutosImportacaoGestao() {
+    window.dbClient = gestaoClient;
+    window.todosOsProdutos = gestaoProdutosImportacao;
+}
+
+async function carregarProdutosImportacaoGestao(forcar = false) {
+    if (gestaoImportacaoProdutosCarregados && !forcar) {
+        definirEstadoProdutosImportacaoGestao();
+        return gestaoProdutosImportacao;
+    }
+
+    const produtos = [];
+    let inicio = 0;
+    const tamanhoPagina = 1000;
+    while (true) {
+        const resposta = await gestaoClient.rpc('listar_produtos_admin', { p_limite: tamanhoPagina, p_offset: inicio });
+        if (resposta.error) throw resposta.error;
+        const pagina = Array.isArray(resposta.data) ? resposta.data : [];
+        produtos.push(...pagina);
+        if (pagina.length < tamanhoPagina) break;
+        inicio += tamanhoPagina;
+    }
+
+    gestaoProdutosImportacao = produtos;
+    gestaoImportacaoProdutosCarregados = true;
+    definirEstadoProdutosImportacaoGestao();
+    return gestaoProdutosImportacao;
+}
+
+window.carregarProdutosAdminDaNuvem = async function carregarProdutosAdminDaNuvemGestao() {
+    await carregarProdutosImportacaoGestao(true);
+};
+
+function garantirScriptImportacaoGestao() {
+    if (typeof analisarFicheiroCatalogoAdmin === 'function') return Promise.resolve();
+    if (gestaoImportacaoScriptPromessa) return gestaoImportacaoScriptPromessa;
+
+    gestaoImportacaoScriptPromessa = new Promise((resolve, reject) => {
+        const script = document.createElement('script');
+        script.src = 'gestao-importacao.js?v=20260830-gestao';
+        script.onload = resolve;
+        script.onerror = () => reject(new Error('Falha ao carregar importação administrativa.'));
+        document.body.appendChild(script);
+    });
+    return gestaoImportacaoScriptPromessa;
+}
+
+function prefetchBibliotecaSheetJsGestao() {
+    const url = 'https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js';
+    if (document.querySelector(`link[rel="prefetch"][href="${url}"]`)) return;
+    const link = document.createElement('link');
+    link.rel = 'prefetch';
+    link.href = url;
+    link.as = 'script';
+    document.head.appendChild(link);
+}
+
+async function prepararImportacaoGestao(comScript = true) {
+    definirEstadoProdutosImportacaoGestao();
+    if (!gestaoImportacaoProdutosCarregados) {
+        const status = document.getElementById('status-importacao-stock')
+            || document.getElementById('status-importacao-catalogo-sem-stock')
+            || document.getElementById('status-importacao-catalogo');
+        if (status && !status.textContent) status.textContent = 'A preparar importação...';
+        await carregarProdutosImportacaoGestao();
+        if (status && status.textContent === 'A preparar importação...') status.textContent = '';
+    }
+    if (comScript) await garantirScriptImportacaoGestao();
+}
+
+function ligarElementoImportacaoGestao(id, evento, handler) {
+    const elemento = document.getElementById(id);
+    if (elemento) elemento.addEventListener(evento, handler);
+}
+
+function ligarImportacaoGestao() {
+    ligarElementoImportacaoGestao('admin-ficheiro-stock', 'change', function () {
+        prepararImportacaoGestao().then(() => {
+            if (typeof analisarFicheiroStockAdmin === 'function') analisarFicheiroStockAdmin(this);
+        }).catch(console.error);
+    });
+    ligarElementoImportacaoGestao('btn-confirmar-importacao-stock', 'click', () => {
+        prepararImportacaoGestao().then(() => {
+            if (typeof confirmarImportacaoStockAdmin === 'function') confirmarImportacaoStockAdmin();
+        }).catch(console.error);
+    });
+    ligarElementoImportacaoGestao('admin-ficheiro-catalogo-sem-stock', 'change', function () {
+        prepararImportacaoGestao().then(() => {
+            if (typeof analisarFicheiroCatalogoSemStockAdmin === 'function') analisarFicheiroCatalogoSemStockAdmin(this);
+        }).catch(console.error);
+    });
+    ligarElementoImportacaoGestao('btn-confirmar-importacao-catalogo-sem-stock', 'click', () => {
+        prepararImportacaoGestao().then(() => {
+            if (typeof confirmarImportacaoCatalogoSemStockAdmin === 'function') confirmarImportacaoCatalogoSemStockAdmin();
+        }).catch(console.error);
+    });
+    ligarElementoImportacaoGestao('admin-ficheiro-catalogo', 'change', function () {
+        prepararImportacaoGestao().then(() => {
+            if (typeof analisarFicheiroCatalogoAdmin === 'function') analisarFicheiroCatalogoAdmin(this);
+        }).catch(console.error);
+    });
+    ligarElementoImportacaoGestao('confirmacao-substituir-catalogo', 'input', () => {
+        garantirScriptImportacaoGestao().then(() => {
+            if (typeof atualizarConfirmacaoCatalogoAdmin === 'function') atualizarConfirmacaoCatalogoAdmin();
+        }).catch(console.error);
+    });
+    ligarElementoImportacaoGestao('btn-confirmar-importacao-catalogo', 'click', () => {
+        prepararImportacaoGestao().then(() => {
+            if (typeof confirmarImportacaoCatalogoAdmin === 'function') confirmarImportacaoCatalogoAdmin();
+        }).catch(console.error);
+    });
+
+    document.querySelector('[data-gestao-seccao="importar"]')?.addEventListener('mouseenter', prefetchBibliotecaSheetJsGestao, { once: true });
+    document.querySelector('[data-gestao-seccao="importar"]')?.addEventListener('focus', prefetchBibliotecaSheetJsGestao, { once: true });
 }
 
 function normalizarCorHexGestao(valor, fallback = GESTAO_COR_BRANCO) {
@@ -744,6 +869,7 @@ async function iniciarPainelGestao() {
     document.getElementById('btn-atualizar-banners')?.addEventListener('click', () => {
         carregarBannersGestao().catch(console.error);
     });
+    ligarImportacaoGestao();
 
     try {
         await carregarBannersGestao();
