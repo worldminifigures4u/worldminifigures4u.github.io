@@ -1162,6 +1162,27 @@ body.pagina-mapas-admin > main.fornecedores-admin {
 .pagina-mapas-admin .mapas-contador-filtros .fornecedor-pesquisa-compacta {
     width: 100%;
     min-width: 0;
+    border-color: #555;
+    background: #242424;
+    color: #fff;
+    -webkit-text-fill-color: #fff;
+    caret-color: #fff;
+}
+
+.pagina-mapas-admin .mapas-contador-filtros .fornecedor-pesquisa-compacta:focus {
+    border-color: #ffc400;
+    background: #242424;
+    color: #fff;
+    -webkit-text-fill-color: #fff;
+}
+
+.pagina-mapas-admin .mapas-contador-filtros .fornecedor-pesquisa-compacta:-webkit-autofill,
+.pagina-mapas-admin .mapas-contador-filtros .fornecedor-pesquisa-compacta:-webkit-autofill:hover,
+.pagina-mapas-admin .mapas-contador-filtros .fornecedor-pesquisa-compacta:-webkit-autofill:focus {
+    box-shadow: 0 0 0 1000px #242424 inset;
+    -webkit-box-shadow: 0 0 0 1000px #242424 inset;
+    -webkit-text-fill-color: #fff;
+    caret-color: #fff;
 }
 
 .pagina-mapas-admin .mapas-contador-filtros > :not(.campo-com-limpar) {
