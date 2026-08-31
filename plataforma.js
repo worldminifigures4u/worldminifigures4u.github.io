@@ -1,5 +1,6 @@
 
 const WALLAPOP_STORAGE_KEY = "figures-planet-wallapop-itens";
+const PLATAFORMA_NOTAS_ANUNCIO_STORAGE_KEY = "figures-planet-plataforma-notas-anuncio";
 const PESO_PADRAO_PLATAFORMA = 10;
 
 const WALLAPOP_SEM_IMAGEM = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(
@@ -18,7 +19,7 @@ let fichaClientePlataformaAtual = null;
 let stockNegativoConfirmado = new Set();
 let plataformaFigurasRepetidasUltimaAnalise = [];
 let plataformaFigurasRepetidasEncomenda = [];
-let plataformaNotasAnuncioAtual = '';
+let plataformaNotasAnuncioAtual = carregarNotasAnuncioPlataforma();
 const PLATAFORMA_LISTA_MAX_CARACTERES = 30000;
 const PLATAFORMA_LISTA_MAX_LINHAS = 500;
 
@@ -1432,7 +1433,7 @@ function preencherSelectProdutosPlataforma(select, produtos, textoVazio, produto
 function fecharRevisaoListaProdutosPlataforma() {
     document.getElementById('plataforma-revisao-lista')?.remove();
     document.body.classList.remove('plataforma-modal-aberto');
-    plataformaNotasRevisaoRascunho = '';
+    plataformaNotasRevisaoRascunho = plataformaNotasAnuncioAtual;
 }
 
 function aplicarSelecoesListaProdutosPlataforma(selecoes) {
@@ -1479,24 +1480,34 @@ function adicionarListaRevistaPlataforma(linhas, modal) {
 
     const adicionados = aplicarSelecoesListaProdutosPlataforma(selecoes);
     if (!adicionados) return;
-    anexarNotasAnuncioPlataforma(notas);
+    atualizarNotasAnuncioPlataforma(notas);
     definirStatusWallapop(`${adicionados} figura(s) adicionada(s) a partir da lista.`);
 }
 
-function anexarNotasAnuncioPlataforma(notas) {
-    if (!notas) return;
-    plataformaNotasAnuncioAtual = plataformaNotasAnuncioAtual
-        ? `${plataformaNotasAnuncioAtual}\n\n${notas}`
-        : notas;
+function sincronizarCamposNotasAnuncioPlataforma() {
+    const valor = plataformaNotasAnuncioAtual || '';
+    const campos = [
+        document.getElementById('plataforma-notas-anuncio'),
+        document.getElementById('plataforma-lista-notas')
+    ].filter(Boolean);
+    campos.forEach(campo => {
+        if (campo.value !== valor) campo.value = valor;
+    });
+}
+
+function atualizarNotasAnuncioPlataforma(valor) {
+    plataformaNotasAnuncioAtual = String(valor || '');
+    plataformaNotasRevisaoRascunho = plataformaNotasAnuncioAtual;
+    guardarNotasAnuncioPlataforma();
+    sincronizarCamposNotasAnuncioPlataforma();
 }
 
 function limparNotasAnuncioPlataforma() {
-    plataformaNotasRevisaoRascunho = '';
-    plataformaNotasAnuncioAtual = '';
+    atualizarNotasAnuncioPlataforma('');
 }
 
 function obterNotasAnuncioParaFicheirosPlataforma() {
-    return (encomendaPlataformaParaFicheiros?.notas_anuncio || plataformaNotasAnuncioAtual || '').trim();
+    return (plataformaNotasAnuncioAtual || encomendaPlataformaParaFicheiros?.notas_anuncio || '').trim();
 }
 
 function criarTextoNotasAnuncioPlataforma() {
@@ -1537,7 +1548,7 @@ function atualizarPreviaListaProdutosPlataforma() {
     previa.textContent = formatarPreviaListaPlataforma(resumo);
 }
 
-let plataformaNotasRevisaoRascunho = '';
+let plataformaNotasRevisaoRascunho = plataformaNotasAnuncioAtual;
 
 function abrirRevisaoListaProdutosPlataforma() {
     const texto = document.getElementById('plataforma-lista-produtos').value;
@@ -1591,9 +1602,9 @@ function abrirRevisaoListaProdutosPlataforma() {
     notasArea.id = 'plataforma-lista-notas';
     notasArea.rows = 2;
     notasArea.placeholder = 'Apontamentos enquanto revês esta lista (não entra na encomenda)...';
-    notasArea.value = plataformaNotasRevisaoRascunho;
+    notasArea.value = plataformaNotasAnuncioAtual || plataformaNotasRevisaoRascunho;
     notasArea.addEventListener('input', () => {
-        plataformaNotasRevisaoRascunho = notasArea.value;
+        atualizarNotasAnuncioPlataforma(notasArea.value);
     });
     notasBloco.append(notasLabel, notasArea);
 
@@ -1716,8 +1727,28 @@ function carregarItensWallapop() {
     }
 }
 
+function carregarNotasAnuncioPlataforma() {
+    try {
+        return localStorage.getItem(PLATAFORMA_NOTAS_ANUNCIO_STORAGE_KEY) || '';
+    } catch (_) {
+        return '';
+    }
+}
+
 function guardarItensWallapop() {
     localStorage.setItem(WALLAPOP_STORAGE_KEY, JSON.stringify(wallapopItens));
+}
+
+function guardarNotasAnuncioPlataforma() {
+    try {
+        if (plataformaNotasAnuncioAtual) {
+            localStorage.setItem(PLATAFORMA_NOTAS_ANUNCIO_STORAGE_KEY, plataformaNotasAnuncioAtual);
+        } else {
+            localStorage.removeItem(PLATAFORMA_NOTAS_ANUNCIO_STORAGE_KEY);
+        }
+    } catch (_) {
+        /* localStorage pode estar indisponivel em modo privado */
+    }
 }
 
 function marcarWallapopPorRegistar() {
@@ -3376,6 +3407,7 @@ async function iniciarWallapopAdmin() {
         await carregarCatalogoWallapop();
         bloqueio.hidden = true;
         document.getElementById('wallapop-aplicacao').hidden = false;
+        sincronizarCamposNotasAnuncioPlataforma();
         renderizarResultadosWallapop();
         renderizarSelecionadosWallapop();
         renderizarFolhaWallapop();
@@ -3400,6 +3432,9 @@ async function iniciarWallapopAdmin() {
 }
 
 document.getElementById('wallapop-pesquisa').addEventListener('input', renderizarResultadosWallapop);
+document.getElementById('plataforma-notas-anuncio')?.addEventListener('input', evento => {
+    atualizarNotasAnuncioPlataforma(evento.target.value);
+});
 document.getElementById('btn-analisar-lista-produtos').addEventListener('click', abrirRevisaoListaProdutosPlataforma);
 document.getElementById('plataforma-lista-produtos')?.addEventListener('input', () => {
     clearTimeout(window.__plataformaListaPreviaTimer);
