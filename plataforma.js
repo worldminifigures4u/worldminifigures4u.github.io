@@ -18,6 +18,7 @@ let fichaClientePlataformaAtual = null;
 let stockNegativoConfirmado = new Set();
 let plataformaFigurasRepetidasUltimaAnalise = [];
 let plataformaFigurasRepetidasEncomenda = [];
+let plataformaNotasAnuncioAtual = '';
 const PLATAFORMA_LISTA_MAX_CARACTERES = 30000;
 const PLATAFORMA_LISTA_MAX_LINHAS = 500;
 
@@ -1469,6 +1470,7 @@ function adicionarListaRevistaPlataforma(linhas, modal) {
         produtoId: linha.querySelector('select').value,
         quantidade: linhas[indice].quantidade
     })).filter(item => item.produtoId);
+    const notas = (modal.querySelector('#plataforma-lista-notas')?.value || plataformaNotasRevisaoRascunho || '').trim();
 
     if (!selecoes.length) {
         modal.querySelector('.plataforma-lista-aviso').textContent = 'Seleciona pelo menos um produto.';
@@ -1477,29 +1479,31 @@ function adicionarListaRevistaPlataforma(linhas, modal) {
 
     const adicionados = aplicarSelecoesListaProdutosPlataforma(selecoes);
     if (!adicionados) return;
-    exportarNotasRevisaoListaPlataforma();
+    anexarNotasAnuncioPlataforma(notas);
     definirStatusWallapop(`${adicionados} figura(s) adicionada(s) a partir da lista.`);
 }
 
-/** Exporta as notas tomadas durante a revisão da lista para um .txt com o nome do cliente. */
-function exportarNotasRevisaoListaPlataforma() {
-    const notas = (plataformaNotasRevisaoRascunho || '').trim();
+function anexarNotasAnuncioPlataforma(notas) {
     if (!notas) return;
-    const nomeCliente = (document.getElementById('wallapop-nome-cliente')?.value || '').trim() || 'cliente';
-    const nomeFicheiroSeguro = nomeCliente
-        .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
-        .replace(/[^a-zA-Z0-9 _-]/g, '')
-        .trim()
-        .replace(/\s+/g, '_') || 'cliente';
-    const blob = new Blob([`${nomeCliente}\n\n${notas}`], { type: 'text/plain;charset=utf-8' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `${nomeFicheiroSeguro}.txt`;
-    document.body.appendChild(link);
-    link.click();
-    link.remove();
-    setTimeout(() => URL.revokeObjectURL(url), 1000);
+    plataformaNotasAnuncioAtual = plataformaNotasAnuncioAtual
+        ? `${plataformaNotasAnuncioAtual}\n\n${notas}`
+        : notas;
+}
+
+function limparNotasAnuncioPlataforma() {
+    plataformaNotasRevisaoRascunho = '';
+    plataformaNotasAnuncioAtual = '';
+}
+
+function obterNotasAnuncioParaFicheirosPlataforma() {
+    return (encomendaPlataformaParaFicheiros?.notas_anuncio || plataformaNotasAnuncioAtual || '').trim();
+}
+
+function criarTextoNotasAnuncioPlataforma() {
+    const notas = obterNotasAnuncioParaFicheirosPlataforma();
+    if (!notas) return '';
+    const nomeCliente = obterNomeClienteParaCabecalhoTxt() || obterNomeClientePlataforma() || 'Cliente';
+    return '\ufeff' + [nomeCliente, '', notas].join('\r\n');
 }
 
 function adicionarListaAnalisadaPlataforma(linhas) {
@@ -2604,6 +2608,10 @@ async function descarregarImagemWallapop() {
         const ficheiros = [
             { nome: `${nomeEncomenda}.txt`, conteudo: criarTextoEncomendaWallapop() }
         ];
+        const textoNotas = criarTextoNotasAnuncioPlataforma();
+        if (textoNotas) {
+            ficheiros.push({ nome: 'notas encomenda.txt', conteudo: textoNotas });
+        }
         for (let indice = 0; indice < paginasItens.length; indice += 1) {
             const canvas = await gerarCanvasFolhaWallapop(
                 paginasItens[indice],
@@ -2660,12 +2668,15 @@ async function guardarFicheirosPlataforma() {
     try {
         const pastaBase = await obterPastaBaseWallapop();
         const pastaEncomenda = await pastaBase.getDirectoryHandle(nomeEncomenda, { create: true });
+        const textoNotas = criarTextoNotasAnuncioPlataforma();
         if (plataforma === 'OLX') {
             await escreverFicheiroWallapop(pastaEncomenda, 'informacao cliente.txt', criarTextoClienteOlx());
             await escreverFicheiroWallapop(pastaEncomenda, `${nomeEncomenda}.txt`, criarTextoInternoPlataforma());
+            if (textoNotas) await escreverFicheiroWallapop(pastaEncomenda, 'notas encomenda.txt', textoNotas);
             definirStatusWallapop(`Pasta "${nomeEncomenda}" guardada com os dois ficheiros OLX.`);
         } else {
             await escreverFicheiroWallapop(pastaEncomenda, `${nomeEncomenda}.txt`, criarTextoInternoPlataforma());
+            if (textoNotas) await escreverFicheiroWallapop(pastaEncomenda, 'notas encomenda.txt', textoNotas);
             definirStatusWallapop(`Ficheiro ${plataforma} guardado na pasta "${nomeEncomenda}".`);
         }
     } catch (error) {
@@ -3019,6 +3030,7 @@ function novaEncomendaPlataforma() {
     wallapopRegistoConcluido = false;
     wallapopItens = [];
     limparFigurasRepetidasListaPlataforma();
+    limparNotasAnuncioPlataforma();
     guardarItensWallapop();
     const seletor = document.getElementById('plataforma-tipo');
     seletor.disabled = false;
@@ -3266,6 +3278,7 @@ async function registarEncomendaWallapop() {
             plataforma,
             nome_cliente: nomeCliente,
             nome_encomenda: nomeEncomendaAutomatico,
+            notas_anuncio: plataformaNotasAnuncioAtual,
             envio: { ...envio, total },
             cliente: { ...dadosCliente },
             figuras_repetidas: [...plataformaFigurasRepetidasEncomenda],
@@ -3278,6 +3291,7 @@ async function registarEncomendaWallapop() {
         wallapopRegistoConcluido = false;
         wallapopItens = [];
         limparFigurasRepetidasListaPlataforma();
+        limparNotasAnuncioPlataforma();
         stockNegativoConfirmado = new Set();
         guardarItensWallapop();
         document.getElementById('plataforma-tipo').disabled = false;
@@ -3337,6 +3351,7 @@ function limparListaWallapop() {
     if (!wallapopItens.length || !window.confirm('Limpar todos os produtos desta imagem?')) return;
     wallapopItens = [];
     limparFigurasRepetidasListaPlataforma();
+    limparNotasAnuncioPlataforma();
     guardarItensWallapop();
     marcarWallapopPorRegistar();
     renderizarSelecionadosWallapop();
