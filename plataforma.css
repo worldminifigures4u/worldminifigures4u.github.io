@@ -787,6 +787,12 @@ body.pagina-wallapop{
             font-variant-numeric:tabular-nums;
         }
 
+        html:not(.admin-light-mode) .wallapop-preview-folha-cartao .wallapop-linha-quantidade,
+        html:not(.admin-light-mode) .wallapop-preview-folha-cartao .wallapop-linha-nome,
+        html:not(.admin-light-mode) .wallapop-preview-folha-cartao .wallapop-linha-preco{
+            color:#f4f4f4;
+        }
+
         .wallapop-vazio{
             grid-column:1 / -1;
             padding:80px 20px;
