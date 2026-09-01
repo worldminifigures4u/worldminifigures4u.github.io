@@ -384,3 +384,50 @@ body.pagina-com-cabecalho-site{
     border-color:var(--cor-acao-principal, #ffc107) !important;
     color:var(--cor-acao-principal, #ffc107) !important;
 }
+
+html:not(.admin-light-mode) body.cabecalho-com-admin :is(
+    input:not([type="checkbox"]):not([type="radio"]),
+    textarea,
+    select
+){
+    background:#242424 !important;
+    border-color:#444 !important;
+    color:#fff !important;
+    -webkit-text-fill-color:#fff !important;
+    caret-color:#fff;
+    color-scheme:dark;
+}
+
+html:not(.admin-light-mode) body.cabecalho-com-admin :is(
+    input:not([type="checkbox"]):not([type="radio"]),
+    textarea,
+    select
+):focus{
+    background:#242424 !important;
+    border-color:#ffc400 !important;
+    color:#fff !important;
+    -webkit-text-fill-color:#fff !important;
+}
+
+html:not(.admin-light-mode) body.cabecalho-com-admin :is(input, textarea)::placeholder{
+    color:#8f98a3 !important;
+    -webkit-text-fill-color:#8f98a3 !important;
+}
+
+html:not(.admin-light-mode) body.cabecalho-com-admin :is(
+    input:not([type="checkbox"]):not([type="radio"]),
+    textarea
+):-webkit-autofill,
+html:not(.admin-light-mode) body.cabecalho-com-admin :is(
+    input:not([type="checkbox"]):not([type="radio"]),
+    textarea
+):-webkit-autofill:hover,
+html:not(.admin-light-mode) body.cabecalho-com-admin :is(
+    input:not([type="checkbox"]):not([type="radio"]),
+    textarea
+):-webkit-autofill:focus{
+    box-shadow:0 0 0 1000px #242424 inset !important;
+    -webkit-box-shadow:0 0 0 1000px #242424 inset !important;
+    -webkit-text-fill-color:#fff !important;
+    caret-color:#fff;
+}
