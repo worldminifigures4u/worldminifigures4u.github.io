@@ -1617,7 +1617,7 @@ body.pagina-encomendas-admin{
 }
 
 .admin-fatura-confirmacao-caixa{
-    width:min(420px, 100%);
+    width:min(520px, 100%);
     padding:22px 20px 18px;
     border:1px solid #333;
     border-radius:8px;
@@ -1626,8 +1626,15 @@ body.pagina-encomendas-admin{
     box-shadow:0 16px 40px rgba(0,0,0,0.45);
 }
 
+.admin-fatura-confirmacao-titulo{
+    margin:0 0 14px;
+    color:#ffc400;
+    font-size:21px;
+    line-height:1.2;
+}
+
 .admin-fatura-confirmacao-texto{
-    margin:0 0 18px;
+    margin:0 0 8px;
     font-size:15px;
     line-height:1.45;
 }
@@ -1637,10 +1644,23 @@ body.pagina-encomendas-admin{
     flex-wrap:wrap;
     gap:10px;
     justify-content:flex-end;
+    margin-top:18px;
 }
 
 .admin-fatura-confirmacao-acoes .wallapop-botao{
-    min-width:120px;
+    min-width:136px;
+}
+
+.admin-fatura-confirmacao-cancelar{
+    border-color:#555;
+    color:#fff;
+    background:#222;
+}
+
+.admin-fatura-confirmacao-cancelar:hover,
+.admin-fatura-confirmacao-cancelar:focus-visible{
+    border-color:#777;
+    background:#2d2d2d;
 }
 
 .admin-encomenda-modal[hidden]{

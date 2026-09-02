@@ -815,6 +815,63 @@ function obterTotalEncomendaLote(encomenda) {
     return Number(encomenda?.total ?? encomenda?.valor_total ?? 0) || 0;
 }
 
+function pedirConclusaoLoteEncomendas(quantidade, total) {
+    return new Promise(resolve => {
+        const existente = document.getElementById('admin-fatura-confirmacao');
+        if (existente) existente.remove();
+
+        const fundo = criarElementoEncomenda('div', 'admin-fatura-confirmacao');
+        fundo.id = 'admin-fatura-confirmacao';
+        fundo.setAttribute('role', 'dialog');
+        fundo.setAttribute('aria-modal', 'true');
+
+        const caixa = criarElementoEncomenda('div', 'admin-fatura-confirmacao-caixa');
+        caixa.append(
+            criarElementoEncomenda('h3', 'admin-fatura-confirmacao-titulo', `Concluir ${quantidade} encomenda(s)?`),
+            criarElementoEncomenda('p', 'admin-fatura-confirmacao-texto', 'Os anexos destas encomendas serão eliminados definitivamente.'),
+            criarElementoEncomenda('p', 'admin-fatura-confirmacao-texto', 'As notas internas serão mantidas.'),
+            criarElementoEncomenda('p', 'admin-fatura-confirmacao-texto', `Total selecionado: ${formatarEuroEncomenda(total)}.`),
+            criarElementoEncomenda('p', 'admin-fatura-confirmacao-texto', 'Pode emitir os recibos no Moloni agora ou deixar para mais tarde.'),
+            criarElementoEncomenda('p', 'admin-fatura-confirmacao-texto', 'Se emitir agora, a data de emissão é a de hoje e o pagamento fica com a data real.')
+        );
+
+        const acoes = criarElementoEncomenda('div', 'admin-fatura-confirmacao-acoes');
+        const botoes = [
+            { texto: 'Cancelar', valor: null, classe: 'wallapop-botao admin-fatura-confirmacao-cancelar', foco: true },
+            { texto: 'Recibos mais tarde', valor: 'mais_tarde', classe: 'wallapop-botao' },
+            { texto: 'Concluir e emitir recibos', valor: 'emitir', classe: 'wallapop-botao wallapop-botao-destaque' }
+        ];
+
+        const fechar = valor => {
+            document.removeEventListener('keydown', aoTecla);
+            fundo.remove();
+            resolve(valor);
+        };
+        const aoTecla = evento => {
+            if (evento.key === 'Escape') {
+                evento.preventDefault();
+                fechar(null);
+            }
+        };
+
+        botoes.forEach(definicao => {
+            const botao = criarElementoEncomenda('button', definicao.classe, definicao.texto);
+            botao.type = 'button';
+            botao.addEventListener('click', () => fechar(definicao.valor));
+            acoes.appendChild(botao);
+            if (definicao.foco) window.setTimeout(() => botao.focus(), 0);
+        });
+        fundo.addEventListener('click', evento => {
+            if (evento.target === fundo) fechar(null);
+        });
+        document.addEventListener('keydown', aoTecla);
+
+        caixa.appendChild(acoes);
+        fundo.appendChild(caixa);
+        document.body.appendChild(fundo);
+    });
+}
+
 function atualizarAcoesLoteEncomendas() {
     const barra = document.getElementById('acoes-lote-encomendas');
     const total = document.getElementById('total-encomendas-selecionadas');
@@ -846,10 +903,8 @@ async function concluirEncomendasSelecionadas() {
     if (!selecionadas.length) return;
 
     const total = selecionadas.reduce((soma, encomenda) => soma + obterTotalEncomendaLote(encomenda), 0);
-    const confirmado = window.confirm(
-        `Concluir ${selecionadas.length} encomenda(s) selecionada(s), eliminar os anexos e emitir os recibos no Moloni?\n\nTotal: ${formatarEuroEncomenda(total)}`
-    );
-    if (!confirmado) return;
+    const escolhaConclusao = await pedirConclusaoLoteEncomendas(selecionadas.length, total);
+    if (!escolhaConclusao) return;
 
     const botao = document.getElementById('btn-concluir-encomendas-selecionadas');
     if (botao) botao.disabled = true;
@@ -862,8 +917,9 @@ async function concluirEncomendasSelecionadas() {
         selectTemporario.dataset.estadoAtual = selectTemporario.value;
         const ok = await AdminEncomendaVista.atualizarEstado(encomenda, 'Concluído', selectTemporario, {
             semConfirmacaoConclusao: true,
-            emitirFaturaMoloni: true,
-            forcarEmissaoFatura: true,
+            emitirFaturaMoloni: escolhaConclusao === 'emitir',
+            forcarEmissaoFatura: escolhaConclusao === 'emitir',
+            naoPerguntarFaturaMoloni: true,
             aguardarFaturaMoloni: true
         });
         if (ok) {

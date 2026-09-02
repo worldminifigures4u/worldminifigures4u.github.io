@@ -1285,7 +1285,7 @@ window.AdminEncomendaVista = (function () {
         return !encomendaFaturaMoloniOpcional(encomenda);
     }
 
-    function pedirConfirmacaoFatura(mensagem) {
+    function criarModalDecisaoEncomenda(opcoes = {}) {
         return new Promise((resolve) => {
             const existente = document.getElementById("admin-fatura-confirmacao");
             if (existente) existente.remove();
@@ -1296,37 +1296,83 @@ window.AdminEncomendaVista = (function () {
             fundo.setAttribute("aria-modal", "true");
 
             const caixa = criarElemento("div", "admin-fatura-confirmacao-caixa");
-            const texto = criarElemento("p", "admin-fatura-confirmacao-texto", mensagem);
+            if (opcoes.titulo) {
+                const titulo = criarElemento("h3", "admin-fatura-confirmacao-titulo", opcoes.titulo);
+                caixa.appendChild(titulo);
+            }
+            (opcoes.mensagens || []).forEach(mensagem => {
+                caixa.appendChild(criarElemento("p", "admin-fatura-confirmacao-texto", mensagem));
+            });
             const acoes = criarElemento("div", "admin-fatura-confirmacao-acoes");
-            const botaoMaisTarde = criarElemento("button", "wallapop-botao", "Mais tarde");
-            botaoMaisTarde.type = "button";
-            const botaoEmiteJa = criarElemento("button", "wallapop-botao wallapop-botao-destaque", "Emite já");
-            botaoEmiteJa.type = "button";
 
-            const fechar = (emitir) => {
+            const fechar = (valor) => {
                 document.removeEventListener("keydown", aoTecla);
                 fundo.remove();
-                resolve(emitir);
+                resolve(valor);
             };
             const aoTecla = (evento) => {
                 if (evento.key === "Escape") {
                     evento.preventDefault();
-                    fechar(false);
+                    fechar(opcoes.valorCancelar ?? null);
                 }
             };
 
-            botaoMaisTarde.addEventListener("click", () => fechar(false));
-            botaoEmiteJa.addEventListener("click", () => fechar(true));
+            (opcoes.botoes || []).forEach(definicao => {
+                const botao = criarElemento("button", definicao.classe || "wallapop-botao", definicao.texto);
+                botao.type = "button";
+                botao.addEventListener("click", () => fechar(definicao.valor));
+                acoes.appendChild(botao);
+                if (definicao.foco) {
+                    window.setTimeout(() => botao.focus(), 0);
+                }
+            });
             fundo.addEventListener("click", (evento) => {
-                if (evento.target === fundo) fechar(false);
+                if (evento.target === fundo) fechar(opcoes.valorCancelar ?? null);
             });
             document.addEventListener("keydown", aoTecla);
 
-            acoes.append(botaoMaisTarde, botaoEmiteJa);
-            caixa.append(texto, acoes);
+            caixa.appendChild(acoes);
             fundo.appendChild(caixa);
             document.body.appendChild(fundo);
-            botaoEmiteJa.focus();
+        });
+    }
+
+    function pedirConfirmacaoFatura(mensagem) {
+        return criarModalDecisaoEncomenda({
+            mensagens: [mensagem],
+            valorCancelar: false,
+            botoes: [
+                { texto: "Mais tarde", valor: false, classe: "wallapop-botao" },
+                { texto: "Emitir agora", valor: true, classe: "wallapop-botao wallapop-botao-destaque", foco: true }
+            ]
+        });
+    }
+
+    function pedirConclusaoEncomenda(encomenda) {
+        const codigo = encomenda.codigo_encomenda || "";
+        const mensagens = [
+            "Todos os anexos desta encomenda serão eliminados definitivamente.",
+            "As notas internas serão mantidas."
+        ];
+        const botoes = [
+            { texto: "Cancelar", valor: null, classe: "wallapop-botao admin-fatura-confirmacao-cancelar", foco: true }
+        ];
+        if (podeEmitirFaturaMoloni(encomenda)) {
+            mensagens.push("Pode emitir a fatura-recibo no Moloni agora ou deixar para mais tarde.");
+            mensagens.push("Se emitir agora, a data de emissão é a de hoje e o pagamento fica com a data real.");
+            botoes.push(
+                { texto: "Recibo mais tarde", valor: "mais_tarde", classe: "wallapop-botao" },
+                { texto: "Concluir e emitir recibo", valor: "emitir", classe: "wallapop-botao wallapop-botao-destaque" }
+            );
+        } else {
+            mensagens.push("Esta encomenda já não tem recibo Moloni pendente.");
+            botoes.push({ texto: "Concluir encomenda", valor: "concluir", classe: "wallapop-botao wallapop-botao-destaque" });
+        }
+        return criarModalDecisaoEncomenda({
+            titulo: `Concluir encomenda ${codigo}?`,
+            mensagens,
+            valorCancelar: null,
+            botoes
         });
     }
 
@@ -1445,19 +1491,17 @@ window.AdminEncomendaVista = (function () {
         let reporStock = true;
 
         if (estado === "Concluído" && estadoAnterior !== "Concluído" && opcoes.semConfirmacaoConclusao !== true) {
-            const codigo = encomenda.codigo_encomenda || "";
-            let avisoFatura = "";
-            if (podeEmitirFaturaMoloni(encomenda)) {
-                avisoFatura = encomendaFaturaMoloniOpcional(encomenda)
-                    ? "\n\nDepois pode escolher se emite fatura-recibo no Moloni (data de emissão de hoje; pagamento com data real)."
-                    : "\n\nSerá emitida automaticamente uma fatura-recibo no Moloni (data de emissão de hoje; pagamento com data real).";
-            }
-            const confirmado = window.confirm(
-                `Ao concluir a encomenda ${codigo}, todos os anexos serão eliminados definitivamente. As notas internas serão mantidas.${avisoFatura}\n\nContinuar?`
-            );
-            if (!confirmado) {
+            const escolhaConclusao = await pedirConclusaoEncomenda(encomenda);
+            if (!escolhaConclusao) {
                 select.value = estadoAnterior;
                 return;
+            }
+            if (escolhaConclusao === "emitir") {
+                opcoes.emitirFaturaMoloni = true;
+                opcoes.forcarEmissaoFatura = true;
+            } else if (escolhaConclusao === "mais_tarde") {
+                opcoes.emitirFaturaMoloni = false;
+                opcoes.naoPerguntarFaturaMoloni = true;
             }
         }
 
@@ -1639,10 +1683,15 @@ window.AdminEncomendaVista = (function () {
             let emitirFaturaDepois = false;
             let forcarEmissaoFatura = false;
             if (estado === "Concluído" && estadoAnterior !== "Concluído" && podeEmitirFaturaMoloni(encomenda)) {
-                let emitirFatura = opcoes.emitirFaturaMoloni === true
-                    ? true
-                    : deveEmitirFaturaMoloniAutomaticamente(encomenda);
-                if (!emitirFatura && encomendaFaturaMoloniOpcional(encomenda)) {
+                let emitirFatura = null;
+                if (opcoes.emitirFaturaMoloni === true) {
+                    emitirFatura = true;
+                } else if (opcoes.emitirFaturaMoloni === false) {
+                    emitirFatura = false;
+                } else {
+                    emitirFatura = deveEmitirFaturaMoloniAutomaticamente(encomenda);
+                }
+                if (!emitirFatura && encomendaFaturaMoloniOpcional(encomenda) && opcoes.naoPerguntarFaturaMoloni !== true) {
                     emitirFatura = await pedirEmissaoFaturaMoloni(encomenda);
                 }
                 if (emitirFatura) {
