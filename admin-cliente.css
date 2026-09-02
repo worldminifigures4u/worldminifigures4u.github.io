@@ -394,6 +394,10 @@
         }
 
         .admin-cliente-historico-linha:last-child{ border-bottom:0; }
+        .admin-cliente-historico-linha.clientes-historico-cancelada{
+            background:rgba(255, 77, 77, 0.08);
+            color:#ff8a8a;
+        }
         .admin-cliente-historico-linha > :nth-child(1),
         .admin-cliente-historico-linha .clientes-historico-codigo{
             color:#ffc107;
@@ -419,6 +423,12 @@
             justify-self:end;
             white-space:nowrap;
             font-variant-numeric:tabular-nums;
+        }
+        .admin-cliente-historico-linha.clientes-historico-cancelada > :nth-child(1),
+        .admin-cliente-historico-linha.clientes-historico-cancelada .clientes-historico-codigo,
+        .admin-cliente-historico-linha.clientes-historico-cancelada .clientes-historico-estado-cancelada,
+        .admin-cliente-historico-linha.clientes-historico-cancelada .clientes-historico-total{
+            color:#ff4d4d;
         }
 
         .admin-cliente-notas{
