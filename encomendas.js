@@ -27,6 +27,8 @@ let totalConcluidasServidor = null;
 let carregandoMaisConcluidas = false;
 let todasConcluidasCarregadas = false;
 let encomendasSelecionadasLote = new Set();
+let promessaFichaClienteEncomendas = null;
+let fichaClienteEncomendasConfigurada = false;
 
 const ENCOMENDAS_SEM_IMAGEM = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(
     '<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120"><rect width="100%" height="100%" fill="#222"/><text x="50%" y="50%" text-anchor="middle" dominant-baseline="middle" fill="#888" font-family="Arial" font-size="13">Sem foto</text></svg>'
@@ -129,6 +131,51 @@ function configurarVistaEncomendasAdmin() {
             onEncomendaApagada: () => {}
         }
     });
+}
+
+function carregarScriptEncomendasAdmin(src) {
+    return new Promise((resolve, reject) => {
+        const existente = document.querySelector(`script[data-encomendas-chunk="${src}"]`);
+        if (existente) {
+            if (existente.dataset.loaded === '1') return resolve();
+            existente.addEventListener('load', () => resolve());
+            existente.addEventListener('error', () => reject(new Error('Falha ao carregar ' + src)));
+            return;
+        }
+        const script = document.createElement('script');
+        script.src = src;
+        script.defer = true;
+        script.dataset.encomendasChunk = src;
+        script.onload = () => {
+            script.dataset.loaded = '1';
+            resolve();
+        };
+        script.onerror = () => reject(new Error('Falha ao carregar ' + src));
+        document.body.appendChild(script);
+    });
+}
+
+function configurarFichaClienteEncomendas() {
+    if (!window.AdminFichaCliente) return;
+    window.AdminFichaCliente.configurar({
+        client: encomendasClient,
+        formatarEuro: valor => Number(valor || 0).toFixed(2).replace('.', ','),
+        formatarData: formatarDataEncomenda
+    });
+    window.AdminFichaCliente.initEventos();
+    fichaClienteEncomendasConfigurada = true;
+}
+
+function garantirFichaClienteEncomendas() {
+    if (window.AdminFichaCliente) {
+        if (!fichaClienteEncomendasConfigurada) configurarFichaClienteEncomendas();
+        return Promise.resolve();
+    }
+    if (!promessaFichaClienteEncomendas) {
+        promessaFichaClienteEncomendas = carregarScriptEncomendasAdmin('admin-ficha-cliente.js?v=20260902-notas-unificadas')
+            .then(() => configurarFichaClienteEncomendas());
+    }
+    return promessaFichaClienteEncomendas;
 }
 
 function definirStatusFichaCliente(texto, erro = false) {
@@ -323,6 +370,7 @@ function criarCodigoHistoricoEncomenda(item, indice, historico) {
 function renderizarFichaClienteAdmin(dados) {
     const conteudo = document.getElementById('admin-cliente-conteudo');
     const cliente = dados.cliente || {};
+    const clienteId = String(cliente.id || dados.cliente_id || '').trim();
     const resumo = dados.resumo || {};
     const perfis = Array.isArray(dados.perfis) ? dados.perfis : [];
     const historico = Array.isArray(dados.historico) ? dados.historico : [];
@@ -428,15 +476,30 @@ function renderizarFichaClienteAdmin(dados) {
     guardar.addEventListener('click', async () => {
         guardar.disabled = true;
         definirStatusFichaCliente('A guardar notas...');
+        if (!clienteId) {
+            guardar.disabled = false;
+            definirStatusFichaCliente('Erro ao guardar notas: ficha sem identificador do cliente.', true);
+            return;
+        }
         const { data, error } = await encomendasClient.rpc('guardar_notas_cliente_admin', {
-            p_cliente_id: cliente.id,
+            p_cliente_id: clienteId,
             p_notas: notas.value
         });
-        guardar.disabled = false;
         if (error || data?.sucesso === false) {
+            guardar.disabled = false;
             definirStatusFichaCliente('Erro ao guardar notas: ' + (error?.message || data?.erro || 'sem detalhe'), true);
             return;
         }
+        cliente.notas = notas.value;
+        const fichaAtualizada = await encomendasClient.rpc('obter_ficha_cliente_por_id_admin', {
+            p_cliente_id: clienteId
+        });
+        guardar.disabled = false;
+        if (fichaAtualizada.error || fichaAtualizada.data?.sucesso === false) {
+            definirStatusFichaCliente('Notas guardadas, mas a ficha não foi atualizada no ecrã.');
+            return;
+        }
+        renderizarFichaClienteAdmin(fichaAtualizada.data);
         definirStatusFichaCliente('Notas guardadas.');
     });
     notasSecao.append(notas, guardar);
@@ -444,22 +507,13 @@ function renderizarFichaClienteAdmin(dados) {
 }
 
 async function abrirFichaClienteAdmin(encomenda) {
-    const modal = document.getElementById('admin-cliente-modal');
-    modal.hidden = false;
-    document.body.classList.add('admin-cliente-modal-aberto');
-    document.getElementById('admin-cliente-conteudo').replaceChildren(
-        criarElementoEncomenda('p', 'admin-cliente-carregar', 'A carregar ficha do cliente...')
-    );
-    definirStatusFichaCliente('');
-    const { data, error } = await encomendasClient.rpc('obter_ficha_cliente_admin', {
-        p_encomenda_id: String(encomenda.id)
-    });
-    if (error || data?.sucesso === false) {
-        document.getElementById('admin-cliente-conteudo').replaceChildren();
-        definirStatusFichaCliente('Erro ao carregar ficha: ' + (error?.message || data?.erro || 'sem detalhe'), true);
-        return;
+    try {
+        await garantirFichaClienteEncomendas();
+        const abriu = await window.AdminFichaCliente?.abrirPorEncomenda(String(encomenda.id));
+        if (!abriu) definirStatusFichaCliente('Não foi possível abrir a ficha do cliente.', true);
+    } catch (error) {
+        definirStatusFichaCliente('Erro ao abrir ficha: ' + (error?.message || 'sem detalhe'), true);
     }
-    renderizarFichaClienteAdmin(data);
 }
 
 function criarCardEncomenda(encomenda) {

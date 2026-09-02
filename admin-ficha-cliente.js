@@ -432,6 +432,7 @@
         dadosPessoais.appendChild(cabecalhoDados);
         const grelha = criarElemento('div', 'admin-cliente-grelha');
         grelha.append(
+            criarCampoFichaCliente('Nome de utilizador', obterNomeUtilizadorCliente(cliente)),
             criarCampoFichaCliente('Nome', obterNomePessoaCliente(cliente)),
             criarCampoFichaCliente('E-mail', cliente.email),
             criarCampoFichaCliente('Telem\u00f3vel', cliente.telefone),
@@ -443,6 +444,13 @@
         if (cliente.bloquear_compras) restricoes.push('Compras bloqueadas no site');
         if (restricoes.length) {
             dadosPessoais.appendChild(criarElemento('p', 'admin-cliente-restricoes', restricoes.join(' \u2022 ')));
+        }
+        if (cliente.tem_aviso) {
+            dadosPessoais.appendChild(criarElemento(
+                'p',
+                'admin-cliente-aviso-conta',
+                '\u26a0\ufe0f Cliente com aviso a ler.'
+            ));
         }
         if (cliente.auth_user_id) {
             dadosPessoais.appendChild(criarElemento(
@@ -506,17 +514,33 @@
         const guardar = criarElemento('button', 'wallapop-botao wallapop-botao-destaque', 'Guardar notas');
         guardar.type = 'button';
         guardar.addEventListener('click', async () => {
+            const clienteId = String(cliente.id || dados.cliente_id || '').trim();
             guardar.disabled = true;
             definirStatusFichaCliente('A guardar notas...');
+            if (!clienteId) {
+                guardar.disabled = false;
+                definirStatusFichaCliente('Erro ao guardar notas: ficha sem identificador do cliente.', true);
+                return;
+            }
             const { data, error } = await fichaClient.rpc('guardar_notas_cliente_admin', {
-                p_cliente_id: cliente.id,
+                p_cliente_id: clienteId,
                 p_notas: notas.value
             });
-            guardar.disabled = false;
             if (error || data?.sucesso === false) {
+                guardar.disabled = false;
                 definirStatusFichaCliente('Erro ao guardar notas: ' + (error?.message || data?.erro || 'sem detalhe'), true);
                 return;
             }
+            cliente.notas = notas.value;
+            const fichaAtualizada = await fichaClient.rpc('obter_ficha_cliente_por_id_admin', {
+                p_cliente_id: clienteId
+            });
+            guardar.disabled = false;
+            if (fichaAtualizada.error || fichaAtualizada.data?.sucesso === false) {
+                definirStatusFichaCliente('Notas guardadas, mas a ficha não foi atualizada no ecrã.');
+                return;
+            }
+            renderizarFichaClienteAdmin(fichaAtualizada.data);
             definirStatusFichaCliente('Notas guardadas.');
         });
         notasSecao.append(notas, guardar);
