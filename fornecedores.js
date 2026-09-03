@@ -68,7 +68,7 @@ function garantirFornecedoresProdutoModal() {
     if (window.FornecedoresProdutoModal) return Promise.resolve();
     if (!__fornecedoresProdutoPromessa) {
         prepararContextoProdutoFornecedor();
-        __fornecedoresProdutoPromessa = carregarScriptAdmin("mapas-produto-modal.js?v=20260829-referencia-personalizado")
+        __fornecedoresProdutoPromessa = carregarScriptAdmin("mapas-produto-modal.js?v=20260903-marcacao-atual-limpa")
             .then(function () {
                 window.FornecedoresProdutoModal = {
                     abrir: function () {
@@ -1456,12 +1456,13 @@ function formatarResumoHistoricoFornecedor(historico, estadoAtual = "") {
 
 function normalizarMarcacaoFornecedor(valor) {
     const historico = obterHistoricoFornecedor(valor);
+    const marcacaoAtualLimpa = Boolean(valor && typeof valor === "object" && !Array.isArray(valor) && valor.marcacao_atual_limpa === true);
     let estadoObjeto = valor && typeof valor === "object" && !Array.isArray(valor)
         ? String(valor.estado || "").trim()
         : (historico.length ? "" : String(valor ?? "").trim());
     if (/^-?\d+(?:[,.]\d+)?$/.test(estadoObjeto)) estadoObjeto = "";
     // Se nao houver estado atual, a ultima linha do historico define a marcacao visivel.
-    if (!estadoObjeto && historico.length) {
+    if (!estadoObjeto && historico.length && !marcacaoAtualLimpa) {
         const ultimo = historico[historico.length - 1];
         const tipoUltimo = normalizarTipoHistoricoFornecedor(ultimo?.tipo);
         if (tipoUltimo === "os" || tipoUltimo === "encomendada_os") estadoObjeto = "OS";
@@ -1485,12 +1486,13 @@ function normalizarMarcacaoFornecedor(valor) {
         desde: historico[0]?.data || null,
         datas,
         historico,
-        texto: formatarResumoHistoricoFornecedor(historico, estado)
+        texto: marcacaoAtualLimpa && !estado ? "Disponivel" : formatarResumoHistoricoFornecedor(historico, estado)
     };
 }
 
 function formatarValorFornecedorParaInput(valor) {
     if (valor && typeof valor === "object" && !Array.isArray(valor)) {
+        if (valor.marcacao_atual_limpa === true) return "";
         const estado = String(valor.estado || "").trim();
         if (estado) {
             if (/^-?\d+(?:[,.]\d+)?$/.test(estado)) return "";
@@ -1668,7 +1670,7 @@ function parseValorMarcacaoFornecedorInput(texto, valorAnterior) {
     const anterior = normalizarMarcacaoFornecedor(valorAnterior);
     const historico = [...(anterior.historico || [])];
     if (!valor) {
-        return historico.length ? { estado: "", historico, datas: anterior.datas || [], desde: anterior.desde || null } : "";
+        return historico.length ? { estado: "", marcacao_atual_limpa: true, historico, datas: anterior.datas || [], desde: anterior.desde || null } : "";
     }
     const maiusculas = valor.toUpperCase();
     if (maiusculas === "OS" || maiusculas.startsWith("OS")) {
@@ -1999,7 +2001,8 @@ function lerFornecedoresProdutoEditor(produtoAtual) {
                 ...valor,
                 historico,
                 datas: historico.filter((item) => item?.tipo === "os").map((item) => item.data).filter(Boolean),
-                desde: historico[0]?.data || null
+                desde: historico[0]?.data || null,
+                marcacao_atual_limpa: !String(valor.estado || "").trim() && historico.length > 0
             };
         }
         const temValor = valor && (

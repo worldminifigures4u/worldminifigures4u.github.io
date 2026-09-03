@@ -382,6 +382,7 @@ async function carregarFichasFornecedoresMapa(forcar = false) {
 
 function obterEstadoFornecedorEdicaoMapa(valor) {
     if (valor && typeof valor === "object" && !Array.isArray(valor)) {
+        if (valor.marcacao_atual_limpa === true) return "";
         const estado = String(valor.estado || valor.marcacao || valor.status || "").trim();
         if (estado) return estado;
         const historico = obterHistoricoFornecedorMapa(valor);
@@ -625,7 +626,12 @@ function lerFornecedoresFallbackMapa(produtoAtual) {
         }
         if (anterior && typeof anterior === "object" && !Array.isArray(anterior)) {
             if (estado || historico.length) {
-                fornecedores[chave] = { ...anterior, estado, historico };
+                fornecedores[chave] = {
+                    ...anterior,
+                    estado,
+                    historico,
+                    marcacao_atual_limpa: !estado && historico.length > 0
+                };
             } else {
                 delete fornecedores[chave];
             }
