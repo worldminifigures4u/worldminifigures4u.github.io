@@ -1748,13 +1748,13 @@ body.pagina-mapas-admin > main.fornecedores-admin {
 }
 
 .pagina-fornecedores-unificada .fornecedor-resultados .fornecedor-tabela-encomenda .mapas-col-vendas-3m {
-    color: #ddd;
+    color: #39d353;
     font-weight: 800;
     font-variant-numeric: tabular-nums;
 }
 
 .pagina-fornecedores-unificada .fornecedor-resultados .fornecedor-tabela-encomenda .mapas-col-vendas-3m.com-vendas-recentes {
-    color: #29b6f6;
+    color: #39d353;
 }
 
 .pagina-fornecedores-unificada :is(.fornecedor-resultados, .fornecedor-selecionados, .fornecedor-pedido-produtos) .fornecedor-tabela-encomenda .mapas-col-ref,
@@ -2148,8 +2148,9 @@ body.pagina-mapas-admin > main.fornecedores-admin {
     color: #18c4ff !important;
 }
 
+.mapa-previsto-celula,
 .mapa-previsto-celula.com-pendente {
-    color: #39d353 !important;
+    color: #fff !important;
 }
 
 .mapa-fornecedor-celula {

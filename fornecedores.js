@@ -2244,6 +2244,9 @@ function produtoCorrespondeVendaFornecedor(produto, item) {
     const produtoSku = String(produto.sku || "").trim().toUpperCase();
     const itemSku = String(item.sku || "").trim().toUpperCase();
     if (produtoSku && itemSku && produtoSku === itemSku) return true;
+    if (isReferenciaPartilhadaVendasFornecedor(produto.referencia) || isReferenciaPartilhadaVendasFornecedor(item.referencia)) {
+        return false;
+    }
     return correspondeReferenciaListaFornecedor(produto.referencia, item.referencia)
         || correspondeReferenciaListaFornecedor(produto.referencia, item.sku)
         || correspondeReferenciaListaFornecedor(produto.sku, item.referencia);
@@ -2290,6 +2293,7 @@ function criarIndiceVendasRecentesFornecedor() {
                 item.sku,
                 item.referencia
             ].forEach((valor) => {
+                if (isReferenciaPartilhadaVendasFornecedor(valor)) return;
                 const chave = normalizarReferenciaListaFornecedor(valor);
                 if (!chave) return;
                 if (!indice.has(chave)) indice.set(chave, []);
@@ -2305,7 +2309,9 @@ function obterVendasRecentesProdutoPorIndiceFornecedor(produto, indice) {
     const chaves = new Set([
         normalizarReferenciaListaFornecedor(produto.id),
         normalizarReferenciaListaFornecedor(produto.sku),
-        normalizarReferenciaListaFornecedor(produto.referencia)
+        isReferenciaPartilhadaVendasFornecedor(produto.referencia)
+            ? ""
+            : normalizarReferenciaListaFornecedor(produto.referencia)
     ].filter(Boolean));
     let total = 0;
     const contados = new Set();
@@ -2390,6 +2396,10 @@ function correspondeReferenciaListaFornecedor(referenciaA, referenciaB) {
     const candidatosB = obterCandidatosReferenciaListaFornecedor(referenciaB);
     if (!candidatosA.length || !candidatosB.length) return false;
     return candidatosA.some(valor => candidatosB.includes(valor));
+}
+
+function isReferenciaPartilhadaVendasFornecedor(valor) {
+    return ["PERSONALIZADO", "PERSONALIZADA", "CUSTOM"].includes(normalizarReferenciaListaFornecedor(valor));
 }
 
 function encontrarProdutoListaFinalFornecedor(referencia) {
@@ -2488,17 +2498,30 @@ function obterCaixaScrollQuantidadeMapa(input) {
 function garantirInputVisivelNoScroll(caixa, input) {
     if (!caixa || !input) return;
     const estilos = window.getComputedStyle(caixa);
-    if (!["auto", "scroll", "overlay"].includes(estilos.overflowY)) return;
+    const linha = input.closest("tr") || input;
+    if (!["auto", "scroll", "overlay"].includes(estilos.overflowY)) {
+        linha.scrollIntoView({ block: "nearest", inline: "nearest" });
+        return;
+    }
 
     const margem = 8;
     const caixaRect = caixa.getBoundingClientRect();
-    const inputRect = input.getBoundingClientRect();
+    const inputRect = linha.getBoundingClientRect();
 
     if (inputRect.bottom > caixaRect.bottom - margem) {
         caixa.scrollTop += inputRect.bottom - caixaRect.bottom + margem;
     } else if (inputRect.top < caixaRect.top + margem) {
         caixa.scrollTop -= caixaRect.top - inputRect.top + margem;
     }
+
+    requestAnimationFrame(() => {
+        const atualizado = linha.getBoundingClientRect();
+        const alturaCabecalho = document.querySelector(".cabecalho-site-admin")?.getBoundingClientRect().height || 0;
+        const topoMinimo = alturaCabecalho + 8;
+        if (atualizado.top < topoMinimo || atualizado.bottom > window.innerHeight - 8) {
+            linha.scrollIntoView({ block: "nearest", inline: "nearest" });
+        }
+    });
 }
 
 function focarQuantidadeMapaRelativa(inputAtual, direcao, caixa) {
