@@ -1738,7 +1738,6 @@ body.pagina-mapas-admin > main.fornecedores-admin {
 
 .pagina-fornecedores-unificada :is(.fornecedor-resultados, .fornecedor-selecionados, .fornecedor-pedido-produtos) .fornecedor-tabela-encomenda .mapas-col-ref,
 .pagina-fornecedores-unificada :is(.fornecedor-resultados, .fornecedor-selecionados, .fornecedor-pedido-produtos) .fornecedor-tabela-encomenda .mapas-col-stock,
-.pagina-fornecedores-unificada :is(.fornecedor-resultados, .fornecedor-selecionados, .fornecedor-pedido-produtos) .fornecedor-tabela-encomenda .mapas-col-pendente,
 .pagina-fornecedores-unificada :is(.fornecedor-resultados, .fornecedor-selecionados, .fornecedor-pedido-produtos) .fornecedor-tabela-encomenda .mapas-col-previsto,
 .pagina-fornecedores-unificada :is(.fornecedor-resultados, .fornecedor-selecionados, .fornecedor-pedido-produtos) .fornecedor-tabela-encomenda .mapas-col-qtd,
 .pagina-fornecedores-unificada .fornecedor-resultados .fornecedor-tabela-encomenda .mapas-col-vendas-3m {
@@ -3125,7 +3124,6 @@ body.mapas-produto-modal-aberto {
 .fornecedor-tabela-encomenda[data-coluna-ativa="nome"] td.mapas-col-nome,
 .fornecedor-tabela-encomenda[data-coluna-ativa="ref"] td.mapas-col-ref,
 .fornecedor-tabela-encomenda[data-coluna-ativa="stock"] td.mapas-col-stock,
-.fornecedor-tabela-encomenda[data-coluna-ativa="pendente"] td.mapas-col-pendente,
 .fornecedor-tabela-encomenda[data-coluna-ativa="previsto"] td.mapas-col-previsto,
 .fornecedor-tabela-encomenda[data-coluna-ativa="qtd"] td.mapas-col-qtd,
 .fornecedor-tabela-encomenda[data-coluna-ativa="vendas_3m"] td.mapas-col-vendas-3m {
@@ -3142,7 +3140,6 @@ body.mapas-produto-modal-aberto {
 .fornecedor-tabela-encomenda[data-coluna-ativa="nome"] tbody tr:first-child td.mapas-col-nome,
 .fornecedor-tabela-encomenda[data-coluna-ativa="ref"] tbody tr:first-child td.mapas-col-ref,
 .fornecedor-tabela-encomenda[data-coluna-ativa="stock"] tbody tr:first-child td.mapas-col-stock,
-.fornecedor-tabela-encomenda[data-coluna-ativa="pendente"] tbody tr:first-child td.mapas-col-pendente,
 .fornecedor-tabela-encomenda[data-coluna-ativa="previsto"] tbody tr:first-child td.mapas-col-previsto,
 .fornecedor-tabela-encomenda[data-coluna-ativa="qtd"] tbody tr:first-child td.mapas-col-qtd,
 .fornecedor-tabela-encomenda[data-coluna-ativa="vendas_3m"] tbody tr:first-child td.mapas-col-vendas-3m {
@@ -3159,7 +3156,6 @@ body.mapas-produto-modal-aberto {
 .fornecedor-tabela-encomenda[data-coluna-ativa="nome"] tbody tr:last-child td.mapas-col-nome,
 .fornecedor-tabela-encomenda[data-coluna-ativa="ref"] tbody tr:last-child td.mapas-col-ref,
 .fornecedor-tabela-encomenda[data-coluna-ativa="stock"] tbody tr:last-child td.mapas-col-stock,
-.fornecedor-tabela-encomenda[data-coluna-ativa="pendente"] tbody tr:last-child td.mapas-col-pendente,
 .fornecedor-tabela-encomenda[data-coluna-ativa="previsto"] tbody tr:last-child td.mapas-col-previsto,
 .fornecedor-tabela-encomenda[data-coluna-ativa="qtd"] tbody tr:last-child td.mapas-col-qtd,
 .fornecedor-tabela-encomenda[data-coluna-ativa="vendas_3m"] tbody tr:last-child td.mapas-col-vendas-3m {

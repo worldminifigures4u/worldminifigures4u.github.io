@@ -2880,7 +2880,7 @@ function sincronizarLargurasColunasTabelaEncomendaFornecedor() {
         const linhas = [...corpo.querySelectorAll("tbody tr")];
         if (!ths.length || !linhas.length) return;
 
-        const minimos = [58, 88, 68, 42, 52, 52, 56, 56];
+        const minimos = [58, 88, 68, 42, 52, 56, 56];
         const larguras = ths.map((_, indice) => minimos[indice] || 0);
 
         linhas.forEach((linha) => {
@@ -2917,7 +2917,6 @@ function criarTheadTabelaEncomendaFornecedor() {
         ["Nome", "mapas-col-nome", "nome"],
         ["Ref.", "mapas-col-ref", "ref"],
         ["Stock", "mapas-col-stock", "stock"],
-        ["Chegar", "mapas-col-pendente", "pendente"],
         ["Prev.", "mapas-col-previsto", "previsto"],
         ["Qtd", "mapas-col-qtd", "qtd"],
         ["3M", "mapas-col-vendas-3m", "vendas_3m"],
@@ -3017,12 +3016,11 @@ function renderizarResultadosFornecedorTabelaEncomenda(caixa, resultados) {
         linha.appendChild(refCelula);
 
         linha.appendChild(criarCelulaMapaFornecedor(stockNumero, `mapas-col-stock mapa-stock-celula ${stockNumero <= 0 ? "sem-stock" : ""}`));
-        const pendenteCelula = criarCelulaMapaFornecedor(pendente, `mapas-col-pendente mapa-pendente-celula ${pendente > 0 ? "com-pendente" : ""}`);
+        const previstoCelula = criarCelulaMapaFornecedor(previsto, `mapas-col-previsto mapa-previsto-celula ${previsto > stockNumero ? "com-pendente" : ""}`);
         if (pendentes.detalhes.length) {
-            pendenteCelula.title = pendentes.detalhes.join("\n");
+            previstoCelula.title = pendentes.detalhes.join("\n");
         }
-        linha.appendChild(pendenteCelula);
-        linha.appendChild(criarCelulaMapaFornecedor(previsto, `mapas-col-previsto mapa-previsto-celula ${previsto > stockNumero ? "com-pendente" : ""}`));
+        linha.appendChild(previstoCelula);
 
         const qtdCelula = document.createElement("td");
         qtdCelula.className = "mapas-col-qtd";
