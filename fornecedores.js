@@ -2250,13 +2250,18 @@ function obterQuantidadeVendaFornecedor(item) {
     return Math.max(1, Math.floor(Number(item?.quantidade ?? item?.qtd ?? 1) || 1));
 }
 
+function vendaClienteCanceladaFornecedor(encomenda) {
+    const estado = normalizarEstadoPedidoFornecedor(encomenda?.estado);
+    return estado === "cancelado" || estado === "cancelada";
+}
+
 function obterVendasRecentesProdutoFornecedor(produto) {
     if (!Array.isArray(fornecedorVendasRecentesCache)) return 0;
     const limite = Date.now() - (90 * 24 * 60 * 60 * 1000);
     return fornecedorVendasRecentesCache.reduce((total, encomenda) => {
         const data = Date.parse(encomenda.criado_em || "");
         if (!data || data < limite) return total;
-        if (normalizarEstadoPedidoFornecedor(encomenda.estado) === "cancelada") return total;
+        if (vendaClienteCanceladaFornecedor(encomenda)) return total;
         return total + obterProdutosEncomendaClienteFornecedor(encomenda)
             .filter((item) => produtoCorrespondeVendaFornecedor(produto, item))
             .reduce((subtotal, item) => subtotal + obterQuantidadeVendaFornecedor(item), 0);
@@ -2270,7 +2275,7 @@ function criarIndiceVendasRecentesFornecedor() {
     fornecedorVendasRecentesCache.forEach((encomenda, indiceEncomenda) => {
         const data = Date.parse(encomenda.criado_em || "");
         if (!data || data < limite) return;
-        if (normalizarEstadoPedidoFornecedor(encomenda.estado) === "cancelada") return;
+        if (vendaClienteCanceladaFornecedor(encomenda)) return;
         obterProdutosEncomendaClienteFornecedor(encomenda).forEach((item, indiceItem) => {
             const quantidade = obterQuantidadeVendaFornecedor(item);
             const itemKey = [
