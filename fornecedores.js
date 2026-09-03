@@ -3016,7 +3016,13 @@ function renderizarResultadosFornecedorTabelaEncomenda(caixa, resultados) {
         linha.appendChild(refCelula);
 
         linha.appendChild(criarCelulaMapaFornecedor(stockNumero, `mapas-col-stock mapa-stock-celula ${stockNumero <= 0 ? "sem-stock" : ""}`));
-        const previstoCelula = criarCelulaMapaFornecedor(previsto, `mapas-col-previsto mapa-previsto-celula ${previsto > stockNumero ? "com-pendente" : ""}`);
+        const previstoClasses = [
+            "mapas-col-previsto",
+            "mapa-previsto-celula",
+            previsto <= 0 ? "sem-stock" : "",
+            pendente > 0 ? "com-pendente" : "",
+        ].filter(Boolean).join(" ");
+        const previstoCelula = criarCelulaMapaFornecedor(previsto, previstoClasses);
         if (pendentes.detalhes.length) {
             previstoCelula.title = pendentes.detalhes.join("\n");
         }

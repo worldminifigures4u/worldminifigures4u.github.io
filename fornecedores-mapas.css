@@ -2143,13 +2143,16 @@ body.pagina-mapas-admin > main.fornecedores-admin {
     font-weight: 900;
 }
 
+.mapa-previsto-celula.sem-stock {
+    color: #ff4d4d !important;
+}
+
 .mapa-pendente-celula.com-pendente {
     color: #18c4ff !important;
 }
 
-.mapa-previsto-celula,
 .mapa-previsto-celula.com-pendente {
-    color: #fff !important;
+    color: #18c4ff !important;
 }
 
 .mapa-fornecedor-celula {
