@@ -2243,13 +2243,7 @@ function produtoCorrespondeVendaFornecedor(produto, item) {
     if (produtoId && itemId && produtoId === itemId) return true;
     const produtoSku = String(produto.sku || "").trim().toUpperCase();
     const itemSku = String(item.sku || "").trim().toUpperCase();
-    if (produtoSku && itemSku && produtoSku === itemSku) return true;
-    if (isReferenciaPartilhadaVendasFornecedor(produto.referencia) || isReferenciaPartilhadaVendasFornecedor(item.referencia)) {
-        return false;
-    }
-    return correspondeReferenciaListaFornecedor(produto.referencia, item.referencia)
-        || correspondeReferenciaListaFornecedor(produto.referencia, item.sku)
-        || correspondeReferenciaListaFornecedor(produto.sku, item.referencia);
+    return Boolean(produtoSku && itemSku && produtoSku === itemSku);
 }
 
 function obterQuantidadeVendaFornecedor(item) {
@@ -2290,10 +2284,8 @@ function criarIndiceVendasRecentesFornecedor() {
                 item.id_produto,
                 item.produto_id,
                 item.id,
-                item.sku,
-                item.referencia
+                item.sku
             ].forEach((valor) => {
-                if (isReferenciaPartilhadaVendasFornecedor(valor)) return;
                 const chave = normalizarReferenciaListaFornecedor(valor);
                 if (!chave) return;
                 if (!indice.has(chave)) indice.set(chave, []);
@@ -2308,10 +2300,7 @@ function obterVendasRecentesProdutoPorIndiceFornecedor(produto, indice) {
     if (!indice?.size) return 0;
     const chaves = new Set([
         normalizarReferenciaListaFornecedor(produto.id),
-        normalizarReferenciaListaFornecedor(produto.sku),
-        isReferenciaPartilhadaVendasFornecedor(produto.referencia)
-            ? ""
-            : normalizarReferenciaListaFornecedor(produto.referencia)
+        normalizarReferenciaListaFornecedor(produto.sku)
     ].filter(Boolean));
     let total = 0;
     const contados = new Set();
@@ -2396,10 +2385,6 @@ function correspondeReferenciaListaFornecedor(referenciaA, referenciaB) {
     const candidatosB = obterCandidatosReferenciaListaFornecedor(referenciaB);
     if (!candidatosA.length || !candidatosB.length) return false;
     return candidatosA.some(valor => candidatosB.includes(valor));
-}
-
-function isReferenciaPartilhadaVendasFornecedor(valor) {
-    return ["PERSONALIZADO", "PERSONALIZADA", "CUSTOM"].includes(normalizarReferenciaListaFornecedor(valor));
 }
 
 function encontrarProdutoListaFinalFornecedor(referencia) {
