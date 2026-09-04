@@ -1565,9 +1565,11 @@ function atualizarAcoesModalProdutoMapa(modo) {
     const acoesEdicao = document.getElementById("mapas-produto-acoes-edicao");
     const acoesVer = document.getElementById("mapas-produto-acoes-ver");
     const form = document.getElementById("mapas-produto-form");
+    const botaoApagar = document.getElementById("mapas-produto-apagar");
     if (acoesEdicao) acoesEdicao.hidden = modo === "ver";
     if (acoesVer) acoesVer.hidden = modo !== "ver";
     if (form) form.classList.toggle("mapas-produto-form-leitura", modo === "ver");
+    if (botaoApagar) botaoApagar.hidden = modo !== "editar";
 }
 
 function criarCheckboxEdicaoMapa(form, id, rotulo, marcado) {
@@ -1623,7 +1625,7 @@ function criarSecaoEdicaoMapa(titulo, classe = "") {
 
 function garantirModalEdicaoProdutoMapa() {
     let modal = document.getElementById("mapas-produto-modal");
-    if (modal && modal.dataset.acoesLayout !== "editar-fechar-topo") {
+    if (modal && modal.dataset.acoesLayout !== "editar-apagar-topo") {
         modal.remove();
         modal = null;
     }
@@ -1631,7 +1633,7 @@ function garantirModalEdicaoProdutoMapa() {
     modal = document.createElement("div");
     modal.id = "mapas-produto-modal";
     modal.className = "mapas-produto-modal";
-    modal.dataset.acoesLayout = "editar-fechar-topo";
+    modal.dataset.acoesLayout = "editar-apagar-topo";
     modal.hidden = true;
     modal.innerHTML = `
         <div class="mapas-produto-modal-dialog" role="dialog" aria-modal="true" aria-labelledby="mapas-produto-modal-titulo">
@@ -1642,6 +1644,7 @@ function garantirModalEdicaoProdutoMapa() {
                     <button type="button" id="mapas-produto-fechar-ficha" class="wallapop-botao">Fechar</button>
                 </div>
                 <div class="mapas-produto-acoes mapas-produto-acoes-topo" id="mapas-produto-acoes-edicao" hidden>
+                    <button type="button" id="mapas-produto-apagar" class="wallapop-botao mapas-produto-apagar" hidden>Apagar produto</button>
                     <button type="button" id="mapas-produto-cancelar" class="wallapop-botao">Cancelar</button>
                     <button type="submit" form="mapas-produto-form" id="mapas-produto-guardar" class="wallapop-botao wallapop-botao-destaque">Guardar produto</button>
                 </div>
@@ -1669,6 +1672,7 @@ function garantirModalEdicaoProdutoMapa() {
         const id = modal.dataset.produtoId || document.getElementById("mapas-editar-id")?.value;
         if (id) abrirEdicaoProdutoMapa(id);
     });
+    modal.querySelector("#mapas-produto-apagar")?.addEventListener("click", apagarProdutoMapa);
     ligarFechoModalPorFundo(modal, fecharEdicaoProdutoMapa);
     modal.querySelector("#mapas-produto-form")?.addEventListener("submit", guardarEdicaoProdutoMapa);
     return modal;
@@ -1905,6 +1909,46 @@ async function editarProdutoMapaRpc(id, skuOriginal, produto) {
         }));
     }
     return { data, error };
+}
+
+async function apagarProdutoMapa() {
+    const modal = document.getElementById("mapas-produto-modal");
+    const botao = document.getElementById("mapas-produto-apagar");
+    const status = document.getElementById("mapas-produto-status");
+    const id = document.getElementById("mapas-editar-id")?.value || modal?.dataset.produtoId || "";
+    const produto = mapasProdutos.find(item => String(item.id) === String(id));
+    if (!id || !produto) return;
+
+    const nome = produto.nome || "este produto";
+    const sku = produto.sku ? `\nSKU: ${produto.sku}` : "";
+    const referencia = produto.referencia ? `\nRef.: ${produto.referencia}` : "";
+    const confirmou = window.confirm(`Apagar "${nome}"?${referencia}${sku}\n\nIsto apaga a ficha do produto do catálogo. As encomendas antigas não são alteradas.`);
+    if (!confirmou) return;
+
+    try {
+        if (botao) botao.disabled = true;
+        if (status) {
+            status.textContent = "A apagar produto...";
+            status.classList.remove("status-erro", "status-sucesso", "status-neutro");
+            status.classList.add("status-aviso");
+        }
+        const { error } = await mapasClient.rpc("apagar_produto_admin", { p_id: String(id) });
+        if (error) throw error;
+        mapasProdutos = mapasProdutos.filter(item => String(item.id) !== String(id));
+        sincronizarEstadoImportacaoMapa();
+        atualizarResultadosMapa();
+        fecharEdicaoProdutoMapa();
+        definirStatusMapa(`Produto "${nome}" apagado.`);
+    } catch (erro) {
+        console.error(erro);
+        if (status) {
+            status.textContent = "Erro: " + (erro.message || "Não foi possível apagar o produto.");
+            status.classList.remove("status-aviso", "status-sucesso", "status-neutro");
+            status.classList.add("status-erro");
+        }
+    } finally {
+        if (botao) botao.disabled = false;
+    }
 }
 
 async function guardarEdicaoProdutoMapa(evento) {

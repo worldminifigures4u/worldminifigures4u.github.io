@@ -2307,6 +2307,18 @@ body.pagina-mapas-admin > main.fornecedores-admin {
     white-space: nowrap;
 }
 
+.mapas-produto-acoes-topo .mapas-produto-apagar {
+    border-color: #5a2525 !important;
+    background: #2a1111 !important;
+    color: #ffb3b3 !important;
+}
+
+.mapas-produto-acoes-topo .mapas-produto-apagar:hover,
+.mapas-produto-acoes-topo .mapas-produto-apagar:focus-visible {
+    background: #4a1717 !important;
+    color: #fff !important;
+}
+
 .mapas-produto-form {
     min-height: 0;
     overflow: auto;
