@@ -4124,6 +4124,25 @@ function criarElementoPedidoFornecedor(tag, classe, texto) {
     return elemento;
 }
 
+function obterTotaisPedidoFornecedor(pedido) {
+    return (pedido?.itens || []).reduce((totais, item) => {
+        const quantidade = Math.max(0, Number(item.quantidade || 0));
+        const recebido = Math.max(0, Number(item.recebido || 0));
+        const faltaOs = Math.max(0, Number(item.falta_os || 0));
+        const quantidadeOriginal = Math.max(0, Number(item.quantidade_original ?? item.quantidade ?? 0));
+        totais.itens += 1;
+        totais.quantidade += quantidade;
+        totais.os += faltaOs;
+        if (itemPedidoEstaExFornecedor(item)) totais.ex += quantidadeOriginal;
+        totais.pendente += Math.max(0, quantidade - recebido);
+        return totais;
+    }, { itens: 0, quantidade: 0, os: 0, ex: 0, pendente: 0 });
+}
+
+function formatarResumoPedidoFornecedor(totaisPedido) {
+    return `${totaisPedido.itens} artigo(s) | ${totaisPedido.quantidade} unidade(s) | ${totaisPedido.pendente} por receber${totaisPedido.os > 0 ? ` | ${totaisPedido.os} OS` : ""}${totaisPedido.ex > 0 ? ` | ${totaisPedido.ex} EX` : ""}`;
+}
+
 function renderizarPedidoFornecedorProdutosTabela(caixa, pedido) {
     const envoltorio = document.createElement("div");
     envoltorio.className = "mapas-tabela-wrapper fornecedor-tabela-wrapper-centro";
@@ -4416,17 +4435,8 @@ function renderizarModalPedidoFornecedor(id) {
 
     const card = criarElementoPedidoFornecedor("article", "admin-encomenda-card fornecedor-pedido-card aberta fornecedor-pedido-card-modal");
     const cabecalho = criarElementoPedidoFornecedor("div", "admin-encomenda-cabecalho fornecedor-pedido-cabecalho fornecedor-pedido-cabecalho-modal");
-    const totaisPedido = (pedido.itens || []).reduce((totais, item) => {
-        const quantidade = Math.max(0, Number(item.quantidade || 0));
-        const recebido = Math.max(0, Number(item.recebido || 0));
-        const faltaOs = Math.max(0, Number(item.falta_os || 0));
-        totais.itens += 1;
-        totais.quantidade += quantidade;
-        totais.os += faltaOs;
-        totais.pendente += Math.max(0, quantidade - recebido);
-        return totais;
-    }, { itens: 0, quantidade: 0, os: 0, pendente: 0 });
-    const resumo = `${totaisPedido.itens} artigo(s) | ${totaisPedido.quantidade} unidade(s) | ${totaisPedido.pendente} por receber${totaisPedido.os > 0 ? ` | ${totaisPedido.os} OS` : ""}`;
+    const totaisPedido = obterTotaisPedidoFornecedor(pedido);
+    const resumo = formatarResumoPedidoFornecedor(totaisPedido);
     const linha = criarElementoPedidoFornecedor("div", "admin-encomenda-linha fornecedor-pedido-linha-cabecalho");
     linha.append(
         criarElementoPedidoFornecedor("strong", "admin-encomenda-codigo", obterTextoCodigoPedidoFornecedor(pedido)),
@@ -4473,16 +4483,7 @@ function renderizarPedidosFornecedores() {
     pedidos.forEach(pedido => {
         const aberto = fornecedorPedidosAbertos.has(String(pedido.id));
         const alvoJuntar = String(pedido.id) === fornecedorPedidoAlvoJuntar;
-        const totaisPedido = (pedido.itens || []).reduce((totais, item) => {
-            const quantidade = Math.max(0, Number(item.quantidade || 0));
-            const recebido = Math.max(0, Number(item.recebido || 0));
-            const faltaOs = Math.max(0, Number(item.falta_os || 0));
-            totais.itens += 1;
-            totais.quantidade += quantidade;
-            totais.os += faltaOs;
-            totais.pendente += Math.max(0, quantidade - recebido);
-            return totais;
-        }, { itens: 0, quantidade: 0, os: 0, pendente: 0 });
+        const totaisPedido = obterTotaisPedidoFornecedor(pedido);
 
         const card = criarElementoPedidoFornecedor("article", `admin-encomenda-card fornecedor-pedido-card${aberto ? " aberta" : ""}${alvoJuntar ? " fornecedor-pedido-alvo-juntar" : ""}`);
         const cabecalho = criarElementoPedidoFornecedor("div", "admin-encomenda-cabecalho fornecedor-pedido-cabecalho");
@@ -4500,7 +4501,7 @@ function renderizarPedidosFornecedores() {
         });
 
         const linha = criarElementoPedidoFornecedor("div", "admin-encomenda-linha fornecedor-pedido-linha-cabecalho");
-        const resumo = `${totaisPedido.itens} artigo(s) | ${totaisPedido.quantidade} unidade(s) | ${totaisPedido.pendente} por receber${totaisPedido.os > 0 ? ` | ${totaisPedido.os} OS` : ""}`;
+        const resumo = formatarResumoPedidoFornecedor(totaisPedido);
         linha.append(
             criarElementoPedidoFornecedor("strong", "admin-encomenda-codigo", obterTextoCodigoPedidoFornecedor(pedido)),
             criarElementoPedidoFornecedor("span", "admin-encomenda-data", formatarDataPedidoFornecedor(obterDataExibicaoPedidoFornecedor(pedido))),
