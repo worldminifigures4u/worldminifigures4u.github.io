@@ -233,8 +233,8 @@ function montarLinhaEdicaoProdutoFornecedor(pedido, item, indice) {
         if (marcarExInput.checked) {
             if (marcarOsInput.checked) {
                 marcarOsInput.checked = false;
-                faltaInput.value = "0";
             }
+            faltaInput.value = "0";
             // Marcar como EX (caro demais) exclui automaticamente da encomenda,
             // tal como acontece ao marcar OS - mas sem contar como "falta de stock".
             quantidadeInput.value = "0";
@@ -809,8 +809,8 @@ function lerItensEditadosPedidoFornecedor(pedido, modal) {
         if (remover) return null;
         const quantidade = Math.max(0, Math.floor(Number(linha.querySelector('[data-campo="quantidade"]')?.value || 0)));
         const quantidadeOriginal = Math.max(quantidade, Math.floor(Number(item.quantidade_original ?? item.quantidade ?? quantidade) || quantidade));
-        const marcarOs = Boolean(linha.querySelector('[data-campo="marcar_os"]')?.checked);
-        const marcarEx = Boolean(linha.querySelector('[data-campo="marcar_ex"]')?.checked) && !marcarOs;
+        const marcarEx = Boolean(linha.querySelector('[data-campo="marcar_ex"]')?.checked);
+        const marcarOs = Boolean(linha.querySelector('[data-campo="marcar_os"]')?.checked) && !marcarEx;
         let faltaOsIndicada = Math.max(0, Math.floor(Number(linha.querySelector('[data-campo="falta_os"]')?.value || 0)));
         if (marcarOs && faltaOsIndicada === 0) {
             faltaOsIndicada = Math.max(1, quantidadeOriginal - quantidade);
@@ -881,6 +881,7 @@ async function guardarEdicaoPedidoFornecedor(evento) {
         return;
     }
 
+    let guardadoComSucesso = false;
     try {
         botao.disabled = true;
         status.textContent = 'A guardar ficha...';
@@ -916,9 +917,10 @@ async function guardarEdicaoPedidoFornecedor(evento) {
             console.warn('Nao foi possivel sincronizar preço compra nos produtos.', erroPrecoCompra);
             avisoPrecoCompra = ' O preço compra ficou guardado na encomenda, mas ainda não foi atualizado na ficha do produto. Execute o SQL atualizado no Supabase.';
         }
+        guardadoComSucesso = true;
+        fecharEdicaoPedidoFornecedor();
         renderizarResultadosFornecedor();
         renderizarPedidosFornecedores();
-        fecharEdicaoPedidoFornecedor();
         definirStatusFornecedor(`Ajuste ${atualizado.codigo} guardado.${produtosComPrecoAtualizado ? ` Preço compra atualizado em ${produtosComPrecoAtualizado} produto(s).` : ''}${avisoPrecoCompra}`, Boolean(avisoPrecoCompra));
     } catch (error) {
         console.error(error);
@@ -927,6 +929,7 @@ async function guardarEdicaoPedidoFornecedor(evento) {
         status.classList.add('status-erro');
     } finally {
         botao.disabled = false;
+        if (guardadoComSucesso) fecharEdicaoPedidoFornecedor();
     }
 }
 

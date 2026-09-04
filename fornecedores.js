@@ -87,7 +87,7 @@ function garantirFornecedoresProdutoModal() {
 function garantirFornecedoresEdicaoPedido() {
     if (window.FornecedoresEdicaoPedido) return Promise.resolve();
     if (!__fornecedoresEdicaoPromessa) {
-        __fornecedoresEdicaoPromessa = carregarScriptAdmin("fornecedores-edicao-pedido.js?v=20260904-lista-ex-fornecedor");
+        __fornecedoresEdicaoPromessa = carregarScriptAdmin("fornecedores-edicao-pedido.js?v=20260904-ex-sem-os");
     }
     return __fornecedoresEdicaoPromessa;
 }
@@ -780,7 +780,11 @@ function normalizarItemPedidoFornecedor(item) {
         quantidade,
         Math.floor(Number(item.quantidade_original ?? item.quantidade_inicial ?? quantidade) || quantidade)
     );
-    const faltaOs = Math.max(0, Math.floor(Number(item.falta_os || Math.max(0, quantidadeOriginal - quantidade)) || 0));
+    const estadoFornecedor = String(item.estado_fornecedor || "").trim();
+    const marcadoEx = Boolean(item.marcado_ex) || estadoFornecedor.toUpperCase() === "EX";
+    const faltaOs = marcadoEx
+        ? 0
+        : Math.max(0, Math.floor(Number(item.falta_os || Math.max(0, quantidadeOriginal - quantidade)) || 0));
     const precoCusto = Number(item.preco_custo ?? item.custo ?? item.preco_compra ?? item.preco_fornecedor ?? item.preco ?? 0);
     return {
         ...item,
@@ -790,7 +794,8 @@ function normalizarItemPedidoFornecedor(item) {
         data_os: item.data_os || null,
         data_recebida: item.data_recebida || item.recebido_em || null,
         preco_custo: Number.isFinite(precoCusto) ? Math.max(0, precoCusto) : 0,
-        estado_fornecedor: item.estado_fornecedor || (faltaOs > 0 ? 'OS' : ''),
+        estado_fornecedor: estadoFornecedor || (faltaOs > 0 ? 'OS' : ''),
+        marcado_ex: marcadoEx,
         origem_ajuste: item.origem_ajuste || ''
     };
 }
@@ -3647,8 +3652,15 @@ function chaveItemHistoricoPedidoFornecedor(item) {
 
 function itemPedidoEstavaOsFornecedor(item) {
     if (!item) return false;
+    if (itemPedidoEstaExFornecedor(item)) return false;
     return Math.max(0, Number(item.falta_os || 0)) > 0
         || String(item.estado_fornecedor || "").trim().toUpperCase() === "OS";
+}
+
+function itemPedidoEstaExFornecedor(item) {
+    if (!item) return false;
+    return Boolean(item.marcado_ex)
+        || String(item.estado_fornecedor || "").trim().toUpperCase() === "EX";
 }
 
 async function sincronizarHistoricoPedidosFornecedor(itens, fornecedorNome, opcoes = {}) {
@@ -3666,7 +3678,9 @@ async function sincronizarHistoricoPedidosFornecedor(itens, fornecedorNome, opco
     for (const item of (itens || [])) {
         const quantidade = Math.max(0, Number(item?.quantidade || 0));
         const faltaOs = Math.max(0, Number(item?.falta_os || 0));
-        if (quantidade <= 0 && faltaOs <= 0 && String(item?.estado_fornecedor || "").trim().toUpperCase() !== "OS") {
+        const estadoItem = String(item?.estado_fornecedor || "").trim().toUpperCase();
+        const agoraEx = itemPedidoEstaExFornecedor(item);
+        if (quantidade <= 0 && faltaOs <= 0 && estadoItem !== "OS" && !agoraEx) {
             continue;
         }
 
@@ -3681,7 +3695,8 @@ async function sincronizarHistoricoPedidosFornecedor(itens, fornecedorNome, opco
 
         const anterior = mapaAnterior.get(chaveItemHistoricoPedidoFornecedor(item));
         const eraOs = itemPedidoEstavaOsFornecedor(anterior);
-        const agoraOs = faltaOs > 0 || String(item.estado_fornecedor || "").trim().toUpperCase() === "OS";
+        const eraEx = itemPedidoEstaExFornecedor(anterior);
+        const agoraOs = !agoraEx && (faltaOs > 0 || estadoItem === "OS");
 
         let fornecedores = obterObjetoFornecedoresProduto(produtoAtual);
         const chaveNormalizada = normalizarChaveFornecedor(fornecedorNome);
@@ -3691,7 +3706,11 @@ async function sincronizarHistoricoPedidosFornecedor(itens, fornecedorNome, opco
         let alterou = false;
 
         if (modo === "criar") {
-            if (agoraOs) {
+            if (agoraEx) {
+                atual = acrescentarHistoricoFornecedor(atual, "ex", agora);
+                atual = aplicarMarcacaoAtualAposConfirmar(atual, "EX", agora);
+                alterou = true;
+            } else if (agoraOs) {
                 atual = acrescentarHistoricoFornecedor(atual, "os", agora);
                 alterou = true;
             } else if (quantidade > 0) {
@@ -3701,7 +3720,13 @@ async function sincronizarHistoricoPedidosFornecedor(itens, fornecedorNome, opco
         } else if (modo === "editar") {
             // OS total (nada a receber): atualiza historico já na edição
             // OS parcial: historico "Encomendada / OS" só ao confirmar estado Encomendada/Recebida
-            if (agoraOs && quantidade <= 0) {
+            if (agoraEx) {
+                if (!eraEx) {
+                    atual = acrescentarHistoricoFornecedor(atual, "ex", agora);
+                }
+                atual = aplicarMarcacaoAtualAposConfirmar(atual, "EX", agora);
+                alterou = true;
+            } else if (agoraOs && quantidade <= 0) {
                 if (!eraOs) {
                     atual = corrigirUltimaTentativaParaOs(atual, agora);
                 }
@@ -3741,7 +3766,16 @@ async function sincronizarHistoricoPedidosFornecedor(itens, fornecedorNome, opco
         } else if (modo === "confirmar") {
             // A preparar → Encomendada
             const parcial = quantidade > 0 && agoraOs;
-            if (parcial) {
+            if (agoraEx) {
+                const marcacao = normalizarMarcacaoFornecedor(atual);
+                const ultimo = marcacao.historico[marcacao.historico.length - 1];
+                let base = atual;
+                if (!ultimo || ultimo.tipo !== "ex") {
+                    base = acrescentarHistoricoFornecedor(atual, "ex", dataPedido);
+                }
+                atual = aplicarMarcacaoAtualAposConfirmar(base, "EX", dataPedido);
+                alterou = true;
+            } else if (parcial) {
                 // Histórico: uma linha "Encomendada / OS" | Marcação atual: OS
                 atual = confirmarTentativaParcialFornecedor(atual, dataPedido);
                 alterou = true;
