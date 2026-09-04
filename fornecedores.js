@@ -1657,6 +1657,28 @@ function confirmarTentativaParcialFornecedor(valorAnterior, novaData = dataOsAgo
     return montarMarcacaoComHistorico(historico, "OS");
 }
 
+function corrigirUltimaTentativaParaEx(valorAnterior, novaData = dataOsAgoraFornecedor()) {
+    const anterior = normalizarMarcacaoFornecedor(valorAnterior);
+    const historico = [...(anterior.historico || [])];
+    let indice = -1;
+    for (let i = historico.length - 1; i >= 0; i -= 1) {
+        const tipo = historico[i]?.tipo;
+        if (tipo === "solicitada" || tipo === "encomendada" || tipo === "encomendada_os" || tipo === "ex") {
+            indice = i;
+            break;
+        }
+    }
+
+    const data = String(novaData || dataOsAgoraFornecedor());
+    if (indice >= 0) {
+        historico[indice] = { tipo: "ex", data };
+    } else {
+        historico.push({ tipo: "ex", data });
+    }
+
+    return montarMarcacaoComHistorico(historico, "EX");
+}
+
 function aplicarMarcacaoAtualAposConfirmar(valorAnterior, estadoMarcacao, novaData = dataOsAgoraFornecedor()) {
     const anterior = normalizarMarcacaoFornecedor(valorAnterior);
     return montarMarcacaoComHistorico(anterior.historico || [], estadoMarcacao);
@@ -3721,10 +3743,7 @@ async function sincronizarHistoricoPedidosFornecedor(itens, fornecedorNome, opco
             // OS total (nada a receber): atualiza historico já na edição
             // OS parcial: historico "Encomendada / OS" só ao confirmar estado Encomendada/Recebida
             if (agoraEx) {
-                if (!eraEx) {
-                    atual = acrescentarHistoricoFornecedor(atual, "ex", agora);
-                }
-                atual = aplicarMarcacaoAtualAposConfirmar(atual, "EX", agora);
+                atual = corrigirUltimaTentativaParaEx(atual, agora);
                 alterou = true;
             } else if (agoraOs && quantidade <= 0) {
                 if (!eraOs) {
@@ -3767,13 +3786,7 @@ async function sincronizarHistoricoPedidosFornecedor(itens, fornecedorNome, opco
             // A preparar → Encomendada
             const parcial = quantidade > 0 && agoraOs;
             if (agoraEx) {
-                const marcacao = normalizarMarcacaoFornecedor(atual);
-                const ultimo = marcacao.historico[marcacao.historico.length - 1];
-                let base = atual;
-                if (!ultimo || ultimo.tipo !== "ex") {
-                    base = acrescentarHistoricoFornecedor(atual, "ex", dataPedido);
-                }
-                atual = aplicarMarcacaoAtualAposConfirmar(base, "EX", dataPedido);
+                atual = corrigirUltimaTentativaParaEx(atual, dataPedido);
                 alterou = true;
             } else if (parcial) {
                 // Histórico: uma linha "Encomendada / OS" | Marcação atual: OS
