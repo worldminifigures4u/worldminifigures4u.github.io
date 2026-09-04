@@ -68,7 +68,7 @@ function garantirFornecedoresProdutoModal() {
     if (window.FornecedoresProdutoModal) return Promise.resolve();
     if (!__fornecedoresProdutoPromessa) {
         prepararContextoProdutoFornecedor();
-        __fornecedoresProdutoPromessa = carregarScriptAdmin("mapas-produto-modal.js?v=20260903-marcacao-atual-limpa")
+        __fornecedoresProdutoPromessa = carregarScriptAdmin("mapas-produto-modal.js?v=20260904-vendas-sem-devolvidas")
             .then(function () {
                 window.FornecedoresProdutoModal = {
                     abrir: function () {
@@ -2282,7 +2282,10 @@ function obterQuantidadeVendaFornecedor(item) {
 
 function vendaClienteCanceladaFornecedor(encomenda) {
     const estado = normalizarEstadoPedidoFornecedor(encomenda?.estado);
-    return estado === "cancelado" || estado === "cancelada";
+    return estado === "cancelado"
+        || estado === "cancelada"
+        || estado === "devolvido"
+        || estado === "devolvida";
 }
 
 function obterVendasRecentesProdutoFornecedor(produto) {

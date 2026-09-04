@@ -1301,7 +1301,10 @@ function formatarDataVendaMapa(encomenda) {
 
 function vendaCanceladaMapa(encomenda) {
     const estado = normalizarTextoProdutoMapa(encomenda?.estado);
-    return estado === "cancelado" || estado === "cancelada";
+    return estado === "cancelado"
+        || estado === "cancelada"
+        || estado === "devolvido"
+        || estado === "devolvida";
 }
 
 function renderizarHistoricoVendasMapa(conteudo, produto, encomendas) {
