@@ -132,11 +132,14 @@ function montarLinhaEdicaoProdutoFornecedor(pedido, item, indice) {
     const produtoAtual = obterProdutoParaPedidoFornecedor(item) || item;
     const quantidadeOriginal = Math.max(0, Number(item.quantidade_original ?? item.quantidade ?? 0));
     const quantidadeAtual = Math.max(0, Number(item.quantidade || 0));
-    const faltaAtual = Math.max(0, Number(item.falta_os || Math.max(0, quantidadeOriginal - quantidadeAtual)));
+    const itemMarcadoEx = item.estado_fornecedor === "EX" || item.marcado_ex === true;
+    const faltaAtual = itemMarcadoEx
+        ? 0
+        : Math.max(0, Number(item.falta_os || Math.max(0, quantidadeOriginal - quantidadeAtual)));
     const precoCustoAtual = Number(item.preco_custo ?? item.custo ?? item.preco ?? 0) || 0;
     const linha = document.createElement("div");
     linha.className = "fornecedor-edicao-produto";
-    if (faltaAtual > 0 || item.estado_fornecedor === "OS") linha.classList.add("tem-os");
+    if (!itemMarcadoEx && (faltaAtual > 0 || item.estado_fornecedor === "OS")) linha.classList.add("tem-os");
     linha.dataset.indice = String(indice);
     linha.dataset.referencia = item.referencia || produtoAtual.referencia || "";
     linha.dataset.sku = item.sku || produtoAtual.sku || "";
@@ -151,9 +154,11 @@ function montarLinhaEdicaoProdutoFornecedor(pedido, item, indice) {
     ids.className = "fornecedor-identificadores";
     ids.textContent = `Ref. ${item.referencia || produtoAtual.referencia || "-"} | SKU ${item.sku || produtoAtual.sku || "-"}`;
     const ajuste = document.createElement("span");
-    ajuste.className = faltaAtual > 0 ? "fornecedor-ajuste-os ativo" : "fornecedor-ajuste-os";
+    ajuste.className = itemMarcadoEx ? "fornecedor-ajuste-os fornecedor-ajuste-ex ativo" : (faltaAtual > 0 ? "fornecedor-ajuste-os ativo" : "fornecedor-ajuste-os");
     const dataOsTexto = item.data_os ? ` | desde ${formatarDataOsCurtaFornecedor(item.data_os)}` : "";
-    ajuste.textContent = faltaAtual > 0
+    ajuste.textContent = itemMarcadoEx
+        ? `Inicial: ${quantidadeOriginal} | EX${dataOsTexto}`
+        : faltaAtual > 0
         ? `Inicial: ${quantidadeOriginal} | OS: ${faltaAtual}${dataOsTexto}`
         : `Inicial: ${quantidadeOriginal}`;
     if (item.origem_ajuste) {
@@ -213,7 +218,7 @@ function montarLinhaEdicaoProdutoFornecedor(pedido, item, indice) {
     const marcarOsInput = document.createElement("input");
     marcarOsInput.type = "checkbox";
     marcarOsInput.dataset.campo = "marcar_os";
-    marcarOsInput.checked = faltaAtual > 0 || item.estado_fornecedor === "OS";
+    marcarOsInput.checked = !itemMarcadoEx && (faltaAtual > 0 || item.estado_fornecedor === "OS");
     marcarOs.append(marcarOsInput, document.createTextNode(" Marcar OS"));
 
     const marcarEx = document.createElement("label");
@@ -222,7 +227,7 @@ function montarLinhaEdicaoProdutoFornecedor(pedido, item, indice) {
     const marcarExInput = document.createElement("input");
     marcarExInput.type = "checkbox";
     marcarExInput.dataset.campo = "marcar_ex";
-    marcarExInput.checked = item.estado_fornecedor === "EX";
+    marcarExInput.checked = itemMarcadoEx;
     marcarEx.append(marcarExInput, document.createTextNode(" Marcar EX"));
     marcarExInput.addEventListener("change", () => {
         if (marcarExInput.checked) {
@@ -258,11 +263,17 @@ function montarLinhaEdicaoProdutoFornecedor(pedido, item, indice) {
     };
     const atualizarAjuste = () => {
         const faltaValor = lerNumeroCampo(faltaInput);
-        ajuste.className = faltaValor > 0 ? "fornecedor-ajuste-os ativo" : "fornecedor-ajuste-os";
-        ajuste.textContent = faltaValor > 0
+        ajuste.className = marcarExInput.checked
+            ? "fornecedor-ajuste-os fornecedor-ajuste-ex ativo"
+            : faltaValor > 0
+                ? "fornecedor-ajuste-os ativo"
+                : "fornecedor-ajuste-os";
+        ajuste.textContent = marcarExInput.checked
+            ? `Inicial: ${quantidadeOriginal} | EX`
+            : faltaValor > 0
             ? `Inicial: ${quantidadeOriginal} | OS: ${faltaValor}`
             : `Inicial: ${quantidadeOriginal}`;
-        linha.classList.toggle("tem-os", faltaValor > 0 || marcarOsInput.checked);
+        linha.classList.toggle("tem-os", !marcarExInput.checked && (faltaValor > 0 || marcarOsInput.checked));
     };
 
     const sincronizarFalta = () => {
@@ -283,7 +294,7 @@ function montarLinhaEdicaoProdutoFornecedor(pedido, item, indice) {
         const faltaValor = lerNumeroCampo(faltaInput);
         faltaInput.value = String(faltaValor);
         quantidadeInput.value = String(Math.max(0, quantidadeOriginal - faltaValor));
-        marcarOsInput.checked = faltaValor > 0;
+        marcarOsInput.checked = !marcarExInput.checked && faltaValor > 0;
         atualizarAjuste();
     };
     const confirmarPreco = () => {
@@ -424,11 +435,41 @@ function processarLinhasListaOsFornecedor(texto) {
     return { itens, erros };
 }
 
+function analisarLinhaListaExFornecedor(linha, numeroLinha) {
+    const partes = dividirLinhaListaFinalFornecedor(linha).map((parte) => String(parte || "").trim()).filter(Boolean);
+    if (!partes.length) return null;
+
+    const referencia = partes[0];
+    if (!referencia) {
+        return { erro: `linha ${numeroLinha}: referência inválida`, original: linha };
+    }
+    return { referencia, original: linha };
+}
+
+function processarLinhasListaExFornecedor(texto) {
+    const linhas = String(texto || "").split(/\r?\n/);
+    const itens = [];
+    const erros = [];
+
+    linhas.forEach((linha, indice) => {
+        const analisada = analisarLinhaListaExFornecedor(linha, indice + 1);
+        if (!analisada) return;
+        if (analisada.erro) {
+            erros.push(analisada.erro);
+            return;
+        }
+        itens.push(analisada);
+    });
+
+    return { itens, erros };
+}
+
 function aplicarListaOsNaLinhaEdicaoFornecedor(linha, quantidadeOsIndicada = null) {
     const quantidadeOriginal = Math.max(0, Math.floor(Number(linha.dataset.quantidadeOriginal || 0)));
     const quantidadeInput = linha.querySelector('[data-campo="quantidade"]');
     const faltaInput = linha.querySelector('[data-campo="falta_os"]');
     const marcarOsInput = linha.querySelector('[data-campo="marcar_os"]');
+    const marcarExInput = linha.querySelector('[data-campo="marcar_ex"]');
     const removerInput = linha.querySelector('[data-campo="remover"]');
     if (!quantidadeInput || !faltaInput || !marcarOsInput) return false;
 
@@ -440,6 +481,7 @@ function aplicarListaOsNaLinhaEdicaoFornecedor(linha, quantidadeOsIndicada = nul
         )
     );
     if (removerInput) removerInput.checked = false;
+    if (marcarExInput) marcarExInput.checked = false;
     marcarOsInput.checked = true;
     faltaInput.value = String(faltaOs);
     quantidadeInput.value = String(Math.max(0, quantidadeOriginal - faltaOs));
@@ -449,6 +491,30 @@ function aplicarListaOsNaLinhaEdicaoFornecedor(linha, quantidadeOsIndicada = nul
     if (ajuste) {
         ajuste.className = "fornecedor-ajuste-os ativo";
         ajuste.textContent = `Inicial: ${quantidadeOriginal} | OS: ${faltaOs}`;
+    }
+    return true;
+}
+
+function aplicarListaExNaLinhaEdicaoFornecedor(linha) {
+    const quantidadeOriginal = Math.max(0, Math.floor(Number(linha.dataset.quantidadeOriginal || 0)));
+    const quantidadeInput = linha.querySelector('[data-campo="quantidade"]');
+    const faltaInput = linha.querySelector('[data-campo="falta_os"]');
+    const marcarOsInput = linha.querySelector('[data-campo="marcar_os"]');
+    const marcarExInput = linha.querySelector('[data-campo="marcar_ex"]');
+    const removerInput = linha.querySelector('[data-campo="remover"]');
+    if (!quantidadeInput || !faltaInput || !marcarExInput) return false;
+
+    if (removerInput) removerInput.checked = false;
+    if (marcarOsInput) marcarOsInput.checked = false;
+    marcarExInput.checked = true;
+    faltaInput.value = "0";
+    quantidadeInput.value = "0";
+    linha.classList.remove("tem-os");
+
+    const ajuste = linha.querySelector(".fornecedor-ajuste-os");
+    if (ajuste) {
+        ajuste.className = "fornecedor-ajuste-os fornecedor-ajuste-ex ativo";
+        ajuste.textContent = `Inicial: ${quantidadeOriginal} | EX`;
     }
     return true;
 }
@@ -517,11 +583,81 @@ function aplicarListaOsNaEdicaoFornecedor() {
     );
 }
 
+function aplicarListaExNaEdicaoFornecedor() {
+    const modal = document.getElementById("fornecedor-edicao-modal");
+    if (!modal || modal.hidden) return;
+    const area = modal.querySelector("#fornecedor-edicao-lista-ex");
+    const status = modal.querySelector("#fornecedor-edicao-status");
+    const texto = String(area?.value || "");
+
+    if (texto.length > FORNECEDOR_LISTA_MAX_CARACTERES) {
+        definirStatusEdicaoFornecedor(status, "erro", `A lista EX é demasiado grande. Limite: ${FORNECEDOR_LISTA_MAX_CARACTERES.toLocaleString("pt-PT")} caracteres.`);
+        return;
+    }
+    if (texto.split(/\r?\n/).filter((linha) => linha.trim()).length > FORNECEDOR_LISTA_MAX_LINHAS) {
+        definirStatusEdicaoFornecedor(status, "erro", `A lista EX tem demasiadas linhas. Limite: ${FORNECEDOR_LISTA_MAX_LINHAS} referências por colagem.`);
+        return;
+    }
+
+    const { itens, erros } = processarLinhasListaExFornecedor(texto);
+    if (!itens.length) {
+        definirStatusEdicaoFornecedor(status, "erro", erros.length ? erros.join("; ") : "Cole a lista EX do fornecedor antes de aplicar.");
+        return;
+    }
+
+    const linhas = Array.from(modal.querySelectorAll(".fornecedor-edicao-produto"));
+    const aplicadas = [];
+    const naoEncontradas = [];
+    const vistas = new Set();
+
+    itens.forEach((item) => {
+        const chave = normalizarReferenciaListaFornecedor(item.referencia);
+        if (vistas.has(chave)) return;
+        vistas.add(chave);
+
+        const linha = linhas.find((atual) => linhaEdicaoContemReferenciaFornecedor(atual, item.referencia));
+        if (!linha) {
+            naoEncontradas.push(item.referencia);
+            return;
+        }
+        if (aplicarListaExNaLinhaEdicaoFornecedor(linha)) {
+            aplicadas.push(item.referencia);
+        }
+    });
+
+    const avisos = [];
+    if (naoEncontradas.length) {
+        avisos.push(`${naoEncontradas.length} não estão nesta encomenda: ${naoEncontradas.join(", ")}`);
+    }
+    if (erros.length) avisos.push(erros.join("; "));
+    if (!aplicadas.length) {
+        definirStatusEdicaoFornecedor(
+            status,
+            "erro",
+            avisos.length
+                ? `Nenhuma figura EX aplicada. ${avisos.join(" | ")}`
+                : "Nenhuma figura da lista EX coincide com esta encomenda."
+        );
+        return;
+    }
+    definirStatusEdicaoFornecedor(
+        status,
+        avisos.length ? "aviso" : "sucesso",
+        `${aplicadas.length} figura(s) marcada(s) como EX (removidas do a receber sem OS).${avisos.length ? " " + avisos.join(" | ") : ""}`
+    );
+}
+
+function limparListaExEdicaoFornecedor() {
+    const modal = document.getElementById("fornecedor-edicao-modal");
+    const area = modal?.querySelector("#fornecedor-edicao-lista-ex");
+    if (area) area.value = "";
+}
+
 
 function garantirModalEdicaoFornecedor() {
     let modal = document.getElementById('fornecedor-edicao-modal');
-    // Recria se faltar a secção lista OS (modal antigo em memória)
-    if (modal && !modal.querySelector('#fornecedor-edicao-lista-os')) {
+    // Recria se faltar alguma secção nova (modal antigo em memória)
+    if (modal && (!modal.querySelector('#fornecedor-edicao-lista-os') || !modal.querySelector('#fornecedor-edicao-lista-ex'))) {
         modal.remove();
         modal = null;
     }
@@ -577,6 +713,15 @@ function garantirModalEdicaoFornecedor() {
                             <button type="button" id="fornecedor-edicao-aplicar-lista-os" class="wallapop-botao-destaque">Marcar OS na encomenda</button>
                         </div>
                     </section>
+                    <section class="fornecedor-lista-final-box fornecedor-lista-ex-edicao" aria-label="Lista EX enviada pelo fornecedor">
+                        <h4>Colar lista EX do fornecedor</h4>
+                        <p>Cola as referências que o fornecedor indicou como EX. São marcadas como EX e saem do “a receber” sem criar OS.</p>
+                        <textarea id="fornecedor-edicao-lista-ex" rows="4" placeholder="Ex.:&#10;AF301&#10;PG634"></textarea>
+                        <div class="fornecedor-lista-final-acoes">
+                            <button type="button" id="fornecedor-edicao-limpar-lista-ex">Limpar texto</button>
+                            <button type="button" id="fornecedor-edicao-aplicar-lista-ex" class="wallapop-botao-destaque">Marcar EX na encomenda</button>
+                        </div>
+                    </section>
                     <div class="fornecedor-edicao-produtos" id="fornecedor-edicao-produtos"></div>
                     <p class="fornecedores-status fornecedor-edicao-status" id="fornecedor-edicao-status" role="status"></p>
                 </div>
@@ -595,6 +740,8 @@ function garantirModalEdicaoFornecedor() {
     modal.querySelector('#fornecedor-edicao-limpar-lista-final')?.addEventListener('click', limparListaFinalEdicaoFornecedor);
     modal.querySelector('#fornecedor-edicao-aplicar-lista-os')?.addEventListener('click', aplicarListaOsNaEdicaoFornecedor);
     modal.querySelector('#fornecedor-edicao-limpar-lista-os')?.addEventListener('click', limparListaOsEdicaoFornecedor);
+    modal.querySelector('#fornecedor-edicao-aplicar-lista-ex')?.addEventListener('click', aplicarListaExNaEdicaoFornecedor);
+    modal.querySelector('#fornecedor-edicao-limpar-lista-ex')?.addEventListener('click', limparListaExEdicaoFornecedor);
     ligarFechoModalPorFundo(modal, fecharEdicaoPedidoFornecedor);
     modal.querySelector('#fornecedor-edicao-form')?.addEventListener('submit', guardarEdicaoPedidoFornecedor);
     modal.querySelector('#fornecedor-edicao-form')?.addEventListener('keydown', (evento) => {
@@ -631,6 +778,8 @@ function abrirEdicaoPedidoFornecedor(id) {
     modal.querySelector('#fornecedor-edicao-lista-final').value = '';
     const listaOs = modal.querySelector('#fornecedor-edicao-lista-os');
     if (listaOs) listaOs.value = '';
+    const listaEx = modal.querySelector('#fornecedor-edicao-lista-ex');
+    if (listaEx) listaEx.value = '';
 
     const lista = modal.querySelector('#fornecedor-edicao-produtos');
     lista.replaceChildren();
@@ -668,7 +817,7 @@ function lerItensEditadosPedidoFornecedor(pedido, modal) {
         }
         // A diferença entre quantidade original e a receber só implica OS quando
         // não é um caso de EX (aí a quantidade foi reduzida por preço, não por falta).
-        const faltaOs = marcarEx ? faltaOsIndicada : Math.max(faltaOsIndicada, quantidadeOriginal - quantidade);
+        const faltaOs = marcarEx ? 0 : Math.max(faltaOsIndicada, quantidadeOriginal - quantidade);
         const precoCusto = Math.max(0, Number(String(linha.querySelector('[data-campo="preco_custo"]')?.value || '').replace(',', '.')) || 0);
         const recebido = Math.max(0, Math.floor(Number(linha.querySelector('[data-campo="recebido"]')?.dataset.valor || item.recebido || 0)));
         const estaOs = !marcarEx && (faltaOs > 0 || marcarOs);
