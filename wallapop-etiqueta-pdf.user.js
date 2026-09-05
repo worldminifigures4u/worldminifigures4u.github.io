@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Wallapop etiqueta - PDF
 // @namespace    figuresplanet
-// @version      5.9
+// @version      6.0
 // @description  Guarda etiqueta Wallapop em PDF A4 com nome da encomenda em tamanho compacto
 // @match        https://*.wallapop.com/*
 // @match        https://wallapop-delivery-labels.wallapop.com/*
@@ -19,10 +19,15 @@
 
   const STORAGE_NOME_WALLAPOP = 'fp_wallapop_cliente_wallapop';
   const STORAGE_TS_WALLAPOP = 'fp_wallapop_cliente_wallapop_ts';
+  const STORAGE_NOME_WALLAPOP_ETIQUETA = 'fp_wallapop_cliente_wallapop_etiqueta';
+  const STORAGE_TS_WALLAPOP_ETIQUETA = 'fp_wallapop_cliente_wallapop_etiqueta_ts';
+  const STORAGE_BLOQUEIO_FALLBACK = 'fp_wallapop_cliente_bloqueio_fallback_ts';
   const STORAGE_NOME_FIGURESPLANET = 'fp_wallapop_cliente_figuresplanet';
   const STORAGE_TS_FIGURESPLANET = 'fp_wallapop_cliente_figuresplanet_ts';
   const EXPIRACAO_WALLAPOP_MS = 5 * 60 * 1000;
+  const EXPIRACAO_WALLAPOP_ETIQUETA_MS = 10 * 60 * 1000;
   const EXPIRACAO_FIGURESPLANET_MS = 30 * 60 * 1000;
+  const EXPIRACAO_BLOQUEIO_FALLBACK_MS = 90 * 1000;
 
   const A4_LARGURA_MM = 210;
   const A4_ALTURA_MM = 297;
@@ -79,10 +84,40 @@
     GM_setValue(STORAGE_TS_WALLAPOP, 0);
   }
 
-  function guardarNomeCliente({ limparSeFalhar = false } = {}) {
+  function limparNomeWallapopEtiqueta() {
+    GM_setValue(STORAGE_NOME_WALLAPOP_ETIQUETA, '');
+    GM_setValue(STORAGE_TS_WALLAPOP_ETIQUETA, 0);
+  }
+
+  function bloquearFallbackNomeEtiqueta() {
+    GM_setValue(STORAGE_BLOQUEIO_FALLBACK, Date.now());
+  }
+
+  function desbloquearFallbackNomeEtiqueta() {
+    GM_setValue(STORAGE_BLOQUEIO_FALLBACK, 0);
+  }
+
+  function fallbackNomeEtiquetaBloqueado() {
+    const ts = Number(GM_getValue(STORAGE_BLOQUEIO_FALLBACK, 0)) || 0;
+    return ts && Date.now() - ts <= EXPIRACAO_BLOQUEIO_FALLBACK_MS;
+  }
+
+  function guardarNomeCliente({ limparSeFalhar = false, guardarParaEtiqueta = false } = {}) {
     const nome = extrairNomeCliente();
-    if (guardarNomeComChave(nome, STORAGE_NOME_WALLAPOP, STORAGE_TS_WALLAPOP)) return true;
-    if (limparSeFalhar) limparNomeWallapop();
+    if (guardarNomeComChave(nome, STORAGE_NOME_WALLAPOP, STORAGE_TS_WALLAPOP)) {
+      if (guardarParaEtiqueta) {
+        guardarNomeComChave(nome, STORAGE_NOME_WALLAPOP_ETIQUETA, STORAGE_TS_WALLAPOP_ETIQUETA);
+        desbloquearFallbackNomeEtiqueta();
+      }
+      return true;
+    }
+    if (limparSeFalhar) {
+      limparNomeWallapop();
+      if (guardarParaEtiqueta) {
+        limparNomeWallapopEtiqueta();
+        bloquearFallbackNomeEtiqueta();
+      }
+    }
     return false;
   }
 
@@ -109,13 +144,18 @@
   }
 
   function obterNomeEtiqueta() {
+    const nomeWallapopEtiqueta = obterValorRecente(
+      STORAGE_NOME_WALLAPOP_ETIQUETA,
+      STORAGE_TS_WALLAPOP_ETIQUETA,
+      EXPIRACAO_WALLAPOP_ETIQUETA_MS
+    );
     const nomeWallapop = obterValorRecente(STORAGE_NOME_WALLAPOP, STORAGE_TS_WALLAPOP, EXPIRACAO_WALLAPOP_MS);
     const nomeFiguresPlanet = obterValorRecente(
       STORAGE_NOME_FIGURESPLANET,
       STORAGE_TS_FIGURESPLANET,
       EXPIRACAO_FIGURESPLANET_MS
     );
-    const nome = nomeWallapop || nomeFiguresPlanet;
+    const nome = nomeWallapopEtiqueta || nomeWallapop || (fallbackNomeEtiquetaBloqueado() ? '' : nomeFiguresPlanet);
     return nome ? `Etiqueta - ${nome}` : 'Etiqueta';
   }
 
@@ -124,6 +164,8 @@
   }
 
   function iniciarCapturaCliente() {
+    limparNomeWallapop();
+    limparNomeWallapopEtiqueta();
     guardarNomeCliente();
 
     document.addEventListener(
@@ -131,7 +173,7 @@
       (e) => {
         const alvo = e.target.closest('button, a, [role="button"]');
         if (alvo && /mostrar etiqueta/i.test(alvo.textContent || '')) {
-          guardarNomeCliente({ limparSeFalhar: true });
+          guardarNomeCliente({ limparSeFalhar: true, guardarParaEtiqueta: true });
         }
       },
       true
