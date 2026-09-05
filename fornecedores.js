@@ -796,7 +796,8 @@ function normalizarItemPedidoFornecedor(item) {
         preco_custo: Number.isFinite(precoCusto) ? Math.max(0, precoCusto) : 0,
         estado_fornecedor: estadoFornecedor || (faltaOs > 0 ? 'OS' : ''),
         marcado_ex: marcadoEx,
-        origem_ajuste: item.origem_ajuste || ''
+        origem_ajuste: item.origem_ajuste || '',
+        data_origem_ajuste: item.data_origem_ajuste || null
     };
 }
 
@@ -922,6 +923,9 @@ function fundirItemPedidoFornecedor(destino, origem) {
     if (!destino.origem_ajuste && origem.origem_ajuste) {
         destino.origem_ajuste = origem.origem_ajuste;
     }
+    if (!destino.data_origem_ajuste && origem.data_origem_ajuste) {
+        destino.data_origem_ajuste = origem.data_origem_ajuste;
+    }
     return destino;
 }
 
@@ -962,6 +966,7 @@ function serializarItemPedidoFornecedor(item) {
         data_recebida: normalizado.data_recebida || null,
         estado_fornecedor: String(normalizado.estado_fornecedor || ''),
         origem_ajuste: String(normalizado.origem_ajuste || ''),
+        data_origem_ajuste: normalizado.data_origem_ajuste || null,
         recebido: Math.max(0, Math.floor(Number(normalizado.recebido || 0))),
         novidade: obterBooleanoProdutoFornecedor(normalizado.novidade),
         stock_no_momento: (() => {
@@ -1033,6 +1038,31 @@ function obterTextoOrigemAjustePedidoFornecedor(origemAjuste) {
     if (origemAjuste === "reforco") return "Quantidade aumentada";
     if (origemAjuste === "lista-final") return "Ajustado pela lista final";
     return "";
+}
+
+function formatarDataAjustePedidoFornecedor(valor) {
+    if (!valor) return "";
+    const texto = String(valor).trim();
+    const isoDia = texto.match(/^(\d{4})-(\d{2})-(\d{2})/);
+    if (isoDia) return `${isoDia[3]}/${isoDia[2]}/${isoDia[1]}`;
+    const data = new Date(texto);
+    if (Number.isNaN(data.getTime())) return "";
+    return new Intl.DateTimeFormat("pt-PT", {
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric"
+    }).format(data);
+}
+
+function obterTextoOrigemAjusteItemPedidoFornecedor(item, pedido = null) {
+    const origemAjuste = String(item?.origem_ajuste || "").trim();
+    if (origemAjuste === "substituicao") {
+        const data = formatarDataAjustePedidoFornecedor(
+            item?.data_origem_ajuste || pedido?.atualizado_em || pedido?.criado_em
+        );
+        return data || obterTextoOrigemAjustePedidoFornecedor(origemAjuste);
+    }
+    return obterTextoOrigemAjustePedidoFornecedor(origemAjuste);
 }
 
 function escaparHtmlFornecedor(valor) {
@@ -2453,6 +2483,7 @@ function criarItemFornecedorAPartirListaFinal(analisada, produto = null) {
         falta_os: 0,
         estado_fornecedor: "",
         origem_ajuste: "lista-final",
+        data_origem_ajuste: dataOsAgoraFornecedor(),
         recebido: 0,
         preco_custo: precoCusto,
         preco: precoCusto,
@@ -3616,6 +3647,7 @@ async function atualizarPedidoFornecedor(id, alteracoes) {
 
 function criarItemFornecedorAPartirSelecao(item, origemAjuste = '') {
     const quantidade = Math.max(1, Math.floor(Number(item.quantidade) || 1));
+    const origem = String(origemAjuste || '').trim();
     return normalizarItemPedidoFornecedor({
         id: item.id,
         nome: item.nome,
@@ -3627,7 +3659,8 @@ function criarItemFornecedorAPartirSelecao(item, origemAjuste = '') {
         quantidade_original: quantidade,
         falta_os: 0,
         estado_fornecedor: '',
-        origem_ajuste: origemAjuste,
+        origem_ajuste: origem,
+        data_origem_ajuste: origem ? dataOsAgoraFornecedor() : null,
         recebido: 0,
         novidade: obterNovidadeParaItemPedidoFornecedor(item),
         stock_no_momento: Number(item.stock || 0),
@@ -4027,6 +4060,7 @@ async function adicionarSelecaoAoPedidoFornecedor(id) {
             existente.quantidade = Math.max(0, Number(existente.quantidade || 0)) + quantidade;
             existente.quantidade_original = Math.max(0, Number(existente.quantidade_original || existente.quantidade || 0)) + quantidade;
             existente.origem_ajuste = existente.origem_ajuste || 'reforco';
+            existente.data_origem_ajuste = existente.data_origem_ajuste || dataOsAgoraFornecedor();
             const precoCusto = Math.max(0, Number(selecionado.preco_custo ?? selecionado.custo ?? 0) || 0);
             if (precoCusto > 0) {
                 existente.preco_custo = precoCusto;
@@ -4092,7 +4126,7 @@ function obterValorOrdenacaoItemPedidoFornecedor(item, coluna) {
         const partes = [];
         if (faltaOs > 0) partes.push("OS/Falta");
         if (marcadoEx) partes.push("EX");
-        if (item?.origem_ajuste) partes.push(obterTextoOrigemAjustePedidoFornecedor(item.origem_ajuste));
+        if (item?.origem_ajuste) partes.push(obterTextoOrigemAjusteItemPedidoFornecedor(item));
         return partes.join(" ") || "-";
     }
     return item?.nome || "";
@@ -4267,7 +4301,7 @@ function renderizarPedidoFornecedorProdutosTabela(caixa, pedido) {
         if (item.origem_ajuste) {
             const origemSpan = document.createElement("span");
             origemSpan.className = "fornecedor-ajuste-os";
-            origemSpan.textContent = obterTextoOrigemAjustePedidoFornecedor(item.origem_ajuste);
+            origemSpan.textContent = obterTextoOrigemAjusteItemPedidoFornecedor(item, pedido);
             origemCelula.appendChild(origemSpan);
         }
         if (!origemCelula.childElementCount) origemCelula.textContent = "-";
@@ -4314,7 +4348,7 @@ function criarDetalhesPedidoFornecedor(pedido) {
             if (faltaOs > 0) linhaProduto.classList.add("tem-os");
             linhaProduto.appendChild(criarImagemFornecedor(produtoAtual, "fornecedor-miniatura pequena"));
             const info = criarElementoPedidoFornecedor("div", "fornecedor-info");
-            info.innerHTML = `<strong>${escaparHtmlFornecedor(item.nome)}</strong><span class="fornecedor-identificadores">Ref. ${escaparHtmlFornecedor(item.referencia || "-")} | SKU ${escaparHtmlFornecedor(item.sku || "-")}</span><span>Pedido: ${Number(item.quantidade || 0)} | Recebido: ${recebido} | Stock atual: ${Number(produtoAtual.stock || 0)}</span>${faltaOs > 0 ? `<span class="fornecedor-ajuste-os ativo">OS/Falta: ${faltaOs}${item.quantidade_original ? ` de ${Number(item.quantidade_original || 0)}` : ""}</span>` : ""}${marcadoEx ? `<span class="fornecedor-ajuste-os fornecedor-ajuste-ex ativo">EX</span>` : ""}${item.origem_ajuste ? `<span class="fornecedor-ajuste-os">${escaparHtmlFornecedor(obterTextoOrigemAjustePedidoFornecedor(item.origem_ajuste))}</span>` : ""}`;
+            info.innerHTML = `<strong>${escaparHtmlFornecedor(item.nome)}</strong><span class="fornecedor-identificadores">Ref. ${escaparHtmlFornecedor(item.referencia || "-")} | SKU ${escaparHtmlFornecedor(item.sku || "-")}</span><span>Pedido: ${Number(item.quantidade || 0)} | Recebido: ${recebido} | Stock atual: ${Number(produtoAtual.stock || 0)}</span>${faltaOs > 0 ? `<span class="fornecedor-ajuste-os ativo">OS/Falta: ${faltaOs}${item.quantidade_original ? ` de ${Number(item.quantidade_original || 0)}` : ""}</span>` : ""}${marcadoEx ? `<span class="fornecedor-ajuste-os fornecedor-ajuste-ex ativo">EX</span>` : ""}${item.origem_ajuste ? `<span class="fornecedor-ajuste-os">${escaparHtmlFornecedor(obterTextoOrigemAjusteItemPedidoFornecedor(item, pedido))}</span>` : ""}`;
             const input = document.createElement("input");
             input.type = "number";
             input.min = "0";
