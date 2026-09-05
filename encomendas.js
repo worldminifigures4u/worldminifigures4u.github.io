@@ -605,6 +605,11 @@ async function concluirEncomendasSelecionadas() {
     if (botao) botao.disabled = true;
     definirStatusEncomendas(`A concluir ${selecionadas.length} encomenda(s) selecionada(s)...`, 'processando');
 
+    const recibosAntes = new Set(
+        selecionadas
+            .filter(encomenda => encomenda.moloni_document_id)
+            .map(encomenda => String(encomenda.id))
+    );
     let concluidas = 0;
     for (const encomenda of selecionadas) {
         const selectTemporario = document.createElement('select');
@@ -625,7 +630,14 @@ async function concluirEncomendasSelecionadas() {
 
     if (botao) botao.disabled = false;
     renderizarEncomendasAdmin();
-    definirStatusEncomendas(`${concluidas} encomenda(s) concluída(s).`);
+    const recibosCriados = selecionadas.filter(encomenda => (
+        encomenda.moloni_document_id
+        && !recibosAntes.has(String(encomenda.id))
+    )).length;
+    const detalheMoloni = escolhaConclusao === 'emitir'
+        ? ` ${recibosCriados} recibo(s) Moloni emitido(s).`
+        : ' Recibos Moloni deixados para mais tarde.';
+    definirStatusEncomendas(`${concluidas} encomenda(s) concluída(s).${detalheMoloni}`);
 }
 
 function renderizarEncomendasAdmin() {

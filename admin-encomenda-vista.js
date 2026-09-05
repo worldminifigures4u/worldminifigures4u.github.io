@@ -1726,6 +1726,10 @@ window.AdminEncomendaVista = (function () {
             }
             if (emitirFaturaDepois) {
                 if (opcoes.aguardarFaturaMoloni === true) {
+                    hooks.definirStatus(
+                        `A emitir fatura-recibo Moloni para ${encomenda.codigo_encomenda || ""}...`,
+                        "processando"
+                    );
                     const fatura = await emitirFaturaMoloni(encomenda, { forcarEmissao: forcarEmissaoFatura });
                     if (fatura?.sucesso) {
                         const numeroFatura = fatura.numero && String(fatura.numero) !== "0"
