@@ -1673,7 +1673,6 @@ function garantirModalEdicaoProdutoMapa() {
         if (id) abrirEdicaoProdutoMapa(id);
     });
     modal.querySelector("#mapas-produto-apagar")?.addEventListener("click", apagarProdutoMapa);
-    ligarFechoModalPorFundo(modal, fecharEdicaoProdutoMapa);
     modal.querySelector("#mapas-produto-form")?.addEventListener("submit", guardarEdicaoProdutoMapa);
     return modal;
 }
