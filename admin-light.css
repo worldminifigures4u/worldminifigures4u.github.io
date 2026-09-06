@@ -1228,6 +1228,14 @@ html.admin-light-mode body.cabecalho-com-admin .admin-encomenda-produto.marcado-
     box-shadow:inset 4px 0 0 #ff4d4f !important;
 }
 
+html.admin-light-mode body.cabecalho-com-admin :is(
+    .admin-encomenda-produto-quantidade,
+    .admin-encomenda-produto-marcacao-ultimo.marcacao-ativa .admin-encomenda-produto-marcacao-texto,
+    .admin-encomenda-resumo-alerta
+){
+    color:#b42318 !important;
+}
+
 html.admin-light-mode body.cabecalho-com-admin .admin-encomenda-produto.marcado-penultimo{
     background:#fff6e8 !important;
     box-shadow:inset 4px 0 0 #f59e0b !important;
