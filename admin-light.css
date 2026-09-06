@@ -197,6 +197,8 @@ html.admin-light-mode body.cabecalho-com-admin :is(
     background:#ffffff !important;
     border-color:#b9c5d2 !important;
     color:#17202a !important;
+    -webkit-text-fill-color:#17202a !important;
+    caret-color:#17202a !important;
 }
 
 html.admin-light-mode body.cabecalho-com-admin :is(input, textarea)::placeholder{
@@ -982,6 +984,8 @@ html.admin-light-mode body.cabecalho-com-admin :is(
     background:#fbfcfe !important;
     border-color:#c3ccd8 !important;
     color:#182231 !important;
+    -webkit-text-fill-color:#182231 !important;
+    caret-color:#182231 !important;
     box-shadow:none !important;
 }
 
