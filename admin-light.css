@@ -651,6 +651,26 @@ html.admin-light-mode body.cabecalho-com-admin .admin-encomenda-anexo span{
     color:#17202a !important;
 }
 
+html.admin-light-mode body.cabecalho-com-admin .admin-encomenda-produto-observacoes.com-nota{
+    display:block !important;
+    width:fit-content !important;
+    max-width:100% !important;
+    padding:4px 7px 4px 9px !important;
+    border-left:3px solid #d97706 !important;
+    border-radius:4px !important;
+    background:#fff7d6 !important;
+    color:#7c2d12 !important;
+    font-size:12px !important;
+    font-weight:800 !important;
+    line-height:1.25 !important;
+    box-shadow:0 0 0 1px rgba(217,119,6,.18) !important;
+}
+
+html.admin-light-mode body.cabecalho-com-admin .admin-encomenda-produto-observacoes.sem-nota{
+    color:#748094 !important;
+    font-weight:600 !important;
+}
+
 html.admin-light-mode body.cabecalho-com-admin .admin-encomenda-anexo-pendente{
     background:#f7f9fc !important;
     border-style:dashed !important;

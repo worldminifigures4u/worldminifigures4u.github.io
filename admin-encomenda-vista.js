@@ -2098,12 +2098,17 @@ window.AdminEncomendaVista = (function () {
                 encomenda, item, indice, "ultimo", linhaProduto, { atual: celulaPenultimo }
             );
             refUltimo.atual = celulaUltimo;
+            const observacoesTexto = obterObservacoesProduto(item);
 
             linhaProduto.append(
                 criarMiniaturaProduto(item),
                 criarElemento("span", "admin-encomenda-produto-quantidade", quantidade > 1 ? `${quantidade} x` : ""),
                 criarElemento("strong", "admin-encomenda-produto-nome", item.nome || "Produto"),
-                criarElemento("span", "admin-encomenda-produto-observacoes", obterObservacoesProduto(item) || "—"),
+                criarElemento(
+                    "span",
+                    `admin-encomenda-produto-observacoes${observacoesTexto ? " com-nota" : " sem-nota"}`,
+                    observacoesTexto || "—"
+                ),
                 criarElemento("span", "admin-encomenda-produto-tema", obterTemaProduto(item)),
                 criarElemento("span", "admin-encomenda-produto-subtema", obterSubtemaProduto(item)),
                 criarElemento("span", "admin-encomenda-produto-referencia", obterReferenciaProduto(item) || "—"),
