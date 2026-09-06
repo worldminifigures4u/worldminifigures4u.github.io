@@ -163,18 +163,19 @@ window.AdminEncomendaVista = (function () {
         return true;
     }
 
-    function pedirCodigoSeguimento(encomenda) {
+    async function pedirCodigoSeguimento(encomenda) {
         const codigoEncomenda = encomenda.codigo_encomenda || encomenda.id || "";
         const rotuloEnvio = obterRotuloEnvioRegistado(encomenda);
         const atual = String(encomenda.codigo_seguimento || "").trim();
-        const resposta = window.prompt(
+        const resposta = await pedirTextoSite(
             `Encomenda ${codigoEncomenda} · ${rotuloEnvio}\nIndique o código de envio/seguimento:`,
-            atual
+            atual,
+            { titulo: "Código de envio", textoConfirmar: "Guardar" }
         );
         if (resposta === null) return null;
         const codigo = String(resposta).trim();
         if (!codigo) {
-            window.alert(`O código de envio é obrigatório para ${rotuloEnvio}.`);
+            await mostrarAvisoSite(`O código de envio é obrigatório para ${rotuloEnvio}.`, { titulo: "Código obrigatório" });
             return null;
         }
         return codigo;
@@ -281,7 +282,7 @@ window.AdminEncomendaVista = (function () {
         return partes.join(" | ") || String(error);
     }
 
-    function confirmarRecuperacaoStockNegativo(produtosSemStock) {
+    async function confirmarRecuperacaoStockNegativo(produtosSemStock) {
         const lista = Array.isArray(produtosSemStock) ? produtosSemStock : [];
         if (!lista.length) return false;
         const detalhes = lista.map(item => {
@@ -296,11 +297,12 @@ window.AdminEncomendaVista = (function () {
             return `• ${nome}\n  Stock registado: ${stock} | Necessário: ${necessario}`
                 + (resultante !== null ? ` | Stock após recuperar: ${resultante}` : "");
         }).join("\n\n");
-        return window.confirm(
+        return mostrarConfirmacaoSite(
             "Há figuras sem stock suficiente para recuperar esta encomenda.\n\n"
             + detalhes
             + "\n\nConfirmas que queres recuperar mesmo assim? O stock pode ficar negativo.\n"
-            + "Quando receberes a encomenda do fornecedor, o stock soma a esse valor (ex.: -1 + 5 = 4)."
+            + "Quando receberes a encomenda do fornecedor, o stock soma a esse valor (ex.: -1 + 5 = 4).",
+            { titulo: "Stock insuficiente", textoConfirmar: "Recuperar", textoCancelar: "Cancelar" }
         );
     }
 
@@ -745,7 +747,11 @@ window.AdminEncomendaVista = (function () {
                     const apagar = criarElemento("button", "wallapop-botao admin-encomenda-anexo-apagar", "Eliminar");
                     apagar.type = "button";
                     apagar.addEventListener("click", async () => {
-                        if (!window.confirm(`Eliminar o anexo "${nome.textContent}"?`)) return;
+                        if (!(await mostrarConfirmacaoSite(`Eliminar o anexo "${nome.textContent}"?`, {
+                            titulo: "Eliminar anexo",
+                            textoConfirmar: "Eliminar",
+                            textoCancelar: "Cancelar"
+                        }))) return;
                         apagar.disabled = true;
                         const caminho = `${pastaAnexos(encomenda)}/${anexo.name}`;
                         const { error } = await obterClient().storage.from(ANEXOS_BUCKET).remove([caminho]);
@@ -1473,7 +1479,11 @@ window.AdminEncomendaVista = (function () {
         botao.addEventListener("click", async evento => {
             evento.stopPropagation();
             const codigo = encomenda.codigo_encomenda || "";
-            if (!window.confirm(`Emitir fatura-recibo Moloni para a encomenda ${codigo}?`)) return;
+            if (!(await mostrarConfirmacaoSite(`Emitir fatura-recibo Moloni para a encomenda ${codigo}?`, {
+                titulo: "Emitir Moloni",
+                textoConfirmar: "Emitir",
+                textoCancelar: "Cancelar"
+            }))) return;
             botao.disabled = true;
             hooks.definirStatus(`A emitir fatura-recibo Moloni para ${codigo}...`, "processando");
             try {
@@ -1523,7 +1533,11 @@ window.AdminEncomendaVista = (function () {
             if (encomenda.stock_reposto) {
                 mensagemRecuperacao += "\n\nO stock dos produtos será novamente reduzido.";
             }
-            if (!window.confirm(mensagemRecuperacao)) {
+            if (!(await mostrarConfirmacaoSite(mensagemRecuperacao, {
+                titulo: "Recuperar encomenda",
+                textoConfirmar: "Recuperar",
+                textoCancelar: "Cancelar"
+            }))) {
                 select.value = estadoAnterior;
                 return;
             }
@@ -1536,7 +1550,11 @@ window.AdminEncomendaVista = (function () {
                 : estado === "Devolvido"
                     ? `Marcar a encomenda ${codigo} como devolvida e repor automaticamente o stock dos produtos?\n\nConfirme apenas quando já recebeu a devolução e verificou as figuras.`
                     : `Cancelar a encomenda ${codigo} e repor automaticamente o stock dos produtos?`;
-            if (!window.confirm(mensagemCancelamento)) {
+            if (!(await mostrarConfirmacaoSite(mensagemCancelamento, {
+                titulo: estado === "Devolvido" ? "Marcar devolvida" : "Cancelar encomenda",
+                textoConfirmar: estado === "Devolvido" ? "Marcar devolvida" : "Cancelar encomenda",
+                textoCancelar: "Voltar"
+            }))) {
                 select.value = estadoAnterior;
                 return;
             }
@@ -1545,7 +1563,11 @@ window.AdminEncomendaVista = (function () {
         if (estado === "Pago" && estadoAnterior !== "Pago") {
             const codigo = encomenda.codigo_encomenda || "";
             const origem = encomenda.origem || "Site";
-            if (!window.confirm(`Marcar a encomenda ${codigo} (${origem}) como Pago?`)) {
+            if (!(await mostrarConfirmacaoSite(`Marcar a encomenda ${codigo} (${origem}) como Pago?`, {
+                titulo: "Marcar como pago",
+                textoConfirmar: "Marcar pago",
+                textoCancelar: "Cancelar"
+            }))) {
                 select.value = estadoAnterior;
                 return;
             }
@@ -1594,7 +1616,7 @@ window.AdminEncomendaVista = (function () {
                     && Array.isArray(data.produtos_sem_stock)
                     && data.produtos_sem_stock.length
                 ) {
-                    if (!confirmarRecuperacaoStockNegativo(data.produtos_sem_stock)) {
+                    if (!(await confirmarRecuperacaoStockNegativo(data.produtos_sem_stock))) {
                         select.value = estadoAnterior;
                         hooks.definirStatus("Recuperação cancelada: stock insuficiente.");
                         return;
@@ -1773,7 +1795,11 @@ window.AdminEncomendaVista = (function () {
             hooks.definirStatus(`Não é possível apagar a encomenda ${codigo}: o stock ainda não está marcado como reposto.`, true);
             return;
         }
-        if (!window.confirm(`Apagar definitivamente a encomenda ${codigo}? Esta ação não pode ser desfeita.`)) return;
+        if (!(await mostrarConfirmacaoSite(`Apagar definitivamente a encomenda ${codigo}? Esta ação não pode ser desfeita.`, {
+            titulo: "Apagar encomenda",
+            textoConfirmar: "Apagar",
+            textoCancelar: "Cancelar"
+        }))) return;
 
         botao.disabled = true;
         hooks.definirStatus("A apagar encomenda...");

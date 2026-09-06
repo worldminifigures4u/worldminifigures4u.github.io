@@ -695,8 +695,16 @@ async function apagarFichaCliente(dados, botao) {
     const avisoHistorico = encomendas > 0
         ? `\n\nEste cliente tem ${encomendas} encomenda(s). As encomendas ficam guardadas, mas deixam de estar ligadas a esta ficha.`
         : "";
-    if (!window.confirm(`Apagar definitivamente a ficha de ${nome}?${avisoHistorico}`)) return;
-    if (!window.confirm("Confirmar eliminação definitiva da ficha do cliente?")) return;
+    if (!(await mostrarConfirmacaoSite(`Apagar definitivamente a ficha de ${nome}?${avisoHistorico}`, {
+        titulo: "Apagar cliente",
+        textoConfirmar: "Continuar",
+        textoCancelar: "Cancelar"
+    }))) return;
+    if (!(await mostrarConfirmacaoSite("Confirmar eliminação definitiva da ficha do cliente?", {
+        titulo: "Confirmação final",
+        textoConfirmar: "Apagar",
+        textoCancelar: "Cancelar"
+    }))) return;
 
     botao.disabled = true;
     definirStatusClientes("A apagar ficha do cliente...");

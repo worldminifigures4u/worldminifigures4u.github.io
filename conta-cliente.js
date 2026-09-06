@@ -344,7 +344,10 @@ async function eliminarContaUtilizador(event) {
         if (!password) throw new Error('Introduza a sua palavra-passe atual.');
         if (confirmacao !== 'ELIMINAR') throw new Error('Escreva ELIMINAR exatamente como indicado.');
 
-        const confirmou = window.confirm('Eliminar definitivamente a sua conta? Esta ação não pode ser anulada.');
+        const confirmou = await mostrarConfirmacaoSite(
+            'Eliminar definitivamente a sua conta? Esta ação não pode ser anulada.',
+            { titulo: "Eliminar conta", textoConfirmar: "Eliminar", textoCancelar: "Cancelar" }
+        );
         if (!confirmou) return;
 
         const { data: { session }, error: sessionError } = await dbClient.auth.getSession();

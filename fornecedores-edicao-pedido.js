@@ -82,7 +82,7 @@ function processarLinhasListaFinalFornecedor(texto) {
     return { itens, erros, foraCatalogo, unidades };
 }
 
-function aplicarListaFinalFornecedor() {
+async function aplicarListaFinalFornecedor() {
     const area = document.getElementById("fornecedor-lista-final");
     if (!area) return;
     const textoLista = String(area.value || "");
@@ -102,7 +102,10 @@ function aplicarListaFinalFornecedor() {
         return;
     }
 
-    if (fornecedorSelecao.length && !window.confirm("Substituir a lista atual pela lista final enviada pelo fornecedor?")) {
+    if (fornecedorSelecao.length && !(await mostrarConfirmacaoSite(
+        "Substituir a lista atual pela lista final enviada pelo fornecedor?",
+        { titulo: "Substituir lista", textoConfirmar: "Substituir", textoCancelar: "Cancelar" }
+    ))) {
         return;
     }
 

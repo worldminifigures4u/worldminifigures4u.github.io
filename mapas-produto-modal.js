@@ -494,9 +494,12 @@ function criarBlocoFornecedorFallbackMapa(form, id, rotulo, valor, opcoes = {}) 
             apagar.setAttribute("aria-label", `Apagar linha ${rotuloHistoricoFornecedorLeituraMapa(item.tipo)}`);
             apagar.title = "Apagar esta linha";
             apagar.textContent = "×";
-            apagar.addEventListener("click", () => {
+            apagar.addEventListener("click", async () => {
                 const rotuloLinha = `${formatarDataFornecedorLeituraMapa(item.data) || "sem data"} - ${rotuloHistoricoFornecedorLeituraMapa(item.tipo)}`;
-                if (!window.confirm(`Apagar esta linha do histórico de ${rotulo}?\n\n${rotuloLinha}\n\nSó fica definitivo ao guardar o produto.`)) {
+                if (!(await mostrarConfirmacaoSite(
+                    `Apagar esta linha do histórico de ${rotulo}?\n\n${rotuloLinha}\n\nSó fica definitivo ao guardar o produto.`,
+                    { titulo: "Apagar histórico", textoConfirmar: "Apagar", textoCancelar: "Cancelar" }
+                ))) {
                     return;
                 }
                 historicoAtual = historicoAtual.filter((_, i) => i !== indice);
@@ -508,8 +511,11 @@ function criarBlocoFornecedorFallbackMapa(form, id, rotulo, valor, opcoes = {}) 
         });
     };
 
-    botaoLimpar.addEventListener("click", () => {
-        if (!window.confirm(`Limpar o histórico de ${rotulo} nesta ficha?\n\nA marcação atual também fica vazia. Só fica definitivo ao guardar o produto.`)) {
+    botaoLimpar.addEventListener("click", async () => {
+        if (!(await mostrarConfirmacaoSite(
+            `Limpar o histórico de ${rotulo} nesta ficha?\n\nA marcação atual também fica vazia. Só fica definitivo ao guardar o produto.`,
+            { titulo: "Limpar histórico", textoConfirmar: "Limpar", textoCancelar: "Cancelar" }
+        ))) {
             return;
         }
         historicoAtual = [];
@@ -1921,7 +1927,10 @@ async function apagarProdutoMapa() {
     const nome = produto.nome || "este produto";
     const sku = produto.sku ? `\nSKU: ${produto.sku}` : "";
     const referencia = produto.referencia ? `\nRef.: ${produto.referencia}` : "";
-    const confirmou = window.confirm(`Apagar "${nome}"?${referencia}${sku}\n\nIsto apaga a ficha do produto do catálogo. As encomendas antigas não são alteradas.`);
+    const confirmou = await mostrarConfirmacaoSite(
+        `Apagar "${nome}"?${referencia}${sku}\n\nIsto apaga a ficha do produto do catálogo. As encomendas antigas não são alteradas.`,
+        { titulo: "Apagar produto", textoConfirmar: "Apagar", textoCancelar: "Cancelar" }
+    );
     if (!confirmou) return;
 
     try {

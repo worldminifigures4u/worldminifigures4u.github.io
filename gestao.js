@@ -995,7 +995,11 @@ async function guardarBannerGestao(id, dados) {
 
 async function apagarBannerGestao(id) {
     if (!id) return;
-    if (!window.confirm('Apagar este banner?')) return;
+    if (!(await mostrarConfirmacaoSite('Apagar este banner?', {
+        titulo: "Apagar banner",
+        textoConfirmar: "Apagar",
+        textoCancelar: "Cancelar"
+    }))) return;
     definirStatusGestao('A apagar...');
     const { data, error } = await gestaoClient.rpc('apagar_banner_loja_admin', { p_id: id });
     if (error) {

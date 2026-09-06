@@ -235,17 +235,11 @@ async function receberPedidoFornecedor(id) {
         definirStatusFornecedor('Indique pelo menos uma quantidade recebida (dentro do pendente).', true);
         return;
     }
-    if (typeof confirmarFornecedorNoSite === "function") {
-        const confirmou = await confirmarFornecedorNoSite({
-            titulo: "Receber stock",
-            texto: `Atualizar stock de ${rececoes.length} produto(s) da encomenda ${obterTextoCodigoPedidoFornecedor(pedido)}?`,
-            textoCancelar: "Cancelar",
-            textoConfirmar: "Atualizar"
-        });
-        if (!confirmou) return;
-    } else if (!window.confirm(`Atualizar stock de ${rececoes.length} produto(s) da encomenda ${obterTextoCodigoPedidoFornecedor(pedido)}?`)) {
-        return;
-    }
+    const confirmouRececao = await mostrarConfirmacaoSite(
+        `Atualizar stock de ${rececoes.length} produto(s) da encomenda ${obterTextoCodigoPedidoFornecedor(pedido)}?`,
+        { titulo: "Receber stock", textoConfirmar: "Atualizar", textoCancelar: "Cancelar" }
+    );
+    if (!confirmouRececao) return;
 
     receberStockFornecedorEmCurso.add(idPedido);
     try {

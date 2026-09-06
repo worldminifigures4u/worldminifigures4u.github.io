@@ -660,7 +660,10 @@ async function apagarFichaFornecedor() {
         return;
     }
 
-    const confirmou = window.confirm(`Apagar o fornecedor "${ficha.nome}"?\n\nIsto remove a ficha do fornecedor, mas nao apaga produtos nem encomendas ja criadas.`);
+    const confirmou = await mostrarConfirmacaoSite(
+        `Apagar o fornecedor "${ficha.nome}"?\n\nIsto remove a ficha do fornecedor, mas nao apaga produtos nem encomendas ja criadas.`,
+        { titulo: "Apagar fornecedor", textoConfirmar: "Apagar", textoCancelar: "Cancelar" }
+    );
     if (!confirmou) return;
 
     try {
@@ -1914,9 +1917,12 @@ function criarBlocoHistoricoFornecedorFicha(form, id, rotulo, valor, opcoes = {}
             apagar.setAttribute("aria-label", `Apagar linha ${rotuloHistoricoFornecedor(item.tipo)}`);
             apagar.title = "Apagar esta linha";
             apagar.textContent = "×";
-            apagar.addEventListener("click", () => {
+            apagar.addEventListener("click", async () => {
                 const rotuloLinha = `${item.data ? formatarDataOsCurtaFornecedor(item.data) : "sem data"} — ${rotuloHistoricoFornecedor(item.tipo)}`;
-                if (!window.confirm(`Apagar esta linha do histórico de ${rotulo}?\n\n${rotuloLinha}\n\nSó fica definitivo ao guardar o produto.`)) {
+                if (!(await mostrarConfirmacaoSite(
+                    `Apagar esta linha do histórico de ${rotulo}?\n\n${rotuloLinha}\n\nSó fica definitivo ao guardar o produto.`,
+                    { titulo: "Apagar histórico", textoConfirmar: "Apagar", textoCancelar: "Cancelar" }
+                ))) {
                     return;
                 }
                 historicoAtual = historicoAtual.filter((_, i) => i !== indice);
@@ -1934,8 +1940,11 @@ function criarBlocoHistoricoFornecedorFicha(form, id, rotulo, valor, opcoes = {}
         montarHistoricoEncomendasFornecedorEditor(bloco, opcoes.produto, rotulo);
     }
 
-    botaoLimpar.addEventListener("click", () => {
-        if (!window.confirm(`Limpar o histórico de ${rotulo} nesta ficha?\n\nA marcação atual também fica vazia. Só fica definitivo ao guardar o produto.`)) {
+    botaoLimpar.addEventListener("click", async () => {
+        if (!(await mostrarConfirmacaoSite(
+            `Limpar o histórico de ${rotulo} nesta ficha?\n\nA marcação atual também fica vazia. Só fica definitivo ao guardar o produto.`,
+            { titulo: "Limpar histórico", textoConfirmar: "Limpar", textoCancelar: "Cancelar" }
+        ))) {
             return;
         }
         historicoAtual = [];
@@ -2028,7 +2037,10 @@ function montarHistoricoEncomendasFornecedorEditor(bloco, produto, fornecedorNom
         apagar.setAttribute("aria-label", `Remover linha ${codigo}`);
         apagar.textContent = "×";
         apagar.addEventListener("click", async () => {
-            if (!window.confirm(`Remover ${produto.nome || "este produto"} da encomenda ${codigo}?\n\nIsto apaga esta linha do histórico a fornecedores.`)) {
+            if (!(await mostrarConfirmacaoSite(
+                `Remover ${produto.nome || "este produto"} da encomenda ${codigo}?\n\nIsto apaga esta linha do histórico a fornecedores.`,
+                { titulo: "Remover da encomenda", textoConfirmar: "Remover", textoCancelar: "Cancelar" }
+            ))) {
                 return;
             }
             apagar.disabled = true;
@@ -2048,7 +2060,9 @@ function montarHistoricoEncomendasFornecedorEditor(bloco, produto, fornecedorNom
                 }
             } catch (erro) {
                 console.error(erro);
-                window.alert("Não foi possível remover esta linha: " + (erro.message || "erro desconhecido"));
+                await mostrarAvisoSite("Não foi possível remover esta linha: " + (erro.message || "erro desconhecido"), {
+                    titulo: "Erro ao remover"
+                });
                 apagar.disabled = false;
             }
         });
@@ -3566,13 +3580,17 @@ function renderizarSelecionadosFornecedor() {
     atualizarResumoEncomendaFornecedor();
 }
 
-function limparSelecaoFornecedor() {
+async function limparSelecaoFornecedor() {
     if (!fornecedorSelecao.length) {
         definirStatusFornecedor('A lista ja esta vazia.');
         atualizarResumoEncomendaFornecedor();
         return;
     }
-    if (!window.confirm('Limpar todos os produtos da encomenda a fornecedor?')) return;
+    if (!(await mostrarConfirmacaoSite('Limpar todos os produtos da encomenda a fornecedor?', {
+        titulo: "Limpar lista",
+        textoConfirmar: "Limpar",
+        textoCancelar: "Cancelar"
+    }))) return;
     fornecedorSelecao = [];
     guardarSelecaoFornecedor();
     renderizarResultadosFornecedor();
@@ -3699,7 +3717,11 @@ async function alterarEstadoPedidoFornecedor(id, estado) {
 async function apagarPedidoFornecedor(id) {
     const pedido = fornecedorPedidos.find(item => item.id === id);
     if (!pedido) return;
-    if (!window.confirm(`Apagar a encomenda ${obterTextoCodigoPedidoFornecedor(pedido)}? Isto nao altera o stock.`)) return;
+    if (!(await mostrarConfirmacaoSite(`Apagar a encomenda ${obterTextoCodigoPedidoFornecedor(pedido)}? Isto nao altera o stock.`, {
+        titulo: "Apagar encomenda",
+        textoConfirmar: "Apagar",
+        textoCancelar: "Cancelar"
+    }))) return;
     try {
         const { error } = await fornecedoresClient.rpc('apagar_encomenda_fornecedor_admin', { p_id: id });
         if (error) throw error;

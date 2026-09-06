@@ -1440,23 +1440,23 @@ function fecharRevisaoListaProdutosPlataforma() {
     plataformaNotasRevisaoRascunho = plataformaNotasAnuncioAtual;
 }
 
-function aplicarSelecoesListaProdutosPlataforma(selecoes) {
+async function aplicarSelecoesListaProdutosPlataforma(selecoes) {
     if (!selecoes.length) return 0;
 
     const agrupadas = new Map();
     selecoes.forEach(item => agrupadas.set(item.produtoId, (agrupadas.get(item.produtoId) || 0) + item.quantidade));
 
     let adicionados = 0;
-    agrupadas.forEach((quantidade, produtoId) => {
+    for (const [produtoId, quantidade] of agrupadas.entries()) {
         const produto = wallapopProdutos.find(item => String(item.id) === String(produtoId));
-        if (!produto) return;
+        if (!produto) continue;
         const existente = wallapopItens.find(item => String(item.id) === String(produtoId));
         const quantidadeTotal = (existente ? Number(existente.quantidade || 0) : 0) + quantidade;
-        if (!confirmarStockNegativoPlataforma(produto, quantidadeTotal)) return;
+        if (!(await confirmarStockNegativoPlataforma(produto, quantidadeTotal))) continue;
         if (existente) existente.quantidade = quantidadeTotal;
         else wallapopItens.push({ ...produto, quantidade });
         adicionados += quantidade;
-    });
+    }
 
     if (!adicionados) return 0;
     acumularFigurasRepetidasListaPlataforma(plataformaFigurasRepetidasUltimaAnalise);
@@ -1470,7 +1470,7 @@ function aplicarSelecoesListaProdutosPlataforma(selecoes) {
     return adicionados;
 }
 
-function adicionarListaRevistaPlataforma(linhas, modal) {
+async function adicionarListaRevistaPlataforma(linhas, modal) {
     const selecoes = [...modal.querySelectorAll('[data-linha-lista]')].map((linha, indice) => ({
         produtoId: linha.querySelector('select').value,
         quantidade: linhas[indice].quantidade
@@ -1482,7 +1482,7 @@ function adicionarListaRevistaPlataforma(linhas, modal) {
         return;
     }
 
-    const adicionados = aplicarSelecoesListaProdutosPlataforma(selecoes);
+    const adicionados = await aplicarSelecoesListaProdutosPlataforma(selecoes);
     if (!adicionados) return;
     atualizarNotasAnuncioPlataforma(notas);
     definirStatusWallapop(`${adicionados} figura(s) adicionada(s) a partir da lista.`);
@@ -1521,7 +1521,7 @@ function criarTextoNotasAnuncioPlataforma() {
     return '\ufeff' + [nomeCliente, '', notas].join('\r\n');
 }
 
-function adicionarListaAnalisadaPlataforma(linhas) {
+async function adicionarListaAnalisadaPlataforma(linhas) {
     const selecoes = linhas
         .filter(linha => linha.produtoId)
         .map(linha => ({ produtoId: linha.produtoId, quantidade: linha.quantidade }));
@@ -1934,7 +1934,7 @@ function obterStockDisponivelPlataforma(produto) {
     return Math.max(stock, 0) + obterQuantidadeOriginalPlataforma(produto.id);
 }
 
-function confirmarStockNegativoPlataforma(produto, quantidadePretendida) {
+async function confirmarStockNegativoPlataforma(produto, quantidadePretendida) {
     const disponivel = obterStockDisponivelPlataforma(produto);
     const produtoId = produto?.id ? String(produto.id) : '';
     if (disponivel === null || quantidadePretendida <= disponivel || stockNegativoConfirmado.has(produtoId)) {
@@ -1944,29 +1944,33 @@ function confirmarStockNegativoPlataforma(produto, quantidadePretendida) {
     const mensagem = disponivel > 0
         ? `${nome} tem stock ${disponivel} e estás a tentar vender ${quantidadePretendida}. Queres avançar e deixar stock negativo?`
         : `${nome} não tem stock disponível. Queres avançar e deixar stock negativo?`;
-    if (!window.confirm(mensagem)) return false;
+    if (!(await mostrarConfirmacaoSite(mensagem, {
+        titulo: "Stock insuficiente",
+        textoConfirmar: "Avançar",
+        textoCancelar: "Cancelar"
+    }))) return false;
     if (produtoId) stockNegativoConfirmado.add(produtoId);
     return true;
 }
 
-function confirmarFaltasStockPlataforma() {
+async function confirmarFaltasStockPlataforma() {
     for (const item of wallapopItens) {
-        if (!confirmarStockNegativoPlataforma(item, Math.max(1, Number(item.quantidade) || 1))) {
+        if (!(await confirmarStockNegativoPlataforma(item, Math.max(1, Number(item.quantidade) || 1)))) {
             return false;
         }
     }
     return true;
 }
 
-function adicionarProdutoWallapop(id) {
+async function adicionarProdutoWallapop(id) {
     const existente = wallapopItens.find(item => String(item.id) === String(id));
     if (existente) {
-        if (!confirmarStockNegativoPlataforma(existente, existente.quantidade + 1)) return;
+        if (!(await confirmarStockNegativoPlataforma(existente, existente.quantidade + 1))) return;
         existente.quantidade += 1;
     } else {
         const produto = wallapopProdutos.find(item => String(item.id) === String(id));
         if (!produto) return;
-        if (!confirmarStockNegativoPlataforma(produto, 1)) return;
+        if (!(await confirmarStockNegativoPlataforma(produto, 1))) return;
         wallapopItens.push({ ...produto, quantidade: 1 });
     }
     guardarItensWallapop();
@@ -1975,11 +1979,11 @@ function adicionarProdutoWallapop(id) {
     renderizarFolhaWallapop();
 }
 
-function alterarQuantidadeWallapop(id, diferenca) {
+async function alterarQuantidadeWallapop(id, diferenca) {
     const item = wallapopItens.find(produto => String(produto.id) === String(id));
     if (!item) return;
     const novaQuantidade = Math.max(1, item.quantidade + diferenca);
-    if (diferenca > 0 && !confirmarStockNegativoPlataforma(item, novaQuantidade)) return;
+    if (diferenca > 0 && !(await confirmarStockNegativoPlataforma(item, novaQuantidade))) return;
     item.quantidade = novaQuantidade;
     guardarItensWallapop();
     marcarWallapopPorRegistar();
@@ -3163,8 +3167,12 @@ async function abrirEncomendaPlataformaPeloTxt(evento) {
     }
 }
 
-function novaEncomendaPlataforma() {
-    if (wallapopItens.length && !window.confirm('Come\u00e7ar uma nova encomenda e limpar a lista atual?')) return;
+async function novaEncomendaPlataforma() {
+    if (wallapopItens.length && !(await mostrarConfirmacaoSite('Come\u00e7ar uma nova encomenda e limpar a lista atual?', {
+        titulo: "Nova encomenda",
+        textoConfirmar: "Começar",
+        textoCancelar: "Cancelar"
+    }))) return;
     encomendaPlataformaEmEdicao = null;
     stockNegativoConfirmado = new Set();
     wallapopRegistoConcluido = false;
@@ -3270,7 +3278,7 @@ async function registarEncomendaWallapop() {
         definirStatusWallapop('Adicione pelo menos um produto.', true);
         return;
     }
-    if (!confirmarFaltasStockPlataforma()) {
+    if (!(await confirmarFaltasStockPlataforma())) {
         definirStatusWallapop('Encomenda n\u00e3o registada. Confirma primeiro os produtos sem stock.', true);
         return;
     }
@@ -3309,7 +3317,10 @@ async function registarEncomendaWallapop() {
     }
     const confirmado = encomendaPlataformaEmEdicao
         ? await confirmarResumoAlteracoesStockPlataforma(naoReporStock)
-        : window.confirm(`Registar a encomenda ${plataforma} de ${nomeCliente} por ${formatarEuroWallapop(total)} € e descontar o stock?`);
+        : await mostrarConfirmacaoSite(
+            `Registar a encomenda ${plataforma} de ${nomeCliente} por ${formatarEuroWallapop(total)} € e descontar o stock?`,
+            { titulo: "Registar encomenda", textoConfirmar: "Registar", textoCancelar: "Cancelar" }
+        );
     if (!confirmado) return;
 
     registoPlataformaEmCurso = true;
@@ -3489,8 +3500,13 @@ async function registarEncomendaWallapop() {
     }
 }
 
-function limparListaWallapop() {
-    if (!wallapopItens.length || !window.confirm('Limpar todos os produtos desta imagem?')) return;
+async function limparListaWallapop() {
+    if (!wallapopItens.length) return;
+    if (!(await mostrarConfirmacaoSite('Limpar todos os produtos desta imagem?', {
+        titulo: "Limpar lista",
+        textoConfirmar: "Limpar",
+        textoCancelar: "Cancelar"
+    }))) return;
     wallapopItens = [];
     limparFigurasRepetidasListaPlataforma();
     limparNotasAnuncioPlataforma();

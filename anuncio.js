@@ -428,8 +428,9 @@ async function registarEncomendaWallapop() {
     const total = wallapopItens.reduce((soma, item) => {
         return soma + (Math.max(1, Number(item.quantidade) || 1) * Number(item.preco || 0));
     }, 0);
-    const confirmado = window.confirm(
-        `Registar a encomenda Wallapop de ${nomeCliente} por ${formatarEuroWallapop(total)} € e descontar o stock?`
+    const confirmado = await mostrarConfirmacaoSite(
+        `Registar a encomenda Wallapop de ${nomeCliente} por ${formatarEuroWallapop(total)} € e descontar o stock?`,
+        { titulo: "Registar encomenda", textoConfirmar: "Registar", textoCancelar: "Cancelar" }
     );
     if (!confirmado) return;
 
@@ -466,8 +467,13 @@ async function registarEncomendaWallapop() {
     }
 }
 
-function limparListaWallapop() {
-    if (!wallapopItens.length || !window.confirm('Limpar todos os produtos desta imagem?')) return;
+async function limparListaWallapop() {
+    if (!wallapopItens.length) return;
+    if (!(await mostrarConfirmacaoSite('Limpar todos os produtos desta imagem?', {
+        titulo: "Limpar lista",
+        textoConfirmar: "Limpar",
+        textoCancelar: "Cancelar"
+    }))) return;
     wallapopItens = [];
     guardarItensWallapop();
     marcarWallapopPorRegistar();
