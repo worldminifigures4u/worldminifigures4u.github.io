@@ -2181,7 +2181,7 @@ window.AdminEncomendaVista = (function () {
             const loteIds = ids.slice(inicio, inicio + 200);
             const { data, error } = await obterClient()
                 .from("produtos_loja")
-                .select("id, sku, tema, subtema, imagens")
+                .select("id, sku, tema, subtema, imagens, observacoes")
                 .in("id", loteIds);
             if (error) {
                 console.warn("Nao foi possivel carregar tema/subtema por id.", error);
@@ -2196,7 +2196,7 @@ window.AdminEncomendaVista = (function () {
             const loteSkus = skus.slice(inicio, inicio + 200);
             const { data, error } = await obterClient()
                 .from("produtos_loja")
-                .select("id, sku, tema, subtema, imagens")
+                .select("id, sku, tema, subtema, imagens, observacoes")
                 .in("sku", loteSkus);
             if (error) {
                 console.warn("Nao foi possivel carregar tema/subtema por sku.", error);
