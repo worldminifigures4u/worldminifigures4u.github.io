@@ -1489,3 +1489,36 @@ html.admin-light-mode body.cabecalho-com-admin .wallapop-pagina-cabecalho{
     border-color:#d7dee8 !important;
     box-shadow:none !important;
 }
+
+html.admin-light-mode body.cabecalho-com-admin .clientes-encomenda-modal{
+    background:rgba(15, 23, 42, .34) !important;
+}
+
+html.admin-light-mode body.cabecalho-com-admin .clientes-encomenda-dialogo{
+    background:#fbfcfe !important;
+    border-color:#d7dee8 !important;
+    color:#182231 !important;
+    box-shadow:0 22px 55px rgba(31, 41, 55, .18) !important;
+}
+
+html.admin-light-mode body.cabecalho-com-admin .clientes-encomenda-topo{
+    margin:-18px -20px 14px;
+    padding:16px 64px 14px 20px;
+    background:#fbfcfe !important;
+    border-bottom:1px solid #d7dee8 !important;
+    color:#182231 !important;
+}
+
+html.admin-light-mode body.cabecalho-com-admin .clientes-encomenda-topo h2,
+html.admin-light-mode body.cabecalho-com-admin .clientes-encomenda-contador{
+    color:#111827 !important;
+}
+
+html.admin-light-mode body.cabecalho-com-admin .clientes-encomenda-conteudo .admin-encomenda-card{
+    background:#fbfcfe !important;
+    color:#182231 !important;
+}
+
+html.admin-light-mode body.cabecalho-com-admin .clientes-encomenda-conteudo .admin-encomenda-cabecalho-fixo:hover{
+    background:#eef5fb !important;
+}
