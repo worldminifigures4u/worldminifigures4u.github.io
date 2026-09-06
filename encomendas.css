@@ -315,7 +315,7 @@ body.pagina-encomendas-admin{
             flex:1;
             min-width:0;
             display:grid;
-            grid-template-columns:68px 118px 78px minmax(110px, 1fr) 76px 128px 68px 82px;
+            grid-template-columns:68px 118px 78px minmax(90px, 1fr) 76px 128px 68px minmax(104px, max-content);
             column-gap:12px;
             align-items:center;
         }
@@ -462,6 +462,8 @@ body.pagina-encomendas-admin{
             font-size:12px;
             font-weight:800;
             cursor:pointer;
+            min-width:104px;
+            white-space:nowrap;
         }
 
         .admin-encomenda-prioridade input{
@@ -1497,7 +1499,7 @@ body.pagina-encomendas-admin{
                 padding:8px 10px;
             }
             .admin-encomenda-linha{
-                grid-template-columns:60px 118px 76px minmax(80px, 1fr) 68px 120px 64px 72px;
+                grid-template-columns:60px 118px 76px minmax(70px, 1fr) 68px 120px 64px minmax(104px, max-content);
                 column-gap:10px;
                 overflow-x:auto;
             }
