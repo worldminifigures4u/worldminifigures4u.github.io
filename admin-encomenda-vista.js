@@ -35,14 +35,18 @@ window.AdminEncomendaVista = (function () {
 
     let imagensProdutos = new Map();
     let imagensProdutosPorSku = new Map();
+    let imagensProdutosPorReferencia = new Map();
     let referenciasProdutos = new Map();
     let referenciasProdutosPorSku = new Map();
     let temasProdutos = new Map();
     let temasProdutosPorSku = new Map();
+    let temasProdutosPorReferencia = new Map();
     let subtemasProdutos = new Map();
     let subtemasProdutosPorSku = new Map();
+    let subtemasProdutosPorReferencia = new Map();
     let observacoesProdutos = new Map();
     let observacoesProdutosPorSku = new Map();
+    let observacoesProdutosPorReferencia = new Map();
 
     function configurar(opcoes = {}) {
         if (opcoes.client) client = opcoes.client;
@@ -502,6 +506,7 @@ window.AdminEncomendaVista = (function () {
     function obterImagemProduto(item) {
         return imagensProdutos.get(String(item.id_produto || item.id || ""))
             || imagensProdutosPorSku.get(String(item.sku || "").toUpperCase())
+            || imagensProdutosPorReferencia.get(chaveReferenciaProduto(item))
             || "";
     }
 
@@ -522,6 +527,7 @@ window.AdminEncomendaVista = (function () {
         const tema = item.tema
             || temasProdutos.get(String(item.id_produto || item.id || ""))
             || temasProdutosPorSku.get(String(item.sku || "").toUpperCase())
+            || temasProdutosPorReferencia.get(chaveReferenciaProduto(item))
             || "";
         return String(tema).trim() || "—";
     }
@@ -530,6 +536,7 @@ window.AdminEncomendaVista = (function () {
         const subtema = item.subtema
             || subtemasProdutos.get(String(item.id_produto || item.id || ""))
             || subtemasProdutosPorSku.get(String(item.sku || "").toUpperCase())
+            || subtemasProdutosPorReferencia.get(chaveReferenciaProduto(item))
             || "";
         return formatarSubtemaProduto(subtema);
     }
@@ -538,8 +545,13 @@ window.AdminEncomendaVista = (function () {
         const observacoes = item.observacoes
             || observacoesProdutos.get(String(item.id_produto || item.id || ""))
             || observacoesProdutosPorSku.get(String(item.sku || "").toUpperCase())
+            || observacoesProdutosPorReferencia.get(chaveReferenciaProduto(item))
             || "";
         return String(observacoes).trim();
+    }
+
+    function chaveReferenciaProduto(item) {
+        return String(item?.referencia || item?.ref || "").trim().toUpperCase();
     }
 
     function abrirImagemProduto(url, nome) {
@@ -2144,6 +2156,7 @@ window.AdminEncomendaVista = (function () {
         const id = String(produto.id || "");
         const sku = String(produto.sku || "").trim();
         const skuChave = sku.toUpperCase();
+        const referenciaChave = chaveReferenciaProduto(produto);
 
         const referencia = String(produto.referencia || "").trim();
         if (referencia) {
@@ -2155,24 +2168,28 @@ window.AdminEncomendaVista = (function () {
         if (tema) {
             if (id) temasProdutos.set(id, tema);
             if (skuChave) temasProdutosPorSku.set(skuChave, tema);
+            if (referenciaChave) temasProdutosPorReferencia.set(referenciaChave, tema);
         }
 
         const subtema = String(produto.subtema || "").trim();
         if (subtema) {
             if (id) subtemasProdutos.set(id, subtema);
             if (skuChave) subtemasProdutosPorSku.set(skuChave, subtema);
+            if (referenciaChave) subtemasProdutosPorReferencia.set(referenciaChave, subtema);
         }
 
         const observacoes = String(produto.observacoes || "").trim();
         if (observacoes) {
             if (id) observacoesProdutos.set(id, observacoes);
             if (skuChave) observacoesProdutosPorSku.set(skuChave, observacoes);
+            if (referenciaChave) observacoesProdutosPorReferencia.set(referenciaChave, observacoes);
         }
 
         const imagem = obterPrimeiraImagem(produto.imagens);
         if (imagem) {
             if (id) imagensProdutos.set(id, imagem);
             if (skuChave) imagensProdutosPorSku.set(skuChave, imagem);
+            if (referenciaChave) imagensProdutosPorReferencia.set(referenciaChave, imagem);
         }
     }
 
@@ -2181,7 +2198,7 @@ window.AdminEncomendaVista = (function () {
             const loteIds = ids.slice(inicio, inicio + 200);
             const { data, error } = await obterClient()
                 .from("produtos_loja")
-                .select("id, sku, tema, subtema, imagens, observacoes")
+                .select("id, sku, tema, subtema, imagens")
                 .in("id", loteIds);
             if (error) {
                 console.warn("Nao foi possivel carregar tema/subtema por id.", error);
@@ -2196,7 +2213,7 @@ window.AdminEncomendaVista = (function () {
             const loteSkus = skus.slice(inicio, inicio + 200);
             const { data, error } = await obterClient()
                 .from("produtos_loja")
-                .select("id, sku, tema, subtema, imagens, observacoes")
+                .select("id, sku, tema, subtema, imagens")
                 .in("sku", loteSkus);
             if (error) {
                 console.warn("Nao foi possivel carregar tema/subtema por sku.", error);
@@ -2206,11 +2223,54 @@ window.AdminEncomendaVista = (function () {
         }
     }
 
+    async function carregarMetadadosProdutosAdminCompletos(itens) {
+        const lista = Array.isArray(itens) ? itens : [];
+        if (!lista.some(item => {
+            const id = String(item.id_produto || item.id || "");
+            const sku = String(item.sku || "").toUpperCase();
+            const referencia = chaveReferenciaProduto(item);
+            return !obterObservacoesProduto(item) && (id || sku || referencia);
+        })) return;
+
+        const ids = new Set(lista.map(item => String(item.id_produto || item.id || "")).filter(Boolean));
+        const skus = new Set(lista.map(item => String(item.sku || "").toUpperCase()).filter(Boolean));
+        const referencias = new Set(lista.map(chaveReferenciaProduto).filter(Boolean));
+        const tamanhoPagina = 500;
+        let inicio = 0;
+
+        while (ids.size || skus.size || referencias.size) {
+            const { data, error } = await obterClient().rpc("listar_produtos_admin", {
+                p_limite: tamanhoPagina,
+                p_offset: inicio
+            });
+            if (error) {
+                console.warn("Nao foi possivel carregar observacoes administrativas dos produtos.", error);
+                return;
+            }
+
+            const produtos = Array.isArray(data) ? data : [];
+            produtos.forEach(produto => {
+                const id = String(produto.id || "");
+                const sku = String(produto.sku || "").toUpperCase();
+                const referencia = chaveReferenciaProduto(produto);
+                if (!ids.has(id) && !skus.has(sku) && !referencias.has(referencia)) return;
+                aplicarMetadadosProdutoEncomenda(produto);
+                if (id) ids.delete(id);
+                if (sku) skus.delete(sku);
+                if (referencia) referencias.delete(referencia);
+            });
+
+            if (produtos.length < tamanhoPagina) break;
+            inicio += tamanhoPagina;
+        }
+    }
+
     async function carregarImagensParaEncomendas(encomendas) {
         const itens = (encomendas || []).flatMap(obterProdutos);
         const ids = [...new Set(itens.map(item => String(item.id_produto || item.id || "")).filter(Boolean))];
         const skus = [...new Set(itens.map(item => String(item.sku || "").trim()).filter(Boolean))];
-        if (!ids.length && !skus.length) return;
+        const referencias = [...new Set(itens.map(chaveReferenciaProduto).filter(Boolean))];
+        if (!ids.length && !skus.length && !referencias.length) return;
 
         if (ids.length) {
             for (let inicio = 0; inicio < ids.length; inicio += 200) {
@@ -2231,19 +2291,24 @@ window.AdminEncomendaVista = (function () {
         if (skusEmFalta.length) {
             await carregarMetadadosProdutosLojaPorSkus(skusEmFalta);
         }
+        await carregarMetadadosProdutosAdminCompletos(itens);
     }
 
     function limparCacheImagens() {
         imagensProdutos = new Map();
         imagensProdutosPorSku = new Map();
+        imagensProdutosPorReferencia = new Map();
         referenciasProdutos = new Map();
         referenciasProdutosPorSku = new Map();
         temasProdutos = new Map();
         temasProdutosPorSku = new Map();
+        temasProdutosPorReferencia = new Map();
         subtemasProdutos = new Map();
         subtemasProdutosPorSku = new Map();
+        subtemasProdutosPorReferencia = new Map();
         observacoesProdutos = new Map();
         observacoesProdutosPorSku = new Map();
+        observacoesProdutosPorReferencia = new Map();
     }
 
     return {
