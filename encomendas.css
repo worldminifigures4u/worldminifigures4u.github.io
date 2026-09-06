@@ -1225,6 +1225,11 @@ body.pagina-encomendas-admin{
             color:#aeb6c2;
             font-size:12px;
             font-weight:600;
+            line-height:1.35;
+            overflow:visible;
+            overflow-wrap:anywhere;
+            text-overflow:clip;
+            white-space:normal;
         }
 
         .admin-encomenda-produto-preco{
