@@ -850,22 +850,25 @@ function validarReferenciasItensFornecedor(itens, opcoes = {}) {
             avisos.push(`${nome}: sem Ref.`);
             return;
         }
-        if (!refsNaLista.has(chave)) refsNaLista.set(chave, []);
-        refsNaLista.get(chave).push(nome);
+        if (!refsNaLista.has(chave)) {
+            refsNaLista.set(chave, { referencia, nomes: [] });
+        }
+        refsNaLista.get(chave).nomes.push(nome);
+    });
 
+    refsNaLista.forEach(({ referencia, nomes }) => {
+        const unicos = [...new Set(nomes)];
         if (verificarCatalogo) {
             const produtos = obterProdutosPorReferenciaFornecedor(referencia);
             if (!produtos.length) {
                 avisos.push(`${referencia}: nao existe no catalogo`);
-            } else if (produtos.length > 1) {
-                const nomes = produtos.map(produto => produto.nome || "sem nome").slice(0, 4).join(", ");
-                avisos.push(`${referencia}: existe em ${produtos.length} fichas (${nomes})`);
+                return;
+            }
+            if (produtos.length > 1) {
+                avisos.push(`${referencia}: Ref. partilhada por ${produtos.length} fichas (${unicos.slice(0, 4).join(", ")})`);
+                return;
             }
         }
-    });
-
-    refsNaLista.forEach((nomes, referencia) => {
-        const unicos = [...new Set(nomes)];
         if (unicos.length > 1) {
             avisos.push(`${referencia}: repetida na selecao (${unicos.slice(0, 4).join(", ")})`);
         }
@@ -874,14 +877,71 @@ function validarReferenciasItensFornecedor(itens, opcoes = {}) {
     return avisos;
 }
 
-function confirmarReferenciasItensFornecedor(itens, contexto = "continuar") {
+function confirmarFornecedorNoSite(opcoes = {}) {
+    return new Promise(resolve => {
+        document.getElementById("fornecedor-confirmacao-modal")?.remove();
+
+        const modal = document.createElement("div");
+        modal.id = "fornecedor-confirmacao-modal";
+        modal.className = "fornecedor-confirmacao-modal";
+        modal.setAttribute("role", "dialog");
+        modal.setAttribute("aria-modal", "true");
+        modal.setAttribute("aria-labelledby", "fornecedor-confirmacao-titulo");
+
+        const dialog = criarElementoPedidoFornecedor("div", "fornecedor-confirmacao-dialog");
+        const titulo = criarElementoPedidoFornecedor("h3", "", opcoes.titulo || "Confirmar");
+        titulo.id = "fornecedor-confirmacao-titulo";
+        const texto = criarElementoPedidoFornecedor("p", "", opcoes.texto || "");
+        const lista = criarElementoPedidoFornecedor("ul", "fornecedor-confirmacao-lista");
+        (opcoes.itens || []).slice(0, 8).forEach(item => {
+            lista.appendChild(criarElementoPedidoFornecedor("li", "", item));
+        });
+        if ((opcoes.itens || []).length > 8) {
+            lista.appendChild(criarElementoPedidoFornecedor("li", "", `... e mais ${opcoes.itens.length - 8}`));
+        }
+
+        const acoes = criarElementoPedidoFornecedor("div", "fornecedor-confirmacao-acoes");
+        const cancelar = criarElementoPedidoFornecedor("button", "wallapop-botao", opcoes.textoCancelar || "Cancelar");
+        cancelar.type = "button";
+        const confirmar = criarElementoPedidoFornecedor("button", "wallapop-botao wallapop-botao-destaque", opcoes.textoConfirmar || "Continuar");
+        confirmar.type = "button";
+
+        const fechar = valor => {
+            modal.remove();
+            document.body.classList.remove("fornecedor-confirmacao-modal-aberto");
+            resolve(valor);
+        };
+
+        cancelar.addEventListener("click", () => fechar(false));
+        confirmar.addEventListener("click", () => fechar(true));
+        modal.addEventListener("click", evento => {
+            if (evento.target === modal) fechar(false);
+        });
+        modal.addEventListener("keydown", evento => {
+            if (evento.key === "Escape") fechar(false);
+        });
+
+        acoes.append(cancelar, confirmar);
+        dialog.append(titulo, texto);
+        if ((opcoes.itens || []).length) dialog.appendChild(lista);
+        dialog.appendChild(acoes);
+        modal.appendChild(dialog);
+        document.body.appendChild(modal);
+        document.body.classList.add("fornecedor-confirmacao-modal-aberto");
+        confirmar.focus();
+    });
+}
+
+async function confirmarReferenciasItensFornecedor(itens, contexto = "continuar") {
     const avisos = validarReferenciasItensFornecedor(itens);
     if (!avisos.length) return true;
-    const linhas = avisos.slice(0, 8).join("\n- ");
-    const extra = avisos.length > 8 ? `\n... e mais ${avisos.length - 8}` : "";
-    return window.confirm(
-        `Atenção: encontrei referências partilhadas antes de ${contexto}.\n\n- ${linhas}${extra}\n\nSe esta Ref. vem mesmo com várias figuras diferentes, carrega em OK. Cancelar para rever.`
-    );
+    return confirmarFornecedorNoSite({
+        titulo: "Referencias partilhadas",
+        texto: `Antes de ${contexto}, confirma se estas referencias vêm mesmo com várias figuras diferentes.`,
+        itens: avisos,
+        textoCancelar: "Rever",
+        textoConfirmar: "Continuar"
+    });
 }
 
 function itemPedidoCorrespondeProdutoFornecedor(item, produto) {
@@ -3545,7 +3605,7 @@ async function criarPedidoFornecedor() {
         preco: Number(item.preco_custo ?? item.custo ?? 0) || 0,
         imagens: item.imagens || []
     }));
-    if (!confirmarReferenciasItensFornecedor(itens, "criar a encomenda")) return;
+    if (!(await confirmarReferenciasItensFornecedor(itens, "criar a encomenda"))) return;
 
     try {
         definirStatusFornecedor('A criar encomenda no Supabase...');
@@ -4084,9 +4144,14 @@ async function adicionarSelecaoAoPedidoFornecedor(id) {
         definirStatusFornecedor('Escolha primeiro os produtos e depois junte a selecao a esta encomenda.', true);
         return;
     }
-    if (!confirmarReferenciasItensFornecedor(fornecedorSelecao, "juntar a selecao a uma encomenda")) return;
+    if (!(await confirmarReferenciasItensFornecedor(fornecedorSelecao, "juntar a selecao a uma encomenda"))) return;
     const total = fornecedorSelecao.reduce((soma, item) => soma + Math.max(1, Math.floor(Number(item.quantidade) || 1)), 0);
-    if (!window.confirm(`Adicionar ${total} unidade(s) selecionada(s) a ${obterTextoCodigoPedidoFornecedor(pedido)}?`)) return;
+    if (!(await confirmarFornecedorNoSite({
+        titulo: "Adicionar a encomenda",
+        texto: `Adicionar ${total} unidade(s) selecionada(s) a ${obterTextoCodigoPedidoFornecedor(pedido)}?`,
+        textoCancelar: "Cancelar",
+        textoConfirmar: "Adicionar"
+    }))) return;
 
     const itens = serializarItensPedidoFornecedor(pedido.itens);
     const itensExportar = [];

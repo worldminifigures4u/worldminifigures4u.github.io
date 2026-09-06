@@ -190,7 +190,7 @@ async function receberPedidoFornecedor(id) {
     let pedido = fornecedorPedidos.find(item => String(item.id) === idPedido);
     if (!pedido) return;
     if (typeof confirmarReferenciasItensFornecedor === "function"
-        && !confirmarReferenciasItensFornecedor(pedido.itens || [], "receber stock")) {
+        && !(await confirmarReferenciasItensFornecedor(pedido.itens || [], "receber stock"))) {
         definirStatusFornecedor("Rececao cancelada para rever as referencias.", true);
         return;
     }
@@ -235,7 +235,17 @@ async function receberPedidoFornecedor(id) {
         definirStatusFornecedor('Indique pelo menos uma quantidade recebida (dentro do pendente).', true);
         return;
     }
-    if (!window.confirm(`Atualizar stock de ${rececoes.length} produto(s) da encomenda ${obterTextoCodigoPedidoFornecedor(pedido)}?`)) return;
+    if (typeof confirmarFornecedorNoSite === "function") {
+        const confirmou = await confirmarFornecedorNoSite({
+            titulo: "Receber stock",
+            texto: `Atualizar stock de ${rececoes.length} produto(s) da encomenda ${obterTextoCodigoPedidoFornecedor(pedido)}?`,
+            textoCancelar: "Cancelar",
+            textoConfirmar: "Atualizar"
+        });
+        if (!confirmou) return;
+    } else if (!window.confirm(`Atualizar stock de ${rececoes.length} produto(s) da encomenda ${obterTextoCodigoPedidoFornecedor(pedido)}?`)) {
+        return;
+    }
 
     receberStockFornecedorEmCurso.add(idPedido);
     try {
