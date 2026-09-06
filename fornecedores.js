@@ -815,6 +815,17 @@ function obterChaveItemPedidoFornecedor(item) {
 
 function itensPedidoFornecedorCorrespondem(itemA, itemB) {
     if (!itemA || !itemB) return false;
+    const idA = String(itemA.id || "").trim();
+    const idB = String(itemB.id || "").trim();
+    if (idA && idB) return idA === idB;
+
+    const skuA = normalizarSkuFornecedor(itemA.sku);
+    const skuB = normalizarSkuFornecedor(itemB.sku);
+    if (skuA && skuB) return skuA === skuB;
+
+    const produtosReferencia = obterProdutosPorReferenciaFornecedor(itemA.referencia);
+    if (produtosReferencia.length > 1) return false;
+
     return correspondeReferenciaListaFornecedor(itemA.referencia, itemB.referencia);
 }
 
@@ -869,7 +880,7 @@ function confirmarReferenciasItensFornecedor(itens, contexto = "continuar") {
     const linhas = avisos.slice(0, 8).join("\n- ");
     const extra = avisos.length > 8 ? `\n... e mais ${avisos.length - 8}` : "";
     return window.confirm(
-        `Atenção: encontrei possível problema nas referências antes de ${contexto}.\n\n- ${linhas}${extra}\n\nOK para continuar mesmo assim. Cancelar para rever.`
+        `Atenção: encontrei referências partilhadas antes de ${contexto}.\n\n- ${linhas}${extra}\n\nSe esta Ref. vem mesmo com várias figuras diferentes, carrega em OK. Cancelar para rever.`
     );
 }
 
@@ -2227,7 +2238,14 @@ function definirQuantidadeFornecedor(id, valor) {
     const item = fornecedorSelecao.find((selecionado) => String(selecionado.id) === String(id));
     if (!item) return;
     const quantidade = Math.max(1, Math.floor(Number(valor) || 1));
-    item.quantidade = quantidade;
+    const chaveReferencia = normalizarReferenciaListaFornecedor(item.referencia);
+    fornecedorSelecao.forEach((selecionado) => {
+        if (chaveReferencia && normalizarReferenciaListaFornecedor(selecionado.referencia) === chaveReferencia) {
+            selecionado.quantidade = quantidade;
+        } else if (String(selecionado.id) === String(id)) {
+            selecionado.quantidade = quantidade;
+        }
+    });
     guardarSelecaoFornecedor();
     renderizarSelecionadosFornecedor();
 }
@@ -2411,20 +2429,31 @@ function obterQuantidadeSelecionadaFornecedor(id) {
     return Number(item?.quantidade || 0);
 }
 
+function obterProdutosRelacionadosQuantidadeFornecedor(produto) {
+    const relacionados = obterProdutosPorReferenciaFornecedor(produto?.referencia);
+    if (relacionados.length > 1) return relacionados;
+    return produto ? [produto] : [];
+}
+
 function definirQuantidadeMapaFornecedor(produto, valor) {
     const quantidade = Math.max(0, Math.floor(Number(valor) || 0));
-    const id = String(produto.id);
-    const indice = fornecedorSelecao.findIndex(item => String(item.id) === id);
+    const produtos = obterProdutosRelacionadosQuantidadeFornecedor(produto);
 
-    if (quantidade <= 0) {
-        if (indice >= 0) fornecedorSelecao.splice(indice, 1);
-    } else if (indice >= 0) {
-        fornecedorSelecao[indice] = { ...fornecedorSelecao[indice], ...produto, quantidade };
-    } else {
-        fornecedorSelecao.push({ ...produto, quantidade });
-    }
+    produtos.forEach((produtoRelacionado) => {
+        const id = String(produtoRelacionado.id);
+        const indice = fornecedorSelecao.findIndex(item => String(item.id) === id);
+
+        if (quantidade <= 0) {
+            if (indice >= 0) fornecedorSelecao.splice(indice, 1);
+        } else if (indice >= 0) {
+            fornecedorSelecao[indice] = { ...fornecedorSelecao[indice], ...produtoRelacionado, quantidade };
+        } else {
+            fornecedorSelecao.push({ ...produtoRelacionado, quantidade });
+        }
+    });
 
     guardarSelecaoFornecedor();
+    renderizarResultadosFornecedor();
     renderizarSelecionadosFornecedor();
 }
 
@@ -3256,9 +3285,18 @@ function adicionarProdutoFornecedor(produto, quantidade = 1) {
 }
 
 function alterarQuantidadeFornecedor(id, delta) {
-    fornecedorSelecao = fornecedorSelecao.map(item => {
-        if (String(item.id) !== String(id)) return item;
-        return { ...item, quantidade: Math.max(1, Number(item.quantidade || 1) + delta) };
+    const item = fornecedorSelecao.find(selecionado => String(selecionado.id) === String(id));
+    if (!item) return;
+    const quantidade = Math.max(1, Number(item.quantidade || 1) + delta);
+    const chaveReferencia = normalizarReferenciaListaFornecedor(item.referencia);
+    fornecedorSelecao = fornecedorSelecao.map(selecionado => {
+        if (chaveReferencia && normalizarReferenciaListaFornecedor(selecionado.referencia) === chaveReferencia) {
+            return { ...selecionado, quantidade };
+        }
+        if (String(selecionado.id) === String(id)) {
+            return { ...selecionado, quantidade };
+        }
+        return selecionado;
     });
     guardarSelecaoFornecedor();
     renderizarSelecionadosFornecedor();

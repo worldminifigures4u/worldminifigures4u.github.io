@@ -11,12 +11,23 @@ function criarNomeFicheiroExportacaoFornecedor(pedido) {
 }
 
 function obterTextoExportacaoPedidoFornecedor(pedido) {
-    return ordenarItensPedidoFornecedor(pedido?.itens || [])
-        .map(item => {
-            const referencia = limparCampoExportacaoFornecedor(item.referencia);
-            const quantidade = Math.max(0, Math.floor(Number(item.quantidade || 0)));
-            return `${referencia}\t${quantidade}`;
-        })
+    const porReferencia = new Map();
+    ordenarItensPedidoFornecedor(pedido?.itens || []).forEach(item => {
+        const referencia = limparCampoExportacaoFornecedor(item.referencia);
+        if (!referencia) return;
+        const chave = typeof normalizarReferenciaListaFornecedor === 'function'
+            ? normalizarReferenciaListaFornecedor(referencia)
+            : referencia.toUpperCase().replace(/\s+/g, '');
+        const quantidade = Math.max(0, Math.floor(Number(item.quantidade || 0)));
+        const anterior = porReferencia.get(chave);
+        porReferencia.set(chave, {
+            referencia: anterior?.referencia || referencia,
+            quantidade: Math.max(Number(anterior?.quantidade || 0), quantidade)
+        });
+    });
+
+    return [...porReferencia.values()]
+        .map(item => `${item.referencia}\t${item.quantidade}`)
         .filter(Boolean)
         .join('\r\n');
 }
