@@ -1553,3 +1553,35 @@ html.admin-light-mode body.cabecalho-com-admin .fornecedor-pedido-cabecalho-moda
 html.admin-light-mode body.cabecalho-com-admin .fornecedor-pedido-cabecalho-modal:focus-visible{
     background:#eef5fb !important;
 }
+
+html.admin-light-mode body.cabecalho-com-admin :is(
+    .mapas-produto-preview-imagens,
+    .preview-imagens-admin
+){
+    background:transparent !important;
+}
+
+html.admin-light-mode body.cabecalho-com-admin .item-preview-imagem-admin{
+    background:#f3f6fa !important;
+    border-color:#c8d2dd !important;
+}
+
+html.admin-light-mode body.cabecalho-com-admin .item-preview-imagem-admin:hover{
+    border-color:#d8a92f !important;
+}
+
+html.admin-light-mode body.cabecalho-com-admin .preview-imagens-admin img{
+    background:#f3f6fa !important;
+}
+
+html.admin-light-mode body.cabecalho-com-admin .input-upload-admin::file-selector-button{
+    background:#eef3f8 !important;
+    border-color:#c3ccd8 !important;
+    color:#182231 !important;
+}
+
+html.admin-light-mode body.cabecalho-com-admin .input-upload-admin::file-selector-button:hover{
+    background:#e2ebf4 !important;
+    border-color:#9fb0c2 !important;
+    color:#111827 !important;
+}
