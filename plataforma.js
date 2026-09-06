@@ -1,6 +1,7 @@
 
 const WALLAPOP_STORAGE_KEY = "figures-planet-wallapop-itens";
 const PLATAFORMA_NOTAS_ANUNCIO_STORAGE_KEY = "figures-planet-plataforma-notas-anuncio";
+const PLATAFORMA_RASCUNHO_CLIENTE_STORAGE_KEY = "figures-planet-plataforma-rascunho-cliente";
 const PESO_PADRAO_PLATAFORMA = 10;
 
 const WALLAPOP_SEM_IMAGEM = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(
@@ -20,6 +21,7 @@ let stockNegativoConfirmado = new Set();
 let plataformaFigurasRepetidasUltimaAnalise = [];
 let plataformaFigurasRepetidasEncomenda = [];
 let plataformaNotasAnuncioAtual = carregarNotasAnuncioPlataforma();
+let plataformaARestaurarRascunhoCliente = false;
 const PLATAFORMA_LISTA_MAX_CARACTERES = 30000;
 const PLATAFORMA_LISTA_MAX_LINHAS = 500;
 
@@ -346,6 +348,7 @@ function preencherClientePlataformaComFicha(dados) {
     document.getElementById('plataforma-cidade-cliente').value = cliente.cidade || '';
     aplicarPaisEnvioPredefinidoPlataforma();
     renderizarFichaClientePlataforma(dados);
+    guardarRascunhoClientePlataforma();
 }
 
 function obterPlataformaAtual() {
@@ -678,7 +681,8 @@ async function carregarFichaClientePlataforma(encomendaId) {
     return data;
 }
 
-async function carregarFichaClientePorPerfilPlataforma() {
+async function carregarFichaClientePorPerfilPlataforma(opcoes = {}) {
+    const abrirCriacao = opcoes.abrirCriacao !== false;
     const linkPerfil = document.getElementById('plataforma-link-perfil')?.value.trim() || '';
     if (!linkPerfil || !perfilExternoDetetado) {
         fichaClientePlataformaAtual = null;
@@ -706,7 +710,7 @@ async function carregarFichaClientePorPerfilPlataforma() {
         });
         definirStatusWallapop('');
         const modalCliente = document.getElementById('admin-cliente-modal');
-        if (!modalCliente || modalCliente.hidden) {
+        if (abrirCriacao && (!modalCliente || modalCliente.hidden)) {
             garantirFichaClientePlataforma().then(function () {
                 window.AdminFichaCliente?.abrirCriacao({
                     url: linkPerfil || perfilExternoDetetado.url || '',
@@ -1749,6 +1753,111 @@ function guardarNotasAnuncioPlataforma() {
     } catch (_) {
         /* localStorage pode estar indisponivel em modo privado */
     }
+}
+
+function obterRascunhoClientePlataforma() {
+    return {
+        plataforma: obterPlataformaAtual(),
+        link_perfil: document.getElementById('plataforma-link-perfil')?.value.trim() || '',
+        nome_encomenda: document.getElementById('wallapop-nome-encomenda')?.value.trim() || '',
+        nome_utilizador: document.getElementById('wallapop-nome-cliente')?.value.trim() || '',
+        telefone: document.getElementById('plataforma-telefone-cliente')?.value.trim() || '',
+        morada: document.getElementById('plataforma-morada-cliente')?.value.trim() || '',
+        cp: document.getElementById('plataforma-cp-cliente')?.value.trim() || '',
+        cidade: document.getElementById('plataforma-cidade-cliente')?.value.trim() || '',
+        pais: document.getElementById('plataforma-pais-envio')?.value || '',
+        metodo_envio: document.getElementById('plataforma-metodo-envio')?.value || '',
+        codigo_seguimento: document.getElementById('plataforma-codigo-seguimento')?.value.trim() || '',
+        portes_manual: document.getElementById('plataforma-portes-manual')?.value.trim() || '',
+        total_manual: document.getElementById('plataforma-total-manual')?.value.trim() || '',
+        perfil: perfilExternoDetetado ? { ...perfilExternoDetetado } : null
+    };
+}
+
+function rascunhoClientePlataformaTemDados(rascunho) {
+    return Boolean(rascunho && Object.entries(rascunho).some(([chave, valor]) => {
+        if (chave === 'plataforma') return valor && valor !== 'Wallapop';
+        if (chave === 'perfil') return Boolean(valor);
+        return Boolean(String(valor || '').trim());
+    }));
+}
+
+function guardarRascunhoClientePlataforma() {
+    if (plataformaARestaurarRascunhoCliente || encomendaPlataformaEmEdicao) return;
+    try {
+        const rascunho = obterRascunhoClientePlataforma();
+        if (rascunhoClientePlataformaTemDados(rascunho)) {
+            localStorage.setItem(PLATAFORMA_RASCUNHO_CLIENTE_STORAGE_KEY, JSON.stringify(rascunho));
+        } else {
+            localStorage.removeItem(PLATAFORMA_RASCUNHO_CLIENTE_STORAGE_KEY);
+        }
+    } catch (_) {
+        /* localStorage pode estar indisponivel em modo privado */
+    }
+}
+
+function limparRascunhoClientePlataforma() {
+    try {
+        localStorage.removeItem(PLATAFORMA_RASCUNHO_CLIENTE_STORAGE_KEY);
+    } catch (_) {
+        /* localStorage pode estar indisponivel em modo privado */
+    }
+}
+
+async function restaurarRascunhoClientePlataforma() {
+    let rascunho = null;
+    try {
+        rascunho = JSON.parse(localStorage.getItem(PLATAFORMA_RASCUNHO_CLIENTE_STORAGE_KEY) || 'null');
+    } catch (_) {
+        rascunho = null;
+    }
+    if (!rascunho || typeof rascunho !== 'object') return;
+
+    plataformaARestaurarRascunhoCliente = true;
+    try {
+        const seletor = document.getElementById('plataforma-tipo');
+        if (seletor && rascunho.plataforma && [...seletor.options].some(opcao => opcao.value === rascunho.plataforma)) {
+            seletor.value = rascunho.plataforma;
+        }
+        atualizarModoPlataforma();
+
+        const campoPerfil = document.getElementById('plataforma-link-perfil');
+        if (campoPerfil) campoPerfil.value = rascunho.link_perfil || '';
+        perfilExternoDetetado = rascunho.perfil || analisarLinkPerfilPlataforma(rascunho.link_perfil || '');
+        if (perfilExternoDetetado?.erro) perfilExternoDetetado = null;
+
+        document.getElementById('wallapop-nome-encomenda').value = rascunho.nome_encomenda || '';
+        document.getElementById('wallapop-nome-cliente').value = rascunho.nome_utilizador || perfilExternoDetetado?.utilizador || '';
+        document.getElementById('plataforma-telefone-cliente').value = rascunho.telefone || perfilExternoDetetado?.telefone || '';
+        document.getElementById('plataforma-morada-cliente').value = rascunho.morada || '';
+        document.getElementById('plataforma-cp-cliente').value = rascunho.cp || '';
+        document.getElementById('plataforma-cidade-cliente').value = rascunho.cidade || '';
+
+        if (rascunho.pais) selecionarPaisEnvioPlataforma(rascunho.pais);
+        atualizarOpcoesEnvioPlataforma();
+        const metodo = document.getElementById('plataforma-metodo-envio');
+        if (metodo && rascunho.metodo_envio && [...metodo.options].some(opcao => opcao.value === rascunho.metodo_envio)) {
+            metodo.value = rascunho.metodo_envio;
+        }
+        const campoSeguimento = document.getElementById('plataforma-codigo-seguimento');
+        if (campoSeguimento) campoSeguimento.value = rascunho.codigo_seguimento || '';
+        const campoPortes = document.getElementById('plataforma-portes-manual');
+        if (campoPortes) campoPortes.value = rascunho.portes_manual || '';
+        const campoTotal = document.getElementById('plataforma-total-manual');
+        if (campoTotal) campoTotal.value = rascunho.total_manual || '';
+
+        atualizarBarraPerfilPlataforma({});
+        atualizarVisibilidadeSeguimentoPlataforma();
+        atualizarVisibilidadePortesManualPlataforma();
+        atualizarResumoPlataforma();
+    } finally {
+        plataformaARestaurarRascunhoCliente = false;
+    }
+
+    if (perfilExternoDetetado) {
+        await carregarFichaClientePorPerfilPlataforma({ abrirCriacao: false }).catch(() => {});
+    }
+    guardarRascunhoClientePlataforma();
 }
 
 function marcarWallapopPorRegistar() {
@@ -3062,6 +3171,7 @@ function novaEncomendaPlataforma() {
     wallapopItens = [];
     limparFigurasRepetidasListaPlataforma();
     limparNotasAnuncioPlataforma();
+    limparRascunhoClientePlataforma();
     guardarItensWallapop();
     const seletor = document.getElementById('plataforma-tipo');
     seletor.disabled = false;
@@ -3323,6 +3433,7 @@ async function registarEncomendaWallapop() {
         wallapopItens = [];
         limparFigurasRepetidasListaPlataforma();
         limparNotasAnuncioPlataforma();
+        limparRascunhoClientePlataforma();
         stockNegativoConfirmado = new Set();
         guardarItensWallapop();
         document.getElementById('plataforma-tipo').disabled = false;
@@ -3384,6 +3495,7 @@ function limparListaWallapop() {
     limparFigurasRepetidasListaPlataforma();
     limparNotasAnuncioPlataforma();
     guardarItensWallapop();
+    guardarRascunhoClientePlataforma();
     marcarWallapopPorRegistar();
     renderizarSelecionadosWallapop();
     renderizarFolhaWallapop();
@@ -3424,6 +3536,8 @@ async function iniciarWallapopAdmin() {
                 console.error(error);
                 definirStatusWallapop('Erro ao abrir: ' + (error.message || 'erro desconhecido'), true);
             }
+        } else {
+            await restaurarRascunhoClientePlataforma();
         }
     } catch (error) {
         console.error(error);
@@ -3460,39 +3574,67 @@ document.getElementById('ficheiro-encomenda-txt')?.addEventListener('change', ab
 document.getElementById('btn-nova-encomenda-plataforma')?.addEventListener('click', novaEncomendaPlataforma);
 document.getElementById('wallapop-nome-encomenda').addEventListener('input', marcarWallapopPorRegistar);
 document.getElementById('wallapop-nome-cliente').addEventListener('input', marcarWallapopPorRegistar);
-document.getElementById('plataforma-telefone-cliente')?.addEventListener('input', marcarWallapopPorRegistar);
-document.getElementById('plataforma-morada-cliente')?.addEventListener('input', marcarWallapopPorRegistar);
-document.getElementById('plataforma-cp-cliente')?.addEventListener('input', marcarWallapopPorRegistar);
-document.getElementById('plataforma-cidade-cliente')?.addEventListener('input', marcarWallapopPorRegistar);
-document.getElementById('plataforma-tipo').addEventListener('change', atualizarModoPlataforma);
+document.getElementById('wallapop-nome-encomenda').addEventListener('input', guardarRascunhoClientePlataforma);
+document.getElementById('wallapop-nome-cliente').addEventListener('input', guardarRascunhoClientePlataforma);
+document.getElementById('plataforma-telefone-cliente')?.addEventListener('input', () => {
+    marcarWallapopPorRegistar();
+    guardarRascunhoClientePlataforma();
+});
+document.getElementById('plataforma-morada-cliente')?.addEventListener('input', () => {
+    marcarWallapopPorRegistar();
+    guardarRascunhoClientePlataforma();
+});
+document.getElementById('plataforma-cp-cliente')?.addEventListener('input', () => {
+    marcarWallapopPorRegistar();
+    guardarRascunhoClientePlataforma();
+});
+document.getElementById('plataforma-cidade-cliente')?.addEventListener('input', () => {
+    marcarWallapopPorRegistar();
+    guardarRascunhoClientePlataforma();
+});
+document.getElementById('plataforma-codigo-seguimento')?.addEventListener('input', () => {
+    marcarWallapopPorRegistar();
+    guardarRascunhoClientePlataforma();
+});
+document.getElementById('plataforma-tipo').addEventListener('change', () => {
+    atualizarModoPlataforma();
+    guardarRascunhoClientePlataforma();
+});
 document.getElementById('plataforma-link-perfil').addEventListener('input', () => {
     atualizarPerfilExternoPlataforma();
     marcarWallapopPorRegistar();
+    guardarRascunhoClientePlataforma();
     clearTimeout(window.__plataformaPerfilTimer);
     window.__plataformaPerfilTimer = setTimeout(() => {
         carregarFichaClientePorPerfilPlataforma().catch(error => {
             console.error('Erro ao carregar ficha pelo perfil.', error);
             definirStatusWallapop('Erro ao carregar ficha do cliente: ' + (error.message || 'sem detalhe'), true);
+        }).finally(() => {
+            guardarRascunhoClientePlataforma();
         });
     }, 350);
 });
 document.getElementById('plataforma-pais-envio').addEventListener('change', () => {
     marcarWallapopPorRegistar();
     atualizarOpcoesEnvioPlataforma();
+    guardarRascunhoClientePlataforma();
 });
 document.getElementById('plataforma-metodo-envio').addEventListener('change', () => {
     marcarWallapopPorRegistar();
     atualizarVisibilidadeSeguimentoPlataforma();
     atualizarVisibilidadePortesManualPlataforma();
     atualizarResumoPlataforma();
+    guardarRascunhoClientePlataforma();
 });
 document.getElementById('plataforma-portes-manual')?.addEventListener('input', () => {
     marcarWallapopPorRegistar();
     atualizarResumoPlataforma();
+    guardarRascunhoClientePlataforma();
 });
 document.getElementById('plataforma-total-manual')?.addEventListener('input', () => {
     marcarWallapopPorRegistar();
     atualizarResumoPlataforma();
+    guardarRascunhoClientePlataforma();
 });
 window.addEventListener('load', iniciarWallapopAdmin);
 
