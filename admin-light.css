@@ -1522,3 +1522,34 @@ html.admin-light-mode body.cabecalho-com-admin .clientes-encomenda-conteudo .adm
 html.admin-light-mode body.cabecalho-com-admin .clientes-encomenda-conteudo .admin-encomenda-cabecalho-fixo:hover{
     background:#eef5fb !important;
 }
+
+html.admin-light-mode body.cabecalho-com-admin .fornecedor-pedido-modal{
+    background:rgba(15, 23, 42, .34) !important;
+}
+
+html.admin-light-mode body.cabecalho-com-admin .fornecedor-pedido-modal-dialog{
+    background:#fbfcfe !important;
+    border-color:#d7dee8 !important;
+    color:#182231 !important;
+    box-shadow:0 22px 55px rgba(31, 41, 55, .18) !important;
+}
+
+html.admin-light-mode body.cabecalho-com-admin .fornecedor-pedido-modal-topo{
+    background:#fbfcfe !important;
+    border-bottom-color:#d7dee8 !important;
+    color:#182231 !important;
+}
+
+html.admin-light-mode body.cabecalho-com-admin .fornecedor-pedido-modal-topo h3{
+    color:#111827 !important;
+}
+
+html.admin-light-mode body.cabecalho-com-admin .fornecedor-pedido-modal-corpo{
+    background:#fbfcfe !important;
+    color:#182231 !important;
+}
+
+html.admin-light-mode body.cabecalho-com-admin .fornecedor-pedido-cabecalho-modal:hover,
+html.admin-light-mode body.cabecalho-com-admin .fornecedor-pedido-cabecalho-modal:focus-visible{
+    background:#eef5fb !important;
+}
