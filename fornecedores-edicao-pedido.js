@@ -153,8 +153,29 @@ function focarCampoEdicaoMesmaColunaFornecedor(inputAtual, direcao) {
 
     proximo.focus({ preventScroll: true });
     proximo.select();
-    proximo.closest(".fornecedor-edicao-produto")?.scrollIntoView({ block: "nearest", inline: "nearest" });
+    garantirCampoEdicaoVisivelFornecedor(proximo);
     return true;
+}
+
+function garantirCampoEdicaoVisivelFornecedor(input) {
+    const linha = input?.closest(".fornecedor-edicao-produto") || input;
+    const caixa = input?.closest(".fornecedor-edicao-corpo");
+    if (!linha || !caixa) return;
+
+    const ajustar = () => {
+        const margem = 12;
+        const caixaRect = caixa.getBoundingClientRect();
+        const linhaRect = linha.getBoundingClientRect();
+
+        if (linhaRect.bottom > caixaRect.bottom - margem) {
+            caixa.scrollTop += linhaRect.bottom - caixaRect.bottom + margem;
+        } else if (linhaRect.top < caixaRect.top + margem) {
+            caixa.scrollTop -= caixaRect.top - linhaRect.top + margem;
+        }
+    };
+
+    ajustar();
+    requestAnimationFrame(ajustar);
 }
 
 function montarLinhaEdicaoProdutoFornecedor(pedido, item, indice) {

@@ -87,7 +87,7 @@ function garantirFornecedoresProdutoModal() {
 function garantirFornecedoresEdicaoPedido() {
     if (window.FornecedoresEdicaoPedido) return Promise.resolve();
     if (!__fornecedoresEdicaoPromessa) {
-        __fornecedoresEdicaoPromessa = carregarScriptAdmin("fornecedores-edicao-pedido.js?v=20260907-tab-vertical-edicao");
+        __fornecedoresEdicaoPromessa = carregarScriptAdmin("fornecedores-edicao-pedido.js?v=20260907-tab-scroll-edicao");
     }
     return __fornecedoresEdicaoPromessa;
 }
@@ -2687,33 +2687,49 @@ function obterCaixaScrollQuantidadeMapa(input) {
     return input?.closest("#fornecedor-resultados, #fornecedor-selecionados") || null;
 }
 
+function elementoTemScrollVerticalFornecedor(elemento) {
+    if (!elemento) return false;
+    const estilos = window.getComputedStyle(elemento);
+    return ["auto", "scroll", "overlay"].includes(estilos.overflowY)
+        && elemento.scrollHeight > elemento.clientHeight + 1;
+}
+
+function ajustarScrollJanelaParaElementoFornecedor(elemento) {
+    if (!elemento) return;
+    const rect = elemento.getBoundingClientRect();
+    const alturaCabecalho = document.querySelector(".cabecalho-site-admin")?.getBoundingClientRect().height || 0;
+    const topoMinimo = Math.max(12, alturaCabecalho + 10);
+    const fundoMaximo = window.innerHeight - 72;
+
+    if (rect.bottom > fundoMaximo) {
+        window.scrollBy({ top: rect.bottom - fundoMaximo, left: 0, behavior: "auto" });
+    } else if (rect.top < topoMinimo) {
+        window.scrollBy({ top: rect.top - topoMinimo, left: 0, behavior: "auto" });
+    }
+}
+
 function garantirInputVisivelNoScroll(caixa, input) {
-    if (!caixa || !input) return;
-    const estilos = window.getComputedStyle(caixa);
+    if (!input) return;
     const linha = input.closest("tr") || input;
-    if (!["auto", "scroll", "overlay"].includes(estilos.overflowY)) {
-        linha.scrollIntoView({ block: "nearest", inline: "nearest" });
-        return;
-    }
 
-    const margem = 8;
-    const caixaRect = caixa.getBoundingClientRect();
-    const inputRect = linha.getBoundingClientRect();
+    const ajustar = () => {
+        if (elementoTemScrollVerticalFornecedor(caixa)) {
+            const margem = 12;
+            const caixaRect = caixa.getBoundingClientRect();
+            const inputRect = linha.getBoundingClientRect();
 
-    if (inputRect.bottom > caixaRect.bottom - margem) {
-        caixa.scrollTop += inputRect.bottom - caixaRect.bottom + margem;
-    } else if (inputRect.top < caixaRect.top + margem) {
-        caixa.scrollTop -= caixaRect.top - inputRect.top + margem;
-    }
-
-    requestAnimationFrame(() => {
-        const atualizado = linha.getBoundingClientRect();
-        const alturaCabecalho = document.querySelector(".cabecalho-site-admin")?.getBoundingClientRect().height || 0;
-        const topoMinimo = alturaCabecalho + 8;
-        if (atualizado.top < topoMinimo || atualizado.bottom > window.innerHeight - 8) {
-            linha.scrollIntoView({ block: "nearest", inline: "nearest" });
+            if (inputRect.bottom > caixaRect.bottom - margem) {
+                caixa.scrollTop += inputRect.bottom - caixaRect.bottom + margem;
+            } else if (inputRect.top < caixaRect.top + margem) {
+                caixa.scrollTop -= caixaRect.top - inputRect.top + margem;
+            }
         }
-    });
+
+        ajustarScrollJanelaParaElementoFornecedor(linha);
+    };
+
+    ajustar();
+    requestAnimationFrame(ajustar);
 }
 
 function obterIndiceCelulaQuantidadeMapa(input) {
