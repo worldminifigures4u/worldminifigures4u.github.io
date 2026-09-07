@@ -1482,9 +1482,10 @@ async function adicionarListaRevistaPlataforma(linhas, modal) {
         return;
     }
 
+    atualizarNotasAnuncioPlataforma(notas);
+    fecharRevisaoListaProdutosPlataforma();
     const adicionados = await aplicarSelecoesListaProdutosPlataforma(selecoes);
     if (!adicionados) return;
-    atualizarNotasAnuncioPlataforma(notas);
     definirStatusWallapop(`${adicionados} figura(s) adicionada(s) a partir da lista.`);
 }
 
