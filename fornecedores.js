@@ -2716,13 +2716,31 @@ function garantirInputVisivelNoScroll(caixa, input) {
     });
 }
 
+function obterIndiceCelulaQuantidadeMapa(input) {
+    const celula = input?.closest("td");
+    const linha = celula?.parentElement;
+    if (!celula || !linha) return -1;
+    return Array.from(linha.children).indexOf(celula);
+}
+
+function obterInputsQuantidadeMesmaColunaMapa(inputAtual, container) {
+    const indiceCelula = obterIndiceCelulaQuantidadeMapa(inputAtual);
+    if (indiceCelula < 0) return [];
+
+    return Array.from(container.querySelectorAll("tbody tr"))
+        .map((linha) => linha.children[indiceCelula]?.querySelector(".mapa-quantidade-input"))
+        .filter(input => input && !input.disabled && input.offsetParent !== null);
+}
+
 function focarQuantidadeMapaRelativa(inputAtual, direcao, caixa) {
     const tabela = inputAtual?.closest(".mapas-produtos-tabela");
     const container = tabela || caixa || obterCaixaScrollQuantidadeMapa(inputAtual);
     if (!container) return false;
 
-    const inputs = Array.from(container.querySelectorAll("tbody .mapa-quantidade-input"))
-        .filter(input => !input.disabled && input.offsetParent !== null);
+    const inputs = tabela
+        ? obterInputsQuantidadeMesmaColunaMapa(inputAtual, tabela)
+        : Array.from(container.querySelectorAll(".mapa-quantidade-input"))
+            .filter(input => !input.disabled && input.offsetParent !== null);
     const indiceAtual = inputs.indexOf(inputAtual);
     if (indiceAtual < 0) return false;
 
