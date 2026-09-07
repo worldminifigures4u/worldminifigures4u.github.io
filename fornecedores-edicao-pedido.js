@@ -131,6 +131,32 @@ function obterPedidoEdicaoFornecedor(modal) {
     return fornecedorPedidos.find(item => String(item.id) === String(id)) || null;
 }
 
+function obterInputsEdicaoMesmaColunaFornecedor(inputAtual) {
+    const campo = inputAtual?.dataset?.campo || "";
+    if (!["quantidade", "falta_os", "preco_custo"].includes(campo)) return [];
+
+    const lista = inputAtual.closest("#fornecedor-edicao-produtos");
+    if (!lista) return [];
+
+    return Array.from(lista.querySelectorAll(".fornecedor-edicao-produto"))
+        .map(linha => linha.querySelector(`input[data-campo="${campo}"]`))
+        .filter(input => input && !input.disabled && input.offsetParent !== null);
+}
+
+function focarCampoEdicaoMesmaColunaFornecedor(inputAtual, direcao) {
+    const inputs = obterInputsEdicaoMesmaColunaFornecedor(inputAtual);
+    const indiceAtual = inputs.indexOf(inputAtual);
+    if (indiceAtual < 0) return false;
+
+    const proximo = inputs[indiceAtual + direcao];
+    if (!proximo) return true;
+
+    proximo.focus({ preventScroll: true });
+    proximo.select();
+    proximo.closest(".fornecedor-edicao-produto")?.scrollIntoView({ block: "nearest", inline: "nearest" });
+    return true;
+}
+
 function montarLinhaEdicaoProdutoFornecedor(pedido, item, indice) {
     const produtoAtual = obterProdutoParaPedidoFornecedor(item) || item;
     const quantidadeOriginal = Math.max(0, Number(item.quantidade_original ?? item.quantidade ?? 0));
@@ -330,6 +356,14 @@ function montarLinhaEdicaoProdutoFornecedor(pedido, item, indice) {
     precoCustoInput.addEventListener("blur", confirmarPreco);
     [quantidadeInput, faltaInput, precoCustoInput].forEach((inputNumero) => {
         inputNumero.addEventListener("keydown", (evento) => {
+            if (evento.key === "Tab") {
+                evento.preventDefault();
+                evento.stopPropagation();
+                evento.stopImmediatePropagation?.();
+                const direcao = evento.shiftKey ? -1 : 1;
+                focarCampoEdicaoMesmaColunaFornecedor(inputNumero, direcao);
+                return;
+            }
             if (evento.key === "Enter") {
                 evento.preventDefault();
                 inputNumero.blur();

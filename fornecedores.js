@@ -87,7 +87,7 @@ function garantirFornecedoresProdutoModal() {
 function garantirFornecedoresEdicaoPedido() {
     if (window.FornecedoresEdicaoPedido) return Promise.resolve();
     if (!__fornecedoresEdicaoPromessa) {
-        __fornecedoresEdicaoPromessa = carregarScriptAdmin("fornecedores-edicao-pedido.js?v=20260904-ex-sem-os");
+        __fornecedoresEdicaoPromessa = carregarScriptAdmin("fornecedores-edicao-pedido.js?v=20260907-tab-vertical-edicao");
     }
     return __fornecedoresEdicaoPromessa;
 }
