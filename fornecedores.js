@@ -297,6 +297,39 @@ function guardarSelecaoFornecedor() {
     localStorage.setItem(FORNECEDORES_SELECAO_KEY, JSON.stringify(fornecedorSelecao));
 }
 
+function capturarScrollFornecedor() {
+    const alvos = [
+        document.scrollingElement || document.documentElement,
+        document.getElementById("fornecedor-resultados"),
+        document.getElementById("fornecedor-selecionados"),
+    ].filter(Boolean);
+
+    return alvos.map((elemento) => ({
+        elemento,
+        top: elemento.scrollTop,
+        left: elemento.scrollLeft,
+    }));
+}
+
+function restaurarScrollFornecedor(posicoes) {
+    if (!Array.isArray(posicoes) || !posicoes.length) return;
+    const restaurar = () => {
+        posicoes.forEach(({ elemento, top, left }) => {
+            if (!elemento) return;
+            elemento.scrollTop = top;
+            elemento.scrollLeft = left;
+        });
+    };
+    restaurar();
+    requestAnimationFrame(restaurar);
+}
+
+function executarPreservandoScrollFornecedor(callback) {
+    const posicoes = capturarScrollFornecedor();
+    callback();
+    restaurarScrollFornecedor(posicoes);
+}
+
 function carregarPedidosFornecedores() {
     try {
         const dados = JSON.parse(localStorage.getItem(FORNECEDORES_STORAGE_KEY) || '[]');
@@ -2321,7 +2354,7 @@ function definirQuantidadeFornecedor(id, valor) {
         }
     });
     guardarSelecaoFornecedor();
-    renderizarSelecionadosFornecedor();
+    executarPreservandoScrollFornecedor(renderizarSelecionadosFornecedor);
 }
 
 function obterProdutoAtual(id) {
@@ -2509,7 +2542,7 @@ function obterProdutosRelacionadosQuantidadeFornecedor(produto) {
     return produto ? [produto] : [];
 }
 
-function definirQuantidadeMapaFornecedor(produto, valor) {
+function definirQuantidadeMapaFornecedor(produto, valor, opcoes = {}) {
     const quantidade = Math.max(0, Math.floor(Number(valor) || 0));
     const produtos = obterProdutosRelacionadosQuantidadeFornecedor(produto);
 
@@ -2527,8 +2560,10 @@ function definirQuantidadeMapaFornecedor(produto, valor) {
     });
 
     guardarSelecaoFornecedor();
-    renderizarResultadosFornecedor();
-    renderizarSelecionadosFornecedor();
+    executarPreservandoScrollFornecedor(() => {
+        if (opcoes.atualizarResultados) renderizarResultadosFornecedor();
+        renderizarSelecionadosFornecedor();
+    });
 }
 
 function normalizarReferenciaListaFornecedor(valor) {
@@ -3198,8 +3233,8 @@ function renderizarResultadosFornecedorTabelaEncomenda(caixa, resultados) {
         input.setAttribute("aria-label", `Quantidade de ${atual.nome || "produto"}`);
         input.addEventListener("keydown", tratarTeclaQuantidadeMapa);
         input.addEventListener("input", () => definirQuantidadeMapaFornecedor(atual, input.value));
-        input.addEventListener("change", () => definirQuantidadeMapaFornecedor(atual, input.value));
-        input.addEventListener("blur", () => definirQuantidadeMapaFornecedor(atual, input.value));
+        input.addEventListener("change", () => definirQuantidadeMapaFornecedor(atual, input.value, { atualizarResultados: true }));
+        input.addEventListener("blur", () => definirQuantidadeMapaFornecedor(atual, input.value, { atualizarResultados: true }));
         ligarSelecaoLinhaQuantidadeMapa(input);
         qtdCelula.appendChild(input);
         linha.appendChild(qtdCelula);
@@ -3373,7 +3408,7 @@ function alterarQuantidadeFornecedor(id, delta) {
         return selecionado;
     });
     guardarSelecaoFornecedor();
-    renderizarSelecionadosFornecedor();
+    executarPreservandoScrollFornecedor(renderizarSelecionadosFornecedor);
 }
 
 function definirPrecoCustoFornecedor(id, valor) {
@@ -3388,7 +3423,7 @@ function definirPrecoCustoFornecedor(id, valor) {
 function removerProdutoFornecedor(id) {
     fornecedorSelecao = fornecedorSelecao.filter(item => String(item.id) !== String(id));
     guardarSelecaoFornecedor();
-    renderizarSelecionadosFornecedor();
+    executarPreservandoScrollFornecedor(renderizarSelecionadosFornecedor);
 }
 
 function renderizarSelecionadosFornecedorTabela(caixa) {
