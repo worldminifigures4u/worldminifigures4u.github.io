@@ -1172,6 +1172,25 @@ function obterTextoOrigemAjusteItemPedidoFornecedor(item, pedido = null) {
     return obterTextoOrigemAjustePedidoFornecedor(origemAjuste);
 }
 
+function obterDataOsProdutoFornecedor(produto, fornecedorNome) {
+    if (!produto || !fornecedorNome) return "";
+    const fornecedores = obterObjetoFornecedoresProduto(produto);
+    const chaveNormalizada = normalizarChaveFornecedor(fornecedorNome);
+    const chave = Object.keys(fornecedores).find((atual) => normalizarChaveFornecedor(atual) === chaveNormalizada);
+    if (!chave) return "";
+    const marcacao = normalizarMarcacaoFornecedor(fornecedores[chave]);
+    const datasOs = (marcacao.historico || [])
+        .filter((evento) => ["os", "encomendada_os"].includes(String(evento?.tipo || "").toLowerCase()) && evento.data)
+        .map((evento) => evento.data)
+        .sort();
+    return formatarDataAjustePedidoFornecedor(datasOs[datasOs.length - 1] || "");
+}
+
+function obterDataOsItemPedidoFornecedor(item, produto = null, fornecedorNome = "") {
+    return formatarDataAjustePedidoFornecedor(item?.data_os || "")
+        || obterDataOsProdutoFornecedor(produto, fornecedorNome);
+}
+
 function escaparHtmlFornecedor(valor) {
     return String(valor ?? '').replace(/[&<>"']/g, (caracter) => ({
         '&': '&amp;',
@@ -4511,6 +4530,13 @@ function renderizarPedidoFornecedorProdutosTabela(caixa, pedido) {
             osSpan.className = "fornecedor-ajuste-os ativo";
             osSpan.textContent = `OS/Falta: ${faltaOs}${item.quantidade_original ? ` de ${Number(item.quantidade_original || 0)}` : ""}`;
             origemCelula.appendChild(osSpan);
+            const dataOs = obterDataOsItemPedidoFornecedor(item, produtoAtual, pedido.fornecedor);
+            if (dataOs) {
+                const dataOsSpan = document.createElement("span");
+                dataOsSpan.className = "fornecedor-ajuste-os";
+                dataOsSpan.textContent = dataOs;
+                origemCelula.appendChild(dataOsSpan);
+            }
         }
         if (marcadoEx) {
             const exSpan = document.createElement("span");
@@ -4568,7 +4594,8 @@ function criarDetalhesPedidoFornecedor(pedido) {
             if (faltaOs > 0) linhaProduto.classList.add("tem-os");
             linhaProduto.appendChild(criarImagemFornecedor(produtoAtual, "fornecedor-miniatura pequena"));
             const info = criarElementoPedidoFornecedor("div", "fornecedor-info");
-            info.innerHTML = `<strong>${escaparHtmlFornecedor(item.nome)}</strong><span class="fornecedor-identificadores">Ref. ${escaparHtmlFornecedor(item.referencia || "-")} | SKU ${escaparHtmlFornecedor(item.sku || "-")}</span><span>Pedido: ${Number(item.quantidade || 0)} | Recebido: ${recebido} | Stock atual: ${Number(produtoAtual.stock || 0)}</span>${faltaOs > 0 ? `<span class="fornecedor-ajuste-os ativo">OS/Falta: ${faltaOs}${item.quantidade_original ? ` de ${Number(item.quantidade_original || 0)}` : ""}</span>` : ""}${marcadoEx ? `<span class="fornecedor-ajuste-os fornecedor-ajuste-ex ativo">EX</span>` : ""}${item.origem_ajuste ? `<span class="fornecedor-ajuste-os">${escaparHtmlFornecedor(obterTextoOrigemAjusteItemPedidoFornecedor(item, pedido))}</span>` : ""}`;
+            const dataOs = obterDataOsItemPedidoFornecedor(item, produtoAtual, pedido.fornecedor);
+            info.innerHTML = `<strong>${escaparHtmlFornecedor(item.nome)}</strong><span class="fornecedor-identificadores">Ref. ${escaparHtmlFornecedor(item.referencia || "-")} | SKU ${escaparHtmlFornecedor(item.sku || "-")}</span><span>Pedido: ${Number(item.quantidade || 0)} | Recebido: ${recebido} | Stock atual: ${Number(produtoAtual.stock || 0)}</span>${faltaOs > 0 ? `<span class="fornecedor-ajuste-os ativo">OS/Falta: ${faltaOs}${item.quantidade_original ? ` de ${Number(item.quantidade_original || 0)}` : ""}</span>${dataOs ? `<span class="fornecedor-ajuste-os">${escaparHtmlFornecedor(dataOs)}</span>` : ""}` : ""}${marcadoEx ? `<span class="fornecedor-ajuste-os fornecedor-ajuste-ex ativo">EX</span>` : ""}${item.origem_ajuste ? `<span class="fornecedor-ajuste-os">${escaparHtmlFornecedor(obterTextoOrigemAjusteItemPedidoFornecedor(item, pedido))}</span>` : ""}`;
             const input = document.createElement("input");
             input.type = "number";
             input.min = "0";
