@@ -4545,10 +4545,14 @@ function renderizarPedidoFornecedorProdutosTabela(caixa, pedido) {
             origemCelula.appendChild(exSpan);
         }
         if (item.origem_ajuste) {
+            const textoOrigem = obterTextoOrigemAjusteItemPedidoFornecedor(item, pedido);
+            const dataOs = obterDataOsItemPedidoFornecedor(item, produtoAtual, pedido.fornecedor);
+            if (textoOrigem && textoOrigem !== dataOs) {
             const origemSpan = document.createElement("span");
             origemSpan.className = "fornecedor-ajuste-os";
-            origemSpan.textContent = obterTextoOrigemAjusteItemPedidoFornecedor(item, pedido);
+                origemSpan.textContent = textoOrigem;
             origemCelula.appendChild(origemSpan);
+            }
         }
         if (!origemCelula.childElementCount) origemCelula.textContent = "-";
         linha.appendChild(origemCelula);
@@ -4595,7 +4599,9 @@ function criarDetalhesPedidoFornecedor(pedido) {
             linhaProduto.appendChild(criarImagemFornecedor(produtoAtual, "fornecedor-miniatura pequena"));
             const info = criarElementoPedidoFornecedor("div", "fornecedor-info");
             const dataOs = obterDataOsItemPedidoFornecedor(item, produtoAtual, pedido.fornecedor);
-            info.innerHTML = `<strong>${escaparHtmlFornecedor(item.nome)}</strong><span class="fornecedor-identificadores">Ref. ${escaparHtmlFornecedor(item.referencia || "-")} | SKU ${escaparHtmlFornecedor(item.sku || "-")}</span><span>Pedido: ${Number(item.quantidade || 0)} | Recebido: ${recebido} | Stock atual: ${Number(produtoAtual.stock || 0)}</span>${faltaOs > 0 ? `<span class="fornecedor-ajuste-os ativo">OS/Falta: ${faltaOs}${item.quantidade_original ? ` de ${Number(item.quantidade_original || 0)}` : ""}</span>${dataOs ? `<span class="fornecedor-ajuste-os">${escaparHtmlFornecedor(dataOs)}</span>` : ""}` : ""}${marcadoEx ? `<span class="fornecedor-ajuste-os fornecedor-ajuste-ex ativo">EX</span>` : ""}${item.origem_ajuste ? `<span class="fornecedor-ajuste-os">${escaparHtmlFornecedor(obterTextoOrigemAjusteItemPedidoFornecedor(item, pedido))}</span>` : ""}`;
+            const textoOrigem = item.origem_ajuste ? obterTextoOrigemAjusteItemPedidoFornecedor(item, pedido) : "";
+            const textoOrigemVisivel = textoOrigem && textoOrigem !== dataOs ? textoOrigem : "";
+            info.innerHTML = `<strong>${escaparHtmlFornecedor(item.nome)}</strong><span class="fornecedor-identificadores">Ref. ${escaparHtmlFornecedor(item.referencia || "-")} | SKU ${escaparHtmlFornecedor(item.sku || "-")}</span><span>Pedido: ${Number(item.quantidade || 0)} | Recebido: ${recebido} | Stock atual: ${Number(produtoAtual.stock || 0)}</span>${faltaOs > 0 ? `<span class="fornecedor-ajuste-os ativo">OS/Falta: ${faltaOs}${item.quantidade_original ? ` de ${Number(item.quantidade_original || 0)}` : ""}</span>${dataOs ? `<span class="fornecedor-ajuste-os">${escaparHtmlFornecedor(dataOs)}</span>` : ""}` : ""}${marcadoEx ? `<span class="fornecedor-ajuste-os fornecedor-ajuste-ex ativo">EX</span>` : ""}${textoOrigemVisivel ? `<span class="fornecedor-ajuste-os">${escaparHtmlFornecedor(textoOrigemVisivel)}</span>` : ""}`;
             const input = document.createElement("input");
             input.type = "number";
             input.min = "0";
