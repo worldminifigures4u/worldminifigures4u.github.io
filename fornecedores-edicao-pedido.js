@@ -50,7 +50,56 @@ function analisarLinhaListaFinalFornecedor(linha, numeroLinha) {
     return { referencia, quantidade, preco_custo: precoCusto, original: linha };
 }
 
-function processarLinhasListaFinalFornecedor(texto) {
+function obterItemExistenteListaFinalFornecedor(itensAtuais, item) {
+    if (!item || !Array.isArray(itensAtuais)) return null;
+    if (typeof encontrarItemPedidoFornecedor === "function") {
+        return encontrarItemPedidoFornecedor(itensAtuais, item);
+    }
+    const chaveItem = normalizarReferenciaListaFornecedor(item.referencia || item.sku || item.id || item.nome);
+    return itensAtuais.find((existente) => {
+        const chaveExistente = normalizarReferenciaListaFornecedor(existente?.referencia || existente?.sku || existente?.id || existente?.nome);
+        return chaveItem && chaveExistente && chaveItem === chaveExistente;
+    }) || null;
+}
+
+function fundirItemListaFinalComExistenteFornecedor(importado, existente) {
+    if (!existente) return importado;
+    const quantidadeAnterior = Math.max(0, Math.floor(Number(existente.quantidade || 0)));
+    const quantidadeNova = Math.max(0, Math.floor(Number(importado.quantidade || 0)));
+    const quantidadeOriginalAnterior = Math.max(
+        quantidadeAnterior,
+        Math.floor(Number(existente.quantidade_original ?? existente.quantidade ?? quantidadeAnterior) || quantidadeAnterior)
+    );
+    const quantidadeOriginal = Math.max(quantidadeOriginalAnterior, quantidadeNova);
+    const aumentouQuantidade = quantidadeNova > quantidadeAnterior;
+    const origemAtual = String(existente.origem_ajuste || "").trim();
+    const dataOrigemAtual = existente.data_origem_ajuste || null;
+    const origemAjuste = aumentouQuantidade ? (origemAtual || "reforco") : origemAtual;
+    const dataOrigemAjuste = aumentouQuantidade ? (dataOrigemAtual || dataOsAgoraFornecedor()) : dataOrigemAtual;
+    const precoCusto = Math.max(0, Number(importado.preco_custo ?? importado.preco ?? existente.preco_custo ?? existente.preco ?? 0) || 0);
+
+    return normalizarItemPedidoFornecedor({
+        ...existente,
+        id: importado.id || existente.id,
+        nome: importado.nome || existente.nome,
+        sku: importado.sku || existente.sku || "",
+        referencia: importado.referencia || existente.referencia || "",
+        tema: importado.tema || existente.tema || "",
+        subtema: importado.subtema || existente.subtema || "",
+        imagens: importado.imagens || existente.imagens || [],
+        quantidade: quantidadeNova,
+        quantidade_original: quantidadeOriginal,
+        falta_os: Math.max(0, Number(existente.falta_os || 0)),
+        estado_fornecedor: existente.estado_fornecedor || "",
+        origem_ajuste: origemAjuste,
+        data_origem_ajuste: dataOrigemAjuste,
+        recebido: Math.min(Math.max(0, Number(existente.recebido || 0)), quantidadeNova),
+        preco_custo: precoCusto,
+        preco: precoCusto
+    });
+}
+
+function processarLinhasListaFinalFornecedor(texto, itensAtuais = []) {
     const linhas = String(texto || "").split(/\r?\n/);
     const itens = [];
     const erros = [];
@@ -66,7 +115,7 @@ function processarLinhasListaFinalFornecedor(texto) {
 
         const produto = encontrarProdutoListaFinalFornecedor(analisada.referencia);
         if (!produto) foraCatalogo.push(analisada.referencia);
-        const item = criarItemFornecedorAPartirListaFinal(analisada, produto);
+        let item = criarItemFornecedorAPartirListaFinal(analisada, produto);
         if (produto) {
             item.referencia = analisada.referencia;
             item.nome = produto.nome || item.nome;
@@ -75,6 +124,7 @@ function processarLinhasListaFinalFornecedor(texto) {
             item.subtema = produto.subtema || item.subtema || "";
             item.imagens = produto.imagens || item.imagens || [];
         }
+        item = fundirItemListaFinalComExistenteFornecedor(item, obterItemExistenteListaFinalFornecedor(itensAtuais, item));
         itens.push(item);
     });
 
@@ -423,7 +473,7 @@ function aplicarListaFinalNaEdicaoFornecedor() {
         return;
     }
 
-    const { itens, erros, foraCatalogo, unidades } = processarLinhasListaFinalFornecedor(texto);
+    const { itens, erros, foraCatalogo, unidades } = processarLinhasListaFinalFornecedor(texto, pedido.itens || []);
     if (!itens.length) {
         definirStatusEdicaoFornecedor(status, "erro", erros.length ? erros.join("; ") : "Cole a lista final do fornecedor antes de aplicar.");
         return;
@@ -880,12 +930,15 @@ function lerItensEditadosPedidoFornecedor(pedido, modal) {
         const recebido = Math.max(0, Math.floor(Number(linha.querySelector('[data-campo="recebido"]')?.dataset.valor || item.recebido || 0)));
         const estaOs = !marcarEx && (faltaOs > 0 || marcarOs);
         const quantidadeFinal = estaOs ? Math.max(0, quantidadeOriginal - faltaOs) : quantidade;
+        const estavaOs = itemPedidoEstavaOsFornecedor(item);
+        const estavaEx = itemPedidoEstaExFornecedor(item);
+        const mudouParaOsOuEx = (estaOs && !estavaOs) || (marcarEx && !estavaEx);
         return {
             ...item,
             quantidade_original: quantidadeOriginal,
             quantidade: quantidadeFinal,
             falta_os: faltaOs,
-            data_os: (estaOs || marcarEx) ? (item.data_os || dataOsHojeFornecedor()) : null,
+            data_os: (estaOs || marcarEx) ? (item.data_os || (mudouParaOsOuEx ? dataOsHojeFornecedor() : null)) : null,
             preco_custo: precoCusto,
             preco: precoCusto,
             estado_fornecedor: estaOs ? 'OS' : (marcarEx ? 'EX' : (['OS', 'EX'].includes(item.estado_fornecedor) ? '' : item.estado_fornecedor || '')),
