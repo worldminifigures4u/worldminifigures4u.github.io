@@ -2732,15 +2732,32 @@ function obterInputsQuantidadeMesmaColunaMapa(inputAtual, container) {
         .filter(input => input && !input.disabled && input.offsetParent !== null);
 }
 
-function focarQuantidadeMapaRelativa(inputAtual, direcao, caixa) {
-    const tabela = inputAtual?.closest(".mapas-produtos-tabela");
-    const container = tabela || caixa || obterCaixaScrollQuantidadeMapa(inputAtual);
-    if (!container) return false;
+function inputEhQuantidadeFornecedor(elemento) {
+    return elemento instanceof HTMLInputElement
+        && (
+            elemento.classList.contains("mapa-quantidade-input")
+            || elemento.classList.contains("fornecedor-quantidade-input")
+            || elemento.classList.contains("fornecedor-recebido-input")
+        );
+}
 
-    const inputs = tabela
-        ? obterInputsQuantidadeMesmaColunaMapa(inputAtual, tabela)
-        : Array.from(container.querySelectorAll(".mapa-quantidade-input"))
-            .filter(input => !input.disabled && input.offsetParent !== null);
+function obterInputsQuantidadeMesmoBlocoFornecedor(inputAtual) {
+    const tabela = inputAtual?.closest(".mapas-produtos-tabela");
+    if (tabela) return obterInputsQuantidadeMesmaColunaMapa(inputAtual, tabela);
+
+    const bloco = inputAtual?.closest("#fornecedor-selecionados, .fornecedor-pedido-produtos-lista, .fornecedor-pedido-produtos");
+    if (!bloco) return [];
+
+    const seletor = inputAtual.classList.contains("fornecedor-recebido-input")
+        ? ".fornecedor-recebido-input"
+        : ".mapa-quantidade-input, .fornecedor-quantidade-input";
+
+    return Array.from(bloco.querySelectorAll(seletor))
+        .filter(input => inputEhQuantidadeFornecedor(input) && !input.disabled && input.offsetParent !== null);
+}
+
+function focarQuantidadeMapaRelativa(inputAtual, direcao, caixa) {
+    const inputs = obterInputsQuantidadeMesmoBlocoFornecedor(inputAtual);
     const indiceAtual = inputs.indexOf(inputAtual);
     if (indiceAtual < 0) return false;
 
@@ -2755,13 +2772,20 @@ function focarQuantidadeMapaRelativa(inputAtual, direcao, caixa) {
 
 function tratarTeclaQuantidadeMapa(evento) {
     if (evento.key !== "Tab") return;
+    const inputAtual = inputEhQuantidadeFornecedor(evento.target) ? evento.target : evento.currentTarget;
+    if (!inputEhQuantidadeFornecedor(inputAtual)) return;
 
-    const caixa = obterCaixaScrollQuantidadeMapa(evento.currentTarget);
-    if (!caixa) return;
+    const caixa = obterCaixaScrollQuantidadeMapa(inputAtual);
 
     evento.preventDefault();
     const direcao = evento.shiftKey ? -1 : 1;
-    focarQuantidadeMapaRelativa(evento.currentTarget, direcao, caixa);
+    focarQuantidadeMapaRelativa(inputAtual, direcao, caixa);
+}
+
+function capturarTabQuantidadeFornecedor(evento) {
+    if (evento.key !== "Tab") return;
+    if (!inputEhQuantidadeFornecedor(evento.target)) return;
+    tratarTeclaQuantidadeMapa(evento);
 }
 
 function obterPendentesProdutoFornecedor(produto) {
@@ -3251,7 +3275,6 @@ function renderizarResultadosFornecedorTabelaEncomenda(caixa, resultados) {
         if (quantidadeSelecionada <= 0) input.removeAttribute("value");
         input.className = "mapa-quantidade-input";
         input.setAttribute("aria-label", `Quantidade de ${atual.nome || "produto"}`);
-        input.addEventListener("keydown", tratarTeclaQuantidadeMapa);
         input.addEventListener("input", () => definirQuantidadeMapaFornecedor(atual, input.value));
         input.addEventListener("change", () => definirQuantidadeMapaFornecedor(atual, input.value, { atualizarResultados: true }));
         input.addEventListener("blur", () => definirQuantidadeMapaFornecedor(atual, input.value, { atualizarResultados: true }));
@@ -3514,7 +3537,6 @@ function renderizarSelecionadosFornecedorTabela(caixa) {
         qtd.dataset.semLimparCampo = "1";
         qtd.value = String(Math.max(1, Number(item.quantidade) || 1));
         qtd.setAttribute("aria-label", `Quantidade de ${atual.nome || "produto"}`);
-        qtd.addEventListener("keydown", tratarTeclaQuantidadeMapa);
         qtd.addEventListener("change", () => definirQuantidadeFornecedor(atual.id, qtd.value));
         qtd.addEventListener("blur", () => definirQuantidadeFornecedor(atual.id, qtd.value));
         qtdCelula.appendChild(qtd);
@@ -4499,7 +4521,6 @@ function renderizarPedidoFornecedorProdutosTabela(caixa, pedido) {
         input.dataset.pedido = pedido.id;
         input.dataset.produto = item.id;
         input.setAttribute("aria-label", `Quantidade a receber de ${item.nome || "produto"}`);
-        input.addEventListener("keydown", tratarTeclaQuantidadeMapa);
         qtdCelula.appendChild(input);
         linha.appendChild(qtdCelula);
 
@@ -4840,6 +4861,7 @@ function ligarEventoFornecedor(id, evento, handler) {
 ligarBloqueioScrollExternoListaFornecedor();
 ligarStickyInfoFornecedor();
 ligarFiltrosMarcacaoFornecedor();
+document.addEventListener("keydown", capturarTabQuantidadeFornecedor, true);
 window.addEventListener("scroll", verificarCarregamentoProgressivoFornecedor, { passive: true });
 ligarEventoFornecedor('fornecedor-pesquisa', 'input', agendarRenderizacaoResultadosFornecedor);
 ligarEventoFornecedor('fornecedor-nome', 'change', agendarRenderizacaoResultadosFornecedor);
