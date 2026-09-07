@@ -2717,19 +2717,21 @@ function garantirInputVisivelNoScroll(caixa, input) {
 }
 
 function focarQuantidadeMapaRelativa(inputAtual, direcao, caixa) {
-    const container = caixa || obterCaixaScrollQuantidadeMapa(inputAtual);
+    const tabela = inputAtual?.closest(".mapas-produtos-tabela");
+    const container = tabela || caixa || obterCaixaScrollQuantidadeMapa(inputAtual);
     if (!container) return false;
 
-    const inputs = Array.from(container.querySelectorAll(".mapa-quantidade-input"));
+    const inputs = Array.from(container.querySelectorAll("tbody .mapa-quantidade-input"))
+        .filter(input => !input.disabled && input.offsetParent !== null);
     const indiceAtual = inputs.indexOf(inputAtual);
     if (indiceAtual < 0) return false;
 
     const proximo = inputs[indiceAtual + direcao];
-    if (!proximo) return false;
+    if (!proximo) return true;
 
     proximo.focus({ preventScroll: true });
     proximo.select();
-    garantirInputVisivelNoScroll(container, proximo);
+    garantirInputVisivelNoScroll(caixa || obterCaixaScrollQuantidadeMapa(proximo), proximo);
     return true;
 }
 
@@ -4479,6 +4481,7 @@ function renderizarPedidoFornecedorProdutosTabela(caixa, pedido) {
         input.dataset.pedido = pedido.id;
         input.dataset.produto = item.id;
         input.setAttribute("aria-label", `Quantidade a receber de ${item.nome || "produto"}`);
+        input.addEventListener("keydown", tratarTeclaQuantidadeMapa);
         qtdCelula.appendChild(input);
         linha.appendChild(qtdCelula);
 
