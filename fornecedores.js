@@ -2778,6 +2778,8 @@ function tratarTeclaQuantidadeMapa(evento) {
     const caixa = obterCaixaScrollQuantidadeMapa(inputAtual);
 
     evento.preventDefault();
+    evento.stopPropagation();
+    evento.stopImmediatePropagation?.();
     const direcao = evento.shiftKey ? -1 : 1;
     focarQuantidadeMapaRelativa(inputAtual, direcao, caixa);
 }
@@ -3276,8 +3278,8 @@ function renderizarResultadosFornecedorTabelaEncomenda(caixa, resultados) {
         input.className = "mapa-quantidade-input";
         input.setAttribute("aria-label", `Quantidade de ${atual.nome || "produto"}`);
         input.addEventListener("input", () => definirQuantidadeMapaFornecedor(atual, input.value));
-        input.addEventListener("change", () => definirQuantidadeMapaFornecedor(atual, input.value, { atualizarResultados: true }));
-        input.addEventListener("blur", () => definirQuantidadeMapaFornecedor(atual, input.value, { atualizarResultados: true }));
+        input.addEventListener("change", () => definirQuantidadeMapaFornecedor(atual, input.value));
+        input.addEventListener("blur", () => definirQuantidadeMapaFornecedor(atual, input.value));
         ligarSelecaoLinhaQuantidadeMapa(input);
         qtdCelula.appendChild(input);
         linha.appendChild(qtdCelula);
