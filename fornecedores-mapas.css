@@ -1190,8 +1190,8 @@ body.pagina-mapas-admin > main.fornecedores-admin {
     position: relative;
     z-index: 6;
     display: grid;
-    grid-template-columns: minmax(360px, 1fr) minmax(220px, 340px) minmax(150px, 1fr);
-    grid-template-areas: "acoes pesquisa contadores";
+    grid-template-columns: minmax(180px, .55fr) minmax(220px, 320px) minmax(520px, 1.45fr);
+    grid-template-areas: "contadores pesquisa acoes";
     gap: 8px;
     align-items: center;
     min-width: 0;
@@ -1202,7 +1202,7 @@ body.pagina-mapas-admin > main.fornecedores-admin {
     grid-area: contadores;
     display: flex;
     align-items: center;
-    justify-content: flex-end;
+    justify-content: flex-start;
     gap: 8px;
     min-width: 0;
 }
@@ -1218,7 +1218,7 @@ body.pagina-mapas-admin > main.fornecedores-admin {
     grid-area: acoes;
     display: flex;
     align-items: center;
-    justify-content: flex-start;
+    justify-content: flex-end;
     gap: 8px;
     min-width: 0;
 }
@@ -1268,6 +1268,20 @@ body.pagina-mapas-admin > main.fornecedores-admin {
     min-height: 36px;
     border-radius: 6px;
     font: inherit;
+}
+
+.pagina-mapas-admin .mapas-botao-novo {
+    border-color: #ffc400;
+    background: #ffc400;
+    color: #111;
+    font-weight: 900;
+}
+
+.pagina-mapas-admin .mapas-botao-novo:hover,
+.pagina-mapas-admin .mapas-botao-novo:focus-visible {
+    background: #ffd84d;
+    color: #000;
+    border-color: #ffd84d;
 }
 
 .mapas-colunas-painel {

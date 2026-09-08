@@ -769,6 +769,23 @@ html.admin-light-mode body.cabecalho-com-admin .portes-tab.ativa{
     color:#4a3700 !important;
 }
 
+html.admin-light-mode body.cabecalho-com-admin .pagina-mapas-admin .mapas-botao-novo,
+html.admin-light-mode body.pagina-mapas-admin.cabecalho-com-admin .mapas-botao-novo{
+    background:#ffc400 !important;
+    border-color:#d99d00 !important;
+    color:#111827 !important;
+    box-shadow:0 2px 8px rgba(217, 157, 0, .22) !important;
+}
+
+html.admin-light-mode body.cabecalho-com-admin .pagina-mapas-admin .mapas-botao-novo:hover,
+html.admin-light-mode body.cabecalho-com-admin .pagina-mapas-admin .mapas-botao-novo:focus-visible,
+html.admin-light-mode body.pagina-mapas-admin.cabecalho-com-admin .mapas-botao-novo:hover,
+html.admin-light-mode body.pagina-mapas-admin.cabecalho-com-admin .mapas-botao-novo:focus-visible{
+    background:#ffd84d !important;
+    border-color:#d99d00 !important;
+    color:#000 !important;
+}
+
 html.admin-light-mode body.cabecalho-com-admin .wallapop-botao-registar{
     background:#e9f8ef !important;
     border:1px solid #7bd99a !important;
