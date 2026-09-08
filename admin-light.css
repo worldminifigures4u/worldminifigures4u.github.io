@@ -1368,6 +1368,10 @@ html.admin-light-mode body.cabecalho-com-admin :is(
     color:#475569 !important;
 }
 
+html.admin-light-mode body.cabecalho-com-admin .mapas-produto-fornecedor-leitura-preco{
+    color:#b77900 !important;
+}
+
 html.admin-light-mode body.cabecalho-com-admin .mapas-produto-leitura-badge{
     background:#eef2f6 !important;
     border-color:#cbd5e1 !important;

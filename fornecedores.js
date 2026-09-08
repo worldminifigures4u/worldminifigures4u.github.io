@@ -68,7 +68,7 @@ function garantirFornecedoresProdutoModal() {
     if (window.FornecedoresProdutoModal) return Promise.resolve();
     if (!__fornecedoresProdutoPromessa) {
         prepararContextoProdutoFornecedor();
-        __fornecedoresProdutoPromessa = carregarScriptAdmin("mapas-produto-modal.js?v=20260905-modal-sem-fundo")
+        __fornecedoresProdutoPromessa = carregarScriptAdmin("mapas-produto-modal.js?v=20260908-preco-fornecedor")
             .then(function () {
                 window.FornecedoresProdutoModal = {
                     abrir: function () {
@@ -87,7 +87,7 @@ function garantirFornecedoresProdutoModal() {
 function garantirFornecedoresEdicaoPedido() {
     if (window.FornecedoresEdicaoPedido) return Promise.resolve();
     if (!__fornecedoresEdicaoPromessa) {
-        __fornecedoresEdicaoPromessa = carregarScriptAdmin("fornecedores-edicao-pedido.js?v=20260907-preservar-data-itens");
+        __fornecedoresEdicaoPromessa = carregarScriptAdmin("fornecedores-edicao-pedido.js?v=20260908-preco-fornecedor");
     }
     return __fornecedoresEdicaoPromessa;
 }
@@ -1696,6 +1696,22 @@ function obterEstadoMarcacaoPreservado(valor) {
     return String(valor).trim();
 }
 
+function obterExtrasMarcacaoFornecedor(valor) {
+    if (!valor || typeof valor !== "object" || Array.isArray(valor)) return {};
+    const {
+        estado,
+        desde,
+        datas,
+        historico,
+        texto,
+        tipo,
+        detalhe,
+        marcacao_atual_limpa,
+        ...extras
+    } = valor;
+    return { ...extras };
+}
+
 function acrescentarHistoricoFornecedor(valorAnterior, tipo, novaData = dataOsAgoraFornecedor()) {
     const anterior = normalizarMarcacaoFornecedor(valorAnterior);
     const historico = [...(anterior.historico || [])];
@@ -1703,12 +1719,13 @@ function acrescentarHistoricoFornecedor(valorAnterior, tipo, novaData = dataOsAg
         tipo: normalizarTipoHistoricoFornecedor(tipo),
         data: String(novaData || dataOsAgoraFornecedor())
     });
-    return montarMarcacaoComHistorico(historico, obterEstadoMarcacaoPreservado(valorAnterior));
+    return montarMarcacaoComHistorico(historico, obterEstadoMarcacaoPreservado(valorAnterior), obterExtrasMarcacaoFornecedor(valorAnterior));
 }
 
-function montarMarcacaoComHistorico(historico, estadoAtual = "") {
+function montarMarcacaoComHistorico(historico, estadoAtual = "", extras = {}) {
     const lista = Array.isArray(historico) ? historico : [];
     return {
+        ...extras,
         estado: String(estadoAtual || "").trim(),
         desde: lista[0]?.data || null,
         datas: lista.filter((item) => item.tipo === "os").map((item) => item.data).filter(Boolean),
@@ -1716,8 +1733,8 @@ function montarMarcacaoComHistorico(historico, estadoAtual = "") {
     };
 }
 
-function reconstruirMarcacaoHistoricoFornecedor(historico, estadoAtual = "") {
-    return montarMarcacaoComHistorico(historico, estadoAtual);
+function reconstruirMarcacaoHistoricoFornecedor(historico, estadoAtual = "", valorAnterior = null) {
+    return montarMarcacaoComHistorico(historico, estadoAtual, obterExtrasMarcacaoFornecedor(valorAnterior));
 }
 
 function corrigirUltimaTentativaParaOs(valorAnterior, novaData = dataOsAgoraFornecedor()) {
@@ -1739,7 +1756,7 @@ function corrigirUltimaTentativaParaOs(valorAnterior, novaData = dataOsAgoraForn
         data: String(novaData || dataOsAgoraFornecedor())
     };
     // Histórico passa a OS; marcação atual só muda ao confirmar Encomendada
-    return montarMarcacaoComHistorico(historico, obterEstadoMarcacaoPreservado(valorAnterior));
+    return montarMarcacaoComHistorico(historico, obterEstadoMarcacaoPreservado(valorAnterior), obterExtrasMarcacaoFornecedor(valorAnterior));
 }
 
 function promoverUltimaSolicitadaParaEncomendada(valorAnterior, novaData = dataOsAgoraFornecedor()) {
@@ -1759,7 +1776,7 @@ function promoverUltimaSolicitadaParaEncomendada(valorAnterior, novaData = dataO
         data
     };
     // Histórico Encomendada + marcação atual Encomendada (stock disponível na encomenda)
-    return montarMarcacaoComHistorico(historico, "Encomendada");
+    return montarMarcacaoComHistorico(historico, "Encomendada", obterExtrasMarcacaoFornecedor(valorAnterior));
 }
 
 function garantirMarcacaoEncomendadaFornecedor(valorAnterior, novaData = dataOsAgoraFornecedor()) {
@@ -1781,7 +1798,7 @@ function garantirMarcacaoEncomendadaFornecedor(valorAnterior, novaData = dataOsA
     } else {
         historico.push({ tipo: "encomendada", data });
     }
-    return montarMarcacaoComHistorico(historico, "Encomendada");
+    return montarMarcacaoComHistorico(historico, "Encomendada", obterExtrasMarcacaoFornecedor(valorAnterior));
 }
 
 function confirmarTentativaParcialFornecedor(valorAnterior, novaData = dataOsAgoraFornecedor()) {
@@ -1810,7 +1827,7 @@ function confirmarTentativaParcialFornecedor(valorAnterior, novaData = dataOsAgo
         historico.push({ tipo: "encomendada_os", data });
     }
 
-    return montarMarcacaoComHistorico(historico, "OS");
+    return montarMarcacaoComHistorico(historico, "OS", obterExtrasMarcacaoFornecedor(valorAnterior));
 }
 
 function corrigirUltimaTentativaParaEx(valorAnterior, novaData = dataOsAgoraFornecedor()) {
@@ -1832,12 +1849,12 @@ function corrigirUltimaTentativaParaEx(valorAnterior, novaData = dataOsAgoraForn
         historico.push({ tipo: "ex", data });
     }
 
-    return montarMarcacaoComHistorico(historico, "EX");
+    return montarMarcacaoComHistorico(historico, "EX", obterExtrasMarcacaoFornecedor(valorAnterior));
 }
 
 function aplicarMarcacaoAtualAposConfirmar(valorAnterior, estadoMarcacao, novaData = dataOsAgoraFornecedor()) {
     const anterior = normalizarMarcacaoFornecedor(valorAnterior);
-    return montarMarcacaoComHistorico(anterior.historico || [], estadoMarcacao);
+    return montarMarcacaoComHistorico(anterior.historico || [], estadoMarcacao, obterExtrasMarcacaoFornecedor(valorAnterior));
 }
 
 function corrigirUltimaEncomendadaParaOs(valorAnterior, novaData = dataOsAgoraFornecedor()) {
@@ -1851,13 +1868,15 @@ function criarMarcacaoOsFornecedor(valorAnterior, novaData = dataOsAgoraForneced
 function parseValorMarcacaoFornecedorInput(texto, valorAnterior) {
     const valor = String(texto || "").trim();
     const anterior = normalizarMarcacaoFornecedor(valorAnterior);
+    const extras = obterExtrasMarcacaoFornecedor(valorAnterior);
     const historico = [...(anterior.historico || [])];
     if (!valor) {
-        return historico.length ? { estado: "", marcacao_atual_limpa: true, historico, datas: anterior.datas || [], desde: anterior.desde || null } : "";
+        return historico.length ? { ...extras, estado: "", marcacao_atual_limpa: true, historico, datas: anterior.datas || [], desde: anterior.desde || null } : "";
     }
     const maiusculas = valor.toUpperCase();
     if (maiusculas === "OS" || maiusculas.startsWith("OS")) {
         return {
+            ...extras,
             estado: "OS",
             desde: anterior.desde || historico[0]?.data || null,
             datas: anterior.datas || [],
@@ -1865,23 +1884,34 @@ function parseValorMarcacaoFornecedorInput(texto, valorAnterior) {
         };
     }
     if (maiusculas === "EX") {
-        return { estado: "EX", historico, desde: anterior.desde || null, datas: anterior.datas || [] };
+        return { ...extras, estado: "EX", historico, desde: anterior.desde || null, datas: anterior.datas || [] };
     }
     if (/^-?\d+(?:[,.]\d+)?$/.test(valor)) {
-        return historico.length ? { estado: "", historico, desde: anterior.desde || null, datas: anterior.datas || [] } : "";
+        return historico.length ? { ...extras, estado: "", historico, desde: anterior.desde || null, datas: anterior.datas || [] } : "";
     }
     if (maiusculas === "SOLICITADA" || maiusculas === "SOLICITADO") {
-        return { estado: "Solicitada", historico, desde: anterior.desde || null, datas: anterior.datas || [] };
+        return { ...extras, estado: "Solicitada", historico, desde: anterior.desde || null, datas: anterior.datas || [] };
     }
     if (maiusculas === "ENCOMENDADA" || maiusculas === "ENCOMENDADO") {
-        return { estado: "Encomendada", historico, desde: anterior.desde || null, datas: anterior.datas || [] };
+        return { ...extras, estado: "Encomendada", historico, desde: anterior.desde || null, datas: anterior.datas || [] };
     }
-    return { estado: valor, historico, desde: anterior.desde || null, datas: anterior.datas || [] };
+    return { ...extras, estado: valor, historico, desde: anterior.desde || null, datas: anterior.datas || [] };
 }
 
 function classificarValorFornecedor(valor) {
     const marcacao = normalizarMarcacaoFornecedor(valor);
     return { tipo: marcacao.tipo, texto: marcacao.texto };
+}
+
+function obterPrecoCompraMarcacaoFornecedor(valor) {
+    if (!valor || typeof valor !== "object" || Array.isArray(valor)) return 0;
+    const preco = Number(valor.preco_compra ?? valor.ultimo_preco_compra ?? valor.preco_custo ?? 0);
+    return Number.isFinite(preco) ? Math.max(0, preco) : 0;
+}
+
+function obterTextoPrecoCompraMarcacaoFornecedor(valor) {
+    const preco = obterPrecoCompraMarcacaoFornecedor(valor);
+    return preco > 0 ? `Compra: ${formatarEuroFornecedor(preco)}` : "";
 }
 
 function criarBlocoHistoricoFornecedorFicha(form, id, rotulo, valor, opcoes = {}) {
@@ -3397,11 +3427,13 @@ function renderizarResultadosFornecedor() {
         ids.textContent = `${atual.referencia ? `Ref. ${atual.referencia} | ` : ""}SKU ${atual.sku || "-"}`;
         info.appendChild(ids);
 
-        const estadoFornecedor = classificarValorFornecedor(obterValorFornecedorProduto(atual, fornecedorMarcacao));
+        const valorFornecedorProduto = obterValorFornecedorProduto(atual, fornecedorMarcacao);
+        const estadoFornecedor = classificarValorFornecedor(valorFornecedorProduto);
         if (fornecedorMarcacao && fornecedorMarcacao !== "Outro" && filtroFornecedor !== "todos") {
             const fornecedorLinha = document.createElement("span");
             fornecedorLinha.className = `fornecedor-marcacao ${estadoFornecedor.tipo}`;
-            fornecedorLinha.textContent = `${fornecedorMarcacao}: ${estadoFornecedor.texto}`;
+            const precoCompraFornecedor = obterTextoPrecoCompraMarcacaoFornecedor(valorFornecedorProduto);
+            fornecedorLinha.textContent = `${fornecedorMarcacao}: ${estadoFornecedor.texto}${precoCompraFornecedor ? ` | ${precoCompraFornecedor}` : ""}`;
             info.appendChild(fornecedorLinha);
         }
 
@@ -3937,6 +3969,26 @@ function definirEventoFornecedorNoProduto(produto, fornecedorNome, tipo, data = 
     return fornecedores;
 }
 
+function definirPrecoCompraFornecedorNoProduto(produto, fornecedorNome, precoCompra, data = dataOsAgoraFornecedor()) {
+    const chaveNormalizada = normalizarChaveFornecedor(fornecedorNome);
+    const preco = Math.max(0, Number(precoCompra || 0) || 0);
+    if (!produto || !chaveNormalizada || fornecedorNome === "Outro" || preco <= 0) return null;
+    const fornecedores = obterObjetoFornecedoresProduto(produto);
+    const chaveExistente = Object.keys(fornecedores).find(chave => normalizarChaveFornecedor(chave) === chaveNormalizada);
+    const chave = chaveExistente || fornecedorNome;
+    const anterior = fornecedores[chave];
+    const marcacao = normalizarMarcacaoFornecedor(anterior);
+    const base = anterior && typeof anterior === "object" && !Array.isArray(anterior)
+        ? { ...anterior }
+        : montarMarcacaoComHistorico(marcacao.historico || [], obterEstadoMarcacaoPreservado(anterior));
+    fornecedores[chave] = {
+        ...base,
+        preco_compra: preco,
+        data_preco_compra: String(data || dataOsAgoraFornecedor())
+    };
+    return fornecedores;
+}
+
 function chaveItemHistoricoPedidoFornecedor(item) {
     return normalizarReferenciaListaFornecedor(item?.referencia)
         || String(item?.id || item?.sku || "").trim().toUpperCase();
@@ -4105,7 +4157,7 @@ async function sincronizarOsProdutosFornecedor(itens, fornecedorNome) {
     return sincronizarHistoricoPedidosFornecedor(itens, fornecedorNome, { modo: "criar" });
 }
 
-async function sincronizarPrecoCompraProdutosFornecedor(itens) {
+async function sincronizarPrecoCompraProdutosFornecedor(itens, fornecedorNome = "") {
     if (!fornecedoresClient) return 0;
     const porProduto = new Map();
     (itens || []).forEach(item => {
@@ -4128,12 +4180,26 @@ async function sincronizarPrecoCompraProdutosFornecedor(itens) {
         });
         if (error) throw error;
         const idAtualizado = String(data?.id || produtoAtual?.id || item.id || "");
+        let fornecedoresAtualizados = null;
+        const produtoLocal = fornecedorProdutos.find(produto => String(produto.id || "") === idAtualizado) || produtoAtual;
+        fornecedoresAtualizados = definirPrecoCompraFornecedorNoProduto(produtoLocal, fornecedorNome, precoCompra);
+        if (fornecedoresAtualizados) {
+            const { error: erroFornecedores } = await fornecedoresClient.rpc("atualizar_fornecedores_produto_admin", {
+                p_id: String(produtoAtual.id),
+                p_fornecedores: fornecedoresAtualizados
+            });
+            if (erroFornecedores) throw erroFornecedores;
+        }
         fornecedorProdutos = fornecedorProdutos.map(produto => {
             const mesmoId = idAtualizado && String(produto.id || "") === idAtualizado;
-            return mesmoId ? { ...produto, preco_compra: precoCompra } : produto;
+            return mesmoId
+                ? { ...produto, preco_compra: precoCompra, ...(fornecedoresAtualizados ? { fornecedores: fornecedoresAtualizados } : {}) }
+                : produto;
         });
         fornecedorSelecao = fornecedorSelecao.map(produto =>
-            String(produto.id || "") === idAtualizado ? { ...produto, preco_compra: precoCompra } : produto
+            String(produto.id || "") === idAtualizado
+                ? { ...produto, preco_compra: precoCompra, ...(fornecedoresAtualizados ? { fornecedores: fornecedoresAtualizados } : {}) }
+                : produto
         );
         atualizados += 1;
     }

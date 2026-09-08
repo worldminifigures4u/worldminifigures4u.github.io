@@ -1023,7 +1023,7 @@ async function guardarEdicaoPedidoFornecedor(evento) {
         let produtosComPrecoAtualizado = 0;
         let avisoPrecoCompra = '';
         try {
-            produtosComPrecoAtualizado = await sincronizarPrecoCompraProdutosFornecedor(itens);
+            produtosComPrecoAtualizado = await sincronizarPrecoCompraProdutosFornecedor(itens, fornecedor);
         } catch (erroPrecoCompra) {
             console.warn('Nao foi possivel sincronizar preço compra nos produtos.', erroPrecoCompra);
             avisoPrecoCompra = ' O preço compra ficou guardado na encomenda, mas ainda não foi atualizado na ficha do produto. Execute o SQL atualizado no Supabase.';

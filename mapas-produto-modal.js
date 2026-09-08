@@ -876,14 +876,22 @@ function normalizarMarcacaoFornecedorLeituraMapa(valor) {
     }
 
     const ultimoHistorico = historico[historico.length - 1] || null;
+    const precoCompra = obterPrecoCompraMarcacaoFornecedorLeituraMapa(valor);
     return {
         tipo,
         texto,
         historico,
+        precoCompra,
         detalhe: ultimoHistorico
             ? `${rotuloHistoricoFornecedorLeituraMapa(ultimoHistorico.tipo)} ${formatarDataFornecedorLeituraMapa(ultimoHistorico.data)}`.trim()
             : ""
     };
+}
+
+function obterPrecoCompraMarcacaoFornecedorLeituraMapa(valor) {
+    if (!valor || typeof valor !== "object" || Array.isArray(valor)) return 0;
+    const preco = Number(valor.preco_compra ?? valor.ultimo_preco_compra ?? valor.preco_custo ?? 0);
+    return Number.isFinite(preco) ? Math.max(0, preco) : 0;
 }
 
 function obterMarcacoesFornecedoresLeituraMapa(produto) {
@@ -894,10 +902,11 @@ function obterMarcacoesFornecedoresLeituraMapa(produto) {
         }))
         .filter((item) =>
             item.nome
-            && item.marcacao.tipo !== "disponivel"
+            && (item.marcacao.tipo !== "disponivel" || item.marcacao.precoCompra > 0)
             && (
                 (item.marcacao.tipo !== "solicitada" && item.marcacao.tipo !== "encomendada")
                 || temLinhaPendenteEncomendaFornecedorProdutoMapa(produto, item.nome)
+                || item.marcacao.precoCompra > 0
             )
             && String(item.marcacao.texto || "").trim()
         )
@@ -1433,6 +1442,12 @@ function montarSecaoFornecedoresLeituraMapa(campos, produto) {
         estado.textContent = marcacao.texto;
 
         item.append(fornecedor, estado);
+        if (marcacao.precoCompra > 0) {
+            const preco = document.createElement("small");
+            preco.className = "mapas-produto-fornecedor-leitura-preco";
+            preco.textContent = `Compra: ${formatarEuroProdutoModal(marcacao.precoCompra)} €`;
+            item.appendChild(preco);
+        }
         if (marcacao.detalhe) {
             const detalhe = document.createElement("small");
             detalhe.className = "mapas-produto-fornecedor-leitura-detalhe";
