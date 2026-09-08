@@ -72,6 +72,14 @@ function fundirItemListaFinalComExistenteFornecedor(importado, existente) {
     );
     const quantidadeOriginal = Math.max(quantidadeOriginalAnterior, quantidadeNova);
     const aumentouQuantidade = quantidadeNova > quantidadeAnterior;
+    const faltaOsAnterior = Math.max(0, Number(existente.falta_os || 0));
+    const faltaOs = quantidadeNova < quantidadeOriginal
+        ? Math.max(faltaOsAnterior, quantidadeOriginal - quantidadeNova)
+        : 0;
+    const estadoFornecedorAnterior = String(existente.estado_fornecedor || "").trim();
+    const estadoFornecedor = faltaOs > 0
+        ? "OS"
+        : (["OS", "EX"].includes(estadoFornecedorAnterior.toUpperCase()) ? "" : estadoFornecedorAnterior);
     const origemAtual = String(existente.origem_ajuste || "").trim();
     const dataOrigemAtual = existente.data_origem_ajuste || null;
     const origemAjuste = aumentouQuantidade ? (origemAtual || "reforco") : origemAtual;
@@ -89,8 +97,9 @@ function fundirItemListaFinalComExistenteFornecedor(importado, existente) {
         imagens: importado.imagens || existente.imagens || [],
         quantidade: quantidadeNova,
         quantidade_original: quantidadeOriginal,
-        falta_os: Math.max(0, Number(existente.falta_os || 0)),
-        estado_fornecedor: existente.estado_fornecedor || "",
+        falta_os: faltaOs,
+        estado_fornecedor: estadoFornecedor,
+        marcado_ex: false,
         origem_ajuste: origemAjuste,
         data_origem_ajuste: dataOrigemAjuste,
         recebido: Math.min(Math.max(0, Number(existente.recebido || 0)), quantidadeNova),
@@ -99,11 +108,20 @@ function fundirItemListaFinalComExistenteFornecedor(importado, existente) {
     });
 }
 
+function itemListaFinalDeveSerMantidoFornecedor(item) {
+    if (!item) return false;
+    const faltaOs = Math.max(0, Number(item.falta_os || 0));
+    const estado = String(item.estado_fornecedor || "").trim().toUpperCase();
+    const marcadoEx = Boolean(item.marcado_ex) || estado === "EX";
+    return faltaOs > 0 || estado === "OS" || marcadoEx;
+}
+
 function processarLinhasListaFinalFornecedor(texto, itensAtuais = []) {
     const linhas = String(texto || "").split(/\r?\n/);
     const itens = [];
     const erros = [];
     const foraCatalogo = [];
+    const itensUsados = new Set();
 
     linhas.forEach((linha, indice) => {
         const analisada = analisarLinhaListaFinalFornecedor(linha, indice + 1);
@@ -124,8 +142,15 @@ function processarLinhasListaFinalFornecedor(texto, itensAtuais = []) {
             item.subtema = produto.subtema || item.subtema || "";
             item.imagens = produto.imagens || item.imagens || [];
         }
-        item = fundirItemListaFinalComExistenteFornecedor(item, obterItemExistenteListaFinalFornecedor(itensAtuais, item));
+        const existente = obterItemExistenteListaFinalFornecedor(itensAtuais, item);
+        if (existente) itensUsados.add(existente);
+        item = fundirItemListaFinalComExistenteFornecedor(item, existente);
         itens.push(item);
+    });
+
+    (Array.isArray(itensAtuais) ? itensAtuais : []).forEach((existente) => {
+        if (itensUsados.has(existente) || !itemListaFinalDeveSerMantidoFornecedor(existente)) return;
+        itens.push(normalizarItemPedidoFornecedor({ ...existente }));
     });
 
     const unidades = itens.reduce((total, item) => total + Math.max(0, Number(item.quantidade || 0)), 0);
@@ -145,7 +170,7 @@ async function aplicarListaFinalFornecedor() {
         return;
     }
 
-    const { itens: importados, erros, foraCatalogo, unidades } = processarLinhasListaFinalFornecedor(textoLista);
+    const { itens: importados, erros, foraCatalogo, unidades } = processarLinhasListaFinalFornecedor(textoLista, fornecedorSelecao);
     if (!importados.length) {
         const detalhe = erros.length ? ` ${erros.join("; ")}` : "";
         definirStatusFornecedor(`Não foi possível importar produtos da lista.${detalhe}`, true);
