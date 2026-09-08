@@ -87,7 +87,7 @@ function garantirFornecedoresProdutoModal() {
 function garantirFornecedoresEdicaoPedido() {
     if (window.FornecedoresEdicaoPedido) return Promise.resolve();
     if (!__fornecedoresEdicaoPromessa) {
-        __fornecedoresEdicaoPromessa = carregarScriptAdmin("fornecedores-edicao-pedido.js?v=20260908-lista-final-os");
+        __fornecedoresEdicaoPromessa = carregarScriptAdmin("fornecedores-edicao-pedido.js?v=20260908-lista-final-os-auto");
     }
     return __fornecedoresEdicaoPromessa;
 }
@@ -95,7 +95,7 @@ function garantirFornecedoresEdicaoPedido() {
 function garantirFornecedoresPrintReceive() {
     if (window.FornecedoresPrintReceive) return Promise.resolve();
     if (!__fornecedoresPrintPromessa) {
-        __fornecedoresPrintPromessa = carregarScriptAdmin("fornecedores-print-receive.js?v=20260908-lista-final-os");
+        __fornecedoresPrintPromessa = carregarScriptAdmin("fornecedores-print-receive.js?v=20260908-lista-final-os-auto");
     }
     return __fornecedoresPrintPromessa;
 }

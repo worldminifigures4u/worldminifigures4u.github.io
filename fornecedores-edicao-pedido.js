@@ -108,12 +108,27 @@ function fundirItemListaFinalComExistenteFornecedor(importado, existente) {
     });
 }
 
-function itemListaFinalDeveSerMantidoFornecedor(item) {
+function criarItemAusenteListaFinalFornecedor(item) {
     if (!item) return false;
-    const faltaOs = Math.max(0, Number(item.falta_os || 0));
+    const quantidadeAtual = Math.max(0, Math.floor(Number(item.quantidade || 0)));
+    const quantidadeOriginal = Math.max(
+        quantidadeAtual,
+        Math.floor(Number(item.quantidade_original ?? item.quantidade_inicial ?? item.quantidade ?? quantidadeAtual) || quantidadeAtual)
+    );
+    if (quantidadeOriginal <= 0) return null;
     const estado = String(item.estado_fornecedor || "").trim().toUpperCase();
     const marcadoEx = Boolean(item.marcado_ex) || estado === "EX";
-    return faltaOs > 0 || estado === "OS" || marcadoEx;
+    if (marcadoEx) return normalizarItemPedidoFornecedor({ ...item, marcado_ex: true, estado_fornecedor: "EX" });
+    return normalizarItemPedidoFornecedor({
+        ...item,
+        quantidade: 0,
+        quantidade_original: quantidadeOriginal,
+        falta_os: quantidadeOriginal,
+        data_os: item.data_os || dataOsHojeFornecedor(),
+        estado_fornecedor: "OS",
+        marcado_ex: false,
+        recebido: 0
+    });
 }
 
 function processarLinhasListaFinalFornecedor(texto, itensAtuais = []) {
@@ -149,8 +164,9 @@ function processarLinhasListaFinalFornecedor(texto, itensAtuais = []) {
     });
 
     (Array.isArray(itensAtuais) ? itensAtuais : []).forEach((existente) => {
-        if (itensUsados.has(existente) || !itemListaFinalDeveSerMantidoFornecedor(existente)) return;
-        itens.push(normalizarItemPedidoFornecedor({ ...existente }));
+        if (itensUsados.has(existente)) return;
+        const ausente = criarItemAusenteListaFinalFornecedor(existente);
+        if (ausente) itens.push(ausente);
     });
 
     const unidades = itens.reduce((total, item) => total + Math.max(0, Number(item.quantidade || 0)), 0);
