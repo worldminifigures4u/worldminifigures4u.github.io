@@ -437,6 +437,14 @@ function criarBlocoFornecedorFallbackMapa(form, id, rotulo, valor, opcoes = {}) 
     titulo.textContent = rotulo;
     cabecalho.appendChild(titulo);
 
+    const precoFornecedor = obterPrecoCompraMarcacaoFornecedorLeituraMapa(valor);
+    if (precoFornecedor > 0) {
+        const precoCompra = document.createElement("span");
+        precoCompra.className = "mapas-produto-fornecedor-preco-compra";
+        precoCompra.textContent = `Compra: ${formatarEuroProdutoModal(precoFornecedor)} €`;
+        cabecalho.appendChild(precoCompra);
+    }
+
     const botaoLimpar = document.createElement("button");
     botaoLimpar.type = "button";
     botaoLimpar.className = "mapas-produto-fornecedor-limpar-historico";

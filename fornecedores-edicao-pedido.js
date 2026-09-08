@@ -241,18 +241,18 @@ function montarLinhaEdicaoProdutoFornecedor(pedido, item, indice) {
     linha.className = "fornecedor-edicao-produto";
     if (!itemMarcadoEx && (faltaAtual > 0 || item.estado_fornecedor === "OS")) linha.classList.add("tem-os");
     linha.dataset.indice = String(indice);
-    linha.dataset.referencia = item.referencia || produtoAtual.referencia || "";
-    linha.dataset.sku = item.sku || produtoAtual.sku || "";
+    linha.dataset.referencia = produtoAtual.referencia || item.referencia || "";
+    linha.dataset.sku = produtoAtual.sku || item.sku || "";
     linha.dataset.quantidadeOriginal = String(quantidadeOriginal);
     linha.appendChild(criarImagemFornecedor(produtoAtual, "fornecedor-miniatura pequena"));
 
     const info = document.createElement("div");
     info.className = "fornecedor-info";
     const nome = document.createElement("strong");
-    nome.textContent = item.nome || produtoAtual.nome || "Produto";
+    nome.textContent = produtoAtual.nome || item.nome || "Produto";
     const ids = document.createElement("span");
     ids.className = "fornecedor-identificadores";
-    ids.textContent = `Ref. ${item.referencia || produtoAtual.referencia || "-"} | SKU ${item.sku || produtoAtual.sku || "-"}`;
+    ids.textContent = `Ref. ${produtoAtual.referencia || item.referencia || "-"} | SKU ${produtoAtual.sku || item.sku || "-"}`;
     const ajuste = document.createElement("span");
     ajuste.className = itemMarcadoEx ? "fornecedor-ajuste-os fornecedor-ajuste-ex ativo" : (faltaAtual > 0 ? "fornecedor-ajuste-os ativo" : "fornecedor-ajuste-os");
     const dataOsTexto = item.data_os ? ` | desde ${formatarDataOsCurtaFornecedor(item.data_os)}` : "";
@@ -933,8 +933,16 @@ function lerItensEditadosPedidoFornecedor(pedido, modal) {
         const estavaOs = itemPedidoEstavaOsFornecedor(item);
         const estavaEx = itemPedidoEstaExFornecedor(item);
         const mudouParaOsOuEx = (estaOs && !estavaOs) || (marcarEx && !estavaEx);
+        const produtoAtual = obterProdutoParaPedidoFornecedor(item) || item;
         return {
             ...item,
+            id: produtoAtual.id || item.id,
+            nome: produtoAtual.nome || item.nome,
+            sku: produtoAtual.sku || item.sku || "",
+            referencia: produtoAtual.referencia || item.referencia || "",
+            tema: produtoAtual.tema || item.tema || "",
+            subtema: produtoAtual.subtema || item.subtema || "",
+            imagens: produtoAtual.imagens || item.imagens || [],
             quantidade_original: quantidadeOriginal,
             quantidade: quantidadeFinal,
             falta_os: faltaOs,

@@ -2617,6 +2617,12 @@ body.pagina-mapas-admin > main.fornecedores-admin {
     font-weight: 800;
 }
 
+.mapas-produto-fornecedor-preco-compra {
+    color: #ffc400;
+    font-size: 12px;
+    font-weight: 800;
+}
+
 .mapas-produto-fornecedor-leitura.tipo-os,
 .mapas-produto-fornecedor-leitura.tipo-encomendada_os {
     border-color: #333;

@@ -195,39 +195,51 @@ async function receberPedidoFornecedor(id) {
         return;
     }
     const linhas = Array.from(document.querySelectorAll(`.fornecedor-recebido-input[data-pedido="${CSS.escape(idPedido)}"]`));
-    const quantidadesPorReferencia = new Map();
+    const quantidadesPorLinha = new Map();
     linhas.forEach(input => {
-        const produtoId = input.dataset.produto;
-        const itemPedido = (pedido.itens || []).find(item => String(item.id) === String(produtoId));
-        const chave = normalizarReferenciaListaFornecedor(itemPedido?.referencia);
-        if (!chave) return;
+        const indice = Number(input.dataset.indice);
+        const itemPedido = Number.isInteger(indice) && indice >= 0 ? (pedido.itens || [])[indice] : null;
+        if (!itemPedido) return;
         const pendente = Math.max(0, Number(itemPedido?.quantidade || 0) - Number(itemPedido?.recebido || 0));
         const quantidade = Math.min(pendente, Math.max(0, Math.floor(Number(input.value) || 0)));
-        if (quantidade > 0) quantidadesPorReferencia.set(chave, quantidade);
+        if (quantidade > 0) quantidadesPorLinha.set(indice, quantidade);
     });
     const itensCorrigidos = (pedido.itens || []).map(item => {
         const produtoAtual = obterProdutoParaPedidoFornecedor(item);
-        if (!produtoAtual?.id || String(produtoAtual.id) === String(item.id)) return item;
+        if (!produtoAtual?.id) return item;
+        const referenciaAtual = produtoAtual.referencia || item.referencia || "";
+        const skuAtual = produtoAtual.sku || item.sku || "";
+        const nomeAtual = produtoAtual.nome || item.nome;
+        const precisaCorrigir = String(produtoAtual.id) !== String(item.id)
+            || String(referenciaAtual || "") !== String(item.referencia || "")
+            || String(skuAtual || "") !== String(item.sku || "")
+            || String(nomeAtual || "") !== String(item.nome || "");
+        if (!precisaCorrigir) return item;
         return {
             ...item,
             id: produtoAtual.id,
-            nome: produtoAtual.nome || item.nome,
-            sku: produtoAtual.sku || item.sku || "",
-            referencia: produtoAtual.referencia || item.referencia || "",
+            nome: nomeAtual,
+            sku: skuAtual,
+            referencia: referenciaAtual,
             tema: produtoAtual.tema || item.tema || "",
             subtema: produtoAtual.subtema || item.subtema || "",
             imagens: produtoAtual.imagens || item.imagens || []
         };
     });
-    const corrigiuIds = itensCorrigidos.some((item, indice) => String(item.id || "") !== String((pedido.itens || [])[indice]?.id || ""));
-    if (corrigiuIds) {
-        definirStatusFornecedor("A corrigir ligacao dos produtos pela referencia antes de receber stock...");
+    const corrigiuItens = itensCorrigidos.some((item, indice) => {
+        const anterior = (pedido.itens || [])[indice] || {};
+        return String(item.id || "") !== String(anterior.id || "")
+            || String(item.referencia || "") !== String(anterior.referencia || "")
+            || String(item.sku || "") !== String(anterior.sku || "")
+            || String(item.nome || "") !== String(anterior.nome || "");
+    });
+    if (corrigiuItens) {
+        definirStatusFornecedor("A corrigir ligacao dos produtos antes de receber stock...");
         pedido = await atualizarPedidoFornecedor(idPedido, { itens: itensCorrigidos });
     }
-    const rececoes = (pedido.itens || []).map(itemPedido => {
-        const chave = normalizarReferenciaListaFornecedor(itemPedido?.referencia);
+    const rececoes = (pedido.itens || []).map((itemPedido, indice) => {
         const pendente = Math.max(0, Number(itemPedido?.quantidade || 0) - Number(itemPedido?.recebido || 0));
-        const quantidade = Math.min(pendente, Math.max(0, Math.floor(Number(quantidadesPorReferencia.get(chave) || 0))));
+        const quantidade = Math.min(pendente, Math.max(0, Math.floor(Number(quantidadesPorLinha.get(indice) || 0))));
         const produtoAtual = obterProdutoParaPedidoFornecedor(itemPedido);
         return { produto_id: produtoAtual?.id || itemPedido.id, quantidade };
     }).filter(item => item.quantidade > 0);

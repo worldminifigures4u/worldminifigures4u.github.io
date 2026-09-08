@@ -68,7 +68,7 @@ function garantirFornecedoresProdutoModal() {
     if (window.FornecedoresProdutoModal) return Promise.resolve();
     if (!__fornecedoresProdutoPromessa) {
         prepararContextoProdutoFornecedor();
-        __fornecedoresProdutoPromessa = carregarScriptAdmin("mapas-produto-modal.js?v=20260908-preco-fornecedor")
+        __fornecedoresProdutoPromessa = carregarScriptAdmin("mapas-produto-modal.js?v=20260908-ref-preco-fornecedor")
             .then(function () {
                 window.FornecedoresProdutoModal = {
                     abrir: function () {
@@ -87,7 +87,7 @@ function garantirFornecedoresProdutoModal() {
 function garantirFornecedoresEdicaoPedido() {
     if (window.FornecedoresEdicaoPedido) return Promise.resolve();
     if (!__fornecedoresEdicaoPromessa) {
-        __fornecedoresEdicaoPromessa = carregarScriptAdmin("fornecedores-edicao-pedido.js?v=20260908-preco-fornecedor");
+        __fornecedoresEdicaoPromessa = carregarScriptAdmin("fornecedores-edicao-pedido.js?v=20260908-ref-preco-fornecedor");
     }
     return __fornecedoresEdicaoPromessa;
 }
@@ -95,7 +95,7 @@ function garantirFornecedoresEdicaoPedido() {
 function garantirFornecedoresPrintReceive() {
     if (window.FornecedoresPrintReceive) return Promise.resolve();
     if (!__fornecedoresPrintPromessa) {
-        __fornecedoresPrintPromessa = carregarScriptAdmin("fornecedores-print-receive.js?v=20260830-impressao-sem-zero");
+        __fornecedoresPrintPromessa = carregarScriptAdmin("fornecedores-print-receive.js?v=20260908-ref-preco-fornecedor");
     }
     return __fornecedoresPrintPromessa;
 }
@@ -1937,6 +1937,14 @@ function criarBlocoHistoricoFornecedorFicha(form, id, rotulo, valor, opcoes = {}
     titulo.className = "mapas-produto-fornecedor-titulo";
     titulo.textContent = rotulo;
     cabecalho.appendChild(titulo);
+
+    const precoCompraTexto = obterTextoPrecoCompraMarcacaoFornecedor(valor);
+    if (precoCompraTexto) {
+        const precoCompra = document.createElement("span");
+        precoCompra.className = "mapas-produto-fornecedor-preco-compra";
+        precoCompra.textContent = precoCompraTexto;
+        cabecalho.appendChild(precoCompra);
+    }
 
     const botaoLimpar = document.createElement("button");
     botaoLimpar.type = "button";
@@ -4537,6 +4545,7 @@ function renderizarPedidoFornecedorProdutosTabela(caixa, pedido) {
 
     const tbody = document.createElement("tbody");
     ordenarItensPedidoFornecedor(pedido.itens || []).forEach(item => {
+        const indiceOriginal = (pedido.itens || []).indexOf(item);
         const produtoAtual = obterProdutoParaPedidoFornecedor(item) || item;
         const recebido = Number(item.recebido || 0);
         const restante = Math.max(0, Number(item.quantidade || 0) - recebido);
@@ -4555,7 +4564,7 @@ function renderizarPedidoFornecedorProdutosTabela(caixa, pedido) {
         const nomeBotao = document.createElement("button");
         nomeBotao.type = "button";
         nomeBotao.className = "mapas-produto-nome-botao";
-        nomeBotao.textContent = item.nome || "Produto sem nome";
+        nomeBotao.textContent = produtoAtual.nome || item.nome || "Produto sem nome";
         nomeBotao.title = "Editar produto";
         nomeBotao.tabIndex = -1;
         if (produtoAtual?.id) {
@@ -4568,7 +4577,7 @@ function renderizarPedidoFornecedorProdutosTabela(caixa, pedido) {
 
         const refCelula = document.createElement("td");
         refCelula.className = "mapas-col-ref";
-        refCelula.textContent = item.referencia || "-";
+        refCelula.textContent = produtoAtual.referencia || item.referencia || "-";
         linha.appendChild(refCelula);
 
         const pedidoCelula = document.createElement("td");
@@ -4634,6 +4643,7 @@ function renderizarPedidoFornecedorProdutosTabela(caixa, pedido) {
         input.className = "mapa-quantidade-input fornecedor-recebido-input";
         input.dataset.pedido = pedido.id;
         input.dataset.produto = item.id;
+        input.dataset.indice = String(indiceOriginal);
         input.setAttribute("aria-label", `Quantidade a receber de ${item.nome || "produto"}`);
         qtdCelula.appendChild(input);
         linha.appendChild(qtdCelula);
@@ -4654,7 +4664,7 @@ function criarDetalhesPedidoFornecedor(pedido) {
         renderizarPedidoFornecedorProdutosTabela(produtos, pedido);
     } else {
         const lista = criarElementoPedidoFornecedor("div", "fornecedor-pedido-produtos-lista");
-        pedido.itens.forEach(item => {
+        pedido.itens.forEach((item, indice) => {
             const produtoAtual = obterProdutoParaPedidoFornecedor(item) || item;
             const recebido = Number(item.recebido || 0);
             const restante = Math.max(0, Number(item.quantidade || 0) - recebido);
@@ -4667,7 +4677,7 @@ function criarDetalhesPedidoFornecedor(pedido) {
             const dataOs = obterDataOsItemPedidoFornecedor(item, produtoAtual, pedido.fornecedor);
             const textoOrigem = item.origem_ajuste ? obterTextoOrigemAjusteItemPedidoFornecedor(item, pedido) : "";
             const textoOrigemVisivel = textoOrigem && textoOrigem !== dataOs ? textoOrigem : "";
-            info.innerHTML = `<strong>${escaparHtmlFornecedor(item.nome)}</strong><span class="fornecedor-identificadores">Ref. ${escaparHtmlFornecedor(item.referencia || "-")} | SKU ${escaparHtmlFornecedor(item.sku || "-")}</span><span>Pedido: ${Number(item.quantidade || 0)} | Recebido: ${recebido} | Stock atual: ${Number(produtoAtual.stock || 0)}</span>${faltaOs > 0 ? `<span class="fornecedor-ajuste-os ativo">OS/Falta: ${faltaOs}${item.quantidade_original ? ` de ${Number(item.quantidade_original || 0)}` : ""}</span>${dataOs ? `<span class="fornecedor-ajuste-os">${escaparHtmlFornecedor(dataOs)}</span>` : ""}` : ""}${marcadoEx ? `<span class="fornecedor-ajuste-os fornecedor-ajuste-ex ativo">EX</span>` : ""}${textoOrigemVisivel ? `<span class="fornecedor-ajuste-os">${escaparHtmlFornecedor(textoOrigemVisivel)}</span>` : ""}`;
+            info.innerHTML = `<strong>${escaparHtmlFornecedor(produtoAtual.nome || item.nome)}</strong><span class="fornecedor-identificadores">Ref. ${escaparHtmlFornecedor(produtoAtual.referencia || item.referencia || "-")} | SKU ${escaparHtmlFornecedor(produtoAtual.sku || item.sku || "-")}</span><span>Pedido: ${Number(item.quantidade || 0)} | Recebido: ${recebido} | Stock atual: ${Number(produtoAtual.stock || 0)}</span>${faltaOs > 0 ? `<span class="fornecedor-ajuste-os ativo">OS/Falta: ${faltaOs}${item.quantidade_original ? ` de ${Number(item.quantidade_original || 0)}` : ""}</span>${dataOs ? `<span class="fornecedor-ajuste-os">${escaparHtmlFornecedor(dataOs)}</span>` : ""}` : ""}${marcadoEx ? `<span class="fornecedor-ajuste-os fornecedor-ajuste-ex ativo">EX</span>` : ""}${textoOrigemVisivel ? `<span class="fornecedor-ajuste-os">${escaparHtmlFornecedor(textoOrigemVisivel)}</span>` : ""}`;
             const input = document.createElement("input");
             input.type = "number";
             input.min = "0";
@@ -4677,6 +4687,7 @@ function criarDetalhesPedidoFornecedor(pedido) {
             input.className = "fornecedor-recebido-input";
             input.dataset.pedido = pedido.id;
             input.dataset.produto = item.id;
+            input.dataset.indice = String(indice);
             linhaProduto.append(info, input);
             lista.appendChild(linhaProduto);
         });
