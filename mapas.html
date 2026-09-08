@@ -19,7 +19,7 @@
     <link rel="apple-touch-icon" href="fp-ring-favicon-192.png">
     <link rel="stylesheet" href="styles.css?v=20260721-rodape-800">
     <link rel="stylesheet" href="styles-admin.css?v=20260901-campos-admin-escuros">
-    <link rel="stylesheet" href="fornecedores-mapas.css?v=20260908-ref-preco-fornecedor">
+    <link rel="stylesheet" href="fornecedores-mapas.css?v=20260908-pesquisa-mapas-centro">
     <link rel="stylesheet" href="admin-light.css?v=20260908-ref-preco-fornecedor">
     <link rel="stylesheet" href="styles-tema.css?v=20260721-sem-underline" media="print" data-async-css>
     <noscript><link rel="stylesheet" href="styles-tema.css?v=20260721-sem-underline"></noscript>
@@ -72,28 +72,33 @@
         <section class="fornecedores-grid fornecedores-grid-mapas">
             <section class="fornecedores-painel fornecedores-painel-mapa" id="fornecedores-escolher" aria-label="Mapas">
                 <div id="fornecedor-contador-barra" class="mapas-contador-filtros">
-                    <input id="fornecedor-pesquisa" class="fornecedor-pesquisa-compacta" type="search" placeholder="nome, referência, sku ou tema">
-                    <select id="mapas-filtro-stock" class="mapas-filtro-stock" aria-label="Filtrar stock">
-                        <option value="todos">Todos os stocks</option>
-                        <option value="sem-stock">Stock = 0</option>
-                        <option value="com-stock">Stock &gt; 0</option>
-                        <option value="maior-1">Stock &gt; 1</option>
-                        <option value="maior-2">Stock &gt; 2</option>
-                        <option value="maior-3">Stock &gt; 3</option>
-                        <option value="maior-4">Stock &gt; 4</option>
-                        <option value="maior-5">Stock &gt; 5</option>
-                        <option value="maior-6">Stock &gt; 6</option>
-                        <option value="maior-7">Stock &gt; 7</option>
-                        <option value="maior-8">Stock &gt; 8</option>
-                        <option value="maior-9">Stock &gt; 9</option>
-                        <option value="maior-10">Stock &gt; 10</option>
-                    </select>
-                    <button type="button" id="mapas-copiar-lista" class="mapas-copiar-lista">Copiar lista visível</button>
-                    <details class="mapas-colunas-painel" id="mapas-colunas-painel">
-                        <summary>Colunas</summary>
-                        <div class="mapas-colunas-opcoes" id="mapas-colunas-opcoes" role="group" aria-label="Colunas visíveis"></div>
-                    </details>
-                    <button type="button" id="mapas-criar-produto" class="mapas-copiar-lista">Novo</button>
+                    <div id="mapas-contadores-resumo" class="mapas-contadores-resumo"></div>
+                    <div class="mapas-pesquisa-zona">
+                        <input id="fornecedor-pesquisa" class="fornecedor-pesquisa-compacta" type="search" placeholder="Nome, ref., SKU ou tema">
+                    </div>
+                    <div class="mapas-acoes-zona">
+                        <select id="mapas-filtro-stock" class="mapas-filtro-stock" aria-label="Filtrar stock">
+                            <option value="todos">Todos os stocks</option>
+                            <option value="sem-stock">Stock = 0</option>
+                            <option value="com-stock">Stock &gt; 0</option>
+                            <option value="maior-1">Stock &gt; 1</option>
+                            <option value="maior-2">Stock &gt; 2</option>
+                            <option value="maior-3">Stock &gt; 3</option>
+                            <option value="maior-4">Stock &gt; 4</option>
+                            <option value="maior-5">Stock &gt; 5</option>
+                            <option value="maior-6">Stock &gt; 6</option>
+                            <option value="maior-7">Stock &gt; 7</option>
+                            <option value="maior-8">Stock &gt; 8</option>
+                            <option value="maior-9">Stock &gt; 9</option>
+                            <option value="maior-10">Stock &gt; 10</option>
+                        </select>
+                        <button type="button" id="mapas-copiar-lista" class="mapas-copiar-lista">Copiar lista visível</button>
+                        <details class="mapas-colunas-painel" id="mapas-colunas-painel">
+                            <summary>Colunas</summary>
+                            <div class="mapas-colunas-opcoes" id="mapas-colunas-opcoes" role="group" aria-label="Colunas visíveis"></div>
+                        </details>
+                        <button type="button" id="mapas-criar-produto" class="mapas-copiar-lista">Novo</button>
+                    </div>
                 </div>
                 <div id="fornecedor-resultados" class="fornecedor-resultados"></div>
             </section>
@@ -105,7 +110,7 @@
 <script src="app-util.js?v=20260713-r25" defer></script>
 <script src="admin-theme.js?v=20260826-light-mode" defer></script>
 <script src="app-sku.js?v=20260713-r25" defer></script>
-    <script src="mapas.js?v=20260905-modal-sem-fundo" defer></script>
+    <script src="mapas.js?v=20260908-pesquisa-mapas-centro" defer></script>
 <script src="campo-limpar.js?v=20260720-sem-x-cliente" defer></script>
 <script src="inline-listeners-base.js?v=20260725-logo-hq" defer></script>
 <script src="inline-listeners-admin.js?v=20260713-r25" defer></script>
