@@ -1190,10 +1190,11 @@ body.pagina-mapas-admin > main.fornecedores-admin {
     position: relative;
     z-index: 6;
     display: grid;
-    grid-template-columns: minmax(0, 1fr) minmax(220px, 320px) minmax(0, 1fr);
+    grid-template-columns: max-content minmax(220px, 320px) max-content;
     grid-template-areas: "acoes pesquisa direita";
-    gap: 8px;
+    gap: 10px;
     align-items: center;
+    justify-content: center;
     min-width: 0;
     overflow: visible;
 }
