@@ -1328,7 +1328,7 @@ body.pagina-mapas-admin > main.fornecedores-admin {
 .mapas-colunas-opcoes {
     position: absolute;
     top: calc(100% + 6px);
-    right: 0;
+    left: 0;
     z-index: 40;
     display: grid;
     grid-template-columns: repeat(2, minmax(140px, 1fr));
