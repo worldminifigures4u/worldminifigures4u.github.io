@@ -1190,7 +1190,7 @@ body.pagina-mapas-admin > main.fornecedores-admin {
     position: relative;
     z-index: 6;
     display: grid;
-    grid-template-columns: max-content minmax(220px, 320px) max-content;
+    grid-template-columns: max-content minmax(220px, 240px) max-content;
     grid-template-areas: "acoes pesquisa direita";
     gap: 10px;
     align-items: center;
@@ -1235,10 +1235,10 @@ body.pagina-mapas-admin > main.fornecedores-admin {
 .pagina-mapas-admin .mapas-pesquisa-zona > .campo-com-limpar,
 .pagina-mapas-admin .mapas-pesquisa-zona > #fornecedor-pesquisa {
     display: block;
-    flex: 0 1 320px;
-    width: min(320px, 100%);
+    flex: 0 1 240px;
+    width: min(240px, 100%);
     min-width: 220px;
-    max-width: 320px;
+    max-width: 240px;
 }
 
 .pagina-mapas-admin .mapas-contador-filtros .fornecedor-pesquisa-compacta {
@@ -3347,8 +3347,8 @@ body.mapas-produto-modal-aberto {
 
     .pagina-mapas-admin .mapas-pesquisa-zona > .campo-com-limpar,
     .pagina-mapas-admin .mapas-pesquisa-zona > #fornecedor-pesquisa {
-        width: min(360px, 100%);
-        max-width: 360px;
+        width: min(240px, 100%);
+        max-width: 240px;
     }
 
     .mapas-produtos-tabela {
