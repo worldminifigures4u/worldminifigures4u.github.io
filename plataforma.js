@@ -821,6 +821,10 @@ function podeEditarPortesManuaisPlataforma() {
     return plataforma === 'Todocoleccion' && !metodoEnvioEntregaMaoPlataforma(metodo);
 }
 
+function podeUsarTotalManualPlataforma() {
+    return Boolean(encomendaPlataformaEmEdicao) || podeEditarPortesManuaisPlataforma();
+}
+
 function atualizarVisibilidadePortesManualPlataforma() {
     const bloco = document.getElementById('plataforma-portes-manual-bloco');
     if (!bloco) return;
@@ -851,7 +855,7 @@ function campoTotalManualPreenchidoPlataforma() {
 
 function obterTotalManualPlataforma(subtotal, portes) {
     const calculado = Math.round((Number(subtotal || 0) + Number(portes || 0)) * 100) / 100;
-    if (!podeEditarPortesManuaisPlataforma() || !campoTotalManualPreenchidoPlataforma()) {
+    if (!podeUsarTotalManualPlataforma() || !campoTotalManualPreenchidoPlataforma()) {
         return calculado;
     }
     const valor = parseEuroManualPlataforma(document.getElementById('plataforma-total-manual')?.value);
@@ -3319,6 +3323,17 @@ async function registarEncomendaWallapop() {
             }
         }
     }
+    if (!podeEditarPortesManuaisPlataforma()
+        && podeUsarTotalManualPlataforma()
+        && campoTotalManualPreenchidoPlataforma()) {
+        const totalValido = parseEuroManualPlataforma(
+            document.getElementById('plataforma-total-manual')?.value
+        );
+        if (totalValido === null) {
+            definirStatusWallapop('Indique um total de encomenda válido (ex.: 28,05).', true);
+            return;
+        }
+    }
 
     const envio = obterEnvioPlataforma();
     const dadosCliente = obterDadosClientePlataforma();
@@ -3353,7 +3368,7 @@ async function registarEncomendaWallapop() {
             p_metodo_envio: envio.id || null,
             p_metodo_envio_nome: envio.nome || null,
             p_portes: envio.portes || 0,
-            p_total: podeEditarPortesManuaisPlataforma() && campoTotalManualPreenchidoPlataforma()
+            p_total: podeUsarTotalManualPlataforma() && campoTotalManualPreenchidoPlataforma()
                 ? total
                 : null,
             p_telefone_cliente: dadosCliente.telefone || null,

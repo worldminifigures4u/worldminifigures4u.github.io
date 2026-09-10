@@ -5,6 +5,7 @@
 -- 3) produtos inativos: so bloqueiam se nao tiverem stock nem reserva nesta encomenda
 -- 4) credita sempre a quantidade ja reservada na encomenda ao validar stock
 -- 5) preserva o preco_unitario enviado pelo site ao editar a encomenda
+-- 6) aceita total manual em edicoes de qualquer plataforma externa
 
 create or replace function public.atualizar_encomenda_plataforma_admin(
   p_encomenda_id text,
@@ -236,7 +237,7 @@ begin
     v_portes := greatest(0, round(coalesce(p_portes, 0)::numeric, 2));
   end if;
 
-  if upper(v_encomenda.origem) = 'TODOCOLECCION' and p_total is not null then
+  if p_total is not null then
     v_total := greatest(0, round(p_total::numeric, 2));
   else
     v_total := v_subtotal + v_portes;
