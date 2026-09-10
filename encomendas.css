@@ -654,6 +654,28 @@ body.pagina-encomendas-admin{
             font-size:12px;
         }
 
+        .admin-encomenda-gravar-status{
+            min-height:18px;
+            margin:8px 0 0;
+            color:#29ad4b;
+            font-size:12px;
+            font-weight:800;
+            line-height:1.25;
+            text-align:center;
+        }
+
+        .admin-encomenda-gravar-status:empty{
+            margin:0;
+        }
+
+        .admin-encomenda-gravar-status.erro{
+            color:#ff5c5c;
+        }
+
+        .admin-encomenda-gravar-status.processando{
+            color:#ffc400;
+        }
+
         .admin-encomenda-notas-cabecalho{
             display:flex;
             flex-direction:column;

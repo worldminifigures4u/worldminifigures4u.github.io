@@ -1975,9 +1975,29 @@ window.AdminEncomendaVista = (function () {
             controloTotal?.reverter?.();
         }
 
+        let statusGravacao = null;
+        let temporizadorStatusGravacao = null;
+        function mostrarStatusGravacao(mensagem, tipo = "sucesso") {
+            if (!statusGravacao) return;
+            window.clearTimeout(temporizadorStatusGravacao);
+            statusGravacao.textContent = mensagem;
+            statusGravacao.classList.remove("sucesso", "erro", "processando");
+            statusGravacao.classList.add(tipo === true ? "erro" : tipo);
+            if (tipo !== "processando") {
+                temporizadorStatusGravacao = window.setTimeout(() => {
+                    statusGravacao.textContent = "";
+                    statusGravacao.classList.remove("sucesso", "erro", "processando");
+                }, 4500);
+            }
+        }
+
         async function gravarAlteracoesPendentes() {
-            if (!temAlteracoesPendentes()) return true;
+            if (!temAlteracoesPendentes()) {
+                mostrarStatusGravacao("Já estava guardado.");
+                return true;
+            }
             if (gravarTudo) gravarTudo.disabled = true;
+            mostrarStatusGravacao("A gravar...", "processando");
             let ok = true;
 
             if (controloNotas?.temAlteracoesPendentes?.()) {
@@ -1993,7 +2013,12 @@ window.AdminEncomendaVista = (function () {
                 ok = (await controloTotal.guardar()) && ok;
             }
 
-            if (!ok) hooks.definirStatus("Algumas alterações não foram guardadas.", true);
+            if (!ok) {
+                hooks.definirStatus("Algumas alterações não foram guardadas.", true);
+                mostrarStatusGravacao("Erro ao gravar.", "erro");
+            } else {
+                mostrarStatusGravacao("Guardado.");
+            }
             if (gravarTudo) gravarTudo.disabled = false;
             return ok;
         }
@@ -2104,7 +2129,9 @@ window.AdminEncomendaVista = (function () {
             apagarEncomenda(encomenda, apagar);
         });
         botoesAcoes.appendChild(apagar);
-        colunaAcoes.appendChild(botoesAcoes);
+        statusGravacao = criarElemento("p", "admin-encomenda-gravar-status");
+        statusGravacao.setAttribute("aria-live", "polite");
+        colunaAcoes.append(botoesAcoes, statusGravacao);
         dados.append(grupoConteudo, colunaAcoes);
 
         const produtos = criarElemento("div", "admin-encomenda-produtos");
