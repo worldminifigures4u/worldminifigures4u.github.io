@@ -1890,6 +1890,9 @@ window.AdminEncomendaVista = (function () {
         );
         card.dataset.encomendaId = String(encomenda.id);
 
+        let statusGravacao = null;
+        let temporizadorStatusGravacao = null;
+
         const cabecalho = criarElemento("div", "admin-encomenda-cabecalho");
         if (!modoModal) {
             cabecalho.tabIndex = 0;
@@ -1934,6 +1937,10 @@ window.AdminEncomendaVista = (function () {
         anexosContagem.title = formatarTextoContagemAnexos(encomenda.num_anexos);
         linha.appendChild(anexosContagem);
 
+        statusGravacao = criarElemento("span", "admin-encomenda-gravar-status admin-encomenda-gravar-status-cabecalho");
+        statusGravacao.setAttribute("aria-live", "polite");
+        linha.appendChild(statusGravacao);
+
         if (estadoNormalizado(encomenda.estado) === "Pago") {
             const prioridade = criarElemento("label", "admin-encomenda-prioridade");
             const checkbox = document.createElement("input");
@@ -1975,8 +1982,6 @@ window.AdminEncomendaVista = (function () {
             controloTotal?.reverter?.();
         }
 
-        let statusGravacao = null;
-        let temporizadorStatusGravacao = null;
         function mostrarStatusGravacao(mensagem, tipo = "sucesso") {
             if (!statusGravacao) return;
             window.clearTimeout(temporizadorStatusGravacao);
@@ -2129,9 +2134,7 @@ window.AdminEncomendaVista = (function () {
             apagarEncomenda(encomenda, apagar);
         });
         botoesAcoes.appendChild(apagar);
-        statusGravacao = criarElemento("p", "admin-encomenda-gravar-status");
-        statusGravacao.setAttribute("aria-live", "polite");
-        colunaAcoes.append(botoesAcoes, statusGravacao);
+        colunaAcoes.append(botoesAcoes);
         dados.append(grupoConteudo, colunaAcoes);
 
         const produtos = criarElemento("div", "admin-encomenda-produtos");

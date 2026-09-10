@@ -315,13 +315,13 @@ body.pagina-encomendas-admin{
             flex:1;
             min-width:0;
             display:grid;
-            grid-template-columns:68px 118px 78px minmax(90px, 1fr) 76px 128px 68px minmax(104px, max-content);
+            grid-template-columns:68px 118px 78px minmax(90px, 1fr) 76px 128px 68px minmax(86px, max-content) minmax(104px, max-content);
             column-gap:12px;
             align-items:center;
         }
 
         .admin-encomenda-linha-com-selecao{
-            grid-template-columns:22px 68px 118px 78px minmax(110px, 1fr) 76px 128px 68px 82px;
+            grid-template-columns:22px 68px 118px 78px minmax(110px, 1fr) 76px 128px 68px minmax(86px, max-content) 82px;
         }
 
         .admin-encomenda-selecao-lote{
@@ -674,6 +674,20 @@ body.pagina-encomendas-admin{
 
         .admin-encomenda-gravar-status.processando{
             color:#ffc400;
+        }
+
+        .admin-encomenda-gravar-status-cabecalho{
+            justify-self:start;
+            min-height:0;
+            margin:0;
+            font-size:11px;
+            line-height:1.25;
+            text-align:left;
+            white-space:nowrap;
+        }
+
+        .admin-encomenda-gravar-status-cabecalho:empty{
+            display:none;
         }
 
         .admin-encomenda-notas-cabecalho{
