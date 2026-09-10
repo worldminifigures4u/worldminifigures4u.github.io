@@ -4,6 +4,7 @@
 -- 2) linhas antigas com campo "id" (sem id_produto) tambem repoem stock
 -- 3) produtos inativos: so bloqueiam se nao tiverem stock nem reserva nesta encomenda
 -- 4) credita sempre a quantidade ja reservada na encomenda ao validar stock
+-- 5) preserva o preco_unitario enviado pelo site ao editar a encomenda
 
 create or replace function public.atualizar_encomenda_plataforma_admin(
   p_encomenda_id text,
@@ -179,6 +180,11 @@ begin
     select
       coalesce(nullif(item->>'id_produto', ''), nullif(item->>'id', '')) as id_produto,
       sum((item->>'quantidade')::integer)::integer as quantidade,
+      max(case
+        when nullif(replace(coalesce(item->>'preco_unitario', item->>'preco', item->>'valor_unitario'), ',', '.'), '') ~ '^[0-9]+(\.[0-9]+)?$'
+        then replace(coalesce(item->>'preco_unitario', item->>'preco', item->>'valor_unitario'), ',', '.')::numeric
+        else null
+      end) as preco_unitario,
       min((item->>'ordem')::integer) as ordem
     from jsonb_array_elements(p_itens) as itens(item)
     group by 1
@@ -201,13 +207,13 @@ begin
       'referencia', v_produto.referencia,
       'sku', v_produto.sku,
       'quantidade', v_item.quantidade,
-      'preco_unitario', v_produto.preco,
-      'subtotal', v_produto.preco * v_item.quantidade
+      'preco_unitario', coalesce(v_item.preco_unitario, v_produto.preco),
+      'subtotal', coalesce(v_item.preco_unitario, v_produto.preco) * v_item.quantidade
     ));
     v_produtos_texto := v_produtos_texto
       || case when v_produtos_texto = '' then '' else E'\n' end
       || v_item.quantidade || E'\t' || v_produto.nome || E'\t' || coalesce(v_produto.sku, '');
-    v_subtotal := v_subtotal + (v_produto.preco * v_item.quantidade);
+    v_subtotal := v_subtotal + (coalesce(v_item.preco_unitario, v_produto.preco) * v_item.quantidade);
     v_peso_total := v_peso_total + (v_produto.peso * v_item.quantidade);
 
     update public.produtos

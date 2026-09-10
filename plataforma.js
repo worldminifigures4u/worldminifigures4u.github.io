@@ -409,6 +409,7 @@ function obterCodigoEncomendaAtual() {
 }
 
 function obterItensParaFicheirosPlataforma() {
+    if (encomendaPlataformaEmEdicao) return wallapopItens;
     return encomendaPlataformaParaFicheiros?.itens || wallapopItens;
 }
 
@@ -732,9 +733,13 @@ function formatarEuroWallapop(valor) {
     return Number(valor || 0).toFixed(2).replace('.', ',');
 }
 
+function obterPrecoItemWallapop(item) {
+    return Number(item?.preco_unitario ?? item?.preco ?? item?.valor_unitario ?? 0) || 0;
+}
+
 function calcularSubtotalPlataforma() {
     return wallapopItens.reduce((total, item) => (
-        total + Math.max(1, Number(item.quantidade) || 1) * Number(item.preco || 0)
+        total + Math.max(1, Number(item.quantidade) || 1) * obterPrecoItemWallapop(item)
     ), 0);
 }
 
@@ -1903,7 +1908,12 @@ async function carregarCatalogoWallapop() {
     wallapopItens = wallapopItens
         .map(item => {
             const produto = produtos.find(atual => String(atual.id) === String(item.id));
-            if (produto) return { ...produto, quantidade: Math.max(1, Number(item.quantidade) || 1) };
+            if (produto) return {
+                ...produto,
+                preco: obterPrecoItemWallapop(item) || Number(produto.preco || 0),
+                preco_unitario: obterPrecoItemWallapop(item) || Number(produto.preco || 0),
+                quantidade: Math.max(1, Number(item.quantidade) || 1)
+            };
             return encomendaPlataformaEmEdicao ? item : null;
         })
         .filter(Boolean);
@@ -2083,7 +2093,7 @@ function renderizarSelecionadosWallapop() {
         nome.textContent = item.nome;
         const preco = document.createElement('span');
         preco.className = 'plataforma-produto-preco';
-        preco.textContent = `${formatarEuroWallapop(item.preco)} €`;
+        preco.textContent = `${formatarEuroWallapop(obterPrecoItemWallapop(item))} €`;
         info.append(nome, preco);
 
         const controlos = document.createElement('div');
@@ -2178,7 +2188,7 @@ function calcularTotalFigurasLoteWallapop(itens) {
 
 function calcularTotalPrecoLoteWallapop(itens) {
     return (itens || []).reduce((total, item) => (
-        total + Math.max(1, Number(item.quantidade) || 1) * Number(item.preco || 0)
+        total + Math.max(1, Number(item.quantidade) || 1) * obterPrecoItemWallapop(item)
     ), 0);
 }
 
@@ -2356,7 +2366,7 @@ function atualizarAlturaPrevisualizacaoWallapop() {
 }
 
 function formatarPrecoLinhaAnuncioPlataforma(item) {
-    return `${formatarEuroWallapop(item.preco)} \u20ac`;
+    return `${formatarEuroWallapop(obterPrecoItemWallapop(item))} \u20ac`;
 }
 
 function criarLinhaFolhaWallapop(item) {
@@ -2612,7 +2622,7 @@ function criarTextoEncomendaWallapop() {
         String(item.sku || '').trim()
     ].join('\t')));
     const total = itens.reduce((soma, item) => {
-        return soma + (Math.max(1, Number(item.quantidade) || 1) * Number(item.preco || 0));
+        return soma + (Math.max(1, Number(item.quantidade) || 1) * obterPrecoItemWallapop(item));
     }, 0);
     linhas.push('', `Total:\t${formatarEuroWallapop(total)} €`);
     return '\ufeff' + anexarFigurasRepetidasAoTextoPlataforma(linhas).join('\r\n');
@@ -2654,7 +2664,7 @@ function criarTextoInternoPlataforma() {
 function formatarLinhaTxtProdutoPlataforma(item) {
     const quantidade = Math.max(1, Number(item.quantidade) || 1);
     const nome = String(item.nome || '').trim();
-    const totalLinha = quantidade * Number(item.preco || 0);
+    const totalLinha = quantidade * obterPrecoItemWallapop(item);
     return `${quantidade}x ${nome} ${formatarEuroWallapop(totalLinha)} \u20ac`;
 }
 
@@ -2662,7 +2672,7 @@ function criarTextoClienteOlx() {
     const itens = obterItensParaFicheirosPlataforma();
     const envio = obterEnvioParaFicheirosPlataforma();
     const subtotal = itens.reduce((total, item) => (
-        total + Math.max(1, Number(item.quantidade) || 1) * Number(item.preco || 0)
+        total + Math.max(1, Number(item.quantidade) || 1) * obterPrecoItemWallapop(item)
     ), 0);
     const linhas = criarCabecalhoCodigoEncomenda().concat(['Produtos:']);
     itens.forEach(item => {
@@ -2838,6 +2848,7 @@ function obterItensEncomendaWallapop() {
     return wallapopItens.map((item, indice) => ({
         id_produto: String(item.id),
         quantidade: Math.max(1, Number(item.quantidade) || 1),
+        preco_unitario: obterPrecoItemWallapop(item),
         ordem: indice,
         permitir_stock_negativo: true
     }));
@@ -3062,10 +3073,14 @@ async function carregarEncomendaPlataformaPorCodigo(codigo) {
             String(item.id_produto || item.id || '') === String(produto.id)
         ));
         const atual = wallapopProdutos.find(item => String(item.id) === String(produto.id));
+        const precoGuardado = obterPrecoItemWallapop(reservado);
+        const precoProduto = Number(atual?.preco ?? produto.preco ?? 0) || 0;
         return {
             ...produto,
             ...atual,
             id: produto.id || atual?.id,
+            preco: precoGuardado || precoProduto,
+            preco_unitario: precoGuardado || precoProduto,
             stock: Number.isFinite(Number(atual?.stock))
                 ? Number(atual.stock)
                 : Number(produto.stock),
