@@ -1629,3 +1629,20 @@ html.admin-light-mode body.cabecalho-com-admin .input-upload-admin::file-selecto
     border-color:#9fb0c2 !important;
     color:#111827 !important;
 }
+
+html.admin-light-mode body.pagina-fornecedores-admin .fornecedor-total-figuras-encomenda{
+    background:#ffffff !important;
+    border-color:#c3ccd8 !important;
+    color:#0f5e9c !important;
+}
+
+html.admin-light-mode body.pagina-fornecedores-admin .fornecedor-pedidos.admin-encomendas-lista{
+    background:#ffffff !important;
+    border-color:#d8e0ea !important;
+}
+
+html.admin-light-mode body.pagina-fornecedores-admin .fornecedor-vazio{
+    background:#f7f9fc !important;
+    border:1px solid #d8e0ea !important;
+    color:#56616f !important;
+}
