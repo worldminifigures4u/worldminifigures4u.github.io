@@ -421,6 +421,14 @@ function obterEnvioParaFicheirosPlataforma() {
     return encomendaPlataformaParaFicheiros?.envio || obterEnvioPlataforma();
 }
 
+function obterTotalParaFicheirosPlataforma(subtotal, portes) {
+    const totalGuardado = Number(encomendaPlataformaParaFicheiros?.envio?.total);
+    if (Number.isFinite(totalGuardado) && totalGuardado > 0) {
+        return Math.round(totalGuardado * 100) / 100;
+    }
+    return obterTotalManualPlataforma(subtotal, portes);
+}
+
 function obterNomeParaFicheirosPlataforma() {
     if (encomendaPlataformaParaFicheiros?.nome_encomenda) {
         return encomendaPlataformaParaFicheiros.nome_encomenda;
@@ -2678,6 +2686,7 @@ function criarTextoClienteOlx() {
     const subtotal = itens.reduce((total, item) => (
         total + Math.max(1, Number(item.quantidade) || 1) * obterPrecoItemWallapop(item)
     ), 0);
+    const totalGeral = obterTotalParaFicheirosPlataforma(subtotal, envio.portes);
     const linhas = criarCabecalhoCodigoEncomenda().concat(['Produtos:']);
     itens.forEach(item => {
         linhas.push(formatarLinhaTxtProdutoPlataforma(item));
@@ -2686,7 +2695,7 @@ function criarTextoClienteOlx() {
         '',
         `Portes de envio (${envio.nome}):\t${formatarEuroWallapop(envio.portes)} \u20ac`,
         '',
-        `Total geral:\t${formatarEuroWallapop(subtotal + envio.portes)} \u20ac`,
+        `Total geral:\t${formatarEuroWallapop(totalGeral)} \u20ac`,
         '',
         ...criarLinhasDadosClienteOlx()
     );
