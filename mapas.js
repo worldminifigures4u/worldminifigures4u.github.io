@@ -114,7 +114,11 @@ function produtoPassaPesquisaMapa(produto, termo) {
     if (haystack.includes(termo)) return true;
     // Pesquisa por palavras: "Doctor Evazan" encontra mesmo com espaços a mais no nome
     const tokens = termo.split(" ").filter(Boolean);
-    return tokens.length > 0 && tokens.every((token) => haystack.includes(token));
+    const nomeTokens = normalizarMapa(produto.nome || "").split(" ").filter(Boolean);
+    return tokens.length > 0 && tokens.every((token) => {
+        if (/^v\d+$/.test(token)) return nomeTokens.includes(token);
+        return haystack.includes(token);
+    });
 }
 
 function normalizarSkuMapa(valor) {
