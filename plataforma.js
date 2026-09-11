@@ -144,7 +144,7 @@ function atualizarPerfilExternoPlataforma() {
     fichaClientePlataformaAtual = null;
 
     const seletor = document.getElementById('plataforma-tipo');
-    if (!seletor.disabled) {
+    if (!seletor.disabled && !encomendaPlataformaEmEdicao) {
         seletor.value = perfilExternoDetetado.plataforma;
         atualizarModoPlataforma();
     }
@@ -3133,7 +3133,7 @@ async function carregarEncomendaPlataformaPorCodigo(codigo) {
 
     const seletor = document.getElementById('plataforma-tipo');
     seletor.value = encomenda.origem;
-    seletor.disabled = true;
+    seletor.disabled = false;
     atualizarModoPlataforma();
     document.getElementById('wallapop-nome-encomenda').value = encomenda.nome_cliente || '';
     document.getElementById('wallapop-nome-cliente').value = '';
@@ -3276,19 +3276,6 @@ async function registarEncomendaWallapop() {
             document.getElementById('plataforma-link-perfil').focus();
             return;
         }
-        if (perfil.plataforma !== plataforma) {
-            const seletorPlataforma = document.getElementById('plataforma-tipo');
-            const podeConverterEdicao = eraEdicao && plataformaOriginalEdicao === 'WhatsApp';
-            if (seletorPlataforma && (!seletorPlataforma.disabled || podeConverterEdicao)) {
-                seletorPlataforma.value = perfil.plataforma;
-                atualizarModoPlataforma();
-                plataforma = perfil.plataforma;
-            }
-        }
-        if (perfil.plataforma !== plataforma) {
-            definirStatusWallapop(`O link pertence a ${perfil.plataforma}, mas a encomenda est\u00e1 em ${plataforma}.`, true);
-            return;
-        }
         perfilExternoDetetado = perfil;
         if (perfil.plataforma === 'WhatsApp') {
             const campoNome = document.getElementById('wallapop-nome-encomenda');
@@ -3428,19 +3415,10 @@ async function registarEncomendaWallapop() {
 
         const encomendaId = String(data.encomenda?.id || encomendaPlataformaEmEdicao?.id || '');
         if (encomendaId && eraEdicao && plataformaOriginalEdicao && plataformaOriginalEdicao !== plataforma) {
-            const origemAtualizada = ehPlataformaEstiloAnuncio(plataforma)
-                ? {
-                    origem: plataforma,
-                    metodo_pagamento: plataforma,
-                    regiao_envio: plataforma.toLowerCase(),
-                    metodo_envio: plataforma.toLowerCase(),
-                    metodo_envio_nome: plataforma,
-                    referencia_externa: null
-                }
-                : {
-                    origem: plataforma,
-                    metodo_pagamento: plataforma
-                };
+            const origemAtualizada = {
+                origem: plataforma,
+                metodo_pagamento: plataforma
+            };
             const { error: erroOrigem } = await wallapopClient
                 .from('encomendas')
                 .update(origemAtualizada)
