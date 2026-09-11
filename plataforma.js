@@ -783,12 +783,20 @@ function obterOpcaoInPostTodocoleccionFallback(peso) {
         || { id: 'inpost_registado', nome: 'InPost Registado', valor: peso > 1000 ? 5.81 : 5.12 };
 }
 
-function obterOpcoesEnvioPlataforma(regiao, peso) {
-    let plataforma = obterPlataformaAtual();
-    const padrao = obterOpcaoEnvioPadraoPlataforma(plataforma);
-    if (padrao) return [padrao, { ...ENTREGA_MAO_PLATAFORMA }];
+function juntarOpcoesEnvioPlataforma(...grupos) {
+    const vistos = new Set();
+    const opcoes = [];
+    grupos.flat().forEach(opcao => {
+        const id = String(opcao?.id || '').trim();
+        if (!id || vistos.has(id)) return;
+        vistos.add(id);
+        opcoes.push({ ...opcao });
+    });
+    return opcoes;
+}
 
-    if (peso <= 0) return [{ ...ENTREGA_MAO_PLATAFORMA }];
+function obterOpcoesEnvioTabelaPlataforma(regiao, peso) {
+    if (peso <= 0) return [];
     const zonaEnvio = typeof obterZonaPortesPorPais === 'function'
         ? obterZonaPortesPorPais(regiao)
         : (regiao === 'espanha' ? 'espanha' : (regiao === 'portugal' ? 'portugal' : 'europa'));
@@ -796,15 +804,22 @@ function obterOpcoesEnvioPlataforma(regiao, peso) {
         ? TABELA_PORTES_POR_PESO
         : {};
     const zona = tabela[zonaEnvio] || tabela.portugal || [];
-    if (!zona.length) return [{ ...ENTREGA_MAO_PLATAFORMA }];
-    const opcoes = (zona.find(linha => peso <= linha.ate) || zona[zona.length - 1]).opcoes || [];
-    let filtradas = plataforma === 'Todocoleccion'
-        ? opcoes.filter(opcao => opcao.id === 'ctt_registado' || opcao.id === 'inpost_registado')
-        : opcoes;
-    if (plataforma === 'Todocoleccion' && !filtradas.some(opcao => opcao.id === 'inpost_registado')) {
-        filtradas = [...filtradas, obterOpcaoInPostTodocoleccionFallback(peso)];
+    if (!zona.length) return [];
+    return (zona.find(linha => peso <= linha.ate) || zona[zona.length - 1]).opcoes || [];
+}
+
+function obterOpcoesEnvioPlataforma(regiao, peso) {
+    const plataforma = obterPlataformaAtual();
+    const padrao = obterOpcaoEnvioPadraoPlataforma(plataforma);
+    let opcoesTabela = obterOpcoesEnvioTabelaPlataforma(regiao, peso);
+    if (plataforma === 'Todocoleccion' && !opcoesTabela.some(opcao => opcao.id === 'inpost_registado')) {
+        opcoesTabela = [...opcoesTabela, obterOpcaoInPostTodocoleccionFallback(peso)];
     }
-    return [...filtradas, { ...ENTREGA_MAO_PLATAFORMA }];
+    return juntarOpcoesEnvioPlataforma(
+        padrao ? [padrao] : [],
+        opcoesTabela,
+        [{ ...ENTREGA_MAO_PLATAFORMA }]
+    );
 }
 
 function calcularPortesPlataforma(valorBase) {
