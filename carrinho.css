@@ -352,12 +352,17 @@
             text-transform:uppercase;
         }
 
+        .envio-aviso-zona,
         .envio-aviso-recomendacao,
         .envio-aviso-limite{
             margin:0 0 14px;
             color:#777;
             font-size:12px;
             line-height:1.45;
+        }
+
+        .envio-aviso-zona{
+            margin-top:-6px;
         }
 
 
