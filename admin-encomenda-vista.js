@@ -563,8 +563,7 @@ window.AdminEncomendaVista = (function () {
     }
 
     function obterObservacoesProduto(item) {
-        const observacoes = item.observacoes
-            || observacoesProdutos.get(String(item.id_produto || item.id || ""))
+        const observacoes = observacoesProdutos.get(String(item.id_produto || item.id || ""))
             || observacoesProdutosPorSku.get(String(item.sku || "").toUpperCase())
             || observacoesProdutosPorReferencia.get(chaveReferenciaProduto(item))
             || "";
