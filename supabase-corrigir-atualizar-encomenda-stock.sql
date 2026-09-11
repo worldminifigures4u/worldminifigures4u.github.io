@@ -6,6 +6,7 @@
 -- 4) credita sempre a quantidade ja reservada na encomenda ao validar stock
 -- 5) preserva o preco_unitario enviado pelo site ao editar a encomenda
 -- 6) aceita total manual em edicoes de qualquer plataforma externa
+-- 7) aceita WhatsApp como plataforma externa editavel
 
 create or replace function public.atualizar_encomenda_plataforma_admin(
   p_encomenda_id text,
@@ -64,7 +65,7 @@ begin
   if not found then
     raise exception 'Encomenda nao encontrada';
   end if;
-  if lower(coalesce(v_encomenda.origem, 'site')) not in ('wallapop', 'vinted', 'olx', 'todocoleccion') then
+  if lower(coalesce(v_encomenda.origem, 'site')) not in ('wallapop', 'vinted', 'olx', 'todocoleccion', 'whatsapp') then
     raise exception 'Esta encomenda nao pertence a uma plataforma externa';
   end if;
   if lower(coalesce(v_encomenda.estado, '')) = 'cancelado' then
@@ -235,6 +236,12 @@ begin
       raise exception 'Selecione o metodo de envio Todocoleccion';
     end if;
     v_portes := greatest(0, round(coalesce(p_portes, 0)::numeric, 2));
+  elsif upper(v_encomenda.origem) = 'WHATSAPP' then
+    if nullif(trim(coalesce(p_metodo_envio, '')), '') is null
+       or nullif(trim(coalesce(p_metodo_envio_nome, '')), '') is null then
+      raise exception 'Selecione o metodo de envio WhatsApp';
+    end if;
+    v_portes := greatest(0, round(coalesce(p_portes, 0)::numeric, 2));
   end if;
 
   if p_total is not null then
@@ -248,11 +255,11 @@ begin
       produtos = v_produtos,
       produtos_texto = v_produtos_texto,
       produtos_texto_cliente = v_produtos_texto,
-      regiao_envio = case when upper(v_encomenda.origem) in ('OLX', 'TODOCOLECCION')
+      regiao_envio = case when upper(v_encomenda.origem) in ('OLX', 'TODOCOLECCION', 'WHATSAPP')
         then coalesce(nullif(trim(p_regiao_envio), ''), 'portugal') else lower(v_encomenda.origem) end,
-      metodo_envio = case when upper(v_encomenda.origem) in ('OLX', 'TODOCOLECCION')
+      metodo_envio = case when upper(v_encomenda.origem) in ('OLX', 'TODOCOLECCION', 'WHATSAPP')
         then trim(p_metodo_envio) else lower(v_encomenda.origem) end,
-      metodo_envio_nome = case when upper(v_encomenda.origem) in ('OLX', 'TODOCOLECCION')
+      metodo_envio_nome = case when upper(v_encomenda.origem) in ('OLX', 'TODOCOLECCION', 'WHATSAPP')
         then trim(p_metodo_envio_nome) else v_encomenda.origem end,
       portes = v_portes,
       peso_total = v_peso_total,
@@ -309,7 +316,7 @@ begin
   if not found then
     return jsonb_build_object('sucesso', false, 'erro', 'Encomenda nao encontrada');
   end if;
-  if lower(coalesce(v_encomenda.origem, 'site')) not in ('wallapop', 'vinted', 'olx', 'todocoleccion') then
+  if lower(coalesce(v_encomenda.origem, 'site')) not in ('wallapop', 'vinted', 'olx', 'todocoleccion', 'whatsapp') then
     return jsonb_build_object('sucesso', false, 'erro', 'A encomenda nao pertence a uma plataforma externa');
   end if;
   if lower(coalesce(v_encomenda.estado, '')) = 'cancelado' then
