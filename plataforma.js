@@ -22,6 +22,7 @@ let plataformaFigurasRepetidasUltimaAnalise = [];
 let plataformaFigurasRepetidasEncomenda = [];
 let plataformaNotasAnuncioAtual = carregarNotasAnuncioPlataforma();
 let plataformaARestaurarRascunhoCliente = false;
+let plataformaTotalManualAlterado = false;
 const PLATAFORMA_LISTA_MAX_CARACTERES = 30000;
 const PLATAFORMA_LISTA_MAX_LINHAS = 500;
 
@@ -751,6 +752,10 @@ function calcularSubtotalPlataforma() {
     ), 0);
 }
 
+function arredondarDinheiroPlataforma(valor) {
+    return Math.round(Number(valor || 0) * 100) / 100;
+}
+
 function calcularPesoPlataforma() {
     return wallapopItens.reduce((total, item) => (
         total + Math.max(1, Number(item.quantidade) || 1) * Number(item.peso || PESO_PADRAO_PLATAFORMA)
@@ -876,9 +881,29 @@ function campoTotalManualPreenchidoPlataforma() {
     return Boolean(String(document.getElementById('plataforma-total-manual')?.value || '').trim());
 }
 
+function totalCalculadoPlataforma(subtotal, portes) {
+    return arredondarDinheiroPlataforma(Number(subtotal || 0) + Number(portes || 0));
+}
+
+function valorIgualDinheiroPlataforma(a, b) {
+    return Math.abs(arredondarDinheiroPlataforma(a) - arredondarDinheiroPlataforma(b)) < 0.005;
+}
+
+function totalManualAtivoPlataforma(subtotal, portes) {
+    if (!podeUsarTotalManualPlataforma() || !campoTotalManualPreenchidoPlataforma()) return false;
+    if (!encomendaPlataformaEmEdicao) return true;
+    if (plataformaTotalManualAlterado) return true;
+    const calculadoAtual = totalCalculadoPlataforma(subtotal, portes);
+    const calculadoOriginal = totalCalculadoPlataforma(
+        encomendaPlataformaEmEdicao.subtotal_original,
+        encomendaPlataformaEmEdicao.portes_original
+    );
+    return valorIgualDinheiroPlataforma(calculadoAtual, calculadoOriginal);
+}
+
 function obterTotalManualPlataforma(subtotal, portes) {
-    const calculado = Math.round((Number(subtotal || 0) + Number(portes || 0)) * 100) / 100;
-    if (!podeUsarTotalManualPlataforma() || !campoTotalManualPreenchidoPlataforma()) {
+    const calculado = totalCalculadoPlataforma(subtotal, portes);
+    if (!totalManualAtivoPlataforma(subtotal, portes)) {
         return calculado;
     }
     const valor = parseEuroManualPlataforma(document.getElementById('plataforma-total-manual')?.value);
@@ -3095,7 +3120,11 @@ async function carregarEncomendaPlataformaPorCodigo(codigo) {
     const encomenda = data.encomenda;
     const catalogo = Array.isArray(data.catalogo_itens) ? data.catalogo_itens : [];
     const produtosEncomenda = Array.isArray(encomenda.produtos) ? encomenda.produtos : [];
+    const subtotalOriginal = produtosEncomenda.reduce((total, item) => (
+        total + Math.max(1, Number(item.quantidade) || 1) * obterPrecoItemWallapop(item)
+    ), 0);
     stockNegativoConfirmado = new Set();
+    plataformaTotalManualAlterado = false;
     wallapopItens = catalogo.map(produto => {
         const reservado = produtosEncomenda.find(item => (
             String(item.id_produto || item.id || '') === String(produto.id)
@@ -3122,6 +3151,9 @@ async function carregarEncomendaPlataformaPorCodigo(codigo) {
         estado: encomenda.estado,
         telefone_cliente: encomenda.telefone_cliente || '',
         referencia_externa: encomenda.referencia_externa || '',
+        subtotal_original: subtotalOriginal,
+        portes_original: Number(encomenda.portes || 0),
+        total_original: Number(encomenda.total || 0),
         quantidades_originais: Object.fromEntries(produtosEncomenda.map(item => [
             String(item.id_produto || item.id || ''),
             Math.max(1, Number(item.quantidade) || 1)
@@ -3379,7 +3411,7 @@ async function registarEncomendaWallapop() {
             p_metodo_envio: envio.id || null,
             p_metodo_envio_nome: envio.nome || null,
             p_portes: envio.portes || 0,
-            p_total: podeUsarTotalManualPlataforma() && campoTotalManualPreenchidoPlataforma()
+            p_total: totalManualAtivoPlataforma(subtotal, envio.portes)
                 ? total
                 : null,
             p_telefone_cliente: dadosCliente.telefone || null,
@@ -3681,6 +3713,7 @@ document.getElementById('plataforma-portes-manual')?.addEventListener('input', (
     guardarRascunhoClientePlataforma();
 });
 document.getElementById('plataforma-total-manual')?.addEventListener('input', () => {
+    plataformaTotalManualAlterado = true;
     marcarWallapopPorRegistar();
     atualizarResumoPlataforma();
     guardarRascunhoClientePlataforma();
