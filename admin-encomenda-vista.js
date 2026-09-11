@@ -104,6 +104,25 @@ window.AdminEncomendaVista = (function () {
         return `${partes[0]} ${partes[partes.length - 1]}`;
     }
 
+    function normalizarPartesNomeCliente(valor) {
+        return normalizar(valor)
+            .replace(/[^\p{L}\p{N}]+/gu, " ")
+            .split(/\s+/)
+            .filter(Boolean);
+    }
+
+    function nomesClienteEquivalentes(a, b) {
+        const partesA = normalizarPartesNomeCliente(a);
+        const partesB = normalizarPartesNomeCliente(b);
+        if (!partesA.length || !partesB.length) return false;
+        const textoA = partesA.join(" ");
+        const textoB = partesB.join(" ");
+        if (textoA === textoB) return true;
+        const conjuntoA = new Set(partesA);
+        const conjuntoB = new Set(partesB);
+        return partesA.every(parte => conjuntoB.has(parte)) || partesB.every(parte => conjuntoA.has(parte));
+    }
+
     function obterNomeTituloEncomenda(encomenda) {
         const nick = formatarNomeTituloEncomenda(
             encomenda?.clientes_gestao?.nome_utilizador
@@ -116,7 +135,7 @@ window.AdminEncomendaVista = (function () {
             || encomenda?.nome_cliente
         );
 
-        if (nick && nomeCurto && normalizar(nick) !== normalizar(nomeCurto)) {
+        if (nick && nomeCurto && !nomesClienteEquivalentes(nick, nomeCurto)) {
             return `${nick} · ${nomeCurto}`;
         }
         return nick || nomeCurto || "";
