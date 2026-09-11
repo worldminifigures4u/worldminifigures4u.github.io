@@ -424,7 +424,7 @@ function obterEnvioParaFicheirosPlataforma() {
 
 function obterTotalParaFicheirosPlataforma(subtotal, portes) {
     const totalGuardado = Number(encomendaPlataformaParaFicheiros?.envio?.total);
-    if (Number.isFinite(totalGuardado) && totalGuardado > 0) {
+    if (!encomendaPlataformaEmEdicao && Number.isFinite(totalGuardado) && totalGuardado > 0) {
         return Math.round(totalGuardado * 100) / 100;
     }
     return obterTotalManualPlataforma(subtotal, portes);
@@ -2245,6 +2245,11 @@ function calcularTotalPrecoLoteWallapop(itens) {
     ), 0);
 }
 
+function calcularTotalFicheirosPlataforma(itens, envio = obterEnvioParaFicheirosPlataforma()) {
+    const subtotal = calcularTotalPrecoLoteWallapop(itens);
+    return obterTotalParaFicheirosPlataforma(subtotal, Number(envio?.portes) || 0);
+}
+
 function formatarRodapeFolhaWallapop(numeroPagina, totalPaginas, totalFiguras) {
     const rotuloFiguras = totalFiguras === 1 ? 'figura' : 'figuras';
     return `${totalFiguras} ${rotuloFiguras} \u2022 P\u00e1gina ${numeroPagina} de ${totalPaginas}`;
@@ -2559,7 +2564,7 @@ function renderizarFolhaWallapop(itens = wallapopItens) {
     const paginas = dividirItensWallapop(itens);
     const totalPaginas = paginas.length;
     const totalFiguras = calcularTotalFigurasLoteWallapop(itens);
-    const totalPrecoLote = calcularTotalPrecoLoteWallapop(itens);
+    const totalPrecoLote = calcularTotalFicheirosPlataforma(itens);
 
     if (!itens.length) {
         const pagina = document.createElement('section');
@@ -2674,9 +2679,7 @@ function criarTextoEncomendaWallapop() {
         String(item.nome || '').trim(),
         String(item.sku || '').trim()
     ].join('\t')));
-    const total = itens.reduce((soma, item) => {
-        return soma + (Math.max(1, Number(item.quantidade) || 1) * obterPrecoItemWallapop(item));
-    }, 0);
+    const total = calcularTotalFicheirosPlataforma(itens);
     linhas.push('', `Total:\t${formatarEuroWallapop(total)} €`);
     return '\ufeff' + anexarFigurasRepetidasAoTextoPlataforma(linhas).join('\r\n');
 }
@@ -2812,7 +2815,7 @@ async function descarregarImagemWallapop() {
         if (!paginasItens.length) throw new Error('Nao existem folhas para exportar.');
         const totalPaginas = paginasItens.length;
         const totalFiguras = calcularTotalFigurasLoteWallapop(itensFicheiros);
-        const totalPrecoLote = calcularTotalPrecoLoteWallapop(itensFicheiros);
+        const totalPrecoLote = calcularTotalFicheirosPlataforma(itensFicheiros);
 
         const ficheiros = [
             { nome: `${nomeEncomenda}.txt`, conteudo: criarTextoEncomendaWallapop() }
