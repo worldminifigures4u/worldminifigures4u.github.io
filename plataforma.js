@@ -846,7 +846,8 @@ function parseEuroManualPlataforma(texto) {
 function podeEditarPortesManuaisPlataforma() {
     const plataforma = obterPlataformaAtual();
     const metodo = document.getElementById('plataforma-metodo-envio')?.value || '';
-    return plataforma === 'Todocoleccion' && !metodoEnvioEntregaMaoPlataforma(metodo);
+    return (Boolean(encomendaPlataformaEmEdicao) || plataforma === 'Todocoleccion')
+        && !metodoEnvioEntregaMaoPlataforma(metodo);
 }
 
 function podeUsarTotalManualPlataforma() {

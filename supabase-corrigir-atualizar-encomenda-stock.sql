@@ -7,6 +7,7 @@
 -- 5) preserva o preco_unitario enviado pelo site ao editar a encomenda
 -- 6) aceita total manual em edicoes de qualquer plataforma externa
 -- 7) aceita WhatsApp como plataforma externa editavel
+-- 8) permite guardar portes/metodo de envio manual em qualquer origem editavel
 
 create or replace function public.atualizar_encomenda_plataforma_admin(
   p_encomenda_id text,
@@ -224,22 +225,10 @@ begin
     where id::text = v_item.id_produto;
   end loop;
 
-  if upper(v_encomenda.origem) = 'OLX' then
+  if upper(v_encomenda.origem) in ('WALLAPOP', 'VINTED', 'OLX', 'TODOCOLECCION', 'WHATSAPP') then
     if nullif(trim(coalesce(p_metodo_envio, '')), '') is null
        or nullif(trim(coalesce(p_metodo_envio_nome, '')), '') is null then
-      raise exception 'Selecione o metodo de envio OLX';
-    end if;
-    v_portes := greatest(0, round(coalesce(p_portes, 0)::numeric, 2));
-  elsif upper(v_encomenda.origem) = 'TODOCOLECCION' then
-    if nullif(trim(coalesce(p_metodo_envio, '')), '') is null
-       or nullif(trim(coalesce(p_metodo_envio_nome, '')), '') is null then
-      raise exception 'Selecione o metodo de envio Todocoleccion';
-    end if;
-    v_portes := greatest(0, round(coalesce(p_portes, 0)::numeric, 2));
-  elsif upper(v_encomenda.origem) = 'WHATSAPP' then
-    if nullif(trim(coalesce(p_metodo_envio, '')), '') is null
-       or nullif(trim(coalesce(p_metodo_envio_nome, '')), '') is null then
-      raise exception 'Selecione o metodo de envio WhatsApp';
+      raise exception 'Selecione o metodo de envio';
     end if;
     v_portes := greatest(0, round(coalesce(p_portes, 0)::numeric, 2));
   end if;
@@ -255,11 +244,11 @@ begin
       produtos = v_produtos,
       produtos_texto = v_produtos_texto,
       produtos_texto_cliente = v_produtos_texto,
-      regiao_envio = case when upper(v_encomenda.origem) in ('OLX', 'TODOCOLECCION', 'WHATSAPP')
+      regiao_envio = case when upper(v_encomenda.origem) in ('WALLAPOP', 'VINTED', 'OLX', 'TODOCOLECCION', 'WHATSAPP')
         then coalesce(nullif(trim(p_regiao_envio), ''), 'portugal') else lower(v_encomenda.origem) end,
-      metodo_envio = case when upper(v_encomenda.origem) in ('OLX', 'TODOCOLECCION', 'WHATSAPP')
+      metodo_envio = case when upper(v_encomenda.origem) in ('WALLAPOP', 'VINTED', 'OLX', 'TODOCOLECCION', 'WHATSAPP')
         then trim(p_metodo_envio) else lower(v_encomenda.origem) end,
-      metodo_envio_nome = case when upper(v_encomenda.origem) in ('OLX', 'TODOCOLECCION', 'WHATSAPP')
+      metodo_envio_nome = case when upper(v_encomenda.origem) in ('WALLAPOP', 'VINTED', 'OLX', 'TODOCOLECCION', 'WHATSAPP')
         then trim(p_metodo_envio_nome) else v_encomenda.origem end,
       portes = v_portes,
       peso_total = v_peso_total,
