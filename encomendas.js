@@ -97,7 +97,7 @@ function configurarVistaEncomendasAdmin() {
             atualizarResumo: atualizarResumoEncomendas,
             obterLista: () => encomendasAdmin,
             definirLista: lista => { encomendasAdmin = lista; },
-            onEncomendaApagada: () => {}
+            onEncomendaApagada: fecharModalEncomendaAdmin
         }
     });
 }
