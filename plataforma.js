@@ -430,6 +430,11 @@ function obterTotalParaFicheirosPlataforma(subtotal, portes) {
     return obterTotalManualPlataforma(subtotal, portes);
 }
 
+function obterDestinoVoltarEdicaoPlataforma() {
+    const destino = new URLSearchParams(window.location.search).get('voltar');
+    return normalizarTextoPlataforma(destino);
+}
+
 function obterNomeParaFicheirosPlataforma() {
     if (encomendaPlataformaParaFicheiros?.nome_encomenda) {
         return encomendaPlataformaParaFicheiros.nome_encomenda;
@@ -3553,12 +3558,18 @@ async function registarEncomendaWallapop() {
         renderizarResultadosWallapop();
         renderizarSelecionadosWallapop();
         renderizarFolhaWallapop();
+        const destinoVoltarEdicao = obterDestinoVoltarEdicaoPlataforma();
         if (window.history?.replaceState) {
             const url = new URL(window.location.href);
             if (url.searchParams.has('editar')) {
                 url.searchParams.delete('editar');
+                url.searchParams.delete('voltar');
                 window.history.replaceState({}, '', url.pathname + url.search + url.hash);
             }
+        }
+        if (eraEdicao && destinoVoltarEdicao === 'encomendas') {
+            window.location.assign('encomendas.html');
+            return;
         }
     } catch (error) {
         console.error(error);

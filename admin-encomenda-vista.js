@@ -2146,7 +2146,12 @@ window.AdminEncomendaVista = (function () {
         if (emitirMoloni) botoesAcoes.appendChild(emitirMoloni);
         if (podeEditar) {
             const editar = criarElemento("a", "wallapop-botao admin-encomenda-editar", "Editar");
-            editar.href = `plataforma.html?editar=${encodeURIComponent(encomenda.codigo_encomenda)}`;
+            const destinoEditar = new URL("plataforma.html", window.location.href);
+            destinoEditar.searchParams.set("editar", encomenda.codigo_encomenda);
+            if (opcoes.voltarAoEditar) {
+                destinoEditar.searchParams.set("voltar", opcoes.voltarAoEditar);
+            }
+            editar.href = destinoEditar.pathname + destinoEditar.search;
             editar.addEventListener("click", evento => evento.stopPropagation());
             botoesAcoes.appendChild(editar);
         }

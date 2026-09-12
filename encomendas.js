@@ -160,7 +160,8 @@ async function abrirFichaClienteAdmin(encomenda) {
 function criarCardEncomenda(encomenda) {
     const card = AdminEncomendaVista.criarCardEncomenda(encomenda, {
         abrirCliente: abrirFichaClienteAdmin,
-        abrirEncomenda: abrirModalEncomendaAdmin
+        abrirEncomenda: abrirModalEncomendaAdmin,
+        voltarAoEditar: 'encomendas'
     });
     acrescentarSelecaoLoteEncomenda(card, encomenda);
     return card;
@@ -220,7 +221,8 @@ function abrirModalEncomendaAdmin(encomenda) {
         abrirCliente: abrirFichaClienteAdmin,
         fecharAoAlterarEstado: fecharModalEncomendaAdmin,
         fecharAoConcluir: fecharModalEncomendaAdmin,
-        fecharAoPagar: fecharModalEncomendaAdmin
+        fecharAoPagar: fecharModalEncomendaAdmin,
+        voltarAoEditar: 'encomendas'
     }));
 
     renderizarModal();
