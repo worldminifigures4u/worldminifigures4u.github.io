@@ -563,10 +563,8 @@ window.AdminEncomendaVista = (function () {
     }
 
     function obterObservacoesProduto(item) {
-        const observacoes = observacoesProdutos.get(String(item.id_produto || item.id || ""))
-            || observacoesProdutosPorSku.get(String(item.sku || "").toUpperCase())
-            || observacoesProdutosPorReferencia.get(chaveReferenciaProduto(item))
-            || "";
+        const id = String(item.id_produto || item.id || "");
+        const observacoes = id ? observacoesProdutos.get(id) : "";
         return String(observacoes).trim();
     }
 
