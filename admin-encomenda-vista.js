@@ -1311,6 +1311,10 @@ window.AdminEncomendaVista = (function () {
         return origemEncomenda(encomenda) === "olx" ? "OLX" : "Site";
     }
 
+    function rotuloOrigemEncomenda(encomenda) {
+        return String(encomenda?.origem || "Site").trim() || "Site";
+    }
+
     function podeEmitirFaturaMoloni(encomenda) {
         if (encomenda?.moloni_document_id) return false;
         return true;
@@ -1386,6 +1390,7 @@ window.AdminEncomendaVista = (function () {
 
     function pedirConclusaoEncomenda(encomenda) {
         const codigo = encomenda.codigo_encomenda || "";
+        const origem = rotuloOrigemEncomenda(encomenda);
         const mensagens = [
             "Todos os anexos desta encomenda serão eliminados definitivamente.",
             "As notas internas serão mantidas."
@@ -1405,7 +1410,7 @@ window.AdminEncomendaVista = (function () {
             botoes.push({ texto: "Concluir encomenda", valor: "concluir", classe: "wallapop-botao wallapop-botao-destaque" });
         }
         return criarModalDecisaoEncomenda({
-            titulo: `Concluir encomenda ${codigo}?`,
+            titulo: `Concluir encomenda ${codigo} (${origem})?`,
             mensagens,
             valorCancelar: null,
             botoes
