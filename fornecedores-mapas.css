@@ -1279,6 +1279,7 @@ body.pagina-mapas-admin > main.fornecedores-admin {
     color: #bdbdbd;
     font-size: 12px;
     font-weight: 700;
+    text-align: center;
 }
 
 .mapas-filtro-stock,
@@ -1403,7 +1404,7 @@ body.pagina-mapas-admin > main.fornecedores-admin {
     min-width: 62px;
     color: #bdbdbd;
     line-height: 1;
-    text-align: left;
+    text-align: center;
 }
 
 .mapas-contador-item strong {
@@ -1429,7 +1430,7 @@ body.pagina-mapas-admin > main.fornecedores-admin {
     font-size: 12px;
     font-weight: 700;
     line-height: 1;
-    text-align: left;
+    text-align: center;
 }
 
 .mapas-contador-item.destaque strong {
