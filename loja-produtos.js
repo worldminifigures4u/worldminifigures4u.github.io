@@ -502,7 +502,7 @@ function construirMapaTemasLoja(metadados = []) {
     const mapa = {};
 
     metadados.forEach(item => {
-        const tema = (item.tema || 'Outros').trim();
+        const tema = (item.tema || 'Diversos').trim();
         const subtema = (item.subtema && item.subtema !== 'semsubtema') ? item.subtema.trim() : '';
         if (!mapa[tema]) mapa[tema] = [];
         if (subtema && !mapa[tema].includes(subtema)) mapa[tema].push(subtema);
@@ -896,7 +896,7 @@ function gerarMenus(listaProdutos){
 
     const mapa = {};
     listaProdutos.forEach(prod => {
-        const tema = (prod.tema || 'Outros').trim();
+        const tema = (prod.tema || 'Diversos').trim();
         const subtema = (prod.subtema && prod.subtema !== 'semsubtema') ? prod.subtema.trim() : '';
         if(!mapa[tema]){ mapa[tema] = []; }
         if(subtema && !mapa[tema].includes(subtema)){ mapa[tema].push(subtema); }
@@ -1171,7 +1171,7 @@ function criarCardProduto(prod) {
 
     const category = document.createElement('div');
     category.className = 'categoria';
-    category.innerText = prod.tema || 'Outros';
+    category.innerText = prod.tema || 'Diversos';
     card.appendChild(category);
 
     if (prod.subtema && prod.subtema !== 'semsubtema') {
