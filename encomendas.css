@@ -632,7 +632,8 @@ body.pagina-encomendas-admin{
         }
 
         .admin-encomenda-dados-acoes .wallapop-botao,
-        .admin-encomenda-dados-acoes .admin-encomenda-editar{
+        .admin-encomenda-dados-acoes .admin-encomenda-editar,
+        .admin-encomenda-dados-acoes .admin-encomenda-anexos-escolher{
             width:100%;
             min-height:34px;
             height:auto;
@@ -647,6 +648,10 @@ body.pagina-encomendas-admin{
             font-weight:700;
             line-height:1.1;
             white-space:nowrap;
+        }
+
+        .admin-encomenda-dados-acoes .admin-encomenda-anexos-escolher{
+            background:transparent;
         }
 
         .admin-encomenda-dados-acoes .admin-encomenda-gravar{
@@ -1572,7 +1577,8 @@ body.pagina-encomendas-admin{
             }
 
             .admin-encomenda-dados-acoes .wallapop-botao,
-            .admin-encomenda-dados-acoes .admin-encomenda-editar{
+            .admin-encomenda-dados-acoes .admin-encomenda-editar,
+            .admin-encomenda-dados-acoes .admin-encomenda-anexos-escolher{
                 width:auto;
             }
 

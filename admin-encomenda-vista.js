@@ -929,6 +929,8 @@ window.AdminEncomendaVista = (function () {
                 criarElemento("span", "admin-encomenda-anexos-escolher-texto", "Escolher Ficheiros")
             );
             upload.appendChild(campoFicheiro);
+            bloco.botaoEscolherAnexos = campoFicheiro;
+            bloco.removerCaixaUploadAnexos = () => upload.remove();
             const listaPendentes = criarElemento("div", "admin-encomenda-anexos-pendentes");
             conteudo.append(upload, listaPendentes);
 
@@ -2138,6 +2140,8 @@ window.AdminEncomendaVista = (function () {
             && !estadoRepostoNormalizado(encomenda.estado)
             && encomenda.codigo_encomenda;
 
+        gestaoEncomenda = criarGestaoEncomenda(encomenda);
+
         const botoesAcoes = criarElemento("div", "admin-encomenda-dados-botoes");
         botoesAcoes.appendChild(gravarTudo);
         const emitirMoloni = criarBotaoEmitirFaturaMoloni(encomenda);
@@ -2160,6 +2164,11 @@ window.AdminEncomendaVista = (function () {
             apagarEncomenda(encomenda, apagar);
         });
         botoesAcoes.appendChild(apagar);
+        if (gestaoEncomenda.botaoEscolherAnexos) {
+            gestaoEncomenda.botaoEscolherAnexos.classList.add("admin-encomenda-anexos-escolher-acao");
+            botoesAcoes.appendChild(gestaoEncomenda.botaoEscolherAnexos);
+            gestaoEncomenda.removerCaixaUploadAnexos?.();
+        }
         colunaAcoes.append(botoesAcoes);
         dados.append(grupoConteudo, colunaAcoes);
 
@@ -2224,7 +2233,6 @@ window.AdminEncomendaVista = (function () {
         caixaEstado.appendChild(select);
         blocoEstado.appendChild(caixaEstado);
 
-        gestaoEncomenda = criarGestaoEncomenda(encomenda);
         gestaoLinha.append(blocoEstado, gestaoEncomenda);
 
         detalhes.append(dados, gestaoLinha, produtos);
