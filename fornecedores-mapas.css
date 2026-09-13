@@ -1400,7 +1400,7 @@ body.pagina-mapas-admin > main.fornecedores-admin {
 .mapas-contador-item {
     display: grid;
     gap: 4px;
-    min-width: 112px;
+    min-width: 62px;
     color: #bdbdbd;
     line-height: 1;
     text-align: left;
@@ -1410,7 +1410,7 @@ body.pagina-mapas-admin > main.fornecedores-admin {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    min-width: 112px;
+    min-width: 62px;
     min-height: 36px;
     box-sizing: border-box;
     padding: 0 12px;
