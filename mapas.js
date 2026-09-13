@@ -346,8 +346,8 @@ function renderizarContadoresMapa(resultados) {
     const destinoContadores = document.getElementById("mapas-contadores-resumo") || contador;
     destinoContadores.querySelectorAll(".mapas-contador-item").forEach(item => item.remove());
     const totalStock = resultados.reduce((acc, produto) => acc + Number(produto.stock || 0), 0);
-    const figuras = criarItemContadorMapa(resultados.length === 1 ? "Figura" : "Figuras", resultados.length);
-    const stock = criarItemContadorMapa("Stock", totalStock);
+    const figuras = criarItemContadorMapa("Produtos", resultados.length);
+    const stock = criarItemContadorMapa("Unid.", totalStock);
     if (destinoContadores !== contador) {
         destinoContadores.append(figuras, stock);
         return;
