@@ -38,6 +38,7 @@ window.AdminEncomendaVista = (function () {
     let imagensProdutosPorReferencia = new Map();
     let referenciasProdutos = new Map();
     let referenciasProdutosPorSku = new Map();
+    let referenciasProdutosPorReferencia = new Map();
     let temasProdutos = new Map();
     let temasProdutosPorSku = new Map();
     let temasProdutosPorReferencia = new Map();
@@ -2116,6 +2117,7 @@ window.AdminEncomendaVista = (function () {
         if (referencia) {
             if (id) referenciasProdutos.set(id, referencia);
             if (skuChave) referenciasProdutosPorSku.set(skuChave, referencia);
+            if (referenciaChave) referenciasProdutosPorReferencia.set(referenciaChave, referencia);
         }
 
         const tema = String(produto.tema || "").trim();
@@ -2260,6 +2262,7 @@ window.AdminEncomendaVista = (function () {
         imagensProdutosPorReferencia = new Map();
         referenciasProdutos = new Map();
         referenciasProdutosPorSku = new Map();
+        referenciasProdutosPorReferencia = new Map();
         temasProdutos = new Map();
         temasProdutosPorSku = new Map();
         temasProdutosPorReferencia = new Map();
