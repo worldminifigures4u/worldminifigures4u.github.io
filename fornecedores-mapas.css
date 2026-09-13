@@ -1398,24 +1398,25 @@ body.pagina-mapas-admin > main.fornecedores-admin {
 }
 
 .mapas-contador-item {
+    display: grid;
+    gap: 4px;
+    min-width: 112px;
+    color: #bdbdbd;
+    line-height: 1;
+    text-align: left;
+}
+
+.mapas-contador-item strong {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    gap: 8px;
     min-width: 112px;
-    height: 36px;
+    min-height: 36px;
     box-sizing: border-box;
     padding: 0 12px;
     border: 1px solid #333;
     border-radius: 6px;
     background: #1f1f1f;
-    color: #fff;
-    line-height: 1;
-    text-align: center;
-}
-
-.mapas-contador-item strong {
-    display: inline;
     color: #fff;
     font-size: 18px;
     line-height: 1;
@@ -1423,20 +1424,17 @@ body.pagina-mapas-admin > main.fornecedores-admin {
 }
 
 .mapas-contador-item span {
-    display: inline;
-    color: #d8d8d8;
+    display: block;
+    color: #bdbdbd;
     font-size: 12px;
+    font-weight: 700;
     line-height: 1;
-    text-align: center;
-}
-
-.mapas-contador-item.destaque {
-    border-color: #ffc400;
-    background: #2b2308;
-    color: #ffe58a;
+    text-align: left;
 }
 
 .mapas-contador-item.destaque strong {
+    border-color: #ffc400;
+    background: #2b2308;
     color: #ffc400;
 }
 
