@@ -1960,10 +1960,6 @@ window.AdminEncomendaVista = (function () {
         anexosContagem.title = formatarTextoContagemAnexos(encomenda.num_anexos);
         linha.appendChild(anexosContagem);
 
-        statusGravacao = criarElemento("span", "admin-encomenda-gravar-status admin-encomenda-gravar-status-cabecalho");
-        statusGravacao.setAttribute("aria-live", "polite");
-        linha.appendChild(statusGravacao);
-
         if (estadoNormalizado(encomenda.estado) === "Pago") {
             const prioridade = criarElemento("label", "admin-encomenda-prioridade");
             const checkbox = document.createElement("input");
@@ -1978,6 +1974,10 @@ window.AdminEncomendaVista = (function () {
         } else {
             linha.appendChild(criarElemento("span", "admin-encomenda-prioridade-vazia", ""));
         }
+
+        statusGravacao = criarElemento("span", "admin-encomenda-gravar-status admin-encomenda-gravar-status-cabecalho");
+        statusGravacao.setAttribute("aria-live", "polite");
+        linha.appendChild(statusGravacao);
 
         cabecalho.append(linha);
         if (!modoModal) cabecalho.appendChild(criarElemento("span", "admin-encomenda-seta", "▾"));
