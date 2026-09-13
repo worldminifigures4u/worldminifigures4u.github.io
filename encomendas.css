@@ -1345,58 +1345,6 @@ body.pagina-encomendas-admin{
             white-space:nowrap;
         }
 
-        .admin-encomenda-total-grupo{
-            display:flex;
-            align-items:center;
-            gap:8px;
-            margin-left:auto;
-        }
-
-        .admin-encomenda-portes-grupo{
-            display:flex;
-            align-items:center;
-            gap:6px;
-            margin-right:10px;
-            color:#29b6f6;
-            font-size:14px;
-            white-space:nowrap;
-        }
-
-        .admin-encomenda-portes-rotulo{
-            font-weight:800;
-        }
-
-        .admin-encomenda-portes-valor{
-            color:#cfd8dc;
-            font-weight:700;
-        }
-
-        .admin-encomenda-portes-valor,
-        .admin-encomenda-total-valor{
-            min-width:72px;
-            padding:3px 7px;
-            border:1px solid #3a4a55;
-            border-radius:6px;
-            background:#151515;
-            color:#29b6f6;
-            font-size:14px;
-            font-weight:700;
-            text-align:right;
-            font-family:inherit;
-            box-sizing:border-box;
-            font-variant-numeric:tabular-nums;
-        }
-
-        .admin-encomenda-total-rotulo{
-            color:#29b6f6;
-            font-size:14px;
-            font-weight:800;
-        }
-
-        .admin-encomenda-total-valor{
-            min-width:82px;
-        }
-
         .admin-encomenda-seguimento-input{
             width:100%;
             max-width:220px;

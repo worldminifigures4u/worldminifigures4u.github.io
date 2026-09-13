@@ -1112,20 +1112,9 @@ window.AdminEncomendaVista = (function () {
         return data;
     }
 
-    function criarLinhaTotalInformativa(encomenda) {
+    function criarLinhaResumoEncomenda(encomenda) {
         const linha = criarElemento("div", "admin-encomenda-total-linha");
         linha.appendChild(criarResumoPecasProdutos(encomenda));
-
-        const totalGrupo = criarElemento("div", "admin-encomenda-total-grupo");
-        const portesGrupo = criarElemento("div", "admin-encomenda-portes-grupo");
-        portesGrupo.append(
-            criarElemento("span", "admin-encomenda-portes-rotulo", "Portes:"),
-            criarElemento("span", "admin-encomenda-portes-valor", formatarEuro(encomenda.portes))
-        );
-        totalGrupo.appendChild(portesGrupo);
-        totalGrupo.appendChild(criarElemento("span", "admin-encomenda-total-rotulo", "Total:"));
-        totalGrupo.appendChild(criarElemento("span", "admin-encomenda-total-valor", formatarEuro(encomenda.total)));
-        linha.appendChild(totalGrupo);
         return { elemento: linha };
     }
 
@@ -2075,7 +2064,7 @@ window.AdminEncomendaVista = (function () {
             );
             lista.appendChild(linhaProduto);
         });
-        produtos.append(lista, criarLinhaTotalInformativa(encomenda).elemento);
+        produtos.append(lista, criarLinhaResumoEncomenda(encomenda).elemento);
 
         const gestaoLinha = criarElemento("div", "admin-encomenda-gestao");
         const blocoEstado = criarElemento("div", "admin-encomenda-gestao-bloco admin-encomenda-gestao-estado");
