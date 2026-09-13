@@ -610,7 +610,7 @@ body.pagina-encomendas-admin{
         }
 
         .admin-encomenda-dados-acoes{
-            flex:0 0 112px;
+            flex:0 0 clamp(220px, 18vw, 260px);
             display:flex;
             flex-direction:column;
             gap:0;
@@ -622,10 +622,10 @@ body.pagina-encomendas-admin{
 
         .admin-encomenda-dados-botoes{
             flex:1 1 auto;
-            display:flex;
-            flex-direction:column;
-            justify-content:space-between;
-            gap:4px;
+            display:grid;
+            grid-template-columns:repeat(2, minmax(0, 1fr));
+            grid-auto-rows:minmax(34px, 1fr);
+            gap:6px;
             min-height:0;
             height:100%;
             overflow:hidden;
@@ -634,10 +634,9 @@ body.pagina-encomendas-admin{
         .admin-encomenda-dados-acoes .wallapop-botao,
         .admin-encomenda-dados-acoes .admin-encomenda-editar{
             width:100%;
-            flex:1 1 0;
-            min-height:0;
+            min-height:34px;
             height:auto;
-            padding:4px 8px;
+            padding:6px 12px;
             box-sizing:border-box;
             display:inline-flex;
             align-items:center;
@@ -1568,14 +1567,12 @@ body.pagina-encomendas-admin{
             }
 
             .admin-encomenda-dados-botoes{
-                flex-direction:row;
-                flex-wrap:wrap;
-                justify-content:flex-start;
+                grid-template-columns:repeat(2, minmax(0, 1fr));
+                grid-auto-rows:minmax(38px, auto);
             }
 
             .admin-encomenda-dados-acoes .wallapop-botao,
             .admin-encomenda-dados-acoes .admin-encomenda-editar{
-                flex:1 1 100px;
                 width:auto;
             }
 
