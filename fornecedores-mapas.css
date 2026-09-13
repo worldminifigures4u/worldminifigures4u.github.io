@@ -1294,20 +1294,6 @@ body.pagina-mapas-admin > main.fornecedores-admin {
     width: 78px;
 }
 
-.pagina-mapas-admin .mapas-botao-novo {
-    border-color: #ffc400;
-    background: #ffc400;
-    color: #111;
-    font-weight: 900;
-}
-
-.pagina-mapas-admin .mapas-botao-novo:hover,
-.pagina-mapas-admin .mapas-botao-novo:focus-visible {
-    background: #ffd84d;
-    color: #000;
-    border-color: #ffd84d;
-}
-
 .mapas-colunas-painel {
     position: relative;
     min-height: 36px;
