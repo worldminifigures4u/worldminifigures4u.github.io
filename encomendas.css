@@ -683,10 +683,13 @@ body.pagina-encomendas-admin{
         .admin-encomenda-gravar-status-cabecalho{
             justify-self:start;
             min-height:0;
+            max-width:100%;
             margin:0;
-            font-size:11px;
+            font-size:14px;
             line-height:1.25;
             text-align:left;
+            overflow:hidden;
+            text-overflow:ellipsis;
             white-space:nowrap;
         }
 
