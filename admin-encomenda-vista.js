@@ -535,6 +535,7 @@ window.AdminEncomendaVista = (function () {
         return item.referencia
             || referenciasProdutos.get(String(item.id_produto || item.id || ""))
             || referenciasProdutosPorSku.get(String(item.sku || "").toUpperCase())
+            || referenciasProdutosPorReferencia.get(chaveReferenciaProduto(item))
             || "";
     }
 
@@ -551,16 +552,16 @@ window.AdminEncomendaVista = (function () {
     }
 
     function obterTemaProduto(item) {
-        const tema = item.tema
+        const tema = limparTextoProduto(item.tema)
             || temasProdutos.get(String(item.id_produto || item.id || ""))
             || temasProdutosPorSku.get(String(item.sku || "").toUpperCase())
             || temasProdutosPorReferencia.get(chaveReferenciaProduto(item))
             || "";
-        return String(tema).trim() || "—";
+        return limparTextoProduto(tema);
     }
 
     function obterSubtemaProduto(item) {
-        const subtema = item.subtema
+        const subtema = limparTextoProduto(item.subtema)
             || subtemasProdutos.get(String(item.id_produto || item.id || ""))
             || subtemasProdutosPorSku.get(String(item.sku || "").toUpperCase())
             || subtemasProdutosPorReferencia.get(chaveReferenciaProduto(item))
@@ -570,7 +571,11 @@ window.AdminEncomendaVista = (function () {
 
     function obterObservacoesProduto(item) {
         const id = String(item.id_produto || item.id || "");
-        const observacoes = id ? observacoesProdutos.get(id) : "";
+        const sku = String(item.sku || "").toUpperCase();
+        const referencia = chaveReferenciaProduto(item);
+        const observacoes = (id ? observacoesProdutos.get(id) : "")
+            || (sku ? observacoesProdutosPorSku.get(sku) : "")
+            || (referencia ? observacoesProdutosPorReferencia.get(referencia) : "");
         return limparTextoProduto(observacoes);
     }
 
@@ -2178,7 +2183,13 @@ window.AdminEncomendaVista = (function () {
             const id = String(item.id_produto || item.id || "");
             const sku = String(item.sku || "").toUpperCase();
             const referencia = chaveReferenciaProduto(item);
-            return !obterObservacoesProduto(item) && (id || sku || referencia);
+            return (id || sku || referencia)
+                && (
+                    !obterTemaProduto(item)
+                    || !obterReferenciaProduto(item)
+                    || !obterImagemProduto(item)
+                    || !obterObservacoesProduto(item)
+                );
         })) return;
 
         const ids = new Set(lista.map(item => String(item.id_produto || item.id || "")).filter(Boolean));
