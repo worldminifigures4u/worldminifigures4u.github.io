@@ -926,7 +926,7 @@ window.AdminEncomendaVista = (function () {
             input.multiple = true;
             campoFicheiro.append(
                 input,
-                criarElemento("span", "admin-encomenda-anexos-escolher-texto", "Escolher Ficheiros")
+                criarElemento("span", "admin-encomenda-anexos-escolher-texto", "Anexos")
             );
             upload.appendChild(campoFicheiro);
             bloco.botaoEscolherAnexos = campoFicheiro;
@@ -2144,6 +2144,11 @@ window.AdminEncomendaVista = (function () {
 
         const botoesAcoes = criarElemento("div", "admin-encomenda-dados-botoes");
         botoesAcoes.appendChild(gravarTudo);
+        if (gestaoEncomenda.botaoEscolherAnexos) {
+            gestaoEncomenda.botaoEscolherAnexos.classList.add("admin-encomenda-anexos-escolher-acao");
+            botoesAcoes.appendChild(gestaoEncomenda.botaoEscolherAnexos);
+            gestaoEncomenda.removerCaixaUploadAnexos?.();
+        }
         const emitirMoloni = criarBotaoEmitirFaturaMoloni(encomenda);
         if (emitirMoloni) botoesAcoes.appendChild(emitirMoloni);
         if (podeEditar) {
@@ -2164,11 +2169,6 @@ window.AdminEncomendaVista = (function () {
             apagarEncomenda(encomenda, apagar);
         });
         botoesAcoes.appendChild(apagar);
-        if (gestaoEncomenda.botaoEscolherAnexos) {
-            gestaoEncomenda.botaoEscolherAnexos.classList.add("admin-encomenda-anexos-escolher-acao");
-            botoesAcoes.appendChild(gestaoEncomenda.botaoEscolherAnexos);
-            gestaoEncomenda.removerCaixaUploadAnexos?.();
-        }
         colunaAcoes.append(botoesAcoes);
         dados.append(grupoConteudo, colunaAcoes);
 
