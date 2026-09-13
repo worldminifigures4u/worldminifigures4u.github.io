@@ -1289,6 +1289,10 @@ body.pagina-mapas-admin > main.fornecedores-admin {
     font: inherit;
 }
 
+.mapas-filtro-stock-curto {
+    width: 72px;
+}
+
 .pagina-mapas-admin .mapas-botao-novo {
     border-color: #ffc400;
     background: #ffc400;
