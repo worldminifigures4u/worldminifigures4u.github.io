@@ -782,7 +782,6 @@ async function iniciarClientesAdmin() {
     }
 }
 
-document.getElementById("btn-pesquisar-clientes").addEventListener("click", pesquisarClientes);
 document.getElementById("btn-criar-cliente").addEventListener("click", criarClienteNovo);
 document.getElementById("clientes-pesquisa").addEventListener("input", () => {
     clearTimeout(window.__clientesPesquisaTimer);

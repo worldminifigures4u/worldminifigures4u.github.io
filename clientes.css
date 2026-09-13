@@ -116,7 +116,7 @@ html:not(.admin-light-mode) .clientes-admin #btn-criar-cliente.wallapop-botao-de
 
 .clientes-pesquisa-acoes{
     display:grid;
-    grid-template-columns:1fr 1fr;
+    grid-template-columns:1fr;
     gap:8px;
 }
 
