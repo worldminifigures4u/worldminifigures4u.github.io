@@ -615,14 +615,20 @@ function atualizarResultadosMapa() {
     const termo = normalizarMapa(document.getElementById("fornecedor-pesquisa")?.value || "");
     const filtroStock = document.getElementById("mapas-filtro-stock")?.value || "todos";
     const filtroTop = document.getElementById("mapas-filtro-top")?.value || "todos";
+    const filtroAtivo = document.getElementById("mapas-filtro-ativo")?.value || "todos";
+    const filtroLego = document.getElementById("mapas-filtro-lego")?.value || "todos";
     const filtroArquivado = document.getElementById("mapas-filtro-arquivado")?.value || "nao";
     const filtroDescontinuado = document.getElementById("mapas-filtro-descontinuado")?.value || "nao";
+    const filtroNovidade = document.getElementById("mapas-filtro-novidade")?.value || "todos";
     mapasResultados = mapasProdutos
         .filter(produto => produtoPassaPesquisaMapa(produto, termo))
         .filter(produto => produtoPassaFiltroStockMapa(produto, filtroStock))
         .filter(produto => produtoPassaFiltroBooleanoMapa(produto, "top", filtroTop))
+        .filter(produto => produtoPassaFiltroBooleanoMapa(produto, "ativo", filtroAtivo))
+        .filter(produto => produtoPassaFiltroBooleanoMapa(produto, "lego", filtroLego))
         .filter(produto => produtoPassaFiltroBooleanoMapa(produto, "arquivado", filtroArquivado))
         .filter(produto => produtoPassaFiltroBooleanoMapa(produto, "descontinuado", filtroDescontinuado))
+        .filter(produto => produtoPassaFiltroBooleanoMapa(produto, "novidade", filtroNovidade))
         .sort(compararProdutosMapa);
     renderizarTabelaMapa();
 }
@@ -852,8 +858,11 @@ async function iniciarMapas() {
 document.getElementById("fornecedor-pesquisa")?.addEventListener("input", agendarAtualizacaoResultadosMapa);
 document.getElementById("mapas-filtro-stock")?.addEventListener("change", atualizarResultadosMapa);
 document.getElementById("mapas-filtro-top")?.addEventListener("change", atualizarResultadosMapa);
+document.getElementById("mapas-filtro-ativo")?.addEventListener("change", atualizarResultadosMapa);
+document.getElementById("mapas-filtro-lego")?.addEventListener("change", atualizarResultadosMapa);
 document.getElementById("mapas-filtro-arquivado")?.addEventListener("change", atualizarResultadosMapa);
 document.getElementById("mapas-filtro-descontinuado")?.addEventListener("change", atualizarResultadosMapa);
+document.getElementById("mapas-filtro-novidade")?.addEventListener("change", atualizarResultadosMapa);
 document.getElementById("mapas-criar-produto")?.addEventListener("click", abrirCriacaoProdutoMapa);
 document.getElementById("mapas-copiar-lista")?.addEventListener("click", copiarListaMapaVisivel);
 document.addEventListener("click", (evento) => {

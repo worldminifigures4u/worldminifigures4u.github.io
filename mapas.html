@@ -19,7 +19,7 @@
     <link rel="apple-touch-icon" href="fp-ring-favicon-192.png">
     <link rel="stylesheet" href="styles.css?v=20260721-rodape-800">
     <link rel="stylesheet" href="styles-admin.css?v=20260901-campos-admin-escuros">
-    <link rel="stylesheet" href="fornecedores-mapas.css?v=20260913-titulos-centrados">
+    <link rel="stylesheet" href="fornecedores-mapas.css?v=20260913-filtros-extra">
     <link rel="stylesheet" href="admin-light.css?v=20260908-pesquisa-mapas-ordem-exata">
     <link rel="stylesheet" href="styles-tema.css?v=20260721-sem-underline" media="print" data-async-css>
     <noscript><link rel="stylesheet" href="styles-tema.css?v=20260721-sem-underline"></noscript>
@@ -108,6 +108,22 @@
                             </select>
                         </label>
                         <label class="mapas-filtro-booleano">
+                            <span>Ativo</span>
+                            <select id="mapas-filtro-ativo" class="mapas-filtro-stock" aria-label="Filtrar ativo">
+                                <option value="todos">Todos</option>
+                                <option value="sim">Sim</option>
+                                <option value="nao">Não</option>
+                            </select>
+                        </label>
+                        <label class="mapas-filtro-booleano">
+                            <span>Lego</span>
+                            <select id="mapas-filtro-lego" class="mapas-filtro-stock" aria-label="Filtrar lego">
+                                <option value="todos">Todos</option>
+                                <option value="sim">Sim</option>
+                                <option value="nao">Não</option>
+                            </select>
+                        </label>
+                        <label class="mapas-filtro-booleano">
                             <span>Arquivado</span>
                             <select id="mapas-filtro-arquivado" class="mapas-filtro-stock" aria-label="Filtrar arquivado">
                                 <option value="todos">Todos</option>
@@ -123,6 +139,14 @@
                                 <option value="nao" selected>Não</option>
                             </select>
                         </label>
+                        <label class="mapas-filtro-booleano">
+                            <span>Novidade</span>
+                            <select id="mapas-filtro-novidade" class="mapas-filtro-stock" aria-label="Filtrar novidade">
+                                <option value="todos">Todos</option>
+                                <option value="sim">Sim</option>
+                                <option value="nao">Não</option>
+                            </select>
+                        </label>
                         <div id="mapas-contadores-resumo" class="mapas-contadores-resumo"></div>
                     </div>
                 </div>
@@ -136,7 +160,7 @@
 <script src="app-util.js?v=20260713-r25" defer></script>
 <script src="admin-theme.js?v=20260826-light-mode" defer></script>
 <script src="app-sku.js?v=20260713-r25" defer></script>
-    <script src="mapas.js?v=20260913-filtros-top-arquivado" defer></script>
+    <script src="mapas.js?v=20260913-filtros-extra" defer></script>
 <script src="campo-limpar.js?v=20260720-sem-x-cliente" defer></script>
 <script src="inline-listeners-base.js?v=20260725-logo-hq" defer></script>
 <script src="inline-listeners-admin.js?v=20260713-r25" defer></script>
