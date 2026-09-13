@@ -1193,7 +1193,7 @@ body.pagina-mapas-admin > main.fornecedores-admin {
     grid-template-columns: max-content minmax(220px, 240px) max-content;
     grid-template-areas: "acoes pesquisa direita";
     gap: 10px;
-    align-items: center;
+    align-items: end;
     justify-content: center;
     min-width: 0;
     overflow: visible;
@@ -1210,6 +1210,7 @@ body.pagina-mapas-admin > main.fornecedores-admin {
 .pagina-mapas-admin .mapas-pesquisa-zona {
     grid-area: pesquisa;
     display: flex;
+    align-items: flex-end;
     justify-content: center;
     min-width: 0;
 }
@@ -1217,7 +1218,7 @@ body.pagina-mapas-admin > main.fornecedores-admin {
 .pagina-mapas-admin .mapas-acoes-zona {
     grid-area: acoes;
     display: flex;
-    align-items: center;
+    align-items: flex-end;
     justify-content: flex-start;
     gap: 8px;
     min-width: 0;
@@ -1226,7 +1227,7 @@ body.pagina-mapas-admin > main.fornecedores-admin {
 .pagina-mapas-admin .mapas-direita-zona {
     grid-area: direita;
     display: flex;
-    align-items: center;
+    align-items: flex-end;
     justify-content: flex-end;
     gap: 8px;
     min-width: 0;
