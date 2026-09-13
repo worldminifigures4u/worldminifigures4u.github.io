@@ -538,9 +538,15 @@ window.AdminEncomendaVista = (function () {
             || "";
     }
 
+    function limparTextoProduto(valor) {
+        const texto = String(valor ?? "").trim();
+        if (!texto || /^undefined$/i.test(texto) || /^null$/i.test(texto)) return "";
+        return texto;
+    }
+
     function formatarSubtemaProduto(valor) {
-        const texto = String(valor || "").trim();
-        if (!texto || texto === "semsubtema" || /^sem\s*subtema$/i.test(texto)) return "—";
+        const texto = limparTextoProduto(valor);
+        if (!texto || texto === "semsubtema" || /^sem\s*subtema$/i.test(texto)) return "";
         return texto;
     }
 
@@ -565,7 +571,7 @@ window.AdminEncomendaVista = (function () {
     function obterObservacoesProduto(item) {
         const id = String(item.id_produto || item.id || "");
         const observacoes = id ? observacoesProdutos.get(id) : "";
-        return String(observacoes).trim();
+        return limparTextoProduto(observacoes);
     }
 
     function chaveReferenciaProduto(item) {
@@ -2058,7 +2064,7 @@ window.AdminEncomendaVista = (function () {
                 criarElemento(
                     "span",
                     `admin-encomenda-produto-observacoes${observacoesTexto ? " com-nota" : " sem-nota"}`,
-                    observacoesTexto || "—"
+                    observacoesTexto
                 ),
                 criarElemento("span", "admin-encomenda-produto-tema", obterTemaProduto(item)),
                 criarElemento("span", "admin-encomenda-produto-subtema", obterSubtemaProduto(item)),
