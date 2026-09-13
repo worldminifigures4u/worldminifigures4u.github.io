@@ -2021,11 +2021,11 @@ window.AdminEncomendaVista = (function () {
 
         async function gravarAlteracoesPendentes() {
             if (!temAlteracoesPendentes()) {
-                mostrarStatusGravacao("Já estava guardado.");
+                mostrarStatusGravacao("Guardado.");
                 return true;
             }
             if (gravarTudo) gravarTudo.disabled = true;
-            mostrarStatusGravacao("A gravar...", "processando");
+            mostrarStatusGravacao("A gravar", "processando");
             let ok = true;
 
             if (controloNotas?.temAlteracoesPendentes?.()) {
@@ -2043,7 +2043,7 @@ window.AdminEncomendaVista = (function () {
 
             if (!ok) {
                 hooks.definirStatus("Algumas alterações não foram guardadas.", true);
-                mostrarStatusGravacao("Erro ao gravar.", "erro");
+                mostrarStatusGravacao("Erro.", "erro");
             } else {
                 mostrarStatusGravacao("Guardado.");
             }
