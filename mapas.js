@@ -298,6 +298,14 @@ function produtoPassaFiltroStockMapa(produto, filtro) {
     return true;
 }
 
+function produtoPassaFiltroBooleanoMapa(produto, campo, filtro) {
+    if (!filtro || filtro === "todos") return true;
+    const ativo = valorBooleanoMapa(produto?.[campo]);
+    if (filtro === "sim") return ativo;
+    if (filtro === "nao") return !ativo;
+    return true;
+}
+
 function valorOrdenacaoMapa(produto, coluna) {
     if (coluna === "preco" || coluna === "preco_compra" || coluna === "stock" || coluna === "peso") return Number(produto[coluna] || 0);
     if (coluna === "ativo") return produto.ativo !== false ? 1 : 0;
@@ -606,9 +614,15 @@ function atualizarResultadosMapa() {
     mapasAtualizacaoPendente = 0;
     const termo = normalizarMapa(document.getElementById("fornecedor-pesquisa")?.value || "");
     const filtroStock = document.getElementById("mapas-filtro-stock")?.value || "todos";
+    const filtroTop = document.getElementById("mapas-filtro-top")?.value || "todos";
+    const filtroArquivado = document.getElementById("mapas-filtro-arquivado")?.value || "nao";
+    const filtroDescontinuado = document.getElementById("mapas-filtro-descontinuado")?.value || "nao";
     mapasResultados = mapasProdutos
         .filter(produto => produtoPassaPesquisaMapa(produto, termo))
         .filter(produto => produtoPassaFiltroStockMapa(produto, filtroStock))
+        .filter(produto => produtoPassaFiltroBooleanoMapa(produto, "top", filtroTop))
+        .filter(produto => produtoPassaFiltroBooleanoMapa(produto, "arquivado", filtroArquivado))
+        .filter(produto => produtoPassaFiltroBooleanoMapa(produto, "descontinuado", filtroDescontinuado))
         .sort(compararProdutosMapa);
     renderizarTabelaMapa();
 }
@@ -837,6 +851,9 @@ async function iniciarMapas() {
 
 document.getElementById("fornecedor-pesquisa")?.addEventListener("input", agendarAtualizacaoResultadosMapa);
 document.getElementById("mapas-filtro-stock")?.addEventListener("change", atualizarResultadosMapa);
+document.getElementById("mapas-filtro-top")?.addEventListener("change", atualizarResultadosMapa);
+document.getElementById("mapas-filtro-arquivado")?.addEventListener("change", atualizarResultadosMapa);
+document.getElementById("mapas-filtro-descontinuado")?.addEventListener("change", atualizarResultadosMapa);
 document.getElementById("mapas-criar-produto")?.addEventListener("click", abrirCriacaoProdutoMapa);
 document.getElementById("mapas-copiar-lista")?.addEventListener("click", copiarListaMapaVisivel);
 document.addEventListener("click", (evento) => {

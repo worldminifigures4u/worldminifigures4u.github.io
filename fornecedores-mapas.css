@@ -1273,6 +1273,14 @@ body.pagina-mapas-admin > main.fornecedores-admin {
     flex: 0 0 auto;
 }
 
+.pagina-mapas-admin .mapas-filtro-booleano {
+    display: grid;
+    gap: 4px;
+    color: #bdbdbd;
+    font-size: 12px;
+    font-weight: 700;
+}
+
 .mapas-filtro-stock,
 .mapas-copiar-lista {
     min-height: 36px;
