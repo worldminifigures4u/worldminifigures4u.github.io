@@ -6,6 +6,7 @@ const ADMIN_EMAILS = ['worldminifigures4u@gmail.com'];
 const PESO_PADRAO_PRODUTO_GRAMAS = 10;
 const NOME_CONTA_CABECALHO_KEY = 'figures-planet-conta-primeiro-nome';
 const CONTA_BLOQUEADA_KEY = 'figures-planet-conta-bloqueada';
+const ADMIN_AUTH_TIMEOUT_MS = 8000;
 
 function emailEhAdmin(email) {
     const normalizado = String(email || '').toLowerCase();
@@ -17,9 +18,21 @@ function bloquearAcessoAdminRapido(bloqueio, mensagem = 'Acesso reservado ao adm
     setTimeout(() => window.location.replace('conta.html'), 1400);
 }
 
-async function confirmarAdminRemoto(client, bloqueio) {
+function limitarTempoAdmin(pedido, mensagem) {
+    let temporizador = null;
+    const limite = new Promise((_, reject) => {
+        temporizador = setTimeout(() => reject(new Error(mensagem)), ADMIN_AUTH_TIMEOUT_MS);
+    });
+    return Promise.race([pedido, limite]).finally(() => clearTimeout(temporizador));
+}
+
+async function confirmarAdminRemoto(client, bloqueio, opcoes = {}) {
+    const redirecionarErro = opcoes.redirecionarErro !== false;
     try {
-        const { data: { user }, error } = await client.auth.getUser();
+        const { data: { user }, error } = await limitarTempoAdmin(
+            client.auth.getUser(),
+            'A confirmação remota demorou demasiado.'
+        );
         if (error || !user || !emailEhAdmin(user.email)) {
             bloquearAcessoAdminRapido(bloqueio);
             return null;
@@ -27,17 +40,26 @@ async function confirmarAdminRemoto(client, bloqueio) {
         return user;
     } catch (error) {
         console.warn('Nao foi possivel confirmar admin remotamente.', error);
-        bloquearAcessoAdminRapido(bloqueio);
+        if (redirecionarErro) {
+            bloquearAcessoAdminRapido(bloqueio, 'Não foi possível confirmar o acesso. A regressar à conta...');
+        }
         return null;
     }
 }
 
 async function validarAdminRapido(client, bloqueio) {
-    const { data: { session } } = await client.auth.getSession();
-    const utilizadorLocal = session?.user || null;
-    if (utilizadorLocal && emailEhAdmin(utilizadorLocal.email)) {
-        confirmarAdminRemoto(client, bloqueio);
-        return utilizadorLocal;
+    try {
+        const { data: { session } } = await limitarTempoAdmin(
+            client.auth.getSession(),
+            'A leitura da sessão demorou demasiado.'
+        );
+        const utilizadorLocal = session?.user || null;
+        if (utilizadorLocal && emailEhAdmin(utilizadorLocal.email)) {
+            confirmarAdminRemoto(client, bloqueio, { redirecionarErro: false });
+            return utilizadorLocal;
+        }
+    } catch (error) {
+        console.warn('Nao foi possivel ler sessao admin local.', error);
     }
 
     return confirmarAdminRemoto(client, bloqueio);
