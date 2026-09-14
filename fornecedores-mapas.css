@@ -400,6 +400,11 @@ body.pagina-fornecedores-admin{ margin:0; padding-left:0; padding-right:0; paddi
             border-color:rgba(139,216,255,.28);
             color:#8bd8ff;
         }
+        .estado-fornecedor-caixote-recebido{
+            background:rgba(190,162,255,.1);
+            border-color:rgba(190,162,255,.34);
+            color:#c9b8ff;
+        }
         .estado-fornecedor-recebida-parcialmente{
             background:rgba(255,193,7,.06);
             border-color:rgba(255,193,7,.22);

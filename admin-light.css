@@ -1210,6 +1210,12 @@ html.admin-light-mode body.cabecalho-com-admin .estado-encomenda{
     color:#263241 !important;
 }
 
+html.admin-light-mode body.cabecalho-com-admin .estado-fornecedor-caixote-recebido{
+    background:#f2edff !important;
+    border-color:#b8a5ef !important;
+    color:#4c1d95 !important;
+}
+
 html.admin-light-mode body.cabecalho-com-admin .estado-a-aguardar-pagamento{
     background:#fff7df !important;
     border-color:#e5bd4c !important;

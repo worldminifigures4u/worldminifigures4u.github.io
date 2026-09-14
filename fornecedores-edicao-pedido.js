@@ -342,7 +342,7 @@ function montarLinhaEdicaoProdutoFornecedor(pedido, item, indice) {
 
     const recebido = document.createElement("div");
     recebido.className = "fornecedor-edicao-recebido-info";
-    const recebidoAtual = ["A preparar", "Encomendada"].includes(pedido.estado)
+    const recebidoAtual = ["A preparar", "Encomendada", "Caixote recebido"].includes(pedido.estado)
         ? 0
         : Math.max(0, Number(item.recebido || 0));
     recebido.dataset.campo = "recebido";

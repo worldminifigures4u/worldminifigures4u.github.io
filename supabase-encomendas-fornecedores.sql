@@ -12,7 +12,7 @@ create table if not exists public.encomendas_fornecedores (
     fornecedor text not null,
     referencia text,
     estado text not null default 'A preparar'
-        check (estado in ('A preparar', 'Encomendada', 'Recebida parcialmente', 'Recebida', 'Cancelada')),
+        check (estado in ('A preparar', 'Encomendada', 'Caixote recebido', 'Recebida parcialmente', 'Recebida', 'Cancelada')),
     itens jsonb not null default '[]'::jsonb,
     criado_por uuid default auth.uid(),
     criado_em timestamptz not null default now(),

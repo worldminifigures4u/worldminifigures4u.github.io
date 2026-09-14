@@ -87,7 +87,7 @@ function garantirFornecedoresProdutoModal() {
 function garantirFornecedoresEdicaoPedido() {
     if (window.FornecedoresEdicaoPedido) return Promise.resolve();
     if (!__fornecedoresEdicaoPromessa) {
-        __fornecedoresEdicaoPromessa = carregarScriptAdmin("fornecedores-edicao-pedido.js?v=20260908-lista-final-os-auto");
+        __fornecedoresEdicaoPromessa = carregarScriptAdmin("fornecedores-edicao-pedido.js?v=20260914-caixote-recebido");
     }
     return __fornecedoresEdicaoPromessa;
 }
@@ -1096,7 +1096,7 @@ function serializarItensPedidoFornecedor(itens) {
 }
 
 function obterEstadosPedidoFornecedor() {
-    return ['A preparar', 'Encomendada', 'Recebida parcialmente', 'Recebida', 'Cancelada'];
+    return ['A preparar', 'Encomendada', 'Caixote recebido', 'Recebida parcialmente', 'Recebida', 'Cancelada'];
 }
 
 function normalizarEstadoPedidoFornecedor(estado) {
@@ -4415,6 +4415,7 @@ function obterClasseBadgeEstadoPedidoFornecedor(estado) {
     const mapa = {
         a_preparar: "estado-fornecedor-a-preparar",
         encomendada: "estado-fornecedor-encomendada",
+        caixote_recebido: "estado-fornecedor-caixote-recebido",
         recebida_parcialmente: "estado-fornecedor-recebida-parcialmente",
         recebida: "estado-fornecedor-recebida",
         cancelada: "estado-fornecedor-cancelada"
