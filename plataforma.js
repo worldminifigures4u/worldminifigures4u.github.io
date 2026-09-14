@@ -1737,7 +1737,22 @@ function abrirRevisaoListaProdutosPlataforma() {
             select.appendChild(option);
         });
         select.value = linha.produtoId;
-        select.onchange = () => item.classList.toggle('estado-rever', !select.value);
+        const atualizarAvisoStockLinha = () => {
+            item.querySelector('.plataforma-aviso-stock-linha')?.remove();
+            const produtoSelecionado = wallapopProdutos.find(produto => String(produto.id) === String(select.value));
+            const disponivel = obterStockDisponivelPlataforma(produtoSelecionado);
+            if (!produtoSelecionado || disponivel === null || disponivel > 0) return;
+            const avisoStock = document.createElement('div');
+            avisoStock.className = 'plataforma-aviso-stock-linha';
+            const texto = document.createElement('span');
+            texto.textContent = 'Sem stock para este cliente';
+            avisoStock.append(texto, criarBotaoAvisoStockPlataforma(produtoSelecionado, `Pedido na análise da lista: ${linha.original}`));
+            item.appendChild(avisoStock);
+        };
+        select.onchange = () => {
+            item.classList.toggle('estado-rever', !select.value);
+            atualizarAvisoStockLinha();
+        };
 
         const seletorArea = document.createElement('div');
         seletorArea.className = 'plataforma-lista-seletor';
@@ -1759,6 +1774,7 @@ function abrirRevisaoListaProdutosPlataforma() {
                         select.value
                     );
                     item.classList.toggle('estado-rever', !select.value);
+                    atualizarAvisoStockLinha();
                     return;
                 }
                 const resultados = buscarProdutosCatalogoPlataforma(termo);
@@ -1769,10 +1785,12 @@ function abrirRevisaoListaProdutosPlataforma() {
                     resultados.some(produto => String(produto.id) === String(select.value)) ? select.value : ''
                 );
                 item.classList.toggle('estado-rever', !select.value);
+                atualizarAvisoStockLinha();
             }, 120);
         });
         seletorArea.append(select, pesquisaManual);
         item.append(original, seletorArea);
+        atualizarAvisoStockLinha();
         lista.appendChild(item);
     });
 
@@ -2034,6 +2052,57 @@ function obterStockDisponivelPlataforma(produto) {
     return Math.max(stock, 0) + obterQuantidadeOriginalPlataforma(produto.id);
 }
 
+function obterDadosAvisoStockPlataforma(produto, nota = "") {
+    const cliente = fichaClientePlataformaAtual?.cliente || {};
+    return {
+        cliente_id: cliente.id || "",
+        cliente_nome: cliente.nome_utilizador || cliente.nome || obterNomeClientePlataforma(),
+        produto_id: produto?.id || "",
+        produto_nome: produto?.nome || "",
+        produto_sku: produto?.sku || "",
+        produto_referencia: produto?.referencia || "",
+        plataforma: obterPlataformaAtual(),
+        nota,
+        origem: "plataformas"
+    };
+}
+
+async function guardarAvisoStockPlataforma(produto, botao = null, nota = "") {
+    if (!window.AvisosStockAdmin) {
+        definirStatusWallapop("Avisos de stock indisponíveis.", true);
+        return false;
+    }
+    if (!fichaClientePlataformaAtual?.cliente?.id) {
+        definirStatusWallapop("Carrega ou cria primeiro a ficha do cliente para guardar o aviso de stock.", true);
+        return false;
+    }
+    try {
+        if (botao) botao.disabled = true;
+        await window.AvisosStockAdmin.criarAviso(obterDadosAvisoStockPlataforma(produto, nota));
+        definirStatusWallapop(`Aviso de stock guardado para ${produto?.nome || "a figura"}.`);
+        return true;
+    } catch (error) {
+        console.error(error);
+        definirStatusWallapop("Erro ao guardar aviso de stock: " + (error.message || "sem detalhe"), true);
+        return false;
+    } finally {
+        if (botao) botao.disabled = false;
+    }
+}
+
+function criarBotaoAvisoStockPlataforma(produto, nota = "") {
+    const botao = document.createElement("button");
+    botao.type = "button";
+    botao.className = "wallapop-botao plataforma-aviso-stock-botao";
+    botao.textContent = "Avisar stock";
+    botao.title = "Guardar aviso para contactar este cliente quando a figura chegar";
+    botao.addEventListener("click", (evento) => {
+        evento.stopPropagation();
+        guardarAvisoStockPlataforma(produto, botao, nota);
+    });
+    return botao;
+}
+
 async function confirmarStockNegativoPlataforma(produto, quantidadePretendida) {
     const disponivel = obterStockDisponivelPlataforma(produto);
     const produtoId = produto?.id ? String(produto.id) : '';
@@ -2150,12 +2219,18 @@ function renderizarResultadosWallapop() {
         }
         info.appendChild(preco);
 
+        const acoes = document.createElement('div');
+        acoes.className = 'plataforma-resultado-acoes';
         const adicionar = document.createElement('button');
         adicionar.className = 'wallapop-botao wallapop-botao-destaque';
         adicionar.type = 'button';
         adicionar.textContent = 'Adicionar';
         adicionar.onclick = () => adicionarProdutoWallapop(produto.id);
-        linha.append(info, adicionar);
+        acoes.appendChild(adicionar);
+        if (obterStockDisponivelPlataforma(produto) !== null && obterStockDisponivelPlataforma(produto) <= 0) {
+            acoes.appendChild(criarBotaoAvisoStockPlataforma(produto, "Pedido criado a partir da pesquisa em Plataformas."));
+        }
+        linha.append(info, acoes);
         contentor.appendChild(linha);
     });
 
@@ -2184,6 +2259,15 @@ function renderizarSelecionadosWallapop() {
         preco.className = 'plataforma-produto-preco';
         preco.textContent = `${formatarEuroWallapop(obterPrecoItemWallapop(item))} €`;
         info.append(nome, preco);
+        const disponivel = obterStockDisponivelPlataforma(item);
+        if (disponivel !== null && Number(item.quantidade || 1) > disponivel) {
+            const aviso = document.createElement('div');
+            aviso.className = 'plataforma-selecionado-aviso-stock';
+            const texto = document.createElement('span');
+            texto.textContent = 'Sem stock suficiente';
+            aviso.append(texto, criarBotaoAvisoStockPlataforma(item, "Pedido criado a partir dos produtos selecionados."));
+            info.appendChild(aviso);
+        }
 
         const controlos = document.createElement('div');
         controlos.className = 'wallapop-quantidade';
@@ -3665,6 +3749,7 @@ async function iniciarWallapopAdmin() {
         await window.carregarScriptSupabase();
         if (typeof supabase === 'undefined') throw new Error('A biblioteca Supabase não carregou.');
         wallapopClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        window.AvisosStockAdmin?.configurar({ client: wallapopClient, status: definirStatusWallapop });
         const user = await validarAdminRapido(wallapopClient, bloqueio);
         if (!user) return;
 

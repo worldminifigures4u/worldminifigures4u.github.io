@@ -1406,6 +1406,68 @@ function montarSecaoHistoricoVendasMapa(campos, produto) {
     });
 }
 
+function criarLinhaAvisoStockProdutoMapa(aviso, produto) {
+    const linha = document.createElement("div");
+    linha.className = "mapas-produto-aviso-stock-linha";
+    const principal = document.createElement("div");
+    principal.className = "mapas-produto-aviso-stock-principal";
+    const cliente = document.createElement("strong");
+    cliente.textContent = aviso.cliente_nome || "Cliente";
+    const meta = document.createElement("span");
+    meta.textContent = [
+        aviso.plataforma || "",
+        formatarDataFornecedorLeituraMapa(aviso.created_at),
+        aviso.estado || "Por avisar"
+    ].filter(Boolean).join(" · ");
+    principal.append(cliente, meta);
+    linha.appendChild(principal);
+    if (String(aviso.estado || "").toLowerCase() === "por avisar") {
+        const avisado = document.createElement("button");
+        avisado.type = "button";
+        avisado.className = "wallapop-botao mapas-produto-aviso-stock-acao";
+        avisado.textContent = "Avisado";
+        avisado.addEventListener("click", async () => {
+            avisado.disabled = true;
+            await window.AvisosStockAdmin?.atualizarEstado(aviso.id, "Avisado");
+            abrirFichaProdutoMapa(produto.id);
+        });
+        linha.appendChild(avisado);
+    }
+    return linha;
+}
+
+async function carregarSecaoAvisosStockProdutoMapa(produto, conteudo) {
+    if (!window.AvisosStockAdmin) {
+        conteudo.textContent = "Avisos de stock indisponíveis.";
+        return;
+    }
+    try {
+        const avisos = await window.AvisosStockAdmin.listarPorProduto(produto);
+        conteudo.replaceChildren();
+        if (!avisos.length) {
+            const vazio = document.createElement("p");
+            vazio.className = "mapas-produto-ajuda-media";
+            vazio.textContent = "Sem clientes a avisar.";
+            conteudo.appendChild(vazio);
+            return;
+        }
+        avisos.forEach(aviso => conteudo.appendChild(criarLinhaAvisoStockProdutoMapa(aviso, produto)));
+    } catch (error) {
+        console.error(error);
+        conteudo.textContent = "Erro ao carregar avisos de stock.";
+    }
+}
+
+function montarSecaoAvisosStockProdutoMapa(campos, produto) {
+    const secao = criarSecaoEdicaoMapa("Clientes a avisar", "mapas-produto-secao-media mapas-produto-aviso-stock-secao");
+    const conteudo = document.createElement("div");
+    conteudo.className = "mapas-produto-aviso-stock-lista";
+    conteudo.textContent = "A carregar avisos de stock...";
+    secao.appendChild(conteudo);
+    campos.appendChild(secao);
+    carregarSecaoAvisosStockProdutoMapa(produto, conteudo);
+}
+
 function criarCampoLeituraMapa(secao, rotulo, valor, opcoes = {}) {
     const bloco = document.createElement("div");
     bloco.className = `mapas-produto-campo mapas-produto-leitura${opcoes.largo ? " mapas-produto-campo-largo" : ""}`;
@@ -1705,6 +1767,7 @@ function preencherFichaProdutoMapa(produto) {
     campos.appendChild(topo);
 
     montarSecaoFornecedoresLeituraMapa(campos, produto);
+    montarSecaoAvisosStockProdutoMapa(campos, produto);
     montarSecaoHistoricoRececoesMapa(campos, produto);
     montarSecaoHistoricoVendasMapa(campos, produto);
 }

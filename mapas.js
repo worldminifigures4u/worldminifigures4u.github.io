@@ -61,7 +61,7 @@ var __mapasProdutoModalPromessa = null;
 function garantirMapasProdutoModal() {
     if (window.MapasProdutoModal) return Promise.resolve();
     if (!__mapasProdutoModalPromessa) {
-        __mapasProdutoModalPromessa = carregarScriptAdmin("mapas-produto-modal.js?v=20260914-galeria-tabela");
+        __mapasProdutoModalPromessa = carregarScriptAdmin("mapas-produto-modal.js?v=20260914-avisos-stock");
     }
     return __mapasProdutoModalPromessa;
 }
@@ -854,6 +854,7 @@ async function iniciarMapas() {
         await window.carregarScriptSupabase();
         if (typeof supabase === "undefined") throw new Error("A biblioteca Supabase nao carregou.");
         mapasClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        window.AvisosStockAdmin?.configurar({ client: mapasClient, status: definirStatusMapa });
         const user = await validarAdminRapido(mapasClient, document.getElementById("fornecedores-bloqueio"));
         if (!user) return;
         mostrarNavegacaoAdminValidada();

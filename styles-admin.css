@@ -431,3 +431,146 @@ html:not(.admin-light-mode) body.cabecalho-com-admin :is(
     -webkit-text-fill-color:#fff !important;
     caret-color:#fff;
 }
+/* Avisos administrativos de stock. */
+.plataforma-resultado-acoes{
+    display:flex;
+    flex-direction:column;
+    gap:8px;
+    align-items:stretch;
+    justify-content:center;
+}
+
+.plataforma-aviso-stock-botao{
+    border-color:#ff4d55;
+    color:#ffdddd;
+}
+
+.plataforma-aviso-stock-botao:hover,
+.plataforma-aviso-stock-botao:focus-visible{
+    background:rgba(255, 77, 85, 0.16);
+    border-color:#ff6b72;
+}
+
+.plataforma-aviso-stock-linha,
+.plataforma-selecionado-aviso-stock{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:10px;
+    margin-top:8px;
+    padding:8px 10px;
+    border:1px solid rgba(255, 77, 85, 0.45);
+    border-radius:6px;
+    background:rgba(255, 77, 85, 0.1);
+    color:#ffd7d9;
+    font-size:13px;
+    font-weight:700;
+}
+
+.plataforma-aviso-stock-linha .plataforma-aviso-stock-botao,
+.plataforma-selecionado-aviso-stock .plataforma-aviso-stock-botao{
+    min-height:28px;
+    height:28px;
+    padding:0 10px;
+    font-size:12px;
+}
+
+.clientes-aviso-stock-lista,
+.mapas-produto-aviso-stock-lista{
+    display:grid;
+    gap:8px;
+}
+
+.clientes-aviso-stock-linha,
+.mapas-produto-aviso-stock-linha{
+    display:grid;
+    grid-template-columns:minmax(0, 1fr) auto;
+    gap:10px;
+    align-items:center;
+    padding:10px 12px;
+    border:1px solid #333;
+    border-radius:7px;
+    background:#171717;
+}
+
+.clientes-aviso-stock-principal,
+.mapas-produto-aviso-stock-principal{
+    display:grid;
+    gap:3px;
+    min-width:0;
+}
+
+.clientes-aviso-stock-principal strong,
+.mapas-produto-aviso-stock-principal strong{
+    color:#fff;
+    font-size:14px;
+}
+
+.clientes-aviso-stock-principal span,
+.mapas-produto-aviso-stock-principal span,
+.clientes-aviso-stock-meta{
+    color:#aaa;
+    font-size:12px;
+}
+
+.clientes-aviso-stock-meta{
+    display:flex;
+    align-items:center;
+    justify-content:flex-end;
+    gap:8px;
+}
+
+.clientes-aviso-stock-estado{
+    display:inline-flex;
+    align-items:center;
+    min-height:22px;
+    padding:0 8px;
+    border:1px solid rgba(255, 193, 7, 0.55);
+    border-radius:999px;
+    color:#ffc107;
+    font-size:12px;
+    font-weight:800;
+}
+
+.clientes-aviso-stock-estado.estado-avisado{
+    border-color:rgba(40, 167, 69, 0.55);
+    color:#28a745;
+}
+
+.clientes-aviso-stock-estado.estado-cancelado{
+    border-color:rgba(255, 77, 85, 0.55);
+    color:#ff4d55;
+}
+
+.clientes-aviso-stock-acao,
+.mapas-produto-aviso-stock-acao{
+    min-width:92px;
+}
+
+html.admin-light-mode .plataforma-aviso-stock-botao{
+    color:#b91c1c;
+}
+
+html.admin-light-mode .plataforma-aviso-stock-linha,
+html.admin-light-mode .plataforma-selecionado-aviso-stock{
+    background:#fff1f2;
+    border-color:#fb7185;
+    color:#7f1d1d;
+}
+
+html.admin-light-mode .clientes-aviso-stock-linha,
+html.admin-light-mode .mapas-produto-aviso-stock-linha{
+    background:#fff;
+    border-color:#d6e0ee;
+}
+
+html.admin-light-mode .clientes-aviso-stock-principal strong,
+html.admin-light-mode .mapas-produto-aviso-stock-principal strong{
+    color:#0f172a;
+}
+
+html.admin-light-mode .clientes-aviso-stock-principal span,
+html.admin-light-mode .mapas-produto-aviso-stock-principal span,
+html.admin-light-mode .clientes-aviso-stock-meta{
+    color:#475569;
+}

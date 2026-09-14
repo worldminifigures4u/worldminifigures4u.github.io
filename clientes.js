@@ -403,6 +403,63 @@ function criarSecaoHistoricoCliente(historico = []) {
     return historicoSecao;
 }
 
+function criarLinhaAvisoStockCliente(aviso) {
+    const linha = criarElementoCliente("div", "clientes-aviso-stock-linha");
+    const principal = criarElementoCliente("div", "clientes-aviso-stock-principal");
+    principal.append(
+        criarElementoCliente("strong", "", aviso.produto_nome || "Figura"),
+        criarElementoCliente("span", "", [
+            aviso.produto_referencia ? `Ref. ${aviso.produto_referencia}` : "",
+            aviso.produto_sku ? `SKU ${aviso.produto_sku}` : "",
+            aviso.plataforma || ""
+        ].filter(Boolean).join(" · "))
+    );
+    const meta = criarElementoCliente("div", "clientes-aviso-stock-meta");
+    meta.append(
+        criarElementoCliente("span", "", formatarDataCliente(aviso.created_at)),
+        criarElementoCliente("span", `clientes-aviso-stock-estado estado-${String(aviso.estado || "").toLowerCase().replace(/\s+/g, "-")}`, aviso.estado || "Por avisar")
+    );
+    linha.append(principal, meta);
+    if (String(aviso.estado || "").toLowerCase() === "por avisar") {
+        const avisado = criarElementoCliente("button", "wallapop-botao clientes-aviso-stock-acao", "Avisado");
+        avisado.type = "button";
+        avisado.addEventListener("click", async () => {
+            avisado.disabled = true;
+            await window.AvisosStockAdmin?.atualizarEstado(aviso.id, "Avisado");
+            if (clienteAbertoId) abrirCliente(clienteAbertoId);
+        });
+        linha.appendChild(avisado);
+    }
+    return linha;
+}
+
+async function carregarSecaoAvisosStockCliente(clienteId, secao) {
+    const lista = secao.querySelector(".clientes-aviso-stock-lista");
+    if (!lista || !window.AvisosStockAdmin) return;
+    try {
+        const avisos = await window.AvisosStockAdmin.listarPorCliente(clienteId);
+        lista.replaceChildren();
+        if (!avisos.length) {
+            lista.appendChild(criarElementoCliente("p", "admin-cliente-vazio", "Sem avisos de stock."));
+            return;
+        }
+        avisos.forEach(aviso => lista.appendChild(criarLinhaAvisoStockCliente(aviso)));
+    } catch (error) {
+        console.error(error);
+        lista.replaceChildren(criarElementoCliente("p", "admin-cliente-vazio", "Erro ao carregar avisos de stock."));
+    }
+}
+
+function criarSecaoAvisosStockCliente(cliente) {
+    const secao = criarElementoCliente("section", "admin-cliente-secao clientes-aviso-stock-secao");
+    secao.appendChild(criarElementoCliente("h3", "", "Avisos de stock"));
+    const lista = criarElementoCliente("div", "clientes-aviso-stock-lista");
+    lista.appendChild(criarElementoCliente("p", "admin-cliente-vazio", "A carregar avisos de stock..."));
+    secao.appendChild(lista);
+    setTimeout(() => carregarSecaoAvisosStockCliente(cliente.id, secao), 0);
+    return secao;
+}
+
 function criarCodigoHistoricoCliente(item, indice, historico) {
     const codigo = item.codigo || item.codigo_encomenda || `#${item.id}`;
     if (!item.id) return criarElementoCliente("strong", "", codigo);
@@ -760,6 +817,7 @@ function renderizarFichaCliente(dados) {
     ficha.append(
         topo,
         montarVistaConsultaCliente(dados, resumo),
+        criarSecaoAvisosStockCliente(cliente),
         criarSecaoHistoricoCliente(historico)
     );
 }
@@ -770,6 +828,7 @@ async function iniciarClientesAdmin() {
         await window.carregarScriptSupabase();
         if (typeof supabase === "undefined") throw new Error("A biblioteca Supabase nao carregou.");
         clientesClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        window.AvisosStockAdmin?.configurar({ client: clientesClient, status: definirStatusClientes });
         const user = await validarAdminRapido(clientesClient, bloqueio);
         if (!user) return;
         mostrarNavegacaoAdminValidada();
