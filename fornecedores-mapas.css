@@ -1740,6 +1740,24 @@ body.pagina-mapas-admin > main.fornecedores-admin {
     text-align: center;
 }
 
+.mapas-produto-foto-botao-lista {
+    width: 42px;
+    height: 42px;
+    padding: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 0;
+    border-radius: 4px;
+    background: transparent;
+    cursor: zoom-in;
+}
+
+.mapas-produto-foto-botao-lista:focus-visible {
+    outline: 2px solid #ffc400;
+    outline-offset: 2px;
+}
+
 .mapas-col-foto .fornecedor-produto-foto {
     width: 46px;
     height: 46px;

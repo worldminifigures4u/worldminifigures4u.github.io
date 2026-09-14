@@ -61,7 +61,7 @@ var __mapasProdutoModalPromessa = null;
 function garantirMapasProdutoModal() {
     if (window.MapasProdutoModal) return Promise.resolve();
     if (!__mapasProdutoModalPromessa) {
-        __mapasProdutoModalPromessa = carregarScriptAdmin("mapas-produto-modal.js?v=20260914-galeria-fotos");
+        __mapasProdutoModalPromessa = carregarScriptAdmin("mapas-produto-modal.js?v=20260914-galeria-tabela");
     }
     return __mapasProdutoModalPromessa;
 }
@@ -69,6 +69,15 @@ function garantirMapasProdutoModal() {
 async function abrirFichaProdutoMapa() {
     await garantirMapasProdutoModal();
     return window.MapasProdutoModal.abrirFicha.apply(null, arguments);
+}
+
+async function abrirFotosProdutoMapa(produto) {
+    const imagens = normalizarImagensMapa(produto?.imagens);
+    if (!imagens.length) return;
+    await garantirMapasProdutoModal();
+    if (typeof window.MapasProdutoModal?.abrirFotos === "function") {
+        window.MapasProdutoModal.abrirFotos(imagens, 0, produto?.nome || "Produto");
+    }
 }
 
 async function abrirEdicaoProdutoMapa() {
@@ -438,9 +447,10 @@ function criarCabecalhoTabelaMapa() {
 }
 
 function criarMiniaturaProdutoMapa(produto) {
+    const imagens = normalizarImagensMapa(produto?.imagens);
     const urlOriginal = typeof obterImagemPrincipalProduto === "function"
         ? obterImagemPrincipalProduto(produto)
-        : (normalizarImagensMapa(produto?.imagens)[0] || "");
+        : (imagens[0] || "");
     const url = typeof otimizarImagemCloudinary === "function"
         ? otimizarImagemCloudinary(urlOriginal, 72)
         : urlOriginal;
@@ -451,6 +461,12 @@ function criarMiniaturaProdutoMapa(produto) {
         vazio.setAttribute("aria-hidden", "true");
         return vazio;
     }
+
+    const botao = document.createElement("button");
+    botao.type = "button";
+    botao.className = "mapas-produto-foto-botao-lista";
+    botao.title = "Ampliar fotografia";
+    botao.setAttribute("aria-label", `Abrir fotos de ${produto?.nome || "produto"}`);
 
     const img = document.createElement("img");
     img.className = "mapas-produto-foto";
@@ -464,9 +480,14 @@ function criarMiniaturaProdutoMapa(produto) {
         const vazio = document.createElement("span");
         vazio.className = "mapas-produto-foto-vazia";
         vazio.setAttribute("aria-hidden", "true");
-        img.replaceWith(vazio);
+        botao.replaceWith(vazio);
     };
-    return img;
+    botao.appendChild(img);
+    botao.addEventListener("click", evento => {
+        evento.stopPropagation();
+        abrirFotosProdutoMapa(produto);
+    });
+    return botao;
 }
 
 function valorCelulaMapa(produto, coluna) {

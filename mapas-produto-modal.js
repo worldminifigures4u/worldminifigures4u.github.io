@@ -2180,6 +2180,7 @@ window.MapasProdutoModal = {
   abrirFicha: abrirFichaProdutoMapa,
   abrirEdicao: abrirEdicaoProdutoMapa,
   abrirEditar: abrirEdicaoProdutoMapa,
+  abrirFotos: abrirGaleriaProdutoMapa,
   abrirCriacao: abrirCriacaoProdutoMapa,
   fechar: fecharEdicaoProdutoMapa,
   guardar: guardarEdicaoProdutoMapa
