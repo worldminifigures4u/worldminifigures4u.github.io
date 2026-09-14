@@ -679,6 +679,11 @@ window.AdminEncomendaVista = (function () {
         return n === 1 ? "1 anexo" : `${n} anexos`;
     }
 
+    function anexosObrigatoriosEmFalta(encomenda, quantidade) {
+        const origem = origemEncomenda(encomenda);
+        return Number(quantidade) === 0 && (origem === "wallapop" || origem === "vinted");
+    }
+
     function atualizarContagemAnexosLista(encomenda, quantidade) {
         const valor = Number(quantidade);
         if (!Number.isFinite(valor) || valor < 0) return;
@@ -689,6 +694,7 @@ window.AdminEncomendaVista = (function () {
                 elemento.textContent = formatarTextoContagemAnexos(valor);
                 elemento.title = formatarTextoContagemAnexos(valor);
                 elemento.classList.toggle("sem-anexos", valor === 0);
+                elemento.classList.toggle("anexos-obrigatorios-falta", anexosObrigatoriosEmFalta(encomenda, valor));
             });
     }
 
@@ -1821,7 +1827,7 @@ window.AdminEncomendaVista = (function () {
 
         const anexosContagem = criarElemento(
             "span",
-            `admin-encomenda-anexos-contagem${Number(encomenda.num_anexos) === 0 ? " sem-anexos" : ""}`,
+            `admin-encomenda-anexos-contagem${Number(encomenda.num_anexos) === 0 ? " sem-anexos" : ""}${anexosObrigatoriosEmFalta(encomenda, encomenda.num_anexos) ? " anexos-obrigatorios-falta" : ""}`,
             formatarTextoContagemAnexos(encomenda.num_anexos)
         );
         anexosContagem.dataset.encomendaId = String(encomenda.id);

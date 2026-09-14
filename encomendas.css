@@ -449,6 +449,11 @@ body.pagina-encomendas-admin{
             font-weight:600;
         }
 
+        .admin-encomenda-anexos-contagem.anexos-obrigatorios-falta{
+            color:#ff5252;
+            font-weight:800;
+        }
+
         .admin-encomenda-linha .admin-encomenda-prioridade,
         .admin-encomenda-prioridade-vazia{
             justify-self:start;
