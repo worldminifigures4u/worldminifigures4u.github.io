@@ -47,6 +47,7 @@ window.AdminEncomendaVista = (function () {
     let subtemasProdutosPorReferencia = new Map();
     let observacoesProdutos = new Map();
     let observacoesProdutosPorSku = new Map();
+    let observacoesProdutosPorNome = new Map();
     let observacoesProdutosPorReferencia = new Map();
 
     function configurar(opcoes = {}) {
@@ -573,15 +574,34 @@ window.AdminEncomendaVista = (function () {
     function obterObservacoesProduto(item) {
         const id = String(item.id_produto || item.id || "");
         const sku = String(item.sku || "").toUpperCase();
+        const nome = chaveNomeProduto(item);
         const referencia = chaveReferenciaProduto(item);
         const observacoes = (id ? observacoesProdutos.get(id) : "")
             || (sku ? observacoesProdutosPorSku.get(sku) : "")
-            || (referencia ? observacoesProdutosPorReferencia.get(referencia) : "");
+            || (nome ? observacoesProdutosPorNome.get(nome) : "")
+            || (referenciaSeguraParaObservacoes(referencia) ? observacoesProdutosPorReferencia.get(referencia) : "");
         return limparTextoProduto(observacoes);
+    }
+
+    function chaveNomeProduto(item) {
+        return normalizar(item?.nome || "");
     }
 
     function chaveReferenciaProduto(item) {
         return String(item?.referencia || item?.ref || "").trim().toUpperCase();
+    }
+
+    function referenciaSeguraParaObservacoes(referencia) {
+        const valor = normalizar(referencia).replace(/\s+/g, " ");
+        if (!valor || valor === "-") return false;
+        return !new Set([
+            "personalizado",
+            "personalizada",
+            "custom",
+            "sem ref",
+            "sem referencia",
+            "por verificar"
+        ]).has(valor);
     }
 
     function abrirImagemProduto(url, nome) {
@@ -2142,9 +2162,11 @@ window.AdminEncomendaVista = (function () {
 
         const observacoes = String(produto.observacoes || "").trim();
         if (observacoes) {
+            const nomeChave = chaveNomeProduto(produto);
             if (id) observacoesProdutos.set(id, observacoes);
             if (skuChave) observacoesProdutosPorSku.set(skuChave, observacoes);
-            if (referenciaChave) observacoesProdutosPorReferencia.set(referenciaChave, observacoes);
+            if (nomeChave) observacoesProdutosPorNome.set(nomeChave, observacoes);
+            if (referenciaSeguraParaObservacoes(referenciaChave)) observacoesProdutosPorReferencia.set(referenciaChave, observacoes);
         }
 
         const imagem = obterPrimeiraImagem(produto.imagens);
@@ -2190,8 +2212,9 @@ window.AdminEncomendaVista = (function () {
         if (!lista.some(item => {
             const id = String(item.id_produto || item.id || "");
             const sku = String(item.sku || "").toUpperCase();
+            const nome = chaveNomeProduto(item);
             const referencia = chaveReferenciaProduto(item);
-            return (id || sku || referencia)
+            return (id || sku || nome || referencia)
                 && (
                     !obterTemaProduto(item)
                     || !obterReferenciaProduto(item)
@@ -2202,11 +2225,12 @@ window.AdminEncomendaVista = (function () {
 
         const ids = new Set(lista.map(item => String(item.id_produto || item.id || "")).filter(Boolean));
         const skus = new Set(lista.map(item => String(item.sku || "").toUpperCase()).filter(Boolean));
+        const nomes = new Set(lista.map(chaveNomeProduto).filter(Boolean));
         const referencias = new Set(lista.map(chaveReferenciaProduto).filter(Boolean));
         const tamanhoPagina = 500;
         let inicio = 0;
 
-        while (ids.size || skus.size || referencias.size) {
+        while (ids.size || skus.size || nomes.size || referencias.size) {
             const { data, error } = await obterClient().rpc("listar_produtos_admin", {
                 p_limite: tamanhoPagina,
                 p_offset: inicio
@@ -2220,11 +2244,13 @@ window.AdminEncomendaVista = (function () {
             produtos.forEach(produto => {
                 const id = String(produto.id || "");
                 const sku = String(produto.sku || "").toUpperCase();
+                const nome = chaveNomeProduto(produto);
                 const referencia = chaveReferenciaProduto(produto);
-                if (!ids.has(id) && !skus.has(sku) && !referencias.has(referencia)) return;
+                if (!ids.has(id) && !skus.has(sku) && !nomes.has(nome) && !referencias.has(referencia)) return;
                 aplicarMetadadosProdutoEncomenda(produto);
                 if (id) ids.delete(id);
                 if (sku) skus.delete(sku);
+                if (nome) nomes.delete(nome);
                 if (referencia) referencias.delete(referencia);
             });
 
@@ -2277,6 +2303,7 @@ window.AdminEncomendaVista = (function () {
         subtemasProdutosPorReferencia = new Map();
         observacoesProdutos = new Map();
         observacoesProdutosPorSku = new Map();
+        observacoesProdutosPorNome = new Map();
         observacoesProdutosPorReferencia = new Map();
     }
 
