@@ -417,6 +417,11 @@ html.admin-light-mode body.cabecalho-com-admin .mapas-contador-item.destaque{
     color:#4a3700 !important;
 }
 
+html.admin-light-mode body.cabecalho-com-admin .mapas-contador-item strong{
+    background:#f8fafc !important;
+    border-color:#b9c5d2 !important;
+}
+
 html.admin-light-mode body.cabecalho-com-admin .mapas-contador-item strong,
 html.admin-light-mode body.cabecalho-com-admin .mapas-contador-item.destaque strong{
     color:#17202a !important;
