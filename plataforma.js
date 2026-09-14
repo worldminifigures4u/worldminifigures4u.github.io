@@ -22,6 +22,7 @@ let plataformaFigurasRepetidasUltimaAnalise = [];
 let plataformaFigurasRepetidasEncomenda = [];
 let plataformaNotasAnuncioAtual = carregarNotasAnuncioPlataforma();
 let plataformaARestaurarRascunhoCliente = false;
+let plataformaPortesManualAlterado = false;
 let plataformaTotalManualAlterado = false;
 const PLATAFORMA_LISTA_MAX_CARACTERES = 30000;
 const PLATAFORMA_LISTA_MAX_LINHAS = 500;
@@ -879,6 +880,30 @@ function obterPortesManuaisPlataforma() {
     return valor === null ? 0 : valor;
 }
 
+function obterPortesCalculadosPlataforma() {
+    const regiao = document.getElementById('plataforma-pais-envio')?.value || 'portugal';
+    const peso = calcularPesoPlataforma();
+    const opcoes = obterOpcoesEnvioPlataforma(regiao, peso);
+    const metodo = document.getElementById('plataforma-metodo-envio')?.value || '';
+    const opcao = opcoes.find(item => item.id === metodo) || opcoes[0] || { valor: 0 };
+    return calcularPortesPlataforma(opcao.valor);
+}
+
+function sincronizarValoresManuaisAutomaticosPlataforma() {
+    if (!encomendaPlataformaEmEdicao) return;
+
+    const portesCalculados = obterPortesCalculadosPlataforma();
+    const campoPortes = document.getElementById('plataforma-portes-manual');
+    if (campoPortes && podeEditarPortesManuaisPlataforma() && !plataformaPortesManualAlterado) {
+        campoPortes.value = formatarEuroWallapop(portesCalculados);
+    }
+
+    const campoTotal = document.getElementById('plataforma-total-manual');
+    if (campoTotal && podeUsarTotalManualPlataforma() && !plataformaTotalManualAlterado) {
+        campoTotal.value = formatarEuroWallapop(totalCalculadoPlataforma(calcularSubtotalPlataforma(), portesCalculados));
+    }
+}
+
 function campoPortesManualPreenchidoPlataforma() {
     return Boolean(String(document.getElementById('plataforma-portes-manual')?.value || '').trim());
 }
@@ -982,6 +1007,7 @@ function atualizarContagemFigurasPlataforma() {
 }
 
 function atualizarResumoPlataforma() {
+    sincronizarValoresManuaisAutomaticosPlataforma();
     const subtotal = calcularSubtotalPlataforma();
     const envio = obterEnvioPlataforma();
     const portes = envio.portes;
@@ -3136,6 +3162,7 @@ async function carregarEncomendaPlataformaPorCodigo(codigo) {
         total + Math.max(1, Number(item.quantidade) || 1) * obterPrecoItemWallapop(item)
     ), 0);
     stockNegativoConfirmado = new Set();
+    plataformaPortesManualAlterado = false;
     plataformaTotalManualAlterado = false;
     wallapopItens = catalogo.map(produto => {
         const reservado = produtosEncomenda.find(item => (
@@ -3203,12 +3230,15 @@ async function carregarEncomendaPlataformaPorCodigo(codigo) {
     }
     atualizarVisibilidadeSeguimentoPlataforma();
     atualizarVisibilidadePortesManualPlataforma();
+    const portesCalculadosAbertura = obterPortesCalculadosPlataforma();
     const campoPortes = document.getElementById('plataforma-portes-manual');
     if (campoPortes) {
         const portesGuardados = Number(encomenda.portes || 0);
         campoPortes.value = portesGuardados > 0
             ? formatarEuroWallapop(portesGuardados)
             : '';
+        plataformaPortesManualAlterado = portesGuardados > 0
+            && !valorIgualDinheiroPlataforma(portesGuardados, portesCalculadosAbertura);
     }
     const campoTotal = document.getElementById('plataforma-total-manual');
     if (campoTotal) {
@@ -3216,6 +3246,8 @@ async function carregarEncomendaPlataformaPorCodigo(codigo) {
         campoTotal.value = totalGuardado > 0
             ? formatarEuroWallapop(totalGuardado)
             : '';
+        plataformaTotalManualAlterado = totalGuardado > 0
+            && !valorIgualDinheiroPlataforma(totalGuardado, totalCalculadoPlataforma(subtotalOriginal, Number(encomenda.portes || 0)));
     }
     atualizarResumoPlataforma();
     const campoSeguimento = document.getElementById('plataforma-codigo-seguimento');
@@ -3747,6 +3779,7 @@ document.getElementById('plataforma-metodo-envio').addEventListener('change', ()
     guardarRascunhoClientePlataforma();
 });
 document.getElementById('plataforma-portes-manual')?.addEventListener('input', () => {
+    plataformaPortesManualAlterado = true;
     marcarWallapopPorRegistar();
     atualizarResumoPlataforma();
     guardarRascunhoClientePlataforma();
