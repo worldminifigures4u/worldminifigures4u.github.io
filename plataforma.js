@@ -2795,24 +2795,24 @@ function garantirHtml2CanvasPlataforma() {
     return html2canvasPromessaPlataforma;
 }
 
-async function descarregarImagemWallapop() {
-    if (!validarEncomendaRegistadaParaFicheiros()) return;
+async function descarregarImagemWallapop(opcoes = {}) {
+    if (!validarEncomendaRegistadaParaFicheiros()) return false;
     const campoNome = document.getElementById('wallapop-nome-encomenda');
     const nomeEncomenda = limparNomePastaWallapop(obterNomeParaFicheirosPlataforma());
     if (!nomeEncomenda) {
         definirStatusWallapop('Indique um nome válido para a encomenda.', true);
         campoNome.focus();
-        return;
+        return false;
     }
     const itensFicheiros = obterItensParaFicheirosPlataforma();
     if (!itensFicheiros.length) {
         definirStatusWallapop('Adicione pelo menos um produto.', true);
-        return;
+        return false;
     }
     definirStatusWallapop('Escolhe a pasta de destino...');
     try {
         // O picker tem de abrir ainda no clique do utilizador.
-        const pastaBase = await obterPastaBaseWallapop();
+        const pastaBase = opcoes.pastaBase || await obterPastaBaseWallapop();
 
         definirStatusWallapop('A gerar as imagens...');
         await garantirHtml2CanvasPlataforma();
@@ -2849,41 +2849,42 @@ async function descarregarImagemWallapop() {
             await escreverFicheiroWallapop(pastaEncomenda, ficheiro.nome, ficheiro.conteudo);
         }
         definirStatusWallapop(`Pasta "${nomeEncomenda}" guardada com ${paginasItens.length} imagem(ns).`);
+        return true;
     } catch (error) {
         console.error(error);
         if (error?.name === 'AbortError') {
             definirStatusWallapop('Seleção da pasta cancelada.', true);
-            return;
+            return false;
         }
         definirStatusWallapop(mensagemErroGuardarFicheirosPlataforma(error), true);
+        return false;
     } finally {
         renderizarFolhaWallapop();
     }
 }
 
-async function guardarFicheirosPlataforma() {
+async function guardarFicheirosPlataforma(opcoes = {}) {
     const plataforma = obterPlataformaParaFicheiros();
     if (plataformaGeraImagensFicheiro(plataforma)) {
-        await descarregarImagemWallapop();
-        return;
+        return descarregarImagemWallapop(opcoes);
     }
-    if (!validarEncomendaRegistadaParaFicheiros()) return;
+    if (!validarEncomendaRegistadaParaFicheiros()) return false;
 
     const campoNome = document.getElementById('wallapop-nome-encomenda');
     const nomeEncomenda = limparNomePastaWallapop(obterNomeParaFicheirosPlataforma());
     if (!nomeEncomenda) {
         definirStatusWallapop('Indique um nome v\u00e1lido para a encomenda.', true);
         campoNome.focus();
-        return;
+        return false;
     }
     if (!obterItensParaFicheirosPlataforma().length) {
         definirStatusWallapop('Adicione pelo menos um produto.', true);
-        return;
+        return false;
     }
 
     definirStatusWallapop('A preparar a pasta e os ficheiros...');
     try {
-        const pastaBase = await obterPastaBaseWallapop();
+        const pastaBase = opcoes.pastaBase || await obterPastaBaseWallapop();
         const pastaEncomenda = await pastaBase.getDirectoryHandle(nomeEncomenda, { create: true });
         const textoNotas = criarTextoNotasAnuncioPlataforma();
         if (plataforma === 'OLX') {
@@ -2896,13 +2897,15 @@ async function guardarFicheirosPlataforma() {
             if (textoNotas) await escreverFicheiroWallapop(pastaEncomenda, 'notas encomenda.txt', textoNotas);
             definirStatusWallapop(`Ficheiro ${plataforma} guardado na pasta "${nomeEncomenda}".`);
         }
+        return true;
     } catch (error) {
         console.error(error);
         if (error?.name === 'AbortError') {
             definirStatusWallapop('Sele\u00e7\u00e3o da pasta cancelada.', true);
-            return;
+            return false;
         }
         definirStatusWallapop(mensagemErroGuardarFicheirosPlataforma(error), true);
+        return false;
     }
 }
 
@@ -3291,10 +3294,14 @@ async function registarEncomendaWallapop() {
 
     let plataforma = obterPlataformaAtual();
     const eraEdicao = Boolean(encomendaPlataformaEmEdicao);
+    const destinoVoltarEdicao = obterDestinoVoltarEdicaoPlataforma();
+    const exportarAntesDeVoltar = eraEdicao && destinoVoltarEdicao === 'encomendas';
+    let pastaExportacaoEdicao = null;
     const plataformaOriginalEdicao = encomendaPlataformaEmEdicao?.origem || '';
     const botao = document.getElementById('btn-registar-wallapop');
     const campoPerfil = document.getElementById('plataforma-link-perfil');
     let linkPerfil = campoPerfil.value.trim();
+    let perfil = null;
 
     if (!linkPerfil && eraEdicao && plataforma === 'WhatsApp') {
         const telefoneWhatsapp = obterTelefoneWhatsappAtualPlataforma();
@@ -3311,13 +3318,27 @@ async function registarEncomendaWallapop() {
         return;
     }
     if (linkPerfil) {
-        const perfil = analisarLinkPerfilPlataforma(linkPerfil);
+        perfil = analisarLinkPerfilPlataforma(linkPerfil);
         if (!perfil || perfil.erro) {
             definirStatusWallapop(perfil?.erro || 'Link do perfil inv\u00e1lido.', true);
             document.getElementById('plataforma-link-perfil').focus();
             return;
         }
         perfilExternoDetetado = perfil;
+    }
+
+    if (exportarAntesDeVoltar) {
+        definirStatusWallapop('Escolhe a pasta de destino para exportar os ficheiros...');
+        try {
+            pastaExportacaoEdicao = await obterPastaBaseWallapop();
+        } catch (error) {
+            console.error(error);
+            definirStatusWallapop(mensagemErroGuardarFicheirosPlataforma(error), true);
+            return;
+        }
+    }
+
+    if (perfil) {
         if (perfil.plataforma === 'WhatsApp') {
             const campoNome = document.getElementById('wallapop-nome-encomenda');
             const campoUtilizador = document.getElementById('wallapop-nome-cliente');
@@ -3558,7 +3579,6 @@ async function registarEncomendaWallapop() {
         renderizarResultadosWallapop();
         renderizarSelecionadosWallapop();
         renderizarFolhaWallapop();
-        const destinoVoltarEdicao = obterDestinoVoltarEdicaoPlataforma();
         if (window.history?.replaceState) {
             const url = new URL(window.location.href);
             if (url.searchParams.has('editar')) {
@@ -3568,6 +3588,10 @@ async function registarEncomendaWallapop() {
             }
         }
         if (eraEdicao && destinoVoltarEdicao === 'encomendas') {
+            if (pastaExportacaoEdicao) {
+                const exportou = await guardarFicheirosPlataforma({ pastaBase: pastaExportacaoEdicao });
+                if (!exportou) return;
+            }
             window.location.assign('encomendas.html');
             return;
         }
