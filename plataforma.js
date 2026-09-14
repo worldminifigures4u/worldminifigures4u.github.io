@@ -436,6 +436,11 @@ function obterDestinoVoltarEdicaoPlataforma() {
     return normalizarTextoPlataforma(destino);
 }
 
+function edicaoVeioDaPaginaEncomendasPlataforma() {
+    const params = new URLSearchParams(window.location.search);
+    return Boolean(params.get('editar')) && normalizarTextoPlataforma(params.get('voltar')) === 'encomendas';
+}
+
 function obterNomeParaFicheirosPlataforma() {
     if (encomendaPlataformaParaFicheiros?.nome_encomenda) {
         return encomendaPlataformaParaFicheiros.nome_encomenda;
@@ -3326,8 +3331,8 @@ async function registarEncomendaWallapop() {
 
     let plataforma = obterPlataformaAtual();
     const eraEdicao = Boolean(encomendaPlataformaEmEdicao);
-    const destinoVoltarEdicao = obterDestinoVoltarEdicaoPlataforma();
-    const exportarAntesDeVoltar = eraEdicao && destinoVoltarEdicao === 'encomendas';
+    const edicaoComVoltaEncomendas = eraEdicao && edicaoVeioDaPaginaEncomendasPlataforma();
+    const exportarAntesDeVoltar = edicaoComVoltaEncomendas;
     let pastaExportacaoEdicao = null;
     const plataformaOriginalEdicao = encomendaPlataformaEmEdicao?.origem || '';
     const botao = document.getElementById('btn-registar-wallapop');
@@ -3619,7 +3624,7 @@ async function registarEncomendaWallapop() {
                 window.history.replaceState({}, '', url.pathname + url.search + url.hash);
             }
         }
-        if (eraEdicao && destinoVoltarEdicao === 'encomendas') {
+        if (edicaoComVoltaEncomendas) {
             if (pastaExportacaoEdicao) {
                 const exportou = await guardarFicheirosPlataforma({ pastaBase: pastaExportacaoEdicao });
                 if (!exportou) return;
