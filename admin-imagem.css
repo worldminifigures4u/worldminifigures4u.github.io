@@ -21,6 +21,84 @@
             background:#111;
         }
 
+        .admin-imagem-galeria-nav{
+            position:fixed;
+            top:50%;
+            transform:translateY(-50%);
+            width:52px;
+            height:76px;
+            border:1px solid #ffc400;
+            border-radius:7px;
+            background:rgba(20,20,20,.88);
+            color:#ffc400;
+            font-size:48px;
+            line-height:1;
+            cursor:pointer;
+        }
+
+        .admin-imagem-galeria-nav[hidden],
+        .admin-imagem-galeria-contador[hidden],
+        .admin-imagem-galeria-miniaturas[hidden]{
+            display:none;
+        }
+
+        .admin-imagem-galeria-anterior{
+            left:28px;
+        }
+
+        .admin-imagem-galeria-seguinte{
+            right:28px;
+        }
+
+        .admin-imagem-galeria-contador{
+            position:fixed;
+            left:50%;
+            bottom:102px;
+            transform:translateX(-50%);
+            padding:5px 10px;
+            border-radius:5px;
+            background:rgba(0,0,0,.72);
+            color:#fff;
+            font-size:15px;
+            font-weight:700;
+        }
+
+        .admin-imagem-galeria-miniaturas{
+            position:fixed;
+            left:50%;
+            bottom:24px;
+            transform:translateX(-50%);
+            max-width:min(760px, calc(100vw - 120px));
+            display:flex;
+            gap:8px;
+            overflow-x:auto;
+            padding:2px;
+        }
+
+        .admin-imagem-galeria-miniatura{
+            width:62px;
+            height:62px;
+            flex:0 0 auto;
+            padding:2px;
+            border:2px solid transparent;
+            border-radius:6px;
+            background:#1b1b1b;
+            cursor:pointer;
+        }
+
+        .admin-imagem-galeria-miniatura.ativa{
+            border-color:#ffc400;
+        }
+
+        .admin-imagem-galeria-miniatura img{
+            width:100%;
+            height:100%;
+            display:block;
+            object-fit:cover;
+            border-radius:4px;
+            background:#111;
+        }
+
         .admin-imagem-modal-fechar{
             position:fixed;
             top:18px;
@@ -38,4 +116,38 @@
 
         body.admin-imagem-modal-aberto{
             overflow:hidden;
+        }
+
+        @media (max-width:720px){
+            .admin-imagem-modal{
+                padding:16px;
+            }
+
+            .admin-imagem-galeria-nav{
+                width:42px;
+                height:62px;
+                font-size:38px;
+            }
+
+            .admin-imagem-galeria-anterior{
+                left:12px;
+            }
+
+            .admin-imagem-galeria-seguinte{
+                right:12px;
+            }
+
+            .admin-imagem-galeria-miniaturas{
+                max-width:calc(100vw - 24px);
+                bottom:14px;
+            }
+
+            .admin-imagem-galeria-contador{
+                bottom:86px;
+            }
+
+            .admin-imagem-galeria-miniatura{
+                width:54px;
+                height:54px;
+            }
         }

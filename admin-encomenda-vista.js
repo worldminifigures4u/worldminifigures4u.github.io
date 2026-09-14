@@ -36,6 +36,9 @@ window.AdminEncomendaVista = (function () {
     let imagensProdutos = new Map();
     let imagensProdutosPorSku = new Map();
     let imagensProdutosPorReferencia = new Map();
+    let imagensProdutosListas = new Map();
+    let imagensProdutosListasPorSku = new Map();
+    let imagensProdutosListasPorReferencia = new Map();
     let referenciasProdutos = new Map();
     let referenciasProdutosPorSku = new Map();
     let referenciasProdutosPorReferencia = new Map();
@@ -49,6 +52,8 @@ window.AdminEncomendaVista = (function () {
     let observacoesProdutosPorSku = new Map();
     let observacoesProdutosPorNome = new Map();
     let observacoesProdutosPorReferencia = new Map();
+    let imagemProdutoGaleria = { imagens: [], indice: 0, nome: "" };
+    let imagemProdutoGaleriaEventosLigados = false;
 
     function configurar(opcoes = {}) {
         if (opcoes.client) client = opcoes.client;
@@ -511,13 +516,17 @@ window.AdminEncomendaVista = (function () {
         return resumo;
     }
 
-    function obterPrimeiraImagem(imagens) {
+    function normalizarListaImagensProduto(imagens) {
         let lista = imagens;
         if (typeof lista === "string") {
             try { lista = JSON.parse(lista); }
             catch (_) { lista = lista.split(",").map(item => item.trim()).filter(Boolean); }
         }
-        return Array.isArray(lista) ? String(lista.find(Boolean) || "") : "";
+        return Array.isArray(lista) ? lista.map(item => String(item || "").trim()).filter(Boolean) : [];
+    }
+
+    function obterPrimeiraImagem(imagens) {
+        return normalizarListaImagensProduto(imagens)[0] || "";
     }
 
     function otimizarMiniatura(url) {
@@ -531,6 +540,20 @@ window.AdminEncomendaVista = (function () {
             || imagensProdutosPorSku.get(String(item.sku || "").toUpperCase())
             || imagensProdutosPorReferencia.get(chaveReferenciaProduto(item))
             || "";
+    }
+
+    function obterImagensProduto(item) {
+        const id = String(item.id_produto || item.id || "");
+        const sku = String(item.sku || "").toUpperCase();
+        const referencia = chaveReferenciaProduto(item);
+        const diretas = normalizarListaImagensProduto(item.imagens);
+        const lista = (id ? imagensProdutosListas.get(id) : null)
+            || (sku ? imagensProdutosListasPorSku.get(sku) : null)
+            || (referencia ? imagensProdutosListasPorReferencia.get(referencia) : null)
+            || diretas;
+        if (Array.isArray(lista) && lista.length) return lista;
+        const primeira = obterImagemProduto(item);
+        return primeira ? [primeira] : [];
     }
 
     function obterReferenciaProduto(item) {
@@ -604,13 +627,19 @@ window.AdminEncomendaVista = (function () {
         ]).has(valor);
     }
 
-    function abrirImagemProduto(url, nome) {
-        if (!url) return;
+    function abrirImagemProduto(imagens, nome, indice = 0) {
+        const lista = Array.isArray(imagens) ? imagens.filter(Boolean) : normalizarListaImagensProduto(imagens);
+        if (!lista.length) return;
         const modal = document.getElementById("admin-imagem-modal");
         const foto = document.getElementById("admin-imagem-modal-foto");
         if (!modal || !foto) return;
-        foto.src = url;
-        foto.alt = nome || "Fotografia do produto";
+        imagemProdutoGaleria = {
+            imagens: lista,
+            indice: Math.min(Math.max(0, Number(indice) || 0), lista.length - 1),
+            nome: nome || "Fotografia do produto"
+        };
+        garantirControlosGaleriaImagemProduto();
+        atualizarGaleriaImagemProduto();
         modal.hidden = false;
         document.body.classList.add("admin-imagem-modal-aberto");
         document.getElementById("admin-imagem-modal-fechar")?.focus();
@@ -622,11 +651,84 @@ window.AdminEncomendaVista = (function () {
         if (!modal || !foto) return;
         modal.hidden = true;
         foto.removeAttribute("src");
+        imagemProdutoGaleria = { imagens: [], indice: 0, nome: "" };
         document.body.classList.remove("admin-imagem-modal-aberto");
     }
 
+    function garantirControlosGaleriaImagemProduto() {
+        const modal = document.getElementById("admin-imagem-modal");
+        if (!modal) return;
+        if (!modal.querySelector(".admin-imagem-galeria-anterior")) {
+            const anterior = criarElemento("button", "admin-imagem-galeria-nav admin-imagem-galeria-anterior", "\u2039");
+            anterior.type = "button";
+            anterior.setAttribute("aria-label", "Foto anterior");
+            anterior.addEventListener("click", () => navegarGaleriaImagemProduto(-1));
+            const seguinte = criarElemento("button", "admin-imagem-galeria-nav admin-imagem-galeria-seguinte", "\u203A");
+            seguinte.type = "button";
+            seguinte.setAttribute("aria-label", "Foto seguinte");
+            seguinte.addEventListener("click", () => navegarGaleriaImagemProduto(1));
+            const contador = criarElemento("div", "admin-imagem-galeria-contador");
+            const miniaturas = criarElemento("div", "admin-imagem-galeria-miniaturas");
+            miniaturas.setAttribute("aria-label", "Todas as fotos");
+            modal.append(anterior, seguinte, contador, miniaturas);
+        }
+        if (!imagemProdutoGaleriaEventosLigados) {
+            document.addEventListener("keydown", evento => {
+                const atual = document.getElementById("admin-imagem-modal");
+                if (!atual || atual.hidden) return;
+                if (evento.key === "ArrowLeft") navegarGaleriaImagemProduto(-1);
+                if (evento.key === "ArrowRight") navegarGaleriaImagemProduto(1);
+            });
+            imagemProdutoGaleriaEventosLigados = true;
+        }
+    }
+
+    function navegarGaleriaImagemProduto(delta) {
+        const total = imagemProdutoGaleria.imagens.length;
+        if (total <= 1) return;
+        imagemProdutoGaleria.indice = (imagemProdutoGaleria.indice + delta + total) % total;
+        atualizarGaleriaImagemProduto();
+    }
+
+    function atualizarGaleriaImagemProduto() {
+        const modal = document.getElementById("admin-imagem-modal");
+        const foto = document.getElementById("admin-imagem-modal-foto");
+        if (!modal || !foto) return;
+        const { imagens, indice, nome } = imagemProdutoGaleria;
+        const total = imagens.length;
+        foto.src = imagens[indice] || "";
+        foto.alt = total > 1 ? `${nome} - foto ${indice + 1}` : nome;
+        const contador = modal.querySelector(".admin-imagem-galeria-contador");
+        if (contador) {
+            contador.hidden = total <= 1;
+            contador.textContent = total > 1 ? `${indice + 1} / ${total}` : "";
+        }
+        modal.querySelectorAll(".admin-imagem-galeria-nav").forEach(botao => {
+            botao.hidden = total <= 1;
+        });
+        const miniaturas = modal.querySelector(".admin-imagem-galeria-miniaturas");
+        if (!miniaturas) return;
+        miniaturas.hidden = total <= 1;
+        miniaturas.replaceChildren();
+        imagens.forEach((url, fotoIndice) => {
+            const botao = criarElemento("button", `admin-imagem-galeria-miniatura${fotoIndice === indice ? " ativa" : ""}`);
+            botao.type = "button";
+            botao.setAttribute("aria-label", `Ver foto ${fotoIndice + 1}`);
+            const thumb = document.createElement("img");
+            thumb.src = otimizarMiniatura(url);
+            thumb.alt = "";
+            botao.appendChild(thumb);
+            botao.addEventListener("click", () => {
+                imagemProdutoGaleria.indice = fotoIndice;
+                atualizarGaleriaImagemProduto();
+            });
+            miniaturas.appendChild(botao);
+        });
+    }
+
     function criarMiniaturaProduto(item) {
-        const url = obterImagemProduto(item);
+        const imagens = obterImagensProduto(item);
+        const url = imagens[0] || "";
         const botao = criarElemento("button", "admin-encomenda-produto-foto");
         botao.type = "button";
         botao.dataset.produtoId = String(item.id_produto || item.id || "");
@@ -643,7 +745,7 @@ window.AdminEncomendaVista = (function () {
             imagem.src = SEM_IMAGEM;
             botao.disabled = true;
         };
-        if (url) botao.onclick = () => abrirImagemProduto(url, item.nome);
+        if (url) botao.onclick = () => abrirImagemProduto(imagens, item.nome);
         botao.appendChild(imagem);
         return botao;
     }
@@ -656,7 +758,8 @@ window.AdminEncomendaVista = (function () {
                 sku: botao.dataset.sku || "",
                 nome: botao.dataset.nome || "Produto"
             };
-            const url = obterImagemProduto(item);
+            const imagens = obterImagensProduto(item);
+            const url = imagens[0] || "";
             const imagem = botao.querySelector("img");
             if (!imagem || !url) return;
             imagem.onerror = () => {
@@ -668,7 +771,7 @@ window.AdminEncomendaVista = (function () {
             imagem.alt = item.nome;
             botao.title = "Ampliar fotografia";
             botao.disabled = false;
-            botao.onclick = () => abrirImagemProduto(url, item.nome);
+            botao.onclick = () => abrirImagemProduto(imagens, item.nome);
         });
     }
 
@@ -2169,11 +2272,15 @@ window.AdminEncomendaVista = (function () {
             if (referenciaSeguraParaObservacoes(referenciaChave)) observacoesProdutosPorReferencia.set(referenciaChave, observacoes);
         }
 
-        const imagem = obterPrimeiraImagem(produto.imagens);
+        const imagens = normalizarListaImagensProduto(produto.imagens);
+        const imagem = imagens[0] || "";
         if (imagem) {
             if (id) imagensProdutos.set(id, imagem);
             if (skuChave) imagensProdutosPorSku.set(skuChave, imagem);
             if (referenciaChave) imagensProdutosPorReferencia.set(referenciaChave, imagem);
+            if (id) imagensProdutosListas.set(id, imagens);
+            if (skuChave) imagensProdutosListasPorSku.set(skuChave, imagens);
+            if (referenciaChave) imagensProdutosListasPorReferencia.set(referenciaChave, imagens);
         }
     }
 
@@ -2292,6 +2399,9 @@ window.AdminEncomendaVista = (function () {
         imagensProdutos = new Map();
         imagensProdutosPorSku = new Map();
         imagensProdutosPorReferencia = new Map();
+        imagensProdutosListas = new Map();
+        imagensProdutosListasPorSku = new Map();
+        imagensProdutosListasPorReferencia = new Map();
         referenciasProdutos = new Map();
         referenciasProdutosPorSku = new Map();
         referenciasProdutosPorReferencia = new Map();
