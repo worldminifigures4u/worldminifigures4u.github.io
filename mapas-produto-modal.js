@@ -3,6 +3,7 @@
 
 let mapasFornecedoresFichasCache = null;
 let mapasFornecedoresFichasPromessa = null;
+let galeriaProdutoMapaEstado = { imagens: [], indice: 0, nome: "" };
 
 function normalizarTextoProdutoMapa(valor) {
     return String(valor || "")
@@ -1504,10 +1505,23 @@ function criarFotoPrincipalFichaMapa(produto) {
     const figura = document.createElement("figure");
     figura.className = "mapas-produto-foto-principal";
     if (imagens.length) {
+        figura.classList.add("com-galeria");
+        const botao = document.createElement("button");
+        botao.type = "button";
+        botao.className = "mapas-produto-foto-botao";
+        botao.setAttribute("aria-label", `Abrir fotos de ${produto.nome || "produto"}`);
         const img = document.createElement("img");
         img.src = imagens[0];
         img.alt = produto.nome || "Foto principal";
-        figura.appendChild(img);
+        botao.appendChild(img);
+        botao.addEventListener("click", () => abrirGaleriaProdutoMapa(imagens, 0, produto.nome || "Produto"));
+        figura.appendChild(botao);
+        if (imagens.length > 1) {
+            const contador = document.createElement("span");
+            contador.className = "mapas-produto-foto-contador";
+            contador.textContent = `${imagens.length} fotos`;
+            figura.appendChild(contador);
+        }
     } else {
         const vazio = document.createElement("span");
         vazio.className = "mapas-produto-foto-principal-vazia";
@@ -1515,6 +1529,111 @@ function criarFotoPrincipalFichaMapa(produto) {
         figura.appendChild(vazio);
     }
     return figura;
+}
+
+function garantirGaleriaProdutoMapa() {
+    let modal = document.getElementById("mapas-produto-galeria-modal");
+    if (modal) return modal;
+
+    modal = document.createElement("div");
+    modal.id = "mapas-produto-galeria-modal";
+    modal.className = "mapas-produto-galeria-modal";
+    modal.hidden = true;
+    modal.innerHTML = `
+        <div class="mapas-produto-galeria-dialog" role="dialog" aria-modal="true" aria-label="Fotos do produto">
+            <button type="button" class="mapas-produto-galeria-fechar" aria-label="Fechar fotos">&times;</button>
+            <button type="button" class="mapas-produto-galeria-nav mapas-produto-galeria-anterior" aria-label="Foto anterior">&lsaquo;</button>
+            <figure class="mapas-produto-galeria-figura">
+                <img class="mapas-produto-galeria-imagem" alt="">
+                <figcaption class="mapas-produto-galeria-legenda"></figcaption>
+            </figure>
+            <button type="button" class="mapas-produto-galeria-nav mapas-produto-galeria-seguinte" aria-label="Foto seguinte">&rsaquo;</button>
+            <div class="mapas-produto-galeria-miniaturas" aria-label="Todas as fotos"></div>
+        </div>`;
+    document.body.appendChild(modal);
+
+    modal.addEventListener("click", (evento) => {
+        if (evento.target === modal) fecharGaleriaProdutoMapa();
+    });
+    modal.querySelector(".mapas-produto-galeria-fechar")?.addEventListener("click", fecharGaleriaProdutoMapa);
+    modal.querySelector(".mapas-produto-galeria-anterior")?.addEventListener("click", () => navegarGaleriaProdutoMapa(-1));
+    modal.querySelector(".mapas-produto-galeria-seguinte")?.addEventListener("click", () => navegarGaleriaProdutoMapa(1));
+    document.addEventListener("keydown", (evento) => {
+        if (modal.hidden) return;
+        if (evento.key === "Escape") fecharGaleriaProdutoMapa();
+        if (evento.key === "ArrowLeft") navegarGaleriaProdutoMapa(-1);
+        if (evento.key === "ArrowRight") navegarGaleriaProdutoMapa(1);
+    });
+    return modal;
+}
+
+function abrirGaleriaProdutoMapa(imagens, indice = 0, nome = "Produto") {
+    const lista = normalizarImagensMapa(imagens);
+    if (!lista.length) return;
+    galeriaProdutoMapaEstado = {
+        imagens: lista,
+        indice: Math.min(Math.max(0, Number(indice) || 0), lista.length - 1),
+        nome
+    };
+    const modal = garantirGaleriaProdutoMapa();
+    modal.hidden = false;
+    document.body.classList.add("mapas-produto-galeria-aberta");
+    atualizarGaleriaProdutoMapa();
+    modal.querySelector(".mapas-produto-galeria-fechar")?.focus();
+}
+
+function fecharGaleriaProdutoMapa() {
+    const modal = document.getElementById("mapas-produto-galeria-modal");
+    if (!modal) return;
+    modal.hidden = true;
+    const img = modal.querySelector(".mapas-produto-galeria-imagem");
+    if (img) img.removeAttribute("src");
+    document.body.classList.remove("mapas-produto-galeria-aberta");
+}
+
+function navegarGaleriaProdutoMapa(delta) {
+    const total = galeriaProdutoMapaEstado.imagens.length;
+    if (total <= 1) return;
+    galeriaProdutoMapaEstado.indice = (galeriaProdutoMapaEstado.indice + delta + total) % total;
+    atualizarGaleriaProdutoMapa();
+}
+
+function atualizarGaleriaProdutoMapa() {
+    const modal = garantirGaleriaProdutoMapa();
+    const { imagens, indice, nome } = galeriaProdutoMapaEstado;
+    const total = imagens.length;
+    const img = modal.querySelector(".mapas-produto-galeria-imagem");
+    const legenda = modal.querySelector(".mapas-produto-galeria-legenda");
+    const anterior = modal.querySelector(".mapas-produto-galeria-anterior");
+    const seguinte = modal.querySelector(".mapas-produto-galeria-seguinte");
+    const miniaturas = modal.querySelector(".mapas-produto-galeria-miniaturas");
+
+    if (img) {
+        img.src = imagens[indice];
+        img.alt = `${nome} - foto ${indice + 1}`;
+    }
+    if (legenda) legenda.textContent = `${nome} - ${indice + 1} / ${total}`;
+    [anterior, seguinte].forEach((botao) => {
+        if (botao) botao.hidden = total <= 1;
+    });
+    if (miniaturas) {
+        miniaturas.replaceChildren();
+        imagens.forEach((url, fotoIndice) => {
+            const botao = document.createElement("button");
+            botao.type = "button";
+            botao.className = `mapas-produto-galeria-miniatura${fotoIndice === indice ? " ativa" : ""}`;
+            botao.setAttribute("aria-label", `Ver foto ${fotoIndice + 1}`);
+            const thumb = document.createElement("img");
+            thumb.src = url;
+            thumb.alt = "";
+            botao.appendChild(thumb);
+            botao.addEventListener("click", () => {
+                galeriaProdutoMapaEstado.indice = fotoIndice;
+                atualizarGaleriaProdutoMapa();
+            });
+            miniaturas.appendChild(botao);
+        });
+    }
 }
 
 function preencherFichaProdutoMapa(produto) {
