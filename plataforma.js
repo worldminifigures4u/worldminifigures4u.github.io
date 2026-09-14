@@ -3364,17 +3364,6 @@ async function registarEncomendaWallapop() {
         perfilExternoDetetado = perfil;
     }
 
-    if (exportarAntesDeVoltar) {
-        definirStatusWallapop('Escolhe a pasta de destino para exportar os ficheiros...');
-        try {
-            pastaExportacaoEdicao = await obterPastaBaseWallapop();
-        } catch (error) {
-            console.error(error);
-            definirStatusWallapop(mensagemErroGuardarFicheirosPlataforma(error), true);
-            return;
-        }
-    }
-
     if (perfil) {
         if (perfil.plataforma === 'WhatsApp') {
             const campoNome = document.getElementById('wallapop-nome-encomenda');
@@ -3463,6 +3452,17 @@ async function registarEncomendaWallapop() {
             { titulo: "Registar encomenda", textoConfirmar: "Registar", textoCancelar: "Cancelar" }
         );
     if (!confirmado) return;
+
+    if (exportarAntesDeVoltar) {
+        definirStatusWallapop('Escolhe a pasta de destino para exportar os ficheiros...');
+        try {
+            pastaExportacaoEdicao = await obterPastaBaseWallapop();
+        } catch (error) {
+            console.error(error);
+            definirStatusWallapop(mensagemErroGuardarFicheirosPlataforma(error), true);
+            return;
+        }
+    }
 
     registoPlataformaEmCurso = true;
     botao.disabled = true;
