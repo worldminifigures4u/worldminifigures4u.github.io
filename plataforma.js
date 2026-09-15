@@ -2084,7 +2084,6 @@ async function guardarAvisoStockPlataforma(produto, botao = null, nota = "") {
         }
         await window.AvisosStockAdmin.criarAviso(obterDadosAvisoStockPlataforma(produto, nota));
         if (botao) botao.textContent = "Guardado";
-        definirStatusWallapop(`Aviso de stock guardado para ${produto?.nome || "a figura"}.`);
         return true;
     } catch (error) {
         console.error(error);
