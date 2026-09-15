@@ -174,6 +174,33 @@ begin
 end;
 $$;
 
+create or replace function public.apagar_aviso_stock_admin(
+    p_id text
+)
+returns boolean
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+    v_apagado boolean := false;
+begin
+    if not public.is_admin() then
+        raise exception 'Acesso reservado ao administrador';
+    end if;
+
+    delete from public.avisos_stock
+    where id::text = p_id
+    returning true into v_apagado;
+
+    if not coalesce(v_apagado, false) then
+        raise exception 'Aviso de stock nao encontrado';
+    end if;
+
+    return true;
+end;
+$$;
+
 create or replace function public.atualizar_estado_aviso_stock_admin(
     p_id text,
     p_estado text
@@ -190,10 +217,16 @@ begin
         raise exception 'Acesso reservado ao administrador';
     end if;
 
+    if p_estado = 'Avisado' then
+        delete from public.avisos_stock
+        where id::text = p_id;
+        return jsonb_build_object('apagado', true);
+    end if;
+
     update public.avisos_stock
     set
         estado = case
-            when p_estado in ('Por avisar', 'Avisado', 'Cancelado') then p_estado
+            when p_estado in ('Por avisar', 'Cancelado') then p_estado
             else estado
         end,
         updated_at = now()
@@ -211,9 +244,11 @@ $$;
 revoke execute on function public.guardar_aviso_stock_admin(uuid, text, text, text, text, text, text, text) from public, anon;
 revoke execute on function public.listar_avisos_stock_cliente_admin(uuid) from public, anon;
 revoke execute on function public.listar_avisos_stock_produto_admin(text, text, text) from public, anon;
+revoke execute on function public.apagar_aviso_stock_admin(text) from public, anon;
 revoke execute on function public.atualizar_estado_aviso_stock_admin(text, text) from public, anon;
 
 grant execute on function public.guardar_aviso_stock_admin(uuid, text, text, text, text, text, text, text) to authenticated;
 grant execute on function public.listar_avisos_stock_cliente_admin(uuid) to authenticated;
 grant execute on function public.listar_avisos_stock_produto_admin(text, text, text) to authenticated;
+grant execute on function public.apagar_aviso_stock_admin(text) to authenticated;
 grant execute on function public.atualizar_estado_aviso_stock_admin(text, text) to authenticated;

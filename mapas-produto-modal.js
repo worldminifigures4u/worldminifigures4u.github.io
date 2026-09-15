@@ -1422,20 +1422,16 @@ function criarLinhaAvisoStockProdutoMapa(aviso, produto) {
     principal.append(cliente, meta);
     linha.appendChild(principal);
     if (String(aviso.estado || "").toLowerCase() === "por avisar") {
-        const label = document.createElement("label");
-        label.className = "mapas-produto-aviso-stock-checkbox";
-        const avisado = document.createElement("input");
-        avisado.type = "checkbox";
-        const texto = document.createElement("span");
-        texto.textContent = "Avisado";
-        avisado.addEventListener("change", async () => {
-            if (!avisado.checked) return;
+        const avisado = document.createElement("button");
+        avisado.type = "button";
+        avisado.className = "wallapop-botao mapas-produto-aviso-stock-acao";
+        avisado.textContent = "Avisado";
+        avisado.addEventListener("click", async () => {
             avisado.disabled = true;
-            await window.AvisosStockAdmin?.atualizarEstado(aviso.id, "Avisado");
+            await window.AvisosStockAdmin?.apagarAviso(aviso.id);
             abrirFichaProdutoMapa(produto.id);
         });
-        label.append(avisado, texto);
-        linha.appendChild(label);
+        linha.appendChild(avisado);
     }
     return linha;
 }

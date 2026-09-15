@@ -133,25 +133,29 @@
         }
     }
 
-    async function atualizarEstado(id, estado) {
-        const estadoNovo = normalizarTexto(estado) || "Por avisar";
+    async function apagarAviso(id) {
+        const avisoId = normalizarTexto(id);
+        if (!avisoId) return false;
         try {
-            const data = await chamarRpc("atualizar_estado_aviso_stock_admin", {
-                p_id: String(id),
-                p_estado: estadoNovo
+            await chamarRpc("apagar_aviso_stock_admin", {
+                p_id: avisoId
             });
-            return normalizarAviso(data);
+            return true;
         } catch (erro) {
-            console.warn("Estado do aviso de stock atualizado localmente.", erro);
+            console.warn("Aviso de stock apagado localmente.", erro);
             const locais = carregarLocais();
-            const atualizados = locais.map(item => String(item.id) === String(id)
-                ? normalizarAviso({ ...item, estado: estadoNovo, updated_at: new Date().toISOString() })
-                : item
-            );
+            const atualizados = locais.filter(item => String(item.id) !== avisoId);
             guardarLocais(atualizados);
-            if (statusCallback) statusCallback("Estado do aviso atualizado neste navegador.", true);
-            return atualizados.find(item => String(item.id) === String(id)) || null;
+            if (statusCallback) statusCallback("Aviso eliminado neste navegador.", true);
+            return true;
         }
+    }
+
+    async function atualizarEstado(id, estado) {
+        if (normalizarTexto(estado).toLowerCase() === "avisado") {
+            return apagarAviso(id);
+        }
+        return false;
     }
 
     window.AvisosStockAdmin = {
@@ -159,6 +163,7 @@
         criarAviso,
         listarPorCliente,
         listarPorProduto,
-        atualizarEstado
+        atualizarEstado,
+        apagarAviso
     };
 })();

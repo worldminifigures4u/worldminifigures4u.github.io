@@ -421,18 +421,14 @@ function criarLinhaAvisoStockCliente(aviso) {
     );
     linha.append(principal, meta);
     if (String(aviso.estado || "").toLowerCase() === "por avisar") {
-        const label = criarElementoCliente("label", "clientes-aviso-stock-checkbox");
-        const avisado = document.createElement("input");
-        avisado.type = "checkbox";
-        const texto = criarElementoCliente("span", "", "Avisado");
-        avisado.addEventListener("change", async () => {
-            if (!avisado.checked) return;
+        const avisado = criarElementoCliente("button", "wallapop-botao clientes-aviso-stock-acao", "Avisado");
+        avisado.type = "button";
+        avisado.addEventListener("click", async () => {
             avisado.disabled = true;
-            await window.AvisosStockAdmin?.atualizarEstado(aviso.id, "Avisado");
+            await window.AvisosStockAdmin?.apagarAviso(aviso.id);
             if (clienteAbertoId) abrirCliente(clienteAbertoId);
         });
-        label.append(avisado, texto);
-        linha.appendChild(label);
+        linha.appendChild(avisado);
     }
     return linha;
 }
