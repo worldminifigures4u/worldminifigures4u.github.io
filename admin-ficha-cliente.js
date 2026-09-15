@@ -411,6 +411,74 @@
         return criarElemento('strong', '', item.codigo || item.codigo_encomenda || `#${item.id}`);
     }
 
+    function formatarDataAvisoStock(valor) {
+        return formatarData(valor).replace(',', '');
+    }
+
+    function criarLinhaAvisoStockClienteModal(aviso, clienteId) {
+        const linha = criarElemento('div', 'clientes-aviso-stock-linha');
+        const principal = criarElemento('div', 'clientes-aviso-stock-principal');
+        principal.append(
+            criarElemento('strong', '', aviso.produto_nome || 'Figura'),
+            criarElemento('span', '', [
+                aviso.produto_referencia ? `Ref. ${aviso.produto_referencia}` : '',
+                aviso.produto_sku ? `SKU ${aviso.produto_sku}` : '',
+                aviso.plataforma || '',
+                aviso.created_at ? formatarDataAvisoStock(aviso.created_at) : ''
+            ].filter(Boolean).join(' · '))
+        );
+        const estadoAtual = aviso.estado || 'Por avisar';
+        const meta = criarElemento('div', 'clientes-aviso-stock-meta');
+        meta.appendChild(criarElemento(
+            'span',
+            `clientes-aviso-stock-estado estado-${String(estadoAtual).toLowerCase().replace(/\s+/g, '-')}`,
+            estadoAtual
+        ));
+        linha.append(principal, meta);
+        if (String(estadoAtual).toLowerCase() === 'por avisar') {
+            const avisado = criarElemento('button', 'wallapop-botao clientes-aviso-stock-acao', 'Avisado');
+            avisado.type = 'button';
+            avisado.addEventListener('click', async () => {
+                avisado.disabled = true;
+                await global.AvisosStockAdmin?.apagarAviso(aviso.id);
+                await abrirPorId(clienteId);
+            });
+            meta.appendChild(avisado);
+        }
+        return linha;
+    }
+
+    async function carregarAvisosStockClienteModal(clienteId, lista) {
+        if (!lista) return;
+        if (!clienteId || !global.AvisosStockAdmin) {
+            lista.replaceChildren(criarElemento('p', 'admin-cliente-vazio', 'Sem avisos de stock.'));
+            return;
+        }
+        try {
+            const avisos = await global.AvisosStockAdmin.listarPorCliente(clienteId);
+            const pendentes = avisos.filter(aviso => String(aviso.estado || '').toLowerCase() === 'por avisar');
+            lista.replaceChildren();
+            if (!pendentes.length) {
+                lista.appendChild(criarElemento('p', 'admin-cliente-vazio', 'Sem avisos de stock.'));
+                return;
+            }
+            pendentes.forEach(aviso => lista.appendChild(criarLinhaAvisoStockClienteModal(aviso, clienteId)));
+        } catch (error) {
+            console.error(error);
+            lista.replaceChildren(criarElemento('p', 'admin-cliente-vazio', 'Erro ao carregar avisos de stock.'));
+        }
+    }
+
+    function criarSecaoAvisosStockClienteModal(clienteId) {
+        const secao = criarElemento('section', 'admin-cliente-secao clientes-aviso-stock-secao');
+        secao.appendChild(criarElemento('h3', '', 'Avisos de stock'));
+        const lista = criarElemento('div', 'clientes-aviso-stock-lista');
+        lista.appendChild(criarElemento('p', 'admin-cliente-vazio', 'A carregar avisos de stock...'));
+        secao.appendChild(lista);
+        setTimeout(() => carregarAvisosStockClienteModal(clienteId, lista), 0);
+        return secao;
+    }
+
     function renderizarFichaClienteAdmin(dados) {
         const conteudo = document.getElementById('admin-cliente-conteudo');
         if (!conteudo) return;
@@ -503,6 +571,8 @@
         if (!historico.length) listaHistorico.appendChild(criarElemento('p', 'admin-cliente-vazio', 'Sem encomendas associadas.'));
         historicoSecao.appendChild(listaHistorico);
 
+        const avisosSecao = criarSecaoAvisosStockClienteModal(String(cliente.id || dados.cliente_id || '').trim());
+
         const notasSecao = criarElemento('section', 'admin-cliente-secao');
         notasSecao.appendChild(criarElemento('h3', '', 'Notas internas'));
         const notas = document.createElement('textarea');
@@ -544,7 +614,7 @@
             definirStatusFichaCliente('Notas guardadas.');
         });
         notasSecao.append(notas, guardar);
-        conteudo.append(dadosPessoais, indicadores, perfisSecao, historicoSecao, notasSecao);
+        conteudo.append(dadosPessoais, indicadores, perfisSecao, avisosSecao, historicoSecao, notasSecao);
     }
 
     async function abrirPorId(clienteId) {

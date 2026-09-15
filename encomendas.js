@@ -126,6 +126,7 @@ function carregarScriptEncomendasAdmin(src) {
 
 function configurarFichaClienteEncomendas() {
     if (!window.AdminFichaCliente) return;
+    window.AvisosStockAdmin?.configurar({ client: encomendasClient, status: definirStatusEncomendas });
     window.AdminFichaCliente.configurar({
         client: encomendasClient,
         formatarEuro: valor => Number(valor || 0).toFixed(2).replace('.', ','),
@@ -141,7 +142,7 @@ function garantirFichaClienteEncomendas() {
         return Promise.resolve();
     }
     if (!promessaFichaClienteEncomendas) {
-        promessaFichaClienteEncomendas = carregarScriptEncomendasAdmin('admin-ficha-cliente.js?v=20260902-notas-unificadas')
+        promessaFichaClienteEncomendas = carregarScriptEncomendasAdmin('admin-ficha-cliente.js?v=20260915-avisos-stock')
             .then(() => configurarFichaClienteEncomendas());
     }
     return promessaFichaClienteEncomendas;

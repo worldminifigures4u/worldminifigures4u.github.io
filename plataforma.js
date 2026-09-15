@@ -578,7 +578,7 @@ function garantirFichaClientePlataforma() {
                 return carregarScriptAdmin('paises-cliente.js?v=20260731-wallapop-es');
             })
             .then(function () {
-                return carregarScriptAdmin('admin-ficha-cliente.js?v=20260902-notas-unificadas');
+                return carregarScriptAdmin('admin-ficha-cliente.js?v=20260915-avisos-stock');
             })
             .then(function () {
                 window.AdminFichaCliente?.configurar({
