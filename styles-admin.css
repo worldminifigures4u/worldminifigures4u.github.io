@@ -508,19 +508,23 @@ html:not(.admin-light-mode) body.cabecalho-com-admin :is(
 
 .clientes-aviso-stock-principal span,
 .mapas-produto-aviso-stock-principal span,
-.clientes-aviso-stock-meta{
+.clientes-aviso-stock-meta,
+.mapas-produto-aviso-stock-meta{
     color:#aaa;
     font-size:12px;
 }
 
-.clientes-aviso-stock-meta{
+.clientes-aviso-stock-meta,
+.mapas-produto-aviso-stock-meta{
     display:flex;
     align-items:center;
     justify-content:flex-end;
     gap:8px;
+    flex-wrap:wrap;
 }
 
-.clientes-aviso-stock-estado{
+.clientes-aviso-stock-estado,
+.mapas-produto-aviso-stock-estado{
     display:inline-flex;
     align-items:center;
     min-height:22px;
@@ -532,12 +536,14 @@ html:not(.admin-light-mode) body.cabecalho-com-admin :is(
     font-weight:800;
 }
 
-.clientes-aviso-stock-estado.estado-avisado{
+.clientes-aviso-stock-estado.estado-avisado,
+.mapas-produto-aviso-stock-estado.estado-avisado{
     border-color:rgba(40, 167, 69, 0.55);
     color:#28a745;
 }
 
-.clientes-aviso-stock-estado.estado-cancelado{
+.clientes-aviso-stock-estado.estado-cancelado,
+.mapas-produto-aviso-stock-estado.estado-cancelado{
     border-color:rgba(255, 77, 85, 0.55);
     color:#ff4d55;
 }
@@ -580,6 +586,7 @@ html.admin-light-mode .mapas-produto-aviso-stock-principal strong{
 
 html.admin-light-mode .clientes-aviso-stock-principal span,
 html.admin-light-mode .mapas-produto-aviso-stock-principal span,
-html.admin-light-mode .clientes-aviso-stock-meta{
+html.admin-light-mode .clientes-aviso-stock-meta,
+html.admin-light-mode .mapas-produto-aviso-stock-meta{
     color:#475569;
 }

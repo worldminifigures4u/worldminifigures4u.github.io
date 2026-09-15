@@ -1416,11 +1416,17 @@ function criarLinhaAvisoStockProdutoMapa(aviso, produto) {
     const meta = document.createElement("span");
     meta.textContent = [
         aviso.plataforma || "",
-        formatarDataFornecedorLeituraMapa(aviso.created_at),
-        aviso.estado || "Por avisar"
+        formatarDataFornecedorLeituraMapa(aviso.created_at)
     ].filter(Boolean).join(" · ");
     principal.append(cliente, meta);
-    linha.appendChild(principal);
+    const estadoAtual = aviso.estado || "Por avisar";
+    const acoes = document.createElement("div");
+    acoes.className = "mapas-produto-aviso-stock-meta";
+    const estado = document.createElement("span");
+    estado.className = `mapas-produto-aviso-stock-estado estado-${String(estadoAtual).toLowerCase().replace(/\s+/g, "-")}`;
+    estado.textContent = estadoAtual;
+    acoes.appendChild(estado);
+    linha.append(principal, acoes);
     if (String(aviso.estado || "").toLowerCase() === "por avisar") {
         const avisado = document.createElement("button");
         avisado.type = "button";
@@ -1431,7 +1437,7 @@ function criarLinhaAvisoStockProdutoMapa(aviso, produto) {
             await window.AvisosStockAdmin?.apagarAviso(aviso.id);
             abrirFichaProdutoMapa(produto.id);
         });
-        linha.appendChild(avisado);
+        acoes.appendChild(avisado);
     }
     return linha;
 }

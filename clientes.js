@@ -428,7 +428,7 @@ function criarLinhaAvisoStockCliente(aviso) {
             await window.AvisosStockAdmin?.apagarAviso(aviso.id);
             if (clienteAbertoId) abrirCliente(clienteAbertoId);
         });
-        linha.appendChild(avisado);
+        meta.appendChild(avisado);
     }
     return linha;
 }
