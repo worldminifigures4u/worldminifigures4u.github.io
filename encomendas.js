@@ -262,7 +262,13 @@ async function preencherNomeUtilizadorPorPerfil(encomenda) {
         encomenda.clientes_gestao = {
             ...(encomenda.clientes_gestao || {}),
             nome_utilizador: cliente.nome_utilizador,
-            nome: cliente.nome || encomenda.clientes_gestao?.nome || null
+            nome: cliente.nome || encomenda.clientes_gestao?.nome || null,
+            email: cliente.email || encomenda.clientes_gestao?.email || null,
+            telefone: cliente.telefone || encomenda.clientes_gestao?.telefone || null,
+            morada: cliente.morada || encomenda.clientes_gestao?.morada || null,
+            cp: cliente.cp || encomenda.clientes_gestao?.cp || null,
+            cidade: cliente.cidade || encomenda.clientes_gestao?.cidade || null,
+            pais: cliente.pais || encomenda.clientes_gestao?.pais || null
         };
         encomenda.cliente_gestao_id = encomenda.cliente_gestao_id || cliente.id || null;
     } catch (_) {}
@@ -737,8 +743,8 @@ function erroPermiteFallbackEncomendasAdmin(error) {
 
 async function consultarEncomendasAdmin(aplicarFiltros, opcoes = {}) {
     const seletores = [
-        '*, clientes_gestao(nome_utilizador, nome, tem_aviso)',
-        '*, clientes_gestao(nome, tem_aviso)',
+        '*, clientes_gestao(nome_utilizador, nome, email, telefone, morada, cp, cidade, pais, tem_aviso)',
+        '*, clientes_gestao(nome, email, telefone, morada, cp, cidade, pais, tem_aviso)',
         '*'
     ];
     let ultimoErro = null;

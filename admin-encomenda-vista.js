@@ -148,6 +148,29 @@ window.AdminEncomendaVista = (function () {
         return nick || nomeCurto || "";
     }
 
+    function obterFichaClienteGestaoEncomenda(encomenda) {
+        return encomenda?.clientes_gestao || encomenda?.cliente_gestao || {};
+    }
+
+    function obterDadoClienteEncomenda(encomenda, campoEncomenda, campoFicha) {
+        const valorEncomenda = String(encomenda?.[campoEncomenda] || "").trim();
+        if (valorEncomenda) return valorEncomenda;
+        return String(obterFichaClienteGestaoEncomenda(encomenda)?.[campoFicha] || "").trim();
+    }
+
+    function obterEncomendaComDadosCliente(encomenda) {
+        return {
+            ...encomenda,
+            nome_cliente: obterDadoClienteEncomenda(encomenda, "nome_cliente", "nome") || encomenda?.nome_cliente,
+            email_cliente: obterDadoClienteEncomenda(encomenda, "email_cliente", "email"),
+            telefone_cliente: obterDadoClienteEncomenda(encomenda, "telefone_cliente", "telefone"),
+            morada_cliente: obterDadoClienteEncomenda(encomenda, "morada_cliente", "morada"),
+            cp_cliente: obterDadoClienteEncomenda(encomenda, "cp_cliente", "cp"),
+            cidade_cliente: obterDadoClienteEncomenda(encomenda, "cidade_cliente", "cidade"),
+            pais_cliente: obterDadoClienteEncomenda(encomenda, "pais_cliente", "pais")
+        };
+    }
+
     function normalizarTextoEnvio(valor) {
         return String(valor || "")
             .normalize("NFD")
@@ -2078,15 +2101,16 @@ window.AdminEncomendaVista = (function () {
         const colunaContacto = criarElemento("div", "admin-encomenda-dados-coluna admin-encomenda-dados-contacto");
         const colunaNotas = criarElemento("div", "admin-encomenda-dados-coluna admin-encomenda-dados-notas");
         const colunaAcoes = criarElemento("div", "admin-encomenda-dados-coluna admin-encomenda-dados-acoes");
+        const dadosClienteEncomenda = obterEncomendaComDadosCliente(encomenda);
 
         colunaCliente.append(
-            criarLinhaDetalhe("Nome", encomenda.nome_cliente),
-            criarLinhaDetalheMorada(encomenda)
+            criarLinhaDetalhe("Nome", dadosClienteEncomenda.nome_cliente),
+            criarLinhaDetalheMorada(dadosClienteEncomenda)
         );
 
         colunaContacto.append(
-            criarLinhaDetalhe("E-mail", encomenda.email_cliente),
-            criarLinhaDetalhe("Telemóvel", encomenda.telefone_cliente),
+            criarLinhaDetalhe("E-mail", dadosClienteEncomenda.email_cliente),
+            criarLinhaDetalhe("Telemóvel", dadosClienteEncomenda.telefone_cliente),
             criarLinhaDetalhe("Envio", encomenda.metodo_envio_nome || encomenda.metodo_envio)
         );
         if (mostrarCampoSeguimento(encomenda)) {

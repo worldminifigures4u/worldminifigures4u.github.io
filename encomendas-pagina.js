@@ -23,7 +23,7 @@
                 return carregarScript('paises-cliente.js?v=20260731-wallapop-es');
             })
             .then(function () {
-                return carregarScript('encomendas.js?v=20260912-voltar-encomendas');
+                return carregarScript('encomendas.js?v=20260915-email-ficha-cliente');
             });
 
         return promessaEncomendasJs;
