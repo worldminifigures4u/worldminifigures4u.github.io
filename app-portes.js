@@ -1,5 +1,5 @@
 // Tabelas de portes usadas pelo carrinho (fallback local + carga remota com cache).
-const PORTES_CACHE_KEY = 'figures-planet-portes-tarifas-v8';
+const PORTES_CACHE_KEY = 'figures-planet-portes-tarifas-v9';
 const PORTES_CACHE_TTL_MS = 6 * 60 * 60 * 1000;
 const PORTES_PESO_ABERTO_G = 999999;
 
@@ -148,6 +148,15 @@ function aplicarCatalogoMetodosEnvio(metodos) {
         ativo: metodo.ativo !== false,
         ordem: Number(metodo.ordem || 0)
     })).filter((metodo) => metodo.id);
+    if (!PORTES_METODOS.some((metodo) => metodo.id === 'ctt_azul_internacional')) {
+        PORTES_METODOS.push({
+            id: 'ctt_azul_internacional',
+            nome_exibicao: 'CTT Azul Internacional',
+            registado: false,
+            ativo: true,
+            ordem: 3
+        });
+    }
 
     METODOS_ENVIO_REGISTADOS = new Set(
         PORTES_METODOS.filter((metodo) => metodo.registado).map((metodo) => metodo.id)
@@ -196,6 +205,21 @@ function montarTabelaPortesDeLinhas(linhas) {
             registado: obterMetaMetodoEnvio(String(linha.metodo_id || ''))?.registado === true
                 || METODOS_ENVIO_REGISTADOS.has(String(linha.metodo_id || '')),
             _ordem: Number(linha.ordem || 0)
+        });
+    });
+
+    ['espanha', 'europa'].forEach((zona) => {
+        tabela[zona].forEach((escalao) => {
+            if (escalao.opcoes.some((opcao) => opcao.id === 'ctt_azul_internacional')) return;
+            const registado = escalao.opcoes.find((opcao) => opcao.id === 'ctt_registado');
+            if (!registado) return;
+            escalao.opcoes.push({
+                ...registado,
+                id: 'ctt_azul_internacional',
+                nome: 'CTT Azul Internacional',
+                registado: false,
+                _ordem: Math.max(0, Number(registado._ordem || 2) - 1)
+            });
         });
     });
 
