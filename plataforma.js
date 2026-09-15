@@ -2076,17 +2076,23 @@ async function guardarAvisoStockPlataforma(produto, botao = null, nota = "") {
         definirStatusWallapop("Carrega ou cria primeiro a ficha do cliente para guardar o aviso de stock.", true);
         return false;
     }
+    const textoAnterior = botao?.textContent || "";
     try {
-        if (botao) botao.disabled = true;
+        if (botao) {
+            botao.disabled = true;
+            botao.textContent = "A guardar";
+        }
         await window.AvisosStockAdmin.criarAviso(obterDadosAvisoStockPlataforma(produto, nota));
+        if (botao) botao.textContent = "Guardado";
         definirStatusWallapop(`Aviso de stock guardado para ${produto?.nome || "a figura"}.`);
         return true;
     } catch (error) {
         console.error(error);
+        if (botao) botao.textContent = textoAnterior || "Avisar stock";
         definirStatusWallapop("Erro ao guardar aviso de stock: " + (error.message || "sem detalhe"), true);
         return false;
     } finally {
-        if (botao) botao.disabled = false;
+        if (botao && botao.textContent !== "Guardado") botao.disabled = false;
     }
 }
 
