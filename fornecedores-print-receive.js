@@ -53,6 +53,83 @@ function exportarTxtItensFornecedor(itens, nomeBase = 'encomenda') {
     exportarTxtTextoFornecedor(obterTextoExportacaoPedidoFornecedor({ itens }), nomeBase);
 }
 
+function normalizarTextoAvisoStockFornecedor(valor) {
+    return String(valor || '').trim();
+}
+
+function avisoStockFornecedorEstaPendente(aviso) {
+    return normalizarTextoAvisoStockFornecedor(aviso?.estado).toLowerCase() === "por avisar";
+}
+
+function obterProdutoAvisoStockFornecedor(rececao) {
+    const produtoId = normalizarTextoAvisoStockFornecedor(rececao?.produto_id || rececao?.id);
+    if (!produtoId) return null;
+    return fornecedorProdutos.find(item => String(item.id) === produtoId) || null;
+}
+
+function stockDepoisAvisoStockFornecedor(rececao, produto) {
+    if (Number.isFinite(Number(rececao?.stock_depois))) return Number(rececao.stock_depois);
+    return Number(produto?.stock || 0);
+}
+
+function formatarLinhaAvisoStockRecebidoFornecedor(aviso, produto) {
+    const produtoNome = normalizarTextoAvisoStockFornecedor(aviso?.produto_nome) || produto?.nome || "Figura";
+    const cliente = normalizarTextoAvisoStockFornecedor(aviso?.cliente_nome) || "Cliente";
+    const plataforma = normalizarTextoAvisoStockFornecedor(aviso?.plataforma);
+    const referencia = normalizarTextoAvisoStockFornecedor(aviso?.produto_referencia || produto?.referencia);
+    const sku = normalizarTextoAvisoStockFornecedor(aviso?.produto_sku || produto?.sku);
+    const identificadores = [referencia ? `Ref. ${referencia}` : "", sku ? `SKU ${sku}` : ""].filter(Boolean).join(" · ");
+    return `${produtoNome}${identificadores ? ` (${identificadores})` : ""}: ${cliente}${plataforma ? ` · ${plataforma}` : ""}`;
+}
+
+async function obterLinhasAvisoStockRecebidoFornecedor(aplicado) {
+    if (!window.AvisosStockAdmin || !Array.isArray(aplicado) || !aplicado.length) return [];
+    const vistos = new Set();
+    const linhas = [];
+    for (const rececao of aplicado) {
+        const produto = obterProdutoAvisoStockFornecedor(rececao);
+        if (!produto || stockDepoisAvisoStockFornecedor(rececao, produto) <= 0) continue;
+        let avisos = [];
+        try {
+            avisos = await window.AvisosStockAdmin.listarPorProduto(produto);
+        } catch (erro) {
+            console.warn("Nao foi possivel carregar avisos de stock para produto recebido.", erro);
+        }
+        avisos.filter(avisoStockFornecedorEstaPendente).forEach(aviso => {
+            const chave = normalizarTextoAvisoStockFornecedor(aviso.id)
+                || [
+                    normalizarTextoAvisoStockFornecedor(aviso.cliente_id),
+                    normalizarTextoAvisoStockFornecedor(aviso.produto_id || produto.id),
+                    normalizarTextoAvisoStockFornecedor(aviso.produto_sku || produto.sku),
+                    normalizarTextoAvisoStockFornecedor(aviso.produto_referencia || produto.referencia)
+                ].join("|");
+            if (!chave || vistos.has(chave)) return;
+            vistos.add(chave);
+            linhas.push(formatarLinhaAvisoStockRecebidoFornecedor(aviso, produto));
+        });
+    }
+    return linhas;
+}
+
+async function mostrarAvisosStockRecebidoFornecedor(aplicado) {
+    const linhas = await obterLinhasAvisoStockRecebidoFornecedor(aplicado);
+    if (!linhas.length) return;
+    if (typeof confirmarFornecedorNoSite !== "function") {
+        await mostrarAvisoSite(`Clientes a avisar:\n\n${linhas.slice(0, 8).join("\n")}`, {
+            titulo: "Clientes a avisar",
+            textoConfirmar: "OK"
+        });
+        return;
+    }
+    await confirmarFornecedorNoSite({
+        titulo: "Clientes a avisar",
+        texto: "Estas figuras já têm stock e há clientes à espera de aviso.",
+        itens: linhas,
+        textoConfirmar: "OK",
+        apenasConfirmar: true
+    });
+}
+
 
 async function imprimirPedidoFornecedor(id) {
     const pedido = fornecedorPedidos.find(item => String(item.id) === String(id));
@@ -306,6 +383,7 @@ async function receberPedidoFornecedor(id) {
             ? ` ${ativados} produto(s) ativado(s) (stock saiu de zero/negativo).`
             : '';
         definirStatusFornecedor(`Stock atualizado (+${unidades} un.) para a encomenda ${atualizado.codigo || ''}.${avisoTeto}${avisoAtivo}`);
+        await mostrarAvisosStockRecebidoFornecedor(aplicado);
     } catch (error) {
         console.error(error);
         definirStatusFornecedor('Erro ao receber stock: ' + (error.message || 'erro desconhecido'), true);

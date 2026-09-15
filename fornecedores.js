@@ -63,6 +63,27 @@ function carregarScriptAdmin(src) {
 var __fornecedoresProdutoPromessa = null;
 var __fornecedoresEdicaoPromessa = null;
 var __fornecedoresPrintPromessa = null;
+var __fornecedoresAvisosStockPromessa = null;
+
+function configurarAvisosStockFornecedor() {
+    if (window.AvisosStockAdmin && fornecedoresClient) {
+        window.AvisosStockAdmin.configurar({ client: fornecedoresClient, status: definirStatusFornecedor });
+    }
+}
+
+function garantirAvisosStockAdminFornecedor() {
+    if (window.AvisosStockAdmin) {
+        configurarAvisosStockFornecedor();
+        return Promise.resolve();
+    }
+    if (!__fornecedoresAvisosStockPromessa) {
+        __fornecedoresAvisosStockPromessa = carregarScriptAdmin("avisos-stock-admin.js?v=20260915-aviso-receber-stock")
+            .then(function () {
+                configurarAvisosStockFornecedor();
+            });
+    }
+    return __fornecedoresAvisosStockPromessa;
+}
 
 function garantirFornecedoresProdutoModal() {
     if (window.FornecedoresProdutoModal) return Promise.resolve();
@@ -95,7 +116,7 @@ function garantirFornecedoresEdicaoPedido() {
 function garantirFornecedoresPrintReceive() {
     if (window.FornecedoresPrintReceive) return Promise.resolve();
     if (!__fornecedoresPrintPromessa) {
-        __fornecedoresPrintPromessa = carregarScriptAdmin("fornecedores-print-receive.js?v=20260908-lista-final-os-auto");
+        __fornecedoresPrintPromessa = carregarScriptAdmin("fornecedores-print-receive.js?v=20260915-aviso-receber-stock");
     }
     return __fornecedoresPrintPromessa;
 }
@@ -122,6 +143,7 @@ async function imprimirPedidoFornecedor() {
 }
 
 async function receberPedidoFornecedor() {
+    await garantirAvisosStockAdminFornecedor();
     await garantirFornecedoresPrintReceive();
     return window.FornecedoresPrintReceive.receber.apply(null, arguments);
 }
@@ -952,13 +974,14 @@ function confirmarFornecedorNoSite(opcoes = {}) {
         cancelar.addEventListener("click", () => fechar(false));
         confirmar.addEventListener("click", () => fechar(true));
         modal.addEventListener("click", evento => {
-            if (evento.target === modal) fechar(false);
+            if (evento.target === modal) fechar(opcoes.apenasConfirmar ? true : false);
         });
         modal.addEventListener("keydown", evento => {
-            if (evento.key === "Escape") fechar(false);
+            if (evento.key === "Escape") fechar(opcoes.apenasConfirmar ? true : false);
         });
 
-        acoes.append(cancelar, confirmar);
+        if (!opcoes.apenasConfirmar) acoes.appendChild(cancelar);
+        acoes.appendChild(confirmar);
         dialog.append(titulo, texto);
         if ((opcoes.itens || []).length) dialog.appendChild(lista);
         dialog.appendChild(acoes);
@@ -4925,6 +4948,7 @@ async function iniciarFornecedoresAdmin() {
         const prefetch = function () {
             garantirFornecedoresEdicaoPedido().catch(() => {});
             garantirFornecedoresProdutoModal().catch(() => {});
+            garantirAvisosStockAdminFornecedor().catch(() => {});
             garantirFornecedoresPrintReceive().catch(() => {});
         };
         if ('requestIdleCallback' in window) window.requestIdleCallback(prefetch, { timeout: 4000 });
