@@ -1,13 +1,14 @@
 // Tabelas de portes usadas pelo carrinho (fallback local + carga remota com cache).
-const PORTES_CACHE_KEY = 'figures-planet-portes-tarifas-v7';
+const PORTES_CACHE_KEY = 'figures-planet-portes-tarifas-v8';
 const PORTES_CACHE_TTL_MS = 6 * 60 * 60 * 1000;
 const PORTES_PESO_ABERTO_G = 999999;
 
 const METODOS_ENVIO_FALLBACK = [
     { id: 'ctt_normal', nome_exibicao: 'CTT Normal', registado: false, ordem: 1 },
     { id: 'ctt_azul', nome_exibicao: 'CTT Azul', registado: false, ordem: 2 },
-    { id: 'ctt_registado', nome_exibicao: 'CTT Registado', registado: true, ordem: 3 },
-    { id: 'inpost_registado', nome_exibicao: 'InPost Registado', registado: true, ordem: 4 }
+    { id: 'ctt_azul_internacional', nome_exibicao: 'CTT Azul Internacional', registado: false, ordem: 3 },
+    { id: 'ctt_registado', nome_exibicao: 'CTT Registado', registado: true, ordem: 4 },
+    { id: 'inpost_registado', nome_exibicao: 'InPost Registado', registado: true, ordem: 5 }
 ];
 
 let PORTES_METODOS = METODOS_ENVIO_FALLBACK.slice();
@@ -42,26 +43,31 @@ const TABELA_PORTES_FALLBACK = {
     espanha: [
         { ate: 100, opcoes: [
             { id: 'ctt_normal', nome: 'CTT Normal', valor: 3.26 },
+            { id: 'ctt_azul_internacional', nome: 'CTT Azul Internacional', valor: 7.13 },
             { id: 'ctt_registado', nome: 'CTT Registado', valor: 7.13 },
             { id: 'inpost_registado', nome: 'InPost Registado', valor: 5.12 }
         ]},
         { ate: 250, opcoes: [
             { id: 'ctt_normal', nome: 'CTT Normal', valor: 5.23 },
+            { id: 'ctt_azul_internacional', nome: 'CTT Azul Internacional', valor: 9.29 },
             { id: 'ctt_registado', nome: 'CTT Registado', valor: 9.29 },
             { id: 'inpost_registado', nome: 'InPost Registado', valor: 5.12 }
         ]},
         { ate: 500, opcoes: [
             { id: 'ctt_normal', nome: 'CTT Normal', valor: 8.67 },
+            { id: 'ctt_azul_internacional', nome: 'CTT Azul Internacional', valor: 12.05 },
             { id: 'ctt_registado', nome: 'CTT Registado', valor: 12.05 },
             { id: 'inpost_registado', nome: 'InPost Registado', valor: 5.12 }
         ]},
         { ate: 1000, opcoes: [
             { id: 'ctt_normal', nome: 'CTT Normal', valor: 13.35 },
+            { id: 'ctt_azul_internacional', nome: 'CTT Azul Internacional', valor: 16.24 },
             { id: 'ctt_registado', nome: 'CTT Registado', valor: 16.24 },
             { id: 'inpost_registado', nome: 'InPost Registado', valor: 5.12 }
         ]},
         { ate: Infinity, opcoes: [
             { id: 'ctt_normal', nome: 'CTT Normal', valor: 22.72 },
+            { id: 'ctt_azul_internacional', nome: 'CTT Azul Internacional', valor: 26.08 },
             { id: 'ctt_registado', nome: 'CTT Registado', valor: 26.08 },
             { id: 'inpost_registado', nome: 'InPost Registado', valor: 5.81 }
         ]}
@@ -69,22 +75,27 @@ const TABELA_PORTES_FALLBACK = {
     europa: [
         { ate: 100, opcoes: [
             { id: 'ctt_normal', nome: 'CTT Normal', valor: 3.26 },
+            { id: 'ctt_azul_internacional', nome: 'CTT Azul Internacional', valor: 7.13 },
             { id: 'ctt_registado', nome: 'CTT Registado', valor: 7.13 }
         ]},
         { ate: 250, opcoes: [
             { id: 'ctt_normal', nome: 'CTT Normal', valor: 5.23 },
+            { id: 'ctt_azul_internacional', nome: 'CTT Azul Internacional', valor: 9.29 },
             { id: 'ctt_registado', nome: 'CTT Registado', valor: 9.29 }
         ]},
         { ate: 500, opcoes: [
             { id: 'ctt_normal', nome: 'CTT Normal', valor: 8.67 },
+            { id: 'ctt_azul_internacional', nome: 'CTT Azul Internacional', valor: 12.05 },
             { id: 'ctt_registado', nome: 'CTT Registado', valor: 12.05 }
         ]},
         { ate: 1000, opcoes: [
             { id: 'ctt_normal', nome: 'CTT Normal', valor: 13.35 },
+            { id: 'ctt_azul_internacional', nome: 'CTT Azul Internacional', valor: 16.24 },
             { id: 'ctt_registado', nome: 'CTT Registado', valor: 16.24 }
         ]},
         { ate: Infinity, opcoes: [
             { id: 'ctt_normal', nome: 'CTT Normal', valor: 22.72 },
+            { id: 'ctt_azul_internacional', nome: 'CTT Azul Internacional', valor: 26.08 },
             { id: 'ctt_registado', nome: 'CTT Registado', valor: 26.08 }
         ]}
     ]
@@ -123,7 +134,7 @@ const ZONA_PORTES_POR_PAIS = {
 };
 
 const LIMITE_SUBTOTAL_ENVIO_SEM_RASTREAMENTO = 15;
-let METODOS_ENVIO_SEM_RASTREAMENTO = new Set(['ctt_normal', 'ctt_azul']);
+let METODOS_ENVIO_SEM_RASTREAMENTO = new Set(['ctt_normal', 'ctt_azul', 'ctt_azul_internacional']);
 let METODOS_ENVIO_REGISTADOS = new Set(['ctt_registado', 'inpost_registado']);
 
 let promessaPortesRemotos = null;

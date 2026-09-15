@@ -32,8 +32,9 @@ insert into public.portes_metodos (id, nome_exibicao, registado, ordem)
 values
   ('ctt_normal', 'CTT Normal', false, 1),
   ('ctt_azul', 'CTT Azul', false, 2),
-  ('ctt_registado', 'CTT Registado', true, 3),
-  ('inpost_registado', 'InPost Registado', true, 4)
+  ('ctt_azul_internacional', 'CTT Azul Internacional', false, 3),
+  ('ctt_registado', 'CTT Registado', true, 4),
+  ('inpost_registado', 'InPost Registado', true, 5)
 on conflict (id) do update
 set
   nome_exibicao = excluded.nome_exibicao,
