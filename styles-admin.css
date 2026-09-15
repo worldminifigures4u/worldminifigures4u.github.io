@@ -467,12 +467,24 @@ html:not(.admin-light-mode) body.cabecalho-com-admin :is(
     font-weight:700;
 }
 
+.plataforma-selecionado-aviso-stock{
+    align-items:stretch;
+    flex-direction:column;
+    justify-content:flex-start;
+    gap:6px;
+}
+
 .plataforma-aviso-stock-linha .plataforma-aviso-stock-botao,
 .plataforma-selecionado-aviso-stock .plataforma-aviso-stock-botao{
     min-height:28px;
     height:28px;
     padding:0 10px;
     font-size:12px;
+}
+
+.plataforma-selecionado-aviso-stock .plataforma-aviso-stock-botao{
+    width:100%;
+    white-space:nowrap;
 }
 
 .clientes-aviso-stock-lista,
