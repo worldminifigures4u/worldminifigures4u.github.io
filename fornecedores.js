@@ -68,7 +68,7 @@ function garantirFornecedoresProdutoModal() {
     if (window.FornecedoresProdutoModal) return Promise.resolve();
     if (!__fornecedoresProdutoPromessa) {
         prepararContextoProdutoFornecedor();
-        __fornecedoresProdutoPromessa = carregarScriptAdmin("mapas-produto-modal.js?v=20260908-ref-preco-fornecedor")
+        __fornecedoresProdutoPromessa = carregarScriptAdmin("mapas-produto-modal.js?v=20260915-notas-produto")
             .then(function () {
                 window.FornecedoresProdutoModal = {
                     abrir: function () {
@@ -240,6 +240,7 @@ function normalizarProdutoMapa(produto) {
         ativo: produto.ativo !== false,
         imagens: normalizarImagensMapa(produto.imagens),
         observacoes: produto.observacoes || "",
+        notas_gestao: produto.notas_gestao || "",
         fornecedores: produto.fornecedores || {}
     };
     normalizado.pesquisa = normalizarMapa([

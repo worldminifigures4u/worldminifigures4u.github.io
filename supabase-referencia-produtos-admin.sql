@@ -24,6 +24,9 @@ alter table public.produtos
   add column if not exists observacoes text;
 
 alter table public.produtos
+  add column if not exists notas_gestao text;
+
+alter table public.produtos
   add column if not exists preco_compra numeric not null default 0;
 
 alter table public.produtos
@@ -63,7 +66,7 @@ begin
     where trim(valor) <> '';
 
     insert into public.produtos (
-      sku, referencia, lego, nome, preco, preco_compra, top, arquivado, descontinuado, novidade, stock, tema, subtema, peso, unidades_por_embalagem, observacoes, imagens, fornecedores, ativo
+      sku, referencia, lego, nome, preco, preco_compra, top, arquivado, descontinuado, novidade, stock, tema, subtema, peso, unidades_por_embalagem, observacoes, notas_gestao, imagens, fornecedores, ativo
     ) values (
       upper(trim(v_produto->>'sku')),
       nullif(trim(v_produto->>'referencia'), ''),
@@ -84,6 +87,7 @@ begin
       (v_produto->>'peso')::numeric,
       greatest(1, coalesce(nullif(trim(coalesce(v_produto->>'unidades_por_embalagem', '')), '')::integer, 1)),
       nullif(trim(coalesce(v_produto->>'observacoes', '')), ''),
+      nullif(trim(coalesce(v_produto->>'notas_gestao', '')), ''),
       v_imagens,
       coalesce(v_produto->'fornecedores', '{}'::jsonb),
       coalesce((v_produto->>'ativo')::boolean, false)
@@ -104,6 +108,7 @@ begin
       peso = excluded.peso,
       unidades_por_embalagem = excluded.unidades_por_embalagem,
       observacoes = excluded.observacoes,
+      notas_gestao = excluded.notas_gestao,
       imagens = excluded.imagens,
       fornecedores = excluded.fornecedores,
       ativo = excluded.ativo;
@@ -151,6 +156,7 @@ begin
       'imagens', produto.imagens,
       'stock', coalesce(produto.stock, 0),
       'observacoes', coalesce(produto.observacoes, ''),
+      'notas_gestao', coalesce(produto.notas_gestao, ''),
       'fornecedores', coalesce(produto.fornecedores, '{}'::jsonb),
       'ativo', coalesce(produto.ativo, true)
     ) order by produto.nome)
@@ -197,7 +203,7 @@ begin
 
   insert into public.produtos (
     sku, referencia, lego, nome, tema, subtema, preco, preco_compra, peso, stock,
-    observacoes, ativo, novidade, imagens
+    observacoes, notas_gestao, ativo, novidade, imagens
   ) values (
     v_sku,
     nullif(trim(coalesce(p_produto->>'referencia', '')), ''),
@@ -210,6 +216,7 @@ begin
     (p_produto->>'peso')::numeric,
     (p_produto->>'stock')::integer,
     nullif(trim(coalesce(p_produto->>'observacoes', '')), ''),
+    nullif(trim(coalesce(p_produto->>'notas_gestao', '')), ''),
     coalesce((p_produto->>'ativo')::boolean, true),
     coalesce((p_produto->>'novidade')::boolean, true),
     v_imagens
@@ -233,6 +240,7 @@ begin
     'tema', coalesce(v_produto.tema, ''),
     'subtema', coalesce(v_produto.subtema, ''),
     'observacoes', coalesce(v_produto.observacoes, ''),
+    'notas_gestao', coalesce(v_produto.notas_gestao, ''),
     'imagens', coalesce(to_jsonb(v_produto.imagens), '[]'::jsonb),
     'stock', coalesce(v_produto.stock, 0),
     'fornecedores', coalesce(v_produto.fornecedores, '{}'::jsonb),
@@ -419,6 +427,7 @@ begin
     arquivado = coalesce((p_produto->>'arquivado')::boolean, false),
     descontinuado = coalesce((p_produto->>'descontinuado')::boolean, false),
     observacoes = nullif(trim(coalesce(p_produto->>'observacoes', '')), ''),
+    notas_gestao = nullif(trim(coalesce(p_produto->>'notas_gestao', '')), ''),
     ativo = coalesce((p_produto->>'ativo')::boolean, true),
     novidade = coalesce((p_produto->>'novidade')::boolean, false),
     imagens = v_imagens,
@@ -445,6 +454,7 @@ begin
     arquivado = coalesce((p_produto->>'arquivado')::boolean, false),
     descontinuado = coalesce((p_produto->>'descontinuado')::boolean, false),
       observacoes = nullif(trim(coalesce(p_produto->>'observacoes', '')), ''),
+      notas_gestao = nullif(trim(coalesce(p_produto->>'notas_gestao', '')), ''),
       ativo = coalesce((p_produto->>'ativo')::boolean, true),
       novidade = coalesce((p_produto->>'novidade')::boolean, false),
       imagens = v_imagens,
@@ -474,6 +484,7 @@ begin
     'tema', coalesce(v_produto.tema, ''),
     'subtema', coalesce(v_produto.subtema, ''),
     'observacoes', coalesce(v_produto.observacoes, ''),
+    'notas_gestao', coalesce(v_produto.notas_gestao, ''),
     'imagens', coalesce(to_jsonb(v_produto.imagens), '[]'::jsonb),
     'stock', coalesce(v_produto.stock, 0),
     'fornecedores', coalesce(v_produto.fornecedores, '{}'::jsonb),
@@ -560,6 +571,7 @@ begin
       'unidades_por_embalagem', coalesce(produto.unidades_por_embalagem, 1),
       'ativo', coalesce(produto.ativo, true),
       'observacoes', coalesce(produto.observacoes, ''),
+      'notas_gestao', coalesce(produto.notas_gestao, ''),
       'imagens', coalesce(to_jsonb(produto.imagens), '[]'::jsonb),
       'fornecedores', coalesce(produto.fornecedores, '{}'::jsonb)
     ) order by produto.nome)
@@ -628,6 +640,7 @@ begin
     arquivado = coalesce((p_produto->>'arquivado')::boolean, false),
     descontinuado = coalesce((p_produto->>'descontinuado')::boolean, false),
     observacoes = nullif(trim(coalesce(p_produto->>'observacoes', '')), ''),
+    notas_gestao = nullif(trim(coalesce(p_produto->>'notas_gestao', '')), ''),
     ativo = coalesce((p_produto->>'ativo')::boolean, true),
     novidade = coalesce((p_produto->>'novidade')::boolean, false),
     imagens = v_imagens,
@@ -654,6 +667,7 @@ begin
       arquivado = coalesce((p_produto->>'arquivado')::boolean, false),
       descontinuado = coalesce((p_produto->>'descontinuado')::boolean, false),
       observacoes = nullif(trim(coalesce(p_produto->>'observacoes', '')), ''),
+      notas_gestao = nullif(trim(coalesce(p_produto->>'notas_gestao', '')), ''),
       ativo = coalesce((p_produto->>'ativo')::boolean, true),
       novidade = coalesce((p_produto->>'novidade')::boolean, false),
       imagens = v_imagens,
@@ -685,6 +699,7 @@ begin
     'stock', coalesce(v_produto.stock, 0),
     'ativo', coalesce(v_produto.ativo, true),
     'observacoes', coalesce(v_produto.observacoes, ''),
+    'notas_gestao', coalesce(v_produto.notas_gestao, ''),
     'imagens', coalesce(to_jsonb(v_produto.imagens), '[]'::jsonb),
     'fornecedores', coalesce(v_produto.fornecedores, '{}'::jsonb)
   );

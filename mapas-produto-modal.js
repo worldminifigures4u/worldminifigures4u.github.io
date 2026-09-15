@@ -286,15 +286,25 @@ async function enviarFotosCloudinaryMapa(input) {
 }
 
 function montarSecaoMediaEdicaoMapa(campos, produto) {
-    const secaoObs = criarSecaoEdicaoMapa("Observações", "mapas-produto-secao-media mapas-produto-secao-observacoes");
+    const secaoObs = criarSecaoEdicaoMapa("Notas de preparação", "mapas-produto-secao-media mapas-produto-secao-observacoes");
     criarTextareaEdicaoMapa(
         secaoObs,
         "mapas-editar-observacoes",
         "",
         produto.observacoes || "",
-        { largo: true, rows: 3, placeholder: "Notas internas sobre estado, acessórios, origem, etc." }
+        { largo: true, rows: 3, placeholder: "Instruções para quem prepara a encomenda desta figura." }
     );
     campos.appendChild(secaoObs);
+
+    const secaoGestao = criarSecaoEdicaoMapa("Notas de gestão", "mapas-produto-secao-media mapas-produto-secao-observacoes");
+    criarTextareaEdicaoMapa(
+        secaoGestao,
+        "mapas-editar-notas-gestao",
+        "",
+        produto.notas_gestao || "",
+        { largo: true, rows: 3, placeholder: "Notas internas só para gestão da ficha, compras ou catálogo." }
+    );
+    campos.appendChild(secaoGestao);
 
     const secaoFotos = criarSecaoEdicaoMapa("Fotos", "mapas-produto-secao-media mapas-produto-secao-fotos");
 
@@ -671,7 +681,8 @@ async function enriquecerMediaProdutoMapa(produto) {
     const atual = {
         ...produto,
         imagens: normalizarImagensMapa(produto.imagens),
-        observacoes: String(produto.observacoes || "")
+        observacoes: String(produto.observacoes || ""),
+        notas_gestao: String(produto.notas_gestao || "")
     };
     if (atual.imagens.length) return atual;
 
@@ -1761,12 +1772,22 @@ function preencherFichaProdutoMapa(produto) {
     const observacoesTexto = String(produto.observacoes || "").trim();
     if (observacoesTexto) {
         topo.classList.add("mapas-produto-ficha-topo-com-obs");
-        const secaoObsLeitura = criarSecaoEdicaoMapa("Observações", "mapas-produto-secao-media");
+        const secaoObsLeitura = criarSecaoEdicaoMapa("Notas de preparação", "mapas-produto-secao-media");
         const textoObs = document.createElement("p");
         textoObs.className = "mapas-produto-observacoes-leitura";
         textoObs.textContent = observacoesTexto;
         secaoObsLeitura.appendChild(textoObs);
         topo.appendChild(secaoObsLeitura);
+    }
+    const notasGestaoTexto = String(produto.notas_gestao || "").trim();
+    if (notasGestaoTexto) {
+        topo.classList.add("mapas-produto-ficha-topo-com-obs");
+        const secaoGestaoLeitura = criarSecaoEdicaoMapa("Notas de gestão", "mapas-produto-secao-media");
+        const textoGestao = document.createElement("p");
+        textoGestao.className = "mapas-produto-observacoes-leitura";
+        textoGestao.textContent = notasGestaoTexto;
+        secaoGestaoLeitura.appendChild(textoGestao);
+        topo.appendChild(secaoGestaoLeitura);
     }
 
     const secaoMarcas = criarSecaoEdicaoMapa("Estado", "mapas-produto-secao-marcas");
@@ -2017,7 +2038,7 @@ async function abrirFichaProdutoMapa(produtoId) {
     const produto = await enriquecerMediaProdutoMapa(produtoBase);
     if (modal.dataset.vistaToken !== token) return;
     mapasProdutos = mapasProdutos.map((item) =>
-        String(item.id) === String(produto.id) ? { ...item, imagens: produto.imagens, observacoes: produto.observacoes } : item
+        String(item.id) === String(produto.id) ? { ...item, imagens: produto.imagens, observacoes: produto.observacoes, notas_gestao: produto.notas_gestao } : item
     );
     preencherFichaProdutoMapa(produto);
 }
@@ -2048,7 +2069,7 @@ async function abrirEdicaoProdutoMapa(produtoId) {
     const produto = await enriquecerMediaProdutoMapa(produtoBase);
     if (modal.dataset.vistaToken !== token) return;
     mapasProdutos = mapasProdutos.map((item) =>
-        String(item.id) === String(produto.id) ? { ...item, imagens: produto.imagens, observacoes: produto.observacoes } : item
+        String(item.id) === String(produto.id) ? { ...item, imagens: produto.imagens, observacoes: produto.observacoes, notas_gestao: produto.notas_gestao } : item
     );
     preencherFormularioProdutoMapa(produto, "editar");
 }
@@ -2076,6 +2097,7 @@ function abrirCriacaoProdutoMapa() {
         ativo: false,
         imagens: [],
         observacoes: "",
+        notas_gestao: "",
         fornecedores: {}
     }, "criar");
 }
@@ -2090,6 +2112,7 @@ function fecharEdicaoProdutoMapa() {
 function lerProdutoEditadoMapa() {
     const produtoAtual = mapasProdutos.find(item => String(item.id) === String(document.getElementById("mapas-editar-id").value));
     const observacoesCampo = document.getElementById("mapas-editar-observacoes");
+    const notasGestaoCampo = document.getElementById("mapas-editar-notas-gestao");
     const imagensCampo = document.getElementById("mapas-editar-imagens");
     const produto = {
         nome: document.getElementById("mapas-editar-nome").value.trim(),
@@ -2110,6 +2133,9 @@ function lerProdutoEditadoMapa() {
         observacoes: observacoesCampo
             ? observacoesCampo.value.trim()
             : (produtoAtual?.observacoes || ""),
+        notas_gestao: notasGestaoCampo
+            ? notasGestaoCampo.value.trim()
+            : (produtoAtual?.notas_gestao || ""),
         imagens: imagensCampo
             ? obterUrlsImagensEdicaoMapa()
             : normalizarImagensMapa(produtoAtual?.imagens),
@@ -2224,6 +2250,7 @@ async function guardarEdicaoProdutoMapa(evento) {
                 ...data,
                 imagens: data?.imagens ?? produto.imagens,
                 observacoes: data?.observacoes ?? produto.observacoes,
+                notas_gestao: data?.notas_gestao ?? produto.notas_gestao,
                 fornecedores: data?.fornecedores ?? produto.fornecedores
             });
             mapasProdutos = [criado, ...mapasProdutos.filter(item => String(item.id) !== String(criado.id))];
@@ -2240,6 +2267,7 @@ async function guardarEdicaoProdutoMapa(evento) {
             ...data,
             imagens: data?.imagens ?? produto.imagens,
             observacoes: data?.observacoes ?? produto.observacoes,
+            notas_gestao: data?.notas_gestao ?? produto.notas_gestao,
             fornecedores: data?.fornecedores ?? produto.fornecedores
         });
         mapasProdutos = mapasProdutos.map(item => String(item.id) === String(atualizado.id) ? atualizado : item);

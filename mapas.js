@@ -61,7 +61,7 @@ var __mapasProdutoModalPromessa = null;
 function garantirMapasProdutoModal() {
     if (window.MapasProdutoModal) return Promise.resolve();
     if (!__mapasProdutoModalPromessa) {
-        __mapasProdutoModalPromessa = carregarScriptAdmin("mapas-produto-modal.js?v=20260915-aviso-compacto2");
+        __mapasProdutoModalPromessa = carregarScriptAdmin("mapas-produto-modal.js?v=20260915-notas-produto");
     }
     return __mapasProdutoModalPromessa;
 }
@@ -286,6 +286,7 @@ function normalizarProdutoMapa(produto) {
         ativo: produto.ativo !== false,
         imagens: normalizarImagensMapa(produto.imagens),
         observacoes: produto.observacoes || "",
+        notas_gestao: produto.notas_gestao || "",
         fornecedores: produto.fornecedores || {}
     };
     normalizado.pesquisa = normalizarMapa([
