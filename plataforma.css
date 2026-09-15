@@ -992,6 +992,19 @@ body.pagina-wallapop{
         .plataforma-lista-original small{
             color:#aaa;
             line-height:1.3;
+            font-weight:700;
+        }
+
+        .plataforma-lista-linha.estado-exata .plataforma-lista-original small{
+            color:#43c76f;
+        }
+
+        .plataforma-lista-linha.estado-sugerida .plataforma-lista-original small{
+            color:#ffc107;
+        }
+
+        .plataforma-lista-linha.estado-rever .plataforma-lista-original small{
+            color:#ff6262;
         }
 
         .plataforma-lista-linha select{
