@@ -1422,16 +1422,20 @@ function criarLinhaAvisoStockProdutoMapa(aviso, produto) {
     principal.append(cliente, meta);
     linha.appendChild(principal);
     if (String(aviso.estado || "").toLowerCase() === "por avisar") {
-        const avisado = document.createElement("button");
-        avisado.type = "button";
-        avisado.className = "wallapop-botao mapas-produto-aviso-stock-acao";
-        avisado.textContent = "Avisado";
-        avisado.addEventListener("click", async () => {
+        const label = document.createElement("label");
+        label.className = "mapas-produto-aviso-stock-checkbox";
+        const avisado = document.createElement("input");
+        avisado.type = "checkbox";
+        const texto = document.createElement("span");
+        texto.textContent = "Avisado";
+        avisado.addEventListener("change", async () => {
+            if (!avisado.checked) return;
             avisado.disabled = true;
             await window.AvisosStockAdmin?.atualizarEstado(aviso.id, "Avisado");
             abrirFichaProdutoMapa(produto.id);
         });
-        linha.appendChild(avisado);
+        label.append(avisado, texto);
+        linha.appendChild(label);
     }
     return linha;
 }
@@ -1444,14 +1448,15 @@ async function carregarSecaoAvisosStockProdutoMapa(produto, conteudo) {
     try {
         const avisos = await window.AvisosStockAdmin.listarPorProduto(produto);
         conteudo.replaceChildren();
-        if (!avisos.length) {
+        const pendentes = avisos.filter(aviso => String(aviso.estado || "").toLowerCase() === "por avisar");
+        if (!pendentes.length) {
             const vazio = document.createElement("p");
             vazio.className = "mapas-produto-ajuda-media";
             vazio.textContent = "Sem clientes a avisar.";
             conteudo.appendChild(vazio);
             return;
         }
-        avisos.forEach(aviso => conteudo.appendChild(criarLinhaAvisoStockProdutoMapa(aviso, produto)));
+        pendentes.forEach(aviso => conteudo.appendChild(criarLinhaAvisoStockProdutoMapa(aviso, produto)));
     } catch (error) {
         console.error(error);
         conteudo.textContent = "Erro ao carregar avisos de stock.";
@@ -1953,6 +1958,10 @@ function preencherFormularioProdutoMapa(produto, modo = "editar") {
     linhaDetalhesEstado.appendChild(secaoEstado);
 
     campos.appendChild(linhaDetalhesEstado);
+
+    if (modo !== "criar" && produto.id) {
+        montarSecaoAvisosStockProdutoMapa(campos, produto);
+    }
 
     montarSecoesExtraEdicaoMapa(campos, produto, modo);
     montarSecaoMediaEdicaoMapa(campos, produto);

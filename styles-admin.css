@@ -542,9 +542,26 @@ html:not(.admin-light-mode) body.cabecalho-com-admin :is(
     color:#ff4d55;
 }
 
-.clientes-aviso-stock-acao,
-.mapas-produto-aviso-stock-acao{
-    min-width:92px;
+.clientes-aviso-stock-checkbox,
+.mapas-produto-aviso-stock-checkbox{
+    display:inline-flex;
+    align-items:center;
+    justify-content:flex-end;
+    gap:7px;
+    color:#fff;
+    font-size:13px;
+    font-weight:800;
+    white-space:nowrap;
+    cursor:pointer;
+}
+
+.clientes-aviso-stock-checkbox input,
+.mapas-produto-aviso-stock-checkbox input{
+    width:16px;
+    height:16px;
+    margin:0;
+    accent-color:#ffc107;
+    cursor:pointer;
 }
 
 html.admin-light-mode .plataforma-aviso-stock-botao{
@@ -573,4 +590,9 @@ html.admin-light-mode .clientes-aviso-stock-principal span,
 html.admin-light-mode .mapas-produto-aviso-stock-principal span,
 html.admin-light-mode .clientes-aviso-stock-meta{
     color:#475569;
+}
+
+html.admin-light-mode .clientes-aviso-stock-checkbox,
+html.admin-light-mode .mapas-produto-aviso-stock-checkbox{
+    color:#0f172a;
 }

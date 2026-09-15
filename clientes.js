@@ -421,14 +421,18 @@ function criarLinhaAvisoStockCliente(aviso) {
     );
     linha.append(principal, meta);
     if (String(aviso.estado || "").toLowerCase() === "por avisar") {
-        const avisado = criarElementoCliente("button", "wallapop-botao clientes-aviso-stock-acao", "Avisado");
-        avisado.type = "button";
-        avisado.addEventListener("click", async () => {
+        const label = criarElementoCliente("label", "clientes-aviso-stock-checkbox");
+        const avisado = document.createElement("input");
+        avisado.type = "checkbox";
+        const texto = criarElementoCliente("span", "", "Avisado");
+        avisado.addEventListener("change", async () => {
+            if (!avisado.checked) return;
             avisado.disabled = true;
             await window.AvisosStockAdmin?.atualizarEstado(aviso.id, "Avisado");
             if (clienteAbertoId) abrirCliente(clienteAbertoId);
         });
-        linha.appendChild(avisado);
+        label.append(avisado, texto);
+        linha.appendChild(label);
     }
     return linha;
 }
@@ -439,11 +443,12 @@ async function carregarSecaoAvisosStockCliente(clienteId, secao) {
     try {
         const avisos = await window.AvisosStockAdmin.listarPorCliente(clienteId);
         lista.replaceChildren();
-        if (!avisos.length) {
+        const pendentes = avisos.filter(aviso => String(aviso.estado || "").toLowerCase() === "por avisar");
+        if (!pendentes.length) {
             lista.appendChild(criarElementoCliente("p", "admin-cliente-vazio", "Sem avisos de stock."));
             return;
         }
-        avisos.forEach(aviso => lista.appendChild(criarLinhaAvisoStockCliente(aviso)));
+        pendentes.forEach(aviso => lista.appendChild(criarLinhaAvisoStockCliente(aviso)));
     } catch (error) {
         console.error(error);
         lista.replaceChildren(criarElementoCliente("p", "admin-cliente-vazio", "Erro ao carregar avisos de stock."));
