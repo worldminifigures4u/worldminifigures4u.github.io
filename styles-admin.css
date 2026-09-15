@@ -483,10 +483,12 @@ html:not(.admin-light-mode) body.cabecalho-com-admin :is(
 
 .clientes-aviso-stock-linha,
 .mapas-produto-aviso-stock-linha{
-    display:grid;
-    grid-template-columns:minmax(0, 1fr) auto;
-    gap:10px;
+    display:flex;
+    justify-self:start;
+    max-width:100%;
+    gap:14px;
     align-items:center;
+    flex-wrap:wrap;
     padding:10px 12px;
     border:1px solid #333;
     border-radius:7px;
@@ -518,9 +520,9 @@ html:not(.admin-light-mode) body.cabecalho-com-admin :is(
 .mapas-produto-aviso-stock-meta{
     display:flex;
     align-items:center;
-    justify-content:flex-end;
     gap:8px;
     flex-wrap:wrap;
+    white-space:nowrap;
 }
 
 .clientes-aviso-stock-estado,

@@ -62,6 +62,11 @@ function formatarDataCliente(valor) {
     }).format(data);
 }
 
+function formatarDataAvisoStockCliente(valor) {
+    if (!valor) return "";
+    return formatarDataCliente(valor).replace(",", "");
+}
+
 function criarCampoCliente(rotulo, valor, classeExtra = "") {
     const campo = criarElementoCliente("div", `admin-cliente-campo${classeExtra ? ` ${classeExtra}` : ""}`);
     campo.append(
@@ -411,12 +416,12 @@ function criarLinhaAvisoStockCliente(aviso) {
         criarElementoCliente("span", "", [
             aviso.produto_referencia ? `Ref. ${aviso.produto_referencia}` : "",
             aviso.produto_sku ? `SKU ${aviso.produto_sku}` : "",
-            aviso.plataforma || ""
+            aviso.plataforma || "",
+            formatarDataAvisoStockCliente(aviso.created_at)
         ].filter(Boolean).join(" · "))
     );
     const meta = criarElementoCliente("div", "clientes-aviso-stock-meta");
     meta.append(
-        criarElementoCliente("span", "", formatarDataCliente(aviso.created_at)),
         criarElementoCliente("span", `clientes-aviso-stock-estado estado-${String(aviso.estado || "").toLowerCase().replace(/\s+/g, "-")}`, aviso.estado || "Por avisar")
     );
     linha.append(principal, meta);

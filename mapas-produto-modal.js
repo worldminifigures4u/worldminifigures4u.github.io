@@ -839,6 +839,16 @@ function formatarDataFornecedorLeituraMapa(valor) {
     return texto;
 }
 
+function formatarDataHoraAvisoStockMapa(valor) {
+    if (!valor) return "";
+    const data = new Date(valor);
+    if (Number.isNaN(data.getTime())) return formatarDataFornecedorLeituraMapa(valor);
+    return new Intl.DateTimeFormat("pt-PT", {
+        day: "2-digit", month: "2-digit", year: "numeric",
+        hour: "2-digit", minute: "2-digit"
+    }).format(data).replace(",", "");
+}
+
 function rotuloHistoricoFornecedorLeituraMapa(tipo) {
     const normalizado = normalizarTipoHistoricoFornecedorMapa(tipo);
     if (normalizado === "os") return "OS";
@@ -1416,7 +1426,7 @@ function criarLinhaAvisoStockProdutoMapa(aviso, produto) {
     const meta = document.createElement("span");
     meta.textContent = [
         aviso.plataforma || "",
-        formatarDataFornecedorLeituraMapa(aviso.created_at)
+        formatarDataHoraAvisoStockMapa(aviso.created_at)
     ].filter(Boolean).join(" · ");
     principal.append(cliente, meta);
     const estadoAtual = aviso.estado || "Por avisar";
