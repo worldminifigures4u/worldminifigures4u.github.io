@@ -961,9 +961,8 @@ function obterEnvioPlataforma() {
 function atualizarVisibilidadeSeguimentoPlataforma() {
     const blocoSeguimento = document.getElementById('plataforma-seguimento-bloco');
     if (!blocoSeguimento) return;
-    const plataforma = obterPlataformaAtual();
     const metodo = document.getElementById('plataforma-metodo-envio')?.value || '';
-    blocoSeguimento.hidden = ehPlataformaEstiloAnuncio(plataforma) || metodoEnvioEntregaMaoPlataforma(metodo);
+    blocoSeguimento.hidden = metodoEnvioEntregaMaoPlataforma(metodo);
 }
 
 function atualizarOpcoesEnvioPlataforma() {
@@ -3617,7 +3616,7 @@ async function registarEncomendaWallapop() {
             }
         }
         const metodoEnvio = obterEnvioPlataforma().id;
-        if (encomendaId && !ehPlataformaEstiloAnuncio(obterPlataformaAtual()) && !metodoEnvioEntregaMaoPlataforma(metodoEnvio)) {
+        if (encomendaId && !metodoEnvioEntregaMaoPlataforma(metodoEnvio)) {
             const codigoSeguimento = document.getElementById('plataforma-codigo-seguimento')?.value.trim() || '';
             const { error: erroSeguimento } = await wallapopClient
                 .from('encomendas')

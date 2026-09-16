@@ -204,7 +204,6 @@ window.AdminEncomendaVista = (function () {
     }
 
     function mostrarCampoSeguimento(encomenda) {
-        if (origemEncomenda(encomenda) === "wallapop" || origemEncomenda(encomenda) === "vinted") return false;
         const metodoId = normalizarTextoEnvio(encomenda?.metodo_envio).replace(/\s+/g, "_");
         if (metodoId === "entrega_tomar") return false;
         const nome = normalizarTextoEnvio(encomenda?.metodo_envio_nome);
