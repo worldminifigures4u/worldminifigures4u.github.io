@@ -1390,7 +1390,7 @@ window.AdminEncomendaVista = (function () {
         const codigo = encomenda.codigo_encomenda || "";
         const origem = rotuloOrigemEncomenda(encomenda);
         const mensagens = [
-            "Os anexos e as notas internas serão mantidos."
+            "Os anexos serão mantidos e eliminados automaticamente após 2 meses. As notas internas serão mantidas."
         ];
         const botoes = [
             { texto: "Cancelar", valor: null, classe: "wallapop-botao admin-fatura-confirmacao-cancelar", foco: true }

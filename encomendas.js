@@ -18,6 +18,10 @@ const ESTADOS_ENCOMENDA = [
     'Cancelado'
 ];
 const ENCOMENDAS_CONCLUIDAS_POR_PAGINA = 60;
+const ENCOMENDAS_ANEXOS_RETENCAO_MESES = 2;
+const ENCOMENDAS_LIMPEZA_ANEXOS_INTERVALO_MS = 12 * 60 * 60 * 1000;
+const ENCOMENDAS_LIMPEZA_ANEXOS_ULTIMA_KEY = 'figuresplanet-limpeza-anexos-encomendas-ultima';
+const ENCOMENDAS_LIMPEZA_ANEXOS_IDS_KEY = 'figuresplanet-limpeza-anexos-encomendas-ids';
 
 let encomendasClient = null;
 let encomendasAdmin = [];
@@ -69,6 +73,124 @@ function definirStatusEncomendas(texto, estado = false) {
     status.classList.toggle('msg-sucesso', Boolean(texto) && !erro && !processando);
     if (texto) {
         status.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+}
+
+function obterDataLimiteAnexosEncomendas() {
+    const data = new Date();
+    data.setMonth(data.getMonth() - ENCOMENDAS_ANEXOS_RETENCAO_MESES);
+    return data;
+}
+
+function lerIdsAnexosLimposEncomendas() {
+    try {
+        const ids = JSON.parse(localStorage.getItem(ENCOMENDAS_LIMPEZA_ANEXOS_IDS_KEY) || '[]');
+        return new Set(Array.isArray(ids) ? ids.map(id => String(id)) : []);
+    } catch (_) {
+        return new Set();
+    }
+}
+
+function guardarIdsAnexosLimposEncomendas(ids) {
+    try {
+        const lista = [...ids].slice(-3000);
+        localStorage.setItem(ENCOMENDAS_LIMPEZA_ANEXOS_IDS_KEY, JSON.stringify(lista));
+    } catch (_) {
+        /* Se o armazenamento local falhar, a limpeza continua a ser segura. */
+    }
+}
+
+function deveExecutarLimpezaAnexosEncomendas() {
+    try {
+        const ultima = Number(localStorage.getItem(ENCOMENDAS_LIMPEZA_ANEXOS_ULTIMA_KEY) || 0);
+        return !Number.isFinite(ultima) || Date.now() - ultima > ENCOMENDAS_LIMPEZA_ANEXOS_INTERVALO_MS;
+    } catch (_) {
+        return true;
+    }
+}
+
+function marcarLimpezaAnexosEncomendasExecutada() {
+    try {
+        localStorage.setItem(ENCOMENDAS_LIMPEZA_ANEXOS_ULTIMA_KEY, String(Date.now()));
+    } catch (_) {
+        /* Sem efeito visual; a limpeza pode voltar a tentar noutra sessão. */
+    }
+}
+
+async function listarAnexosEncomendaAntiga(encomendaId) {
+    const { data, error } = await encomendasClient.storage
+        .from(ENCOMENDAS_ANEXOS_BUCKET)
+        .list(String(encomendaId), {
+            limit: 1000,
+            sortBy: { column: 'created_at', order: 'desc' }
+        });
+    if (error) throw error;
+    return (data || []).filter(item => item.name && item.name !== '.emptyFolderPlaceholder');
+}
+
+async function apagarAnexosEncomendaAntiga(encomendaId, anexos) {
+    if (!anexos.length) return 0;
+    const caminhos = anexos.map(anexo => `${encomendaId}/${anexo.name}`);
+    const { error } = await encomendasClient.storage
+        .from(ENCOMENDAS_ANEXOS_BUCKET)
+        .remove(caminhos);
+    if (error) throw error;
+    return caminhos.length;
+}
+
+async function procurarEncomendasConcluidasParaLimparAnexos(inicio, limiteIso) {
+    const { data, error } = await encomendasClient
+        .from('encomendas')
+        .select('id, codigo_encomenda, created_at')
+        .eq('estado', 'Concluído')
+        .lt('created_at', limiteIso)
+        .order('created_at', { ascending: true })
+        .range(inicio, inicio + 199);
+    if (error) throw error;
+    return data || [];
+}
+
+async function limparAnexosAntigosEncomendas() {
+    if (!encomendasClient || !deveExecutarLimpezaAnexosEncomendas()) return;
+
+    const limiteIso = obterDataLimiteAnexosEncomendas().toISOString();
+    const idsLimpos = lerIdsAnexosLimposEncomendas();
+    const idsAfetados = new Set();
+    let apagados = 0;
+    let inicio = 0;
+
+    try {
+        for (let pagina = 0; pagina < 5; pagina += 1) {
+            const encomendas = await procurarEncomendasConcluidasParaLimparAnexos(inicio, limiteIso);
+            if (!encomendas.length) break;
+
+            for (const encomenda of encomendas) {
+                const id = String(encomenda.id || '');
+                if (!id || idsLimpos.has(id)) continue;
+                const anexos = await listarAnexosEncomendaAntiga(id);
+                apagados += await apagarAnexosEncomendaAntiga(id, anexos);
+                idsLimpos.add(id);
+                idsAfetados.add(id);
+            }
+
+            if (encomendas.length < 200) break;
+            inicio += 200;
+        }
+
+        guardarIdsAnexosLimposEncomendas(idsLimpos);
+        marcarLimpezaAnexosEncomendasExecutada();
+
+        if (apagados > 0) {
+            encomendasAdmin = encomendasAdmin.map(encomenda => (
+                idsAfetados.has(String(encomenda.id))
+                    ? { ...encomenda, num_anexos: 0 }
+                    : encomenda
+            ));
+            renderizarEncomendasAdmin();
+            definirStatusEncomendas(`${apagados} anexo(s) antigo(s) eliminado(s) automaticamente.`);
+        }
+    } catch (error) {
+        console.warn('Limpeza automática de anexos indisponível.', error);
     }
 }
 
@@ -532,7 +654,7 @@ function pedirConclusaoLoteEncomendas(quantidade, total) {
         const caixa = criarElementoEncomenda('div', 'admin-fatura-confirmacao-caixa');
         caixa.append(
             criarElementoEncomenda('h3', 'admin-fatura-confirmacao-titulo', `Concluir ${quantidade} encomenda(s)?`),
-            criarElementoEncomenda('p', 'admin-fatura-confirmacao-texto', 'Os anexos destas encomendas serão eliminados definitivamente.'),
+            criarElementoEncomenda('p', 'admin-fatura-confirmacao-texto', 'Os anexos destas encomendas serão mantidos e eliminados automaticamente após 2 meses.'),
             criarElementoEncomenda('p', 'admin-fatura-confirmacao-texto', 'As notas internas serão mantidas.'),
             criarElementoEncomenda('p', 'admin-fatura-confirmacao-texto', `Total selecionado: ${formatarEuroEncomenda(total)}.`),
             criarElementoEncomenda('p', 'admin-fatura-confirmacao-texto', 'Pode emitir os recibos no Moloni agora ou deixar para mais tarde.'),
@@ -868,6 +990,7 @@ async function iniciarPainelEncomendas() {
         const filtroEstado = document.getElementById('filtro-estado-encomendas-admin');
         if (filtroEstado) filtroEstado.value = ENCOMENDAS_ESTADO_INICIAL;
         await carregarEncomendasAdmin();
+        limparAnexosAntigosEncomendas();
         const codigoUrl = obterCodigoEncomendaUrlAdmin();
         if (codigoUrl) await abrirEncomendaAdminPorCodigo(codigoUrl);
     } catch (error) {
