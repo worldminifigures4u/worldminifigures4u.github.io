@@ -845,7 +845,6 @@ window.AdminEncomendaVista = (function () {
     }
 
     async function contarAnexos(encomenda) {
-        if (estadoNormalizado(encomenda.estado) === "Concluído") return 0;
         const anexos = await listarAnexos(encomenda);
         return anexos.length;
     }
@@ -853,10 +852,6 @@ window.AdminEncomendaVista = (function () {
     async function carregarContagensAnexosLista(encomendas) {
         if (!Array.isArray(encomendas) || !encomendas.length) return;
         await Promise.all(encomendas.map(async (encomenda) => {
-            if (estadoNormalizado(encomenda.estado) === "Concluído") {
-                atualizarContagemAnexosLista(encomenda, 0);
-                return;
-            }
             try {
                 const quantidade = await contarAnexos(encomenda);
                 atualizarContagemAnexosLista(encomenda, quantidade);
@@ -1071,15 +1066,13 @@ window.AdminEncomendaVista = (function () {
         const lista = criarElemento("div", "admin-encomenda-anexos-lista");
         const statusAnexos = criarElemento("p", "admin-encomenda-gestao-status");
         const concluida = estadoNormalizado(encomenda.estado) === "Concluído";
-        let avisoConcluida = null;
 
         if (concluida) {
-            avisoConcluida = criarElemento(
+            conteudo.appendChild(criarElemento(
                 "p",
                 "admin-encomenda-anexos-aviso",
-                "Os anexos foram eliminados quando a encomenda foi concluída."
-            );
-            conteudo.appendChild(avisoConcluida);
+                "Os anexos desta encomenda concluída foram mantidos."
+            ));
         } else {
             const upload = criarElemento("div", "admin-encomenda-gestao-caixa admin-encomenda-anexos-upload");
             const campoFicheiro = criarElemento("label", "admin-encomenda-anexos-escolher");
@@ -1164,20 +1157,6 @@ window.AdminEncomendaVista = (function () {
         bloco.carregarAnexos = async () => {
             if (bloco.dataset.anexosCarregados === "true") return;
             bloco.dataset.anexosCarregados = "true";
-            if (concluida) {
-                statusAnexos.textContent = "A verificar anexos residuais...";
-                try {
-                    const eliminados = await apagarAnexos(encomenda);
-                    avisoConcluida.textContent = eliminados
-                        ? `${eliminados} anexo(s) residual(is) eliminado(s). As notas internas foram mantidas.`
-                        : "Não existem anexos nesta encomenda concluída. As notas internas foram mantidas.";
-                    statusAnexos.textContent = "";
-                } catch (error) {
-                    bloco.dataset.anexosCarregados = "false";
-                    statusAnexos.textContent = "Não foi possível verificar a eliminação dos anexos: " + (error.message || "sem detalhe");
-                }
-                return;
-            }
             await carregarAnexos(encomenda, lista, statusAnexos);
         };
         return bloco;
@@ -1412,8 +1391,7 @@ window.AdminEncomendaVista = (function () {
         const codigo = encomenda.codigo_encomenda || "";
         const origem = rotuloOrigemEncomenda(encomenda);
         const mensagens = [
-            "Todos os anexos desta encomenda serão eliminados definitivamente.",
-            "As notas internas serão mantidas."
+            "Os anexos e as notas internas serão mantidos."
         ];
         const botoes = [
             { texto: "Cancelar", valor: null, classe: "wallapop-botao admin-fatura-confirmacao-cancelar", foco: true }
@@ -1745,16 +1723,6 @@ window.AdminEncomendaVista = (function () {
                 stock_reposto: encomenda.stock_reposto,
                 codigo_seguimento: encomenda.codigo_seguimento
             });
-            let anexosEliminados = 0;
-            let erroAnexos = null;
-            if (estado === "Concluído") {
-                try {
-                    anexosEliminados = await apagarAnexos(encomenda);
-                } catch (erroLimpezaAnexos) {
-                    erroAnexos = erroLimpezaAnexos;
-                    console.error("Erro ao eliminar anexos da encomenda concluida.", erroLimpezaAnexos);
-                }
-            }
             select.dataset.estadoAtual = estado;
             atualizarListaAposAlteracaoEncomenda();
             let emitirFaturaDepois = false;
@@ -1776,24 +1744,16 @@ window.AdminEncomendaVista = (function () {
                     forcarEmissaoFatura = opcoes.forcarEmissaoFatura === true || encomendaFaturaMoloniOpcional(encomenda);
                 }
             }
-            if (erroAnexos) {
-                hooks.definirStatus(
-                    `Estado atualizado, mas não foi possível eliminar os anexos: ${erroAnexos.message || "erro desconhecido"}`,
-                    true
-                );
-            } else {
-                const limpeza = estado === "Concluído" ? ` ${anexosEliminados} anexo(s) eliminado(s).` : "";
-                const reposicao = estadoRepostoNormalizado(estado) && data?.stock_reposto_agora ? " Stock reposto." : "";
-                const recuperacao = estadoRepostoNormalizado(estadoAnterior) && !estadoRepostoNormalizado(estado)
-                    ? (data?.stock_reduzido ? " Stock reduzido novamente." : " Encomenda recuperada.")
-                    : "";
-                const seguimento = codigoSeguimentoPendente
-                    ? ` Seguimento: ${encomenda.codigo_seguimento}.`
-                    : "";
-                hooks.definirStatus(
-                    `Estado da encomenda ${encomenda.codigo_encomenda || ""} atualizado.${limpeza}${reposicao}${recuperacao}${seguimento}`
-                );
-            }
+            const reposicao = estadoRepostoNormalizado(estado) && data?.stock_reposto_agora ? " Stock reposto." : "";
+            const recuperacao = estadoRepostoNormalizado(estadoAnterior) && !estadoRepostoNormalizado(estado)
+                ? (data?.stock_reduzido ? " Stock reduzido novamente." : " Encomenda recuperada.")
+                : "";
+            const seguimento = codigoSeguimentoPendente
+                ? ` Seguimento: ${encomenda.codigo_seguimento}.`
+                : "";
+            hooks.definirStatus(
+                `Estado da encomenda ${encomenda.codigo_encomenda || ""} atualizado.${reposicao}${recuperacao}${seguimento}`
+            );
             if (typeof opcoes.fecharAoAlterarEstado === "function") {
                 opcoes.fecharAoAlterarEstado(encomenda);
             } else if (estado === "Concluído" && typeof opcoes.fecharAoConcluir === "function") {
