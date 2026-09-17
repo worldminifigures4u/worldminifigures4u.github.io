@@ -1043,7 +1043,7 @@ function atualizarModoPlataforma() {
         ? 'Ficheiros OLX'
         : (anuncio ? `An\u00fancio ${plataforma}` : `Ficheiro ${plataforma}`);
     document.getElementById('plataforma-resumo-texto').textContent = olx
-        ? 'Ser\u00e3o criados dois TXT: um para enviar ao cliente e outro para a gest\u00e3o interna.'
+        ? 'Ser\u00e3o criados dois TXT e o PNG com as figuras.'
         : (geraImagens
             ? 'Ser\u00e3o criados o PNG com as figuras e o TXT da encomenda.'
             : `Ser\u00e1 criado um TXT interno ${todocoleccion ? 'com quantidade, nome e SKU separados por tabula\u00e7\u00f5es.' : 'da encomenda.'}`);
@@ -1051,9 +1051,11 @@ function atualizarModoPlataforma() {
         ? 'Guardar an\u00fancio'
         : (olx ? 'Guardar ficheiros OLX' : `Guardar ficheiro ${plataforma}`);
     atualizarBotaoRegistoPlataforma();
-    document.getElementById('plataforma-ajuda-ficheiros').textContent = geraImagens
-        ? 'Ao guardar, ser\u00e3o criados o PNG com as figuras e o TXT dentro da pasta da encomenda.'
-        : 'Ao guardar, escolhe a pasta de destino. Dentro dela ser\u00e1 criada uma pasta com o nome da encomenda.';
+    document.getElementById('plataforma-ajuda-ficheiros').textContent = olx
+        ? 'Ao guardar, ser\u00e3o criados os dois TXT OLX e o PNG com as figuras dentro da pasta da encomenda.'
+        : (geraImagens
+            ? 'Ao guardar, ser\u00e3o criados o PNG com as figuras e o TXT dentro da pasta da encomenda.'
+            : 'Ao guardar, escolhe a pasta de destino. Dentro dela ser\u00e1 criada uma pasta com o nome da encomenda.');
     marcarWallapopPorRegistar();
     atualizarOpcoesEnvioPlataforma();
 }
@@ -2894,6 +2896,31 @@ function canvasParaBlobWallapop(canvas) {
     });
 }
 
+async function criarFicheirosImagemPlataforma(itensFicheiros) {
+    await garantirHtml2CanvasPlataforma();
+    const paginasItens = dividirItensWallapop(itensFicheiros);
+    if (!paginasItens.length) throw new Error('Nao existem folhas para exportar.');
+    const totalPaginas = paginasItens.length;
+    const totalFiguras = calcularTotalFigurasLoteWallapop(itensFicheiros);
+    const totalPrecoLote = calcularTotalFicheirosPlataforma(itensFicheiros);
+    const ficheiros = [];
+
+    for (let indice = 0; indice < paginasItens.length; indice += 1) {
+        const canvas = await gerarCanvasFolhaWallapop(
+            paginasItens[indice],
+            indice + 1,
+            totalPaginas,
+            totalFiguras,
+            totalPrecoLote
+        );
+        const imagem = await canvasParaBlobWallapop(canvas);
+        const nomeImagem = paginasItens.length === 1 ? 'foto anuncio.png' : `foto anuncio ${indice + 1}.png`;
+        ficheiros.push({ nome: nomeImagem, conteudo: imagem });
+    }
+
+    return ficheiros;
+}
+
 let html2canvasPromessaPlataforma = null;
 
 function garantirHtml2CanvasPlataforma() {
@@ -2934,13 +2961,6 @@ async function descarregarImagemWallapop(opcoes = {}) {
         const pastaBase = opcoes.pastaBase || await obterPastaBaseWallapop();
 
         definirStatusWallapop('A gerar as imagens...');
-        await garantirHtml2CanvasPlataforma();
-        const paginasItens = dividirItensWallapop(itensFicheiros);
-        if (!paginasItens.length) throw new Error('Nao existem folhas para exportar.');
-        const totalPaginas = paginasItens.length;
-        const totalFiguras = calcularTotalFigurasLoteWallapop(itensFicheiros);
-        const totalPrecoLote = calcularTotalFicheirosPlataforma(itensFicheiros);
-
         const ficheiros = [
             { nome: `${nomeEncomenda}.txt`, conteudo: criarTextoEncomendaWallapop() }
         ];
@@ -2948,18 +2968,8 @@ async function descarregarImagemWallapop(opcoes = {}) {
         if (textoNotas) {
             ficheiros.push({ nome: 'notas encomenda.txt', conteudo: textoNotas });
         }
-        for (let indice = 0; indice < paginasItens.length; indice += 1) {
-            const canvas = await gerarCanvasFolhaWallapop(
-                paginasItens[indice],
-                indice + 1,
-                totalPaginas,
-                totalFiguras,
-                totalPrecoLote
-            );
-            const imagem = await canvasParaBlobWallapop(canvas);
-            const nomeImagem = paginasItens.length === 1 ? 'foto anuncio.png' : `foto anuncio ${indice + 1}.png`;
-            ficheiros.push({ nome: nomeImagem, conteudo: imagem });
-        }
+        const ficheirosImagem = await criarFicheirosImagemPlataforma(itensFicheiros);
+        ficheiros.push(...ficheirosImagem);
 
         definirStatusWallapop('A guardar os ficheiros...');
         // Voltar a obter a subpasta imediatamente antes de escrever (evita handle stale).
@@ -2967,7 +2977,7 @@ async function descarregarImagemWallapop(opcoes = {}) {
         for (const ficheiro of ficheiros) {
             await escreverFicheiroWallapop(pastaEncomenda, ficheiro.nome, ficheiro.conteudo);
         }
-        definirStatusWallapop(`Pasta "${nomeEncomenda}" guardada com ${paginasItens.length} imagem(ns).`);
+        definirStatusWallapop(`Pasta "${nomeEncomenda}" guardada com ${ficheirosImagem.length} imagem(ns).`);
         return true;
     } catch (error) {
         console.error(error);
@@ -3007,10 +3017,15 @@ async function guardarFicheirosPlataforma(opcoes = {}) {
         const pastaEncomenda = await pastaBase.getDirectoryHandle(nomeEncomenda, { create: true });
         const textoNotas = criarTextoNotasAnuncioPlataforma();
         if (plataforma === 'OLX') {
+            definirStatusWallapop('A gerar a imagem OLX...');
+            const ficheirosImagem = await criarFicheirosImagemPlataforma(obterItensParaFicheirosPlataforma());
             await escreverFicheiroWallapop(pastaEncomenda, 'informacao cliente.txt', criarTextoClienteOlx());
             await escreverFicheiroWallapop(pastaEncomenda, `${nomeEncomenda}.txt`, criarTextoInternoPlataforma());
             if (textoNotas) await escreverFicheiroWallapop(pastaEncomenda, 'notas encomenda.txt', textoNotas);
-            definirStatusWallapop(`Pasta "${nomeEncomenda}" guardada com os dois ficheiros OLX.`);
+            for (const ficheiro of ficheirosImagem) {
+                await escreverFicheiroWallapop(pastaEncomenda, ficheiro.nome, ficheiro.conteudo);
+            }
+            definirStatusWallapop(`Pasta "${nomeEncomenda}" guardada com os dois ficheiros OLX e ${ficheirosImagem.length} imagem(ns).`);
         } else {
             await escreverFicheiroWallapop(pastaEncomenda, `${nomeEncomenda}.txt`, criarTextoInternoPlataforma());
             if (textoNotas) await escreverFicheiroWallapop(pastaEncomenda, 'notas encomenda.txt', textoNotas);
