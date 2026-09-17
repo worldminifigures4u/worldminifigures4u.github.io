@@ -677,7 +677,7 @@ function aplicarListaExNaLinhaEdicaoFornecedor(linha) {
     return true;
 }
 
-function aplicarListaOsNaEdicaoFornecedor() {
+async function aplicarListaOsNaEdicaoFornecedor() {
     const modal = document.getElementById("fornecedor-edicao-modal");
     if (!modal || modal.hidden) return;
     const area = modal.querySelector("#fornecedor-edicao-lista-os");
@@ -700,7 +700,7 @@ function aplicarListaOsNaEdicaoFornecedor() {
     }
 
     const linhas = Array.from(modal.querySelectorAll(".fornecedor-edicao-produto"));
-    const aplicadas = [];
+    const aplicar = [];
     const naoEncontradas = [];
     const vistas = new Set();
 
@@ -714,9 +714,7 @@ function aplicarListaOsNaEdicaoFornecedor() {
             naoEncontradas.push(item.referencia);
             return;
         }
-        if (aplicarListaOsNaLinhaEdicaoFornecedor(linha, item.quantidadeOs)) {
-            aplicadas.push(item.referencia);
-        }
+        aplicar.push({ referencia: item.referencia, quantidadeOs: item.quantidadeOs, linha });
     });
 
     const avisos = [];
@@ -724,7 +722,7 @@ function aplicarListaOsNaEdicaoFornecedor() {
         avisos.push(`${naoEncontradas.length} não estão nesta encomenda: ${naoEncontradas.join(", ")}`);
     }
     if (erros.length) avisos.push(erros.join("; "));
-    if (!aplicadas.length) {
+    if (!aplicar.length) {
         definirStatusEdicaoFornecedor(
             status,
             "erro",
@@ -734,6 +732,20 @@ function aplicarListaOsNaEdicaoFornecedor() {
         );
         return;
     }
+
+    if (!(await mostrarConfirmacaoSite(
+        `Marcar ${aplicar.length} figura(s) como OS?\n\nEssas figuras vão sair do “a receber” e ficar marcadas como OS/Falta.${avisos.length ? "\n\nAtenção: " + avisos.join(" | ") : ""}`,
+        { titulo: "Confirmar lista OS", textoConfirmar: "Marcar OS", textoCancelar: "Cancelar" }
+    ))) {
+        return;
+    }
+
+    const aplicadas = [];
+    aplicar.forEach((item) => {
+        if (aplicarListaOsNaLinhaEdicaoFornecedor(item.linha, item.quantidadeOs)) {
+            aplicadas.push(item.referencia);
+        }
+    });
     definirStatusEdicaoFornecedor(
         status,
         avisos.length ? "aviso" : "sucesso",
@@ -741,7 +753,7 @@ function aplicarListaOsNaEdicaoFornecedor() {
     );
 }
 
-function aplicarListaExNaEdicaoFornecedor() {
+async function aplicarListaExNaEdicaoFornecedor() {
     const modal = document.getElementById("fornecedor-edicao-modal");
     if (!modal || modal.hidden) return;
     const area = modal.querySelector("#fornecedor-edicao-lista-ex");
@@ -764,7 +776,7 @@ function aplicarListaExNaEdicaoFornecedor() {
     }
 
     const linhas = Array.from(modal.querySelectorAll(".fornecedor-edicao-produto"));
-    const aplicadas = [];
+    const aplicar = [];
     const naoEncontradas = [];
     const vistas = new Set();
 
@@ -778,9 +790,7 @@ function aplicarListaExNaEdicaoFornecedor() {
             naoEncontradas.push(item.referencia);
             return;
         }
-        if (aplicarListaExNaLinhaEdicaoFornecedor(linha)) {
-            aplicadas.push(item.referencia);
-        }
+        aplicar.push({ referencia: item.referencia, linha });
     });
 
     const avisos = [];
@@ -788,7 +798,7 @@ function aplicarListaExNaEdicaoFornecedor() {
         avisos.push(`${naoEncontradas.length} não estão nesta encomenda: ${naoEncontradas.join(", ")}`);
     }
     if (erros.length) avisos.push(erros.join("; "));
-    if (!aplicadas.length) {
+    if (!aplicar.length) {
         definirStatusEdicaoFornecedor(
             status,
             "erro",
@@ -798,6 +808,20 @@ function aplicarListaExNaEdicaoFornecedor() {
         );
         return;
     }
+
+    if (!(await mostrarConfirmacaoSite(
+        `Marcar ${aplicar.length} figura(s) como EX?\n\nEssas figuras vão sair do “a receber” sem criar OS/Falta.${avisos.length ? "\n\nAtenção: " + avisos.join(" | ") : ""}`,
+        { titulo: "Confirmar lista EX", textoConfirmar: "Marcar EX", textoCancelar: "Cancelar" }
+    ))) {
+        return;
+    }
+
+    const aplicadas = [];
+    aplicar.forEach((item) => {
+        if (aplicarListaExNaLinhaEdicaoFornecedor(item.linha)) {
+            aplicadas.push(item.referencia);
+        }
+    });
     definirStatusEdicaoFornecedor(
         status,
         avisos.length ? "aviso" : "sucesso",
