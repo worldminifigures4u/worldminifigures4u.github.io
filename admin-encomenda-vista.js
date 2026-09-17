@@ -17,6 +17,7 @@ window.AdminEncomendaVista = (function () {
         "Cancelado"
     ];
     const MARCACOES_ORDEM_STORAGE_KEY = "figures-planet-encomenda-marcacoes-ordem";
+    const ANEXOS_RETENCAO_MESES = 2;
     const SEM_IMAGEM = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(
         '<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120"><rect width="100%" height="100%" fill="#222"/><text x="50%" y="50%" text-anchor="middle" dominant-baseline="middle" fill="#888" font-family="Arial" font-size="13">Sem foto</text></svg>'
     );
@@ -97,6 +98,15 @@ window.AdminEncomendaVista = (function () {
     function estadoRepostoNormalizado(estado) {
         const normalizado = estadoNormalizado(estado);
         return normalizado === "Cancelado" || normalizado === "Devolvido";
+    }
+
+    function anexosEncomendaExpirados(encomenda) {
+        const base = encomenda?.data_pagamento || encomenda?.created_at;
+        if (!base) return false;
+        const limite = new Date(base);
+        if (Number.isNaN(limite.getTime())) return false;
+        limite.setMonth(limite.getMonth() + ANEXOS_RETENCAO_MESES);
+        return limite.getTime() <= Date.now();
     }
 
     function formatarNomeTituloEncomenda(valor) {
@@ -1067,10 +1077,13 @@ window.AdminEncomendaVista = (function () {
         const concluida = estadoNormalizado(encomenda.estado) === "Concluído";
 
         if (concluida) {
+            const mensagemAnexos = anexosEncomendaExpirados(encomenda)
+                ? "Os anexos desta encomenda foram apagados automaticamente após 2 meses."
+                : "Os anexos desta encomenda concluída foram mantidos e serão apagados automaticamente após 2 meses.";
             conteudo.appendChild(criarElemento(
                 "p",
                 "admin-encomenda-anexos-aviso",
-                "Os anexos desta encomenda concluída foram mantidos."
+                mensagemAnexos
             ));
         } else {
             const upload = criarElemento("div", "admin-encomenda-gestao-caixa admin-encomenda-anexos-upload");
