@@ -1889,7 +1889,7 @@ function garantirModalEdicaoProdutoMapa() {
             <div class="mapas-produto-modal-topo">
                 <h3 id="mapas-produto-modal-titulo">Ficha do produto</h3>
                 <div class="mapas-produto-acoes mapas-produto-acoes-topo" id="mapas-produto-acoes-ver">
-                    <button type="button" id="mapas-produto-passar-editar" class="wallapop-botao wallapop-botao-destaque">Editar produto</button>
+                    <button type="button" id="mapas-produto-passar-editar" class="wallapop-botao wallapop-botao-destaque">Editar</button>
                     <button type="button" id="mapas-produto-fechar-ficha" class="wallapop-botao">Fechar</button>
                 </div>
                 <div class="mapas-produto-acoes mapas-produto-acoes-topo" id="mapas-produto-acoes-edicao" hidden>
