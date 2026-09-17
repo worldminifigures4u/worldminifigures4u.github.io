@@ -757,7 +757,7 @@ input[type="number"]::-webkit-inner-spin-button{
     height:var(--campo-limpar-tamanho);
     border:0;
     border-radius:10px;
-    background:#ff4d4d;
+    background:#7a1f1f;
     color:#fff;
     font-size:calc(var(--campo-limpar-tamanho) * 0.62);
     font-weight:800;
@@ -775,7 +775,7 @@ input[type="number"]::-webkit-inner-spin-button{
 
 .campo-limpar-botao:hover,
 .campo-limpar-botao:focus-visible{
-    background:#e04343;
+    background:#a52828;
     outline:none;
 }
 

@@ -62,7 +62,7 @@ body.pagina-fornecedores-admin{ margin:0; padding-left:0; padding-right:0; paddi
         .fornecedor-quantidade-input{ width:64px; height:36px; box-sizing:border-box; border:1px solid #444; border-radius:6px; background:#242424; color:#fff; font-weight:800; text-align:center; }
         .fornecedor-preco-custo-label{ display:grid; gap:4px; color:#ddd; font-size:12px; font-weight:800; min-width:112px; }
         .fornecedor-preco-custo-input{ width:112px; height:36px; box-sizing:border-box; border:1px solid #444; border-radius:6px; background:#242424; color:#fff; font-weight:800; text-align:right; padding:6px 8px; }
-        .fornecedor-remover{ background:#ff4747 !important; }
+        .fornecedor-remover{ background:#7a1f1f !important; }
         .fornecedor-lista-final-box{ display:grid; gap:8px; margin:12px 0; padding:12px; border:1px solid #333; border-radius:8px; background:#101010; }
         .fornecedor-lista-final-box h4{ margin:0; color:var(--cor-texto-principal, #fff); font-size:16px; }
         .fornecedor-lista-final-box p{ margin:0; color:#cfcfcf; font-size:13px; }
@@ -2130,7 +2130,7 @@ body.pagina-mapas-admin > main.fornecedores-admin {
     height: 28px;
     border: 0;
     border-radius: 4px;
-    background: #ff4747;
+    background: #7a1f1f;
     color: #fff;
     font-size: 18px;
     font-weight: 800;
@@ -2141,7 +2141,7 @@ body.pagina-mapas-admin > main.fornecedores-admin {
 
 .pagina-fornecedores-unificada .fornecedor-remover-linha:hover,
 .pagina-fornecedores-unificada .fornecedor-remover-linha:focus-visible {
-    background: #d32f2f;
+    background: #a52828;
 }
 
 .pagina-fornecedores-unificada :is(.fornecedor-resultados, .fornecedor-selecionados, .fornecedor-pedido-produtos) .fornecedor-tabela-encomenda .fornecedor-selecionado-nome {

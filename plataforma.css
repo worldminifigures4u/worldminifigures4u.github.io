@@ -276,9 +276,14 @@ body.pagina-wallapop{
         }
 
         .wallapop-quantidade .wallapop-remover{
-            background:#ff4d4d;
+            background:#7a1f1f;
             color:#fff;
             border-radius:8px;
+        }
+
+        .wallapop-quantidade .wallapop-remover:hover,
+        .wallapop-quantidade .wallapop-remover:focus-visible{
+            background:#a52828;
         }
 
         .wallapop-controlos-finais{

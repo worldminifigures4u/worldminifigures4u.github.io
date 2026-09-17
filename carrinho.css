@@ -240,8 +240,13 @@
         }
 
         .btn-remover{
-            background:#ff4d4d;
+            background:#7a1f1f;
             color:white;
+        }
+
+        .btn-remover:hover,
+        .btn-remover:focus-visible{
+            background:#a52828;
         }
 
         .select-envio{

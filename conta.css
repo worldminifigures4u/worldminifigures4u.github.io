@@ -187,7 +187,7 @@ body[data-page="conta"].conta-a-verificar #painel-cliente::before{
         }
 
         .btn-logout {
-            background: #ff4d4d;
+            background: #7a1f1f;
             border: none;
             border-radius: 14px;
             padding: 8px 14px;
@@ -201,7 +201,7 @@ body[data-page="conta"].conta-a-verificar #painel-cliente::before{
         }
 
         .btn-logout:hover {
-            background: #cc3333;
+            background: #a52828;
         }
 
         .btn-link-cliente{
@@ -248,10 +248,10 @@ body[data-page="conta"].conta-a-verificar #painel-cliente::before{
             width:100%;
             padding:11px 14px;
             min-height:34px;
-            border:1px solid #ff4d55;
+            border:1px solid #7a1f1f;
             border-radius:14px;
             background:transparent;
-            color:#ff6b72;
+            color:#ffb3b3;
             font-weight:800;
             font-size:14px;
             cursor:pointer;
@@ -259,7 +259,7 @@ body[data-page="conta"].conta-a-verificar #painel-cliente::before{
 
         .btn-solicitar-eliminacao:hover,
         .btn-solicitar-eliminacao:focus-visible{
-            background:#ff4d55;
+            background:#7a1f1f;
             color:#fff;
         }
 
