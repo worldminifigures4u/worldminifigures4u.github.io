@@ -352,6 +352,41 @@ function fecharModalEncomendaAdmin() {
     document.body.classList.remove('admin-encomenda-modal-aberto');
 }
 
+function obterResumoVisualModalEncomenda(encomenda = {}) {
+    const cliente = encomenda.clientes_gestao || {};
+    const produtos = Array.isArray(encomenda.produtos) ? encomenda.produtos : [];
+    return JSON.stringify({
+        id: String(encomenda.id || ''),
+        codigo: String(encomenda.codigo_encomenda || ''),
+        origem: String(encomenda.origem || ''),
+        estado: String(encomenda.estado || ''),
+        total: Number(encomenda.total || 0),
+        num_anexos: Number(encomenda.num_anexos || 0),
+        nome_cliente: String(cliente.nome || encomenda.nome_cliente || ''),
+        email_cliente: String(cliente.email || encomenda.email_cliente || ''),
+        telefone_cliente: String(cliente.telefone || encomenda.telefone_cliente || ''),
+        morada_cliente: String(cliente.morada || encomenda.morada_cliente || ''),
+        pais_cliente: String(cliente.pais || encomenda.pais_cliente || ''),
+        metodo_envio: String(encomenda.metodo_envio_nome || encomenda.metodo_envio || ''),
+        codigo_seguimento: String(encomenda.codigo_seguimento || ''),
+        metodo_pagamento: String(encomenda.metodo_pagamento || ''),
+        referencia_externa: String(encomenda.referencia_externa || ''),
+        notas_internas: String(encomenda.notas_internas || ''),
+        produtos: produtos.map((item, indice) => ({
+            id: String(item.id_produto || item.id || ''),
+            quantidade: Number(item.quantidade || item.qtd || 1),
+            preco: Number(item.preco_unitario ?? item.preco ?? 0),
+            ordem: indice,
+            penultimo: Boolean(item.penultimo),
+            ultimo: Boolean(item.ultimo)
+        }))
+    });
+}
+
+function encomendaModalVisualIgual(a, b) {
+    return obterResumoVisualModalEncomenda(a) === obterResumoVisualModalEncomenda(b);
+}
+
 function abrirModalEncomendaAdmin(encomenda, opcoes = {}) {
     const carregamentoId = ++carregamentoImagensModalId;
     const modal = document.getElementById('admin-encomenda-modal');
@@ -386,7 +421,9 @@ function abrirModalEncomendaAdmin(encomenda, opcoes = {}) {
         .then(atualizada => {
             if (!atualizada || modal.hidden || carregamentoId !== carregamentoImagensModalId) return;
             if (String(modal.dataset.encomendaId || '') !== String(atualizada.id || '')) return;
-            abrirModalEncomendaAdmin(atualizada, { semRecarregar: true });
+            if (!encomendaModalVisualIgual(encomenda, atualizada)) {
+                abrirModalEncomendaAdmin(atualizada, { semRecarregar: true });
+            }
             renderizarEncomendasAdmin();
         })
         .catch(error => console.warn('Nao foi possivel atualizar a encomenda ao abrir.', error));
