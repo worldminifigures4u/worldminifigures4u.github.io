@@ -3452,7 +3452,7 @@ async function registarEncomendaWallapop() {
         }
     }
 
-    if (!linkPerfil) {
+    if (!linkPerfil && !eraEdicao) {
         definirStatusWallapop('Cole primeiro o link do perfil ou o número WhatsApp do cliente.', true);
         campoPerfil.focus();
         return;
