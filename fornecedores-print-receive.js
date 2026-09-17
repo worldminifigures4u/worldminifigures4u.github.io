@@ -260,6 +260,16 @@ async function imprimirPedidoFornecedor(id) {
 
 const receberStockFornecedorEmCurso = new Set();
 
+async function avisarProblemaReceberStockFornecedor(mensagem) {
+    definirStatusFornecedor(mensagem, true);
+    if (typeof mostrarAvisoSite === "function") {
+        await mostrarAvisoSite(mensagem, {
+            titulo: "Receber stock",
+            textoConfirmar: "OK"
+        });
+    }
+}
+
 async function receberPedidoFornecedor(id) {
     const idPedido = String(id || '');
     if (!idPedido || receberStockFornecedorEmCurso.has(idPedido)) return;
@@ -321,7 +331,7 @@ async function receberPedidoFornecedor(id) {
         return { produto_id: produtoAtual?.id || itemPedido.id, quantidade };
     }).filter(item => item.quantidade > 0);
     if (!rececoes.length) {
-        definirStatusFornecedor('Indique pelo menos uma quantidade recebida (dentro do pendente).', true);
+        await avisarProblemaReceberStockFornecedor('Indique pelo menos uma quantidade recebida dentro do pendente.');
         return;
     }
     const confirmouRececao = await mostrarConfirmacaoSite(
@@ -384,9 +394,12 @@ async function receberPedidoFornecedor(id) {
             : '';
         definirStatusFornecedor(`Stock atualizado (+${unidades} un.) para a encomenda ${atualizado.codigo || ''}.${avisoTeto}${avisoAtivo}`);
         await mostrarAvisosStockRecebidoFornecedor(aplicado);
+        if (typeof fecharModalPedidoFornecedor === "function") {
+            fecharModalPedidoFornecedor();
+        }
     } catch (error) {
         console.error(error);
-        definirStatusFornecedor('Erro ao receber stock: ' + (error.message || 'erro desconhecido'), true);
+        await avisarProblemaReceberStockFornecedor('Erro ao receber stock: ' + (error.message || 'erro desconhecido'));
     } finally {
         receberStockFornecedorEmCurso.delete(idPedido);
     }
