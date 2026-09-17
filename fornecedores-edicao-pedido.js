@@ -228,12 +228,10 @@ function itemPodeReverterListaFinalVaziaFornecedor(item) {
     const quantidade = Math.max(0, Math.floor(Number(item?.quantidade || 0)));
     const quantidadeOriginal = Math.max(0, Math.floor(Number(item?.quantidade_original || item?.quantidade || 0)));
     const faltaOs = Math.max(0, Math.floor(Number(item?.falta_os || 0)));
-    const estado = String(item?.estado_fornecedor || "").trim().toUpperCase();
     const dataOs = extrairDataOsDeTextoFornecedor(item?.data_os || "");
     return quantidade === 0
         && quantidadeOriginal > 0
         && faltaOs === quantidadeOriginal
-        && estado === "OS"
         && dataOs === dataOsHojeFornecedor();
 }
 
