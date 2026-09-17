@@ -1631,7 +1631,7 @@ function garantirGaleriaProdutoMapa() {
     modal.hidden = true;
     modal.innerHTML = `
         <div class="mapas-produto-galeria-dialog" role="dialog" aria-modal="true" aria-label="Fotos do produto">
-            <button type="button" class="mapas-produto-galeria-fechar" aria-label="Fechar fotos">&times;</button>
+            <button type="button" class="mapas-produto-galeria-fechar">Fechar</button>
             <button type="button" class="mapas-produto-galeria-nav mapas-produto-galeria-anterior" aria-label="Foto anterior">&lsaquo;</button>
             <figure class="mapas-produto-galeria-figura">
                 <img class="mapas-produto-galeria-imagem" alt="">
@@ -1895,7 +1895,7 @@ function garantirModalEdicaoProdutoMapa() {
                 <div class="mapas-produto-acoes mapas-produto-acoes-topo" id="mapas-produto-acoes-edicao" hidden>
                     <button type="submit" form="mapas-produto-form" id="mapas-produto-guardar" class="wallapop-botao wallapop-botao-destaque">Guardar</button>
                     <button type="button" id="mapas-produto-apagar" class="wallapop-botao mapas-produto-apagar" hidden>Apagar</button>
-                    <button type="button" id="mapas-produto-cancelar" class="mapas-produto-cancelar-cruz" aria-label="Cancelar edição" title="Cancelar edição">&times;</button>
+                    <button type="button" id="mapas-produto-cancelar" class="wallapop-botao mapas-produto-fechar-edicao">Fechar</button>
                 </div>
             </div>
             <form id="mapas-produto-form" class="mapas-produto-form">

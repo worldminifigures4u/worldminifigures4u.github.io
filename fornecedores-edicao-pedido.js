@@ -853,7 +853,7 @@ function garantirModalEdicaoFornecedor() {
         <div class="fornecedor-edicao-dialog" role="dialog" aria-modal="true" aria-labelledby="fornecedor-edicao-titulo">
             <div class="fornecedor-edicao-topo">
                 <h3 id="fornecedor-edicao-titulo">Editar encomenda do fornecedor</h3>
-                <button type="button" class="fornecedor-edicao-fechar" id="fornecedor-edicao-fechar" aria-label="Fechar">x</button>
+                <button type="button" class="fornecedor-edicao-fechar" id="fornecedor-edicao-fechar">Fechar</button>
             </div>
             <form id="fornecedor-edicao-form" class="fornecedor-edicao-form">
                 <input type="hidden" id="fornecedor-edicao-id">

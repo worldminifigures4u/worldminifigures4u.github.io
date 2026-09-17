@@ -107,15 +107,21 @@
             position:absolute;
             top:24px;
             right:max(24px, calc((100vw - 1096px) / 2));
-            width:44px;
+            min-width:82px;
             height:44px;
-            border:0;
+            padding:0 14px;
+            border:1px solid #ffc400;
             border-radius:4px;
-            background:#ff4d4d;
+            background:#111;
             color:#fff;
-            font-size:30px;
-            line-height:1;
+            font-size:15px;
+            font-weight:800;
             cursor:pointer;
+        }
+
+        .admin-imagem-modal-fechar:hover,
+        .admin-imagem-modal-fechar:focus-visible{
+            background:#242424;
         }
 
         body.admin-imagem-modal-aberto{

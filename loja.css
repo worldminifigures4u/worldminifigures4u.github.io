@@ -407,21 +407,22 @@
             position:fixed;
             top:18px;
             right:22px;
-            width:44px;
+            min-width:82px;
             height:44px;
-            border:0;
+            padding:0 14px;
+            border:1px solid #ffc400;
             border-radius:4px;
-            background:#ff4d4d;
+            background:#111;
             color:#fff;
-            font-size:30px;
-            line-height:1;
+            font-size:15px;
+            font-weight:800;
             cursor:pointer;
             z-index:10001;
         }
 
         .loja-foto-modal-fechar:hover,
         .loja-foto-modal-fechar:focus-visible{
-            background:#e04343;
+            background:#242424;
             outline:none;
         }
 

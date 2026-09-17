@@ -1695,14 +1695,21 @@ body.pagina-encomendas-admin{
     position:absolute;
     top:12px;
     right:12px;
-    width:38px;
+    min-width:76px;
     height:38px;
-    border:0;
+    padding:0 14px;
+    border:1px solid var(--cor-botao-secundario-borda, #ffc107);
     border-radius:5px;
-    background:#ff4d4d;
-    color:#fff;
-    font-size:26px;
+    background:transparent;
+    color:var(--cor-botao-secundario-texto, #fff);
+    font-size:15px;
+    font-weight:800;
     cursor:pointer;
+}
+
+.admin-encomenda-modal-fechar:hover,
+.admin-encomenda-modal-fechar:focus-visible{
+    background:rgba(255, 196, 0, 0.12);
 }
 
 .admin-encomenda-modal-conteudo .admin-encomenda-card{

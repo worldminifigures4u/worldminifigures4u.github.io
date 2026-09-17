@@ -89,7 +89,7 @@ function garantirFornecedoresProdutoModal() {
     if (window.FornecedoresProdutoModal) return Promise.resolve();
     if (!__fornecedoresProdutoPromessa) {
         prepararContextoProdutoFornecedor();
-        __fornecedoresProdutoPromessa = carregarScriptAdmin("mapas-produto-modal.js?v=20260917-botoes-produto-curtos")
+        __fornecedoresProdutoPromessa = carregarScriptAdmin("mapas-produto-modal.js?v=20260917-fechar-texto")
             .then(function () {
                 window.FornecedoresProdutoModal = {
                     abrir: function () {
@@ -108,7 +108,7 @@ function garantirFornecedoresProdutoModal() {
 function garantirFornecedoresEdicaoPedido() {
     if (window.FornecedoresEdicaoPedido) return Promise.resolve();
     if (!__fornecedoresEdicaoPromessa) {
-        __fornecedoresEdicaoPromessa = carregarScriptAdmin("fornecedores-edicao-pedido.js?v=20260917-confirmar-os-ex");
+        __fornecedoresEdicaoPromessa = carregarScriptAdmin("fornecedores-edicao-pedido.js?v=20260917-fechar-texto");
     }
     return __fornecedoresEdicaoPromessa;
 }
@@ -4305,7 +4305,7 @@ function escolherPedidoParaJuntarSelecaoFornecedor() {
         const topo = criarElementoPedidoFornecedor("div", "fornecedor-escolher-pedido-topo");
         const titulo = criarElementoPedidoFornecedor("h3", "", "Escolher encomenda");
         titulo.id = "fornecedor-escolher-pedido-titulo";
-        const fechar = criarElementoPedidoFornecedor("button", "fornecedor-edicao-fechar", "x");
+        const fechar = criarElementoPedidoFornecedor("button", "fornecedor-edicao-fechar", "Fechar");
         fechar.type = "button";
         fechar.setAttribute("aria-label", "Fechar escolha de encomenda");
         topo.append(titulo, fechar);
@@ -4787,8 +4787,7 @@ function obterModalPedidoFornecedor() {
     const fechar = document.createElement("button");
     fechar.type = "button";
     fechar.className = "fornecedor-edicao-fechar fornecedor-pedido-modal-fechar";
-    fechar.setAttribute("aria-label", "Fechar encomenda a fornecedor");
-    fechar.textContent = "x";
+    fechar.textContent = "Fechar";
     fechar.addEventListener("click", fecharModalPedidoFornecedor);
     topo.append(titulo, fechar);
 
