@@ -3247,11 +3247,6 @@ body.mapas-produto-galeria-aberta {
     resize: vertical;
 }
 
-.mapas-produto-form-grid .mapas-produto-sugestoes {
-    color: #cfcfcf;
-    font-size: 13px;
-}
-
 #mapas-editar-imagens {
     min-height: 72px;
     max-height: 120px;

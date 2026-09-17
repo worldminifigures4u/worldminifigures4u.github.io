@@ -65,38 +65,28 @@ function criarInputEdicaoMapa(form, id, rotulo, valor, tipo = "text", opcoes = {
     return input;
 }
 
-function preencherSelectSugestoesProdutoMapa(select, opcoes, textoInicial = "Escolher opção existente") {
-    if (!select) return;
-    select.replaceChildren();
-    const vazio = document.createElement("option");
-    vazio.value = "";
-    vazio.textContent = textoInicial;
-    select.appendChild(vazio);
+function preencherDatalistSugestoesProdutoMapa(datalist, opcoes) {
+    if (!datalist) return;
+    datalist.replaceChildren();
     (opcoes || []).forEach((texto) => {
         const option = document.createElement("option");
         option.value = texto;
-        option.textContent = texto;
-        select.appendChild(option);
+        datalist.appendChild(option);
     });
 }
 
-function criarInputComSugestoesEdicaoMapa(form, id, rotulo, valor, opcoes = {}) {
-    const input = criarInputEdicaoMapa(form, id, rotulo, valor, "text", {
-        required: Boolean(opcoes.required),
-        largo: Boolean(opcoes.largo)
-    });
-    const label = input.closest(".mapas-produto-campo");
-    const select = document.createElement("select");
-    select.className = "mapas-produto-sugestoes";
-    select.setAttribute("aria-label", `${rotulo}: escolher opção existente`);
-    preencherSelectSugestoesProdutoMapa(select, opcoes.listaOpcoes || [], opcoes.textoInicial);
-    select.addEventListener("change", () => {
-        if (!select.value) return;
-        input.value = select.value;
-        input.dispatchEvent(new Event("input", { bubbles: true }));
-    });
-    label?.appendChild(select);
-    return { input, select };
+function ligarAberturaSugestoesProdutoMapa(input) {
+    if (!input) return;
+    const abrir = () => {
+        if (typeof input.showPicker !== "function") return;
+        try {
+            input.showPicker();
+        } catch (erro) {
+            // Alguns browsers só permitem abrir a lista em interação direta.
+        }
+    };
+    input.addEventListener("focus", abrir);
+    input.addEventListener("click", abrir);
 }
 
 /** Temas/subtemas distintos já usados no catálogo, para sugerir no formulário de produto. */
@@ -1982,15 +1972,16 @@ function preencherFormularioProdutoMapa(produto, modo = "editar") {
     criarInputEdicaoMapa(secaoIdentificacao, "mapas-editar-referencia", "Ref.", produto.referencia || "");
     criarInputEdicaoMapa(secaoIdentificacao, "mapas-editar-sku", "SKU", produto.sku || "", "text", { required: true });
     const { temas, subtemas, subtemasPorTema } = obterTemasESubtemasExistentesMapa();
-    const campoTema = criarInputComSugestoesEdicaoMapa(secaoIdentificacao, "mapas-editar-tema", "Tema", produto.tema || "", { required: true, listaOpcoes: temas });
-    const campoSubtema = criarInputComSugestoesEdicaoMapa(secaoIdentificacao, "mapas-editar-subtema", "Subtema", produto.subtema === "semsubtema" ? "" : (produto.subtema || ""), { listaOpcoes: subtemas });
-    const inputTema = campoTema.input;
-    const selectSubtema = campoSubtema.select;
-    if (inputTema && selectSubtema) {
+    const inputTema = criarInputEdicaoMapa(secaoIdentificacao, "mapas-editar-tema", "Tema", produto.tema || "", "text", { required: true, listaId: "mapas-lista-temas", listaOpcoes: temas });
+    const inputSubtema = criarInputEdicaoMapa(secaoIdentificacao, "mapas-editar-subtema", "Subtema", produto.subtema === "semsubtema" ? "" : (produto.subtema || ""), "text", { listaId: "mapas-lista-subtemas", listaOpcoes: subtemas });
+    const datalistSubtema = secaoIdentificacao.querySelector("#mapas-lista-subtemas");
+    ligarAberturaSugestoesProdutoMapa(inputTema);
+    ligarAberturaSugestoesProdutoMapa(inputSubtema);
+    if (inputTema && datalistSubtema) {
         inputTema.addEventListener("input", () => {
             const temaAtual = inputTema.value.trim();
             const opcoesFiltradas = subtemasPorTema[temaAtual] || subtemas;
-            preencherSelectSugestoesProdutoMapa(selectSubtema, opcoesFiltradas);
+            preencherDatalistSugestoesProdutoMapa(datalistSubtema, opcoesFiltradas);
         });
     }
     campos.appendChild(secaoIdentificacao);
