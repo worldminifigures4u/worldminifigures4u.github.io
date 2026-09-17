@@ -2072,10 +2072,6 @@ window.AdminEncomendaVista = (function () {
             criarLinhaDetalhe("Telemóvel", dadosClienteEncomenda.telefone_cliente),
             criarLinhaDetalhe("Envio", encomenda.metodo_envio_nome || encomenda.metodo_envio)
         );
-        if (mostrarCampoSeguimento(encomenda)) {
-            controloSeguimento = criarLinhaSeguimentoEditavel(encomenda);
-            colunaContacto.appendChild(controloSeguimento.elemento);
-        }
         colunaContacto.appendChild(criarLinhaDetalhe("Pagamento", encomenda.metodo_pagamento));
 
         if (encomenda.referencia_externa) {
@@ -2086,6 +2082,10 @@ window.AdminEncomendaVista = (function () {
                 ? "Reposto após devolução"
                 : "Reposto após cancelamento";
             colunaContacto.appendChild(criarLinhaDetalhe("Stock", rotuloStockReposto));
+        }
+        if (mostrarCampoSeguimento(encomenda)) {
+            controloSeguimento = criarLinhaSeguimentoEditavel(encomenda);
+            colunaContacto.appendChild(controloSeguimento.elemento);
         }
 
         const grupoInfo = criarElemento("div", "admin-encomenda-dados-info-grupo");
