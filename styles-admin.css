@@ -468,10 +468,13 @@ html:not(.admin-light-mode) body.cabecalho-com-admin :is(
 }
 
 .plataforma-selecionado-aviso-stock{
-    align-items:stretch;
-    flex-direction:column;
+    grid-column:2 / -1;
+    margin-top:-4px;
+    padding:6px 8px;
+    align-items:center;
+    flex-direction:row;
     justify-content:flex-start;
-    gap:6px;
+    gap:8px;
 }
 
 .plataforma-aviso-stock-linha .plataforma-aviso-stock-botao,
@@ -483,7 +486,7 @@ html:not(.admin-light-mode) body.cabecalho-com-admin :is(
 }
 
 .plataforma-selecionado-aviso-stock .plataforma-aviso-stock-botao{
-    width:100%;
+    width:auto;
     white-space:nowrap;
 }
 

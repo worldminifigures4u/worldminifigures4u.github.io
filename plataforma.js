@@ -2266,13 +2266,14 @@ function renderizarSelecionadosWallapop() {
         preco.textContent = `${formatarEuroWallapop(obterPrecoItemWallapop(item))} €`;
         info.append(nome, preco);
         const disponivel = obterStockDisponivelPlataforma(item);
+        let avisoStockSelecionado = null;
         if (disponivel !== null && Number(item.quantidade || 1) > disponivel) {
             const aviso = document.createElement('div');
             aviso.className = 'plataforma-selecionado-aviso-stock';
             const texto = document.createElement('span');
             texto.textContent = 'Sem stock suficiente';
             aviso.append(texto, criarBotaoAvisoStockPlataforma(item, "Pedido criado a partir dos produtos selecionados."));
-            info.appendChild(aviso);
+            avisoStockSelecionado = aviso;
         }
 
         const controlos = document.createElement('div');
@@ -2307,6 +2308,7 @@ function renderizarSelecionadosWallapop() {
         remover.onclick = () => removerProdutoWallapop(item.id);
         controlos.append(subir, descer, menos, quantidade, mais, remover);
         linha.append(info, controlos);
+        if (avisoStockSelecionado) linha.appendChild(avisoStockSelecionado);
         contentor.appendChild(linha);
     });
 
