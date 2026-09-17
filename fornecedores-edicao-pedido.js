@@ -195,9 +195,9 @@ async function aplicarListaFinalFornecedor() {
         return;
     }
 
-    if (fornecedorSelecao.length && !(await mostrarConfirmacaoSite(
-        "Substituir a lista atual pela lista final enviada pelo fornecedor?",
-        { titulo: "Substituir lista", textoConfirmar: "Substituir", textoCancelar: "Cancelar" }
+    if (!(await mostrarConfirmacaoSite(
+        `Aplicar esta lista final à encomenda?\n\n${linhasImportadas} referência(s) lida(s), ${unidades} unidade(s).\nA lista atual será substituída e as referências que não vierem na lista ficam marcadas como OS/Falta.`,
+        { titulo: "Confirmar lista final", textoConfirmar: "Aplicar", textoCancelar: "Cancelar" }
     ))) {
         return;
     }
@@ -222,77 +222,6 @@ function limparTextoListaFinalFornecedor() {
 function obterPedidoEdicaoFornecedor(modal) {
     const id = modal?.querySelector("#fornecedor-edicao-id")?.value;
     return fornecedorPedidos.find(item => String(item.id) === String(id)) || null;
-}
-
-function itemPodeReverterListaFinalVaziaFornecedor(item) {
-    const quantidade = Math.max(0, Math.floor(Number(item?.quantidade || 0)));
-    const quantidadeOriginal = Math.max(0, Math.floor(Number(item?.quantidade_original || item?.quantidade || 0)));
-    const faltaOs = Math.max(0, Math.floor(Number(item?.falta_os || 0)));
-    const dataOs = extrairDataOsDeTextoFornecedor(item?.data_os || "");
-    return quantidade === 0
-        && quantidadeOriginal > 0
-        && faltaOs === quantidadeOriginal
-        && dataOs === dataOsHojeFornecedor();
-}
-
-function obterItensReversaoListaFinalVaziaFornecedor(pedido) {
-    return (pedido?.itens || []).filter(itemPodeReverterListaFinalVaziaFornecedor);
-}
-
-function atualizarBotaoReverterListaFinalVaziaFornecedor(pedido, modal) {
-    const botao = modal?.querySelector("#fornecedor-edicao-reverter-lista-vazia");
-    if (!botao) return;
-    const afetados = obterItensReversaoListaFinalVaziaFornecedor(pedido).length;
-    botao.hidden = afetados === 0;
-    botao.textContent = afetados === 1
-        ? "Reverter lista vazia (1 item)"
-        : `Reverter lista vazia (${afetados} itens)`;
-}
-
-async function reverterListaFinalVaziaNaEdicaoFornecedor() {
-    const modal = document.getElementById("fornecedor-edicao-modal");
-    if (!modal || modal.hidden) return;
-    const status = modal.querySelector("#fornecedor-edicao-status");
-    const pedido = obterPedidoEdicaoFornecedor(modal);
-    if (!pedido) {
-        definirStatusEdicaoFornecedor(status, "erro", "Encomenda não encontrada para reverter.");
-        return;
-    }
-
-    const afetados = obterItensReversaoListaFinalVaziaFornecedor(pedido);
-    if (!afetados.length) {
-        definirStatusEdicaoFornecedor(status, "aviso", "Não encontrei itens para reverter nesta encomenda.");
-        return;
-    }
-
-    if (!(await mostrarConfirmacaoSite(
-        `Repor ${afetados.length} item(ns) para a quantidade original e limpar OS/Falta criado hoje?`,
-        { titulo: "Reverter lista vazia", textoConfirmar: "Reverter", textoCancelar: "Cancelar" }
-    ))) return;
-
-    pedido.itens = (pedido.itens || []).map(item => {
-        if (!itemPodeReverterListaFinalVaziaFornecedor(item)) return item;
-        const quantidadeOriginal = Math.max(0, Math.floor(Number(item.quantidade_original || 0)));
-        return normalizarItemPedidoFornecedor({
-            ...item,
-            quantidade: quantidadeOriginal,
-            falta_os: 0,
-            data_os: null,
-            estado_fornecedor: "",
-            marcado_ex: false,
-            recebido: Math.min(Math.max(0, Number(item.recebido || 0)), quantidadeOriginal)
-        });
-    });
-
-    const lista = modal.querySelector("#fornecedor-edicao-produtos");
-    if (lista) {
-        lista.replaceChildren();
-        pedido.itens.forEach((item, indice) => {
-            lista.appendChild(montarLinhaEdicaoProdutoFornecedor(pedido, item, indice));
-        });
-    }
-    atualizarBotaoReverterListaFinalVaziaFornecedor(pedido, modal);
-    definirStatusEdicaoFornecedor(status, "sucesso", "Reversão preparada. Clique em Guardar encomenda para gravar.");
 }
 
 function obterInputsEdicaoMesmaColunaFornecedor(inputAtual) {
@@ -566,7 +495,7 @@ function linhaEdicaoContemReferenciaFornecedor(linha, referencia) {
     return correspondeReferenciaListaFornecedor(linha.dataset.referencia, referencia);
 }
 
-function aplicarListaFinalNaEdicaoFornecedor() {
+async function aplicarListaFinalNaEdicaoFornecedor() {
     const modal = document.getElementById("fornecedor-edicao-modal");
     if (!modal || modal.hidden) return;
     const area = modal.querySelector("#fornecedor-edicao-lista-final");
@@ -590,6 +519,13 @@ function aplicarListaFinalNaEdicaoFornecedor() {
     const { itens, erros, foraCatalogo, unidades, linhasImportadas } = processarLinhasListaFinalFornecedor(texto, pedido.itens || []);
     if (!linhasImportadas || !itens.length) {
         definirStatusEdicaoFornecedor(status, "erro", erros.length ? erros.join("; ") : "Cole pelo menos uma referência válida antes de aplicar a lista final.");
+        return;
+    }
+
+    if (!(await mostrarConfirmacaoSite(
+        `Aplicar esta lista final à encomenda?\n\n${linhasImportadas} referência(s) lida(s), ${unidades} unidade(s).\nA lista atual será substituída e as referências que não vierem na lista ficam marcadas como OS/Falta.`,
+        { titulo: "Confirmar lista final", textoConfirmar: "Aplicar", textoCancelar: "Cancelar" }
+    ))) {
         return;
     }
 
@@ -924,7 +860,6 @@ function garantirModalEdicaoFornecedor() {
                         <div class="fornecedor-lista-final-acoes">
                             <button type="button" id="fornecedor-edicao-limpar-lista-final">Limpar texto</button>
                             <button type="button" id="fornecedor-edicao-aplicar-lista-final" class="wallapop-botao-destaque">Aplicar à encomenda</button>
-                            <button type="button" id="fornecedor-edicao-reverter-lista-vazia" class="wallapop-botao" hidden>Reverter lista vazia</button>
                         </div>
                     </section>
                     <section class="fornecedor-lista-final-box fornecedor-lista-os-edicao" aria-label="Lista OS enviada pelo fornecedor">
@@ -961,7 +896,6 @@ function garantirModalEdicaoFornecedor() {
     modal.querySelector('#fornecedor-edicao-cancelar')?.addEventListener('click', fecharEdicaoPedidoFornecedor);
     modal.querySelector('#fornecedor-edicao-aplicar-lista-final')?.addEventListener('click', aplicarListaFinalNaEdicaoFornecedor);
     modal.querySelector('#fornecedor-edicao-limpar-lista-final')?.addEventListener('click', limparListaFinalEdicaoFornecedor);
-    modal.querySelector('#fornecedor-edicao-reverter-lista-vazia')?.addEventListener('click', reverterListaFinalVaziaNaEdicaoFornecedor);
     modal.querySelector('#fornecedor-edicao-aplicar-lista-os')?.addEventListener('click', aplicarListaOsNaEdicaoFornecedor);
     modal.querySelector('#fornecedor-edicao-limpar-lista-os')?.addEventListener('click', limparListaOsEdicaoFornecedor);
     modal.querySelector('#fornecedor-edicao-aplicar-lista-ex')?.addEventListener('click', aplicarListaExNaEdicaoFornecedor);
@@ -1010,7 +944,6 @@ function abrirEdicaoPedidoFornecedor(id) {
     pedido.itens.forEach((item, indice) => {
         lista.appendChild(montarLinhaEdicaoProdutoFornecedor(pedido, item, indice));
     });
-    atualizarBotaoReverterListaFinalVaziaFornecedor(pedido, modal);
 
     modal.hidden = false;
     document.body.classList.add('fornecedor-edicao-modal-aberto');
