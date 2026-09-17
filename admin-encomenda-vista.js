@@ -2116,14 +2116,6 @@ window.AdminEncomendaVista = (function () {
         gestaoEncomenda = criarGestaoEncomenda(encomenda);
 
         const botoesAcoes = criarElemento("div", "admin-encomenda-dados-botoes");
-        botoesAcoes.appendChild(gravarTudo);
-        if (gestaoEncomenda.botaoEscolherAnexos) {
-            gestaoEncomenda.botaoEscolherAnexos.classList.add("admin-encomenda-anexos-escolher-acao");
-            botoesAcoes.appendChild(gestaoEncomenda.botaoEscolherAnexos);
-            gestaoEncomenda.removerCaixaUploadAnexos?.();
-        }
-        const emitirMoloni = criarBotaoEmitirFaturaMoloni(encomenda);
-        if (emitirMoloni) botoesAcoes.appendChild(emitirMoloni);
         if (podeEditar) {
             const editar = criarElemento("a", "wallapop-botao admin-encomenda-editar", "Editar");
             const destinoEditar = new URL("plataforma.html", window.location.href);
@@ -2135,6 +2127,14 @@ window.AdminEncomendaVista = (function () {
             editar.addEventListener("click", evento => evento.stopPropagation());
             botoesAcoes.appendChild(editar);
         }
+        if (gestaoEncomenda.botaoEscolherAnexos) {
+            gestaoEncomenda.botaoEscolherAnexos.classList.add("admin-encomenda-anexos-escolher-acao");
+            botoesAcoes.appendChild(gestaoEncomenda.botaoEscolherAnexos);
+            gestaoEncomenda.removerCaixaUploadAnexos?.();
+        }
+        const emitirMoloni = criarBotaoEmitirFaturaMoloni(encomenda);
+        if (emitirMoloni) botoesAcoes.appendChild(emitirMoloni);
+        botoesAcoes.appendChild(gravarTudo);
         const apagar = criarElemento("button", "wallapop-botao admin-encomenda-apagar", "Apagar");
         apagar.type = "button";
         apagar.addEventListener("click", evento => {
