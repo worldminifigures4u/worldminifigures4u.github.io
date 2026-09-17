@@ -468,7 +468,9 @@ html:not(.admin-light-mode) body.cabecalho-com-admin :is(
 }
 
 .plataforma-selecionado-aviso-stock{
-    grid-column:2 / -1;
+    grid-column:1 / -1;
+    justify-self:start;
+    max-width:100%;
     margin-top:-4px;
     padding:6px 8px;
     align-items:center;
