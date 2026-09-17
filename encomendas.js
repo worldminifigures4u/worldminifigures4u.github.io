@@ -352,7 +352,7 @@ function fecharModalEncomendaAdmin() {
     document.body.classList.remove('admin-encomenda-modal-aberto');
 }
 
-function abrirModalEncomendaAdmin(encomenda) {
+function abrirModalEncomendaAdmin(encomenda, opcoes = {}) {
     const carregamentoId = ++carregamentoImagensModalId;
     const modal = document.getElementById('admin-encomenda-modal');
     const conteudo = document.getElementById('admin-encomenda-modal-conteudo');
@@ -380,6 +380,16 @@ function abrirModalEncomendaAdmin(encomenda) {
             AdminEncomendaVista.atualizarMiniaturasProdutos(conteudo);
         })
         .catch(error => console.warn('Imagens da encomenda indisponiveis.', error));
+
+    if (opcoes.semRecarregar === true) return;
+    recarregarEncomendaAdminPorId(encomenda.id)
+        .then(atualizada => {
+            if (!atualizada || modal.hidden || carregamentoId !== carregamentoImagensModalId) return;
+            if (String(modal.dataset.encomendaId || '') !== String(atualizada.id || '')) return;
+            abrirModalEncomendaAdmin(atualizada, { semRecarregar: true });
+            renderizarEncomendasAdmin();
+        })
+        .catch(error => console.warn('Nao foi possivel atualizar a encomenda ao abrir.', error));
 }
 
 async function atualizarEncomendaAbertaAposCliente(evento) {
@@ -389,7 +399,7 @@ async function atualizarEncomendaAbertaAposCliente(evento) {
     try {
         const atualizada = await recarregarEncomendaAdminPorId(encomendaId);
         if (!atualizada || modal.hidden || String(modal.dataset.encomendaId || '') !== encomendaId) return;
-        abrirModalEncomendaAdmin(atualizada);
+        abrirModalEncomendaAdmin(atualizada, { semRecarregar: true });
         renderizarEncomendasAdmin();
         definirStatusEncomendas('Dados do cliente atualizados na encomenda.');
     } catch (error) {
