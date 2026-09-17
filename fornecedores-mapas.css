@@ -2438,6 +2438,27 @@ body.pagina-mapas-admin > main.fornecedores-admin {
     color: #fff !important;
 }
 
+.mapas-produto-acoes-topo .mapas-produto-cancelar-cruz {
+    width: 44px;
+    height: 44px;
+    border: 0;
+    border-radius: 8px;
+    background: #ff4d55;
+    color: #fff;
+    font-size: 30px;
+    font-weight: 900;
+    line-height: 1;
+    cursor: pointer;
+}
+
+.mapas-produto-acoes-topo .mapas-produto-cancelar-cruz:hover,
+.mapas-produto-acoes-topo .mapas-produto-cancelar-cruz:focus-visible {
+    background: #ff6b72;
+    color: #fff;
+    outline: 2px solid rgba(255, 196, 0, 0.65);
+    outline-offset: 2px;
+}
+
 .mapas-produto-form {
     min-height: 0;
     overflow: auto;
