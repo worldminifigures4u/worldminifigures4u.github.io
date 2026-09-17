@@ -937,6 +937,14 @@ body.pagina-wallapop{
             color:#ffc107;
         }
 
+        .plataforma-lista-fechar{
+            width:auto;
+            min-width:96px;
+            min-height:44px;
+            padding:0 18px;
+            flex:0 0 auto;
+        }
+
         .plataforma-lista-dialogo > p{
             margin:12px 0 16px;
             color:#ccc;

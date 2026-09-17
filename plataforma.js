@@ -1681,8 +1681,8 @@ function abrirRevisaoListaProdutosPlataforma() {
     titulo.textContent = 'Rever produtos da lista';
     const fechar = document.createElement('button');
     fechar.type = 'button';
-    fechar.className = 'wallapop-remover';
-    fechar.textContent = '\u00d7';
+    fechar.className = 'wallapop-botao plataforma-lista-fechar';
+    fechar.textContent = 'Fechar';
     fechar.title = 'Fechar';
     fechar.onclick = fecharRevisaoListaProdutosPlataforma;
     topo.append(titulo, fechar);
