@@ -65,6 +65,19 @@
         aoCriarCliente = null;
     }
 
+    function avisarClienteAtualizado(dados = {}) {
+        const clienteId = dados?.cliente?.id || dados?.cliente_id || null;
+        const modal = document.getElementById('admin-cliente-modal');
+        const encomendaId = modal?.dataset?.encomendaId || '';
+        window.dispatchEvent(new CustomEvent('admin-cliente-atualizado', {
+            detail: {
+                clienteId: clienteId ? String(clienteId) : '',
+                encomendaId: encomendaId ? String(encomendaId) : '',
+                ficha: dados || null
+            }
+        }));
+    }
+
     function criarCampoFichaCliente(rotulo, valor) {
         const linha = criarElemento('div', 'admin-cliente-campo');
         linha.append(
@@ -314,7 +327,9 @@
                 const fichaAtualizada = await fichaClient.rpc('obter_ficha_cliente_por_id_admin', {
                     p_cliente_id: cliente.id
                 });
-                renderizarFichaClienteAdmin(fichaAtualizada.data?.sucesso ? fichaAtualizada.data : dados);
+                const dadosAtualizados = fichaAtualizada.data?.sucesso ? fichaAtualizada.data : dados;
+                renderizarFichaClienteAdmin(dadosAtualizados);
+                avisarClienteAtualizado(dadosAtualizados);
                 definirStatusFichaCliente('Dados do cliente atualizados.');
             }
         });
@@ -620,6 +635,7 @@
     async function abrirPorId(clienteId) {
         const modal = document.getElementById('admin-cliente-modal');
         if (!modal || !fichaClient || !clienteId) return false;
+        modal.dataset.encomendaId = '';
         modal.hidden = false;
         document.body.classList.add('admin-cliente-modal-aberto');
         document.getElementById('admin-cliente-conteudo')?.replaceChildren(
@@ -641,6 +657,7 @@
     async function abrirPorEncomenda(encomendaId) {
         const modal = document.getElementById('admin-cliente-modal');
         if (!modal || !fichaClient || !encomendaId) return false;
+        modal.dataset.encomendaId = String(encomendaId);
         modal.hidden = false;
         document.body.classList.add('admin-cliente-modal-aberto');
         document.getElementById('admin-cliente-conteudo')?.replaceChildren(

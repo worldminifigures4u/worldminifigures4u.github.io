@@ -264,7 +264,7 @@ function garantirFichaClienteEncomendas() {
         return Promise.resolve();
     }
     if (!promessaFichaClienteEncomendas) {
-        promessaFichaClienteEncomendas = carregarScriptEncomendasAdmin('admin-ficha-cliente.js?v=20260915-avisos-stock')
+        promessaFichaClienteEncomendas = carregarScriptEncomendasAdmin('admin-ficha-cliente.js?v=20260917-cliente-atualiza-encomenda')
             .then(() => configurarFichaClienteEncomendas());
     }
     return promessaFichaClienteEncomendas;
@@ -278,6 +278,25 @@ async function abrirFichaClienteAdmin(encomenda) {
     } catch (error) {
         definirStatusEncomendas('Erro ao abrir ficha: ' + (error?.message || 'sem detalhe'), true);
     }
+}
+
+async function recarregarEncomendaAdminPorId(encomendaId) {
+    const id = String(encomendaId || '').trim();
+    if (!id) return null;
+    const { data } = await consultarEncomendasAdmin(
+        query => query.eq('id', id),
+        { inicio: 0, fim: 0 }
+    );
+    const atualizada = Array.isArray(data) ? data[0] : null;
+    if (!atualizada) return null;
+
+    const indice = encomendasAdmin.findIndex(item => String(item.id) === id);
+    if (indice >= 0) {
+        encomendasAdmin[indice] = atualizada;
+    } else {
+        encomendasAdmin = [atualizada, ...encomendasAdmin];
+    }
+    return atualizada;
 }
 
 function criarCardEncomenda(encomenda) {
@@ -328,6 +347,7 @@ function fecharModalEncomendaAdmin() {
     carregamentoImagensModalId += 1;
     conteudo.querySelector('.admin-encomenda-card')?._limparAlturaNotas?.();
     modal.hidden = true;
+    modal.dataset.encomendaId = '';
     conteudo.replaceChildren();
     document.body.classList.remove('admin-encomenda-modal-aberto');
 }
@@ -338,6 +358,7 @@ function abrirModalEncomendaAdmin(encomenda) {
     const conteudo = document.getElementById('admin-encomenda-modal-conteudo');
     const titulo = document.getElementById('admin-encomenda-modal-titulo');
     if (!modal || !conteudo) return;
+    modal.dataset.encomendaId = String(encomenda.id || '');
 
     const renderizarModal = () => conteudo.replaceChildren(AdminEncomendaVista.criarCardEncomenda(encomenda, {
         modoModal: true,
@@ -359,6 +380,21 @@ function abrirModalEncomendaAdmin(encomenda) {
             AdminEncomendaVista.atualizarMiniaturasProdutos(conteudo);
         })
         .catch(error => console.warn('Imagens da encomenda indisponiveis.', error));
+}
+
+async function atualizarEncomendaAbertaAposCliente(evento) {
+    const modal = document.getElementById('admin-encomenda-modal');
+    const encomendaId = String(evento?.detail?.encomendaId || modal?.dataset?.encomendaId || '').trim();
+    if (!modal || modal.hidden || !encomendaId || String(modal.dataset.encomendaId || '') !== encomendaId) return;
+    try {
+        const atualizada = await recarregarEncomendaAdminPorId(encomendaId);
+        if (!atualizada || modal.hidden || String(modal.dataset.encomendaId || '') !== encomendaId) return;
+        abrirModalEncomendaAdmin(atualizada);
+        renderizarEncomendasAdmin();
+        definirStatusEncomendas('Dados do cliente atualizados na encomenda.');
+    } catch (error) {
+        console.warn('Nao foi possivel atualizar a encomenda apos editar cliente.', error);
+    }
 }
 
 function obterUrlPerfilEncomenda(encomenda) {
@@ -1004,6 +1040,7 @@ document.getElementById('pesquisa-encomendas-admin').addEventListener('input', r
 document.getElementById('pesquisa-figura-encomendas-admin').addEventListener('input', renderizarEncomendasAdmin);
 document.getElementById('filtro-estado-encomendas-admin').addEventListener('change', renderizarEncomendasAdmin);
 document.getElementById('btn-concluir-encomendas-selecionadas')?.addEventListener('click', concluirEncomendasSelecionadas);
+window.addEventListener('admin-cliente-atualizado', atualizarEncomendaAbertaAposCliente);
 window.addEventListener('scroll', verificarCarregamentoConcluidasScroll, { passive: true });
 document.getElementById('admin-imagem-modal-fechar').addEventListener('click', fecharImagemProdutoEncomenda);
 document.getElementById('admin-encomenda-modal-fechar')?.addEventListener('click', fecharModalEncomendaAdmin);
