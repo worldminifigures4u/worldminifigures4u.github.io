@@ -835,6 +835,7 @@ window.AdminEncomendaVista = (function () {
     }
 
     function anexosObrigatoriosEmFalta(encomenda, quantidade) {
+        if (estadoNormalizado(encomenda?.estado) === "Concluído") return false;
         const origem = origemEncomenda(encomenda);
         return Number(quantidade) === 0 && (origem === "wallapop" || origem === "vinted");
     }
