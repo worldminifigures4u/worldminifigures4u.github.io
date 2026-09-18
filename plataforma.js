@@ -3437,8 +3437,6 @@ async function registarEncomendaWallapop() {
     let plataforma = obterPlataformaAtual();
     const eraEdicao = Boolean(encomendaPlataformaEmEdicao);
     const edicaoComVoltaEncomendas = eraEdicao && edicaoVeioDaPaginaEncomendasPlataforma();
-    const exportarAntesDeVoltar = edicaoComVoltaEncomendas;
-    let pastaExportacaoEdicao = null;
     const plataformaOriginalEdicao = encomendaPlataformaEmEdicao?.origem || '';
     const botao = document.getElementById('btn-registar-wallapop');
     const campoPerfil = document.getElementById('plataforma-link-perfil');
@@ -3557,17 +3555,6 @@ async function registarEncomendaWallapop() {
             { titulo: "Registar encomenda", textoConfirmar: "Registar", textoCancelar: "Cancelar" }
         );
     if (!confirmado) return;
-
-    if (exportarAntesDeVoltar) {
-        definirStatusWallapop('Escolhe a pasta de destino para exportar os ficheiros...');
-        try {
-            pastaExportacaoEdicao = await obterPastaBaseWallapop();
-        } catch (error) {
-            console.error(error);
-            definirStatusWallapop(mensagemErroGuardarFicheirosPlataforma(error), true);
-            return;
-        }
-    }
 
     registoPlataformaEmCurso = true;
     botao.disabled = true;
@@ -3730,10 +3717,6 @@ async function registarEncomendaWallapop() {
             }
         }
         if (edicaoComVoltaEncomendas) {
-            if (pastaExportacaoEdicao) {
-                const exportou = await guardarFicheirosPlataforma({ pastaBase: pastaExportacaoEdicao });
-                if (!exportou) return;
-            }
             window.location.assign('encomendas.html');
             return;
         }
