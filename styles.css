@@ -29,6 +29,7 @@ body{
             --fp-campo-fundo:#242424;
             --fp-campo-borda:#444;
             --fp-campo-foco:#ffc400;
+            --fp-foco-anel:0 0 0 2px rgba(255, 196, 0, 0.2);
             --fp-campo-raio:6px;
             --fp-botao-raio:6px;
             --fp-botao-altura:42px;
@@ -1044,6 +1045,31 @@ html:not(.admin-light-mode) :is(
 }
 
 html:not(.admin-light-mode) :is(
+    .wallapop-botao,
+    .btn-admin-secundario,
+    .btn-continuar-comprar,
+    .favoritos-continuar,
+    .btn-favorito-adicionar,
+    .btn-acao-cliente,
+    .tab-btn,
+    .conta-ver-produtos,
+    .btn-adicionar,
+    .btn-toggle-menu,
+    .btn-confirmar,
+    .confirm-order-btn,
+    .btn-ver-artigos,
+    .mapas-copiar-lista,
+    .mapas-botao-novo,
+    .fornecedor-btn-editar-ficha,
+    .fornecedor-btn-filtro-marcacao,
+    .portes-btn-criar,
+    .portes-btn-guardar
+):focus-visible{
+    outline: none !important;
+    box-shadow: var(--fp-foco-anel, 0 0 0 2px rgba(255, 196, 0, 0.2)) !important;
+}
+
+html:not(.admin-light-mode) :is(
     .admin-imagem-modal-fechar,
     .admin-encomenda-modal-fechar,
     .admin-cliente-fechar,
@@ -1218,6 +1244,7 @@ html:not(.admin-light-mode) body[data-page] :is(
 ):focus{
     border-color: var(--fp-campo-foco, #ffc400) !important;
     outline: none;
+    box-shadow: var(--fp-foco-anel, 0 0 0 2px rgba(255, 196, 0, 0.2)) !important;
 }
 
 html:not(.admin-light-mode) body.cabecalho-com-admin :is(
