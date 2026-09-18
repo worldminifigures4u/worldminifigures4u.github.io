@@ -975,6 +975,13 @@ html:not(.admin-light-mode) :is(
     .btn-acao-cliente,
     .conta-ver-produtos,
     .btn-adicionar,
+    .btn-confirmar,
+    .confirm-order-btn,
+    .btn-ver-artigos,
+    .mapas-copiar-lista,
+    .mapas-botao-novo,
+    .fornecedor-btn-editar-ficha,
+    .fornecedor-btn-filtro-marcacao,
     .admin-imagem-modal-fechar,
     .admin-encomenda-modal-fechar,
     .admin-cliente-fechar,
@@ -989,6 +996,28 @@ html:not(.admin-light-mode) :is(
     min-height: var(--fp-botao-altura, 42px);
     border-radius: var(--fp-botao-raio, 6px);
     font-weight: 800;
+}
+
+html:not(.admin-light-mode) :is(
+    .btn-confirmar,
+    .confirm-order-btn,
+    .btn-ver-artigos,
+    .mapas-botao-novo
+){
+    border: 0 !important;
+    background: var(--cor-acao-principal, #ffc107) !important;
+    color: #000 !important;
+}
+
+html:not(.admin-light-mode) :is(
+    .btn-confirmar,
+    .confirm-order-btn,
+    .btn-ver-artigos,
+    .mapas-botao-novo
+):is(:hover, :focus-visible){
+    background: var(--cor-acao-principal-hover, #e0a800) !important;
+    color: #000 !important;
+    outline: none;
 }
 
 html:not(.admin-light-mode) :is(
@@ -1018,7 +1047,9 @@ html:not(.admin-light-mode) :is(
     .plataforma-lista-fechar,
     .mapas-produto-galeria-fechar,
     .mapas-produto-fechar-edicao,
-    .admin-fatura-confirmacao-cancelar
+    .admin-fatura-confirmacao-cancelar,
+    .mapas-copiar-lista:not(.mapas-botao-novo),
+    .fornecedor-btn-filtro-marcacao
 ):is(:hover, :focus-visible){
     border-color: var(--cor-acao-principal, #ffc107) !important;
     background: transparent !important;
@@ -1041,6 +1072,7 @@ html:not(.admin-light-mode) :is(
     .fornecedor-ficha-apagar,
     .fornecedor-edicao-remover,
     .fornecedor-historico-apagar,
+    .fornecedor-btn-remover-filtro-marcacao,
     .fornecedor-remover-linha,
     .mapas-col-remover
 ){
@@ -1063,6 +1095,7 @@ html:not(.admin-light-mode) :is(
     .fornecedor-ficha-apagar,
     .fornecedor-edicao-remover,
     .fornecedor-historico-apagar,
+    .fornecedor-btn-remover-filtro-marcacao,
     .fornecedor-remover-linha,
     .mapas-col-remover
 ):is(:hover, :focus-visible){
