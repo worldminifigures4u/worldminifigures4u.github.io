@@ -170,7 +170,7 @@ function criarCardFavoritoCliente(produto) {
     const remover = document.createElement('button');
     remover.type = 'button';
     remover.className = 'btn-favorito-remover';
-    remover.textContent = 'X';
+    remover.textContent = '×';
     remover.setAttribute('aria-label', 'Remover dos favoritos');
     remover.addEventListener('click', () => removerFavoritoProduto(produto.id));
 

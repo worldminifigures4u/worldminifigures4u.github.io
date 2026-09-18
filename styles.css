@@ -20,6 +20,14 @@ body{
             --cor-texto-secundario:#b8b8b8;
             --cor-botao-secundario-borda:#ffc107;
             --cor-botao-secundario-texto:#ffffff;
+            --fp-cor-perigo:#7a1f1f;
+            --fp-cor-perigo-hover:#a52828;
+            --fp-campo-fundo:#242424;
+            --fp-campo-borda:#444;
+            --fp-campo-foco:#ffc400;
+            --fp-campo-raio:6px;
+            --fp-botao-raio:6px;
+            --fp-botao-altura:42px;
         }
 
         body{
@@ -837,7 +845,7 @@ input[type="number"]::-webkit-inner-spin-button{
     height: 38px;
     border: 0;
     border-radius: 8px;
-    background: #ff4444;
+    background: var(--fp-cor-perigo, #7a1f1f);
     color: #fff;
     font-size: 24px;
     font-weight: 900;
@@ -857,7 +865,10 @@ input[type="number"]::-webkit-inner-spin-button{
     cursor: pointer;
 }
 
-.popup-encomenda-sucesso__fechar:hover,
+.popup-encomenda-sucesso__fechar:hover {
+    background: var(--fp-cor-perigo-hover, #a52828);
+}
+
 .popup-encomenda-sucesso__ok:hover {
     filter: brightness(1.08);
 }
@@ -952,4 +963,85 @@ input[type="number"]::-webkit-inner-spin-button{
 
 body.fp-dialogo-site-aberto {
     overflow: hidden;
+}
+
+/* Padronização dark dos componentes repetidos. */
+html:not(.admin-light-mode) :is(
+    .wallapop-botao,
+    .btn-admin-secundario,
+    .btn-continuar-comprar,
+    .favoritos-continuar,
+    .btn-favorito-adicionar,
+    .btn-acao-cliente,
+    .conta-ver-produtos,
+    .btn-adicionar
+){
+    min-height: var(--fp-botao-altura, 42px);
+    border-radius: var(--fp-botao-raio, 6px);
+    font-weight: 800;
+}
+
+html:not(.admin-light-mode) :is(
+    .campo-limpar-botao,
+    .btn-remover,
+    .btn-favorito-remover,
+    .wallapop-remover,
+    .clientes-botao-apagar,
+    .admin-encomenda-apagar,
+    .admin-encomenda-anexo-apagar,
+    .portes-metodo-apagar,
+    .btn-logout,
+    .btn-solicitar-eliminacao,
+    .fornecedor-remover,
+    .fornecedor-ficha-apagar,
+    .fornecedor-edicao-remover,
+    .fornecedor-historico-apagar,
+    .fornecedor-remover-linha,
+    .mapas-col-remover
+){
+    background: var(--fp-cor-perigo, #7a1f1f) !important;
+    color: #fff !important;
+}
+
+html:not(.admin-light-mode) :is(
+    .campo-limpar-botao,
+    .btn-remover,
+    .btn-favorito-remover,
+    .wallapop-remover,
+    .clientes-botao-apagar,
+    .admin-encomenda-apagar,
+    .admin-encomenda-anexo-apagar,
+    .portes-metodo-apagar,
+    .btn-logout,
+    .btn-solicitar-eliminacao,
+    .fornecedor-remover,
+    .fornecedor-ficha-apagar,
+    .fornecedor-edicao-remover,
+    .fornecedor-historico-apagar,
+    .fornecedor-remover-linha,
+    .mapas-col-remover
+):is(:hover, :focus-visible){
+    background: var(--fp-cor-perigo-hover, #a52828) !important;
+    color: #fff !important;
+}
+
+html:not(.admin-light-mode) body[data-page] :is(
+    input:not([type="checkbox"]):not([type="radio"]),
+    textarea,
+    select
+){
+    border-radius: var(--fp-campo-raio, 6px);
+    background: var(--fp-campo-fundo, #242424);
+    border-color: var(--fp-campo-borda, #444);
+    color: #fff;
+    color-scheme: dark;
+}
+
+html:not(.admin-light-mode) body[data-page] :is(
+    input:not([type="checkbox"]):not([type="radio"]),
+    textarea,
+    select
+):focus{
+    border-color: var(--fp-campo-foco, #ffc400);
+    outline: none;
 }

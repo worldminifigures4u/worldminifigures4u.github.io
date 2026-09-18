@@ -218,7 +218,7 @@ function atualizarCarrinho(opcoes = {}) {
 
         const btnRemover = document.createElement('button');
         btnRemover.className = 'btn-remover';
-        btnRemover.textContent = 'X';
+        btnRemover.textContent = '×';
         btnRemover.setAttribute('aria-label', 'Remover produto');
         btnRemover.onclick = () => removerCarrinho(item.id);
 
