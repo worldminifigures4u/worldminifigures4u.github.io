@@ -22,6 +22,10 @@ body{
             --cor-botao-secundario-texto:#ffffff;
             --fp-cor-perigo:#7a1f1f;
             --fp-cor-perigo-hover:#a52828;
+            --fp-cor-sucesso:#39d353;
+            --fp-cor-erro:#ff6b6b;
+            --fp-cor-aviso:#ffc400;
+            --fp-cor-info:#18c4ff;
             --fp-campo-fundo:#242424;
             --fp-campo-borda:#444;
             --fp-campo-foco:#ffc400;
@@ -1111,6 +1115,35 @@ html:not(.admin-light-mode) :is(
 ):is(:hover, :focus-visible){
     border-color: var(--cor-acao-principal, #ffc107) !important;
     outline: none;
+}
+
+html:not(.admin-light-mode) :is(
+    .msg-sucesso,
+    .status-sucesso
+){
+    color: var(--fp-cor-sucesso, #39d353) !important;
+}
+
+html:not(.admin-light-mode) :is(
+    .msg-erro,
+    .status-erro,
+    .erro
+){
+    color: var(--fp-cor-erro, #ff6b6b) !important;
+}
+
+html:not(.admin-light-mode) :is(
+    .msg-processando,
+    .status-aviso
+){
+    color: var(--fp-cor-aviso, #ffc400) !important;
+}
+
+html:not(.admin-light-mode) :is(
+    .status-neutro,
+    .status-discreto
+){
+    color: var(--cor-texto-secundario, #b8b8b8) !important;
 }
 
 html:not(.admin-light-mode) :is(
