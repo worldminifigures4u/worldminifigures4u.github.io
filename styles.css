@@ -981,8 +981,10 @@ html:not(.admin-light-mode) :is(
     .favoritos-continuar,
     .btn-favorito-adicionar,
     .btn-acao-cliente,
+    .tab-btn,
     .conta-ver-produtos,
     .btn-adicionar,
+    .btn-toggle-menu,
     .btn-confirmar,
     .confirm-order-btn,
     .btn-ver-artigos,
@@ -990,6 +992,8 @@ html:not(.admin-light-mode) :is(
     .mapas-botao-novo,
     .fornecedor-btn-editar-ficha,
     .fornecedor-btn-filtro-marcacao,
+    .portes-btn-criar,
+    .portes-btn-guardar,
     .admin-imagem-modal-fechar,
     .admin-encomenda-modal-fechar,
     .admin-cliente-fechar,
@@ -1156,7 +1160,9 @@ html:not(.admin-light-mode) body.cabecalho-com-admin :is(
     .mapas-produto-aviso-stock-linha,
     .estatisticas-painel,
     .gestao-banner-card,
-    .gestao-importacao-painel .mapas-importacao-bloco
+    .gestao-importacao-painel .mapas-importacao-bloco,
+    .portes-aviso,
+    .portes-metodos
 ){
     border: 1px solid var(--fp-painel-borda, #333) !important;
     border-radius: var(--fp-painel-raio, 8px) !important;
@@ -1235,8 +1241,10 @@ html:not(.admin-light-mode) :is(
     .conta-menu-item,
     .btn-tema,
     .btn-subtema,
+    .produto-galeria,
     .carrinho-vazio-figura,
     .imagem-carrinho,
+    .produto-img,
     .favorito-imagem
 ){
     border-radius: var(--fp-campo-raio, 6px) !important;
