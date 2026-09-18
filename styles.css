@@ -28,6 +28,11 @@ body{
             --fp-campo-raio:6px;
             --fp-botao-raio:6px;
             --fp-botao-altura:42px;
+            --fp-painel-fundo:#141414;
+            --fp-cartao-fundo:#171717;
+            --fp-superficie-fundo:#101010;
+            --fp-painel-borda:#333;
+            --fp-painel-raio:8px;
         }
 
         body{
@@ -1122,4 +1127,67 @@ html:not(.admin-light-mode) body[data-page] :is(
 ):focus{
     border-color: var(--fp-campo-foco, #ffc400) !important;
     outline: none;
+}
+
+html:not(.admin-light-mode) body.cabecalho-com-admin :is(
+    .fornecedores-painel,
+    .fornecedores-painel-mapa,
+    .fornecedor-lista-final-box,
+    .fornecedor-ficha-box,
+    .fornecedor-pedido-card,
+    .fornecedor-pedido-card-modal,
+    .fornecedor-tabela-encomenda-bloco,
+    .fornecedor-selecionados-bloco,
+    .mapas-tabela-bloco,
+    .mapas-importacao-painel,
+    .mapas-importacao-bloco,
+    .mapas-produto-upload-bloco,
+    .admin-encomenda-card,
+    .admin-encomenda-gestao-bloco,
+    .admin-encomenda-gestao-caixa,
+    .admin-encomenda-estado-caixa,
+    .clientes-lista-item,
+    .clientes-aviso-stock-linha,
+    .mapas-produto-aviso-stock-linha,
+    .estatisticas-painel,
+    .gestao-banner-card,
+    .gestao-importacao-painel .mapas-importacao-bloco
+){
+    border: 1px solid var(--fp-painel-borda, #333) !important;
+    border-radius: var(--fp-painel-raio, 8px) !important;
+    background: var(--fp-painel-fundo, #141414) !important;
+}
+
+html:not(.admin-light-mode) body.cabecalho-com-admin :is(
+    .admin-cliente-dialogo,
+    .clientes-encomenda-dialogo,
+    .admin-encomenda-modal-dialogo,
+    .admin-fatura-confirmacao-caixa,
+    .fornecedor-confirmacao-dialog,
+    .fornecedor-pedido-modal-dialog,
+    .fornecedor-escolher-pedido-dialog,
+    .fornecedor-edicao-dialog,
+    .mapas-produto-modal-dialog,
+    .mapas-produto-galeria-dialog,
+    .plataforma-stock-dialogo,
+    .plataforma-lista-dialogo
+){
+    border: 1px solid var(--fp-campo-borda, #444) !important;
+    border-radius: var(--fp-painel-raio, 8px) !important;
+    background: var(--fp-painel-fundo, #141414) !important;
+}
+
+html:not(.admin-light-mode) body.cabecalho-com-admin :is(
+    .admin-encomenda-linha,
+    .admin-cliente-historico-linha,
+    .fornecedor-produto,
+    .fornecedor-item,
+    .fornecedor-pedido-linha,
+    .plataforma-lista-linha,
+    .wallapop-selecionado,
+    .wallapop-resultado
+){
+    border-color: var(--fp-painel-borda, #333) !important;
+    border-radius: var(--fp-painel-raio, 8px) !important;
+    background: var(--fp-cartao-fundo, #171717) !important;
 }
