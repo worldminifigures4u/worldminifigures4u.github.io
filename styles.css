@@ -44,6 +44,8 @@ body{
             --fp-tabela-cabecalho-fundo:#181818;
             --fp-tabela-linha-fundo:#111111;
             --fp-tabela-linha-alt-fundo:#171717;
+            --fp-overlay-fundo:rgba(0,0,0,.82);
+            --fp-sombra-modal:0 22px 70px rgba(0,0,0,.55);
         }
 
         body{
@@ -1251,6 +1253,30 @@ html:not(.admin-light-mode) body.cabecalho-com-admin :is(
 }
 
 html:not(.admin-light-mode) body.cabecalho-com-admin :is(
+    .admin-cliente-modal,
+    .clientes-encomenda-modal,
+    .admin-encomenda-modal,
+    .admin-fatura-confirmacao,
+    .fornecedor-confirmacao-modal,
+    .fornecedor-pedido-modal,
+    .fornecedor-escolher-pedido-modal,
+    .fornecedor-edicao-modal,
+    .mapas-produto-modal,
+    .mapas-produto-galeria-modal,
+    .plataforma-stock-modal,
+    .plataforma-lista-modal
+){
+    background: var(--fp-overlay-fundo, rgba(0,0,0,.82)) !important;
+}
+
+html:not(.admin-light-mode) :is(
+    .fp-dialogo-site,
+    .popup-encomenda-sucesso
+){
+    background: var(--fp-overlay-fundo, rgba(0,0,0,.82)) !important;
+}
+
+html:not(.admin-light-mode) body.cabecalho-com-admin :is(
     .admin-cliente-dialogo,
     .clientes-encomenda-dialogo,
     .admin-encomenda-modal-dialogo,
@@ -1267,6 +1293,17 @@ html:not(.admin-light-mode) body.cabecalho-com-admin :is(
     border: 1px solid var(--fp-campo-borda, #444) !important;
     border-radius: var(--fp-painel-raio, 8px) !important;
     background: var(--fp-painel-fundo, #141414) !important;
+    box-shadow: var(--fp-sombra-modal, 0 22px 70px rgba(0,0,0,.55)) !important;
+}
+
+html:not(.admin-light-mode) :is(
+    .fp-dialogo-site-caixa,
+    .popup-encomenda-sucesso__caixa
+){
+    border: 1px solid var(--fp-campo-borda, #444) !important;
+    border-radius: var(--fp-painel-raio, 8px) !important;
+    background: var(--fp-painel-fundo, #141414) !important;
+    box-shadow: var(--fp-sombra-modal, 0 22px 70px rgba(0,0,0,.55)) !important;
 }
 
 html:not(.admin-light-mode) body.cabecalho-com-admin :is(
