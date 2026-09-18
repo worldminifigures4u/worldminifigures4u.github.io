@@ -1082,7 +1082,8 @@ html:not(.admin-light-mode) :is(
     .fornecedor-historico-apagar,
     .fornecedor-btn-remover-filtro-marcacao,
     .fornecedor-remover-linha,
-    .mapas-col-remover
+    .mapas-col-remover,
+    .plataforma-stock-incorreto
 ){
     background: var(--fp-cor-perigo, #7a1f1f) !important;
     color: #fff !important;
@@ -1105,7 +1106,8 @@ html:not(.admin-light-mode) :is(
     .fornecedor-historico-apagar,
     .fornecedor-btn-remover-filtro-marcacao,
     .fornecedor-remover-linha,
-    .mapas-col-remover
+    .mapas-col-remover,
+    .plataforma-stock-incorreto
 ):is(:hover, :focus-visible){
     background: var(--fp-cor-perigo-hover, #a52828) !important;
     color: #fff !important;
@@ -1246,11 +1248,11 @@ html:not(.admin-light-mode) :is(
     body[data-page="carrinho"],
     body[data-page="conta"]
 ) :is(
-    .opcao-envio,
-    .opcao-pagamento,
-    .conta-menu-item,
-    .btn-tema,
-    .btn-subtema
+    .opcao-envio:not(:has(input:checked)),
+    .opcao-pagamento:not(:has(input:checked)),
+    .conta-menu-item:not(.ativa),
+    .btn-tema:not(.ativo),
+    .btn-subtema:not(.ativo)
 ){
     border-color: var(--fp-publico-borda, #2a2a2a) !important;
     background: var(--fp-publico-cartao-fundo, #151515) !important;

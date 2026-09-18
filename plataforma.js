@@ -1802,7 +1802,7 @@ function abrirRevisaoListaProdutosPlataforma() {
     const cancelar = document.createElement('button');
     cancelar.type = 'button';
     cancelar.className = 'wallapop-botao';
-    cancelar.textContent = 'Cancelar';
+    cancelar.textContent = 'Fechar';
     cancelar.onclick = fecharRevisaoListaProdutosPlataforma;
     const adicionar = document.createElement('button');
     adicionar.type = 'button';
