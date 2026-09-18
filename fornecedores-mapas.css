@@ -1462,7 +1462,7 @@ body.pagina-mapas-admin > main.fornecedores-admin {
     height: 14px;
     margin-bottom: 2px;
     scrollbar-width: thin;
-    scrollbar-color: #666 #1a1a1a;
+    scrollbar-color: var(--fp-scroll-thumb, #555) var(--fp-scroll-track, #1a1a1a);
 }
 
 .pagina-mapas-admin .mapas-tabela-scroll-topo.mapas-scroll-topo-oculto {

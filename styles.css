@@ -47,6 +47,133 @@ body{
             --fp-tabela-linha-alt-fundo:#171717;
             --fp-overlay-fundo:rgba(0,0,0,.82);
             --fp-sombra-modal:0 22px 70px rgba(0,0,0,.55);
+            --fp-scroll-track:#1a1a1a;
+            --fp-scroll-thumb:#555;
+            --fp-scroll-thumb-hover:#777;
+        }
+
+        html:not(.admin-light-mode) :is(
+            body[data-page],
+            body.cabecalho-com-admin,
+            body.pagina-com-cabecalho-site
+        ){
+            scrollbar-width:thin;
+            scrollbar-color:var(--fp-scroll-thumb) var(--fp-scroll-track);
+        }
+
+        html:not(.admin-light-mode) :is(
+            .clientes-lista,
+            .clientes-ficha,
+            .clientes-encomenda-dialogo,
+            .admin-cliente-dialogo,
+            .admin-imagem-grelha,
+            .lista-carrinho,
+            .favoritos-lista,
+            .estatisticas-tabela-scroll,
+            .fornecedor-resultados,
+            .fornecedor-pedido-modal-corpo,
+            .fornecedor-edicao-corpo,
+            .fornecedor-escolher-pedido-lista,
+            .mapas-tabela-wrapper,
+            .mapas-tabela-scroll-topo,
+            .plataforma-lista-revisao,
+            .gestao-lista-scroll,
+            .portes-lista-scroll
+        ){
+            scrollbar-width:thin;
+            scrollbar-color:var(--fp-scroll-thumb) var(--fp-scroll-track);
+        }
+
+        html:not(.admin-light-mode) :is(
+            .clientes-lista,
+            .clientes-ficha,
+            .clientes-encomenda-dialogo,
+            .admin-cliente-dialogo,
+            .admin-imagem-grelha,
+            .lista-carrinho,
+            .favoritos-lista,
+            .estatisticas-tabela-scroll,
+            .fornecedor-resultados,
+            .fornecedor-pedido-modal-corpo,
+            .fornecedor-edicao-corpo,
+            .fornecedor-escolher-pedido-lista,
+            .mapas-tabela-wrapper,
+            .mapas-tabela-scroll-topo,
+            .plataforma-lista-revisao,
+            .gestao-lista-scroll,
+            .portes-lista-scroll
+        )::-webkit-scrollbar{
+            width:10px;
+            height:10px;
+        }
+
+        html:not(.admin-light-mode) :is(
+            .clientes-lista,
+            .clientes-ficha,
+            .clientes-encomenda-dialogo,
+            .admin-cliente-dialogo,
+            .admin-imagem-grelha,
+            .lista-carrinho,
+            .favoritos-lista,
+            .estatisticas-tabela-scroll,
+            .fornecedor-resultados,
+            .fornecedor-pedido-modal-corpo,
+            .fornecedor-edicao-corpo,
+            .fornecedor-escolher-pedido-lista,
+            .mapas-tabela-wrapper,
+            .mapas-tabela-scroll-topo,
+            .plataforma-lista-revisao,
+            .gestao-lista-scroll,
+            .portes-lista-scroll
+        )::-webkit-scrollbar-track{
+            background:var(--fp-scroll-track);
+            border-radius:8px;
+        }
+
+        html:not(.admin-light-mode) :is(
+            .clientes-lista,
+            .clientes-ficha,
+            .clientes-encomenda-dialogo,
+            .admin-cliente-dialogo,
+            .admin-imagem-grelha,
+            .lista-carrinho,
+            .favoritos-lista,
+            .estatisticas-tabela-scroll,
+            .fornecedor-resultados,
+            .fornecedor-pedido-modal-corpo,
+            .fornecedor-edicao-corpo,
+            .fornecedor-escolher-pedido-lista,
+            .mapas-tabela-wrapper,
+            .mapas-tabela-scroll-topo,
+            .plataforma-lista-revisao,
+            .gestao-lista-scroll,
+            .portes-lista-scroll
+        )::-webkit-scrollbar-thumb{
+            background:var(--fp-scroll-thumb);
+            border:2px solid var(--fp-scroll-track);
+            border-radius:8px;
+        }
+
+        html:not(.admin-light-mode) :is(
+            .clientes-lista,
+            .clientes-ficha,
+            .clientes-encomenda-dialogo,
+            .admin-cliente-dialogo,
+            .admin-imagem-grelha,
+            .lista-carrinho,
+            .favoritos-lista,
+            .estatisticas-tabela-scroll,
+            .fornecedor-resultados,
+            .fornecedor-pedido-modal-corpo,
+            .fornecedor-edicao-corpo,
+            .fornecedor-escolher-pedido-lista,
+            .mapas-tabela-wrapper,
+            .mapas-tabela-scroll-topo,
+            .plataforma-lista-revisao,
+            .gestao-lista-scroll,
+            .portes-lista-scroll
+        )::-webkit-scrollbar-thumb:hover{
+            background:var(--fp-scroll-thumb-hover);
         }
 
         body{

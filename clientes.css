@@ -161,7 +161,7 @@ html:not(.admin-light-mode) .clientes-admin #btn-criar-cliente.wallapop-botao-de
     height:100%;
     max-height:none;
     scrollbar-width:thin;
-    scrollbar-color:#555 #1a1a1a;
+    scrollbar-color:var(--fp-scroll-thumb, #555) var(--fp-scroll-track, #1a1a1a);
 }
 
 .clientes-lista::-webkit-scrollbar{
@@ -169,18 +169,18 @@ html:not(.admin-light-mode) .clientes-admin #btn-criar-cliente.wallapop-botao-de
 }
 
 .clientes-lista::-webkit-scrollbar-track{
-    background:#1a1a1a;
+    background:var(--fp-scroll-track, #1a1a1a);
     border-radius:8px;
 }
 
 .clientes-lista::-webkit-scrollbar-thumb{
-    background:#555;
+    background:var(--fp-scroll-thumb, #555);
     border-radius:8px;
-    border:2px solid #1a1a1a;
+    border:2px solid var(--fp-scroll-track, #1a1a1a);
 }
 
 .clientes-lista::-webkit-scrollbar-thumb:hover{
-    background:#777;
+    background:var(--fp-scroll-thumb-hover, #777);
 }
 
 .clientes-ficha{
