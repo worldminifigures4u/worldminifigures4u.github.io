@@ -974,11 +974,56 @@ html:not(.admin-light-mode) :is(
     .btn-favorito-adicionar,
     .btn-acao-cliente,
     .conta-ver-produtos,
-    .btn-adicionar
+    .btn-adicionar,
+    .admin-imagem-modal-fechar,
+    .admin-encomenda-modal-fechar,
+    .admin-cliente-fechar,
+    .clientes-encomenda-fechar,
+    .fornecedor-edicao-fechar,
+    .loja-foto-modal-fechar,
+    .plataforma-lista-fechar,
+    .mapas-produto-galeria-fechar,
+    .mapas-produto-fechar-edicao,
+    .admin-fatura-confirmacao-cancelar
 ){
     min-height: var(--fp-botao-altura, 42px);
     border-radius: var(--fp-botao-raio, 6px);
     font-weight: 800;
+}
+
+html:not(.admin-light-mode) :is(
+    .admin-imagem-modal-fechar,
+    .admin-encomenda-modal-fechar,
+    .admin-cliente-fechar,
+    .clientes-encomenda-fechar,
+    .fornecedor-edicao-fechar,
+    .loja-foto-modal-fechar,
+    .plataforma-lista-fechar,
+    .mapas-produto-galeria-fechar,
+    .mapas-produto-fechar-edicao,
+    .admin-fatura-confirmacao-cancelar
+){
+    border: 1px solid var(--cor-botao-secundario-borda, #ffc107) !important;
+    background: transparent !important;
+    color: var(--cor-botao-secundario-texto, #fff) !important;
+}
+
+html:not(.admin-light-mode) :is(
+    .admin-imagem-modal-fechar,
+    .admin-encomenda-modal-fechar,
+    .admin-cliente-fechar,
+    .clientes-encomenda-fechar,
+    .fornecedor-edicao-fechar,
+    .loja-foto-modal-fechar,
+    .plataforma-lista-fechar,
+    .mapas-produto-galeria-fechar,
+    .mapas-produto-fechar-edicao,
+    .admin-fatura-confirmacao-cancelar
+):is(:hover, :focus-visible){
+    border-color: var(--cor-acao-principal, #ffc107) !important;
+    background: transparent !important;
+    color: var(--cor-acao-principal, #ffc107) !important;
+    outline: none;
 }
 
 html:not(.admin-light-mode) :is(
