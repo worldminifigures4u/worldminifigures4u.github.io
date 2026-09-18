@@ -993,9 +993,9 @@ html:not(.admin-light-mode) :is(
     .mapas-produto-fechar-edicao,
     .admin-fatura-confirmacao-cancelar
 ){
-    min-height: var(--fp-botao-altura, 42px);
-    border-radius: var(--fp-botao-raio, 6px);
-    font-weight: 800;
+    min-height: var(--fp-botao-altura, 42px) !important;
+    border-radius: var(--fp-botao-raio, 6px) !important;
+    font-weight: 800 !important;
 }
 
 html:not(.admin-light-mode) :is(
@@ -1108,10 +1108,10 @@ html:not(.admin-light-mode) body[data-page] :is(
     textarea,
     select
 ){
-    border-radius: var(--fp-campo-raio, 6px);
-    background: var(--fp-campo-fundo, #242424);
-    border-color: var(--fp-campo-borda, #444);
-    color: #fff;
+    border-radius: var(--fp-campo-raio, 6px) !important;
+    background: var(--fp-campo-fundo, #242424) !important;
+    border-color: var(--fp-campo-borda, #444) !important;
+    color: #fff !important;
     color-scheme: dark;
 }
 
@@ -1120,6 +1120,6 @@ html:not(.admin-light-mode) body[data-page] :is(
     textarea,
     select
 ):focus{
-    border-color: var(--fp-campo-foco, #ffc400);
+    border-color: var(--fp-campo-foco, #ffc400) !important;
     outline: none;
 }
