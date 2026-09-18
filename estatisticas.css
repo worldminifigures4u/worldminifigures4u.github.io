@@ -137,6 +137,129 @@
     grid-column: span 2;
 }
 
+.estatisticas-grid-comparacao {
+    grid-template-columns: 1fr;
+}
+
+.estatisticas-painel-comparacao {
+    min-height: 360px;
+}
+
+.estatisticas-painel-cabecalho {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 14px;
+}
+
+.estatisticas-painel-cabecalho h2 {
+    margin-bottom: 0;
+}
+
+.estatisticas-anos-opcoes {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 7px;
+}
+
+.estatisticas-ano-opcao {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    min-height: 30px;
+    padding: 0 10px;
+    border: 1px solid #444;
+    border-radius: 999px;
+    background: #1d1d1d;
+    color: #ddd;
+    font-size: 12px;
+    font-weight: 800;
+    cursor: pointer;
+}
+
+.estatisticas-ano-opcao:has(input:checked) {
+    border-color: #ffc107;
+    color: #ffc107;
+}
+
+.estatisticas-ano-opcao input {
+    width: 14px;
+    height: 14px;
+    margin: 0;
+    accent-color: #ffc107;
+}
+
+.estatisticas-anos-vazio {
+    color: #888;
+    font-size: 12px;
+    font-weight: 800;
+}
+
+.estatisticas-comparacao-meses {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px 18px;
+}
+
+.estatisticas-comparacao-grupo {
+    display: grid;
+    grid-template-columns: minmax(76px, 92px) minmax(0, 1fr);
+    gap: 12px;
+    align-items: start;
+    padding: 10px 0;
+    border-top: 1px solid #252525;
+}
+
+.estatisticas-comparacao-mes {
+    color: #fff;
+    font-size: 13px;
+    line-height: 1.25;
+}
+
+.estatisticas-comparacao-barras {
+    display: grid;
+    gap: 7px;
+    min-width: 0;
+}
+
+.estatisticas-comparacao-barra {
+    display: grid;
+    grid-template-columns: 48px minmax(90px, 1fr) minmax(132px, auto);
+    gap: 8px;
+    align-items: center;
+    color: #ddd;
+    font-size: 12px;
+}
+
+.estatisticas-comparacao-ano {
+    color: #ffc107;
+    font-weight: 900;
+}
+
+.estatisticas-comparacao-trilho {
+    height: 11px;
+    border-radius: 999px;
+    background: #262626;
+    overflow: hidden;
+}
+
+.estatisticas-comparacao-preenchimento {
+    display: block;
+    height: 100%;
+    min-width: 2px;
+    border-radius: inherit;
+    background: #ffc107;
+}
+
+.estatisticas-comparacao-valor {
+    justify-self: end;
+    color: #fff;
+    font-weight: 800;
+    white-space: nowrap;
+}
+
 .estatisticas-painel h2 {
     margin: 0 0 14px;
     color: var(--cor-texto-principal, #fff);
@@ -275,6 +398,26 @@
 
     .estatisticas-painel-largo {
         grid-column: auto;
+    }
+
+    .estatisticas-painel-cabecalho {
+        display: grid;
+    }
+
+    .estatisticas-anos-opcoes {
+        justify-content: flex-start;
+    }
+
+    .estatisticas-comparacao-meses {
+        grid-template-columns: 1fr;
+    }
+
+    .estatisticas-comparacao-grupo {
+        grid-template-columns: 1fr;
+    }
+
+    .estatisticas-comparacao-barra {
+        grid-template-columns: 42px minmax(70px, 1fr) minmax(104px, auto);
     }
 
     .estatisticas-filtros label {

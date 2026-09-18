@@ -19,7 +19,7 @@
     <link rel="apple-touch-icon" href="fp-ring-favicon-192.png">
     <link rel="stylesheet" href="styles.css?v=20260917-vermelho-apagar">
     <link rel="stylesheet" href="styles-admin.css?v=20260901-campos-admin-escuros">
-    <link rel="stylesheet" href="estatisticas.css?v=20260828-meses-maiuscula">
+    <link rel="stylesheet" href="estatisticas.css?v=20260918-comparar-anos">
     <link rel="stylesheet" href="admin-light.css?v=20260908-ref-preco-fornecedor">
     <link rel="stylesheet" href="styles-tema.css?v=20260721-sem-underline" media="print" data-async-css>
     <noscript><link rel="stylesheet" href="styles-tema.css?v=20260721-sem-underline"></noscript>
@@ -134,6 +134,16 @@
             </article>
         </section>
 
+        <section class="estatisticas-grid estatisticas-grid-comparacao">
+            <article class="estatisticas-painel estatisticas-painel-comparacao">
+                <div class="estatisticas-painel-cabecalho">
+                    <h2>Comparar vendas por mês e ano</h2>
+                    <div class="estatisticas-anos-opcoes" id="estatisticas-comparar-anos" aria-label="Anos a comparar"></div>
+                </div>
+                <div class="estatisticas-comparacao-meses" id="estatisticas-comparacao-meses"></div>
+            </article>
+        </section>
+
         <section class="estatisticas-grid">
             <article class="estatisticas-painel">
                 <h2>Top figuras por receita</h2>
@@ -163,7 +173,7 @@
     <script src="supabase-cdn.js?v=20260913-timeout" defer></script>
     <script src="app-config.js?v=20260913-admin-timeout" defer></script>
     <script src="admin-theme.js?v=20260826-light-mode" defer></script>
-    <script src="estatisticas.js?v=20260828-sem-faixas-preco" defer></script>
+    <script src="estatisticas.js?v=20260918-comparar-anos" defer></script>
 <script src="campo-limpar.js?v=20260720-sem-x-cliente" defer></script>
 <script src="inline-listeners-base.js?v=20260725-logo-hq" defer></script>
 <script src="inline-listeners-admin.js?v=20260713-r25" defer></script>

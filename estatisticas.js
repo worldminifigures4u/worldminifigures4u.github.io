@@ -8,6 +8,21 @@ const ESTATISTICAS_DIAS_SEMANA = [
     { chave: 7, rotulo: "Domingo" }
 ];
 
+const ESTATISTICAS_MESES_ANO = [
+    'Janeiro',
+    'Fevereiro',
+    'Março',
+    'Abril',
+    'Maio',
+    'Junho',
+    'Julho',
+    'Agosto',
+    'Setembro',
+    'Outubro',
+    'Novembro',
+    'Dezembro'
+];
+
 let estatisticasClient = null;
 let estatisticasEncomendas = [];
 
@@ -194,6 +209,117 @@ function filtrarEncomendasEstatisticas() {
     });
 }
 
+function filtrarEncomendasComparacaoAnos() {
+    const filtro = obterFiltroData();
+    return estatisticasEncomendas.filter(encomenda => {
+        if (filtro.plataforma !== 'todas' && obterPlataformaEncomenda(encomenda) !== filtro.plataforma) return false;
+        return encomendaContaNosTotais(encomenda);
+    });
+}
+
+function obterAnosDisponiveisComparacao(encomendas) {
+    return [...new Set(encomendas
+        .map(obterAnoEncomenda)
+        .filter(ano => /^\d{4}$/.test(String(ano))))]
+        .sort((a, b) => Number(a) - Number(b));
+}
+
+function obterAnosSelecionadosComparacao(anosDisponiveis) {
+    const marcados = [...document.querySelectorAll('#estatisticas-comparar-anos input[type="checkbox"]:checked')]
+        .map(input => input.value)
+        .filter(ano => anosDisponiveis.includes(ano));
+    if (marcados.length) return marcados.sort((a, b) => Number(a) - Number(b));
+    return anosDisponiveis.slice(-Math.min(3, anosDisponiveis.length));
+}
+
+function atualizarOpcoesComparacaoAnos(anosDisponiveis) {
+    const container = document.getElementById('estatisticas-comparar-anos');
+    const selecionadosAtuais = new Set([...container.querySelectorAll('input[type="checkbox"]:checked')].map(input => input.value));
+    const selecaoInicial = new Set(selecionadosAtuais.size
+        ? [...selecionadosAtuais].filter(ano => anosDisponiveis.includes(ano))
+        : anosDisponiveis.slice(-Math.min(3, anosDisponiveis.length)));
+
+    container.replaceChildren();
+    if (!anosDisponiveis.length) {
+        container.appendChild(criarElementoEstatisticas('span', 'estatisticas-anos-vazio', 'Sem anos'));
+        return;
+    }
+
+    anosDisponiveis.forEach(ano => {
+        const label = criarElementoEstatisticas('label', 'estatisticas-ano-opcao');
+        const input = document.createElement('input');
+        input.type = 'checkbox';
+        input.value = ano;
+        input.checked = selecaoInicial.has(ano);
+        input.addEventListener('change', renderizarEstatisticas);
+        label.append(input, criarElementoEstatisticas('span', '', ano));
+        container.appendChild(label);
+    });
+}
+
+function calcularComparacaoMensalAnos(encomendas, anosSelecionados, filtro) {
+    const dados = ESTATISTICAS_MESES_ANO.map((mes, indice) => ({
+        mes,
+        indice,
+        anos: anosSelecionados.map(ano => ({ ano, receita: 0, quantidade: 0, encomendas: 0 }))
+    }));
+    const indiceAno = new Map();
+    dados.forEach(linha => linha.anos.forEach(item => {
+        indiceAno.set(`${item.ano}-${linha.indice}`, item);
+    }));
+
+    encomendas.forEach(encomenda => {
+        const data = obterDataEncomenda(encomenda);
+        if (!data) return;
+        const ano = String(data.getFullYear());
+        if (!anosSelecionados.includes(ano)) return;
+        const alvo = indiceAno.get(`${ano}-${data.getMonth()}`);
+        if (!alvo) return;
+        const produtos = obterProdutosEstatisticas(encomenda);
+        alvo.receita += obterTotalEncomenda(encomenda, filtro);
+        alvo.quantidade += produtos.reduce((soma, item) => soma + obterQuantidadeItem(item), 0);
+        alvo.encomendas += 1;
+    });
+
+    return dados;
+}
+
+function renderizarComparacaoMensalAnos(encomendasBase, filtro) {
+    const anosDisponiveis = obterAnosDisponiveisComparacao(encomendasBase);
+    atualizarOpcoesComparacaoAnos(anosDisponiveis);
+    const container = document.getElementById('estatisticas-comparacao-meses');
+    container.replaceChildren();
+    const anosSelecionados = obterAnosSelecionadosComparacao(anosDisponiveis);
+    if (!anosSelecionados.length) {
+        container.appendChild(criarElementoEstatisticas('p', 'estatisticas-vazio', 'Seleciona pelo menos um ano.'));
+        return;
+    }
+
+    const dados = calcularComparacaoMensalAnos(encomendasBase, anosSelecionados, filtro);
+    const maximo = Math.max(...dados.flatMap(linha => linha.anos.map(item => item.receita)), 1);
+    dados.forEach(linha => {
+        const grupo = criarElementoEstatisticas('div', 'estatisticas-comparacao-grupo');
+        grupo.appendChild(criarElementoEstatisticas('strong', 'estatisticas-comparacao-mes', linha.mes));
+        const barras = criarElementoEstatisticas('div', 'estatisticas-comparacao-barras');
+        linha.anos.forEach(item => {
+            const barra = criarElementoEstatisticas('div', 'estatisticas-comparacao-barra');
+            const trilho = criarElementoEstatisticas('span', 'estatisticas-comparacao-trilho');
+            const preenchimento = criarElementoEstatisticas('span', 'estatisticas-comparacao-preenchimento');
+            const largura = Math.max(0, Math.min(100, Math.ceil(((item.receita / maximo) * 100) / 5) * 5));
+            preenchimento.classList.add(`estatisticas-largura-${largura}`);
+            trilho.appendChild(preenchimento);
+            barra.append(
+                criarElementoEstatisticas('span', 'estatisticas-comparacao-ano', item.ano),
+                trilho,
+                criarElementoEstatisticas('span', 'estatisticas-comparacao-valor', `${formatarEuroEstatisticas(item.receita)} · ${formatarNumeroEstatisticas(item.encomendas)} enc.`)
+            );
+            barras.appendChild(barra);
+        });
+        grupo.appendChild(barras);
+        container.appendChild(grupo);
+    });
+}
+
 function adicionarGrupo(mapa, chave, receita = 0, quantidade = 0, encomendas = 0) {
     const atual = mapa.get(chave) || { chave, receita: 0, quantidade: 0, encomendas: 0 };
     atual.receita += receita;
@@ -339,6 +465,7 @@ function calcularEstatisticas(encomendas, filtro = {}) {
 function renderizarEstatisticas() {
     const filtro = obterFiltroData();
     const encomendas = filtrarEncomendasEstatisticas();
+    const encomendasComparacao = filtrarEncomendasComparacaoAnos();
     const dados = calcularEstatisticas(encomendas, filtro);
 
     document.getElementById('estatisticas-total-vendido').textContent = formatarEuroEstatisticas(dados.totalVendido);
@@ -364,6 +491,7 @@ function renderizarEstatisticas() {
         receita: item.receita / Math.max(1, item.encomendas),
         quantidade: item.encomendas
     })), { limite: 10, rotuloQuantidade: 'enc.' });
+    renderizarComparacaoMensalAnos(encomendasComparacao, filtro);
 }
 
 function atualizarOpcoesPlataforma() {
