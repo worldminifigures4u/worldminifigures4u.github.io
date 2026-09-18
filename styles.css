@@ -41,6 +41,9 @@ body{
             --fp-publico-painel-fundo:#111111;
             --fp-publico-cartao-fundo:#151515;
             --fp-publico-borda:#2a2a2a;
+            --fp-tabela-cabecalho-fundo:#181818;
+            --fp-tabela-linha-fundo:#111111;
+            --fp-tabela-linha-alt-fundo:#171717;
         }
 
         body{
@@ -1239,7 +1242,8 @@ html:not(.admin-light-mode) body.cabecalho-com-admin :is(
     .gestao-banner-card,
     .gestao-importacao-painel .mapas-importacao-bloco,
     .portes-aviso,
-    .portes-metodos
+    .portes-metodos,
+    .portes-grupo
 ){
     border: 1px solid var(--fp-painel-borda, #333) !important;
     border-radius: var(--fp-painel-raio, 8px) !important;
@@ -1278,6 +1282,49 @@ html:not(.admin-light-mode) body.cabecalho-com-admin :is(
     border-color: var(--fp-painel-borda, #333) !important;
     border-radius: var(--fp-painel-raio, 8px) !important;
     background: var(--fp-cartao-fundo, #171717) !important;
+}
+
+html:not(.admin-light-mode) body.cabecalho-com-admin :is(
+    .portes-tabela,
+    .mapas-produtos-tabela,
+    .fornecedor-tabela-encomenda,
+    .estatisticas-tabela
+){
+    color: var(--cor-texto-principal, #fff) !important;
+}
+
+html:not(.admin-light-mode) body.cabecalho-com-admin :is(
+    .portes-tabela th,
+    .mapas-produtos-tabela th,
+    .fornecedor-tabela-encomenda th
+){
+    background: var(--fp-tabela-cabecalho-fundo, #181818) !important;
+    border-color: var(--fp-painel-borda, #333) !important;
+    color: #aaa !important;
+}
+
+html:not(.admin-light-mode) body.cabecalho-com-admin :is(
+    .portes-tabela td,
+    .mapas-produtos-tabela td,
+    .fornecedor-tabela-encomenda td,
+    .estatisticas-linha
+){
+    border-color: var(--fp-painel-borda, #333) !important;
+}
+
+html:not(.admin-light-mode) body.cabecalho-com-admin :is(
+    .portes-tabela tbody tr:not(.portes-alterado):not(.portes-inativo) td,
+    .mapas-produtos-tabela tbody tr:not(.mapa-linha-quantidade-ativa):nth-child(odd) td,
+    .fornecedor-tabela-encomenda tbody tr:not(.mapa-linha-quantidade-ativa):nth-child(odd) td
+){
+    background: var(--fp-tabela-linha-fundo, #111111) !important;
+}
+
+html:not(.admin-light-mode) body.cabecalho-com-admin :is(
+    .mapas-produtos-tabela tbody tr:not(.mapa-linha-quantidade-ativa):nth-child(even) td,
+    .fornecedor-tabela-encomenda tbody tr:not(.mapa-linha-quantidade-ativa):nth-child(even) td
+){
+    background: var(--fp-tabela-linha-alt-fundo, #171717) !important;
 }
 
 html:not(.admin-light-mode) :is(
