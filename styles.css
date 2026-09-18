@@ -28,6 +28,7 @@ body{
             --fp-campo-raio:6px;
             --fp-botao-raio:6px;
             --fp-botao-altura:42px;
+            --fp-botao-compacto:36px;
             --fp-painel-fundo:#141414;
             --fp-cartao-fundo:#171717;
             --fp-superficie-fundo:#101010;
@@ -1069,6 +1070,46 @@ html:not(.admin-light-mode) :is(
     border-color: var(--cor-acao-principal, #ffc107) !important;
     background: transparent !important;
     color: var(--cor-acao-principal, #ffc107) !important;
+    outline: none;
+}
+
+html:not(.admin-light-mode) :is(
+    .btn-quantidade,
+    .btn-remover,
+    .wallapop-quantidade button,
+    .wallapop-remover,
+    .fornecedor-quantidade button,
+    .fornecedor-remover
+){
+    width: var(--fp-botao-compacto, 36px) !important;
+    min-width: var(--fp-botao-compacto, 36px) !important;
+    height: var(--fp-botao-compacto, 36px) !important;
+    min-height: var(--fp-botao-compacto, 36px) !important;
+    border-radius: var(--fp-botao-raio, 6px) !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    padding: 0 !important;
+    font-weight: 900 !important;
+    line-height: 1 !important;
+}
+
+html:not(.admin-light-mode) :is(
+    .btn-quantidade,
+    .wallapop-quantidade button:not(.wallapop-remover),
+    .fornecedor-quantidade button:not(.fornecedor-remover)
+){
+    border: 1px solid var(--fp-painel-borda, #333) !important;
+    background: #333 !important;
+    color: #fff !important;
+}
+
+html:not(.admin-light-mode) :is(
+    .btn-quantidade,
+    .wallapop-quantidade button:not(.wallapop-remover),
+    .fornecedor-quantidade button:not(.fornecedor-remover)
+):is(:hover, :focus-visible){
+    border-color: var(--cor-acao-principal, #ffc107) !important;
     outline: none;
 }
 
