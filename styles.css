@@ -33,6 +33,9 @@ body{
             --fp-superficie-fundo:#101010;
             --fp-painel-borda:#333;
             --fp-painel-raio:8px;
+            --fp-publico-painel-fundo:#111111;
+            --fp-publico-cartao-fundo:#151515;
+            --fp-publico-borda:#2a2a2a;
         }
 
         body{
@@ -1190,4 +1193,65 @@ html:not(.admin-light-mode) body.cabecalho-com-admin :is(
     border-color: var(--fp-painel-borda, #333) !important;
     border-radius: var(--fp-painel-raio, 8px) !important;
     background: var(--fp-cartao-fundo, #171717) !important;
+}
+
+html:not(.admin-light-mode) :is(
+    body[data-page="loja"],
+    body[data-page="favoritos"],
+    body[data-page="carrinho"],
+    body[data-page="conta"],
+    body[data-page="sobre"],
+    body[data-page="contactos"],
+    body[data-page="politicas"]
+) :is(
+    .menu-temas,
+    .loja-banner-cgi,
+    .produto-card,
+    .favorito-card,
+    .linha-carrinho,
+    .carrinho-vazio,
+    .total-box,
+    .encomenda-card,
+    .bloco-institucional
+){
+    border: 1px solid var(--fp-publico-borda, #2a2a2a) !important;
+    border-radius: var(--fp-painel-raio, 8px) !important;
+    background: var(--fp-publico-painel-fundo, #111111) !important;
+}
+
+html:not(.admin-light-mode) :is(
+    body[data-page="loja"],
+    body[data-page="favoritos"],
+    body[data-page="carrinho"],
+    body[data-page="conta"],
+    body[data-page="sobre"],
+    body[data-page="contactos"],
+    body[data-page="politicas"]
+) :is(
+    .opcao-envio,
+    .opcao-pagamento,
+    .conta-menu-item,
+    .btn-tema,
+    .btn-subtema,
+    .carrinho-vazio-figura,
+    .imagem-carrinho,
+    .favorito-imagem
+){
+    border-radius: var(--fp-campo-raio, 6px) !important;
+}
+
+html:not(.admin-light-mode) :is(
+    body[data-page="loja"],
+    body[data-page="favoritos"],
+    body[data-page="carrinho"],
+    body[data-page="conta"]
+) :is(
+    .opcao-envio,
+    .opcao-pagamento,
+    .conta-menu-item,
+    .btn-tema,
+    .btn-subtema
+){
+    border-color: var(--fp-publico-borda, #2a2a2a) !important;
+    background: var(--fp-publico-cartao-fundo, #151515) !important;
 }
