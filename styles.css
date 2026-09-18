@@ -1002,6 +1002,7 @@ html:not(.admin-light-mode) :is(
     .loja-foto-modal-fechar,
     .plataforma-lista-fechar,
     .mapas-produto-galeria-fechar,
+    #mapas-produto-fechar-ficha,
     .mapas-produto-fechar-edicao,
     .admin-fatura-confirmacao-cancelar
 ){
@@ -1041,6 +1042,7 @@ html:not(.admin-light-mode) :is(
     .loja-foto-modal-fechar,
     .plataforma-lista-fechar,
     .mapas-produto-galeria-fechar,
+    #mapas-produto-fechar-ficha,
     .mapas-produto-fechar-edicao,
     .admin-fatura-confirmacao-cancelar
 ){
@@ -1058,6 +1060,7 @@ html:not(.admin-light-mode) :is(
     .loja-foto-modal-fechar,
     .plataforma-lista-fechar,
     .mapas-produto-galeria-fechar,
+    #mapas-produto-fechar-ficha,
     .mapas-produto-fechar-edicao,
     .admin-fatura-confirmacao-cancelar,
     .mapas-copiar-lista:not(.mapas-botao-novo),
