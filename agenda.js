@@ -103,6 +103,27 @@ function mostrarEstadoAgenda(mensagem, tipo = '') {
     alvo.className = `agenda-estado-texto ${tipo}`.trim();
 }
 
+function ativarMenuAdminAgenda(user) {
+    if (!user || !emailEhAdmin(user.email)) return;
+
+    document.querySelectorAll('.acao-plataforma-admin, .acao-anuncio-admin, .acao-mapas-admin, .acao-gestao-admin, .acao-fornecedores-admin, .acao-encomendas-admin, .acao-estatisticas-admin, .acao-agenda-admin, .acao-clientes-admin, .acao-conta-admin')
+        .forEach(atalho => { atalho.hidden = false; });
+
+    const navegacaoAdmin = document.querySelector('.navegacao-admin-cabecalho');
+    if (navegacaoAdmin) navegacaoAdmin.hidden = false;
+    document.body.classList.add('cabecalho-com-admin');
+
+    const nomeEl = document.getElementById('nome-login-cabecalho');
+    if (nomeEl) {
+        nomeEl.textContent = 'Admin';
+        nomeEl.classList.remove('oculto');
+    }
+
+    if (typeof window.sincronizarEspacamentoCabecalho === 'function') {
+        requestAnimationFrame(() => window.sincronizarEspacamentoCabecalho());
+    }
+}
+
 function erroAgenda(error) {
     const mensagem = error?.message || String(error || 'Erro desconhecido.');
     if (mensagem.includes('Could not find the function') || mensagem.includes('listar_agenda_admin')) {
@@ -418,6 +439,7 @@ async function iniciarAgenda() {
         agendaClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
         const admin = await validarAdminRapido(agendaClient, bloqueio);
         if (!admin) return;
+        ativarMenuAdminAgenda(admin);
         if (bloqueio) bloqueio.hidden = true;
         if (aplicacao) aplicacao.hidden = false;
         const hoje = agendaHojeData();
