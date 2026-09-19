@@ -703,52 +703,52 @@ html.admin-light-mode body.cabecalho-com-admin .admin-encomenda-anexo-pendente{
 }
 
 html.admin-light-mode body.cabecalho-com-admin .admin-encomenda-anexo .wallapop-botao{
-    background:#ffffff !important;
-    border-color:#aeb9c6 !important;
-    color:#17202a !important;
+    background:var(--fp-light-superficie, #fbfcfe) !important;
+    border-color:var(--fp-light-borda-forte, #c3ccd8) !important;
+    color:var(--fp-light-texto, #182231) !important;
 }
 
 html.admin-light-mode body.cabecalho-com-admin .admin-encomenda-anexo .wallapop-botao:hover,
 html.admin-light-mode body.cabecalho-com-admin .admin-encomenda-anexo .wallapop-botao:focus-visible{
-    border-color:#8fb3d9 !important;
-    color:#0f5e9c !important;
+    border-color:var(--fp-light-acento, #256d9f) !important;
+    color:var(--fp-light-acento, #256d9f) !important;
 }
 
 html.admin-light-mode body.cabecalho-com-admin .admin-encomenda-estado-caixa{
-    background:#ffffff !important;
-    border-color:#aeb9c6 !important;
+    background:var(--fp-light-superficie, #fbfcfe) !important;
+    border-color:var(--fp-light-borda-forte, #c3ccd8) !important;
     color-scheme:light !important;
 }
 
 html.admin-light-mode body.cabecalho-com-admin .admin-encomenda-estado-caixa select{
-    color:#17202a !important;
+    color:var(--fp-light-texto, #182231) !important;
     color-scheme:light !important;
 }
 
 html.admin-light-mode body.cabecalho-com-admin .admin-encomenda-estado-caixa select option{
-    background-color:#ffffff !important;
-    color:#17202a !important;
+    background-color:var(--fp-light-superficie, #fbfcfe) !important;
+    color:var(--fp-light-texto, #182231) !important;
 }
 
 html.admin-light-mode body.cabecalho-com-admin .admin-encomenda-produto-foto{
-    background:#f8fafc !important;
-    border-color:#b9c5d2 !important;
+    background:var(--fp-light-superficie-alt, #f8fafc) !important;
+    border-color:var(--fp-light-borda-forte, #c3ccd8) !important;
 }
 
 html.admin-light-mode body.cabecalho-com-admin :is(
     .admin-encomenda-portes-input,
     .admin-encomenda-total-input
 ){
-    background:#ffffff !important;
-    border-color:#b9c5d2 !important;
-    color:#17202a !important;
+    background:var(--fp-light-superficie, #fbfcfe) !important;
+    border-color:var(--fp-light-borda-forte, #c3ccd8) !important;
+    color:var(--fp-light-texto, #182231) !important;
 }
 
 html.admin-light-mode body.cabecalho-com-admin :is(
     .admin-encomenda-portes-input,
     .admin-encomenda-total-input
 ):focus{
-    border-color:#8fb3d9 !important;
+    border-color:var(--fp-light-acento, #256d9f) !important;
     box-shadow:0 0 0 2px rgba(15, 94, 156, .14) !important;
 }
 
@@ -761,9 +761,9 @@ html.admin-light-mode body.cabecalho-com-admin .fornecedor-btn-filtro-marcacao,
 html.admin-light-mode body.cabecalho-com-admin .admin-encomenda-editar,
 html.admin-light-mode body.cabecalho-com-admin .admin-encomenda-gravar,
 html.admin-light-mode body.cabecalho-com-admin .portes-tab{
-    background:#ffffff !important;
-    border-color:#aeb9c6 !important;
-    color:#17202a !important;
+    background:var(--fp-light-superficie, #fbfcfe) !important;
+    border-color:var(--fp-light-borda-forte, #c3ccd8) !important;
+    color:var(--fp-light-texto, #182231) !important;
     box-shadow:0 2px 8px rgba(17, 24, 39, .08) !important;
 }
 
@@ -785,8 +785,8 @@ html.admin-light-mode body.cabecalho-com-admin .admin-encomenda-gravar:hover,
 html.admin-light-mode body.cabecalho-com-admin .admin-encomenda-gravar:focus-visible,
 html.admin-light-mode body.cabecalho-com-admin .portes-tab:hover,
 html.admin-light-mode body.cabecalho-com-admin .portes-tab:focus-visible{
-    border-color:#8fb3d9 !important;
-    color:#0f5e9c !important;
+    border-color:var(--fp-light-acento, #256d9f) !important;
+    color:var(--fp-light-acento, #256d9f) !important;
 }
 
 html.admin-light-mode body.cabecalho-com-admin .portes-tab.ativa{
@@ -1016,9 +1016,9 @@ html.admin-light-mode body.cabecalho-com-admin :is(
     .portes-painel,
     fieldset
 ){
-    background:#fbfcfe !important;
-    border-color:#d7dee8 !important;
-    color:#182231 !important;
+    background:var(--fp-light-superficie, #fbfcfe) !important;
+    border-color:var(--fp-light-borda, #d7dee8) !important;
+    color:var(--fp-light-texto, #182231) !important;
     box-shadow:0 6px 18px rgba(31, 41, 55, .055) !important;
 }
 
@@ -1027,11 +1027,11 @@ html.admin-light-mode body.cabecalho-com-admin :is(
     select,
     textarea
 ){
-    background:#fbfcfe !important;
-    border-color:#c3ccd8 !important;
-    color:#182231 !important;
-    -webkit-text-fill-color:#182231 !important;
-    caret-color:#182231 !important;
+    background:var(--fp-light-superficie, #fbfcfe) !important;
+    border-color:var(--fp-light-borda-forte, #c3ccd8) !important;
+    color:var(--fp-light-texto, #182231) !important;
+    -webkit-text-fill-color:var(--fp-light-texto, #182231) !important;
+    caret-color:var(--fp-light-texto, #182231) !important;
     box-shadow:none !important;
 }
 
@@ -1046,7 +1046,7 @@ html.admin-light-mode body.cabecalho-com-admin :is(
     textarea
 ):focus-visible{
     outline:none !important;
-    border-color:#8aa8c3 !important;
+    border-color:var(--fp-light-acento, #256d9f) !important;
     box-shadow:0 0 0 2px rgba(37, 109, 159, .12) !important;
 }
 
@@ -1066,7 +1066,7 @@ html.admin-light-mode body.cabecalho-com-admin :is(
     .mapas-produtos-tabela thead th,
     .fornecedor-tabela-encomenda thead th
 ){
-    border-color:#d5dee9 !important;
+    border-color:var(--fp-light-borda, #d7dee8) !important;
 }
 
 html.admin-light-mode body.cabecalho-com-admin :is(
@@ -1075,8 +1075,8 @@ html.admin-light-mode body.cabecalho-com-admin :is(
     .mapas-produtos-tabela thead th,
     .fornecedor-tabela-encomenda thead th
 ){
-    background:#edf2f8 !important;
-    color:#374151 !important;
+    background:var(--fp-light-cabecalho, #edf2f8) !important;
+    color:var(--fp-light-texto-suave, #374151) !important;
 }
 
 html.admin-light-mode body.cabecalho-com-admin :is(
@@ -1092,8 +1092,8 @@ html.admin-light-mode body.cabecalho-com-admin :is(
     .fornecedor-pedido-linha,
     .fornecedor-resultado-item
 ){
-    background:#fdfefe !important;
-    border-color:#d9e1ea !important;
+    background:var(--fp-light-linha, #fdfefe) !important;
+    border-color:var(--fp-light-borda, #d7dee8) !important;
 }
 
 html.admin-light-mode body.cabecalho-com-admin :is(
@@ -1101,7 +1101,7 @@ html.admin-light-mode body.cabecalho-com-admin :is(
     .fornecedor-tabela-encomenda tbody tr:nth-child(even) td,
     .admin-encomendas-vendas-figura-linha:nth-child(even)
 ){
-    background:#f7f9fc !important;
+    background:var(--fp-light-linha-alt, #f7f9fc) !important;
 }
 
 html.admin-light-mode body.cabecalho-com-admin :is(
@@ -1133,8 +1133,8 @@ html.admin-light-mode body.cabecalho-com-admin :is(
     .admin-encomenda-lote-total,
     .admin-encomendas-total-filtrado
 ){
-    background:#f8fafc !important;
-    border-color:#c3ccd8 !important;
+    background:var(--fp-light-superficie-alt, #f8fafc) !important;
+    border-color:var(--fp-light-borda-forte, #c3ccd8) !important;
 }
 
 html.admin-light-mode body.cabecalho-com-admin .admin-encomenda-card.prioritaria{
