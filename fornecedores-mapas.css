@@ -1399,6 +1399,31 @@ body.pagina-mapas-admin > main.fornecedores-admin {
     color: #ffc400;
 }
 
+.pagina-mapas-admin .mapas-contador-filtros :is(
+    .mapas-filtro-stock,
+    .mapas-copiar-lista,
+    .mapas-botao-novo,
+    .mapas-colunas-painel,
+    .mapas-colunas-painel > summary
+) {
+    box-sizing: border-box;
+    height: 36px !important;
+    min-height: 36px !important;
+    line-height: 1 !important;
+}
+
+.pagina-mapas-admin .mapas-contador-filtros :is(
+    .mapas-copiar-lista,
+    .mapas-botao-novo,
+    .mapas-colunas-painel > summary
+) {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+}
+
 .mapas-contador-item {
     display: grid;
     gap: 4px;
