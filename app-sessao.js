@@ -4,7 +4,6 @@ let produtosClient = null;
 let todosOsProdutos = [];
 let carrinho = carregarCarrinhoLocal();
 let emRecuperacaoPassword = false;
-let agendaSiteTemporizadorAvisos = null;
 
 function obterParametrosAuthUrl() {
     const params = new URLSearchParams(window.location.search);
@@ -159,64 +158,6 @@ async function verificarRestricoesContaClienteSite(user) {
     }
 }
 
-function chaveAvisoAgendaSite(alarme) {
-    return `figures-planet-agenda-aviso-${alarme.id}-${alarme.data_alarme || ''}-${alarme.hora_alarme || 'sem-hora'}`;
-}
-
-function alarmeAgendaSiteEstaNaHora(alarme) {
-    if (!alarme || alarme.estado === 'feito' || !alarme.hora_alarme || !alarme.data_alarme) return false;
-    const partesData = String(alarme.data_alarme).slice(0, 10).split('-').map(Number);
-    const partesHora = String(alarme.hora_alarme).slice(0, 5).split(':').map(Number);
-    if (partesData.length !== 3 || partesData.some(Number.isNaN)) return false;
-    const data = new Date(partesData[0], partesData[1] - 1, partesData[2], partesHora[0] || 0, partesHora[1] || 0, 0, 0);
-    return data <= new Date();
-}
-
-function formatarDataAgendaSite(valor) {
-    const partes = String(valor || '').slice(0, 10).split('-').map(Number);
-    if (partes.length !== 3 || partes.some(Number.isNaN)) return '';
-    return new Date(partes[0], partes[1] - 1, partes[2]).toLocaleDateString('pt-PT', { day: '2-digit', month: '2-digit', year: 'numeric' });
-}
-
-async function verificarAvisosAgendaSite() {
-    if (!dbClient || document.body?.classList?.contains('pagina-agenda-admin') || document.getElementById('fp-dialogo-site')) return;
-    try {
-        const { data, error } = await dbClient.rpc('listar_agenda_admin');
-        if (error || !Array.isArray(data)) return;
-        const alarmes = data
-            .filter(alarmeAgendaSiteEstaNaHora)
-            .filter(alarme => sessionStorage.getItem(chaveAvisoAgendaSite(alarme)) !== '1')
-            .sort((a, b) => `${a.data_alarme || ''} ${a.hora_alarme || ''}`.localeCompare(`${b.data_alarme || ''} ${b.hora_alarme || ''}`));
-        if (!alarmes.length) return;
-        const alarme = alarmes[0];
-        sessionStorage.setItem(chaveAvisoAgendaSite(alarme), '1');
-        const hora = String(alarme.hora_alarme || '').slice(0, 5);
-        const dataFormatada = formatarDataAgendaSite(alarme.data_alarme);
-        const detalhes = [hora, dataFormatada].filter(Boolean).join(' · ');
-        if (typeof mostrarAvisoSite === 'function') {
-            await mostrarAvisoSite(`${alarme.titulo || 'Alarme'}${detalhes ? `\n${detalhes}` : ''}`, {
-                titulo: 'Alarme da Agenda',
-                textoConfirmar: 'OK'
-            });
-        }
-    } catch (erro) {
-        console.warn('Avisos da agenda nao verificados:', erro);
-    }
-}
-
-function iniciarAvisosAgendaSite() {
-    if (document.body?.classList?.contains('pagina-agenda-admin')) return;
-    if (agendaSiteTemporizadorAvisos) return;
-    verificarAvisosAgendaSite();
-    agendaSiteTemporizadorAvisos = setInterval(verificarAvisosAgendaSite, 60000);
-}
-
-function pararAvisosAgendaSite() {
-    if (!agendaSiteTemporizadorAvisos) return;
-    clearInterval(agendaSiteTemporizadorAvisos);
-    agendaSiteTemporizadorAvisos = null;
-}
-
 function atualizarVisibilidadeAdmin(user) {
     const adminAtivo = utilizadorAdmin(user);
     const atalhosAdmin = document.querySelectorAll('.acao-plataforma-admin, .acao-anuncio-admin, .acao-mapas-admin, .acao-gestao-admin, .acao-fornecedores-admin, .acao-encomendas-admin, .acao-estatisticas-admin, .acao-agenda-admin, .acao-clientes-admin, .acao-conta-admin');
@@ -226,7 +167,6 @@ function atualizarVisibilidadeAdmin(user) {
     document.body.classList.toggle('cabecalho-com-admin', adminAtivo);
     if (adminAtivo) {
         garantirEstilosAdmin();
-        iniciarAvisosAgendaSite();
         if (typeof window.atualizarCabecalhoAdmin === 'function') {
             window.atualizarCabecalhoAdmin();
         } else {
@@ -237,7 +177,6 @@ function atualizarVisibilidadeAdmin(user) {
             }
         }
     } else {
-        pararAvisosAgendaSite();
         if (!user) {
             const nomeCache = localStorage.getItem(NOME_CONTA_CABECALHO_KEY) || '';
             atualizarCabecalhoCliente(nomeCache);
