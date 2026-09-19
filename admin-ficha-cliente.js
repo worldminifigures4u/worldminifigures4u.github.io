@@ -197,10 +197,10 @@
         formulario.className = 'admin-cliente-formulario clientes-formulario';
         formulario.id = `admin-cliente-formulario-${cliente.id || 'novo'}`;
 
-        const cancelar = criarElemento('button', 'wallapop-botao', 'Cancelar');
-        cancelar.type = 'button';
+        const fechar = criarElemento('button', 'wallapop-botao', 'Fechar');
+        fechar.type = 'button';
         if (typeof onCancelar === 'function') {
-            cancelar.addEventListener('click', onCancelar);
+            fechar.addEventListener('click', onCancelar);
         }
 
         const guardar = criarElemento(
@@ -211,7 +211,7 @@
         guardar.type = 'submit';
 
         const acoesTopo = criarElemento('div', 'clientes-formulario-acoes-topo admin-cliente-formulario-acoes');
-        acoesTopo.append(cancelar, guardar);
+        acoesTopo.append(guardar, fechar);
         formulario.appendChild(acoesTopo);
 
         const dadosCliente = criarElemento('div', 'clientes-formulario-dados');
@@ -245,16 +245,16 @@
             evento.preventDefault();
             if (typeof onSubmit !== 'function') return;
             guardar.disabled = true;
-            cancelar.disabled = true;
+            fechar.disabled = true;
             try {
-                await onSubmit({ formulario, guardar, cancelar, campos: new FormData(formulario) });
+                await onSubmit({ formulario, guardar, cancelar: fechar, campos: new FormData(formulario) });
             } finally {
                 guardar.disabled = false;
-                cancelar.disabled = false;
+                fechar.disabled = false;
             }
         });
 
-        return { formulario, cancelar, guardar };
+        return { formulario, cancelar: fechar, guardar };
     }
 
     function renderizarFormularioClienteExterno(dados) {
