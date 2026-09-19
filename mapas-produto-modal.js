@@ -1945,8 +1945,8 @@ function garantirModalEdicaoProdutoMapa() {
                     <button type="button" id="mapas-produto-fechar-ficha" class="wallapop-botao">Fechar</button>
                 </div>
                 <div class="mapas-produto-acoes mapas-produto-acoes-topo" id="mapas-produto-acoes-edicao" hidden>
-                    <button type="submit" form="mapas-produto-form" id="mapas-produto-guardar" class="wallapop-botao wallapop-botao-destaque">Guardar</button>
                     <button type="button" id="mapas-produto-apagar" class="wallapop-botao mapas-produto-apagar" hidden>Apagar</button>
+                    <button type="submit" form="mapas-produto-form" id="mapas-produto-guardar" class="wallapop-botao wallapop-botao-destaque">Guardar</button>
                     <button type="button" id="mapas-produto-cancelar" class="wallapop-botao mapas-produto-fechar-edicao">Fechar</button>
                 </div>
             </div>
