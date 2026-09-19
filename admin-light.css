@@ -172,7 +172,7 @@ html.admin-light-mode body.cabecalho-com-admin :is(
     .fornecedor-pedido-produtos,
     .fornecedor-encomendas-lista
 ){
-    scrollbar-color:#b7c3d0 #eef2f6 !important;
+    scrollbar-color:var(--fp-light-scroll-thumb, #b7c3d0) var(--fp-light-scroll-track, #eef2f6) !important;
 }
 
 html.admin-light-mode body.cabecalho-com-admin :is(
@@ -184,7 +184,7 @@ html.admin-light-mode body.cabecalho-com-admin :is(
     .fornecedor-pedido-produtos,
     .fornecedor-encomendas-lista
 )::-webkit-scrollbar-track{
-    background:#eef2f6 !important;
+    background:var(--fp-light-scroll-track, #eef2f6) !important;
 }
 
 html.admin-light-mode body.cabecalho-com-admin :is(
@@ -196,8 +196,8 @@ html.admin-light-mode body.cabecalho-com-admin :is(
     .fornecedor-pedido-produtos,
     .fornecedor-encomendas-lista
 )::-webkit-scrollbar-thumb{
-    background:#b7c3d0 !important;
-    border-color:#eef2f6 !important;
+    background:var(--fp-light-scroll-thumb, #b7c3d0) !important;
+    border-color:var(--fp-light-scroll-track, #eef2f6) !important;
 }
 
 html.admin-light-mode body.cabecalho-com-admin :is(
@@ -209,23 +209,23 @@ html.admin-light-mode body.cabecalho-com-admin :is(
     .fornecedor-pedido-produtos,
     .fornecedor-encomendas-lista
 )::-webkit-scrollbar-thumb:hover{
-    background:#95a3b3 !important;
+    background:var(--fp-light-scroll-thumb-hover, #95a3b3) !important;
 }
 
 html.admin-light-mode body.cabecalho-com-admin :is(
     .mapas-tabela-wrapper,
     .mapas-tabela-scroll-topo
 ){
-    scrollbar-color:#b7c3d0 #eef2f6 !important;
+    scrollbar-color:var(--fp-light-scroll-thumb, #b7c3d0) var(--fp-light-scroll-track, #eef2f6) !important;
 }
 
 html.admin-light-mode body.cabecalho-com-admin .mapas-tabela-scroll-topo::-webkit-scrollbar-track{
-    background:#eef2f6 !important;
+    background:var(--fp-light-scroll-track, #eef2f6) !important;
 }
 
 html.admin-light-mode body.cabecalho-com-admin .mapas-tabela-scroll-topo::-webkit-scrollbar-thumb{
-    background:#b7c3d0 !important;
-    border-color:#eef2f6 !important;
+    background:var(--fp-light-scroll-thumb, #b7c3d0) !important;
+    border-color:var(--fp-light-scroll-track, #eef2f6) !important;
 }
 
 html.admin-light-mode body.cabecalho-com-admin :is(
@@ -584,16 +584,16 @@ html.admin-light-mode body.cabecalho-com-admin .estatisticas-linha{
 }
 
 html.admin-light-mode body.cabecalho-com-admin .estatisticas-tabela-scroll{
-    scrollbar-color:#b7c3d0 #eef2f6 !important;
+    scrollbar-color:var(--fp-light-scroll-thumb, #b7c3d0) var(--fp-light-scroll-track, #eef2f6) !important;
 }
 
 html.admin-light-mode body.cabecalho-com-admin .estatisticas-tabela-scroll::-webkit-scrollbar-track{
-    background:#eef2f6 !important;
+    background:var(--fp-light-scroll-track, #eef2f6) !important;
 }
 
 html.admin-light-mode body.cabecalho-com-admin .estatisticas-tabela-scroll::-webkit-scrollbar-thumb{
-    background:#b7c3d0 !important;
-    border-color:#eef2f6 !important;
+    background:var(--fp-light-scroll-thumb, #b7c3d0) !important;
+    border-color:var(--fp-light-scroll-track, #eef2f6) !important;
 }
 
 html.admin-light-mode body.cabecalho-com-admin .fornecedor-tabela-encomenda thead th{
@@ -1639,43 +1639,43 @@ html.admin-light-mode body.cabecalho-com-admin :is(
 }
 
 html.admin-light-mode body.cabecalho-com-admin .item-preview-imagem-admin{
-    background:#f3f6fa !important;
-    border-color:#c8d2dd !important;
+    background:var(--fp-light-estado-neutro-fundo, #f3f6fa) !important;
+    border-color:var(--fp-light-borda-forte, #c3ccd8) !important;
 }
 
 html.admin-light-mode body.cabecalho-com-admin .item-preview-imagem-admin:hover{
-    border-color:#d8a92f !important;
+    border-color:var(--fp-light-amarelo-borda, #e0b42b) !important;
 }
 
 html.admin-light-mode body.cabecalho-com-admin .preview-imagens-admin img{
-    background:#f3f6fa !important;
+    background:var(--fp-light-estado-neutro-fundo, #f3f6fa) !important;
 }
 
 html.admin-light-mode body.cabecalho-com-admin .input-upload-admin::file-selector-button{
-    background:#eef3f8 !important;
-    border-color:#c3ccd8 !important;
-    color:#182231 !important;
+    background:var(--fp-light-cabecalho, #edf2f8) !important;
+    border-color:var(--fp-light-borda-forte, #c3ccd8) !important;
+    color:var(--fp-light-texto, #182231) !important;
 }
 
 html.admin-light-mode body.cabecalho-com-admin .input-upload-admin::file-selector-button:hover{
     background:#e2ebf4 !important;
-    border-color:#9fb0c2 !important;
-    color:#111827 !important;
+    border-color:var(--fp-light-acento, #256d9f) !important;
+    color:var(--fp-light-texto-forte, #111827) !important;
 }
 
 html.admin-light-mode body.pagina-fornecedores-admin .fornecedor-total-figuras-encomenda{
-    background:#ffffff !important;
-    border-color:#c3ccd8 !important;
-    color:#0f5e9c !important;
+    background:var(--fp-light-superficie, #fbfcfe) !important;
+    border-color:var(--fp-light-borda-forte, #c3ccd8) !important;
+    color:var(--fp-light-acento, #256d9f) !important;
 }
 
 html.admin-light-mode body.pagina-fornecedores-admin .fornecedor-pedidos.admin-encomendas-lista{
-    background:#ffffff !important;
-    border-color:#d8e0ea !important;
+    background:var(--fp-light-superficie, #fbfcfe) !important;
+    border-color:var(--fp-light-borda, #d7dee8) !important;
 }
 
 html.admin-light-mode body.pagina-fornecedores-admin .fornecedor-vazio{
-    background:#f7f9fc !important;
-    border:1px solid #d8e0ea !important;
-    color:#56616f !important;
+    background:var(--fp-light-linha-alt, #f7f9fc) !important;
+    border:1px solid var(--fp-light-borda, #d7dee8) !important;
+    color:var(--fp-light-texto-muted, #64748b) !important;
 }
