@@ -368,7 +368,11 @@ window.addEventListener('load', async () => {
     if (nomeCache) atualizarCabecalhoCliente(nomeCache);
 
     try {
-        await window.carregarScriptSupabase();
+        if (typeof window.carregarScriptSupabase === 'function') {
+            await window.carregarScriptSupabase();
+        } else if (typeof supabase === 'undefined') {
+            throw new Error('A biblioteca Supabase não carregou.');
+        }
     } catch (erro) {
         console.error(erro);
         concluirVerificacaoContaSeExistir();
