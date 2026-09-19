@@ -11,6 +11,7 @@ body.pagina-encomendas-admin .rodape-site,
 body.pagina-fornecedores-admin .rodape-site,
 body.pagina-mapas-admin .rodape-site,
 body.pagina-estatisticas-admin .rodape-site,
+body.pagina-agenda-admin .rodape-site,
 body.pagina-portes-admin .rodape-site,
 body.pagina-gestao-admin .rodape-site,
 body.pagina-wallapop .rodape-site{
@@ -23,6 +24,7 @@ body.pagina-encomendas-admin,
 body.pagina-fornecedores-admin,
 body.pagina-mapas-admin,
 body.pagina-estatisticas-admin,
+body.pagina-agenda-admin,
 body.pagina-portes-admin,
 body.pagina-gestao-admin,
 body.pagina-wallapop{
@@ -34,6 +36,7 @@ body.pagina-encomendas-admin .logo-loja,
 body.pagina-fornecedores-admin .logo-loja,
 body.pagina-mapas-admin .logo-loja,
 body.pagina-estatisticas-admin .logo-loja,
+body.pagina-agenda-admin .logo-loja,
 body.pagina-portes-admin .logo-loja,
 body.pagina-gestao-admin .logo-loja,
 body.pagina-wallapop .logo-loja,
@@ -42,6 +45,7 @@ body.pagina-encomendas-admin .cabecalho-pesquisa,
 body.pagina-fornecedores-admin .cabecalho-pesquisa,
 body.pagina-mapas-admin .cabecalho-pesquisa,
 body.pagina-estatisticas-admin .cabecalho-pesquisa,
+body.pagina-agenda-admin .cabecalho-pesquisa,
 body.pagina-portes-admin .cabecalho-pesquisa,
 body.pagina-gestao-admin .cabecalho-pesquisa,
 body.pagina-wallapop .cabecalho-pesquisa,
@@ -50,6 +54,7 @@ body.pagina-encomendas-admin .acoes-cabecalho-publicas,
 body.pagina-fornecedores-admin .acoes-cabecalho-publicas,
 body.pagina-mapas-admin .acoes-cabecalho-publicas,
 body.pagina-estatisticas-admin .acoes-cabecalho-publicas,
+body.pagina-agenda-admin .acoes-cabecalho-publicas,
 body.pagina-portes-admin .acoes-cabecalho-publicas,
 body.pagina-gestao-admin .acoes-cabecalho-publicas,
 body.pagina-wallapop .acoes-cabecalho-publicas{
@@ -61,6 +66,7 @@ body.pagina-encomendas-admin .cabecalho-loja,
 body.pagina-fornecedores-admin .cabecalho-loja,
 body.pagina-mapas-admin .cabecalho-loja,
 body.pagina-estatisticas-admin .cabecalho-loja,
+body.pagina-agenda-admin .cabecalho-loja,
 body.pagina-portes-admin .cabecalho-loja,
 body.pagina-gestao-admin .cabecalho-loja,
 body.pagina-wallapop .cabecalho-loja{
@@ -76,6 +82,7 @@ body.pagina-encomendas-admin .navegacao-admin-cabecalho,
 body.pagina-fornecedores-admin .navegacao-admin-cabecalho,
 body.pagina-mapas-admin .navegacao-admin-cabecalho,
 body.pagina-estatisticas-admin .navegacao-admin-cabecalho,
+body.pagina-agenda-admin .navegacao-admin-cabecalho,
 body.pagina-portes-admin .navegacao-admin-cabecalho,
 body.pagina-gestao-admin .navegacao-admin-cabecalho,
 body.pagina-wallapop .navegacao-admin-cabecalho{
@@ -92,6 +99,7 @@ body.pagina-wallapop .navegacao-admin-cabecalho{
     body.pagina-fornecedores-admin .navegacao-admin-cabecalho,
     body.pagina-mapas-admin .navegacao-admin-cabecalho,
     body.pagina-estatisticas-admin .navegacao-admin-cabecalho,
+    body.pagina-agenda-admin .navegacao-admin-cabecalho,
     body.pagina-portes-admin .navegacao-admin-cabecalho,
     body.pagina-gestao-admin .navegacao-admin-cabecalho,
     body.pagina-wallapop .navegacao-admin-cabecalho{
@@ -106,6 +114,7 @@ body.pagina-wallapop .navegacao-admin-cabecalho{
     body.pagina-fornecedores-admin .navegacao-admin-cabecalho,
     body.pagina-mapas-admin .navegacao-admin-cabecalho,
     body.pagina-estatisticas-admin .navegacao-admin-cabecalho,
+    body.pagina-agenda-admin .navegacao-admin-cabecalho,
     body.pagina-portes-admin .navegacao-admin-cabecalho,
     body.pagina-gestao-admin .navegacao-admin-cabecalho,
     body.pagina-wallapop .navegacao-admin-cabecalho{
@@ -131,6 +140,10 @@ body.pagina-fornecedores-admin > main.fornecedores-admin{
 
 body.pagina-estatisticas-admin > main.estatisticas-admin{
     width: min(1600px, calc(100% - 32px));
+}
+
+body.pagina-agenda-admin > main.agenda-admin{
+    width: min(1500px, calc(100% - 32px));
 }
 
 body.pagina-gestao-admin > main.gestao-admin{

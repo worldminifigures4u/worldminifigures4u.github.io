@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdn.jsdelivr.net https://cdn.sheetjs.com; connect-src 'self' https://cdn.jsdelivr.net https://gksndzxadndrsynvzgzb.supabase.co wss://gksndzxadndrsynvzgzb.supabase.co https://api.cloudinary.com; img-src 'self' data: blob: https://res.cloudinary.com https://gksndzxadndrsynvzgzb.supabase.co; style-src 'self'; font-src 'self' data:; frame-src 'none'; object-src 'none'; base-uri 'self'; form-action 'self';">
+    <meta name="referrer" content="strict-origin-when-cross-origin">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+    <link rel="preconnect" href="https://gksndzxadndrsynvzgzb.supabase.co" crossorigin>
+    <link rel="preconnect" href="https://res.cloudinary.com" crossorigin>
+
+    <meta name="robots" content="noindex, nofollow, noarchive, nosnippet">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <title>Agenda | Figures Planet</title>
+    <link rel="icon" href="fp-ring-favicon.ico" sizes="any">
+    <link rel="icon" type="image/png" href="fp-ring-favicon-32.png" sizes="32x32">
+    <link rel="apple-touch-icon" href="fp-ring-favicon-192.png">
+    <link rel="stylesheet" href="styles.css?v=20260919-fechar-vermelho">
+    <link rel="stylesheet" href="styles-admin.css?v=20260919-agenda">
+    <link rel="stylesheet" href="agenda.css?v=20260919-agenda">
+    <link rel="stylesheet" href="admin-light.css?v=20260919-light-polish">
+    <link rel="stylesheet" href="styles-tema.css?v=20260721-sem-underline" media="print" data-async-css>
+    <noscript><link rel="stylesheet" href="styles-tema.css?v=20260721-sem-underline"></noscript>
+    <script src="async-css.js?v=20260713-r25"></script>
+</head>
+<body class="pagina-agenda-admin cabecalho-com-admin pagina-com-cabecalho-site">
+    <header class="cabecalho-site-admin">
+        <div class="cabecalho-loja">
+            <a class="logo-loja" href="index.html" aria-label="Figures Planet - Produtos">
+                <img src="figures-planet-logo-transparent.webp?v=20260725-logo-hq" alt="Figures Planet" width="383" height="69" decoding="async" fetchpriority="high">
+            </a>
+            <form class="cabecalho-pesquisa" action="index.html" method="get">
+                <input type="search" name="q" class="input-pesquisa" placeholder="O que estás à procura?">
+                <span class="icone-pesquisa" aria-hidden="true"></span>
+            </form>
+            <div class="acoes-cabecalho acoes-cabecalho-publicas">
+                <a class="acao-cabecalho" href="conta.html" aria-label="Abrir area de cliente" data-vista-nav="conta">
+                    <span class="icone-acao" aria-hidden="true"></span>
+                    <span class="texto-acao">
+                        <strong>Conta</strong>
+                        <span class="detalhe-conta-cabecalho" id="nome-login-cabecalho"></span>
+                    </span>
+                </a>
+                <a class="acao-cabecalho acao-favoritos-topo" href="favoritos.html" aria-label="Abrir favoritos" title="Favoritos" data-vista-nav="favoritos">
+                    <svg class="icone-coracao-favorito" viewBox="0 0 100 92" aria-hidden="true" focusable="false">
+                        <path d="M50 84 L14 48 C3 37 3 18 15 9 C27 0 44 4 50 20 C56 4 73 0 85 9 C97 18 97 37 86 48 Z" fill="none" stroke="currentColor" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"></path>
+                    </svg>
+                </a>
+                <a class="acao-cabecalho acao-carrinho" href="carrinho.html" aria-label="Abrir carrinho" data-vista-nav="carrinho">
+                    <span class="icone-acao" aria-hidden="true"></span>
+                    <span class="badge-carrinho" id="contador-carrinho-cabecalho">0</span>
+                </a>
+            </div>
+            <nav class="navegacao-admin-cabecalho" aria-label="Navegação administrativa" hidden>
+                <a class="acao-cabecalho acao-mapas-admin" href="mapas.html" aria-label="Gerir mapas">Mapas</a>
+                <a class="acao-cabecalho acao-plataforma-admin" href="plataforma.html" aria-label="Gerir plataformas">Plataformas</a>
+                <a class="acao-cabecalho acao-encomendas-admin" href="encomendas.html" aria-label="Gerir encomendas">Encomendas</a>
+                <a class="acao-cabecalho acao-clientes-admin" href="clientes.html" aria-label="Gerir clientes">Clientes</a>
+                <a class="acao-cabecalho acao-fornecedores-admin" href="fornecedores.html" aria-label="Gerir fornecedores">Fornecedores</a>
+                <a class="acao-cabecalho acao-estatisticas-admin" href="estatisticas.html" aria-label="Ver estatísticas">Estatísticas</a>
+                <a class="acao-cabecalho acao-agenda-admin ativa" href="agenda.html" aria-label="Agenda">Agenda</a>
+                <a class="acao-cabecalho acao-gestao-admin" href="gestao.html" aria-label="Gestão">Gestão</a>
+                <a class="acao-cabecalho acao-conta-admin" href="conta.html" aria-label="Abrir conta">Conta</a>
+            </nav>
+        </div>
+    </header>
+
+    <div class="wallapop-bloqueio" id="agenda-bloqueio">A verificar acesso administrativo...</div>
+
+    <main class="agenda-admin" id="agenda-aplicacao" hidden>
+        <section class="agenda-topo" aria-label="Resumo da agenda">
+            <div>
+                <h1>Agenda</h1>
+                <p>Alarmes internos para tarefas, encomendas, clientes, produtos e fornecedores.</p>
+            </div>
+            <button type="button" class="wallapop-botao wallapop-botao-destaque" id="agenda-btn-novo">Novo alarme</button>
+        </section>
+
+        <section class="agenda-metricas" aria-label="Indicadores da agenda">
+            <article><span>Hoje</span><strong id="agenda-metrica-hoje">0</strong></article>
+            <article><span>Vencidos</span><strong id="agenda-metrica-vencidos">0</strong></article>
+            <article><span>Pendentes</span><strong id="agenda-metrica-pendentes">0</strong></article>
+            <article><span>Feitos</span><strong id="agenda-metrica-feitos">0</strong></article>
+        </section>
+
+        <div class="agenda-alertas" id="agenda-alertas" hidden></div>
+
+        <section class="agenda-layout">
+            <article class="agenda-painel agenda-calendario-painel">
+                <div class="agenda-painel-cabecalho">
+                    <button type="button" class="agenda-botao-icone" id="agenda-mes-anterior" aria-label="Mês anterior">‹</button>
+                    <h2 id="agenda-mes-titulo">Mês</h2>
+                    <div class="agenda-calendario-acoes">
+                        <button type="button" class="wallapop-botao agenda-botao-compacto" id="agenda-hoje">Hoje</button>
+                        <button type="button" class="agenda-botao-icone" id="agenda-mes-seguinte" aria-label="Mês seguinte">›</button>
+                    </div>
+                </div>
+                <div class="agenda-semana" aria-hidden="true">
+                    <span>Seg</span><span>Ter</span><span>Qua</span><span>Qui</span><span>Sex</span><span>Sáb</span><span>Dom</span>
+                </div>
+                <div class="agenda-calendario" id="agenda-calendario"></div>
+            </article>
+
+            <article class="agenda-painel agenda-formulario-painel">
+                <div class="agenda-painel-cabecalho">
+                    <h2 id="agenda-formulario-titulo">Novo alarme</h2>
+                    <button type="button" class="wallapop-botao agenda-botao-compacto" id="agenda-limpar-formulario">Limpar</button>
+                </div>
+                <form class="agenda-formulario" id="agenda-formulario">
+                    <input type="hidden" id="agenda-id">
+                    <label class="agenda-campo-largo">
+                        <span>Título</span>
+                        <input type="text" id="agenda-titulo" maxlength="120" required placeholder="Ex.: Confirmar pagamento">
+                    </label>
+                    <label>
+                        <span>Data</span>
+                        <input type="date" id="agenda-data" required>
+                    </label>
+                    <label>
+                        <span>Hora</span>
+                        <input type="time" id="agenda-hora">
+                    </label>
+                    <label>
+                        <span>Prioridade</span>
+                        <select id="agenda-prioridade">
+                            <option value="normal">Normal</option>
+                            <option value="alta">Alta</option>
+                            <option value="baixa">Baixa</option>
+                        </select>
+                    </label>
+                    <label>
+                        <span>Estado</span>
+                        <select id="agenda-estado">
+                            <option value="pendente">Pendente</option>
+                            <option value="feito">Feito</option>
+                        </select>
+                    </label>
+                    <label>
+                        <span>Ligação</span>
+                        <select id="agenda-contexto-tipo">
+                            <option value="">Sem ligação</option>
+                            <option value="encomenda">Encomenda</option>
+                            <option value="cliente">Cliente</option>
+                            <option value="produto">Produto</option>
+                            <option value="fornecedor">Fornecedor</option>
+                            <option value="outro">Outro</option>
+                        </select>
+                    </label>
+                    <label>
+                        <span>Referência</span>
+                        <input type="text" id="agenda-contexto-ref" maxlength="120" placeholder="Código, nome ou referência">
+                    </label>
+                    <label class="agenda-campo-largo">
+                        <span>Notas</span>
+                        <textarea id="agenda-descricao" rows="4" placeholder="O que é preciso fazer?"></textarea>
+                    </label>
+                    <button type="submit" class="wallapop-botao wallapop-botao-destaque agenda-campo-largo">Guardar alarme</button>
+                </form>
+                <p class="agenda-estado-texto" id="agenda-estado-texto" role="status"></p>
+            </article>
+        </section>
+
+        <section class="agenda-painel agenda-lista-painel">
+            <div class="agenda-painel-cabecalho agenda-lista-cabecalho">
+                <h2>Alarmes</h2>
+                <div class="agenda-filtros" aria-label="Filtrar alarmes">
+                    <button type="button" class="agenda-filtro ativo" data-agenda-filtro="pendentes">Pendentes</button>
+                    <button type="button" class="agenda-filtro" data-agenda-filtro="hoje">Hoje</button>
+                    <button type="button" class="agenda-filtro" data-agenda-filtro="vencidos">Vencidos</button>
+                    <button type="button" class="agenda-filtro" data-agenda-filtro="todos">Todos</button>
+                    <button type="button" class="agenda-filtro" data-agenda-filtro="feitos">Feitos</button>
+                </div>
+            </div>
+            <div class="agenda-lista" id="agenda-lista"></div>
+        </section>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="app-config.js?v=20260917-dialogo-padrao"></script>
+    <script src="admin-theme.js?v=20260919-light-polish"></script>
+    <script src="agenda.js?v=20260919-agenda" defer></script>
+    <script src="campo-limpar.js?v=20260919-fechar-vermelho" defer></script>
+    <script src="app-sessao.js?v=20260919-agenda" defer></script>
+    <script src="inline-listeners-base.js?v=20260713-r27" defer></script>
+    <script src="inline-listeners-admin.js?v=20260912-inline-admin" defer></script>
+</body>
+</html>

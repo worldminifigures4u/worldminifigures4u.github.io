@@ -160,7 +160,7 @@ async function verificarRestricoesContaClienteSite(user) {
 
 function atualizarVisibilidadeAdmin(user) {
     const adminAtivo = utilizadorAdmin(user);
-    const atalhosAdmin = document.querySelectorAll('.acao-plataforma-admin, .acao-anuncio-admin, .acao-mapas-admin, .acao-gestao-admin, .acao-fornecedores-admin, .acao-encomendas-admin, .acao-estatisticas-admin, .acao-clientes-admin, .acao-conta-admin');
+    const atalhosAdmin = document.querySelectorAll('.acao-plataforma-admin, .acao-anuncio-admin, .acao-mapas-admin, .acao-gestao-admin, .acao-fornecedores-admin, .acao-encomendas-admin, .acao-estatisticas-admin, .acao-agenda-admin, .acao-clientes-admin, .acao-conta-admin');
     atalhosAdmin.forEach(atalho => { atalho.hidden = !adminAtivo; });
     const navegacaoAdmin = document.querySelector('.navegacao-admin-cabecalho');
     if (navegacaoAdmin) navegacaoAdmin.hidden = !adminAtivo;
