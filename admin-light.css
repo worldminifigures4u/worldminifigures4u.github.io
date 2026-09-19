@@ -42,6 +42,9 @@ html.admin-light-mode body.cabecalho-com-admin{
     --fp-light-scroll-track:#eef2f6;
     --fp-light-scroll-thumb:#b7c3d0;
     --fp-light-scroll-thumb-hover:#95a3b3;
+    --fp-light-overlay:rgba(15, 23, 42, .34);
+    --fp-light-overlay-forte:rgba(17, 24, 39, .38);
+    --fp-light-sombra-modal:0 22px 55px rgba(31, 41, 55, .18);
     --cor-texto-principal:#17202a;
     --cor-texto-secundario:#56616f;
     --cor-menu-fundo:#e8edf3;
@@ -622,28 +625,28 @@ html.admin-light-mode body.cabecalho-com-admin :is(
     .admin-encomenda-overlay,
     .admin-cliente-overlay
 ){
-    background:rgba(17, 24, 39, .38) !important;
+    background:var(--fp-light-overlay-forte, rgba(17, 24, 39, .38)) !important;
 }
 
 html.admin-light-mode body.cabecalho-com-admin .admin-encomenda-modal{
-    background:rgba(17, 24, 39, .34) !important;
+    background:var(--fp-light-overlay, rgba(15, 23, 42, .34)) !important;
 }
 
 html.admin-light-mode body.cabecalho-com-admin .admin-encomenda-modal-dialogo{
-    background:#ffffff !important;
-    border-color:#cfd8e3 !important;
-    color:#17202a !important;
-    box-shadow:0 22px 55px rgba(17, 24, 39, .18) !important;
+    background:var(--fp-light-superficie, #fbfcfe) !important;
+    border-color:var(--fp-light-borda, #d7dee8) !important;
+    color:var(--fp-light-texto, #182231) !important;
+    box-shadow:var(--fp-light-sombra-modal, 0 22px 55px rgba(31, 41, 55, .18)) !important;
 }
 
 html.admin-light-mode body.cabecalho-com-admin .admin-encomenda-modal-topo{
-    background:#ffffff !important;
-    color:#17202a !important;
+    background:var(--fp-light-superficie, #fbfcfe) !important;
+    color:var(--fp-light-texto, #182231) !important;
 }
 
 html.admin-light-mode body.cabecalho-com-admin .admin-encomenda-modal-conteudo .admin-encomenda-card{
-    background:#ffffff !important;
-    color:#17202a !important;
+    background:var(--fp-light-superficie, #fbfcfe) !important;
+    color:var(--fp-light-texto, #182231) !important;
 }
 
 html.admin-light-mode body.cabecalho-com-admin :is(
@@ -1313,14 +1316,14 @@ html.admin-light-mode body.cabecalho-com-admin .admin-encomenda-produto.marcado-
 }
 
 html.admin-light-mode body.cabecalho-com-admin .plataforma-stock-modal{
-    background:rgba(15, 23, 42, .34) !important;
+    background:var(--fp-light-overlay, rgba(15, 23, 42, .34)) !important;
 }
 
 html.admin-light-mode body.cabecalho-com-admin .plataforma-stock-dialogo{
-    background:#fbfcfe !important;
-    border-color:#d7dee8 !important;
-    color:#182231 !important;
-    box-shadow:0 22px 55px rgba(31, 41, 55, .18) !important;
+    background:var(--fp-light-superficie, #fbfcfe) !important;
+    border-color:var(--fp-light-borda, #d7dee8) !important;
+    color:var(--fp-light-texto, #182231) !important;
+    box-shadow:var(--fp-light-sombra-modal, 0 22px 55px rgba(31, 41, 55, .18)) !important;
 }
 
 html.admin-light-mode body.cabecalho-com-admin .plataforma-stock-dialogo h2{
@@ -1356,19 +1359,19 @@ html.admin-light-mode body.cabecalho-com-admin .plataforma-stock-incorreto{
 }
 
 html.admin-light-mode body.cabecalho-com-admin .mapas-produto-modal{
-    background:rgba(15, 23, 42, .34) !important;
+    background:var(--fp-light-overlay, rgba(15, 23, 42, .34)) !important;
 }
 
 html.admin-light-mode body.cabecalho-com-admin .mapas-produto-modal-dialog,
 html.admin-light-mode body.cabecalho-com-admin .mapas-produto-modal-topo,
 html.admin-light-mode body.cabecalho-com-admin .mapas-produto-form{
-    background:#fbfcfe !important;
-    border-color:#d7dee8 !important;
-    color:#182231 !important;
+    background:var(--fp-light-superficie, #fbfcfe) !important;
+    border-color:var(--fp-light-borda, #d7dee8) !important;
+    color:var(--fp-light-texto, #182231) !important;
 }
 
 html.admin-light-mode body.cabecalho-com-admin .mapas-produto-modal-dialog{
-    box-shadow:0 22px 55px rgba(31, 41, 55, .18) !important;
+    box-shadow:var(--fp-light-sombra-modal, 0 22px 55px rgba(31, 41, 55, .18)) !important;
 }
 
 html.admin-light-mode body.cabecalho-com-admin .mapas-produto-modal-topo h3{
@@ -1565,22 +1568,22 @@ html.admin-light-mode body.cabecalho-com-admin .wallapop-pagina-cabecalho{
 }
 
 html.admin-light-mode body.cabecalho-com-admin .clientes-encomenda-modal{
-    background:rgba(15, 23, 42, .34) !important;
+    background:var(--fp-light-overlay, rgba(15, 23, 42, .34)) !important;
 }
 
 html.admin-light-mode body.cabecalho-com-admin .clientes-encomenda-dialogo{
-    background:#fbfcfe !important;
-    border-color:#d7dee8 !important;
-    color:#182231 !important;
-    box-shadow:0 22px 55px rgba(31, 41, 55, .18) !important;
+    background:var(--fp-light-superficie, #fbfcfe) !important;
+    border-color:var(--fp-light-borda, #d7dee8) !important;
+    color:var(--fp-light-texto, #182231) !important;
+    box-shadow:var(--fp-light-sombra-modal, 0 22px 55px rgba(31, 41, 55, .18)) !important;
 }
 
 html.admin-light-mode body.cabecalho-com-admin .clientes-encomenda-topo{
     margin:-18px -20px 14px;
     padding:16px 64px 14px 20px;
-    background:#fbfcfe !important;
-    border-bottom:1px solid #d7dee8 !important;
-    color:#182231 !important;
+    background:var(--fp-light-superficie, #fbfcfe) !important;
+    border-bottom:1px solid var(--fp-light-borda, #d7dee8) !important;
+    color:var(--fp-light-texto, #182231) !important;
 }
 
 html.admin-light-mode body.cabecalho-com-admin .clientes-encomenda-topo h2,
@@ -1589,8 +1592,8 @@ html.admin-light-mode body.cabecalho-com-admin .clientes-encomenda-contador{
 }
 
 html.admin-light-mode body.cabecalho-com-admin .clientes-encomenda-conteudo .admin-encomenda-card{
-    background:#fbfcfe !important;
-    color:#182231 !important;
+    background:var(--fp-light-superficie, #fbfcfe) !important;
+    color:var(--fp-light-texto, #182231) !important;
 }
 
 html.admin-light-mode body.cabecalho-com-admin .clientes-encomenda-conteudo .admin-encomenda-cabecalho-fixo:hover{
@@ -1598,20 +1601,20 @@ html.admin-light-mode body.cabecalho-com-admin .clientes-encomenda-conteudo .adm
 }
 
 html.admin-light-mode body.cabecalho-com-admin .fornecedor-pedido-modal{
-    background:rgba(15, 23, 42, .34) !important;
+    background:var(--fp-light-overlay, rgba(15, 23, 42, .34)) !important;
 }
 
 html.admin-light-mode body.cabecalho-com-admin .fornecedor-pedido-modal-dialog{
-    background:#fbfcfe !important;
-    border-color:#d7dee8 !important;
-    color:#182231 !important;
-    box-shadow:0 22px 55px rgba(31, 41, 55, .18) !important;
+    background:var(--fp-light-superficie, #fbfcfe) !important;
+    border-color:var(--fp-light-borda, #d7dee8) !important;
+    color:var(--fp-light-texto, #182231) !important;
+    box-shadow:var(--fp-light-sombra-modal, 0 22px 55px rgba(31, 41, 55, .18)) !important;
 }
 
 html.admin-light-mode body.cabecalho-com-admin .fornecedor-pedido-modal-topo{
-    background:#fbfcfe !important;
-    border-bottom-color:#d7dee8 !important;
-    color:#182231 !important;
+    background:var(--fp-light-superficie, #fbfcfe) !important;
+    border-bottom-color:var(--fp-light-borda, #d7dee8) !important;
+    color:var(--fp-light-texto, #182231) !important;
 }
 
 html.admin-light-mode body.cabecalho-com-admin .fornecedor-pedido-modal-topo h3{
@@ -1619,8 +1622,8 @@ html.admin-light-mode body.cabecalho-com-admin .fornecedor-pedido-modal-topo h3{
 }
 
 html.admin-light-mode body.cabecalho-com-admin .fornecedor-pedido-modal-corpo{
-    background:#fbfcfe !important;
-    color:#182231 !important;
+    background:var(--fp-light-superficie, #fbfcfe) !important;
+    color:var(--fp-light-texto, #182231) !important;
 }
 
 html.admin-light-mode body.cabecalho-com-admin .fornecedor-pedido-cabecalho-modal:hover,
