@@ -411,6 +411,9 @@ async function iniciarAgenda() {
     const bloqueio = agendaElemento('agenda-bloqueio');
     const aplicacao = agendaElemento('agenda-aplicacao');
     try {
+        if (typeof window.carregarScriptSupabase === 'function') {
+            await window.carregarScriptSupabase();
+        }
         if (typeof supabase === 'undefined') throw new Error('A biblioteca Supabase não carregou.');
         agendaClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
         const admin = await validarAdminRapido(agendaClient, bloqueio);
