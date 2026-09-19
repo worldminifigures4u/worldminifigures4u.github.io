@@ -440,14 +440,14 @@ html:not(.admin-light-mode) body.cabecalho-com-admin :is(
 }
 
 .plataforma-aviso-stock-botao{
-    border-color:#ff4d55;
-    color:#ffdddd;
+    border-color:var(--fp-cor-erro, #ff6b6b);
+    color:#ffd7d9;
 }
 
 .plataforma-aviso-stock-botao:hover,
 .plataforma-aviso-stock-botao:focus-visible{
-    background:rgba(255, 77, 85, 0.16);
-    border-color:#ff6b72;
+    background:rgba(255, 107, 107, 0.16);
+    border-color:var(--fp-cor-erro, #ff6b6b);
 }
 
 .plataforma-aviso-stock-linha,
@@ -458,9 +458,9 @@ html:not(.admin-light-mode) body.cabecalho-com-admin :is(
     gap:10px;
     margin-top:8px;
     padding:8px 10px;
-    border:1px solid rgba(255, 77, 85, 0.45);
+    border:1px solid rgba(255, 107, 107, 0.45);
     border-radius:6px;
-    background:rgba(255, 77, 85, 0.1);
+    background:rgba(255, 107, 107, 0.1);
     color:#ffd7d9;
     font-size:13px;
     font-weight:700;
@@ -562,8 +562,8 @@ html:not(.admin-light-mode) body.cabecalho-com-admin :is(
 
 .clientes-aviso-stock-estado.estado-cancelado,
 .mapas-produto-aviso-stock-estado.estado-cancelado{
-    border-color:rgba(255, 77, 85, 0.55);
-    color:#ff4d55;
+    border-color:rgba(255, 107, 107, 0.55);
+    color:var(--fp-cor-erro, #ff6b6b);
 }
 
 .clientes-aviso-stock-acao,

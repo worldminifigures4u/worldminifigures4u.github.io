@@ -38,7 +38,7 @@ body.pagina-fornecedores-admin{ margin:0; padding-left:0; padding-right:0; paddi
         .fornecedor-contagem-lista{ margin:0 0 6px; color:#cfcfcf; font-size:13px; }
         .fornecedor-marcacao{ color:#cfcfcf !important; font-weight:700; }
         .fornecedor-marcacao.disponivel{ color:#39d353 !important; }
-        .fornecedor-marcacao.os{ color:#ff4d4d !important; }
+        .fornecedor-marcacao.os{ color:var(--fp-cor-erro, #ff6b6b) !important; }
         .fornecedor-marcacao.ex{ color:#ff9f1c !important; }
         .fornecedor-marcacao.encomendado{ color:#ffc400 !important; }
         .fornecedor-resultados,.fornecedor-selecionados,.fornecedor-pedidos{ display:grid; gap:8px; margin-top:12px; }
@@ -51,11 +51,11 @@ body.pagina-fornecedores-admin{ margin:0; padding-left:0; padding-right:0; paddi
         .fornecedor-info strong{ color:#fff; line-height:1.2; }
         .fornecedor-info span{ color:#cfcfcf; font-size:13px; }
         .fornecedor-ajuste-os{ color:#bdbdbd !important; font-size:12px !important; font-weight:700; }
-        .fornecedor-ajuste-os.ativo{ color:#ff4d4d !important; }
+        .fornecedor-ajuste-os.ativo{ color:var(--fp-cor-erro, #ff6b6b) !important; }
         .fornecedor-ajuste-ex.ativo{ color:#ff9f1c !important; }
         .fornecedor-identificadores{ color:#18c4ff !important; font-weight:700; }
         .fornecedor-stock{ color:#fff !important; font-weight:700; }
-        .fornecedor-stock.sem-stock{ color:#ff4d4d !important; }
+        .fornecedor-stock.sem-stock{ color:var(--fp-cor-erro, #ff6b6b) !important; }
         .fornecedor-preco{ color:#18c4ff !important; font-weight:700; }
         .fornecedor-quantidade,.fornecedores-acoes{ display:flex; gap:8px; align-items:center; justify-content:flex-end; }
         .fornecedor-quantidade button,.fornecedor-remover{ min-width:36px; height:36px; border:0; border-radius:6px; background:#333; color:#fff; font-weight:800; cursor:pointer; }
@@ -1151,7 +1151,7 @@ body.pagina-mapas-admin > main.fornecedores-admin {
 
 .pagina-fornecedores-unificada .fornecedor-acoes-encomenda-resumo #btn-limpar-fornecedor:hover:not(:disabled),
 .pagina-fornecedores-unificada .fornecedor-acoes-encomenda-resumo #btn-limpar-fornecedor:focus-visible:not(:disabled) {
-    color: #ff4d4d;
+    color: var(--fp-cor-erro, #ff6b6b);
 }
 
 .pagina-fornecedores-unificada .fornecedor-acoes-encomenda-resumo #btn-juntar-selecao-fornecedor:hover:not(:disabled),
@@ -2254,7 +2254,7 @@ body.pagina-mapas-admin > main.fornecedores-admin {
 }
 
 .mapa-stock-celula.sem-stock {
-    color: #ff4d4d !important;
+    color: var(--fp-cor-erro, #ff6b6b) !important;
 }
 
 .mapa-pendente-celula,
@@ -2263,7 +2263,7 @@ body.pagina-mapas-admin > main.fornecedores-admin {
 }
 
 .mapa-previsto-celula.sem-stock {
-    color: #ff4d4d !important;
+    color: var(--fp-cor-erro, #ff6b6b) !important;
 }
 
 .mapa-pendente-celula.com-pendente {
@@ -2762,7 +2762,7 @@ body.mapas-produto-galeria-aberta {
 }
 
 .mapas-produto-os-item span {
-    color: #ff4d4d;
+    color: var(--fp-cor-erro, #ff6b6b);
     white-space: nowrap;
 }
 
@@ -2914,7 +2914,7 @@ body.mapas-produto-galeria-aberta {
 
 .mapas-produto-fornecedor-leitura.tipo-os .mapas-produto-fornecedor-leitura-estado,
 .mapas-produto-fornecedor-leitura.tipo-encomendada_os .mapas-produto-fornecedor-leitura-estado {
-    color: #ff4d4d;
+    color: var(--fp-cor-erro, #ff6b6b);
 }
 
 .mapas-produto-fornecedor-leitura.tipo-ex .mapas-produto-fornecedor-leitura-estado {
@@ -3300,7 +3300,7 @@ body.mapas-produto-galeria-aberta {
 }
 
 .mapas-produto-fornecedor-limpar-historico:hover:not(:disabled) {
-    border-color: #ff4d4d;
+    border-color: var(--fp-cor-erro, #ff6b6b);
     color: #fff;
     background: #3a2222;
 }
@@ -3366,7 +3366,7 @@ body.mapas-produto-galeria-aberta {
     border: 1px solid #555;
     border-radius: 6px;
     background: #2a2a2a;
-    color: #ff4d4d;
+    color: var(--fp-cor-erro, #ff6b6b);
     font-size: 18px;
     font-weight: 700;
     line-height: 1;
@@ -3375,7 +3375,7 @@ body.mapas-produto-galeria-aberta {
 }
 
 .fornecedor-historico-apagar:hover {
-    border-color: #ff4d4d;
+    border-color: var(--fp-cor-erro, #ff6b6b);
     background: #3a2222;
     color: #fff;
 }

@@ -893,8 +893,8 @@ body.pagina-wallapop{
         }
 
         .plataforma-stock-incorreto{
-            border-color:#ff4d4d;
-            color:#ff7474;
+            border-color:var(--fp-cor-erro, #ff6b6b);
+            color:#ff8a8a;
         }
 
         body.plataforma-modal-aberto{
@@ -1053,7 +1053,7 @@ body.pagina-wallapop{
         .plataforma-lista-aviso{
             min-height:18px;
             margin:10px 0 0 !important;
-            color:#ff7474 !important;
+            color:var(--fp-cor-erro, #ff6b6b) !important;
             text-align:center;
         }
 
@@ -1124,7 +1124,7 @@ body.pagina-wallapop{
 }
 
 .plataforma-sem-stock {
-    color: #ff4d55 !important;
+    color: var(--fp-cor-erro, #ff6b6b) !important;
     font-size: 13px;
     font-weight: 800;
     margin-top: 2px;
@@ -1241,9 +1241,9 @@ body.pagina-wallapop{
     width:100%;
     margin:8px 0 0;
     padding:10px 12px;
-    border:1px solid rgba(255, 77, 85, 0.55);
+    border:1px solid rgba(255, 107, 107, 0.55);
     border-radius:7px;
-    background:rgba(255, 77, 85, 0.14);
+    background:rgba(255, 107, 107, 0.14);
     color:#ffd7d9;
     font:inherit;
     line-height:1.35;
@@ -1256,7 +1256,7 @@ body.pagina-wallapop{
 }
 
 .plataforma-cliente-aviso-preparacao strong{
-    color:#ff4d55;
+    color:var(--fp-cor-erro, #ff6b6b);
     font-size:13px;
     font-weight:800;
 }
@@ -1269,8 +1269,8 @@ body.pagina-wallapop{
 
 .plataforma-cliente-aviso-preparacao:not(:disabled):hover,
 .plataforma-cliente-aviso-preparacao:not(:disabled):focus-visible{
-    background:rgba(255, 77, 85, 0.2);
-    border-color:rgba(255, 77, 85, 0.75);
+    background:rgba(255, 107, 107, 0.2);
+    border-color:rgba(255, 107, 107, 0.75);
     outline:none;
 }
 

@@ -170,7 +170,7 @@ function garantirEstilosAdmin() {
     if (document.querySelector('link[href*="styles-admin.css"]')) return;
     const folha = document.createElement('link');
     folha.rel = 'stylesheet';
-    folha.href = 'styles-admin.css?v=20260917-fechar-texto';
+    folha.href = 'styles-admin.css?v=20260919-fechar-vermelho';
     document.head.appendChild(folha);
 }
 

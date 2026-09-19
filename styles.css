@@ -608,7 +608,7 @@ body{
 
         .msg-sucesso { color: #28a745; }
         .msg-processando { color: var(--cor-acao-principal, #ffc107); }
-        .msg-erro { color: #ff4d4d; }
+        .msg-erro { color: var(--fp-cor-erro, #ff6b6b); }
 
         .texto-principal{
             color:var(--cor-texto-principal, #fff);
@@ -636,7 +636,7 @@ body{
             box-shadow: 0 0 8px rgba(255, 193, 7, 0.2);
         }
 
-        .erro{ color:#ff4d4d; }
+        .erro{ color:var(--fp-cor-erro, #ff6b6b); }
 
         @media(max-width:1100px){
             .cabecalho-loja{

@@ -435,7 +435,7 @@
         .admin-cliente-historico-linha.clientes-historico-cancelada .clientes-historico-codigo,
         .admin-cliente-historico-linha.clientes-historico-cancelada .clientes-historico-estado-cancelada,
         .admin-cliente-historico-linha.clientes-historico-cancelada .clientes-historico-total{
-            color:#ff4d4d;
+            color:var(--fp-cor-erro, #ff6b6b);
         }
 
         .admin-cliente-notas{

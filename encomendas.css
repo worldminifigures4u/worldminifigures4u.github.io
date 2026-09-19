@@ -1164,7 +1164,7 @@ body.pagina-encomendas-admin{
         }
 
         .admin-encomenda-anexo .admin-encomenda-anexo-apagar{
-            border-color:#ff4d4d;
+            border-color:var(--fp-cor-erro, #ff6b6b);
             color:#ff8c8c;
         }
 
@@ -1436,7 +1436,7 @@ body.pagina-encomendas-admin{
 
         .admin-encomendas > .wallapop-status.msg-sucesso{ color:#28a745; }
         .admin-encomendas > .wallapop-status.msg-processando{ color:var(--cor-acao-principal, #ffc107); }
-        .admin-encomendas > .wallapop-status.msg-erro{ color:#ff4d4d; }
+        .admin-encomendas > .wallapop-status.msg-erro{ color:var(--fp-cor-erro, #ff6b6b); }
 
         @media(max-width:760px){
             .admin-encomendas-topo{
