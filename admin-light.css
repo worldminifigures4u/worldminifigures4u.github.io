@@ -6,6 +6,27 @@ html.admin-light-mode body.cabecalho-com-admin{
 }
 
 html.admin-light-mode body.cabecalho-com-admin{
+    --fp-light-fundo:#eef2f6;
+    --fp-light-superficie:#fbfcfe;
+    --fp-light-superficie-alt:#f8fafc;
+    --fp-light-linha:#fdfefe;
+    --fp-light-linha-alt:#f7f9fc;
+    --fp-light-borda:#d7dee8;
+    --fp-light-borda-forte:#c3ccd8;
+    --fp-light-texto:#182231;
+    --fp-light-texto-forte:#111827;
+    --fp-light-texto-suave:#374151;
+    --fp-light-texto-muted:#64748b;
+    --fp-light-cabecalho:#edf2f8;
+    --fp-light-acento:#256d9f;
+    --fp-light-acento-hover:#1f5e89;
+    --fp-light-amarelo:#fff4c2;
+    --fp-light-amarelo-borda:#e0b42b;
+    --fp-light-perigo:#b42318;
+    --fp-light-sucesso:#16803a;
+    --fp-light-scroll-track:#eef2f6;
+    --fp-light-scroll-thumb:#b7c3d0;
+    --fp-light-scroll-thumb-hover:#95a3b3;
     --cor-texto-principal:#17202a;
     --cor-texto-secundario:#56616f;
     --cor-menu-fundo:#e8edf3;
@@ -887,27 +908,27 @@ html.admin-light-mode body.cabecalho-com-admin :is(
 /* Ajuste final do modo claro: menos branco/preto puro e foco mais suave. */
 html.admin-light-mode,
 html.admin-light-mode body.cabecalho-com-admin{
-    background:#eef2f6 !important;
-    color:#182231 !important;
+    background:var(--fp-light-fundo, #eef2f6) !important;
+    color:var(--fp-light-texto, #182231) !important;
 }
 
 html.admin-light-mode body.cabecalho-com-admin{
-    --cor-texto-principal:#182231;
-    --cor-texto-secundario:#667085;
+    --cor-texto-principal:var(--fp-light-texto, #182231);
+    --cor-texto-secundario:var(--fp-light-texto-suave, #374151);
     --cor-menu-fundo:#e7edf4;
-    --cor-menu-texto:#182231;
-    --cor-acao-principal:#256d9f;
-    --cor-acao-principal-hover:#1f5e89;
-    --fp-cor-destaque:#256d9f;
-    --cor-botao-secundario-texto:#182231;
-    --cor-botao-secundario-borda:#c3ccd8;
-    --cor-ativo-texto:#182231;
+    --cor-menu-texto:var(--fp-light-texto, #182231);
+    --cor-acao-principal:var(--fp-light-acento, #256d9f);
+    --cor-acao-principal-hover:var(--fp-light-acento-hover, #1f5e89);
+    --fp-cor-destaque:var(--fp-light-acento, #256d9f);
+    --cor-botao-secundario-texto:var(--fp-light-texto, #182231);
+    --cor-botao-secundario-borda:var(--fp-light-borda-forte, #c3ccd8);
+    --cor-ativo-texto:var(--fp-light-texto, #182231);
 }
 
 html.admin-light-mode body.cabecalho-com-admin .cabecalho-site-admin,
 html.admin-light-mode body.cabecalho-com-admin .cabecalho-loja{
-    background:#fbfcfe !important;
-    border-color:#d7dee8 !important;
+    background:var(--fp-light-superficie, #fbfcfe) !important;
+    border-color:var(--fp-light-borda, #d7dee8) !important;
     box-shadow:0 4px 14px rgba(31, 41, 55, .055) !important;
 }
 
