@@ -1290,7 +1290,7 @@ body.pagina-mapas-admin > main.fornecedores-admin {
 
 .mapas-filtro-stock,
 .mapas-copiar-lista {
-    height: 36px;
+    min-height: 36px;
     border-radius: 6px;
     font: inherit;
 }
@@ -1301,14 +1301,14 @@ body.pagina-mapas-admin > main.fornecedores-admin {
 
 .mapas-colunas-painel {
     position: relative;
-    height: 36px;
+    min-height: var(--fp-botao-altura, 42px);
 }
 
 .mapas-colunas-painel > summary {
     list-style: none;
     display: inline-flex;
     align-items: center;
-    height: 36px;
+    min-height: var(--fp-botao-altura, 42px);
     box-sizing: border-box;
     padding: 0 12px;
     border: 1px solid #555;
@@ -1397,31 +1397,6 @@ body.pagina-mapas-admin > main.fornecedores-admin {
 .mapas-copiar-lista:hover {
     border-color: #ffc400;
     color: #ffc400;
-}
-
-.pagina-mapas-admin .mapas-contador-filtros :is(
-    .mapas-filtro-stock,
-    .mapas-copiar-lista,
-    .mapas-botao-novo,
-    .mapas-colunas-painel,
-    .mapas-colunas-painel > summary
-) {
-    box-sizing: border-box;
-    height: 36px !important;
-    min-height: 36px !important;
-    line-height: 1 !important;
-}
-
-.pagina-mapas-admin .mapas-contador-filtros :is(
-    .mapas-copiar-lista,
-    .mapas-botao-novo,
-    .mapas-colunas-painel > summary
-) {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    padding-top: 0 !important;
-    padding-bottom: 0 !important;
 }
 
 .mapas-contador-item {
