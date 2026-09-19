@@ -1290,7 +1290,7 @@ body.pagina-mapas-admin > main.fornecedores-admin {
 
 .mapas-filtro-stock,
 .mapas-copiar-lista {
-    min-height: 36px;
+    height: 36px;
     border-radius: 6px;
     font: inherit;
 }
@@ -1301,14 +1301,14 @@ body.pagina-mapas-admin > main.fornecedores-admin {
 
 .mapas-colunas-painel {
     position: relative;
-    min-height: 36px;
+    height: 36px;
 }
 
 .mapas-colunas-painel > summary {
     list-style: none;
     display: inline-flex;
     align-items: center;
-    min-height: 36px;
+    height: 36px;
     box-sizing: border-box;
     padding: 0 12px;
     border: 1px solid #555;
