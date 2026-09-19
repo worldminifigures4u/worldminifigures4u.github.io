@@ -24,6 +24,21 @@ html.admin-light-mode body.cabecalho-com-admin{
     --fp-light-amarelo-borda:#e0b42b;
     --fp-light-perigo:#b42318;
     --fp-light-sucesso:#16803a;
+    --fp-light-estado-neutro-fundo:#f3f6fa;
+    --fp-light-estado-neutro-borda:#cbd5e1;
+    --fp-light-estado-neutro-texto:#263241;
+    --fp-light-estado-aviso-fundo:#fff7df;
+    --fp-light-estado-aviso-borda:#e5bd4c;
+    --fp-light-estado-aviso-texto:#7a5200;
+    --fp-light-estado-sucesso-fundo:#e7f5ee;
+    --fp-light-estado-sucesso-borda:#66b889;
+    --fp-light-estado-sucesso-texto:#14532d;
+    --fp-light-estado-info-fundo:#e7f3ff;
+    --fp-light-estado-info-borda:#75b6e8;
+    --fp-light-estado-info-texto:#075985;
+    --fp-light-estado-perigo-fundo:#fff1f1;
+    --fp-light-estado-perigo-borda:#e39a9a;
+    --fp-light-estado-perigo-texto:#991b1b;
     --fp-light-scroll-track:#eef2f6;
     --fp-light-scroll-thumb:#b7c3d0;
     --fp-light-scroll-thumb-hover:#95a3b3;
@@ -1146,23 +1161,23 @@ html.admin-light-mode body.cabecalho-com-admin :is(
     .msg-sucesso,
     .mensagem-sucesso
 ){
-    color:#16803a !important;
+    color:var(--fp-light-sucesso, #16803a) !important;
 }
 
 html.admin-light-mode body.cabecalho-com-admin :is(
     .msg-erro,
     .mensagem-erro
 ){
-    color:#b42318 !important;
+    color:var(--fp-light-perigo, #b42318) !important;
 }
 
 html.admin-light-mode body.cabecalho-com-admin :is(
     .admin-encomenda-estado-badge,
     .estado-badge
 ){
-    background:#f6f8fb !important;
-    border-color:#d6dfeb !important;
-    color:#405064 !important;
+    background:var(--fp-light-estado-neutro-fundo, #f3f6fa) !important;
+    border-color:var(--fp-light-estado-neutro-borda, #cbd5e1) !important;
+    color:var(--fp-light-estado-neutro-texto, #263241) !important;
 }
 
 html.admin-light-mode body.cabecalho-com-admin{
@@ -1226,9 +1241,9 @@ html.admin-light-mode body.cabecalho-com-admin :is(
 }
 
 html.admin-light-mode body.cabecalho-com-admin .estado-encomenda{
-    background:#f3f6fa !important;
-    border-color:#cbd5e1 !important;
-    color:#263241 !important;
+    background:var(--fp-light-estado-neutro-fundo, #f3f6fa) !important;
+    border-color:var(--fp-light-estado-neutro-borda, #cbd5e1) !important;
+    color:var(--fp-light-estado-neutro-texto, #263241) !important;
 }
 
 html.admin-light-mode body.cabecalho-com-admin .estado-fornecedor-caixote-recebido{
@@ -1238,39 +1253,39 @@ html.admin-light-mode body.cabecalho-com-admin .estado-fornecedor-caixote-recebi
 }
 
 html.admin-light-mode body.cabecalho-com-admin .estado-a-aguardar-pagamento{
-    background:#fff7df !important;
-    border-color:#e5bd4c !important;
-    color:#7a5200 !important;
+    background:var(--fp-light-estado-aviso-fundo, #fff7df) !important;
+    border-color:var(--fp-light-estado-aviso-borda, #e5bd4c) !important;
+    color:var(--fp-light-estado-aviso-texto, #7a5200) !important;
 }
 
 html.admin-light-mode body.cabecalho-com-admin .estado-pago{
-    background:#eaf8ef !important;
-    border-color:#78c995 !important;
-    color:#166534 !important;
+    background:var(--fp-light-estado-sucesso-fundo, #e7f5ee) !important;
+    border-color:var(--fp-light-estado-sucesso-borda, #66b889) !important;
+    color:var(--fp-light-estado-sucesso-texto, #14532d) !important;
 }
 
 html.admin-light-mode body.cabecalho-com-admin .estado-concluido{
-    background:#e7f5ee !important;
-    border-color:#66b889 !important;
-    color:#14532d !important;
+    background:var(--fp-light-estado-sucesso-fundo, #e7f5ee) !important;
+    border-color:var(--fp-light-estado-sucesso-borda, #66b889) !important;
+    color:var(--fp-light-estado-sucesso-texto, #14532d) !important;
 }
 
 html.admin-light-mode body.cabecalho-com-admin .estado-em-preparacao{
-    background:#fff2cf !important;
-    border-color:#d8a92f !important;
-    color:#7a4b00 !important;
+    background:var(--fp-light-estado-aviso-fundo, #fff7df) !important;
+    border-color:var(--fp-light-estado-aviso-borda, #e5bd4c) !important;
+    color:var(--fp-light-estado-aviso-texto, #7a5200) !important;
 }
 
 html.admin-light-mode body.cabecalho-com-admin .estado-enviado{
-    background:#e7f3ff !important;
-    border-color:#75b6e8 !important;
-    color:#075985 !important;
+    background:var(--fp-light-estado-info-fundo, #e7f3ff) !important;
+    border-color:var(--fp-light-estado-info-borda, #75b6e8) !important;
+    color:var(--fp-light-estado-info-texto, #075985) !important;
 }
 
 html.admin-light-mode body.cabecalho-com-admin .estado-cancelado{
-    background:#fff1f1 !important;
-    border-color:#e39a9a !important;
-    color:#991b1b !important;
+    background:var(--fp-light-estado-perigo-fundo, #fff1f1) !important;
+    border-color:var(--fp-light-estado-perigo-borda, #e39a9a) !important;
+    color:var(--fp-light-estado-perigo-texto, #991b1b) !important;
 }
 
 html.admin-light-mode body.cabecalho-com-admin .estado-devolvido{
@@ -1289,7 +1304,7 @@ html.admin-light-mode body.cabecalho-com-admin :is(
     .admin-encomenda-produto-marcacao-ultimo.marcacao-ativa .admin-encomenda-produto-marcacao-texto,
     .admin-encomenda-resumo-alerta
 ){
-    color:#b42318 !important;
+    color:var(--fp-light-perigo, #b42318) !important;
 }
 
 html.admin-light-mode body.cabecalho-com-admin .admin-encomenda-produto.marcado-penultimo{
@@ -1335,9 +1350,9 @@ html.admin-light-mode body.cabecalho-com-admin .plataforma-stock-resumo-vazio{
 }
 
 html.admin-light-mode body.cabecalho-com-admin .plataforma-stock-incorreto{
-    background:#fff7f7 !important;
-    border-color:#e39a9a !important;
-    color:#991b1b !important;
+    background:var(--fp-light-estado-perigo-fundo, #fff1f1) !important;
+    border-color:var(--fp-light-estado-perigo-borda, #e39a9a) !important;
+    color:var(--fp-light-estado-perigo-texto, #991b1b) !important;
 }
 
 html.admin-light-mode body.cabecalho-com-admin .mapas-produto-modal{
@@ -1430,11 +1445,11 @@ html.admin-light-mode body.cabecalho-com-admin .mapas-produto-historico-rececoes
 }
 
 html.admin-light-mode body.cabecalho-com-admin .mapas-produto-historico-rececoes-tabela tr.mapas-produto-historico-pendente td{
-    color:#16a34a !important;
+    color:var(--fp-light-sucesso, #16803a) !important;
 }
 
 html.admin-light-mode body.cabecalho-com-admin .mapas-produto-historico-rececoes-tabela tr.mapas-produto-historico-os td{
-    color:#b42318 !important;
+    color:var(--fp-light-perigo, #b42318) !important;
 }
 
 html.admin-light-mode body.cabecalho-com-admin .mapas-produto-fornecedor-historico{
