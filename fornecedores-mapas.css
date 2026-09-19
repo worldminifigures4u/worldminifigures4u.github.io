@@ -3041,6 +3041,33 @@ body.mapas-produto-galeria-aberta {
     box-shadow: 0 0 0 2px rgba(53, 199, 255, 0.28);
 }
 
+.botao-remover-imagem-admin {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    display: grid;
+    place-items: center;
+    width: 28px;
+    height: 28px;
+    border: 1px solid rgba(143, 32, 32, 0.95);
+    border-radius: 8px;
+    background: #8f2020;
+    color: #fff;
+    font: inherit;
+    font-size: 22px;
+    font-weight: 900;
+    line-height: 1;
+    cursor: pointer;
+    z-index: 2;
+}
+
+.botao-remover-imagem-admin:hover,
+.botao-remover-imagem-admin:focus-visible {
+    background: #a22a2a;
+    border-color: #bd3b3b;
+    outline: none;
+}
+
 .etiqueta-imagem-principal {
     position: absolute;
     left: 4px;

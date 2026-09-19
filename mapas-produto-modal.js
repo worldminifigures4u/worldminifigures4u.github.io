@@ -158,6 +158,17 @@ function reordenarUrlsImagensMapa(origem, destino) {
     atualizarPreviewImagensEdicaoMapa();
 }
 
+function removerUrlImagemMapa(indice) {
+    const textarea = document.getElementById("mapas-editar-imagens");
+    if (!textarea || indice < 0) return;
+    const urls = obterUrlsImagensEdicaoMapa();
+    if (indice >= urls.length) return;
+    urls.splice(indice, 1);
+    textarea.value = urls.join("\n");
+    textarea.dispatchEvent(new Event("input", { bubbles: true }));
+    atualizarPreviewImagensEdicaoMapa();
+}
+
 function atualizarPreviewImagensEdicaoMapa() {
     const preview = document.getElementById("mapas-editar-preview-imagens");
     if (!preview) return;
@@ -180,6 +191,23 @@ function atualizarPreviewImagensEdicaoMapa() {
         imagem.loading = "lazy";
         imagem.onerror = () => item.classList.add("oculto");
         item.appendChild(imagem);
+
+        const remover = document.createElement("button");
+        remover.type = "button";
+        remover.className = "botao-remover-imagem-admin";
+        remover.textContent = "×";
+        remover.setAttribute("aria-label", `Remover imagem ${index + 1}`);
+        remover.title = "Remover imagem";
+        remover.addEventListener("click", (evento) => {
+            evento.preventDefault();
+            evento.stopPropagation();
+            removerUrlImagemMapa(index);
+        });
+        remover.addEventListener("dragstart", (evento) => {
+            evento.preventDefault();
+            evento.stopPropagation();
+        });
+        item.appendChild(remover);
 
         if (index === 0) {
             const etiqueta = document.createElement("span");
