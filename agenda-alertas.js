@@ -47,20 +47,20 @@ function formatarHoraAgenda(data) {
 
 function abrirDialogoAlarmeAgenda(alarme, detalhes) {
     return new Promise(resolve => {
-        document.getElementById('fp-dialogo-site')?.remove();
+        document.getElementById('fp-agenda-alerta-dialogo')?.remove();
 
         const modal = document.createElement('div');
-        modal.id = 'fp-dialogo-site';
+        modal.id = 'fp-agenda-alerta-dialogo';
         modal.className = 'fp-dialogo-site';
         modal.setAttribute('role', 'dialog');
         modal.setAttribute('aria-modal', 'true');
-        modal.setAttribute('aria-labelledby', 'fp-dialogo-site-titulo');
+        modal.setAttribute('aria-labelledby', 'fp-agenda-alerta-dialogo-titulo');
 
         const caixa = document.createElement('div');
         caixa.className = 'fp-dialogo-site-caixa';
 
         const titulo = document.createElement('h2');
-        titulo.id = 'fp-dialogo-site-titulo';
+        titulo.id = 'fp-agenda-alerta-dialogo-titulo';
         titulo.textContent = 'Alarme da Agenda';
         caixa.appendChild(titulo);
 
@@ -96,12 +96,6 @@ function abrirDialogoAlarmeAgenda(alarme, detalhes) {
         document.body.appendChild(modal);
         document.body.classList.add('fp-dialogo-site-aberto');
 
-        modal.addEventListener('click', evento => {
-            if (evento.target === modal) fechar('ok');
-        });
-        modal.addEventListener('keydown', evento => {
-            if (evento.key === 'Escape') fechar('ok');
-        });
         acoes.querySelector('.fp-dialogo-site-botao-principal')?.focus();
     });
 }
@@ -152,7 +146,7 @@ async function adiarAlarmeAgenda(alarme, tipo) {
 }
 
 async function verificarAvisosAgenda() {
-    if (document.getElementById('fp-dialogo-site')) return;
+    if (document.getElementById('fp-agenda-alerta-dialogo') || document.getElementById('fp-dialogo-site')) return;
     try {
         const client = await garantirClientAgendaAlertas();
         if (!client || !(await utilizadorPodeVerAgenda(client))) return;
