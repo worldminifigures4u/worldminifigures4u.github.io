@@ -264,7 +264,7 @@ function garantirFichaClienteEncomendas() {
         return Promise.resolve();
     }
     if (!promessaFichaClienteEncomendas) {
-        promessaFichaClienteEncomendas = carregarScriptEncomendasAdmin('admin-ficha-cliente.js?v=20260919-gravar-fechar')
+        promessaFichaClienteEncomendas = carregarScriptEncomendasAdmin('admin-ficha-cliente.js?v=20260919-fechar-formulario')
             .then(() => configurarFichaClienteEncomendas());
     }
     return promessaFichaClienteEncomendas;

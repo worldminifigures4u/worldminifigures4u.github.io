@@ -41,6 +41,11 @@
         status.classList.toggle('msg-sucesso', Boolean(texto) && !erro);
     }
 
+    function definirFecharTopoFichaCliente(visivel) {
+        const fechar = document.getElementById('admin-cliente-fechar');
+        if (fechar) fechar.hidden = !visivel;
+    }
+
     async function chamarRpcFichaClienteComFallback(nomeFuncao, parametros) {
         const resposta = await fichaClient.rpc(nomeFuncao, parametros);
         const erro = resposta.error;
@@ -196,6 +201,7 @@
         const formulario = document.createElement('form');
         formulario.className = 'admin-cliente-formulario clientes-formulario';
         formulario.id = `admin-cliente-formulario-${cliente.id || 'novo'}`;
+        definirFecharTopoFichaCliente(false);
 
         const fechar = criarElemento('button', 'wallapop-botao', 'Fechar');
         fechar.type = 'button';
@@ -495,6 +501,7 @@
     }
 
     function renderizarFichaClienteAdmin(dados) {
+        definirFecharTopoFichaCliente(true);
         const conteudo = document.getElementById('admin-cliente-conteudo');
         if (!conteudo) return;
         const cliente = dados.cliente || {};
