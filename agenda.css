@@ -23,66 +23,16 @@ body.pagina-agenda-admin{
     gap:14px;
 }
 
-.agenda-topo,
-.agenda-painel,
-.agenda-metricas article{
+.agenda-painel{
     background:var(--agenda-painel);
     border:1px solid var(--agenda-borda);
     border-radius:8px;
 }
 
-.agenda-topo{
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-    gap:16px;
-    padding:18px;
-}
-
-.agenda-topo h1,
 .agenda-painel h2{
     margin:0;
     color:var(--agenda-texto);
     font-size:1.35rem;
-}
-
-.agenda-topo p{
-    margin:6px 0 0;
-    color:var(--agenda-texto-suave);
-}
-
-.agenda-metricas{
-    display:grid;
-    grid-template-columns:repeat(4, minmax(0, 1fr));
-    gap:10px;
-}
-
-.agenda-metricas article{
-    padding:16px;
-}
-
-.agenda-metricas span{
-    display:block;
-    color:var(--agenda-texto-suave);
-    font-size:.78rem;
-    font-weight:800;
-    text-transform:uppercase;
-}
-
-.agenda-metricas strong{
-    display:block;
-    margin-top:7px;
-    color:var(--agenda-texto);
-    font-size:1.75rem;
-}
-
-.agenda-alertas{
-    padding:12px 14px;
-    border:1px solid rgba(255, 193, 7, .55);
-    border-radius:8px;
-    background:rgba(255, 193, 7, .12);
-    color:var(--agenda-amarelo);
-    font-weight:800;
 }
 
 .agenda-layout{
@@ -408,9 +358,7 @@ html.admin-light-mode body.pagina-agenda-admin{
     --agenda-texto-suave:var(--fp-light-muted, #667085);
 }
 
-html.admin-light-mode .agenda-topo,
-html.admin-light-mode .agenda-painel,
-html.admin-light-mode .agenda-metricas article{
+html.admin-light-mode .agenda-painel{
     box-shadow:0 8px 24px rgba(15, 23, 42, .08);
 }
 
@@ -426,15 +374,10 @@ html.admin-light-mode .agenda-chip{
 }
 
 @media(max-width:760px){
-    .agenda-topo,
     .agenda-painel-cabecalho,
     .agenda-lista-cabecalho{
         align-items:stretch;
         flex-direction:column;
-    }
-
-    .agenda-metricas{
-        grid-template-columns:repeat(2, minmax(0, 1fr));
     }
 
     .agenda-formulario{

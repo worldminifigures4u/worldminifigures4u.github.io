@@ -132,31 +132,6 @@ async function carregarAgenda() {
     }
 }
 
-function renderizarMetricasAgenda() {
-    const hoje = agendaAlarmes.filter(alarme => alarme.estado !== 'feito' && alarmeEhHojeAgenda(alarme)).length;
-    const vencidos = agendaAlarmes.filter(alarmeEstaVencidoAgenda).length;
-    const pendentes = agendaAlarmes.filter(alarme => alarme.estado !== 'feito').length;
-    const feitos = agendaAlarmes.filter(alarme => alarme.estado === 'feito').length;
-
-    agendaElemento('agenda-metrica-hoje').textContent = String(hoje);
-    agendaElemento('agenda-metrica-vencidos').textContent = String(vencidos);
-    agendaElemento('agenda-metrica-pendentes').textContent = String(pendentes);
-    agendaElemento('agenda-metrica-feitos').textContent = String(feitos);
-
-    const alerta = agendaElemento('agenda-alertas');
-    if (!alerta) return;
-    if (hoje || vencidos) {
-        const partes = [];
-        if (vencidos) partes.push(`${vencidos} vencido(s)`);
-        if (hoje) partes.push(`${hoje} para hoje`);
-        alerta.textContent = `Atenção: ${partes.join(' e ')}.`;
-        alerta.hidden = false;
-    } else {
-        alerta.hidden = true;
-        alerta.textContent = '';
-    }
-}
-
 function alarmesDoDiaAgenda(chave) {
     return agendaAlarmes
         .filter(alarme => alarme.data_alarme === chave)
@@ -274,7 +249,6 @@ function renderizarListaAgenda() {
 }
 
 function renderizarAgenda() {
-    renderizarMetricasAgenda();
     renderizarCalendarioAgenda();
     renderizarListaAgenda();
 }
@@ -408,10 +382,6 @@ async function apagarAlarmeAgenda(alarme) {
 function configurarEventosAgenda() {
     agendaElemento('agenda-formulario')?.addEventListener('submit', guardarFormularioAgenda);
     agendaElemento('agenda-limpar-formulario')?.addEventListener('click', () => limparFormularioAgenda());
-    agendaElemento('agenda-btn-novo')?.addEventListener('click', () => {
-        limparFormularioAgenda(chaveDataAgenda(agendaHojeData()));
-        agendaElemento('agenda-titulo')?.focus();
-    });
     agendaElemento('agenda-mes-anterior')?.addEventListener('click', () => {
         agendaMesAtual.setMonth(agendaMesAtual.getMonth() - 1);
         renderizarCalendarioAgenda();
