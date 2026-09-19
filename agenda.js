@@ -3,6 +3,7 @@ let agendaAlarmes = [];
 let agendaMesAtual = null;
 let agendaDiaSelecionado = '';
 let agendaFiltroAtual = 'pendentes';
+let agendaTemporizadorAvisos = null;
 
 const agendaMeses = [
     'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
@@ -88,6 +89,15 @@ function alarmeEhHojeAgenda(alarme) {
 function alarmeEstaVencidoAgenda(alarme) {
     if (alarme.estado === 'feito') return false;
     return dataLocalAgenda(alarme.data_alarme) < agendaHojeData();
+}
+
+function alarmeEstaNaHoraAgenda(alarme) {
+    if (alarme.estado === 'feito' || !alarme.hora_alarme) return false;
+    const agora = new Date();
+    const data = dataLocalAgenda(alarme.data_alarme);
+    const [horas, minutos] = String(alarme.hora_alarme).split(':').map(Number);
+    data.setHours(horas || 0, minutos || 0, 0, 0);
+    return data <= agora;
 }
 
 function ordenarAlarmesAgenda(a, b) {
@@ -277,6 +287,33 @@ function renderizarAgenda() {
     renderizarMetricasAgenda();
     renderizarCalendarioAgenda();
     renderizarListaAgenda();
+    verificarAvisosDeHoraAgenda();
+}
+
+function chaveAvisoAlarmeAgenda(alarme) {
+    return `figures-planet-agenda-aviso-${alarme.id}-${alarme.data_alarme}-${alarme.hora_alarme || 'sem-hora'}`;
+}
+
+async function verificarAvisosDeHoraAgenda() {
+    if (!agendaAlarmes.length || document.getElementById('fp-dialogo-site')) return;
+
+    const alarmes = agendaAlarmes
+        .filter(alarmeEstaNaHoraAgenda)
+        .filter(alarme => sessionStorage.getItem(chaveAvisoAlarmeAgenda(alarme)) !== '1')
+        .sort(ordenarAlarmesAgenda);
+
+    if (!alarmes.length) return;
+
+    const alarme = alarmes[0];
+    sessionStorage.setItem(chaveAvisoAlarmeAgenda(alarme), '1');
+    const hora = formatarHoraAgenda(alarme.hora_alarme);
+    const data = formatarDataAgenda(alarme.data_alarme);
+    const contexto = textoContextoAgenda(alarme);
+    const detalhes = [hora, data, contexto].filter(Boolean).join(' · ');
+    await mostrarAvisoSite(`${alarme.titulo}${detalhes ? `\n${detalhes}` : ''}`, {
+        titulo: 'Alarme da Agenda',
+        textoConfirmar: 'OK'
+    });
 }
 
 function atualizarFiltrosAgenda() {
@@ -454,6 +491,8 @@ async function iniciarAgenda() {
         configurarEventosAgenda();
         atualizarFiltrosAgenda();
         await carregarAgenda();
+        if (agendaTemporizadorAvisos) clearInterval(agendaTemporizadorAvisos);
+        agendaTemporizadorAvisos = setInterval(verificarAvisosDeHoraAgenda, 60000);
     } catch (error) {
         console.error('Erro ao iniciar agenda.', error);
         if (bloqueio) bloqueio.textContent = erroAgenda(error);
