@@ -219,6 +219,17 @@ body.pagina-agenda-admin{
     grid-column:1 / -1;
 }
 
+.agenda-formulario-acoes{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:10px;
+}
+
+.agenda-formulario-acoes .wallapop-botao{
+    width:100%;
+    min-height:44px;
+}
+
 .agenda-estado-texto{
     min-height:22px;
     margin:12px 0 0;
