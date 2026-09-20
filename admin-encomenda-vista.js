@@ -2145,7 +2145,7 @@ window.AdminEncomendaVista = (function () {
             botoesAcoes.appendChild(editar);
         }
         if (gestaoEncomenda.botaoEscolherAnexos) {
-            gestaoEncomenda.botaoEscolherAnexos.classList.add("admin-encomenda-anexos-escolher-acao");
+            gestaoEncomenda.botaoEscolherAnexos.classList.add("admin-encomenda-anexos-escolher-acao", "wallapop-botao-exportar");
             botoesAcoes.appendChild(gestaoEncomenda.botaoEscolherAnexos);
             gestaoEncomenda.removerCaixaUploadAnexos?.();
         }

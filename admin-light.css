@@ -884,6 +884,19 @@ html.admin-light-mode body.cabecalho-com-admin .wallapop-botao-exportar:focus-vi
     color:#075985 !important;
 }
 
+html.admin-light-mode body.cabecalho-com-admin .admin-encomenda-dados-acoes .admin-encomenda-anexos-escolher.wallapop-botao-exportar{
+    background:#e0f2fe !important;
+    border:1px solid #38bdf8 !important;
+    color:#075985 !important;
+}
+
+html.admin-light-mode body.cabecalho-com-admin .admin-encomenda-dados-acoes .admin-encomenda-anexos-escolher.wallapop-botao-exportar:hover,
+html.admin-light-mode body.cabecalho-com-admin .admin-encomenda-dados-acoes .admin-encomenda-anexos-escolher.wallapop-botao-exportar:focus-within{
+    background:#bae6fd !important;
+    border-color:#0284c7 !important;
+    color:#075985 !important;
+}
+
 html.admin-light-mode body.cabecalho-com-admin #btn-analisar-lista-produtos{
     border-color:#8fb3d9 !important;
     color:#1c4f7d !important;

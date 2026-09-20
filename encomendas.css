@@ -659,6 +659,18 @@ body.pagina-encomendas-admin{
             background:transparent;
         }
 
+        .admin-encomenda-dados-acoes .admin-encomenda-anexos-escolher.wallapop-botao-exportar{
+            border:0;
+            background:#0ea5e9;
+            color:#fff;
+        }
+
+        .admin-encomenda-dados-acoes .admin-encomenda-anexos-escolher.wallapop-botao-exportar:hover,
+        .admin-encomenda-dados-acoes .admin-encomenda-anexos-escolher.wallapop-botao-exportar:focus-within{
+            background:#0284c7;
+            color:#fff;
+        }
+
         .admin-encomenda-dados-acoes .admin-encomenda-gravar{
             font-size:12px;
         }
