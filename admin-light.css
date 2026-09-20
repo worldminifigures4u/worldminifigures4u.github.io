@@ -842,14 +842,14 @@ html.admin-light-mode body.cabecalho-com-admin .btn-acao-cliente:focus-visible{
     color:#2f2300 !important;
 }
 
-html.admin-light-mode body.cabecalho-com-admin .admin-encomenda-botoes .admin-encomenda-editar.wallapop-botao-destaque{
+html.admin-light-mode body.cabecalho-com-admin .admin-encomenda-dados-botoes .admin-encomenda-editar.wallapop-botao-destaque{
     background:#fff6d6 !important;
     border:1px solid #f0c442 !important;
     color:#4a3700 !important;
 }
 
-html.admin-light-mode body.cabecalho-com-admin .admin-encomenda-botoes .admin-encomenda-editar.wallapop-botao-destaque:hover,
-html.admin-light-mode body.cabecalho-com-admin .admin-encomenda-botoes .admin-encomenda-editar.wallapop-botao-destaque:focus-visible{
+html.admin-light-mode body.cabecalho-com-admin .admin-encomenda-dados-botoes .admin-encomenda-editar.wallapop-botao-destaque:hover,
+html.admin-light-mode body.cabecalho-com-admin .admin-encomenda-dados-botoes .admin-encomenda-editar.wallapop-botao-destaque:focus-visible{
     background:#ffefb0 !important;
     border-color:#d6a300 !important;
     color:#2f2300 !important;

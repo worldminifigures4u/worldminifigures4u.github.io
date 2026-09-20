@@ -419,14 +419,14 @@ body.pagina-com-cabecalho-site{
     color:var(--cor-acao-principal, #ffc107) !important;
 }
 
-.admin-encomenda-botoes .admin-encomenda-editar.wallapop-botao-destaque{
+.admin-encomenda-dados-botoes .admin-encomenda-editar.wallapop-botao-destaque{
     background:var(--cor-acao-principal, #ffc107) !important;
     border:0 !important;
     color:#000 !important;
 }
 
-.admin-encomenda-botoes .admin-encomenda-editar.wallapop-botao-destaque:hover,
-.admin-encomenda-botoes .admin-encomenda-editar.wallapop-botao-destaque:focus-visible{
+.admin-encomenda-dados-botoes .admin-encomenda-editar.wallapop-botao-destaque:hover,
+.admin-encomenda-dados-botoes .admin-encomenda-editar.wallapop-botao-destaque:focus-visible{
     background:var(--cor-acao-principal-hover, #e0a800) !important;
     color:#000 !important;
 }
