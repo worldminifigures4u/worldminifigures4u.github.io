@@ -191,6 +191,26 @@
             line-height:1.2;
         }
 
+        .admin-cliente-acoes-topo{
+            position:absolute;
+            top:10px;
+            right:106px;
+            display:flex;
+            align-items:center;
+            justify-content:flex-end;
+            gap:8px;
+        }
+
+        .admin-cliente-acoes-topo[hidden]{
+            display:none !important;
+        }
+
+        .admin-cliente-acoes-topo .wallapop-botao{
+            height:34px;
+            min-width:110px;
+            padding:0 12px;
+        }
+
         .admin-cliente-fechar{
             position:absolute;
             top:10px;

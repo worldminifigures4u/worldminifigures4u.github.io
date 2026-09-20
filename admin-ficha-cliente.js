@@ -46,6 +46,26 @@
         if (fechar) fechar.hidden = !visivel;
     }
 
+    function obterAcoesTopoFichaCliente() {
+        const dialogo = document.querySelector('#admin-cliente-modal .admin-cliente-dialogo');
+        if (!dialogo) return null;
+        let acoes = dialogo.querySelector('.admin-cliente-acoes-topo');
+        if (!acoes) {
+            acoes = criarElemento('div', 'admin-cliente-acoes-topo');
+            const titulo = document.getElementById('admin-cliente-titulo');
+            if (titulo?.parentNode) titulo.parentNode.insertBefore(acoes, titulo.nextSibling);
+            else dialogo.prepend(acoes);
+        }
+        return acoes;
+    }
+
+    function definirAcoesTopoFichaCliente(botoes = []) {
+        const acoes = obterAcoesTopoFichaCliente();
+        if (!acoes) return;
+        acoes.replaceChildren(...botoes.filter(Boolean));
+        acoes.hidden = !acoes.children.length;
+    }
+
     async function chamarRpcFichaClienteComFallback(nomeFuncao, parametros) {
         const resposta = await fichaClient.rpc(nomeFuncao, parametros);
         const erro = resposta.error;
@@ -62,6 +82,7 @@
         const modal = document.getElementById('admin-cliente-modal');
         if (!modal) return;
         modal.hidden = true;
+        definirAcoesTopoFichaCliente();
         document.getElementById('admin-cliente-conteudo')?.replaceChildren();
         definirStatusFichaCliente('');
         document.body.classList.remove('admin-cliente-modal-aberto');
@@ -202,6 +223,7 @@
         formulario.className = 'admin-cliente-formulario clientes-formulario';
         formulario.id = `admin-cliente-formulario-${cliente.id || 'novo'}`;
         definirFecharTopoFichaCliente(false);
+        definirAcoesTopoFichaCliente();
 
         const fechar = criarElemento('button', 'wallapop-botao', 'Fechar');
         fechar.type = 'button';
@@ -517,7 +539,9 @@
             const editar = criarElemento('button', 'wallapop-botao admin-cliente-editar', 'Editar dados');
             editar.type = 'button';
             editar.addEventListener('click', () => renderizarFormularioClienteExterno(dados));
-            cabecalhoDados.appendChild(editar);
+            definirAcoesTopoFichaCliente([editar]);
+        } else {
+            definirAcoesTopoFichaCliente();
         }
         dadosPessoais.appendChild(cabecalhoDados);
         const grelha = criarElemento('div', 'admin-cliente-grelha');
