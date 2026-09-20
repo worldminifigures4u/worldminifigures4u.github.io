@@ -629,7 +629,7 @@ body.pagina-encomendas-admin{
             flex:0 0 auto;
             display:grid;
             grid-template-columns:repeat(2, minmax(0, 1fr));
-            grid-auto-rows:minmax(38px, auto);
+            grid-auto-rows:minmax(46px, auto);
             gap:8px;
             align-content:start;
             min-height:0;
@@ -812,7 +812,8 @@ body.pagina-encomendas-admin{
         }
 
         .admin-encomenda-gestao{
-            margin-top:8px;
+            clear:both;
+            margin-top:12px;
             padding-top:8px;
             border-top:1px solid #333;
             display:flex;
