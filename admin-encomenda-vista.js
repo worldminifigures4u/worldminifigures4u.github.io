@@ -2113,12 +2113,12 @@ window.AdminEncomendaVista = (function () {
 
         colunaCliente.append(
             criarLinhaDetalhe("Nome", dadosClienteEncomenda.nome_cliente),
-            criarLinhaDetalheMorada(dadosClienteEncomenda)
+            criarLinhaDetalheMorada(dadosClienteEncomenda),
+            criarLinhaDetalhe("Telemóvel", dadosClienteEncomenda.telefone_cliente)
         );
 
         colunaContacto.append(
             criarLinhaDetalhe("E-mail", dadosClienteEncomenda.email_cliente),
-            criarLinhaDetalhe("Telemóvel", dadosClienteEncomenda.telefone_cliente),
             criarLinhaDetalhe("Envio", encomenda.metodo_envio_nome || encomenda.metodo_envio)
         );
         colunaContacto.appendChild(criarLinhaDetalhe("Pagamento", encomenda.metodo_pagamento));
