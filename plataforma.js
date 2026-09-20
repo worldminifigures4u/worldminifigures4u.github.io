@@ -474,7 +474,7 @@ function atualizarBotaoRegistoPlataforma() {
     const botao = document.getElementById('btn-registar-wallapop');
     if (!botao) return;
     botao.textContent = encomendaPlataformaEmEdicao
-        ? 'Gravar altera\u00e7\u00f5es'
+        ? 'Gravar'
         : 'Registar encomenda';
     botao.disabled = wallapopRegistoConcluido;
     const apagar = document.getElementById('btn-apagar-encomenda-plataforma');
@@ -3230,7 +3230,7 @@ function confirmarResumoAlteracoesStockPlataforma(naoReporStock = []) {
         const confirmar = document.createElement('button');
         confirmar.type = 'button';
         confirmar.className = 'wallapop-botao wallapop-botao-destaque wallapop-botao-guardar';
-        confirmar.textContent = 'Gravar altera\u00e7\u00f5es';
+        confirmar.textContent = 'Gravar';
         confirmar.addEventListener('click', () => terminar(true));
         const cancelar = document.createElement('button');
         cancelar.type = 'button';
