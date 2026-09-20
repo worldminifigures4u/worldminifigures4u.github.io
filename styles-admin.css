@@ -379,7 +379,6 @@ body.pagina-com-cabecalho-site{
 }
 
 .admin-encomenda-editar,
-.admin-cliente-editar,
 .fornecedor-btn-editar-ficha,
 .btn-admin-secundario{
     background:transparent !important;
@@ -388,13 +387,25 @@ body.pagina-com-cabecalho-site{
 }
 
 .admin-encomenda-editar:hover,
-.admin-cliente-editar:hover,
 .fornecedor-btn-editar-ficha:hover,
 .btn-admin-secundario:hover,
 .btn-admin-secundario:focus-visible{
     background:transparent !important;
     border-color:var(--cor-acao-principal, #ffc107) !important;
     color:var(--cor-acao-principal, #ffc107) !important;
+}
+
+.admin-cliente-acoes-topo .admin-cliente-editar{
+    background:var(--cor-acao-principal, #ffc107) !important;
+    border-color:var(--cor-acao-principal, #ffc107) !important;
+    color:#000 !important;
+}
+
+.admin-cliente-acoes-topo .admin-cliente-editar:hover,
+.admin-cliente-acoes-topo .admin-cliente-editar:focus-visible{
+    background:var(--cor-acao-principal-hover, #e0a800) !important;
+    border-color:var(--cor-acao-principal-hover, #e0a800) !important;
+    color:#000 !important;
 }
 
 html:not(.admin-light-mode) body.cabecalho-com-admin :is(
