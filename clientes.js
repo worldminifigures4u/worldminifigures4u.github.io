@@ -511,19 +511,19 @@ function montarFormularioCliente(dados, opcoes = {}) {
 
     let cancelar = null;
     if (mostrarCancelar) {
-        cancelar = criarElementoCliente("button", "wallapop-botao", "Cancelar");
+        cancelar = criarElementoCliente("button", "wallapop-botao", "Fechar");
         cancelar.type = "button";
     }
 
-    const guardar = criarElementoCliente("button", "wallapop-botao wallapop-botao-destaque", novoCliente ? "Gravar" : "Guardar ficha");
+    const guardar = criarElementoCliente("button", "wallapop-botao wallapop-botao-destaque", novoCliente ? "Gravar" : "Guardar");
     guardar.type = "submit";
 
     if (acoesAntesCampos) {
         const acoesTopo = criarElementoCliente("div", "clientes-formulario-acoes-topo admin-cliente-formulario-acoes");
+        acoesTopo.appendChild(guardar);
         if (cancelar) {
             acoesTopo.appendChild(cancelar);
         }
-        acoesTopo.appendChild(guardar);
         formulario.appendChild(acoesTopo);
     }
 
@@ -729,14 +729,14 @@ function renderizarEdicaoCliente(dados) {
     const topo = criarElementoCliente("div", "clientes-ficha-topo");
     topo.appendChild(criarElementoCliente("h2", "", obterNomeUtilizadorCliente(cliente) || "Cliente sem nome"));
     const acoesTopo = criarElementoCliente("div", "clientes-ficha-acoes");
-    const cancelar = criarElementoCliente("button", "wallapop-botao", "Cancelar");
+    const cancelar = criarElementoCliente("button", "wallapop-botao", "Fechar");
     cancelar.type = "button";
     cancelar.addEventListener("click", () => renderizarFichaCliente(dados));
     const { formulario, checkboxAviso, guardar } = montarFormularioCliente(dados, { acoesNoTopo: true });
     if (checkboxAviso) {
         acoesTopo.appendChild(checkboxAviso);
     }
-    acoesTopo.append(cancelar, guardar);
+    acoesTopo.append(guardar, cancelar);
     topo.appendChild(acoesTopo);
 
     ficha.append(topo, formulario);
