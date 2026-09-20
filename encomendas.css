@@ -1755,6 +1755,29 @@ body.pagina-encomendas-admin{
     white-space:nowrap;
 }
 
+body.cabecalho-com-admin .admin-encomenda-modal-topo .admin-encomenda-modal-botao{
+    width:96px !important;
+    min-width:96px !important;
+    max-width:96px !important;
+    height:38px !important;
+    min-height:38px !important;
+    padding:0 10px !important;
+}
+
+body.cabecalho-com-admin .admin-encomenda-modal-topo .admin-encomenda-dados-botoes > *,
+body.cabecalho-com-admin .admin-encomenda-modal-topo .admin-encomenda-modal-fechar{
+    width:96px !important;
+    min-width:96px !important;
+    max-width:96px !important;
+    height:38px !important;
+    min-height:38px !important;
+    padding:0 10px !important;
+    box-sizing:border-box !important;
+    display:inline-flex !important;
+    align-items:center !important;
+    justify-content:center !important;
+}
+
 .admin-encomenda-modal-fechar{
     flex:0 0 auto;
     border:1px solid var(--cor-botao-secundario-borda, #ffc107);
