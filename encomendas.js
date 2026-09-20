@@ -389,6 +389,26 @@ function encomendaModalVisualIgual(a, b) {
     return obterResumoVisualModalEncomenda(a) === obterResumoVisualModalEncomenda(b);
 }
 
+function fixarBotaoTopoModalEncomenda(botao) {
+    if (!botao) return;
+    botao.classList.add('admin-encomenda-modal-botao');
+    [
+        ['width', '96px'],
+        ['min-width', '96px'],
+        ['max-width', '96px'],
+        ['height', '38px'],
+        ['min-height', '38px'],
+        ['padding', '0 10px'],
+        ['box-sizing', 'border-box'],
+        ['display', 'inline-flex'],
+        ['align-items', 'center'],
+        ['justify-content', 'center'],
+        ['font-size', '13px'],
+        ['line-height', '1'],
+        ['white-space', 'nowrap']
+    ].forEach(([propriedade, valor]) => botao.style.setProperty(propriedade, valor, 'important'));
+}
+
 function moverAcoesParaTopoModalEncomenda(card) {
     const acoesTopo = document.getElementById('admin-encomenda-modal-acoes');
     const botoes = card?.querySelector('.admin-encomenda-dados-botoes');
@@ -396,9 +416,11 @@ function moverAcoesParaTopoModalEncomenda(card) {
 
     const colunaAcoes = botoes.closest('.admin-encomenda-dados-acoes');
     botoes.classList.add('admin-encomenda-modal-botoes');
-    botoes.querySelectorAll('a, button, label').forEach(botao => {
-        botao.classList.add('admin-encomenda-modal-botao');
-    });
+    botoes.style.setProperty('grid-template-columns', 'repeat(4, 96px)', 'important');
+    botoes.style.setProperty('grid-auto-rows', '38px', 'important');
+    botoes.style.setProperty('gap', '8px', 'important');
+    botoes.querySelectorAll('a, button, label').forEach(fixarBotaoTopoModalEncomenda);
+    fixarBotaoTopoModalEncomenda(document.getElementById('admin-encomenda-modal-fechar'));
     acoesTopo.replaceChildren(botoes);
     colunaAcoes?.remove();
 }
