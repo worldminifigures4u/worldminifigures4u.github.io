@@ -536,7 +536,7 @@
         const cabecalhoDados = criarElemento('div', 'admin-cliente-secao-cabecalho');
         cabecalhoDados.appendChild(criarElemento('h3', '', 'Dados do cliente'));
         if (!cliente.auth_user_id) {
-            const editar = criarElemento('button', 'wallapop-botao admin-cliente-editar', 'Editar dados');
+            const editar = criarElemento('button', 'wallapop-botao admin-cliente-editar', 'Editar');
             editar.type = 'button';
             editar.addEventListener('click', () => renderizarFormularioClienteExterno(dados));
             definirAcoesTopoFichaCliente([editar]);

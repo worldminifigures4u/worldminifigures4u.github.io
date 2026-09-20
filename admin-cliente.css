@@ -207,8 +207,12 @@
 
         .admin-cliente-acoes-topo .wallapop-botao{
             height:34px;
-            min-width:110px;
+            min-width:86px;
             padding:0 12px;
+            border-radius:5px;
+            font-size:14px;
+            font-weight:800;
+            line-height:1;
         }
 
         .admin-cliente-fechar{
@@ -253,7 +257,7 @@
         }
 
         .admin-cliente-secao-cabecalho h3{ margin:0; }
-        .admin-cliente-editar{ flex:0 0 auto; padding:8px 12px; }
+        .admin-cliente-editar{ flex:0 0 auto; }
 
         .admin-cliente-formulario{
             display:grid;
