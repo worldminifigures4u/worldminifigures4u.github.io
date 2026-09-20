@@ -839,6 +839,13 @@ body.pagina-encomendas-admin{
             min-width:0;
         }
 
+        body.cabecalho-com-admin .admin-encomenda-gestao-bloco.admin-encomenda-gestao-anexos{
+            padding:0 !important;
+            border:0 !important;
+            border-radius:0 !important;
+            background:transparent !important;
+        }
+
         .admin-encomenda-gestao-rotulo{
             flex:0 0 auto;
             color:var(--cor-texto-principal, #fff);
