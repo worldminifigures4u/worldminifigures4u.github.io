@@ -1730,7 +1730,7 @@ body.pagina-encomendas-admin{
 
 .admin-encomenda-modal-acoes .admin-encomenda-dados-botoes{
     display:grid;
-    grid-template-columns:repeat(4, minmax(86px, auto));
+    grid-template-columns:repeat(4, 96px);
     gap:8px;
     align-items:center;
     height:auto;
@@ -1757,7 +1757,8 @@ body.pagina-encomendas-admin{
 
 .admin-encomenda-modal-fechar{
     flex:0 0 auto;
-    min-width:76px;
+    min-width:96px;
+    width:96px;
     height:38px;
     padding:0 14px;
     border:1px solid var(--cor-botao-secundario-borda, #ffc107);
@@ -1795,7 +1796,7 @@ body.admin-encomenda-modal-aberto{
     }
 
     .admin-encomenda-modal-acoes .admin-encomenda-dados-botoes{
-        grid-template-columns:repeat(2, minmax(86px, 1fr));
+        grid-template-columns:repeat(2, minmax(96px, 1fr));
     }
 
     .admin-encomenda-modal-fechar{
