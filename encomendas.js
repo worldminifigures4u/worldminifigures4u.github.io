@@ -289,6 +289,7 @@ async function recarregarEncomendaAdminPorId(encomendaId) {
     );
     const atualizada = Array.isArray(data) ? data[0] : null;
     if (!atualizada) return null;
+    await atualizarFichaClienteNaEncomendaAdmin(atualizada);
 
     const indice = encomendasAdmin.findIndex(item => String(item.id) === id);
     if (indice >= 0) {
@@ -355,7 +356,7 @@ function fecharModalEncomendaAdmin() {
 }
 
 function obterResumoVisualModalEncomenda(encomenda = {}) {
-    const cliente = encomenda.clientes_gestao || {};
+    const cliente = encomenda.clientes_gestao || encomenda.cliente_gestao || {};
     const produtos = Array.isArray(encomenda.produtos) ? encomenda.produtos : [];
     return JSON.stringify({
         id: String(encomenda.id || ''),
@@ -364,10 +365,14 @@ function obterResumoVisualModalEncomenda(encomenda = {}) {
         estado: String(encomenda.estado || ''),
         total: Number(encomenda.total || 0),
         num_anexos: Number(encomenda.num_anexos || 0),
+        titulo_cliente: String(obterNomeTituloEncomendaAdmin(encomenda) || ''),
+        nome_utilizador_cliente: String(cliente.nome_utilizador || encomenda.nome_utilizador_cliente || ''),
         nome_cliente: String(cliente.nome || encomenda.nome_cliente || ''),
         email_cliente: String(cliente.email || encomenda.email_cliente || ''),
         telefone_cliente: String(cliente.telefone || encomenda.telefone_cliente || ''),
         morada_cliente: String(cliente.morada || encomenda.morada_cliente || ''),
+        cp_cliente: String(cliente.cp || encomenda.cp_cliente || ''),
+        cidade_cliente: String(cliente.cidade || encomenda.cidade_cliente || ''),
         pais_cliente: String(cliente.pais || encomenda.pais_cliente || ''),
         metodo_envio: String(encomenda.metodo_envio_nome || encomenda.metodo_envio || ''),
         codigo_seguimento: String(encomenda.codigo_seguimento || ''),
@@ -387,6 +392,21 @@ function obterResumoVisualModalEncomenda(encomenda = {}) {
 
 function encomendaModalVisualIgual(a, b) {
     return obterResumoVisualModalEncomenda(a) === obterResumoVisualModalEncomenda(b);
+}
+
+async function atualizarFichaClienteNaEncomendaAdmin(encomenda) {
+    if (!encomenda?.id || !encomendasClient) return encomenda;
+    try {
+        const { data, error } = await encomendasClient.rpc('obter_ficha_cliente_admin', {
+            p_encomenda_id: String(encomenda.id)
+        });
+        if (!error && data?.sucesso) {
+            AdminEncomendaVista.aplicarFichaClienteEncomenda(encomenda, data);
+        }
+    } catch (error) {
+        console.warn('Nao foi possivel atualizar ficha do cliente na encomenda.', error);
+    }
+    return encomenda;
 }
 
 function fixarBotaoTopoModalEncomenda(botao) {

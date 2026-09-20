@@ -105,6 +105,17 @@ async function renderizarModalEncomendaCliente() {
         return;
     }
 
+    try {
+        const ficha = await supabaseAdmin.rpc("obter_ficha_cliente_admin", {
+            p_encomenda_id: String(data.id)
+        });
+        if (!ficha.error && ficha.data?.sucesso) {
+            AdminEncomendaVista.aplicarFichaClienteEncomenda(data, ficha.data);
+        }
+    } catch (erroFicha) {
+        console.warn("Nao foi possivel atualizar a ficha do cliente na encomenda.", erroFicha);
+    }
+
     clientesEncomendaModalAtual = data;
     item.estado = data.estado;
     item.total = data.total;

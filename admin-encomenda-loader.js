@@ -21,7 +21,7 @@
         if (!promessaVista) {
             promessaVista = carregarScript('morada-formato.js?v=20260713-morada-formatada')
                 .then(function () {
-                    return carregarScript('admin-encomenda-vista.js?v=20260920-anexos-sem-rotulo');
+                    return carregarScript('admin-encomenda-vista.js?v=20260920-cliente-atualizado-encomenda');
                 });
         }
         return promessaVista;
@@ -34,7 +34,7 @@
         if (!promessaModal) {
             promessaModal = garantirAdminEncomendaVista()
                 .then(function () {
-                    return carregarScript('clientes-encomenda-modal.js?v=20260730-fecho-fundo');
+                    return carregarScript('clientes-encomenda-modal.js?v=20260920-cliente-atualizado-encomenda');
                 })
                 .then(function () {
                     if (typeof configurarModalEncomendaCliente === 'function' && !modalConfigurado) {

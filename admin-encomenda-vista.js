@@ -172,9 +172,11 @@ window.AdminEncomendaVista = (function () {
     }
 
     function obterEncomendaComDadosCliente(encomenda) {
+        const nomeFicha = obterDadoClienteEncomenda(encomenda, "nome_cliente", "nome");
+        const nomeUtilizadorFicha = obterDadoClienteEncomenda(encomenda, "nome_utilizador_cliente", "nome_utilizador");
         return {
             ...encomenda,
-            nome_cliente: obterDadoClienteEncomenda(encomenda, "nome_cliente", "nome") || encomenda?.nome_cliente,
+            nome_cliente: nomeFicha || nomeUtilizadorFicha || encomenda?.nome_cliente,
             email_cliente: obterDadoClienteEncomenda(encomenda, "email_cliente", "email"),
             telefone_cliente: obterDadoClienteEncomenda(encomenda, "telefone_cliente", "telefone"),
             morada_cliente: obterDadoClienteEncomenda(encomenda, "morada_cliente", "morada"),
@@ -182,6 +184,37 @@ window.AdminEncomendaVista = (function () {
             cidade_cliente: obterDadoClienteEncomenda(encomenda, "cidade_cliente", "cidade"),
             pais_cliente: obterDadoClienteEncomenda(encomenda, "pais_cliente", "pais")
         };
+    }
+
+    function aplicarFichaClienteEncomenda(encomenda, dadosFicha = {}) {
+        if (!encomenda) return encomenda;
+        const cliente = dadosFicha?.cliente || dadosFicha?.clientes_gestao || dadosFicha?.cliente_gestao || null;
+        if (!cliente) return encomenda;
+
+        const ficha = {
+            ...(encomenda.clientes_gestao || encomenda.cliente_gestao || {})
+        };
+        [
+            "nome_utilizador",
+            "nome",
+            "email",
+            "telefone",
+            "morada",
+            "cp",
+            "cidade",
+            "pais",
+            "tem_aviso"
+        ].forEach(campo => {
+            if (Object.prototype.hasOwnProperty.call(cliente, campo)) {
+                ficha[campo] = cliente[campo];
+            }
+        });
+        const clienteId = cliente.id || dadosFicha.cliente_id || encomenda.cliente_gestao_id || null;
+        if (clienteId) ficha.id = clienteId;
+        encomenda.clientes_gestao = ficha;
+        encomenda.cliente_gestao = ficha;
+        encomenda.cliente_gestao_id = clienteId;
+        return encomenda;
     }
 
     function normalizarTextoEnvio(valor) {
@@ -2419,6 +2452,7 @@ window.AdminEncomendaVista = (function () {
         atualizarMiniaturasProdutos,
         atualizarEstado,
         limparCacheImagens,
+        aplicarFichaClienteEncomenda,
         formatarEuro,
         formatarData,
         estadoNormalizado,
