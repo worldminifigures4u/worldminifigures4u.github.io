@@ -810,7 +810,7 @@ function renderizarFichaCliente(dados) {
     const restricoesTopo = criarBadgesRestricoesCliente(cliente, "clientes-ficha-restricoes-topo");
     topo.append(titulo);
     if (restricoesTopo) topo.appendChild(restricoesTopo);
-    const editar = criarElementoCliente("button", "wallapop-botao", "Editar");
+    const editar = criarElementoCliente("button", "wallapop-botao wallapop-botao-destaque", "Editar");
     editar.type = "button";
     editar.addEventListener("click", () => renderizarEdicaoCliente(dados));
     const apagar = criarElementoCliente("button", "wallapop-botao clientes-botao-apagar", "Apagar");
