@@ -839,11 +839,14 @@ body.pagina-encomendas-admin{
             min-width:0;
         }
 
+        html:not(.admin-light-mode) body.cabecalho-com-admin .admin-encomenda-gestao-bloco.admin-encomenda-gestao-anexos,
         body.cabecalho-com-admin .admin-encomenda-gestao-bloco.admin-encomenda-gestao-anexos{
             padding:0 !important;
             border:0 !important;
             border-radius:0 !important;
             background:transparent !important;
+            box-shadow:none !important;
+            outline:0 !important;
         }
 
         .admin-encomenda-gestao-rotulo{
@@ -971,6 +974,16 @@ body.pagina-encomendas-admin{
             border-radius:0;
             background:transparent;
             box-sizing:border-box;
+        }
+
+        html:not(.admin-light-mode) body.cabecalho-com-admin .admin-encomenda-gestao-bloco.admin-encomenda-gestao-anexos .admin-encomenda-anexos-conteudo,
+        body.cabecalho-com-admin .admin-encomenda-gestao-bloco.admin-encomenda-gestao-anexos .admin-encomenda-anexos-conteudo{
+            padding:0 !important;
+            border:0 !important;
+            border-radius:0 !important;
+            background:transparent !important;
+            box-shadow:none !important;
+            outline:0 !important;
         }
 
         .admin-encomenda-anexos-coluna .admin-encomenda-anexos{
