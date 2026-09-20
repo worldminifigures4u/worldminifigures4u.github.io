@@ -2134,7 +2134,7 @@ window.AdminEncomendaVista = (function () {
 
         const botoesAcoes = criarElemento("div", "admin-encomenda-dados-botoes");
         if (podeEditar) {
-            const editar = criarElemento("a", "wallapop-botao admin-encomenda-editar", "Editar");
+            const editar = criarElemento("a", "wallapop-botao wallapop-botao-destaque admin-encomenda-editar", "Editar");
             const destinoEditar = new URL("plataforma.html", window.location.href);
             destinoEditar.searchParams.set("editar", encomenda.codigo_encomenda);
             if (opcoes.voltarAoEditar) {
