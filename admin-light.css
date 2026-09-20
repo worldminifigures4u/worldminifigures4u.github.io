@@ -858,6 +858,19 @@ html.admin-light-mode body.cabecalho-com-admin .btn-acao-cliente.wallapop-botao-
     color:#0b5b27 !important;
 }
 
+html.admin-light-mode body.cabecalho-com-admin .wallapop-botao-exportar{
+    background:#e0f2fe !important;
+    border:1px solid #38bdf8 !important;
+    color:#075985 !important;
+}
+
+html.admin-light-mode body.cabecalho-com-admin .wallapop-botao-exportar:hover,
+html.admin-light-mode body.cabecalho-com-admin .wallapop-botao-exportar:focus-visible{
+    background:#bae6fd !important;
+    border-color:#0284c7 !important;
+    color:#075985 !important;
+}
+
 html.admin-light-mode body.cabecalho-com-admin #btn-analisar-lista-produtos{
     border-color:#8fb3d9 !important;
     color:#1c4f7d !important;

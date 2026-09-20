@@ -1047,9 +1047,7 @@ function atualizarModoPlataforma() {
         : (geraImagens
             ? 'Ser\u00e3o criados o PNG com as figuras e o TXT da encomenda.'
             : `Ser\u00e1 criado um TXT interno ${todocoleccion ? 'com quantidade, nome e SKU separados por tabula\u00e7\u00f5es.' : 'da encomenda.'}`);
-    document.getElementById('btn-descarregar-wallapop').textContent = anuncio
-        ? 'Gravar an\u00fancio'
-        : (olx ? 'Gravar ficheiros OLX' : `Gravar ficheiro ${plataforma}`);
+    document.getElementById('btn-descarregar-wallapop').textContent = 'Exportar';
     atualizarBotaoRegistoPlataforma();
     document.getElementById('plataforma-ajuda-ficheiros').textContent = olx
         ? 'Ao gravar, ser\u00e3o criados os dois TXT OLX e o PNG com as figuras dentro da pasta da encomenda.'
@@ -2771,7 +2769,7 @@ function mensagemErroGravarFicheirosPlataforma(error) {
         return 'Sem permissão para escrever na pasta escolhida.';
     }
     if (/user gesture|showDirectoryPicker/i.test(String(error?.message || ''))) {
-        return 'O Chrome bloqueou a escolha da pasta. Clica outra vez em Gravar anúncio.';
+        return 'O Chrome bloqueou a escolha da pasta. Clica outra vez em Exportar.';
     }
     return 'Não foi possível gravar a encomenda: ' + (error?.message || 'erro desconhecido');
 }

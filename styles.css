@@ -1198,6 +1198,18 @@ html:not(.admin-light-mode) .btn-acao-cliente.wallapop-botao-guardar:is(:hover, 
     outline: none;
 }
 
+html:not(.admin-light-mode) .wallapop-botao-exportar{
+    border: 0 !important;
+    background: #0ea5e9 !important;
+    color: #fff !important;
+}
+
+html:not(.admin-light-mode) .wallapop-botao-exportar:is(:hover, :focus-visible){
+    background: #0284c7 !important;
+    color: #fff !important;
+    outline: none;
+}
+
 html:not(.admin-light-mode) :is(
     .wallapop-botao,
     .btn-admin-secundario,
