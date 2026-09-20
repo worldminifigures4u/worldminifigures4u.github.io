@@ -1074,7 +1074,6 @@ window.AdminEncomendaVista = (function () {
 
     function criarGestaoEncomenda(encomenda) {
         const bloco = criarElemento("div", "admin-encomenda-gestao-bloco admin-encomenda-gestao-anexos");
-        bloco.appendChild(criarElemento("span", "admin-encomenda-gestao-rotulo", "Anexos"));
         const conteudo = criarElemento("div", "admin-encomenda-anexos-conteudo");
         const lista = criarElemento("div", "admin-encomenda-anexos-lista");
         const statusAnexos = criarElemento("p", "admin-encomenda-gestao-status");
