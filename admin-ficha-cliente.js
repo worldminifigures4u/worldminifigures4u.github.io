@@ -233,7 +233,7 @@
 
         const guardar = criarElemento(
             'button',
-            'wallapop-botao wallapop-botao-destaque',
+            'wallapop-botao wallapop-botao-destaque wallapop-botao-guardar',
             modoCriacao ? 'Gravar' : 'Guardar'
         );
         guardar.type = 'submit';

@@ -1946,7 +1946,7 @@ function garantirModalEdicaoProdutoMapa() {
                 </div>
                 <div class="mapas-produto-acoes mapas-produto-acoes-topo" id="mapas-produto-acoes-edicao" hidden>
                     <button type="button" id="mapas-produto-apagar" class="wallapop-botao mapas-produto-apagar" hidden>Apagar</button>
-                    <button type="submit" form="mapas-produto-form" id="mapas-produto-guardar" class="wallapop-botao wallapop-botao-destaque">Guardar</button>
+                    <button type="submit" form="mapas-produto-form" id="mapas-produto-guardar" class="wallapop-botao wallapop-botao-destaque wallapop-botao-guardar">Guardar</button>
                     <button type="button" id="mapas-produto-cancelar" class="wallapop-botao mapas-produto-fechar-edicao">Fechar</button>
                 </div>
             </div>
@@ -1992,7 +1992,10 @@ function preencherFormularioProdutoMapa(produto, modo = "editar") {
     if (produto.id) modal.dataset.produtoId = String(produto.id);
     else delete modal.dataset.produtoId;
     if (titulo) titulo.textContent = modo === "criar" ? "Novo produto" : "Editar produto";
-    if (botaoGuardar) botaoGuardar.textContent = modo === "criar" ? "Criar" : "Guardar";
+    if (botaoGuardar) {
+        botaoGuardar.textContent = modo === "criar" ? "Criar" : "Guardar";
+        botaoGuardar.classList.toggle("wallapop-botao-guardar", modo !== "criar");
+    }
     atualizarAcoesModalProdutoMapa(modo);
 
     const secaoIdentificacao = criarSecaoEdicaoMapa("Identificação", "mapas-produto-secao-identificacao");

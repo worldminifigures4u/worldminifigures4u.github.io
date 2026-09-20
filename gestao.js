@@ -928,7 +928,7 @@ function renderizarListaBannersGestao() {
 
         const btnGuardar = document.createElement('button');
         btnGuardar.type = 'button';
-        btnGuardar.className = 'wallapop-botao wallapop-botao-destaque';
+        btnGuardar.className = 'wallapop-botao wallapop-botao-destaque wallapop-botao-guardar';
         btnGuardar.textContent = 'Guardar';
         btnGuardar.addEventListener('click', () => {
             guardarBannerGestao(banner.id, {

@@ -909,7 +909,7 @@ function garantirModalEdicaoFornecedor() {
                 </div>
                 <div class="fornecedores-acoes fornecedor-edicao-acoes">
                     <button type="button" id="fornecedor-edicao-cancelar" class="wallapop-botao">Fechar</button>
-                    <button type="submit" id="fornecedor-edicao-guardar" class="wallapop-botao wallapop-botao-destaque">Guardar encomenda</button>
+                    <button type="submit" id="fornecedor-edicao-guardar" class="wallapop-botao wallapop-botao-destaque wallapop-botao-guardar">Guardar encomenda</button>
                 </div>
             </form>
         </div>

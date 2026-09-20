@@ -142,9 +142,13 @@ function abrirDialogoSite(opcoes = {}) {
             ));
         }
 
+        const textoConfirmar = opcoes.textoConfirmar || 'OK';
+        const classeConfirmar = /^gravar|^guardar/i.test(textoConfirmar)
+            ? 'fp-dialogo-site-botao fp-dialogo-site-botao-principal fp-dialogo-site-botao-guardar'
+            : 'fp-dialogo-site-botao fp-dialogo-site-botao-principal';
         acoes.appendChild(criarBotaoDialogoSite(
-            opcoes.textoConfirmar || 'OK',
-            'fp-dialogo-site-botao fp-dialogo-site-botao-principal',
+            textoConfirmar,
+            classeConfirmar,
             () => fechar(opcoes.tipo === 'prompt' ? String(input?.value || '') : true)
         ));
 

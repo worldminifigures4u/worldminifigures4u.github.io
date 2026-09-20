@@ -1101,10 +1101,23 @@ input[type="number"]::-webkit-inner-spin-button{
     color: #000;
 }
 
+.fp-dialogo-site-botao-guardar {
+    border-color: #28b957;
+    background: #28b957;
+    color: #fff;
+}
+
 .fp-dialogo-site-botao:hover,
 .fp-dialogo-site-botao:focus-visible {
     filter: brightness(1.08);
     outline: none;
+}
+
+.fp-dialogo-site-botao-guardar:hover,
+.fp-dialogo-site-botao-guardar:focus-visible {
+    border-color: #229e49;
+    background: #229e49;
+    color: #fff;
 }
 
 body.fp-dialogo-site-aberto {
@@ -1168,6 +1181,20 @@ html:not(.admin-light-mode) :is(
 ):is(:hover, :focus-visible){
     background: var(--cor-acao-principal-hover, #e0a800) !important;
     color: #000 !important;
+    outline: none;
+}
+
+html:not(.admin-light-mode) .wallapop-botao-guardar,
+html:not(.admin-light-mode) .btn-acao-cliente.wallapop-botao-guardar{
+    border: 0 !important;
+    background: #28b957 !important;
+    color: #fff !important;
+}
+
+html:not(.admin-light-mode) .wallapop-botao-guardar:is(:hover, :focus-visible),
+html:not(.admin-light-mode) .btn-acao-cliente.wallapop-botao-guardar:is(:hover, :focus-visible){
+    background: #229e49 !important;
+    color: #fff !important;
     outline: none;
 }
 

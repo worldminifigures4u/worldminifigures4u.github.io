@@ -1041,7 +1041,7 @@ window.AdminEncomendaVista = (function () {
         };
 
         if (!semBotao) {
-            const guardarNotas = criarElemento("button", "wallapop-botao wallapop-botao-destaque", compacto ? "Gravar" : "Guardar notas");
+            const guardarNotas = criarElemento("button", "wallapop-botao wallapop-botao-destaque wallapop-botao-guardar", compacto ? "Gravar" : "Guardar notas");
             guardarNotas.type = "button";
             guardarNotas.addEventListener("click", evento => evento.stopPropagation());
             guardarNotas.addEventListener("mousedown", ignorarProximoBlurNotas);
@@ -2114,7 +2114,7 @@ window.AdminEncomendaVista = (function () {
         controloNotas = criarSecaoNotasInternasEncomenda(encomenda, { compacto: true, semBotao: true });
         colunaNotas.appendChild(controloNotas.elemento);
 
-        gravarTudo = criarElemento("button", "wallapop-botao wallapop-botao-destaque admin-encomenda-gravar", "Gravar");
+        gravarTudo = criarElemento("button", "wallapop-botao wallapop-botao-destaque wallapop-botao-guardar admin-encomenda-gravar", "Gravar");
         gravarTudo.type = "button";
         gravarTudo.addEventListener("mousedown", () => {
             controloNotas?.ignorarProximoBlur?.();

@@ -190,6 +190,18 @@ body.pagina-gestao-admin > main.gestao-admin{
     color:#000;
 }
 
+.wallapop-botao-guardar{
+    border:0;
+    background:#28b957;
+    color:#fff;
+}
+
+.wallapop-botao-guardar:hover,
+.wallapop-botao-guardar:focus-visible{
+    background:#229e49;
+    color:#fff;
+}
+
 .btn-admin-secundario{
     min-height:40px;
     padding:8px 12px;

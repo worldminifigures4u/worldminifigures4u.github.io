@@ -515,7 +515,7 @@ function montarFormularioCliente(dados, opcoes = {}) {
         cancelar.type = "button";
     }
 
-    const guardar = criarElementoCliente("button", "wallapop-botao wallapop-botao-destaque", novoCliente ? "Gravar" : "Guardar");
+    const guardar = criarElementoCliente("button", "wallapop-botao wallapop-botao-destaque wallapop-botao-guardar", novoCliente ? "Gravar" : "Guardar");
     guardar.type = "submit";
 
     if (acoesAntesCampos) {

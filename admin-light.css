@@ -842,6 +842,22 @@ html.admin-light-mode body.cabecalho-com-admin .btn-acao-cliente:focus-visible{
     color:#2f2300 !important;
 }
 
+html.admin-light-mode body.cabecalho-com-admin .wallapop-botao-guardar,
+html.admin-light-mode body.cabecalho-com-admin .btn-acao-cliente.wallapop-botao-guardar{
+    background:#e2f7e9 !important;
+    border:1px solid #72d994 !important;
+    color:#126b32 !important;
+}
+
+html.admin-light-mode body.cabecalho-com-admin .wallapop-botao-guardar:hover,
+html.admin-light-mode body.cabecalho-com-admin .wallapop-botao-guardar:focus-visible,
+html.admin-light-mode body.cabecalho-com-admin .btn-acao-cliente.wallapop-botao-guardar:hover,
+html.admin-light-mode body.cabecalho-com-admin .btn-acao-cliente.wallapop-botao-guardar:focus-visible{
+    background:#d4f1df !important;
+    border-color:#2eb85c !important;
+    color:#0b5b27 !important;
+}
+
 html.admin-light-mode body.cabecalho-com-admin #btn-analisar-lista-produtos{
     border-color:#8fb3d9 !important;
     color:#1c4f7d !important;

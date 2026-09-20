@@ -3185,7 +3185,7 @@ function confirmarResumoAlteracoesStockPlataforma(naoReporStock = []) {
         };
         const confirmar = document.createElement('button');
         confirmar.type = 'button';
-        confirmar.className = 'wallapop-botao wallapop-botao-destaque';
+        confirmar.className = 'wallapop-botao wallapop-botao-destaque wallapop-botao-guardar';
         confirmar.textContent = 'Guardar altera\u00e7\u00f5es';
         confirmar.addEventListener('click', () => terminar(true));
         const cancelar = document.createElement('button');
@@ -3886,4 +3886,3 @@ document.getElementById('plataforma-total-manual')?.addEventListener('input', ()
     guardarRascunhoClientePlataforma();
 });
 window.addEventListener('load', iniciarWallapopAdmin);
-
