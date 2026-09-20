@@ -1147,6 +1147,7 @@ function normalizarNomeClienteListaPlataforma(texto) {
     if (!nome) return '';
 
     nome = nome
+        .replace(/^(?:product|produto)\s+/i, '')
         .replace(/^(?:y\s+)?(?:el|la|los|las|un|una|unos|unas)\s+/i, '')
         .replace(/\brd[\s-]*d2\b/gi, 'r2-d2')
         .replace(/\br2\s*d2\b/gi, 'r2-d2')
