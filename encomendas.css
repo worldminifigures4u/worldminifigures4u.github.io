@@ -1164,17 +1164,17 @@ body.pagina-encomendas-admin{
 
         .admin-encomenda-anexo .wallapop-botao{
             flex:0 0 auto;
-            width:96px;
-            min-width:96px;
-            max-width:96px;
+            width:96px !important;
+            min-width:96px !important;
+            max-width:96px !important;
             display:inline-flex;
             align-items:center;
             justify-content:center;
-            min-height:38px;
-            height:38px;
-            padding:0 10px;
+            min-height:38px !important;
+            height:38px !important;
+            padding:0 10px !important;
             border-radius:6px;
-            font-size:13px;
+            font-size:13px !important;
             font-weight:800;
             line-height:1;
             box-sizing:border-box;
