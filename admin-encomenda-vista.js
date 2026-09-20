@@ -951,7 +951,7 @@ window.AdminEncomendaVista = (function () {
                     const linha = criarElemento("div", "admin-encomenda-anexo");
                     const nome = criarElemento("span", "", nomeVisivelAnexo(anexo.name));
                     nome.title = nome.textContent;
-                    const abrir = criarElemento("button", "wallapop-botao", "Abrir");
+                    const abrir = criarElemento("button", "wallapop-botao admin-encomenda-modal-botao admin-encomenda-anexo-botao", "Abrir");
                     abrir.type = "button";
                     abrir.addEventListener("click", async () => {
                         abrir.disabled = true;
@@ -965,7 +965,7 @@ window.AdminEncomendaVista = (function () {
                             abrir.disabled = false;
                         }
                     });
-                    const apagar = criarElemento("button", "wallapop-botao admin-encomenda-anexo-apagar", "Eliminar");
+                    const apagar = criarElemento("button", "wallapop-botao admin-encomenda-modal-botao admin-encomenda-anexo-botao admin-encomenda-anexo-apagar", "Eliminar");
                     apagar.type = "button";
                     apagar.addEventListener("click", async () => {
                         if (!(await mostrarConfirmacaoSite(`Eliminar o anexo "${nome.textContent}"?`, {
