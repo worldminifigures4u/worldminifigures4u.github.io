@@ -621,19 +621,20 @@ body.pagina-encomendas-admin{
             gap:0;
             align-self:flex-start;
             min-height:0;
-            overflow:hidden;
+            overflow:visible;
             box-sizing:border-box;
         }
 
         .admin-encomenda-dados-botoes{
-            flex:1 1 auto;
+            flex:0 0 auto;
             display:grid;
             grid-template-columns:repeat(2, minmax(0, 1fr));
-            grid-auto-rows:minmax(34px, 1fr);
-            gap:6px;
+            grid-auto-rows:minmax(38px, auto);
+            gap:8px;
+            align-content:start;
             min-height:0;
-            height:100%;
-            overflow:hidden;
+            height:auto;
+            overflow:visible;
         }
 
         .admin-encomenda-dados-acoes .wallapop-botao,
