@@ -15,6 +15,30 @@ function chaveAvisoAgenda(alarme) {
     return `figures-planet-agenda-aviso-${alarme.id}-${alarme.data_alarme || ''}-${alarme.hora_alarme || 'sem-hora'}`;
 }
 
+function avisoAgendaJaMostrado(alarme) {
+    try {
+        return localStorage.getItem(chaveAvisoAgenda(alarme)) === '1';
+    } catch (_) {
+        return false;
+    }
+}
+
+function marcarAvisoAgendaMostrado(alarme) {
+    try {
+        localStorage.setItem(chaveAvisoAgenda(alarme), '1');
+    } catch (_) {
+        // Se o navegador bloquear o armazenamento, o aviso continua funcional nesta aba.
+    }
+}
+
+function desmarcarAvisoAgendaMostrado(alarme) {
+    try {
+        localStorage.removeItem(chaveAvisoAgenda(alarme));
+    } catch (_) {
+        // Sem acao necessaria.
+    }
+}
+
 function dataHoraAlarmeAgenda(alarme) {
     const partesData = String(alarme?.data_alarme || '').slice(0, 10).split('-').map(Number);
     const partesHora = String(alarme?.hora_alarme || '').slice(0, 5).split(':').map(Number);
@@ -154,12 +178,12 @@ async function verificarAvisosAgenda() {
         if (error || !Array.isArray(data)) return;
         const alarmes = data
             .filter(alarmeAgendaEstaNaHora)
-            .filter(alarme => sessionStorage.getItem(chaveAvisoAgenda(alarme)) !== '1')
+            .filter(alarme => !avisoAgendaJaMostrado(alarme))
             .sort((a, b) => `${a.data_alarme || ''} ${a.hora_alarme || ''}`.localeCompare(`${b.data_alarme || ''} ${b.hora_alarme || ''}`));
         if (!alarmes.length) return;
 
         const alarme = alarmes[0];
-        sessionStorage.setItem(chaveAvisoAgenda(alarme), '1');
+        marcarAvisoAgendaMostrado(alarme);
         const hora = String(alarme.hora_alarme || '').slice(0, 5);
         const dataFormatada = formatarDataAgenda(alarme.data_alarme);
         const detalhes = [hora, dataFormatada].filter(Boolean).join(' · ');
@@ -168,7 +192,7 @@ async function verificarAvisosAgenda() {
             try {
                 await adiarAlarmeAgenda(alarme, acao);
             } catch (erro) {
-                sessionStorage.removeItem(chaveAvisoAgenda(alarme));
+                desmarcarAvisoAgendaMostrado(alarme);
                 throw erro;
             }
         }
