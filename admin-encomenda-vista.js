@@ -163,9 +163,12 @@ window.AdminEncomendaVista = (function () {
     }
 
     function obterDadoClienteEncomenda(encomenda, campoEncomenda, campoFicha) {
+        const ficha = obterFichaClienteGestaoEncomenda(encomenda);
+        const valorFicha = String(ficha?.[campoFicha] || "").trim();
+        if (valorFicha) return valorFicha;
         const valorEncomenda = String(encomenda?.[campoEncomenda] || "").trim();
         if (valorEncomenda) return valorEncomenda;
-        return String(obterFichaClienteGestaoEncomenda(encomenda)?.[campoFicha] || "").trim();
+        return "";
     }
 
     function obterEncomendaComDadosCliente(encomenda) {

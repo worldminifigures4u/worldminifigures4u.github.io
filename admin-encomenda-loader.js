@@ -21,7 +21,7 @@
         if (!promessaVista) {
             promessaVista = carregarScript('morada-formato.js?v=20260713-morada-formatada')
                 .then(function () {
-                    return carregarScript('admin-encomenda-vista.js?v=20260917-anexos-concluidas-neutro');
+                    return carregarScript('admin-encomenda-vista.js?v=20260920-cliente-ficha-prioritaria');
                 });
         }
         return promessaVista;
