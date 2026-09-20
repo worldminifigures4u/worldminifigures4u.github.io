@@ -77,7 +77,7 @@ function garantirAvisosStockAdminFornecedor() {
         return Promise.resolve();
     }
     if (!__fornecedoresAvisosStockPromessa) {
-        __fornecedoresAvisosStockPromessa = carregarScriptAdmin("avisos-stock-admin.js?v=20260915-aviso-receber-stock")
+        __fornecedoresAvisosStockPromessa = carregarScriptAdmin("avisos-stock-admin.js?v=20260920-gravar-texto")
             .then(function () {
                 configurarAvisosStockFornecedor();
             });
@@ -89,7 +89,7 @@ function garantirFornecedoresProdutoModal() {
     if (window.FornecedoresProdutoModal) return Promise.resolve();
     if (!__fornecedoresProdutoPromessa) {
         prepararContextoProdutoFornecedor();
-        __fornecedoresProdutoPromessa = carregarScriptAdmin("mapas-produto-modal.js?v=20260920-guardar-verde")
+        __fornecedoresProdutoPromessa = carregarScriptAdmin("mapas-produto-modal.js?v=20260920-gravar-texto")
             .then(function () {
                 window.FornecedoresProdutoModal = {
                     abrir: function () {
@@ -108,7 +108,7 @@ function garantirFornecedoresProdutoModal() {
 function garantirFornecedoresEdicaoPedido() {
     if (window.FornecedoresEdicaoPedido) return Promise.resolve();
     if (!__fornecedoresEdicaoPromessa) {
-        __fornecedoresEdicaoPromessa = carregarScriptAdmin("fornecedores-edicao-pedido.js?v=20260920-guardar-verde");
+        __fornecedoresEdicaoPromessa = carregarScriptAdmin("fornecedores-edicao-pedido.js?v=20260920-gravar-texto");
     }
     return __fornecedoresEdicaoPromessa;
 }
@@ -712,7 +712,7 @@ async function apagarFichaFornecedor() {
     const idAtual = document.getElementById("fornecedor-ficha-id")?.value || "";
     const ficha = obterFichaFornecedorPorId(idAtual);
     if (!ficha) {
-        definirStatusFornecedor("Escolha um fornecedor guardado para apagar.", true);
+        definirStatusFornecedor("Escolha um fornecedor gravado para apagar.", true);
         return;
     }
 
@@ -781,10 +781,10 @@ async function guardarFichaFornecedor(evento) {
             throw error;
         }
     } catch (error) {
-        console.warn("Nao foi possivel guardar ficha no Supabase; guardada localmente.", error);
+        console.warn("Nao foi possivel gravar ficha no Supabase; gravada localmente.", error);
         fornecedorFichas = fornecedorFichas.filter(item => item.id !== ficha.id);
         fornecedorFichas.push(ficha);
-        definirStatusFornecedor("Fornecedor guardado apenas neste navegador. Execute o SQL de fornecedores para guardar no Supabase.", true);
+        definirStatusFornecedor("Fornecedor gravado apenas neste navegador. Execute o SQL de fornecedores para gravar no Supabase.", true);
     }
 
     fornecedorFichas = combinarFichasFornecedoresComPadrao(fornecedorFichas);
@@ -796,7 +796,7 @@ async function guardarFichaFornecedor(evento) {
         renderizarResultadosFornecedor();
     }
     if (!document.getElementById("fornecedores-status")?.textContent) {
-        definirStatusFornecedor("Fornecedor guardado.");
+        definirStatusFornecedor("Fornecedor gravado.");
     }
     fecharModalFichaFornecedor();
 }
@@ -2034,7 +2034,7 @@ function criarBlocoHistoricoFornecedorFicha(form, id, rotulo, valor, opcoes = {}
             apagar.addEventListener("click", async () => {
                 const rotuloLinha = `${item.data ? formatarDataOsCurtaFornecedor(item.data) : "sem data"} — ${rotuloHistoricoFornecedor(item.tipo)}`;
                 if (!(await mostrarConfirmacaoSite(
-                    `Apagar esta linha do histórico de ${rotulo}?\n\n${rotuloLinha}\n\nSó fica definitivo ao guardar o produto.`,
+                    `Apagar esta linha do histórico de ${rotulo}?\n\n${rotuloLinha}\n\nSó fica definitivo ao gravar o produto.`,
                     { titulo: "Apagar histórico", textoConfirmar: "Apagar", textoCancelar: "Cancelar" }
                 ))) {
                     return;
@@ -2056,7 +2056,7 @@ function criarBlocoHistoricoFornecedorFicha(form, id, rotulo, valor, opcoes = {}
 
     botaoLimpar.addEventListener("click", async () => {
         if (!(await mostrarConfirmacaoSite(
-            `Limpar o histórico de ${rotulo} nesta ficha?\n\nA marcação atual também fica vazia. Só fica definitivo ao guardar o produto.`,
+            `Limpar o histórico de ${rotulo} nesta ficha?\n\nA marcação atual também fica vazia. Só fica definitivo ao gravar o produto.`,
             { titulo: "Limpar histórico", textoConfirmar: "Limpar", textoCancelar: "Cancelar" }
         ))) {
             return;

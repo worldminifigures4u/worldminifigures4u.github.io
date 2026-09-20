@@ -199,17 +199,17 @@ async function guardarPortesAdmin() {
         }));
 
     if (!alteradas.length) {
-        definirStatusPortes('Não há alterações para guardar.');
+        definirStatusPortes('Não há alterações para gravar.');
         return;
     }
 
-    definirStatusPortes('A guardar...');
+    definirStatusPortes('A gravar...');
     const { data, error } = await portesClient.rpc('guardar_portes_tarifas_admin', {
         p_linhas: alteradas
     });
 
     if (error) {
-        definirStatusPortes('Erro ao guardar: ' + (error.message || 'desconhecido'));
+        definirStatusPortes('Erro ao gravar: ' + (error.message || 'desconhecido'));
         return;
     }
 
@@ -219,7 +219,7 @@ async function guardarPortesAdmin() {
 
     await carregarPortesAdmin();
     const atualizados = data && data.atualizados != null ? data.atualizados : alteradas.length;
-    definirStatusPortes(`Guardado. ${atualizados} tarifas atualizadas. Opções desativadas deixam de aparecer ao cliente.`);
+    definirStatusPortes(`Gravado. ${atualizados} tarifas atualizadas. Opções desativadas deixam de aparecer ao cliente.`);
 }
 
 let portesMetodos = [];
@@ -445,7 +445,7 @@ async function criarMetodoPortesAdmin(evento) {
 }
 
 async function guardarTudoPortesAdmin() {
-    definirStatusPortes('A guardar...');
+    definirStatusPortes('A gravar...');
     try {
         const metodos = await guardarMetodosPortesAdmin();
         const alteradas = portesLinhas
@@ -467,16 +467,16 @@ async function guardarTudoPortesAdmin() {
         }
 
         if (!metodos && !tarifas) {
-            definirStatusPortes('Não há alterações para guardar.');
+            definirStatusPortes('Não há alterações para gravar.');
             return;
         }
 
         if (typeof window.limparCachePortes === 'function') window.limparCachePortes();
         await carregarMetodosPortesAdmin();
         await carregarPortesAdmin();
-        definirStatusPortes(`Guardado. Métodos: ${metodos || 0}. Tarifas: ${tarifas || 0}.`);
+        definirStatusPortes(`Gravado. Métodos: ${metodos || 0}. Tarifas: ${tarifas || 0}.`);
     } catch (erro) {
-        definirStatusPortes('Erro ao guardar: ' + (erro.message || 'desconhecido'));
+        definirStatusPortes('Erro ao gravar: ' + (erro.message || 'desconhecido'));
     }
 }
 

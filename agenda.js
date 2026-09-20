@@ -333,7 +333,7 @@ async function guardarFormularioAgenda(evento) {
         p_contexto_ref: agendaElemento('agenda-contexto-ref').value.trim()
     };
 
-    mostrarEstadoAgenda('A guardar alarme...');
+    mostrarEstadoAgenda('A gravar alarme...');
     try {
         await chamarRpcAgenda('guardar_alarme_agenda_admin', parametros);
         agendaDiaSelecionado = dataAlarme;
@@ -341,9 +341,9 @@ async function guardarFormularioAgenda(evento) {
         agendaMesAtual.setDate(1);
         limparFormularioAgenda(dataAlarme);
         await carregarAgenda();
-        mostrarEstadoAgenda('Alarme guardado.', 'sucesso');
+        mostrarEstadoAgenda('Alarme gravado.', 'sucesso');
     } catch (error) {
-        console.error('Erro ao guardar alarme.', error);
+        console.error('Erro ao gravar alarme.', error);
         mostrarEstadoAgenda(erroAgenda(error), 'erro');
     }
 }

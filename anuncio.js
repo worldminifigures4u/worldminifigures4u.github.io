@@ -387,14 +387,14 @@ async function descarregarImagemWallapop() {
         const imagem = await canvasParaBlobWallapop(canvas);
         await escreverFicheiroWallapop(pastaEncomenda, `${nomeEncomenda}.txt`, criarTextoEncomendaWallapop());
         await escreverFicheiroWallapop(pastaEncomenda, 'foto anuncio.png', imagem);
-        definirStatusWallapop(`Pasta "${nomeEncomenda}" guardada com sucesso.`);
+        definirStatusWallapop(`Pasta "${nomeEncomenda}" gravada com sucesso.`);
     } catch (error) {
         console.error(error);
         if (error?.name === 'AbortError') {
             definirStatusWallapop('Seleção da pasta cancelada.', true);
             return;
         }
-        definirStatusWallapop('Não foi possível guardar a encomenda: ' + (error.message || 'erro desconhecido'), true);
+        definirStatusWallapop('Não foi possível gravar a encomenda: ' + (error.message || 'erro desconhecido'), true);
     }
 }
 

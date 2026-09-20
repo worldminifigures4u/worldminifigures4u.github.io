@@ -197,7 +197,7 @@ function pedirTextoSite(mensagem, valorInicial = '', opcoes = {}) {
         mensagem,
         valorInicial,
         titulo: opcoes.titulo || 'Indicar valor',
-        textoConfirmar: opcoes.textoConfirmar || 'Guardar',
+        textoConfirmar: opcoes.textoConfirmar || 'Gravar',
         textoCancelar: opcoes.textoCancelar || 'Cancelar'
     });
 }

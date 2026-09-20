@@ -234,7 +234,7 @@
         const guardar = criarElemento(
             'button',
             'wallapop-botao wallapop-botao-destaque wallapop-botao-guardar',
-            modoCriacao ? 'Gravar' : 'Guardar'
+            'Gravar'
         );
         guardar.type = 'submit';
 
@@ -296,7 +296,7 @@
             modoCriacao: false,
             onCancelar: () => renderizarFichaClienteAdmin(dados),
             onSubmit: async ({ formulario: form, campos }) => {
-                definirStatusFichaCliente('A guardar dados do cliente...');
+                definirStatusFichaCliente('A gravar dados do cliente...');
                 const { data, error } = await chamarRpcFichaClienteComFallback('atualizar_cliente_externo_admin', {
                     p_cliente_id: cliente.id,
                     p_nome: String(campos.get('nome') || ''),
@@ -309,7 +309,7 @@
                     p_pais: String(campos.get('pais') || '')
                 });
                 if (error || data?.sucesso === false) {
-                    definirStatusFichaCliente('Erro ao guardar dados: ' + (error?.message || data?.erro || 'sem detalhe'), true);
+                    definirStatusFichaCliente('Erro ao gravar dados: ' + (error?.message || data?.erro || 'sem detalhe'), true);
                     return;
                 }
                 const resultadoPerfis = await fichaClient.rpc('guardar_perfis_cliente_admin', {
@@ -317,7 +317,7 @@
                     p_perfis: obterPerfisFormularioCliente(form)
                 });
                 if (resultadoPerfis.error || resultadoPerfis.data?.sucesso === false) {
-                    definirStatusFichaCliente('Dados guardados, mas erro nos links: ' + (resultadoPerfis.error?.message || resultadoPerfis.data?.erro || 'sem detalhe'), true);
+                    definirStatusFichaCliente('Dados gravados, mas erro nos links: ' + (resultadoPerfis.error?.message || resultadoPerfis.data?.erro || 'sem detalhe'), true);
                     return;
                 }
                 const resultadoNotas = await fichaClient.rpc('guardar_notas_cliente_admin', {
@@ -325,7 +325,7 @@
                     p_notas: String(campos.get('notas') || '')
                 });
                 if (resultadoNotas.error || resultadoNotas.data?.sucesso === false) {
-                    definirStatusFichaCliente('Dados guardados, mas erro nas notas: ' + (resultadoNotas.error?.message || resultadoNotas.data?.erro || 'sem detalhe'), true);
+                    definirStatusFichaCliente('Dados gravados, mas erro nas notas: ' + (resultadoNotas.error?.message || resultadoNotas.data?.erro || 'sem detalhe'), true);
                     return;
                 }
                 const resultadoRestricoes = await fichaClient.rpc('guardar_restricoes_cliente_admin', {
@@ -334,7 +334,7 @@
                     p_bloquear_conta: campos.get('bloquear_conta') === 'on'
                 });
                 if (resultadoRestricoes.error || resultadoRestricoes.data?.sucesso === false) {
-                    definirStatusFichaCliente('Dados guardados, mas erro nas restricoes: ' + (resultadoRestricoes.error?.message || resultadoRestricoes.data?.erro || 'sem detalhe'), true);
+                    definirStatusFichaCliente('Dados gravados, mas erro nas restricoes: ' + (resultadoRestricoes.error?.message || resultadoRestricoes.data?.erro || 'sem detalhe'), true);
                     return;
                 }
                 const resultadoAviso = await fichaClient.rpc('guardar_aviso_cliente_admin', {
@@ -342,7 +342,7 @@
                     p_tem_aviso: campos.get('tem_aviso') === 'on'
                 });
                 if (resultadoAviso.error || resultadoAviso.data?.sucesso === false) {
-                    definirStatusFichaCliente('Dados guardados, mas erro no aviso: ' + (resultadoAviso.error?.message || resultadoAviso.data?.erro || 'sem detalhe'), true);
+                    definirStatusFichaCliente('Dados gravados, mas erro no aviso: ' + (resultadoAviso.error?.message || resultadoAviso.data?.erro || 'sem detalhe'), true);
                     return;
                 }
                 dados.cliente = {

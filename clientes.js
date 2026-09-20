@@ -515,7 +515,7 @@ function montarFormularioCliente(dados, opcoes = {}) {
         cancelar.type = "button";
     }
 
-    const guardar = criarElementoCliente("button", "wallapop-botao wallapop-botao-destaque wallapop-botao-guardar", novoCliente ? "Gravar" : "Guardar");
+    const guardar = criarElementoCliente("button", "wallapop-botao wallapop-botao-destaque wallapop-botao-guardar", "Gravar");
     guardar.type = "submit";
 
     if (acoesAntesCampos) {
@@ -617,7 +617,7 @@ function montarFormularioCliente(dados, opcoes = {}) {
         evento.preventDefault();
         guardar.disabled = true;
         if (cancelar) cancelar.disabled = true;
-        definirStatusClientes(novoCliente ? "A criar cliente..." : "A guardar ficha...");
+        definirStatusClientes(novoCliente ? "A criar cliente..." : "A gravar ficha...");
         const campos = new FormData(formulario);
         const parametrosCliente = {
             p_nome: String(campos.get("nome") || ""),
@@ -641,7 +641,7 @@ function montarFormularioCliente(dados, opcoes = {}) {
             if (error || data?.sucesso === false) {
                 guardar.disabled = false;
                 if (cancelar) cancelar.disabled = false;
-                definirStatusClientes("Erro ao guardar dados: " + (error?.message || data?.erro || "sem detalhe"), true);
+                definirStatusClientes("Erro ao gravar dados: " + (error?.message || data?.erro || "sem detalhe"), true);
                 return;
             }
             clienteId = data?.cliente?.id || cliente.id;
@@ -673,27 +673,27 @@ function montarFormularioCliente(dados, opcoes = {}) {
         guardar.disabled = false;
         if (cancelar) cancelar.disabled = false;
         if (perfisResposta.error || perfisResposta.data?.sucesso === false) {
-            definirStatusClientes("Dados guardados, mas erro nos links: " + (perfisResposta.error?.message || perfisResposta.data?.erro || "sem detalhe"), true);
+            definirStatusClientes("Dados gravados, mas erro nos links: " + (perfisResposta.error?.message || perfisResposta.data?.erro || "sem detalhe"), true);
             return;
         }
         const notasErro = notas.error || notas.data?.sucesso === false
             ? (notas.error?.message || notas.data?.erro || "sem detalhe")
             : "";
         if (notasErro) {
-            definirStatusClientes("Ficha guardada, mas as notas nao foram atualizadas: " + notasErro, true);
+            definirStatusClientes("Ficha gravada, mas as notas nao foram atualizadas: " + notasErro, true);
             await pesquisarClientes();
             await abrirCliente(clienteId);
             return;
         }
         definirStatusClientes(avisoErro
-            ? "Ficha guardada, mas o aviso nao foi atualizado: " + avisoErro
+            ? "Ficha gravada, mas o aviso nao foi atualizado: " + avisoErro
             : restricoesErro
-                ? "Ficha guardada, mas as restricoes nao foram atualizadas: " + restricoesErro
+                ? "Ficha gravada, mas as restricoes nao foram atualizadas: " + restricoesErro
                 : (novoCliente
                     ? "Cliente criado."
                     : (clienteRegistadoSite
-                        ? "Aviso, restricoes, links e notas guardados."
-                        : "Ficha guardada.")),
+                        ? "Aviso, restricoes, links e notas gravados."
+                        : "Ficha gravada.")),
             Boolean(avisoErro || restricoesErro)
         );
         await pesquisarClientes();
@@ -756,7 +756,7 @@ async function apagarFichaCliente(dados, botao) {
     const nome = obterNomeUtilizadorCliente(cliente) || "Cliente sem nome";
     const encomendas = Number(dados.resumo?.encomendas || 0);
     const avisoHistorico = encomendas > 0
-        ? `\n\nEste cliente tem ${encomendas} encomenda(s). As encomendas ficam guardadas, mas deixam de estar ligadas a esta ficha.`
+        ? `\n\nEste cliente tem ${encomendas} encomenda(s). As encomendas ficam gravadas, mas deixam de estar ligadas a esta ficha.`
         : "";
     if (!(await mostrarConfirmacaoSite(`Apagar definitivamente a ficha de ${nome}?${avisoHistorico}`, {
         titulo: "Apagar cliente",

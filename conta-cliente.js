@@ -457,7 +457,7 @@ async function guardarDadosCliente(event) {
     }
 
     try {
-        mostrarMensagem(statusDiv, 'A guardar dados...');
+        mostrarMensagem(statusDiv, 'A gravar dados...');
         const { data: { user }, error: userError } = await dbClient.auth.getUser();
         if (userError || !user) throw userError || new Error('Sessão não encontrada.');
         const emailAtual = String(user.email || '').toLowerCase();
@@ -495,15 +495,15 @@ async function guardarDadosCliente(event) {
         mostrarMensagem(
             statusDiv,
             emailAlterado
-                ? 'Dados guardados. Confirme o novo e-mail através do link que enviámos para a nova morada.'
-                : 'Dados guardados com sucesso.',
+                ? 'Dados gravados. Confirme o novo e-mail através do link que enviámos para a nova morada.'
+                : 'Dados gravados com sucesso.',
             'msg-sucesso'
         );
     } catch(error) {
-        console.error('Erro ao guardar dados do cliente:', error);
+        console.error('Erro ao gravar dados do cliente:', error);
         mostrarMensagem(
             statusDiv,
-            obterMensagemErroCliente(error, 'Não foi possível guardar os dados. Tente novamente.'),
+            obterMensagemErroCliente(error, 'Não foi possível gravar os dados. Tente novamente.'),
             'msg-erro'
         );
     }

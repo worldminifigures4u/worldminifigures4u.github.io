@@ -424,9 +424,9 @@ function obterEnvioParaFicheirosPlataforma() {
 }
 
 function obterTotalParaFicheirosPlataforma(subtotal, portes) {
-    const totalGuardado = Number(encomendaPlataformaParaFicheiros?.envio?.total);
-    if (!encomendaPlataformaEmEdicao && Number.isFinite(totalGuardado) && totalGuardado > 0) {
-        return Math.round(totalGuardado * 100) / 100;
+    const totalGravado = Number(encomendaPlataformaParaFicheiros?.envio?.total);
+    if (!encomendaPlataformaEmEdicao && Number.isFinite(totalGravado) && totalGravado > 0) {
+        return Math.round(totalGravado * 100) / 100;
     }
     return obterTotalManualPlataforma(subtotal, portes);
 }
@@ -474,7 +474,7 @@ function atualizarBotaoRegistoPlataforma() {
     const botao = document.getElementById('btn-registar-wallapop');
     if (!botao) return;
     botao.textContent = encomendaPlataformaEmEdicao
-        ? 'Guardar altera\u00e7\u00f5es'
+        ? 'Gravar altera\u00e7\u00f5es'
         : 'Registar encomenda';
     botao.disabled = wallapopRegistoConcluido;
 }
@@ -578,7 +578,7 @@ function garantirFichaClientePlataforma() {
                 return carregarScriptAdmin('paises-cliente.js?v=20260731-wallapop-es');
             })
             .then(function () {
-                return carregarScriptAdmin('admin-ficha-cliente.js?v=20260920-ficha-clientes');
+                return carregarScriptAdmin('admin-ficha-cliente.js?v=20260920-gravar-texto');
             })
             .then(function () {
                 window.AdminFichaCliente?.configurar({
@@ -1048,14 +1048,14 @@ function atualizarModoPlataforma() {
             ? 'Ser\u00e3o criados o PNG com as figuras e o TXT da encomenda.'
             : `Ser\u00e1 criado um TXT interno ${todocoleccion ? 'com quantidade, nome e SKU separados por tabula\u00e7\u00f5es.' : 'da encomenda.'}`);
     document.getElementById('btn-descarregar-wallapop').textContent = anuncio
-        ? 'Guardar an\u00fancio'
-        : (olx ? 'Guardar ficheiros OLX' : `Guardar ficheiro ${plataforma}`);
+        ? 'Gravar an\u00fancio'
+        : (olx ? 'Gravar ficheiros OLX' : `Gravar ficheiro ${plataforma}`);
     atualizarBotaoRegistoPlataforma();
     document.getElementById('plataforma-ajuda-ficheiros').textContent = olx
-        ? 'Ao guardar, ser\u00e3o criados os dois TXT OLX e o PNG com as figuras dentro da pasta da encomenda.'
+        ? 'Ao gravar, ser\u00e3o criados os dois TXT OLX e o PNG com as figuras dentro da pasta da encomenda.'
         : (geraImagens
-            ? 'Ao guardar, ser\u00e3o criados o PNG com as figuras e o TXT dentro da pasta da encomenda.'
-            : 'Ao guardar, escolhe a pasta de destino. Dentro dela ser\u00e1 criada uma pasta com o nome da encomenda.');
+            ? 'Ao gravar, ser\u00e3o criados o PNG com as figuras e o TXT dentro da pasta da encomenda.'
+            : 'Ao gravar, escolhe a pasta de destino. Dentro dela ser\u00e1 criada uma pasta com o nome da encomenda.');
     marcarWallapopPorRegistar();
     atualizarOpcoesEnvioPlataforma();
 }
@@ -2075,25 +2075,25 @@ async function guardarAvisoStockPlataforma(produto, botao = null, nota = "") {
         return false;
     }
     if (!fichaClientePlataformaAtual?.cliente?.id) {
-        definirStatusWallapop("Carrega ou cria primeiro a ficha do cliente para guardar o aviso de stock.", true);
+        definirStatusWallapop("Carrega ou cria primeiro a ficha do cliente para gravar o aviso de stock.", true);
         return false;
     }
     const textoAnterior = botao?.textContent || "";
     try {
         if (botao) {
             botao.disabled = true;
-            botao.textContent = "A guardar";
+            botao.textContent = "A gravar";
         }
         await window.AvisosStockAdmin.criarAviso(obterDadosAvisoStockPlataforma(produto, nota));
-        if (botao) botao.textContent = "Guardado";
+        if (botao) botao.textContent = "Gravado";
         return true;
     } catch (error) {
         console.error(error);
         if (botao) botao.textContent = textoAnterior || "Avisar stock";
-        definirStatusWallapop("Erro ao guardar aviso de stock: " + (error.message || "sem detalhe"), true);
+        definirStatusWallapop("Erro ao gravar aviso de stock: " + (error.message || "sem detalhe"), true);
         return false;
     } finally {
-        if (botao && botao.textContent !== "Guardado") botao.disabled = false;
+        if (botao && botao.textContent !== "Gravado") botao.disabled = false;
     }
 }
 
@@ -2102,7 +2102,7 @@ function criarBotaoAvisoStockPlataforma(produto, nota = "") {
     botao.type = "button";
     botao.className = "wallapop-botao plataforma-aviso-stock-botao";
     botao.textContent = "Avisar stock";
-    botao.title = "Guardar aviso para contactar este cliente quando a figura chegar";
+    botao.title = "Gravar aviso para contactar este cliente quando a figura chegar";
     botao.addEventListener("click", (evento) => {
         evento.stopPropagation();
         guardarAvisoStockPlataforma(produto, botao, nota);
@@ -2762,7 +2762,7 @@ function erroFicheiroEstadoDesatualizado(error) {
         || /state cached|state had changed|interface object/i.test(mensagem);
 }
 
-function mensagemErroGuardarFicheirosPlataforma(error) {
+function mensagemErroGravarFicheirosPlataforma(error) {
     if (error?.name === 'AbortError') return 'Seleção da pasta cancelada.';
     if (erroFicheiroEstadoDesatualizado(error)) {
         return 'A pasta ficou desatualizada (OneDrive/antivirus ou ficheiro aberto). Fecha o explorador nessa pasta e tenta outra vez.';
@@ -2771,9 +2771,9 @@ function mensagemErroGuardarFicheirosPlataforma(error) {
         return 'Sem permissão para escrever na pasta escolhida.';
     }
     if (/user gesture|showDirectoryPicker/i.test(String(error?.message || ''))) {
-        return 'O Chrome bloqueou a escolha da pasta. Clica outra vez em Guardar anúncio.';
+        return 'O Chrome bloqueou a escolha da pasta. Clica outra vez em Gravar anúncio.';
     }
-    return 'Não foi possível guardar a encomenda: ' + (error?.message || 'erro desconhecido');
+    return 'Não foi possível gravar a encomenda: ' + (error?.message || 'erro desconhecido');
 }
 
 async function escreverFicheiroWallapop(pasta, nome, conteudo) {
@@ -2974,13 +2974,13 @@ async function descarregarImagemWallapop(opcoes = {}) {
         const ficheirosImagem = await criarFicheirosImagemPlataforma(itensFicheiros);
         ficheiros.push(...ficheirosImagem);
 
-        definirStatusWallapop('A guardar os ficheiros...');
+        definirStatusWallapop('A gravar os ficheiros...');
         // Voltar a obter a subpasta imediatamente antes de escrever (evita handle stale).
         const pastaEncomenda = await pastaBase.getDirectoryHandle(nomeEncomenda, { create: true });
         for (const ficheiro of ficheiros) {
             await escreverFicheiroWallapop(pastaEncomenda, ficheiro.nome, ficheiro.conteudo);
         }
-        definirStatusWallapop(`Pasta "${nomeEncomenda}" guardada com ${ficheirosImagem.length} imagem(ns).`);
+        definirStatusWallapop(`Pasta "${nomeEncomenda}" gravada com ${ficheirosImagem.length} imagem(ns).`);
         return true;
     } catch (error) {
         console.error(error);
@@ -2988,7 +2988,7 @@ async function descarregarImagemWallapop(opcoes = {}) {
             definirStatusWallapop('Seleção da pasta cancelada.', true);
             return false;
         }
-        definirStatusWallapop(mensagemErroGuardarFicheirosPlataforma(error), true);
+        definirStatusWallapop(mensagemErroGravarFicheirosPlataforma(error), true);
         return false;
     } finally {
         renderizarFolhaWallapop();
@@ -3028,11 +3028,11 @@ async function guardarFicheirosPlataforma(opcoes = {}) {
             for (const ficheiro of ficheirosImagem) {
                 await escreverFicheiroWallapop(pastaEncomenda, ficheiro.nome, ficheiro.conteudo);
             }
-            definirStatusWallapop(`Pasta "${nomeEncomenda}" guardada com os dois ficheiros OLX e ${ficheirosImagem.length} imagem(ns).`);
+            definirStatusWallapop(`Pasta "${nomeEncomenda}" gravada com os dois ficheiros OLX e ${ficheirosImagem.length} imagem(ns).`);
         } else {
             await escreverFicheiroWallapop(pastaEncomenda, `${nomeEncomenda}.txt`, criarTextoInternoPlataforma());
             if (textoNotas) await escreverFicheiroWallapop(pastaEncomenda, 'notas encomenda.txt', textoNotas);
-            definirStatusWallapop(`Ficheiro ${plataforma} guardado na pasta "${nomeEncomenda}".`);
+            definirStatusWallapop(`Ficheiro ${plataforma} gravado na pasta "${nomeEncomenda}".`);
         }
         return true;
     } catch (error) {
@@ -3041,7 +3041,7 @@ async function guardarFicheirosPlataforma(opcoes = {}) {
             definirStatusWallapop('Sele\u00e7\u00e3o da pasta cancelada.', true);
             return false;
         }
-        definirStatusWallapop(mensagemErroGuardarFicheirosPlataforma(error), true);
+        definirStatusWallapop(mensagemErroGravarFicheirosPlataforma(error), true);
         return false;
     }
 }
@@ -3162,7 +3162,7 @@ function confirmarResumoAlteracoesStockPlataforma(naoReporStock = []) {
         const titulo = document.createElement('h2');
         titulo.textContent = 'Resumo das altera\u00e7\u00f5es de stock';
         const texto = document.createElement('p');
-        texto.textContent = `Antes de guardar a encomenda ${obterCodigoEncomendaAtual()}, confirma o ajuste que ser\u00e1 feito no stock.`;
+        texto.textContent = `Antes de gravar a encomenda ${obterCodigoEncomendaAtual()}, confirma o ajuste que ser\u00e1 feito no stock.`;
 
         const blocoRetirar = document.createElement('div');
         blocoRetirar.className = 'plataforma-stock-resumo-bloco';
@@ -3186,7 +3186,7 @@ function confirmarResumoAlteracoesStockPlataforma(naoReporStock = []) {
         const confirmar = document.createElement('button');
         confirmar.type = 'button';
         confirmar.className = 'wallapop-botao wallapop-botao-destaque wallapop-botao-guardar';
-        confirmar.textContent = 'Guardar altera\u00e7\u00f5es';
+        confirmar.textContent = 'Gravar altera\u00e7\u00f5es';
         confirmar.addEventListener('click', () => terminar(true));
         const cancelar = document.createElement('button');
         cancelar.type = 'button';
@@ -3280,14 +3280,14 @@ async function carregarEncomendaPlataformaPorCodigo(codigo) {
             String(item.id_produto || item.id || '') === String(produto.id)
         ));
         const atual = wallapopProdutos.find(item => String(item.id) === String(produto.id));
-        const precoGuardado = obterPrecoItemWallapop(reservado);
+        const precoGravado = obterPrecoItemWallapop(reservado);
         const precoProduto = Number(atual?.preco ?? produto.preco ?? 0) || 0;
         return {
             ...produto,
             ...atual,
             id: produto.id || atual?.id,
-            preco: precoGuardado || precoProduto,
-            preco_unitario: precoGuardado || precoProduto,
+            preco: precoGravado || precoProduto,
+            preco_unitario: precoGravado || precoProduto,
             stock: Number.isFinite(Number(atual?.stock))
                 ? Number(atual.stock)
                 : Number(produto.stock),
@@ -3329,12 +3329,12 @@ async function carregarEncomendaPlataformaPorCodigo(codigo) {
     document.getElementById('plataforma-cidade-cliente').value = encomenda.cidade_cliente || '';
 
     selecionarPaisEnvioMoloniPlataforma(encomenda.pais_cliente, encomenda.regiao_envio);
-    const metodoGuardado = encomenda.metodo_envio
+    const metodoGravado = encomenda.metodo_envio
         || (encomenda.origem === 'Wallapop' ? 'wallapop'
             : (encomenda.origem === 'Vinted' ? 'vinted' : ''));
     const selectMetodo = document.getElementById('plataforma-metodo-envio');
-    if (selectMetodo && metodoGuardado && [...selectMetodo.options].some(opcao => opcao.value === metodoGuardado)) {
-        selectMetodo.value = metodoGuardado;
+    if (selectMetodo && metodoGravado && [...selectMetodo.options].some(opcao => opcao.value === metodoGravado)) {
+        selectMetodo.value = metodoGravado;
     } else if (selectMetodo && encomenda.origem === 'Todocoleccion') {
         const fallback = [...selectMetodo.options].find(opcao => opcao.value === 'ctt_registado');
         if (fallback) selectMetodo.value = fallback.value;
@@ -3344,21 +3344,21 @@ async function carregarEncomendaPlataformaPorCodigo(codigo) {
     const portesCalculadosAbertura = obterPortesCalculadosPlataforma();
     const campoPortes = document.getElementById('plataforma-portes-manual');
     if (campoPortes) {
-        const portesGuardados = Number(encomenda.portes || 0);
-        campoPortes.value = portesGuardados > 0
-            ? formatarEuroWallapop(portesGuardados)
+        const portesGravados = Number(encomenda.portes || 0);
+        campoPortes.value = portesGravados > 0
+            ? formatarEuroWallapop(portesGravados)
             : '';
-        plataformaPortesManualAlterado = portesGuardados > 0
-            && !valorIgualDinheiroPlataforma(portesGuardados, portesCalculadosAbertura);
+        plataformaPortesManualAlterado = portesGravados > 0
+            && !valorIgualDinheiroPlataforma(portesGravados, portesCalculadosAbertura);
     }
     const campoTotal = document.getElementById('plataforma-total-manual');
     if (campoTotal) {
-        const totalGuardado = Number(encomenda.total || 0);
-        campoTotal.value = totalGuardado > 0
-            ? formatarEuroWallapop(totalGuardado)
+        const totalGravado = Number(encomenda.total || 0);
+        campoTotal.value = totalGravado > 0
+            ? formatarEuroWallapop(totalGravado)
             : '';
-        plataformaTotalManualAlterado = totalGuardado > 0
-            && !valorIgualDinheiroPlataforma(totalGuardado, totalCalculadoPlataforma(subtotalOriginal, Number(encomenda.portes || 0)));
+        plataformaTotalManualAlterado = totalGravado > 0
+            && !valorIgualDinheiroPlataforma(totalGravado, totalCalculadoPlataforma(subtotalOriginal, Number(encomenda.portes || 0)));
     }
     atualizarResumoPlataforma();
     const campoSeguimento = document.getElementById('plataforma-codigo-seguimento');
@@ -3546,7 +3546,7 @@ async function registarEncomendaWallapop() {
         ? await escolherReposicaoStockPlataforma()
         : [];
     if (naoReporStock === null) {
-        definirStatusWallapop('Altera\u00e7\u00f5es n\u00e3o guardadas.');
+        definirStatusWallapop('Altera\u00e7\u00f5es n\u00e3o gravadas.');
         return;
     }
     const confirmado = encomendaPlataformaEmEdicao
@@ -3560,7 +3560,7 @@ async function registarEncomendaWallapop() {
     registoPlataformaEmCurso = true;
     botao.disabled = true;
     definirStatusWallapop(encomendaPlataformaEmEdicao
-        ? 'A validar o stock e guardar as alterações...'
+        ? 'A validar o stock e gravar as alterações...'
         : 'A validar o stock e registar a encomenda...');
     try {
         const parametros = {
@@ -3617,7 +3617,7 @@ async function registarEncomendaWallapop() {
                 .eq('id', encomendaId);
             if (erroOrigem) {
                 console.error('Erro ao atualizar origem da encomenda:', erroOrigem);
-                avisoPerfil += ` A encomenda foi guardada, mas continuou marcada como ${plataformaOriginalEdicao}.`;
+                avisoPerfil += ` A encomenda foi gravada, mas continuou marcada como ${plataformaOriginalEdicao}.`;
             }
         }
         const metodoEnvio = obterEnvioPlataforma().id;
@@ -3628,8 +3628,8 @@ async function registarEncomendaWallapop() {
                 .update({ codigo_seguimento: codigoSeguimento || null })
                 .eq('id', encomendaId);
             if (erroSeguimento) {
-                console.error('Erro ao guardar código de seguimento:', erroSeguimento);
-                avisoPerfil += ' A encomenda foi guardada, mas o código de envio não ficou atualizado.';
+                console.error('Erro ao gravar código de seguimento:', erroSeguimento);
+                avisoPerfil += ' A encomenda foi gravada, mas o código de envio não ficou atualizado.';
             }
         }
 
@@ -3639,7 +3639,7 @@ async function registarEncomendaWallapop() {
                 p_url_perfil: linkPerfil
             });
             if (associacao.error || associacao.data?.sucesso === false) {
-                avisoPerfil = ' A encomenda foi guardada, mas o perfil do cliente n\u00e3o ficou associado.';
+                avisoPerfil = ' A encomenda foi gravada, mas o perfil do cliente n\u00e3o ficou associado.';
                 console.error('Erro ao associar perfil externo:', associacao.error || associacao.data);
             } else {
                 renderizarFichaClientePlataforma(associacao.data);
@@ -3702,8 +3702,8 @@ async function registarEncomendaWallapop() {
         renderizarFolhaWallapop();
         definirStatusWallapop(
             eraEdicao
-                ? `Encomenda ${codigo} guardada e lista limpa. Pode guardar os ficheiros ou iniciar outra encomenda.${avisoPerfil}`
-                : `Encomenda ${codigo} guardada e lista limpa. Pode guardar os ficheiros da encomenda anterior ou iniciar a seguinte.${avisoPerfil}`
+                ? `Encomenda ${codigo} gravada e lista limpa. Pode gravar os ficheiros ou iniciar outra encomenda.${avisoPerfil}`
+                : `Encomenda ${codigo} gravada e lista limpa. Pode gravar os ficheiros da encomenda anterior ou iniciar a seguinte.${avisoPerfil}`
         );
         await carregarCatalogoWallapop();
         renderizarResultadosWallapop();

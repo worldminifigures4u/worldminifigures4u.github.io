@@ -876,7 +876,7 @@ function garantirModalEdicaoFornecedor() {
                             <select id="fornecedor-edicao-estado"></select>
                         </label>
                     </div>
-                    <p class="fornecedor-edicao-aviso-guardar">As alterações aos campos acima só ficam guardadas ao clicar <strong>Guardar encomenda</strong>.</p>
+                    <p class="fornecedor-edicao-aviso-guardar">As alterações aos campos acima só ficam gravadas ao clicar <strong>Gravar encomenda</strong>.</p>
                     <section class="fornecedor-lista-final-box fornecedor-lista-final-edicao" aria-label="Lista final enviada pelo fornecedor">
                         <h4>Colar lista final do fornecedor</h4>
                         <p>Depois de o fornecedor responder, cola aqui referência, quantidade e preço compra. A encomenda abaixo é corrigida automaticamente.</p>
@@ -888,7 +888,7 @@ function garantirModalEdicaoFornecedor() {
                     </section>
                     <section class="fornecedor-lista-final-box fornecedor-lista-os-edicao" aria-label="Lista OS enviada pelo fornecedor">
                         <h4>Colar lista OS do fornecedor</h4>
-                        <p>Cola as referências sem stock. São marcadas como OS e saem do “a receber” (a quantidade OS fica na ficha ao guardar).</p>
+                        <p>Cola as referências sem stock. São marcadas como OS e saem do “a receber” (a quantidade OS fica na ficha ao gravar).</p>
                         <textarea id="fornecedor-edicao-lista-os" rows="4" placeholder="Ex.:&#10;AF301&#10;PG634&#10;ou com quantidade:&#10;AF301	2"></textarea>
                         <div class="fornecedor-lista-final-acoes">
                             <button type="button" id="fornecedor-edicao-limpar-lista-os">Limpar texto</button>
@@ -909,7 +909,7 @@ function garantirModalEdicaoFornecedor() {
                 </div>
                 <div class="fornecedores-acoes fornecedor-edicao-acoes">
                     <button type="button" id="fornecedor-edicao-cancelar" class="wallapop-botao">Fechar</button>
-                    <button type="submit" id="fornecedor-edicao-guardar" class="wallapop-botao wallapop-botao-destaque wallapop-botao-guardar">Guardar encomenda</button>
+                    <button type="submit" id="fornecedor-edicao-guardar" class="wallapop-botao wallapop-botao-destaque wallapop-botao-guardar">Gravar encomenda</button>
                 </div>
             </form>
         </div>
@@ -1040,7 +1040,7 @@ async function guardarEdicaoPedidoFornecedor(evento) {
     const pedido = fornecedorPedidos.find(item => String(item.id) === String(id));
     if (!pedido) {
         if (status) {
-            status.textContent = 'Encomenda nao encontrada para guardar.';
+            status.textContent = 'Encomenda nao encontrada para gravar.';
             status.classList.remove('status-aviso', 'status-sucesso', 'status-neutro');
             status.classList.add('status-erro');
         }
@@ -1069,15 +1069,15 @@ async function guardarEdicaoPedidoFornecedor(evento) {
     }
 
     if (typeof confirmarReferenciasItensFornecedor === "function"
-        && !confirmarReferenciasItensFornecedor(itens, "guardar a encomenda")) {
-        definirStatusEdicaoFornecedor(status, "aviso", "Guardar cancelado para rever as referencias.");
+        && !confirmarReferenciasItensFornecedor(itens, "gravar a encomenda")) {
+        definirStatusEdicaoFornecedor(status, "aviso", "Gravação cancelada para rever as referencias.");
         return;
     }
 
     let guardadoComSucesso = false;
     try {
         botao.disabled = true;
-        status.textContent = 'A guardar ficha...';
+        status.textContent = 'A gravar ficha...';
         status.classList.remove('status-erro', 'status-sucesso', 'status-aviso');
         status.classList.add('status-neutro');
         const estadoAnterior = pedido.estado;
@@ -1108,16 +1108,16 @@ async function guardarEdicaoPedidoFornecedor(evento) {
             produtosComPrecoAtualizado = await sincronizarPrecoCompraProdutosFornecedor(itens, fornecedor);
         } catch (erroPrecoCompra) {
             console.warn('Nao foi possivel sincronizar preço compra nos produtos.', erroPrecoCompra);
-            avisoPrecoCompra = ' O preço compra ficou guardado na encomenda, mas ainda não foi atualizado na ficha do produto. Execute o SQL atualizado no Supabase.';
+            avisoPrecoCompra = ' O preço compra ficou gravado na encomenda, mas ainda não foi atualizado na ficha do produto. Execute o SQL atualizado no Supabase.';
         }
         guardadoComSucesso = true;
         fecharEdicaoPedidoFornecedor();
         renderizarResultadosFornecedor();
         renderizarPedidosFornecedores();
-        definirStatusFornecedor(`Ajuste ${atualizado.codigo} guardado.${produtosComPrecoAtualizado ? ` Preço compra atualizado em ${produtosComPrecoAtualizado} produto(s).` : ''}${avisoPrecoCompra}`, Boolean(avisoPrecoCompra));
+        definirStatusFornecedor(`Ajuste ${atualizado.codigo} gravado.${produtosComPrecoAtualizado ? ` Preço compra atualizado em ${produtosComPrecoAtualizado} produto(s).` : ''}${avisoPrecoCompra}`, Boolean(avisoPrecoCompra));
     } catch (error) {
         console.error(error);
-        status.textContent = 'Erro: ' + (error.message || 'Nao foi possivel guardar a ficha.');
+        status.textContent = 'Erro: ' + (error.message || 'Nao foi possivel gravar a ficha.');
         status.classList.remove('status-aviso', 'status-sucesso', 'status-neutro');
         status.classList.add('status-erro');
     } finally {

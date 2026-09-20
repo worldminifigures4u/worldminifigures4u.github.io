@@ -88,7 +88,7 @@
             });
             return normalizarAviso(data);
         } catch (erro) {
-            console.warn("Aviso de stock guardado localmente.", erro);
+            console.warn("Aviso de stock gravado localmente.", erro);
             const locais = carregarLocais();
             const existente = locais.find(item =>
                 avisoCorrespondeCliente(item, aviso.cliente_id) &&
@@ -100,7 +100,7 @@
                 ? locais.map(item => item.id === existente.id ? guardado : item)
                 : [guardado, ...locais]
             );
-            if (statusCallback) statusCallback("Aviso guardado neste navegador. Execute o SQL dos avisos de stock para guardar no Supabase.", true);
+            if (statusCallback) statusCallback("Aviso gravado neste navegador. Execute o SQL dos avisos de stock para gravar no Supabase.", true);
             return guardado;
         }
     }

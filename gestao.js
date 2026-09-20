@@ -926,11 +926,11 @@ function renderizarListaBannersGestao() {
             sincronizarPreview();
         });
 
-        const btnGuardar = document.createElement('button');
-        btnGuardar.type = 'button';
-        btnGuardar.className = 'wallapop-botao wallapop-botao-destaque wallapop-botao-guardar';
-        btnGuardar.textContent = 'Guardar';
-        btnGuardar.addEventListener('click', () => {
+        const btnGravar = document.createElement('button');
+        btnGravar.type = 'button';
+        btnGravar.className = 'wallapop-botao wallapop-botao-destaque wallapop-botao-guardar';
+        btnGravar.textContent = 'Gravar';
+        btnGravar.addEventListener('click', () => {
             guardarBannerGestao(banner.id, {
                 url: banner.url,
                 textos: textosEstado.map((item) => criarTextoBannerPadrao(item)),
@@ -949,7 +949,7 @@ function renderizarListaBannersGestao() {
 
         acoes.appendChild(labelAtivo);
         acoes.appendChild(labelOrdem);
-        acoes.appendChild(btnGuardar);
+        acoes.appendChild(btnGravar);
         acoes.appendChild(btnApagar);
 
         campos.appendChild(topoTextos);
@@ -973,7 +973,7 @@ async function carregarBannersGestao() {
 }
 
 async function guardarBannerGestao(id, dados) {
-    definirStatusGestao('A guardar...');
+    definirStatusGestao('A gravar...');
     const { data, error } = await gestaoClient.rpc('guardar_banner_loja_admin', {
         p_id: id || null,
         p_url: dados.url,
@@ -982,11 +982,11 @@ async function guardarBannerGestao(id, dados) {
         p_ativo: dados.ativo !== false
     });
     if (error) {
-        definirStatusGestao('Erro ao guardar: ' + (error.message || 'desconhecido'));
+        definirStatusGestao('Erro ao gravar: ' + (error.message || 'desconhecido'));
         throw error;
     }
     if (!data?.sucesso) {
-        definirStatusGestao('Não foi possível guardar o banner.');
+        definirStatusGestao('Não foi possível gravar o banner.');
         return;
     }
     await carregarBannersGestao();

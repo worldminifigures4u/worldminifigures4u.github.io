@@ -231,7 +231,7 @@ window.AdminEncomendaVista = (function () {
         const resposta = await pedirTextoSite(
             `Encomenda ${codigoEncomenda} · ${rotuloEnvio}\nIndique o código de envio/seguimento:`,
             atual,
-            { titulo: "Código de envio", textoConfirmar: "Guardar" }
+            { titulo: "Código de envio", textoConfirmar: "Gravar" }
         );
         if (resposta === null) return null;
         const codigo = String(resposta).trim();
@@ -269,33 +269,33 @@ window.AdminEncomendaVista = (function () {
         input.spellcheck = false;
         input.placeholder = "Código de envio";
         input.title = "Código de envio / seguimento";
-        let valorGuardado = String(encomenda.codigo_seguimento || "").trim();
-        input.value = valorGuardado;
+        let valorGravado = String(encomenda.codigo_seguimento || "").trim();
+        input.value = valorGravado;
         input.addEventListener("click", evento => evento.stopPropagation());
         input.addEventListener("keydown", evento => evento.stopPropagation());
 
         function temAlteracao() {
-            return String(input.value || "").trim() !== valorGuardado;
+            return String(input.value || "").trim() !== valorGravado;
         }
 
         function reverter() {
-            input.value = valorGuardado;
+            input.value = valorGravado;
         }
 
         async function guardar() {
             const codigo = String(input.value || "").trim();
-            if (codigo === valorGuardado) return true;
+            if (codigo === valorGravado) return true;
             try {
                 const guardado = await guardarCodigoSeguimento(encomenda, codigo);
                 const novo = String(guardado?.codigo_seguimento || "").trim();
-                valorGuardado = novo;
+                valorGravado = novo;
                 input.value = novo;
                 sincronizarEncomendaNaLista(encomenda, { codigo_seguimento: novo || null });
                 hooks.definirStatus(novo ? `Código de envio atualizado: ${novo}.` : "Código de envio removido.");
                 return true;
             } catch (error) {
                 reverter();
-                hooks.definirStatus("Erro ao guardar o código de envio: " + detalheErro(error), true);
+                hooks.definirStatus("Erro ao gravar o código de envio: " + detalheErro(error), true);
                 return false;
             }
         }
@@ -449,8 +449,8 @@ window.AdminEncomendaVista = (function () {
             .select("id, produtos")
             .single();
         if (error) throw error;
-        const produtosGuardados = obterProdutos(data || { produtos });
-        sincronizarEncomendaNaLista(encomenda, { produtos: produtosGuardados });
+        const produtosGravados = obterProdutos(data || { produtos });
+        sincronizarEncomendaNaLista(encomenda, { produtos: produtosGravados });
         return true;
     }
 
@@ -500,7 +500,7 @@ window.AdminEncomendaVista = (function () {
                     outroRef.atual.celula.classList.toggle("marcacao-ativa", outroRef.atual.input.checked);
                 }
                 aplicarDestaqueMarcacaoOrdem(linhaProduto, marcacaoAnterior);
-                hooks.definirStatus("Erro ao guardar marcação: " + detalheErro(error), true);
+                hooks.definirStatus("Erro ao gravar marcação: " + detalheErro(error), true);
             } finally {
                 input.disabled = false;
                 if (outroRef.atual) outroRef.atual.input.disabled = false;
@@ -970,38 +970,38 @@ window.AdminEncomendaVista = (function () {
         const notas = document.createElement("textarea");
         notas.rows = compacto ? 1 : 4;
         notas.maxLength = 10000;
-        let valorGuardado = encomenda.notas_internas || "";
-        notas.value = valorGuardado;
+        let valorGravado = encomenda.notas_internas || "";
+        notas.value = valorGravado;
         notas.placeholder = "";
         notas.addEventListener("click", evento => evento.stopPropagation());
         notas.addEventListener("keydown", evento => evento.stopPropagation());
         const statusNotas = criarElemento("p", "admin-encomenda-gestao-status");
 
         function temAlteracoesPendentes() {
-            return notas.value !== valorGuardado;
+            return notas.value !== valorGravado;
         }
 
         async function guardarNotasInternas() {
             if (!temAlteracoesPendentes()) return true;
-            if (!compacto) statusNotas.textContent = "A guardar...";
+            if (!compacto) statusNotas.textContent = "A gravar...";
             const { data, error } = await obterClient().rpc("guardar_notas_encomenda_admin", {
                 p_encomenda_id: String(encomenda.id),
                 p_notas: notas.value
             });
             if (error || data?.sucesso === false) {
-                const mensagem = "Erro ao guardar notas: " + (error?.message || data?.erro || "sem detalhe");
+                const mensagem = "Erro ao gravar notas: " + (error?.message || data?.erro || "sem detalhe");
                 if (compacto) hooks.definirStatus(mensagem, true);
                 else statusNotas.textContent = mensagem;
                 return false;
             }
-            valorGuardado = notas.value;
+            valorGravado = notas.value;
             encomenda.notas_internas = notas.value;
             if (!compacto) statusNotas.textContent = "";
             return true;
         }
 
         function reverterNotas() {
-            notas.value = valorGuardado;
+            notas.value = valorGravado;
             if (!compacto) statusNotas.textContent = "";
         }
 
@@ -1041,7 +1041,7 @@ window.AdminEncomendaVista = (function () {
         };
 
         if (!semBotao) {
-            const guardarNotas = criarElemento("button", "wallapop-botao wallapop-botao-destaque wallapop-botao-guardar", compacto ? "Gravar" : "Guardar notas");
+            const guardarNotas = criarElemento("button", "wallapop-botao wallapop-botao-destaque wallapop-botao-guardar", compacto ? "Gravar" : "Gravar notas");
             guardarNotas.type = "button";
             guardarNotas.addEventListener("click", evento => evento.stopPropagation());
             guardarNotas.addEventListener("mousedown", ignorarProximoBlurNotas);
@@ -1157,7 +1157,7 @@ window.AdminEncomendaVista = (function () {
                     input.value = "";
                     atualizarAnexosPendentes();
                     await carregarAnexos(encomenda, lista, statusAnexos);
-                    statusAnexos.textContent = `${ficheiros.length} anexo(s) guardado(s).`;
+                    statusAnexos.textContent = `${ficheiros.length} anexo(s) gravado(s).`;
                     return true;
                 } catch (error) {
                     statusAnexos.textContent = "Erro no envio: " + (error.message || "sem detalhe");
@@ -1273,14 +1273,14 @@ window.AdminEncomendaVista = (function () {
 
     async function atualizarPrioridade(encomenda, prioritaria, checkbox) {
         checkbox.disabled = true;
-        hooks.definirStatus("A guardar prioridade...");
+        hooks.definirStatus("A gravar prioridade...");
         try {
             const { data, error } = await obterClient().rpc("atualizar_prioridade_encomenda_admin", {
                 p_encomenda_id: String(encomenda.id),
                 p_prioritaria: prioritaria
             });
             if (error || data?.sucesso === false) {
-                throw error || new Error(data?.erro || "Não foi possível guardar a prioridade.");
+                throw error || new Error(data?.erro || "Não foi possível gravar a prioridade.");
             }
             encomenda.prioritaria = prioritaria;
             sincronizarEncomendaNaLista(encomenda, { prioritaria });
@@ -1289,7 +1289,7 @@ window.AdminEncomendaVista = (function () {
         } catch (error) {
             checkbox.checked = !prioritaria;
             hooks.definirStatus(
-                "Erro ao guardar prioridade: " + detalheErro(error)
+                "Erro ao gravar prioridade: " + detalheErro(error)
                 + ". Execute o SQL atualizado do painel de encomendas no Supabase.",
                 true
             );
@@ -2014,7 +2014,7 @@ window.AdminEncomendaVista = (function () {
 
         async function gravarAlteracoesPendentes() {
             if (!temAlteracoesPendentes()) {
-                mostrarStatusGravacao("Guardado");
+                mostrarStatusGravacao("Gravado");
                 return true;
             }
             if (gravarTudo) gravarTudo.disabled = true;
@@ -2031,10 +2031,10 @@ window.AdminEncomendaVista = (function () {
                 ok = (await gestaoEncomenda.enviarAnexosPendentes()) && ok;
             }
             if (!ok) {
-                hooks.definirStatus("Algumas alterações não foram guardadas.", true);
+                hooks.definirStatus("Algumas alterações não foram gravadas.", true);
                 mostrarStatusGravacao("Erro", "erro");
             } else {
-                mostrarStatusGravacao("Guardado");
+                mostrarStatusGravacao("Gravado");
             }
             if (gravarTudo) gravarTudo.disabled = false;
             return ok;

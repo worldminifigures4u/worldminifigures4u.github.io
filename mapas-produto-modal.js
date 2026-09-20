@@ -568,7 +568,7 @@ function criarBlocoFornecedorFallbackMapa(form, id, rotulo, valor, opcoes = {}) 
             apagar.addEventListener("click", async () => {
                 const rotuloLinha = `${formatarDataFornecedorLeituraMapa(item.data) || "sem data"} - ${rotuloHistoricoFornecedorLeituraMapa(item.tipo)}`;
                 if (!(await mostrarConfirmacaoSite(
-                    `Apagar esta linha do histórico de ${rotulo}?\n\n${rotuloLinha}\n\nSó fica definitivo ao guardar o produto.`,
+                    `Apagar esta linha do histórico de ${rotulo}?\n\n${rotuloLinha}\n\nSó fica definitivo ao gravar o produto.`,
                     { titulo: "Apagar histórico", textoConfirmar: "Apagar", textoCancelar: "Cancelar" }
                 ))) {
                     return;
@@ -584,7 +584,7 @@ function criarBlocoFornecedorFallbackMapa(form, id, rotulo, valor, opcoes = {}) 
 
     botaoLimpar.addEventListener("click", async () => {
         if (!(await mostrarConfirmacaoSite(
-            `Limpar o histórico de ${rotulo} nesta ficha?\n\nA marcação atual também fica vazia. Só fica definitivo ao guardar o produto.`,
+            `Limpar o histórico de ${rotulo} nesta ficha?\n\nA marcação atual também fica vazia. Só fica definitivo ao gravar o produto.`,
             { titulo: "Limpar histórico", textoConfirmar: "Limpar", textoCancelar: "Cancelar" }
         ))) {
             return;
@@ -1946,7 +1946,7 @@ function garantirModalEdicaoProdutoMapa() {
                 </div>
                 <div class="mapas-produto-acoes mapas-produto-acoes-topo" id="mapas-produto-acoes-edicao" hidden>
                     <button type="button" id="mapas-produto-apagar" class="wallapop-botao mapas-produto-apagar" hidden>Apagar</button>
-                    <button type="submit" form="mapas-produto-form" id="mapas-produto-guardar" class="wallapop-botao wallapop-botao-destaque wallapop-botao-guardar">Guardar</button>
+                    <button type="submit" form="mapas-produto-form" id="mapas-produto-guardar" class="wallapop-botao wallapop-botao-destaque wallapop-botao-guardar">Gravar</button>
                     <button type="button" id="mapas-produto-cancelar" class="wallapop-botao mapas-produto-fechar-edicao">Fechar</button>
                 </div>
             </div>
@@ -1983,7 +1983,7 @@ function preencherFormularioProdutoMapa(produto, modo = "editar") {
     const campos = modal.querySelector("#mapas-produto-form-campos");
     const status = modal.querySelector("#mapas-produto-status");
     const titulo = modal.querySelector("#mapas-produto-modal-titulo");
-    const botaoGuardar = modal.querySelector("#mapas-produto-guardar");
+    const botaoGravar = modal.querySelector("#mapas-produto-guardar");
     campos.replaceChildren();
     if (status) status.textContent = "";
     modal.querySelector("#mapas-produto-modo").value = modo;
@@ -1992,9 +1992,9 @@ function preencherFormularioProdutoMapa(produto, modo = "editar") {
     if (produto.id) modal.dataset.produtoId = String(produto.id);
     else delete modal.dataset.produtoId;
     if (titulo) titulo.textContent = modo === "criar" ? "Novo produto" : "Editar produto";
-    if (botaoGuardar) {
-        botaoGuardar.textContent = modo === "criar" ? "Criar" : "Guardar";
-        botaoGuardar.classList.toggle("wallapop-botao-guardar", modo !== "criar");
+    if (botaoGravar) {
+        botaoGravar.textContent = modo === "criar" ? "Criar" : "Gravar";
+        botaoGravar.classList.toggle("wallapop-botao-guardar", modo !== "criar");
     }
     atualizarAcoesModalProdutoMapa(modo);
 
@@ -2271,7 +2271,7 @@ async function guardarEdicaoProdutoMapa(evento) {
     try {
         botao.disabled = true;
         if (status) {
-            status.textContent = modo === "criar" ? "A criar..." : "A guardar...";
+            status.textContent = modo === "criar" ? "A criar..." : "A gravar...";
             status.classList.remove("status-erro", "status-sucesso", "status-neutro");
             status.classList.add("status-aviso");
         }
@@ -2324,12 +2324,12 @@ async function guardarEdicaoProdutoMapa(evento) {
         mapasProdutos = mapasProdutos.map(item => String(item.id) === String(atualizado.id) ? atualizado : item);
         sincronizarEstadoImportacaoMapa();
         atualizarResultadosMapa();
-        definirStatusMapa("Produto guardado.");
+        definirStatusMapa("Produto gravado.");
         await abrirFichaProdutoMapa(atualizado.id);
     } catch (erro) {
         console.error(erro);
         if (status) {
-            status.textContent = "Erro: " + (erro.message || "Não foi possível guardar.");
+            status.textContent = "Erro: " + (erro.message || "Não foi possível gravar.");
             status.classList.remove("status-aviso", "status-sucesso", "status-neutro");
             status.classList.add("status-erro");
         }
