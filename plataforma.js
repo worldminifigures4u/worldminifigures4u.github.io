@@ -578,7 +578,7 @@ function garantirFichaClientePlataforma() {
                 return carregarScriptAdmin('paises-cliente.js?v=20260731-wallapop-es');
             })
             .then(function () {
-                return carregarScriptAdmin('admin-ficha-cliente.js?v=20260920-editar-amarelo');
+                return carregarScriptAdmin('admin-ficha-cliente.js?v=20260920-sem-subtitulo');
             })
             .then(function () {
                 window.AdminFichaCliente?.configurar({

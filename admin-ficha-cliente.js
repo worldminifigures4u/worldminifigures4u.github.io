@@ -534,7 +534,6 @@
 
         const dadosPessoais = criarElemento('section', 'admin-cliente-secao');
         const cabecalhoDados = criarElemento('div', 'admin-cliente-secao-cabecalho');
-        cabecalhoDados.appendChild(criarElemento('h3', '', 'Dados do cliente'));
         if (!cliente.auth_user_id) {
             const editar = criarElemento('button', 'wallapop-botao wallapop-botao-destaque admin-cliente-editar', 'Editar');
             editar.type = 'button';
