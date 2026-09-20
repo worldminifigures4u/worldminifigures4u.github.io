@@ -264,7 +264,7 @@ function garantirFichaClienteEncomendas() {
         return Promise.resolve();
     }
     if (!promessaFichaClienteEncomendas) {
-        promessaFichaClienteEncomendas = carregarScriptEncomendasAdmin('admin-ficha-cliente.js?v=20260920-sem-subtitulo')
+        promessaFichaClienteEncomendas = carregarScriptEncomendasAdmin('admin-ficha-cliente.js?v=20260920-notas-edicao')
             .then(() => configurarFichaClienteEncomendas());
     }
     return promessaFichaClienteEncomendas;

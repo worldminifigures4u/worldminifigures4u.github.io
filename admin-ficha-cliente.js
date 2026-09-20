@@ -620,45 +620,11 @@
 
         const notasSecao = criarElemento('section', 'admin-cliente-secao');
         notasSecao.appendChild(criarElemento('h3', '', 'Notas internas'));
-        const notas = document.createElement('textarea');
-        notas.className = 'admin-cliente-notas';
-        notas.rows = 5;
-        notas.maxLength = 5000;
-        notas.value = cliente.notas || '';
-        notas.placeholder = 'Prefer\u00eancias, observa\u00e7\u00f5es de entrega ou outra informa\u00e7\u00e3o realmente necess\u00e1ria.';
-        const guardar = criarElemento('button', 'wallapop-botao wallapop-botao-destaque', 'Guardar notas');
-        guardar.type = 'button';
-        guardar.addEventListener('click', async () => {
-            const clienteId = String(cliente.id || dados.cliente_id || '').trim();
-            guardar.disabled = true;
-            definirStatusFichaCliente('A guardar notas...');
-            if (!clienteId) {
-                guardar.disabled = false;
-                definirStatusFichaCliente('Erro ao guardar notas: ficha sem identificador do cliente.', true);
-                return;
-            }
-            const { data, error } = await fichaClient.rpc('guardar_notas_cliente_admin', {
-                p_cliente_id: clienteId,
-                p_notas: notas.value
-            });
-            if (error || data?.sucesso === false) {
-                guardar.disabled = false;
-                definirStatusFichaCliente('Erro ao guardar notas: ' + (error?.message || data?.erro || 'sem detalhe'), true);
-                return;
-            }
-            cliente.notas = notas.value;
-            const fichaAtualizada = await fichaClient.rpc('obter_ficha_cliente_por_id_admin', {
-                p_cliente_id: clienteId
-            });
-            guardar.disabled = false;
-            if (fichaAtualizada.error || fichaAtualizada.data?.sucesso === false) {
-                definirStatusFichaCliente('Notas guardadas, mas a ficha não foi atualizada no ecrã.');
-                return;
-            }
-            renderizarFichaClienteAdmin(fichaAtualizada.data);
-            definirStatusFichaCliente('Notas guardadas.');
-        });
-        notasSecao.append(notas, guardar);
+        notasSecao.appendChild(criarElemento(
+            'p',
+            cliente.notas ? 'admin-cliente-notas-consulta' : 'admin-cliente-vazio',
+            cliente.notas || 'Sem notas internas.'
+        ));
         conteudo.append(dadosPessoais, indicadores, perfisSecao, avisosSecao, historicoSecao, notasSecao);
     }
 
