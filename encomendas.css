@@ -1185,6 +1185,21 @@ body.pagina-encomendas-admin{
             color:#ff8c8c;
         }
 
+        body.cabecalho-com-admin .admin-encomenda-anexo .wallapop-botao{
+            width:96px !important;
+            min-width:96px !important;
+            max-width:96px !important;
+            min-height:38px !important;
+            height:38px !important;
+            padding:0 10px !important;
+            box-sizing:border-box !important;
+            display:inline-flex !important;
+            align-items:center !important;
+            justify-content:center !important;
+            font-size:13px !important;
+            line-height:1 !important;
+        }
+
         .admin-encomenda-anexos-vazio,
         .admin-encomenda-anexos-aviso,
         .admin-encomenda-gestao-status{
