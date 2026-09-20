@@ -1730,7 +1730,7 @@ body.pagina-encomendas-admin{
 
 .admin-encomenda-modal-acoes .admin-encomenda-dados-botoes{
     display:grid;
-    grid-template-columns:repeat(4, 96px);
+    grid-template-columns:repeat(4, 96px) !important;
     gap:8px;
     align-items:center;
     height:auto;
@@ -1739,10 +1739,12 @@ body.pagina-encomendas-admin{
 .admin-encomenda-modal-acoes .wallapop-botao,
 .admin-encomenda-modal-acoes .admin-encomenda-editar,
 .admin-encomenda-modal-acoes .admin-encomenda-anexos-escolher{
-    min-width:86px;
-    min-height:38px;
-    height:38px;
-    padding:0 14px;
+    width:96px !important;
+    min-width:96px !important;
+    max-width:96px !important;
+    min-height:38px !important;
+    height:38px !important;
+    padding:0 10px !important;
     box-sizing:border-box;
     display:inline-flex;
     align-items:center;
@@ -1757,10 +1759,11 @@ body.pagina-encomendas-admin{
 
 .admin-encomenda-modal-fechar{
     flex:0 0 auto;
-    min-width:96px;
-    width:96px;
-    height:38px;
-    padding:0 14px;
+    width:96px !important;
+    min-width:96px !important;
+    max-width:96px !important;
+    height:38px !important;
+    padding:0 10px !important;
     border:1px solid var(--cor-botao-secundario-borda, #ffc107);
     border-radius:5px;
     background:transparent;
