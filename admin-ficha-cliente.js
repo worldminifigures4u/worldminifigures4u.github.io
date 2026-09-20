@@ -234,7 +234,7 @@
         const guardar = criarElemento(
             'button',
             'wallapop-botao wallapop-botao-destaque',
-            modoCriacao ? 'Gravar' : 'Guardar ficha'
+            modoCriacao ? 'Gravar' : 'Guardar'
         );
         guardar.type = 'submit';
 
