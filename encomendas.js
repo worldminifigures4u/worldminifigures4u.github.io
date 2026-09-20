@@ -416,7 +416,15 @@ function moverAcoesParaTopoModalEncomenda(card) {
 
     const colunaAcoes = botoes.closest('.admin-encomenda-dados-acoes');
     botoes.classList.add('admin-encomenda-modal-botoes');
-    botoes.style.setProperty('grid-template-columns', 'repeat(4, 96px)', 'important');
+    const ordemPreferida = [
+        botoes.querySelector('.admin-encomenda-apagar'),
+        botoes.querySelector('.admin-encomenda-editar'),
+        botoes.querySelector('.admin-encomenda-anexos-escolher-acao'),
+        botoes.querySelector('.admin-encomenda-gravar')
+    ].filter(Boolean);
+    const restantes = Array.from(botoes.children).filter(botao => !ordemPreferida.includes(botao));
+    botoes.replaceChildren(...ordemPreferida, ...restantes);
+    botoes.style.setProperty('grid-template-columns', `repeat(${Math.max(1, botoes.children.length)}, 96px)`, 'important');
     botoes.style.setProperty('grid-auto-rows', '38px', 'important');
     botoes.style.setProperty('gap', '8px', 'important');
     botoes.querySelectorAll('a, button, label').forEach(fixarBotaoTopoModalEncomenda);
