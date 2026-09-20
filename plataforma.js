@@ -477,6 +477,52 @@ function atualizarBotaoRegistoPlataforma() {
         ? 'Gravar altera\u00e7\u00f5es'
         : 'Registar encomenda';
     botao.disabled = wallapopRegistoConcluido;
+    const apagar = document.getElementById('btn-apagar-encomenda-plataforma');
+    if (apagar) apagar.hidden = !encomendaPlataformaEmEdicao;
+}
+
+function estadoPermiteApagarEncomendaPlataforma(estado) {
+    return ['cancelado', 'cancelada', 'devolvido', 'devolvida'].includes(normalizarTextoPlataforma(estado));
+}
+
+async function apagarEncomendaPlataformaEmEdicao() {
+    const encomenda = encomendaPlataformaEmEdicao;
+    const botao = document.getElementById('btn-apagar-encomenda-plataforma');
+    if (!encomenda?.id) {
+        definirStatusWallapop('Abra uma encomenda para apagar.', true);
+        return;
+    }
+
+    const codigo = encomenda.codigo_encomenda || `#${encomenda.id}`;
+    if (!estadoPermiteApagarEncomendaPlataforma(encomenda.estado)) {
+        definirStatusWallapop(`Para apagar a encomenda ${codigo}, cancele/devolva primeiro para repor o stock.`, true);
+        return;
+    }
+    if (!encomenda.stock_reposto) {
+        definirStatusWallapop(`Não é possível apagar a encomenda ${codigo}: o stock ainda não está marcado como reposto.`, true);
+        return;
+    }
+    if (!(await mostrarConfirmacaoSite(`Apagar definitivamente a encomenda ${codigo}? Esta ação não pode ser desfeita.`, {
+        titulo: 'Apagar encomenda',
+        textoConfirmar: 'Apagar',
+        textoCancelar: 'Cancelar'
+    }))) return;
+
+    if (botao) botao.disabled = true;
+    definirStatusWallapop('A apagar encomenda...');
+    try {
+        const { data, error } = await wallapopClient.rpc('apagar_encomenda_admin', {
+            p_encomenda_id: String(encomenda.id)
+        });
+        if (error || data?.sucesso === false) {
+            throw error || new Error(data?.erro || 'Erro ao apagar encomenda');
+        }
+        definirStatusWallapop(`Encomenda ${codigo} apagada.`);
+        window.location.assign('encomendas.html');
+    } catch (error) {
+        if (botao) botao.disabled = false;
+        definirStatusWallapop('Erro ao apagar encomenda: ' + (error.message || 'erro desconhecido'), true);
+    }
 }
 
 function formatarEncomendasAnterioresPlataforma(numero) {
@@ -3297,6 +3343,7 @@ async function carregarEncomendaPlataformaPorCodigo(codigo) {
         codigo_encomenda: encomenda.codigo_encomenda,
         origem: encomenda.origem,
         estado: encomenda.estado,
+        stock_reposto: Boolean(encomenda.stock_reposto),
         telefone_cliente: encomenda.telefone_cliente || '',
         referencia_externa: encomenda.referencia_externa || '',
         subtotal_original: subtotalOriginal,
@@ -3424,6 +3471,7 @@ async function novaEncomendaPlataforma() {
     atualizarPerfilExternoPlataforma();
     renderizarFichaClientePlataforma(null);
     mostrarEdicaoPlataforma(null);
+    atualizarBotaoRegistoPlataforma();
     atualizarModoPlataforma();
     renderizarSelecionadosWallapop();
     renderizarFolhaWallapop();
@@ -3812,6 +3860,7 @@ document.getElementById('plataforma-lista-produtos')?.addEventListener('keydown'
 document.getElementById('btn-limpar-wallapop').addEventListener('click', limparListaWallapop);
 document.getElementById('btn-descarregar-wallapop').addEventListener('click', guardarFicheirosPlataforma);
 document.getElementById('btn-registar-wallapop').addEventListener('click', registarEncomendaWallapop);
+document.getElementById('btn-apagar-encomenda-plataforma')?.addEventListener('click', apagarEncomendaPlataformaEmEdicao);
 document.getElementById('btn-abrir-encomenda-txt')?.addEventListener('click', () => {
     document.getElementById('ficheiro-encomenda-txt')?.click();
 });

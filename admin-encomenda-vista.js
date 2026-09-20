@@ -2152,13 +2152,6 @@ window.AdminEncomendaVista = (function () {
         const emitirMoloni = criarBotaoEmitirFaturaMoloni(encomenda);
         if (emitirMoloni) botoesAcoes.appendChild(emitirMoloni);
         botoesAcoes.appendChild(gravarTudo);
-        const apagar = criarElemento("button", "wallapop-botao admin-encomenda-apagar", "Apagar");
-        apagar.type = "button";
-        apagar.addEventListener("click", evento => {
-            evento.stopPropagation();
-            apagarEncomenda(encomenda, apagar);
-        });
-        botoesAcoes.appendChild(apagar);
         colunaAcoes.append(botoesAcoes);
         dados.append(grupoConteudo, colunaAcoes);
 
