@@ -532,7 +532,11 @@
         const historico = Array.isArray(dados.historico) ? dados.historico : [];
         conteudo.replaceChildren();
 
-        const dadosPessoais = criarElemento('section', 'admin-cliente-secao');
+        const consulta = criarElemento('div', 'clientes-ficha-consulta');
+        const linhaPrincipal = criarElemento('div', 'clientes-ficha-consulta-principal');
+        const colunaEsquerda = criarElemento('div', 'clientes-ficha-consulta-esquerda');
+
+        const dadosPessoais = criarElemento('section', 'admin-cliente-secao clientes-ficha-consulta-dados');
         const cabecalhoDados = criarElemento('div', 'admin-cliente-secao-cabecalho');
         if (!cliente.auth_user_id) {
             const editar = criarElemento('button', 'wallapop-botao wallapop-botao-destaque admin-cliente-editar', 'Editar');
@@ -542,7 +546,7 @@
         } else {
             definirAcoesTopoFichaCliente();
         }
-        dadosPessoais.appendChild(cabecalhoDados);
+        if (cabecalhoDados.childNodes.length) dadosPessoais.appendChild(cabecalhoDados);
         const grelha = criarElemento('div', 'admin-cliente-grelha');
         grelha.append(
             criarCampoFichaCliente('Nome de utilizador', obterNomeUtilizadorCliente(cliente)),
@@ -573,7 +577,7 @@
             ));
         }
 
-        const indicadores = criarElemento('section', 'admin-cliente-resumo');
+        const indicadores = criarElemento('section', 'admin-cliente-resumo clientes-resumo-secao');
         indicadores.append(
             criarCampoFichaCliente('Encomendas', String(resumo.encomendas || 0)),
             criarCampoFichaCliente('Total comprado', `${formatarEuro(resumo.total)} \u20ac`),
@@ -618,14 +622,17 @@
 
         const avisosSecao = criarSecaoAvisosStockClienteModal(String(cliente.id || dados.cliente_id || '').trim());
 
-        const notasSecao = criarElemento('section', 'admin-cliente-secao');
-        notasSecao.appendChild(criarElemento('h3', '', 'Notas internas'));
+        const notasSecao = criarElemento('section', 'admin-cliente-secao clientes-ficha-consulta-notas');
         notasSecao.appendChild(criarElemento(
-            'p',
-            cliente.notas ? 'admin-cliente-notas-consulta' : 'admin-cliente-vazio',
-            cliente.notas || 'Sem notas internas.'
+            'div',
+            'admin-cliente-notas admin-cliente-notas-consulta',
+            String(cliente.notas || '').trim() || 'Sem notas internas.'
         ));
-        conteudo.append(dadosPessoais, indicadores, perfisSecao, avisosSecao, historicoSecao, notasSecao);
+
+        colunaEsquerda.append(indicadores, dadosPessoais);
+        linhaPrincipal.append(colunaEsquerda, notasSecao);
+        consulta.append(linhaPrincipal, perfisSecao, avisosSecao, historicoSecao);
+        conteudo.appendChild(consulta);
     }
 
     async function abrirPorId(clienteId) {
