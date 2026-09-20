@@ -1144,11 +1144,11 @@ body.pagina-encomendas-admin{
             align-items:center;
             gap:8px;
             min-width:0;
-            max-width:min(100%, 360px);
-            padding:0 6px;
-            border:1px solid #333;
-            border-radius:6px;
-            background:#1b1b1b;
+            max-width:100%;
+            padding:0;
+            border:0;
+            border-radius:0;
+            background:transparent;
             box-sizing:border-box;
         }
 
