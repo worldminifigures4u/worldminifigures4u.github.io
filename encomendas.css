@@ -1406,6 +1406,18 @@ body.pagina-encomendas-admin{
             color:var(--cor-acao-principal, #ffc107);
         }
 
+        .admin-encomenda-botoes .admin-encomenda-editar.wallapop-botao-destaque{
+            background:var(--cor-acao-principal, #ffc107);
+            border:0;
+            color:#000;
+        }
+
+        .admin-encomenda-botoes .admin-encomenda-editar.wallapop-botao-destaque:hover,
+        .admin-encomenda-botoes .admin-encomenda-editar.wallapop-botao-destaque:focus-visible{
+            background:var(--cor-acao-principal-hover, #e0a800);
+            color:#000;
+        }
+
         .admin-encomenda-apagar{
             background:#7a1f1f;
             color:#fff;
