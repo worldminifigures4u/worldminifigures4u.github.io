@@ -396,6 +396,9 @@ function moverAcoesParaTopoModalEncomenda(card) {
 
     const colunaAcoes = botoes.closest('.admin-encomenda-dados-acoes');
     botoes.classList.add('admin-encomenda-modal-botoes');
+    botoes.querySelectorAll('a, button, label').forEach(botao => {
+        botao.classList.add('admin-encomenda-modal-botao');
+    });
     acoesTopo.replaceChildren(botoes);
     colunaAcoes?.remove();
 }
