@@ -1705,22 +1705,58 @@ body.pagina-encomendas-admin{
 .admin-encomenda-modal-topo{
     display:flex;
     align-items:center;
-    gap:12px;
+    gap:10px;
+    flex-wrap:wrap;
     margin-bottom:14px;
-    padding-right:48px;
 }
 
 .admin-encomenda-modal-topo h2{
+    flex:1 1 auto;
+    min-width:180px;
     margin:0;
     font-size:20px;
     line-height:1.2;
     color:var(--cor-texto-principal, #fff);
 }
 
+.admin-encomenda-modal-acoes{
+    flex:0 1 auto;
+    min-width:0;
+}
+
+.admin-encomenda-modal-acoes:empty{
+    display:none;
+}
+
+.admin-encomenda-modal-acoes .admin-encomenda-dados-botoes{
+    display:grid;
+    grid-template-columns:repeat(4, minmax(86px, auto));
+    gap:8px;
+    align-items:center;
+    height:auto;
+}
+
+.admin-encomenda-modal-acoes .wallapop-botao,
+.admin-encomenda-modal-acoes .admin-encomenda-editar,
+.admin-encomenda-modal-acoes .admin-encomenda-anexos-escolher{
+    min-width:86px;
+    min-height:38px;
+    height:38px;
+    padding:0 14px;
+    box-sizing:border-box;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    text-align:center;
+    text-decoration:none;
+    font-size:13px;
+    font-weight:800;
+    line-height:1;
+    white-space:nowrap;
+}
+
 .admin-encomenda-modal-fechar{
-    position:absolute;
-    top:12px;
-    right:12px;
+    flex:0 0 auto;
     min-width:76px;
     height:38px;
     padding:0 14px;
@@ -1751,4 +1787,18 @@ body.pagina-encomendas-admin{
 
 body.admin-encomenda-modal-aberto{
     overflow:hidden;
+}
+
+@media(max-width:900px){
+    .admin-encomenda-modal-acoes{
+        width:100%;
+    }
+
+    .admin-encomenda-modal-acoes .admin-encomenda-dados-botoes{
+        grid-template-columns:repeat(2, minmax(86px, 1fr));
+    }
+
+    .admin-encomenda-modal-fechar{
+        margin-left:auto;
+    }
 }

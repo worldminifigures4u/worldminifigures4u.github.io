@@ -343,12 +343,14 @@ function acrescentarSelecaoLoteEncomenda(card, encomenda) {
 function fecharModalEncomendaAdmin() {
     const modal = document.getElementById('admin-encomenda-modal');
     const conteudo = document.getElementById('admin-encomenda-modal-conteudo');
+    const acoesTopo = document.getElementById('admin-encomenda-modal-acoes');
     if (!modal || !conteudo) return;
     carregamentoImagensModalId += 1;
     conteudo.querySelector('.admin-encomenda-card')?._limparAlturaNotas?.();
     modal.hidden = true;
     modal.dataset.encomendaId = '';
     conteudo.replaceChildren();
+    acoesTopo?.replaceChildren();
     document.body.classList.remove('admin-encomenda-modal-aberto');
 }
 
@@ -387,6 +389,17 @@ function encomendaModalVisualIgual(a, b) {
     return obterResumoVisualModalEncomenda(a) === obterResumoVisualModalEncomenda(b);
 }
 
+function moverAcoesParaTopoModalEncomenda(card) {
+    const acoesTopo = document.getElementById('admin-encomenda-modal-acoes');
+    const botoes = card?.querySelector('.admin-encomenda-dados-botoes');
+    if (!acoesTopo || !botoes) return;
+
+    const colunaAcoes = botoes.closest('.admin-encomenda-dados-acoes');
+    botoes.classList.add('admin-encomenda-modal-botoes');
+    acoesTopo.replaceChildren(botoes);
+    colunaAcoes?.remove();
+}
+
 function abrirModalEncomendaAdmin(encomenda, opcoes = {}) {
     const carregamentoId = ++carregamentoImagensModalId;
     const modal = document.getElementById('admin-encomenda-modal');
@@ -395,14 +408,18 @@ function abrirModalEncomendaAdmin(encomenda, opcoes = {}) {
     if (!modal || !conteudo) return;
     modal.dataset.encomendaId = String(encomenda.id || '');
 
-    const renderizarModal = () => conteudo.replaceChildren(AdminEncomendaVista.criarCardEncomenda(encomenda, {
-        modoModal: true,
-        abrirCliente: abrirFichaClienteAdmin,
-        fecharAoAlterarEstado: fecharModalEncomendaAdmin,
-        fecharAoConcluir: fecharModalEncomendaAdmin,
-        fecharAoPagar: fecharModalEncomendaAdmin,
-        voltarAoEditar: 'encomendas'
-    }));
+    const renderizarModal = () => {
+        const card = AdminEncomendaVista.criarCardEncomenda(encomenda, {
+            modoModal: true,
+            abrirCliente: abrirFichaClienteAdmin,
+            fecharAoAlterarEstado: fecharModalEncomendaAdmin,
+            fecharAoConcluir: fecharModalEncomendaAdmin,
+            fecharAoPagar: fecharModalEncomendaAdmin,
+            voltarAoEditar: 'encomendas'
+        });
+        moverAcoesParaTopoModalEncomenda(card);
+        conteudo.replaceChildren(card);
+    };
 
     renderizarModal();
     if (titulo) titulo.textContent = `Encomenda ${encomenda.codigo_encomenda || encomenda.id || ''}`.trim();
