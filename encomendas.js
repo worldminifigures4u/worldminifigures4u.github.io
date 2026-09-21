@@ -420,7 +420,9 @@ function moverAcoesParaTopoModalEncomenda(card) {
     if (!acoesTopo || !botoes) return;
 
     const colunaAcoes = botoes.closest('.admin-encomenda-dados-acoes');
+    const estado = card?.querySelector('.admin-encomenda-gestao-estado');
     botoes.classList.add('admin-encomenda-modal-botoes');
+    estado?.classList.add('admin-encomenda-modal-estado');
     const ordemPreferida = [
         botoes.querySelector('.admin-encomenda-apagar'),
         botoes.querySelector('.admin-encomenda-editar'),
@@ -431,7 +433,7 @@ function moverAcoesParaTopoModalEncomenda(card) {
     botoes.replaceChildren(...ordemPreferida, ...restantes);
     botoes.querySelectorAll('a, button, label').forEach(marcarBotaoTopoModalEncomenda);
     marcarBotaoTopoModalEncomenda(document.getElementById('admin-encomenda-modal-fechar'));
-    acoesTopo.replaceChildren(botoes);
+    acoesTopo.replaceChildren(...[estado, botoes].filter(Boolean));
     colunaAcoes?.remove();
 }
 

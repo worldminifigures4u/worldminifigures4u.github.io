@@ -1778,6 +1778,10 @@ body.pagina-encomendas-admin{
 .admin-encomenda-modal-acoes{
     flex:0 1 auto;
     min-width:0;
+    display:flex;
+    align-items:center;
+    gap:10px;
+    flex-wrap:wrap;
 }
 
 .admin-encomenda-modal-acoes:empty{
@@ -1791,6 +1795,21 @@ body.pagina-encomendas-admin{
     gap:8px;
     flex-wrap:nowrap;
     height:auto;
+}
+
+.admin-encomenda-modal-acoes .admin-encomenda-modal-estado{
+    flex:0 0 auto;
+    gap:8px;
+    padding:0 !important;
+    border:0 !important;
+    border-radius:0 !important;
+    background:transparent !important;
+    box-shadow:none !important;
+    outline:0 !important;
+}
+
+.admin-encomenda-modal-acoes .admin-encomenda-modal-estado .admin-encomenda-estado-caixa select{
+    width:220px;
 }
 
 .admin-encomenda-modal-botao{
