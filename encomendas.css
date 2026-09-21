@@ -1883,9 +1883,7 @@ body.pagina-encomendas-admin{
     font-size:16px;
     font-weight:800;
     text-align:left;
-    text-decoration:underline;
-    text-decoration-color:#ffc107;
-    text-underline-offset:3px;
+    text-decoration:none;
     white-space:nowrap;
     cursor:pointer;
 }
