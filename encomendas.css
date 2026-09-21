@@ -1422,6 +1422,27 @@ body.pagina-encomendas-admin{
             white-space:nowrap;
         }
 
+        .admin-encomenda-resumo-valores{
+            margin-left:auto;
+            display:flex;
+            align-items:center;
+            justify-content:flex-end;
+            gap:18px;
+            min-width:0;
+        }
+
+        .admin-encomenda-resumo-valor-item{
+            display:inline-flex;
+            align-items:baseline;
+            gap:6px;
+            min-width:0;
+            white-space:nowrap;
+        }
+
+        .admin-encomenda-resumo-valor-item.destaque .admin-encomenda-resumo-valor{
+            font-size:15px;
+        }
+
         .admin-encomenda-seguimento-input{
             width:100%;
             max-width:220px;

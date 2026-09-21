@@ -584,6 +584,23 @@ window.AdminEncomendaVista = (function () {
         return resumo;
     }
 
+    function criarResumoValoresEncomenda(encomenda) {
+        const resumo = criarElemento("div", "admin-encomenda-resumo-valores");
+
+        function adicionarValor(rotulo, valor, destaque = false) {
+            const item = criarElemento("span", `admin-encomenda-resumo-valor-item${destaque ? " destaque" : ""}`);
+            item.append(
+                criarElemento("span", "admin-encomenda-resumo-rotulo", rotulo),
+                criarElemento("strong", "admin-encomenda-resumo-valor", formatarEuro(valor))
+            );
+            resumo.appendChild(item);
+        }
+
+        adicionarValor("Portes:", Number(encomenda?.portes || 0));
+        adicionarValor("Total:", Number(encomenda?.total || 0), true);
+        return resumo;
+    }
+
     function normalizarListaImagensProduto(imagens) {
         let lista = imagens;
         if (typeof lista === "string") {
@@ -1299,7 +1316,10 @@ window.AdminEncomendaVista = (function () {
 
     function criarLinhaResumoEncomenda(encomenda) {
         const linha = criarElemento("div", "admin-encomenda-total-linha");
-        linha.appendChild(criarResumoPecasProdutos(encomenda));
+        linha.append(
+            criarResumoPecasProdutos(encomenda),
+            criarResumoValoresEncomenda(encomenda)
+        );
         return { elemento: linha };
     }
 
