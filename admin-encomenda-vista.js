@@ -1123,7 +1123,7 @@ window.AdminEncomendaVista = (function () {
             ));
         } else {
             const upload = criarElemento("div", "admin-encomenda-gestao-caixa admin-encomenda-anexos-upload");
-            const campoFicheiro = criarElemento("label", "admin-encomenda-anexos-escolher");
+            const campoFicheiro = criarElemento("label", "wallapop-botao admin-encomenda-anexos-escolher");
             const input = document.createElement("input");
             input.type = "file";
             input.className = "admin-encomenda-anexos-input";
