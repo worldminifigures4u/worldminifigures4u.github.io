@@ -1777,6 +1777,7 @@ body.pagina-encomendas-admin{
 
 .admin-encomenda-modal-acoes{
     --admin-encomenda-modal-controlo-altura:38px;
+    --admin-encomenda-modal-botao-largura:96px;
     flex:0 1 auto;
     min-width:0;
     display:flex;
@@ -1881,11 +1882,12 @@ body.pagina-encomendas-admin{
 }
 
 body.cabecalho-com-admin .admin-encomenda-modal-topo .admin-encomenda-modal-botao,
-body.cabecalho-com-admin .admin-encomenda-modal-topo .admin-encomenda-dados-botoes > *{
-    flex:0 0 96px !important;
-    width:96px !important;
-    min-width:96px !important;
-    max-width:96px !important;
+body.cabecalho-com-admin .admin-encomenda-modal-topo .admin-encomenda-dados-botoes > *,
+.admin-encomenda-modal-acoes .admin-encomenda-modal-botoes > :is(a, button, label){
+    flex:0 0 var(--admin-encomenda-modal-botao-largura, 96px) !important;
+    width:var(--admin-encomenda-modal-botao-largura, 96px) !important;
+    min-width:var(--admin-encomenda-modal-botao-largura, 96px) !important;
+    max-width:var(--admin-encomenda-modal-botao-largura, 96px) !important;
     height:var(--admin-encomenda-modal-controlo-altura, 38px) !important;
     min-height:var(--admin-encomenda-modal-controlo-altura, 38px) !important;
     max-height:var(--admin-encomenda-modal-controlo-altura, 38px) !important;
@@ -1900,6 +1902,18 @@ body.cabecalho-com-admin .admin-encomenda-modal-topo .admin-encomenda-dados-boto
     font-weight:800 !important;
     line-height:1 !important;
     white-space:nowrap !important;
+}
+
+.admin-encomenda-modal-acoes .admin-encomenda-modal-botoes > .admin-encomenda-anexos-escolher{
+    min-height:var(--admin-encomenda-modal-controlo-altura, 38px) !important;
+}
+
+.admin-encomenda-modal-acoes .admin-encomenda-modal-botoes > .admin-encomenda-anexos-escolher .admin-encomenda-anexos-escolher-texto{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    width:100%;
+    height:100%;
 }
 
 .admin-encomenda-modal-fechar{
