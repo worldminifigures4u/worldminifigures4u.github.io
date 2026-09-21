@@ -820,7 +820,7 @@ body.pagina-encomendas-admin{
             align-items:center;
             gap:12px;
             flex-wrap:wrap;
-            --admin-gestao-controlo-altura:28px;
+            --admin-gestao-controlo-altura:38px;
         }
 
         .admin-encomenda-gestao-bloco{
@@ -904,16 +904,16 @@ body.pagina-encomendas-admin{
             align-items:center;
             height:var(--admin-gestao-controlo-altura);
             padding:0;
-            border:1px solid #555;
+            border:1px solid var(--cor-botao-secundario-borda, #ffc107);
             border-radius:6px;
-            background:#222;
+            background:transparent;
             color-scheme:dark;
-            transition:border-color .15s ease;
+            transition:border-color .15s ease, color .15s ease;
             box-sizing:border-box;
         }
 
         .admin-encomenda-estado-caixa:hover{
-            border-color:#777;
+            border-color:var(--cor-acao-principal, #ffc107);
         }
 
         .admin-encomenda-estado-caixa:focus-within{
@@ -927,23 +927,24 @@ body.pagina-encomendas-admin{
             max-width:100%;
             min-width:0;
             height:100%;
-            min-height:0;
-            padding:0 26px 0 8px;
+            min-height:var(--admin-gestao-controlo-altura);
+            padding:0 28px 0 12px;
             border:0;
             border-radius:6px;
             background-color:transparent;
-            background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath fill='%23aaa' d='M1 1l4 4 4-4'/%3E%3C/svg%3E");
+            background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath fill='%23ffc107' d='M1 1l4 4 4-4'/%3E%3C/svg%3E");
             background-repeat:no-repeat;
-            background-position:right 10px center;
+            background-position:right 12px center;
             background-size:10px 6px;
-            color:#fff;
-            font-size:12px;
-            font-weight:600;
-            line-height:1.2;
+            color:var(--cor-botao-secundario-texto, #fff);
+            font-size:13px;
+            font-weight:800;
+            line-height:1;
             box-sizing:border-box;
             outline:none;
             box-shadow:none;
             color-scheme:dark;
+            cursor:pointer;
             -webkit-appearance:none;
             -moz-appearance:none;
             appearance:none;
