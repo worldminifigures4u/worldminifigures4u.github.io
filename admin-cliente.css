@@ -564,6 +564,80 @@
 
         .admin-cliente-vazio,
         .admin-cliente-carregar{ color:#aaa; }
+
+        .clientes-aviso-stock-adicionar{
+            display:grid;
+            gap:8px;
+            margin:0 0 12px;
+            padding:10px;
+            border:1px solid #303030;
+            border-radius:5px;
+            background:#181818;
+        }
+
+        .clientes-aviso-stock-adicionar-topo{
+            display:flex;
+            align-items:center;
+            justify-content:space-between;
+            gap:10px;
+            min-width:0;
+        }
+
+        .clientes-aviso-stock-pesquisa{
+            width:100%;
+            min-height:38px;
+            padding:0 12px;
+            border:1px solid #444;
+            border-radius:5px;
+            background:#222;
+            color:#fff;
+            font:inherit;
+            box-sizing:border-box;
+        }
+
+        .clientes-aviso-stock-resultados{
+            display:grid;
+            gap:8px;
+        }
+
+        .clientes-aviso-stock-resultados:empty{
+            display:none;
+        }
+
+        .clientes-aviso-stock-resultado{
+            display:grid;
+            grid-template-columns:minmax(0, 1fr) auto;
+            gap:10px;
+            align-items:center;
+            min-width:0;
+            padding:8px 10px;
+            border:1px solid #2f2f2f;
+            border-radius:5px;
+            background:#141414;
+        }
+
+        .clientes-aviso-stock-resultado-info{
+            display:grid;
+            gap:3px;
+            min-width:0;
+        }
+
+        .clientes-aviso-stock-resultado-info strong,
+        .clientes-aviso-stock-resultado-info span{
+            min-width:0;
+            overflow:hidden;
+            text-overflow:ellipsis;
+            white-space:nowrap;
+        }
+
+        .clientes-aviso-stock-resultado-info span{
+            color:#aaa;
+            font-size:12px;
+        }
+
+        .clientes-aviso-stock-adicionar-botao{
+            min-width:96px;
+        }
         body.admin-cliente-modal-aberto{ overflow:hidden; }
 
         @media(max-width:700px){
@@ -587,6 +661,12 @@
             .admin-cliente-historico-linha > :nth-child(5),
             .admin-cliente-historico-linha .clientes-historico-total{
                 grid-column:2;
+            }
+            .clientes-aviso-stock-resultado{
+                grid-template-columns:1fr;
+            }
+            .clientes-aviso-stock-adicionar-botao{
+                width:100%;
             }
         }
 

@@ -2,6 +2,8 @@
 let clientesClient = null;
 let clientesLista = [];
 let clienteAbertoId = "";
+let clientesProdutosAviso = [];
+let clientesProdutosAvisoPromessa = null;
 
 function obterNomeUtilizadorCliente(cliente = {}) {
     return String(cliente.nome_utilizador || cliente.nome || "").trim();
@@ -65,6 +67,96 @@ function formatarDataCliente(valor) {
 function formatarDataAvisoStockCliente(valor) {
     if (!valor) return "";
     return formatarDataCliente(valor).replace(",", "");
+}
+
+function normalizarPesquisaAvisoCliente(valor) {
+    return String(valor || "")
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .toLowerCase()
+        .trim();
+}
+
+function normalizarProdutoAvisoCliente(produto = {}) {
+    const normalizado = {
+        id: String(produto.id || produto.produto_id || "").trim(),
+        nome: String(produto.nome || produto.produto_nome || "").trim(),
+        sku: String(produto.sku || produto.produto_sku || "").trim(),
+        referencia: String(produto.referencia || produto.produto_referencia || "").trim(),
+        tema: String(produto.tema || "").trim(),
+        subtema: String(produto.subtema || "").trim(),
+        stock: produto.stock
+    };
+    normalizado.pesquisa = normalizarPesquisaAvisoCliente([
+        normalizado.nome,
+        normalizado.sku,
+        normalizado.referencia,
+        normalizado.tema,
+        normalizado.subtema
+    ].filter(Boolean).join(" "));
+    return normalizado;
+}
+
+async function carregarProdutosAvisoCliente() {
+    if (clientesProdutosAviso.length) return clientesProdutosAviso;
+    if (!clientesProdutosAvisoPromessa) {
+        clientesProdutosAvisoPromessa = clientesClient
+            .rpc("listar_produtos_plataforma_admin")
+            .then(({ data, error }) => {
+                if (error) throw error;
+                clientesProdutosAviso = (Array.isArray(data) ? data : [])
+                    .map(normalizarProdutoAvisoCliente)
+                    .filter(produto => produto.id || produto.sku || produto.referencia);
+                return clientesProdutosAviso;
+            })
+            .catch(error => {
+                clientesProdutosAvisoPromessa = null;
+                throw error;
+            });
+    }
+    return clientesProdutosAvisoPromessa;
+}
+
+function obterPlataformaAvisoCliente(perfis = []) {
+    const lista = Array.isArray(perfis) ? perfis : [];
+    const perfil = lista.find(item => String(item?.plataforma || item?.url || "").trim());
+    if (perfil?.plataforma) return String(perfil.plataforma).trim();
+    const url = String(perfil?.url || "").toLowerCase();
+    if (url.includes("wallapop.")) return "Wallapop";
+    if (url.includes("vinted.")) return "Vinted";
+    if (url.includes("olx.")) return "OLX";
+    if (url.includes("todocoleccion.")) return "Todocoleccion";
+    return "Ficha cliente";
+}
+
+function pesquisarProdutosAvisoCliente(produtos, termo) {
+    const pesquisa = normalizarPesquisaAvisoCliente(termo);
+    if (pesquisa.length < 2) return [];
+    return produtos
+        .map(produto => {
+            const sku = normalizarPesquisaAvisoCliente(produto.sku);
+            const referencia = normalizarPesquisaAvisoCliente(produto.referencia);
+            const nome = normalizarPesquisaAvisoCliente(produto.nome);
+            let prioridade = 9;
+            if (sku === pesquisa || referencia === pesquisa) prioridade = 0;
+            else if (sku.startsWith(pesquisa) || referencia.startsWith(pesquisa)) prioridade = 1;
+            else if (nome.startsWith(pesquisa)) prioridade = 2;
+            else if (produto.pesquisa.includes(pesquisa)) prioridade = 3;
+            return { produto, prioridade };
+        })
+        .filter(item => item.prioridade < 9)
+        .sort((a, b) => a.prioridade - b.prioridade || a.produto.nome.localeCompare(b.produto.nome, "pt"))
+        .slice(0, 8)
+        .map(item => item.produto);
+}
+
+function obterTextoMetaProdutoAvisoCliente(produto) {
+    const partes = [
+        produto.referencia ? `Ref. ${produto.referencia}` : "",
+        produto.sku ? `SKU ${produto.sku}` : "",
+        Number.isFinite(Number(produto.stock)) ? `Stock ${Number(produto.stock)}` : ""
+    ].filter(Boolean);
+    return partes.join(" · ");
 }
 
 function criarCampoCliente(rotulo, valor, classeExtra = "") {
@@ -456,9 +548,108 @@ async function carregarSecaoAvisosStockCliente(clienteId, secao) {
     }
 }
 
-function criarSecaoAvisosStockCliente(cliente) {
+async function gravarAvisoStockFichaCliente(cliente, perfis, produto, botao, secao) {
+    if (!window.AvisosStockAdmin) {
+        definirStatusClientes("Avisos de stock indisponíveis.", true);
+        return;
+    }
+    const textoAnterior = botao?.textContent || "";
+    try {
+        if (botao) {
+            botao.disabled = true;
+            botao.textContent = "A gravar";
+        }
+        await window.AvisosStockAdmin.criarAviso({
+            cliente_id: cliente.id,
+            cliente_nome: obterNomeUtilizadorCliente(cliente) || obterNomePessoaCliente(cliente),
+            produto_id: produto.id,
+            produto_nome: produto.nome,
+            produto_sku: produto.sku,
+            produto_referencia: produto.referencia,
+            plataforma: obterPlataformaAvisoCliente(perfis),
+            nota: "Pedido criado a partir da ficha do cliente.",
+            origem: "clientes"
+        });
+        definirStatusClientes("Aviso de stock adicionado.");
+        const input = secao.querySelector(".clientes-aviso-stock-pesquisa");
+        const resultados = secao.querySelector(".clientes-aviso-stock-resultados");
+        if (input) input.value = "";
+        resultados?.replaceChildren();
+        await carregarSecaoAvisosStockCliente(cliente.id, secao);
+    } catch (error) {
+        console.error(error);
+        definirStatusClientes("Erro ao adicionar aviso de stock: " + (error.message || "sem detalhe"), true);
+        if (botao) {
+            botao.disabled = false;
+            botao.textContent = textoAnterior || "Adicionar";
+        }
+    }
+}
+
+function criarResultadoProdutoAvisoCliente(cliente, perfis, produto, secao) {
+    const linha = criarElementoCliente("div", "clientes-aviso-stock-resultado");
+    const info = criarElementoCliente("div", "clientes-aviso-stock-resultado-info");
+    info.append(
+        criarElementoCliente("strong", "", produto.nome || "Figura"),
+        criarElementoCliente("span", "", obterTextoMetaProdutoAvisoCliente(produto))
+    );
+    const adicionar = criarElementoCliente("button", "wallapop-botao wallapop-botao-destaque clientes-aviso-stock-adicionar-botao", "Adicionar");
+    adicionar.type = "button";
+    adicionar.addEventListener("click", () => gravarAvisoStockFichaCliente(cliente, perfis, produto, adicionar, secao));
+    linha.append(info, adicionar);
+    return linha;
+}
+
+async function renderizarPesquisaAvisoStockCliente(cliente, perfis, secao) {
+    const input = secao.querySelector(".clientes-aviso-stock-pesquisa");
+    const resultados = secao.querySelector(".clientes-aviso-stock-resultados");
+    if (!input || !resultados) return;
+    const termo = input.value.trim();
+    resultados.replaceChildren();
+    if (termo.length < 2) return;
+    resultados.appendChild(criarElementoCliente("p", "admin-cliente-vazio", "A procurar figuras..."));
+    try {
+        const produtos = await carregarProdutosAvisoCliente();
+        if (String(input.value || "").trim() !== termo) return;
+        const encontrados = pesquisarProdutosAvisoCliente(produtos, termo);
+        resultados.replaceChildren();
+        if (!encontrados.length) {
+            resultados.appendChild(criarElementoCliente("p", "admin-cliente-vazio", "Nenhuma figura encontrada."));
+            return;
+        }
+        encontrados.forEach(produto => resultados.appendChild(criarResultadoProdutoAvisoCliente(cliente, perfis, produto, secao)));
+    } catch (error) {
+        console.error(error);
+        resultados.replaceChildren(criarElementoCliente("p", "admin-cliente-vazio", "Erro ao pesquisar figuras."));
+    }
+}
+
+function criarFormularioAvisoStockCliente(cliente, perfis, secao) {
+    const formulario = criarElementoCliente("div", "clientes-aviso-stock-adicionar");
+    const cabecalho = criarElementoCliente("div", "clientes-aviso-stock-adicionar-topo");
+    cabecalho.appendChild(criarElementoCliente("strong", "", "Adicionar figura"));
+    const pesquisa = document.createElement("input");
+    pesquisa.type = "search";
+    pesquisa.className = "clientes-aviso-stock-pesquisa";
+    pesquisa.placeholder = "Nome, ref. ou SKU";
+    pesquisa.autocomplete = "off";
+    const resultados = criarElementoCliente("div", "clientes-aviso-stock-resultados");
+    let temporizador = null;
+    pesquisa.addEventListener("input", () => {
+        clearTimeout(temporizador);
+        temporizador = setTimeout(() => renderizarPesquisaAvisoStockCliente(cliente, perfis, secao), 180);
+    });
+    pesquisa.addEventListener("focus", () => {
+        if (pesquisa.value.trim().length >= 2) renderizarPesquisaAvisoStockCliente(cliente, perfis, secao);
+    });
+    formulario.append(cabecalho, pesquisa, resultados);
+    return formulario;
+}
+
+function criarSecaoAvisosStockCliente(cliente, perfis = []) {
     const secao = criarElementoCliente("section", "admin-cliente-secao clientes-aviso-stock-secao");
     secao.appendChild(criarElementoCliente("h3", "", "Avisos de stock"));
+    secao.appendChild(criarFormularioAvisoStockCliente(cliente, perfis, secao));
     const lista = criarElementoCliente("div", "clientes-aviso-stock-lista");
     lista.appendChild(criarElementoCliente("p", "admin-cliente-vazio", "A carregar avisos de stock..."));
     secao.appendChild(lista);
@@ -792,6 +983,7 @@ function renderizarFichaCliente(dados) {
     const ficha = document.getElementById("clientes-ficha");
     const cliente = dados.cliente || {};
     const historico = Array.isArray(dados.historico) ? dados.historico : [];
+    const perfis = Array.isArray(dados.perfis) ? dados.perfis : [];
     const resumo = dados.resumo || {};
     clienteAbertoId = String(cliente.id || "");
     renderizarClientesLista();
@@ -823,7 +1015,7 @@ function renderizarFichaCliente(dados) {
     ficha.append(
         topo,
         montarVistaConsultaCliente(dados, resumo),
-        criarSecaoAvisosStockCliente(cliente),
+        criarSecaoAvisosStockCliente(cliente, perfis),
         criarSecaoHistoricoCliente(historico)
     );
 }
