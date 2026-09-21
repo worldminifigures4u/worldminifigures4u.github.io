@@ -1785,6 +1785,14 @@ body.pagina-encomendas-admin{
     line-height:1.2;
 }
 
+.admin-encomenda-modal-titulo-codigo{
+    color:#fff;
+    font-size:16px;
+    font-weight:900;
+    font-variant-numeric:tabular-nums;
+    white-space:nowrap;
+}
+
 .admin-encomenda-modal-titulo-data{
     color:#aaa;
     font-size:13px;

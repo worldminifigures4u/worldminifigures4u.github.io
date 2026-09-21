@@ -421,17 +421,20 @@ function marcarBotaoTopoModalEncomenda(botao) {
 
 function preencherTituloModalEncomendaAdmin(titulo, encomenda = {}) {
     if (!titulo) return;
+    const codigo = String(encomenda.codigo_encomenda || encomenda.id || '').trim();
     const data = formatarDataEncomenda(encomenda.data_pagamento || encomenda.created_at);
     const origem = String(encomenda.origem || 'Site').trim() || 'Site';
     const cliente = obterNomeTituloEncomendaAdmin(encomenda) || 'Cliente sem nome';
     const origemClasse = `admin-encomenda-modal-titulo-origem${obterClassePlataformaEncomenda(origem)}`;
     titulo.classList.add('admin-encomenda-modal-titulo-resumo');
-    titulo.replaceChildren(
+    const partes = [
+        codigo ? criarElementoEncomenda('span', 'admin-encomenda-modal-titulo-codigo', codigo) : null,
         criarElementoEncomenda('span', 'admin-encomenda-modal-titulo-data', data),
         criarElementoEncomenda('span', origemClasse, origem),
         criarElementoEncomenda('span', 'admin-encomenda-modal-titulo-cliente', cliente)
-    );
-    titulo.title = [data, origem, cliente].filter(Boolean).join(' · ');
+    ].filter(Boolean);
+    titulo.replaceChildren(...partes);
+    titulo.title = [codigo, data, origem, cliente].filter(Boolean).join(' · ');
 }
 
 function moverAcoesParaTopoModalEncomenda(card) {
