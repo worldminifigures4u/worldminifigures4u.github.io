@@ -1380,11 +1380,11 @@ body.pagina-encomendas-admin{
         }
 
         .admin-encomenda-total-linha{
-            margin:12px 0 0;
+            margin:14px 0 0;
             display:flex;
             justify-content:space-between;
             align-items:center;
-            gap:16px;
+            gap:18px 36px;
             flex-wrap:wrap;
         }
 
@@ -1427,16 +1427,21 @@ body.pagina-encomendas-admin{
             display:flex;
             align-items:center;
             justify-content:flex-end;
-            gap:18px;
+            gap:28px;
             min-width:0;
         }
 
         .admin-encomenda-resumo-valor-item{
             display:inline-flex;
             align-items:baseline;
-            gap:6px;
+            gap:8px;
             min-width:0;
             white-space:nowrap;
+        }
+
+        .admin-encomenda-resumo-valor-item + .admin-encomenda-resumo-valor-item{
+            padding-left:22px;
+            border-left:1px solid #333;
         }
 
         .admin-encomenda-resumo-valor-item.destaque .admin-encomenda-resumo-valor{
