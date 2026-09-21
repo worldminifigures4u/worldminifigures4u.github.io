@@ -419,6 +419,21 @@ function marcarBotaoTopoModalEncomenda(botao) {
     botao.classList.add('admin-encomenda-modal-botao');
 }
 
+function preencherTituloModalEncomendaAdmin(titulo, encomenda = {}) {
+    if (!titulo) return;
+    const data = formatarDataEncomenda(encomenda.data_pagamento || encomenda.created_at);
+    const origem = String(encomenda.origem || 'Site').trim() || 'Site';
+    const cliente = obterNomeTituloEncomendaAdmin(encomenda) || 'Cliente sem nome';
+    const origemClasse = `admin-encomenda-modal-titulo-origem${obterClassePlataformaEncomenda(origem)}`;
+    titulo.classList.add('admin-encomenda-modal-titulo-resumo');
+    titulo.replaceChildren(
+        criarElementoEncomenda('span', 'admin-encomenda-modal-titulo-data', data),
+        criarElementoEncomenda('span', origemClasse, origem),
+        criarElementoEncomenda('span', 'admin-encomenda-modal-titulo-cliente', cliente)
+    );
+    titulo.title = [data, origem, cliente].filter(Boolean).join(' · ');
+}
+
 function moverAcoesParaTopoModalEncomenda(card) {
     const acoesTopo = document.getElementById('admin-encomenda-modal-acoes');
     const botoes = card?.querySelector('.admin-encomenda-dados-botoes');
@@ -466,7 +481,7 @@ function abrirModalEncomendaAdmin(encomenda, opcoes = {}) {
     };
 
     renderizarModal();
-    if (titulo) titulo.textContent = `Encomenda ${encomenda.codigo_encomenda || encomenda.id || ''}`.trim();
+    preencherTituloModalEncomendaAdmin(titulo, encomenda);
     modal.hidden = false;
     document.body.classList.add('admin-encomenda-modal-aberto');
     document.getElementById('admin-encomenda-modal-fechar')?.focus();

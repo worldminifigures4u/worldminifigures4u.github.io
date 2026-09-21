@@ -1775,6 +1775,81 @@ body.pagina-encomendas-admin{
     color:var(--cor-texto-principal, #fff);
 }
 
+.admin-encomenda-modal-topo h2.admin-encomenda-modal-titulo-resumo{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    flex-wrap:wrap;
+    min-width:260px;
+    font-size:14px;
+    line-height:1.2;
+}
+
+.admin-encomenda-modal-titulo-data{
+    color:#aaa;
+    font-size:13px;
+    font-weight:700;
+    font-variant-numeric:tabular-nums;
+    white-space:nowrap;
+}
+
+.admin-encomenda-modal-titulo-origem{
+    display:inline-flex;
+    align-items:center;
+    min-height:18px;
+    padding:1px 6px;
+    border:1px solid #ffc400;
+    border-radius:3px;
+    color:#ffc400;
+    font-size:10px;
+    font-weight:800;
+    line-height:1;
+    white-space:nowrap;
+}
+
+.admin-encomenda-modal-titulo-origem.plataforma-olx{
+    border-color:#fff;
+    color:#fff;
+    background:rgba(255, 255, 255, .08);
+}
+
+.admin-encomenda-modal-titulo-origem.plataforma-wallapop{
+    border-color:#13c9b7;
+    color:#13c9b7;
+    background:transparent;
+}
+
+.admin-encomenda-modal-titulo-origem.plataforma-vinted{
+    border-color:#09b1ba;
+    color:#fff;
+    background:#09b1ba;
+}
+
+.admin-encomenda-modal-titulo-origem.plataforma-todocoleccion{
+    border-color:#6c1f7d;
+    color:#fff;
+    background:#6c1f7d;
+}
+
+.admin-encomenda-modal-titulo-origem.plataforma-whatsapp{
+    border-color:#25d366;
+    color:#fff;
+    background:#25d366;
+}
+
+.admin-encomenda-modal-titulo-cliente{
+    min-width:0;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    color:#fff;
+    font-size:16px;
+    font-weight:800;
+    text-decoration:underline;
+    text-decoration-color:#ffc107;
+    text-underline-offset:3px;
+    white-space:nowrap;
+}
+
 .admin-encomenda-modal-acoes{
     --admin-encomenda-modal-controlo-altura:38px;
     --admin-encomenda-modal-botao-largura:96px;
