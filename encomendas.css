@@ -1828,11 +1828,13 @@ body.pagina-encomendas-admin{
     height:var(--admin-encomenda-modal-controlo-altura) !important;
     min-height:var(--admin-encomenda-modal-controlo-altura) !important;
     max-height:var(--admin-encomenda-modal-controlo-altura) !important;
-    border:0 !important;
-    border-radius:0 !important;
-    background:transparent !important;
+    border:1px solid var(--cor-botao-secundario-borda, #ffc107) !important;
+    border-radius:5px !important;
+    background:#222 !important;
     box-sizing:border-box !important;
-    overflow:visible;
+    box-shadow:none !important;
+    outline:0 !important;
+    overflow:hidden;
 }
 
 .admin-encomenda-modal-acoes .admin-encomenda-modal-estado .admin-encomenda-estado-caixa select{
@@ -1843,10 +1845,12 @@ body.pagina-encomendas-admin{
     max-height:var(--admin-encomenda-modal-controlo-altura) !important;
     padding:0 32px 0 14px;
     margin:0 !important;
-    border:1px solid var(--cor-botao-secundario-borda, #ffc107) !important;
-    border-radius:5px !important;
-    background-color:#222 !important;
+    border:0 !important;
+    border-radius:0 !important;
+    background-color:transparent !important;
     box-sizing:border-box !important;
+    box-shadow:none !important;
+    outline:0 !important;
     font-size:13px;
     font-weight:800;
     line-height:1;
@@ -1855,6 +1859,14 @@ body.pagina-encomendas-admin{
     appearance:none;
     -webkit-appearance:none;
     -moz-appearance:none;
+}
+
+.admin-encomenda-modal-acoes .admin-encomenda-modal-estado .admin-encomenda-estado-caixa select:focus,
+.admin-encomenda-modal-acoes .admin-encomenda-modal-estado .admin-encomenda-estado-caixa select:focus-visible,
+.admin-encomenda-modal-acoes .admin-encomenda-modal-estado .admin-encomenda-estado-caixa select:active{
+    border:0 !important;
+    box-shadow:none !important;
+    outline:0 !important;
 }
 
 .admin-encomenda-modal-botao{
