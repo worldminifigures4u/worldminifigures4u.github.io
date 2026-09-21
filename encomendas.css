@@ -1799,17 +1799,52 @@ body.pagina-encomendas-admin{
 
 .admin-encomenda-modal-acoes .admin-encomenda-modal-estado{
     flex:0 0 auto;
-    gap:8px;
+    display:inline-flex !important;
+    align-items:stretch !important;
+    gap:0 !important;
+    height:38px;
+    min-height:38px;
+    max-height:38px;
     padding:0 !important;
-    border:0 !important;
-    border-radius:0 !important;
+    border:1px solid var(--cor-botao-secundario-borda, #ffc107) !important;
+    border-radius:5px !important;
     background:transparent !important;
     box-shadow:none !important;
     outline:0 !important;
+    overflow:hidden;
+}
+
+.admin-encomenda-modal-acoes .admin-encomenda-modal-estado .admin-encomenda-gestao-rotulo{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    height:38px;
+    min-height:38px;
+    max-height:38px;
+    padding:0 12px;
+    border-right:1px solid rgba(255, 196, 0, .45);
+    font-size:13px;
+    font-weight:800;
+    line-height:1;
+}
+
+.admin-encomenda-modal-acoes .admin-encomenda-modal-estado .admin-encomenda-estado-caixa{
+    height:38px !important;
+    min-height:38px !important;
+    max-height:38px !important;
+    border:0 !important;
+    border-radius:0 !important;
+    background:#222 !important;
 }
 
 .admin-encomenda-modal-acoes .admin-encomenda-modal-estado .admin-encomenda-estado-caixa select{
+    height:38px !important;
+    min-height:38px !important;
+    max-height:38px !important;
     width:220px;
+    border-radius:0 !important;
+    font-size:13px;
+    font-weight:800;
 }
 
 .admin-encomenda-modal-botao{

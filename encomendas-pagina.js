@@ -23,7 +23,7 @@
                 return carregarScript('paises-cliente.js?v=20260731-wallapop-es');
             })
             .then(function () {
-                return carregarScript('encomendas.js?v=20260921-estado-topo');
+                return carregarScript('encomendas.js?v=20260921-estado-topo-css');
             });
 
         return promessaEncomendasJs;
