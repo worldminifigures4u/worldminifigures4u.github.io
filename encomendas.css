@@ -833,6 +833,7 @@ body.pagina-encomendas-admin{
         .admin-encomenda-gestao-estado{
             flex:0 0 auto;
             gap:16px;
+            padding-left:10px !important;
         }
 
         .admin-encomenda-gestao-anexos{
