@@ -13,6 +13,14 @@ function obterNomePessoaCliente(cliente = {}) {
     return String(cliente.nome || "").trim();
 }
 
+function normalizarEstadoResumoCliente(valor) {
+    return String(valor || "")
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .toLowerCase()
+        .trim();
+}
+
 function criarElementoCliente(tag, classe, texto) {
     const elemento = document.createElement(tag);
     if (classe) elemento.className = classe;
@@ -62,6 +70,34 @@ function formatarDataCliente(valor) {
         day: "2-digit", month: "2-digit", year: "numeric",
         hour: "2-digit", minute: "2-digit"
     }).format(data);
+}
+
+function formatarDataClienteSemHora(valor) {
+    if (!valor) return "-";
+    const data = new Date(valor);
+    if (Number.isNaN(data.getTime())) return String(valor);
+    return new Intl.DateTimeFormat("pt-PT", {
+        day: "2-digit", month: "2-digit", year: "numeric"
+    }).format(data);
+}
+
+function estadoMostraHoraUltimaCompraCliente(estado) {
+    return ["pago", "em preparacao", "enviado", "concluido", "devolvido"]
+        .includes(normalizarEstadoResumoCliente(estado));
+}
+
+function obterUltimaEncomendaHistoricoCliente(historico = []) {
+    return [...historico]
+        .filter(item => item?.data)
+        .sort((a, b) => new Date(b.data).getTime() - new Date(a.data).getTime())[0] || null;
+}
+
+function formatarUltimaCompraCliente(resumo = {}, historico = []) {
+    if (!resumo.ultima_compra) return "-";
+    const ultima = obterUltimaEncomendaHistoricoCliente(historico);
+    return estadoMostraHoraUltimaCompraCliente(ultima?.estado)
+        ? formatarDataCliente(resumo.ultima_compra)
+        : formatarDataClienteSemHora(resumo.ultima_compra);
 }
 
 function formatarDataAvisoStockCliente(valor) {
@@ -208,6 +244,7 @@ function obterRotuloPerfilCliente(perfil, indice) {
 function montarVistaConsultaCliente(dados, resumo = {}) {
     const cliente = dados.cliente || {};
     const perfis = Array.isArray(dados.perfis) ? dados.perfis : [];
+    const historico = Array.isArray(dados.historico) ? dados.historico : [];
     const contentor = criarElementoCliente("div", "clientes-ficha-consulta");
 
     const restricoes = criarSecaoRestricoesCliente(cliente);
@@ -216,7 +253,7 @@ function montarVistaConsultaCliente(dados, resumo = {}) {
     const linhaPrincipal = criarElementoCliente("div", "clientes-ficha-consulta-principal");
 
     const colunaEsquerda = criarElementoCliente("div", "clientes-ficha-consulta-esquerda");
-    colunaEsquerda.appendChild(criarSecaoResumoCliente(resumo));
+    colunaEsquerda.appendChild(criarSecaoResumoCliente(resumo, historico));
 
     const dadosSecao = criarElementoCliente("section", "admin-cliente-secao clientes-ficha-consulta-dados");
     const grelha = criarElementoCliente("div", "admin-cliente-grelha");
@@ -461,14 +498,14 @@ async function abrirCliente(clienteId) {
     renderizarFichaCliente(data);
 }
 
-function criarSecaoResumoCliente(resumo = {}) {
+function criarSecaoResumoCliente(resumo = {}, historico = []) {
     const secao = criarElementoCliente("section", "admin-cliente-secao clientes-resumo-secao");
     const grelha = criarElementoCliente("div", "clientes-resumo-grelha");
     const encomendas = criarCampoCliente("Encomendas", String(resumo.encomendas || 0));
     encomendas.classList.add("clientes-resumo-encomendas");
     const total = criarCampoCliente("Total comprado", formatarEuroCliente(resumo.total));
     total.classList.add("clientes-resumo-total");
-    const ultima = criarCampoCliente("\u00daltima compra", formatarDataCliente(resumo.ultima_compra));
+    const ultima = criarCampoCliente("\u00daltima compra", formatarUltimaCompraCliente(resumo, historico));
     ultima.classList.add("clientes-resumo-ultima");
     grelha.append(encomendas, total, ultima);
     secao.appendChild(grelha);

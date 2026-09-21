@@ -15,6 +15,44 @@
         return String(cliente.nome || '').trim();
     }
 
+    function normalizarEstadoFichaCliente(valor) {
+        return String(valor || '')
+            .normalize('NFD')
+            .replace(/[\u0300-\u036f]/g, '')
+            .toLowerCase()
+            .trim();
+    }
+
+    function formatarDataSemHoraFichaCliente(valor) {
+        if (!valor) return '\u2014';
+        const data = new Date(valor);
+        if (Number.isNaN(data.getTime())) return String(valor);
+        return new Intl.DateTimeFormat('pt-PT', {
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric'
+        }).format(data);
+    }
+
+    function estadoMostraHoraUltimaCompra(estado) {
+        return ['pago', 'em preparacao', 'enviado', 'concluido', 'devolvido']
+            .includes(normalizarEstadoFichaCliente(estado));
+    }
+
+    function obterUltimaEncomendaHistorico(historico = []) {
+        return [...historico]
+            .filter(item => item?.data)
+            .sort((a, b) => new Date(b.data).getTime() - new Date(a.data).getTime())[0] || null;
+    }
+
+    function formatarUltimaCompraFichaCliente(resumo = {}, historico = []) {
+        if (!resumo.ultima_compra) return '\u2014';
+        const ultima = obterUltimaEncomendaHistorico(historico);
+        return estadoMostraHoraUltimaCompra(ultima?.estado)
+            ? formatarData(resumo.ultima_compra)
+            : formatarDataSemHoraFichaCliente(resumo.ultima_compra);
+    }
+
     function criarElemento(tag, classe, texto) {
         const elemento = document.createElement(tag);
         if (classe) elemento.className = classe;
@@ -581,7 +619,7 @@
         indicadores.append(
             criarCampoFichaCliente('Encomendas', String(resumo.encomendas || 0)),
             criarCampoFichaCliente('Total comprado', `${formatarEuro(resumo.total)} \u20ac`),
-            criarCampoFichaCliente('\u00daltima compra', resumo.ultima_compra ? formatarData(resumo.ultima_compra) : '\u2014')
+            criarCampoFichaCliente('\u00daltima compra', formatarUltimaCompraFichaCliente(resumo, historico))
         );
 
         const perfisSecao = criarElemento('section', 'admin-cliente-secao');

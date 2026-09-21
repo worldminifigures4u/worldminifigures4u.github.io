@@ -264,7 +264,7 @@ function garantirFichaClienteEncomendas() {
         return Promise.resolve();
     }
     if (!promessaFichaClienteEncomendas) {
-        promessaFichaClienteEncomendas = carregarScriptEncomendasAdmin('admin-ficha-cliente.js?v=20260920-gravar-texto')
+        promessaFichaClienteEncomendas = carregarScriptEncomendasAdmin('admin-ficha-cliente.js?v=20260921-ultima-compra-hora-pago')
             .then(() => configurarFichaClienteEncomendas());
     }
     return promessaFichaClienteEncomendas;

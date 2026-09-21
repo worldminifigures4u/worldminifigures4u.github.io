@@ -624,7 +624,7 @@ function garantirFichaClientePlataforma() {
                 return carregarScriptAdmin('paises-cliente.js?v=20260731-wallapop-es');
             })
             .then(function () {
-                return carregarScriptAdmin('admin-ficha-cliente.js?v=20260920-gravar-texto');
+                return carregarScriptAdmin('admin-ficha-cliente.js?v=20260921-ultima-compra-hora-pago');
             })
             .then(function () {
                 window.AdminFichaCliente?.configurar({
