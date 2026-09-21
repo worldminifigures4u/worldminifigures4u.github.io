@@ -1974,19 +1974,24 @@ window.AdminEncomendaVista = (function () {
             linha.appendChild(criarElemento("span", "admin-encomenda-cliente-link admin-encomenda-cliente-texto", obterNomeTituloEncomenda(encomenda) || "Cliente sem nome"));
         }
 
-        linha.append(
-            criarElemento("strong", "admin-encomenda-valor-linha", formatarEuro(encomenda.total)),
-            criarElemento("span", `estado-encomenda estado-${normalizar(estadoNormalizado(encomenda.estado)).replace(/\s+/g, "-")}`, estadoNormalizado(encomenda.estado))
-        );
+        linha.appendChild(criarElemento("strong", "admin-encomenda-valor-linha", formatarEuro(encomenda.total)));
 
-        const anexosContagem = criarElemento(
-            "span",
-            `admin-encomenda-anexos-contagem${Number(encomenda.num_anexos) === 0 ? " sem-anexos" : ""}${anexosObrigatoriosEmFalta(encomenda, encomenda.num_anexos) ? " anexos-obrigatorios-falta" : ""}`,
-            formatarTextoContagemAnexos(encomenda.num_anexos)
-        );
-        anexosContagem.dataset.encomendaId = String(encomenda.id);
-        anexosContagem.title = formatarTextoContagemAnexos(encomenda.num_anexos);
-        linha.appendChild(anexosContagem);
+        if (!modoModal) {
+            linha.appendChild(criarElemento(
+                "span",
+                `estado-encomenda estado-${normalizar(estadoNormalizado(encomenda.estado)).replace(/\s+/g, "-")}`,
+                estadoNormalizado(encomenda.estado)
+            ));
+
+            const anexosContagem = criarElemento(
+                "span",
+                `admin-encomenda-anexos-contagem${Number(encomenda.num_anexos) === 0 ? " sem-anexos" : ""}${anexosObrigatoriosEmFalta(encomenda, encomenda.num_anexos) ? " anexos-obrigatorios-falta" : ""}`,
+                formatarTextoContagemAnexos(encomenda.num_anexos)
+            );
+            anexosContagem.dataset.encomendaId = String(encomenda.id);
+            anexosContagem.title = formatarTextoContagemAnexos(encomenda.num_anexos);
+            linha.appendChild(anexosContagem);
+        }
 
         if (estadoNormalizado(encomenda.estado) === "Pago") {
             const prioridade = criarElemento("label", "admin-encomenda-prioridade");
