@@ -1866,31 +1866,23 @@ body.pagina-encomendas-admin{
     max-height:var(--admin-encomenda-modal-controlo-altura, 38px) !important;
     padding:0 10px !important;
     margin:0 !important;
-    box-sizing:border-box;
-    display:inline-flex;
-    align-items:center;
-    justify-content:center;
+    box-sizing:border-box !important;
+    display:inline-flex !important;
+    align-items:center !important;
+    justify-content:center !important;
+    border-radius:5px !important;
     text-align:center;
     text-decoration:none;
-    font-size:13px;
-    font-weight:800;
-    line-height:1;
+    font-size:13px !important;
+    font-weight:800 !important;
+    line-height:1 !important;
     white-space:nowrap;
+    cursor:pointer;
 }
 
-body.cabecalho-com-admin .admin-encomenda-modal-topo .admin-encomenda-modal-botao{
-    width:96px !important;
-    min-width:96px !important;
-    max-width:96px !important;
-    height:var(--admin-encomenda-modal-controlo-altura, 38px) !important;
-    min-height:var(--admin-encomenda-modal-controlo-altura, 38px) !important;
-    max-height:var(--admin-encomenda-modal-controlo-altura, 38px) !important;
-    padding:0 10px !important;
-    margin:0 !important;
-}
-
-body.cabecalho-com-admin .admin-encomenda-modal-topo .admin-encomenda-dados-botoes > *,
-body.cabecalho-com-admin .admin-encomenda-modal-topo .admin-encomenda-modal-fechar{
+body.cabecalho-com-admin .admin-encomenda-modal-topo .admin-encomenda-modal-botao,
+body.cabecalho-com-admin .admin-encomenda-modal-topo .admin-encomenda-dados-botoes > *{
+    flex:0 0 96px !important;
     width:96px !important;
     min-width:96px !important;
     max-width:96px !important;
@@ -1903,17 +1895,17 @@ body.cabecalho-com-admin .admin-encomenda-modal-topo .admin-encomenda-modal-fech
     display:inline-flex !important;
     align-items:center !important;
     justify-content:center !important;
+    border-radius:5px !important;
+    font-size:13px !important;
+    font-weight:800 !important;
+    line-height:1 !important;
+    white-space:nowrap !important;
 }
 
 .admin-encomenda-modal-fechar{
-    flex:0 0 auto;
     border:1px solid var(--cor-botao-secundario-borda, #ffc107);
-    border-radius:5px;
     background:transparent;
     color:var(--cor-botao-secundario-texto, #fff);
-    font-size:15px;
-    font-weight:800;
-    cursor:pointer;
 }
 
 .admin-encomenda-modal-fechar:hover,
