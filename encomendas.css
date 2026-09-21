@@ -2049,6 +2049,21 @@ body.cabecalho-com-admin .admin-encomenda-modal-topo .admin-encomenda-dados-boto
     height:100%;
 }
 
+.admin-encomenda-modal-acoes .admin-encomenda-gravar-status-modal{
+    flex:1 0 100%;
+    width:100%;
+    min-height:0;
+    margin:0;
+    padding-top:2px;
+    text-align:right;
+    font-size:12px;
+    line-height:1.2;
+}
+
+.admin-encomenda-modal-acoes .admin-encomenda-gravar-status-modal:empty{
+    display:none;
+}
+
 .admin-encomenda-modal-fechar{
     border:1px solid var(--cor-botao-secundario-borda, #ffc107);
     background:transparent;
@@ -2063,12 +2078,6 @@ body.cabecalho-com-admin .admin-encomenda-modal-topo .admin-encomenda-dados-boto
 .admin-encomenda-modal-conteudo .admin-encomenda-card{
     border:0;
     background:transparent;
-}
-
-.admin-encomenda-modal-conteudo .admin-encomenda-cabecalho-fixo{
-    cursor:default;
-    padding-left:0;
-    padding-right:0;
 }
 
 body.admin-encomenda-modal-aberto{

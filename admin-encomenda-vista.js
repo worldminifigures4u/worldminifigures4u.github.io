@@ -2028,9 +2028,12 @@ window.AdminEncomendaVista = (function () {
             linha.appendChild(criarElemento("span", "admin-encomenda-prioridade-vazia", ""));
         }
 
-        statusGravacao = criarElemento("span", "admin-encomenda-gravar-status admin-encomenda-gravar-status-cabecalho");
+        statusGravacao = criarElemento(
+            "span",
+            `admin-encomenda-gravar-status ${modoModal ? "admin-encomenda-gravar-status-modal" : "admin-encomenda-gravar-status-cabecalho"}`
+        );
         statusGravacao.setAttribute("aria-live", "polite");
-        linha.appendChild(statusGravacao);
+        if (!modoModal) linha.appendChild(statusGravacao);
 
         cabecalho.append(linha);
         if (!modoModal) cabecalho.appendChild(criarElemento("span", "admin-encomenda-seta", "▾"));
@@ -2209,7 +2212,11 @@ window.AdminEncomendaVista = (function () {
         const emitirMoloni = criarBotaoEmitirFaturaMoloni(encomenda);
         if (emitirMoloni) botoesAcoes.appendChild(emitirMoloni);
         botoesAcoes.appendChild(gravarTudo);
-        colunaAcoes.append(botoesAcoes);
+        if (modoModal) {
+            colunaAcoes.append(botoesAcoes, statusGravacao);
+        } else {
+            colunaAcoes.append(botoesAcoes);
+        }
         dados.append(grupoConteudo, colunaAcoes);
 
         const produtos = criarElemento("div", "admin-encomenda-produtos");
@@ -2275,7 +2282,8 @@ window.AdminEncomendaVista = (function () {
         gestaoLinha.append(blocoEstado, gestaoEncomenda);
 
         detalhes.append(dados, gestaoLinha, produtos);
-        card.append(cabecalho, detalhes);
+        if (!modoModal) card.appendChild(cabecalho);
+        card.appendChild(detalhes);
         ligarAlturaNotasComInfo(card, grupoInfo, controloNotas, colunaAcoes);
 
         if (modoModal) {
