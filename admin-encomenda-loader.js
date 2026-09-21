@@ -21,7 +21,7 @@
         if (!promessaVista) {
             promessaVista = carregarScript('morada-formato.js?v=20260713-morada-formatada')
                 .then(function () {
-                    return carregarScript('admin-encomenda-vista.js?v=20260920-botoes-anexos-fixados');
+                    return carregarScript('admin-encomenda-vista.js?v=20260921-botoes-css');
                 });
         }
         return promessaVista;

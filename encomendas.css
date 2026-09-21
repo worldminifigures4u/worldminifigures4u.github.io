@@ -1782,11 +1782,12 @@ body.pagina-encomendas-admin{
     display:none;
 }
 
-.admin-encomenda-modal-acoes .admin-encomenda-dados-botoes{
-    display:grid;
-    grid-template-columns:repeat(4, 96px) !important;
-    gap:8px;
+.admin-encomenda-modal-acoes .admin-encomenda-dados-botoes,
+.admin-encomenda-modal-acoes .admin-encomenda-modal-botoes{
+    display:flex;
     align-items:center;
+    gap:8px;
+    flex-wrap:nowrap;
     height:auto;
 }
 
@@ -1818,7 +1819,9 @@ body.cabecalho-com-admin .admin-encomenda-modal-topo .admin-encomenda-modal-bota
     max-width:96px !important;
     height:38px !important;
     min-height:38px !important;
+    max-height:38px !important;
     padding:0 10px !important;
+    margin:0 !important;
 }
 
 body.cabecalho-com-admin .admin-encomenda-modal-topo .admin-encomenda-dados-botoes > *,
@@ -1828,7 +1831,9 @@ body.cabecalho-com-admin .admin-encomenda-modal-topo .admin-encomenda-modal-fech
     max-width:96px !important;
     height:38px !important;
     min-height:38px !important;
+    max-height:38px !important;
     padding:0 10px !important;
+    margin:0 !important;
     box-sizing:border-box !important;
     display:inline-flex !important;
     align-items:center !important;
@@ -1871,8 +1876,9 @@ body.admin-encomenda-modal-aberto{
         width:100%;
     }
 
-    .admin-encomenda-modal-acoes .admin-encomenda-dados-botoes{
-        grid-template-columns:repeat(2, minmax(96px, 1fr));
+    .admin-encomenda-modal-acoes .admin-encomenda-dados-botoes,
+    .admin-encomenda-modal-acoes .admin-encomenda-modal-botoes{
+        flex-wrap:wrap;
     }
 
     .admin-encomenda-modal-fechar{

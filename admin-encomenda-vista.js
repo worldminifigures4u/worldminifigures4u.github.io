@@ -939,27 +939,6 @@ window.AdminEncomendaVista = (function () {
         return caminhos.length;
     }
 
-    function fixarBotaoAnexoEncomenda(botao) {
-        if (!botao) return;
-        [
-            ["width", "96px"],
-            ["min-width", "96px"],
-            ["max-width", "96px"],
-            ["height", "38px"],
-            ["min-height", "38px"],
-            ["max-height", "38px"],
-            ["padding", "0 10px"],
-            ["margin", "0"],
-            ["box-sizing", "border-box"],
-            ["display", "inline-flex"],
-            ["align-items", "center"],
-            ["justify-content", "center"],
-            ["font-size", "13px"],
-            ["line-height", "1"],
-            ["white-space", "nowrap"]
-        ].forEach(([propriedade, valor]) => botao.style.setProperty(propriedade, valor, "important"));
-    }
-
     async function carregarAnexos(encomenda, lista, status) {
         status.textContent = "A carregar anexos...";
         try {
@@ -974,7 +953,6 @@ window.AdminEncomendaVista = (function () {
                     nome.title = nome.textContent;
                     const abrir = criarElemento("button", "wallapop-botao admin-encomenda-modal-botao admin-encomenda-anexo-botao", "Abrir");
                     abrir.type = "button";
-                    fixarBotaoAnexoEncomenda(abrir);
                     abrir.addEventListener("click", async () => {
                         abrir.disabled = true;
                         status.textContent = "A abrir anexo...";
@@ -989,7 +967,6 @@ window.AdminEncomendaVista = (function () {
                     });
                     const apagar = criarElemento("button", "wallapop-botao admin-encomenda-modal-botao admin-encomenda-anexo-botao admin-encomenda-anexo-apagar", "Eliminar");
                     apagar.type = "button";
-                    fixarBotaoAnexoEncomenda(apagar);
                     apagar.addEventListener("click", async () => {
                         if (!(await mostrarConfirmacaoSite(`Eliminar o anexo "${nome.textContent}"?`, {
                             titulo: "Eliminar anexo",

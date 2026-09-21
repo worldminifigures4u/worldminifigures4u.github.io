@@ -409,24 +409,9 @@ async function atualizarFichaClienteNaEncomendaAdmin(encomenda) {
     return encomenda;
 }
 
-function fixarBotaoTopoModalEncomenda(botao) {
+function marcarBotaoTopoModalEncomenda(botao) {
     if (!botao) return;
     botao.classList.add('admin-encomenda-modal-botao');
-    [
-        ['width', '96px'],
-        ['min-width', '96px'],
-        ['max-width', '96px'],
-        ['height', '38px'],
-        ['min-height', '38px'],
-        ['padding', '0 10px'],
-        ['box-sizing', 'border-box'],
-        ['display', 'inline-flex'],
-        ['align-items', 'center'],
-        ['justify-content', 'center'],
-        ['font-size', '13px'],
-        ['line-height', '1'],
-        ['white-space', 'nowrap']
-    ].forEach(([propriedade, valor]) => botao.style.setProperty(propriedade, valor, 'important'));
 }
 
 function moverAcoesParaTopoModalEncomenda(card) {
@@ -444,11 +429,8 @@ function moverAcoesParaTopoModalEncomenda(card) {
     ].filter(Boolean);
     const restantes = Array.from(botoes.children).filter(botao => !ordemPreferida.includes(botao));
     botoes.replaceChildren(...ordemPreferida, ...restantes);
-    botoes.style.setProperty('grid-template-columns', `repeat(${Math.max(1, botoes.children.length)}, 96px)`, 'important');
-    botoes.style.setProperty('grid-auto-rows', '38px', 'important');
-    botoes.style.setProperty('gap', '8px', 'important');
-    botoes.querySelectorAll('a, button, label').forEach(fixarBotaoTopoModalEncomenda);
-    fixarBotaoTopoModalEncomenda(document.getElementById('admin-encomenda-modal-fechar'));
+    botoes.querySelectorAll('a, button, label').forEach(marcarBotaoTopoModalEncomenda);
+    marcarBotaoTopoModalEncomenda(document.getElementById('admin-encomenda-modal-fechar'));
     acoesTopo.replaceChildren(botoes);
     colunaAcoes?.remove();
 }
