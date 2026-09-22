@@ -2850,7 +2850,7 @@ function criarTextoEncomendaWallapop() {
     const linhas = criarCabecalhoCodigoEncomenda().concat(itens.map(item => [
         Math.max(1, Number(item.quantidade) || 1),
         String(item.nome || '').trim(),
-        String(item.sku || '').trim()
+        `${formatarEuroWallapop(obterPrecoItemWallapop(item))} €`
     ].join('\t')));
     const total = calcularTotalFicheirosPlataforma(itens);
     linhas.push('', `Total:\t${formatarEuroWallapop(total)} €`);
@@ -2927,7 +2927,7 @@ function criarCabecalhoCodigoEncomenda() {
     const codigo = obterCodigoEncomendaAtual();
     if (!codigo) return [];
     const nomeCliente = obterNomeClienteParaCabecalhoTxt();
-    return [`${nomeCliente} - Lote personalizado \u2013 Reservado`, ''];
+    return [`${nomeCliente} - Lote personalizado \u2013 ${codigo}`, ''];
 }
 
 function validarEncomendaRegistadaParaFicheiros() {
