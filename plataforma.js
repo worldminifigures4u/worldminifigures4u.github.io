@@ -1173,6 +1173,62 @@ function removerPrecoFinalLinhaListaPlataforma(texto) {
         .trim();
 }
 
+function dividirLinhaListaProdutosPorSeparadoresPlataforma(texto) {
+    const linha = String(texto || '').trim();
+    if (!linha) return [];
+    const partes = linha
+        .split(/\s*(?:[,;|\t]|\u2022)\s*/g)
+        .map(parte => parte.trim())
+        .filter(Boolean);
+    if (partes.length <= 1) return [linha];
+    if (partes.every(parte => /[\p{L}\p{N}]/u.test(parte) && !linhaParecePrecoListaPlataforma(parte))) {
+        return partes;
+    }
+    return [linha];
+}
+
+function obterOcorrenciasNomesProdutosListaPlataforma(texto) {
+    const normalizado = normalizarTextoWallapop(texto);
+    if (!normalizado || !wallapopProdutos.length) return [];
+
+    const nomes = new Map();
+    wallapopProdutos.forEach(produto => {
+        const nome = String(produto.nome || '').trim();
+        const chave = normalizarTextoWallapop(nome);
+        if (chave.length < 3 || !/[a-z0-9]/.test(chave) || nomes.has(chave)) return;
+        nomes.set(chave, nome);
+    });
+
+    const ocorrencias = [];
+    nomes.forEach((nome, chave) => {
+        let inicio = normalizado.indexOf(chave);
+        while (inicio !== -1) {
+            const fim = inicio + chave.length;
+            const limiteInicio = inicio === 0 || normalizado[inicio - 1] === ' ';
+            const limiteFim = fim === normalizado.length || normalizado[fim] === ' ';
+            if (limiteInicio && limiteFim) {
+                ocorrencias.push({ inicio, fim, nome, tamanho: chave.length });
+            }
+            inicio = normalizado.indexOf(chave, inicio + 1);
+        }
+    });
+
+    return ocorrencias
+        .sort((a, b) => b.tamanho - a.tamanho || a.inicio - b.inicio)
+        .reduce((selecionadas, ocorrencia) => {
+            const sobreposta = selecionadas.some(item => ocorrencia.inicio < item.fim && ocorrencia.fim > item.inicio);
+            if (!sobreposta) selecionadas.push(ocorrencia);
+            return selecionadas;
+        }, [])
+        .sort((a, b) => a.inicio - b.inicio);
+}
+
+function extrairNomesProdutosConhecidosListaPlataforma(texto) {
+    const ocorrencias = obterOcorrenciasNomesProdutosListaPlataforma(texto);
+    if (ocorrencias.length < 2) return [];
+    return ocorrencias.map(item => item.nome);
+}
+
 function limparTextoProdutoListaPlataforma(texto) {
     let limpo = String(texto || '').trim();
     if (!limpo) return '';
@@ -1225,7 +1281,14 @@ function preprocessarLinhasListaProdutosPlataforma(linhas) {
         linha = removerPrecoFinalLinhaListaPlataforma(linha);
         if (!linha || linhaParecePrecoListaPlataforma(linha)) return;
 
-        resultado.push(linha);
+        dividirLinhaListaProdutosPorSeparadoresPlataforma(linha).forEach(segmento => {
+            const nomesConhecidos = extrairNomesProdutosConhecidosListaPlataforma(segmento);
+            const candidatos = nomesConhecidos.length ? nomesConhecidos : [segmento];
+            candidatos.forEach(candidato => {
+                const limpo = removerPrecoFinalLinhaListaPlataforma(candidato);
+                if (limpo && !linhaParecePrecoListaPlataforma(limpo)) resultado.push(limpo);
+            });
+        });
     });
 
     return resultado;
