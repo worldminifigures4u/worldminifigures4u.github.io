@@ -661,13 +661,19 @@ window.AdminEncomendaVista = (function () {
         return texto;
     }
 
+    function formatarTemaProduto(valor) {
+        const texto = limparTextoProduto(valor);
+        if (typeof formatarTemaSite === "function") return formatarTemaSite(texto);
+        return /^dc comics$/i.test(texto) ? "DC" : texto;
+    }
+
     function obterTemaProduto(item) {
         const tema = limparTextoProduto(item.tema)
             || temasProdutos.get(String(item.id_produto || item.id || ""))
             || temasProdutosPorSku.get(String(item.sku || "").toUpperCase())
             || temasProdutosPorReferencia.get(chaveReferenciaProduto(item))
             || "";
-        return limparTextoProduto(tema);
+        return formatarTemaProduto(tema);
     }
 
     function obterSubtemaProduto(item) {

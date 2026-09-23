@@ -20,6 +20,10 @@ function textoLegoProdutoModal(valor) {
     return "";
 }
 
+function formatarTemaProdutoMapa(valor) {
+    return typeof formatarTemaSite === "function" ? formatarTemaSite(valor) : String(valor || "").trim();
+}
+
 function formatarEuroProdutoModal(valor) {
     return Number(valor || 0).toLocaleString("pt-PT", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
@@ -95,7 +99,7 @@ function obterTemasESubtemasExistentesMapa() {
     const subtemasPorTema = {};
     const todosSubtemas = new Set();
     (typeof mapasProdutos !== "undefined" ? mapasProdutos : []).forEach((produto) => {
-        const tema = String(produto?.tema || "").trim();
+        const tema = formatarTemaProdutoMapa(produto?.tema);
         const subtema = String(produto?.subtema || "").trim();
         const subtemaValido = subtema && subtema.toLowerCase() !== "semsubtema" ? subtema : "";
         if (tema) temas.add(tema);
@@ -1799,7 +1803,7 @@ function preencherFichaProdutoMapa(produto) {
     const secaoIdentificacao = criarSecaoEdicaoMapa("Identificação", "mapas-produto-secao-identificacao");
     criarCampoLeituraMapa(secaoIdentificacao, "Ref.", produto.referencia || "");
     criarCampoLeituraMapa(secaoIdentificacao, "SKU", produto.sku || "");
-    criarCampoLeituraMapa(secaoIdentificacao, "Tema", produto.tema || "");
+    criarCampoLeituraMapa(secaoIdentificacao, "Tema", formatarTemaProdutoMapa(produto.tema));
     criarCampoLeituraMapa(secaoIdentificacao, "Subtema", produto.subtema === "semsubtema" ? "" : (produto.subtema || ""));
     topo.appendChild(secaoIdentificacao);
 
@@ -2000,7 +2004,7 @@ function preencherFormularioProdutoMapa(produto, modo = "editar") {
     criarInputEdicaoMapa(secaoIdentificacao, "mapas-editar-referencia", "Ref.", produto.referencia || "");
     criarInputEdicaoMapa(secaoIdentificacao, "mapas-editar-sku", "SKU", produto.sku || "", "text", { required: true });
     const { temas, subtemas, subtemasPorTema } = obterTemasESubtemasExistentesMapa();
-    const inputTema = criarInputEdicaoMapa(secaoIdentificacao, "mapas-editar-tema", "Tema", produto.tema || "", "text", { required: true, listaId: "mapas-lista-temas", listaOpcoes: temas });
+    const inputTema = criarInputEdicaoMapa(secaoIdentificacao, "mapas-editar-tema", "Tema", formatarTemaProdutoMapa(produto.tema), "text", { required: true, listaId: "mapas-lista-temas", listaOpcoes: temas });
     const inputSubtema = criarInputEdicaoMapa(secaoIdentificacao, "mapas-editar-subtema", "Subtema", produto.subtema === "semsubtema" ? "" : (produto.subtema || ""), "text", { listaId: "mapas-lista-subtemas", listaOpcoes: subtemas });
     const datalistSubtema = secaoIdentificacao.querySelector("#mapas-lista-subtemas");
     ligarAberturaSugestoesProdutoMapa(inputTema);

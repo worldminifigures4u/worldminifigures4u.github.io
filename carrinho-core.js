@@ -187,6 +187,9 @@ function atualizarCarrinho(opcoes = {}) {
         const tema = document.createElement('span');
         tema.className = 'carrinho-tema';
         const temaDetalhe = [produtoCompleto?.tema, produtoCompleto?.subtema, item.tema, item.subtema]
+            .map((valor, indice) => indice === 0 || indice === 2
+                ? (typeof formatarTemaSite === 'function' ? formatarTemaSite(valor) : String(valor || '').trim())
+                : valor)
             .map(valor => String(valor || '').trim())
             .filter(valor => valor && !/^sem\s*subtema$/i.test(valor));
         tema.textContent = temaDetalhe.length

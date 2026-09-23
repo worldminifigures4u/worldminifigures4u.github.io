@@ -61,7 +61,7 @@ var __mapasProdutoModalPromessa = null;
 function garantirMapasProdutoModal() {
     if (window.MapasProdutoModal) return Promise.resolve();
     if (!__mapasProdutoModalPromessa) {
-        __mapasProdutoModalPromessa = carregarScriptAdmin("mapas-produto-modal.js?v=20260923-estado-sem-os-qtd");
+        __mapasProdutoModalPromessa = carregarScriptAdmin("mapas-produto-modal.js?v=20260923-tema-dc");
     }
     return __mapasProdutoModalPromessa;
 }
@@ -153,6 +153,10 @@ function textoLegoMapa(valor) {
     if (texto === "sim") return "sim";
     if (texto === "nao" || texto === "não") return "não";
     return "";
+}
+
+function formatarTemaMapa(valor) {
+    return typeof formatarTemaSite === "function" ? formatarTemaSite(valor) : String(valor || "").trim();
 }
 
 function definirStatusMapa(texto, erro = false) {
@@ -496,6 +500,7 @@ function valorCelulaMapa(produto, coluna) {
     if (coluna.chave === "ativo") return produto.ativo !== false ? "sim" : "";
     if (coluna.chave === "arquivado" || coluna.chave === "descontinuado" || coluna.chave === "novidade") return textoBooleanoMapa(produto[coluna.chave]);
     if (coluna.chave === "lego") return textoLegoMapa(produto.lego);
+    if (coluna.chave === "tema") return formatarTemaMapa(produto.tema);
     if (coluna.chave === "subtema") return produto.subtema === "semsubtema" ? "" : produto.subtema;
     return produto[coluna.chave] ?? "";
 }

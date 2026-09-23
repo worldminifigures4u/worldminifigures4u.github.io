@@ -13,6 +13,20 @@ function formatarEuro(valor) {
     return Number(valor || 0).toFixed(2).replace('.', ',');
 }
 
+function normalizarTemaSite(valor) {
+    return String(valor || '')
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .trim()
+        .toLowerCase();
+}
+
+function formatarTemaSite(valor) {
+    const texto = String(valor || '').trim();
+    if (normalizarTemaSite(texto) === 'dc comics') return 'DC';
+    return texto;
+}
+
 const MENSAGEM_CONTA_SUSPENSA = 'Esta conta foi suspensa e nao pode iniciar sessao.';
 const MENSAGEM_ERRO_GENERICA_CLIENTE = 'Não foi possível concluir o pedido. Tenta novamente dentro de momentos.';
 const MENSAGEM_LIGACAO_INDISPONIVEL = 'Não foi possível ligar ao serviço. Verifique a internet e recarregue a página.';

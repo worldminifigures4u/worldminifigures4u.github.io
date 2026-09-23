@@ -28,7 +28,7 @@
 
         promessaFavoritosUi = new Promise((resolve, reject) => {
             const script = document.createElement('script');
-            script.src = 'favoritos-ui.js?v=20260918-padronizacao-dark';
+            script.src = 'favoritos-ui.js?v=20260923-tema-dc';
             script.defer = true;
             script.onload = () => resolve();
             script.onerror = () => reject(new Error('Falha ao carregar favoritos-ui.js'));

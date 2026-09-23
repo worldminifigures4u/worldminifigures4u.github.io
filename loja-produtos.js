@@ -186,6 +186,14 @@ function slugificarTemaLoja(texto) {
     return String(texto || '').toLowerCase().replace(/\s+/g, '-');
 }
 
+function rotuloTemaLoja(texto) {
+    return typeof formatarTemaSite === 'function' ? formatarTemaSite(texto) : String(texto || '').trim();
+}
+
+function chaveIconeTemaLoja(texto) {
+    return rotuloTemaLoja(texto) === 'DC' ? 'DC Comics' : String(texto || '').trim();
+}
+
 function criarSvgTema(partes = [], opcoes = {}) {
     const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
     svg.setAttribute('viewBox', '0 0 24 24');
@@ -454,16 +462,17 @@ const MAPA_ICONES_TEMAS = {
 };
 
 function criarIconeTema(tema = '') {
-    const mascara = MAPA_ICONES_MASCARA[tema];
+    const chaveTema = chaveIconeTemaLoja(tema);
+    const mascara = MAPA_ICONES_MASCARA[chaveTema];
     if (mascara) {
         const el = document.createElement('span');
-        el.className = tema === 'DC Comics' ? 'icone-tema-mask icone-tema-dc' : 'icone-tema-mask';
+        el.className = chaveTema === 'DC Comics' ? 'icone-tema-mask icone-tema-dc' : 'icone-tema-mask';
         el.style.webkitMaskImage = `url('${mascara}')`;
         el.style.maskImage = `url('${mascara}')`;
         el.setAttribute('aria-hidden', 'true');
         return el;
     }
-    const partes = MAPA_ICONES_TEMAS[tema] || MAPA_ICONES_TEMAS['Diversos'];
+    const partes = MAPA_ICONES_TEMAS[chaveTema] || MAPA_ICONES_TEMAS['Diversos'];
     return criarSvgTema(partes);
 }
 
@@ -476,7 +485,7 @@ function criarRotuloTema(temaTexto) {
 
     const nomeTema = document.createElement('span');
     nomeTema.className = 'nome-tema';
-    nomeTema.textContent = temaTexto;
+    nomeTema.textContent = rotuloTemaLoja(temaTexto);
 
     conteudo.appendChild(icone);
     conteudo.appendChild(nomeTema);
@@ -512,7 +521,7 @@ function construirMapaTemasLoja(metadados = []) {
         const temaId = slugificarTemaLoja(tema);
         const subtemas = new Map();
         mapa[tema].forEach(subtema => subtemas.set(slugificarTemaLoja(subtema), subtema));
-        mapaTemasLoja.set(temaId, { nome: tema, subtemas });
+        mapaTemasLoja.set(temaId, { nome: tema, rotulo: rotuloTemaLoja(tema), subtemas });
     });
 
     return Object.keys(mapa).map(tema => ({ tema, subtema: 'semsubtema' }));
@@ -1171,7 +1180,7 @@ function criarCardProduto(prod) {
 
     const category = document.createElement('div');
     category.className = 'categoria';
-    category.innerText = prod.tema || 'Diversos';
+    category.innerText = rotuloTemaLoja(prod.tema || 'Diversos');
     card.appendChild(category);
 
     if (prod.subtema && prod.subtema !== 'semsubtema') {
@@ -1569,7 +1578,7 @@ function atualizarBreadcrumbLoja() {
     nav.appendChild(criarSeparador());
 
     if (nomeSubtema) {
-        nav.appendChild(criarLink(infoTema.nome, slugTema));
+        nav.appendChild(criarLink(infoTema.rotulo || rotuloTemaLoja(infoTema.nome), slugTema));
         nav.appendChild(criarSeparador());
         const atual = document.createElement('span');
         atual.className = 'loja-breadcrumb-atual';
@@ -1578,7 +1587,7 @@ function atualizarBreadcrumbLoja() {
     } else {
         const atual = document.createElement('span');
         atual.className = 'loja-breadcrumb-atual';
-        atual.textContent = infoTema.nome;
+        atual.textContent = infoTema.rotulo || rotuloTemaLoja(infoTema.nome);
         nav.appendChild(atual);
     }
 

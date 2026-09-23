@@ -125,7 +125,10 @@ function criarCardFavoritoCliente(produto) {
 
     const detalhe = document.createElement('span');
     detalhe.className = 'favorito-tema';
-    const temaDetalhe = [produto.tema, produto.subtema]
+    const temaDetalhe = [
+        typeof formatarTemaSite === 'function' ? formatarTemaSite(produto.tema) : produto.tema,
+        produto.subtema
+    ]
         .map(valor => String(valor || '').trim())
         .filter(valor => valor && !/^sem\s*subtema$/i.test(valor));
     detalhe.textContent = temaDetalhe.join(' · ') || 'Sem tema';
