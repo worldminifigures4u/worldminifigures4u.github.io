@@ -457,6 +457,7 @@ function moverAcoesParaTopoModalEncomenda(card) {
     const ordemPreferida = [
         botoes.querySelector('.admin-encomenda-apagar'),
         botoes.querySelector('.admin-encomenda-editar'),
+        botoes.querySelector('.admin-encomenda-exportar'),
         botoes.querySelector('.admin-encomenda-gravar')
     ].filter(Boolean);
     const restantes = Array.from(botoes.children).filter(botao => !ordemPreferida.includes(botao) && botao !== botaoAnexos);

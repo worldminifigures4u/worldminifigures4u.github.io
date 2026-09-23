@@ -1276,6 +1276,416 @@ window.AdminEncomendaVista = (function () {
         }
     }
 
+    const EXPORTACAO_SEM_IMAGEM = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(
+        '<svg xmlns="http://www.w3.org/2000/svg" width="500" height="500"><rect width="100%" height="100%" fill="#f1f1f1"/><text x="50%" y="50%" text-anchor="middle" dominant-baseline="middle" fill="#777" font-family="Arial" font-size="34">Sem foto</text></svg>'
+    );
+    const EXPORTACAO_ITENS_POR_FOLHA = 10;
+    const EXPORTACAO_LARGURA_FOLHA = 794;
+    const EXPORTACAO_ALTURA_FOLHA_MINIMA = Math.ceil(1123 / 2);
+    const EXPORTACAO_MARGEM_FOLHA = 42;
+    const EXPORTACAO_ALTURA_LINHA = 96;
+    const EXPORTACAO_COLUNA_FOTO_LARGURA = 90;
+    const EXPORTACAO_COLUNA_QUANTIDADE_LARGURA = 40;
+    const EXPORTACAO_COLUNA_PRECO_LARGURA = 78;
+    const EXPORTACAO_COLUNA_ESPACO = 16;
+    const EXPORTACAO_ALTURA_CABECALHO = 42;
+    const EXPORTACAO_TITULO_LOTE = "Lista de figuras";
+
+    function formatarEuroExportacao(valor) {
+        return Number(valor || 0).toFixed(2).replace(".", ",");
+    }
+
+    function obterQuantidadeExportacao(item) {
+        return Math.max(1, Number(item?.quantidade || item?.qtd || 1) || 1);
+    }
+
+    function obterPrecoExportacao(item) {
+        return Number(item?.preco_unitario ?? item?.preco ?? 0) || 0;
+    }
+
+    function obterPlataformaExportacao(encomenda) {
+        return String(encomenda?.origem || "Site").trim() || "Site";
+    }
+
+    function obterNomeClienteExportacao(encomenda) {
+        return obterNomeTituloEncomenda(encomenda)
+            || encomenda?.nome_cliente
+            || encomenda?.nome_utilizador_cliente
+            || "Cliente";
+    }
+
+    function comporNomePastaExportacao(encomenda) {
+        return [
+            obterNomeClienteExportacao(encomenda),
+            obterPlataformaExportacao(encomenda),
+            String(encomenda?.codigo_encomenda || encomenda?.id || "").trim()
+        ].filter(Boolean).join(" ");
+    }
+
+    function limparNomePastaExportacao(nome) {
+        const limpo = String(nome || "")
+            .replace(/[<>:"/\\|?*\x00-\x1F]/g, " ")
+            .replace(/\s+/g, " ")
+            .trim()
+            .slice(0, 120);
+        if (!limpo || /^(con|prn|aux|nul|com[1-9]|lpt[1-9])$/i.test(limpo)) return "";
+        return limpo;
+    }
+
+    function prepararItensExportacao(encomenda) {
+        return obterProdutos(encomenda).map((item, indice) => ({
+            ...item,
+            nome: String(item.nome || "Produto").trim() || "Produto",
+            quantidade: obterQuantidadeExportacao(item),
+            preco_unitario: obterPrecoExportacao(item),
+            imagem_exportacao: obterPrimeiraImagem(obterImagensProduto(item)) || obterImagemProduto(item),
+            ordem_exportacao: indice
+        }));
+    }
+
+    function calcularSubtotalExportacao(itens) {
+        return (itens || []).reduce((total, item) => (
+            total + obterQuantidadeExportacao(item) * obterPrecoExportacao(item)
+        ), 0);
+    }
+
+    function calcularTotalFigurasExportacao(itens) {
+        return (itens || []).reduce((total, item) => total + obterQuantidadeExportacao(item), 0);
+    }
+
+    function criarCabecalhoTxtExportacao(encomenda) {
+        const codigo = String(encomenda?.codigo_encomenda || encomenda?.id || "").trim();
+        if (!codigo) return [];
+        return [`${obterNomeClienteExportacao(encomenda)} - Lote personalizado – ${codigo}`, ""];
+    }
+
+    function criarTextoAnuncioExportacao(encomenda, itens) {
+        const linhas = criarCabecalhoTxtExportacao(encomenda).concat(itens.map(item => [
+            obterQuantidadeExportacao(item),
+            String(item.nome || "").trim(),
+            `${formatarEuroExportacao(obterPrecoExportacao(item))} €`
+        ].join("\t")));
+        linhas.push("", `Total:\t${formatarEuroExportacao(calcularSubtotalExportacao(itens))} €`);
+        return "\ufeff" + linhas.join("\r\n");
+    }
+
+    function criarTextoInternoExportacao(encomenda, itens) {
+        const linhas = criarCabecalhoTxtExportacao(encomenda).concat(itens.map(item => [
+            obterQuantidadeExportacao(item),
+            String(item.nome || "").trim(),
+            String(obterReferenciaProduto(item) || item.sku || "").trim()
+        ].join("\t")));
+        return "\ufeff" + linhas.join("\r\n");
+    }
+
+    function criarLinhasDadosClienteExportacao(encomenda) {
+        const dados = obterEncomendaComDadosCliente(encomenda);
+        const morada = [
+            dados.morada_cliente,
+            dados.cp_cliente,
+            dados.cidade_cliente,
+            dados.pais_cliente
+        ].filter(Boolean).join(", ");
+        return [
+            `Nome:\t${dados.nome_cliente || obterNomeClienteExportacao(encomenda)}`,
+            `Morada:\t${morada}`,
+            `Telefone:\t${dados.telefone_cliente || ""}`
+        ];
+    }
+
+    function criarTextoClienteOlxExportacao(encomenda, itens) {
+        const subtotal = calcularSubtotalExportacao(itens);
+        const portes = Number(encomenda?.portes || 0);
+        const total = Number(encomenda?.total || 0) || (subtotal + portes);
+        const envio = encomenda?.metodo_envio_nome || encomenda?.metodo_envio || "Envio";
+        const linhas = criarCabecalhoTxtExportacao(encomenda).concat(["Produtos:"]);
+        itens.forEach(item => {
+            const totalLinha = obterQuantidadeExportacao(item) * obterPrecoExportacao(item);
+            linhas.push(`${obterQuantidadeExportacao(item)}x ${item.nome} ${formatarEuroExportacao(totalLinha)} €`);
+        });
+        linhas.push(
+            "",
+            `Portes de envio (${envio}):\t${formatarEuroExportacao(portes)} €`,
+            "",
+            `Total geral:\t${formatarEuroExportacao(total)} €`,
+            "",
+            ...criarLinhasDadosClienteExportacao(encomenda)
+        );
+        return "\ufeff" + linhas.join("\r\n");
+    }
+
+    function criarTextoNotasExportacao(encomenda) {
+        const notas = String(encomenda?.notas_internas || "").trim();
+        if (!notas) return "";
+        return "\ufeff" + [obterNomeClienteExportacao(encomenda), "", notas].join("\r\n");
+    }
+
+    function origemExportaImagem(encomenda) {
+        return ["wallapop", "vinted", "whatsapp", "olx"].includes(origemEncomenda(encomenda));
+    }
+
+    function origemUsaTextoAnuncio(encomenda) {
+        return ["wallapop", "vinted", "whatsapp"].includes(origemEncomenda(encomenda));
+    }
+
+    function dividirItensExportacao(itens, tamanho = EXPORTACAO_ITENS_POR_FOLHA) {
+        const paginas = [];
+        for (let indice = 0; indice < itens.length; indice += tamanho) {
+            paginas.push(itens.slice(indice, indice + tamanho));
+        }
+        return paginas;
+    }
+
+    function obterLayoutFolhaExportacao(totalItens, incluirTotal = false) {
+        const xConteudo = EXPORTACAO_MARGEM_FOLHA;
+        const xQuantidade = xConteudo + EXPORTACAO_COLUNA_FOTO_LARGURA + EXPORTACAO_COLUNA_ESPACO;
+        const xPreco = xQuantidade + EXPORTACAO_COLUNA_QUANTIDADE_LARGURA + EXPORTACAO_COLUNA_ESPACO;
+        const xNome = xPreco + EXPORTACAO_COLUNA_PRECO_LARGURA + EXPORTACAO_COLUNA_ESPACO;
+        const xLinhaFim = EXPORTACAO_LARGURA_FOLHA - EXPORTACAO_MARGEM_FOLHA;
+        const yItens = EXPORTACAO_MARGEM_FOLHA + EXPORTACAO_ALTURA_CABECALHO;
+        const itens = Math.max(1, Math.min(EXPORTACAO_ITENS_POR_FOLHA, Number(totalItens) || 0));
+        const alturaLista = itens * EXPORTACAO_ALTURA_LINHA;
+        const yAposLista = yItens + alturaLista + 14;
+        const alturaTotal = incluirTotal ? 50 : 0;
+        const yRodape = yAposLista + alturaTotal + 20;
+        return {
+            altura: Math.max(EXPORTACAO_ALTURA_FOLHA_MINIMA, yRodape + 38),
+            yTitulo: EXPORTACAO_MARGEM_FOLHA + 12,
+            yLinhaTitulo: EXPORTACAO_MARGEM_FOLHA + 32,
+            yItens,
+            yTotal: incluirTotal ? yAposLista + 28 : null,
+            yLinhaRodape: yAposLista + alturaTotal,
+            yRodape,
+            colunas: {
+                xConteudo,
+                xQuantidade,
+                xPreco,
+                xNome,
+                xLinhaFim,
+                larguraNome: xLinhaFim - xNome
+            }
+        };
+    }
+
+    function otimizarImagemExportacao(url, largura = 320) {
+        const original = String(url || "");
+        if (!original.includes("res.cloudinary.com/") || !original.includes("/image/upload/")) return original;
+        return original.replace("/image/upload/", `/image/upload/f_auto,q_auto,w_${largura},h_${largura},c_fit/`);
+    }
+
+    function carregarImagemExportacao(src) {
+        return new Promise(resolve => {
+            const imagem = new Image();
+            const url = otimizarImagemExportacao(src, 320) || EXPORTACAO_SEM_IMAGEM;
+            if (!url.startsWith("data:")) imagem.crossOrigin = "anonymous";
+            imagem.onload = () => resolve(imagem);
+            imagem.onerror = () => {
+                const fallback = new Image();
+                fallback.onload = () => resolve(fallback);
+                fallback.src = EXPORTACAO_SEM_IMAGEM;
+            };
+            imagem.src = url;
+        });
+    }
+
+    function desenharLinhaExportacao(ctx, xInicio, xFim, y) {
+        ctx.save();
+        ctx.strokeStyle = "#d0d0d0";
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(xInicio, y + 0.5);
+        ctx.lineTo(xFim, y + 0.5);
+        ctx.stroke();
+        ctx.restore();
+    }
+
+    function desenharImagemContidaExportacao(ctx, imagem, x, y, largura, altura) {
+        const origemLargura = imagem.naturalWidth || imagem.width || largura;
+        const origemAltura = imagem.naturalHeight || imagem.height || altura;
+        const escala = Math.min(largura / origemLargura, altura / origemAltura);
+        const destinoLargura = origemLargura * escala;
+        const destinoAltura = origemAltura * escala;
+        const destinoX = x + (largura - destinoLargura) / 2;
+        const destinoY = y + (altura - destinoAltura) / 2;
+        ctx.drawImage(imagem, destinoX, destinoY, destinoLargura, destinoAltura);
+    }
+
+    function quebrarTextoCanvasExportacao(ctx, texto, larguraMaxima, maximoLinhas = 2) {
+        const palavras = String(texto || "").split(/\s+/).filter(Boolean);
+        const linhas = [];
+        let linha = "";
+        palavras.forEach(palavra => {
+            const tentativa = linha ? `${linha} ${palavra}` : palavra;
+            if (ctx.measureText(tentativa).width <= larguraMaxima) {
+                linha = tentativa;
+                return;
+            }
+            if (linha) linhas.push(linha);
+            linha = palavra;
+        });
+        if (linha) linhas.push(linha);
+        if (linhas.length <= maximoLinhas) return linhas;
+        const cortadas = linhas.slice(0, maximoLinhas);
+        let ultima = cortadas[maximoLinhas - 1];
+        while (ultima.length > 1 && ctx.measureText(`${ultima}...`).width > larguraMaxima) {
+            ultima = ultima.slice(0, -1).trimEnd();
+        }
+        cortadas[maximoLinhas - 1] = `${ultima}...`;
+        return cortadas;
+    }
+
+    async function gerarCanvasFolhaExportacao(itensPagina, numeroPagina, totalPaginas, totalFiguras, totalLote = null) {
+        const incluirTotal = numeroPagina === totalPaginas && totalLote != null;
+        const layout = obterLayoutFolhaExportacao(itensPagina.length, incluirTotal);
+        const escala = 2;
+        const canvas = document.createElement("canvas");
+        canvas.width = EXPORTACAO_LARGURA_FOLHA * escala;
+        canvas.height = layout.altura * escala;
+        const ctx = canvas.getContext("2d");
+        ctx.scale(escala, escala);
+        ctx.fillStyle = "#ffffff";
+        ctx.fillRect(0, 0, EXPORTACAO_LARGURA_FOLHA, layout.altura);
+        ctx.textBaseline = "middle";
+        ctx.fillStyle = "#111111";
+        ctx.font = "700 18px Arial, Helvetica, sans-serif";
+        ctx.textAlign = "center";
+        ctx.fillText(EXPORTACAO_TITULO_LOTE, EXPORTACAO_LARGURA_FOLHA / 2, layout.yTitulo);
+        desenharLinhaExportacao(ctx, layout.colunas.xConteudo, layout.colunas.xLinhaFim, layout.yLinhaTitulo);
+
+        for (let indice = 0; indice < itensPagina.length; indice += 1) {
+            const item = itensPagina[indice];
+            const y = layout.yItens + (indice * EXPORTACAO_ALTURA_LINHA);
+            const centroY = y + (EXPORTACAO_ALTURA_LINHA / 2);
+            const imagem = await carregarImagemExportacao(item.imagem_exportacao);
+            desenharImagemContidaExportacao(ctx, imagem, layout.colunas.xConteudo, y + 3, EXPORTACAO_COLUNA_FOTO_LARGURA, EXPORTACAO_COLUNA_FOTO_LARGURA);
+
+            ctx.font = "700 17px Arial, Helvetica, sans-serif";
+            ctx.textAlign = "left";
+            ctx.fillText(`${obterQuantidadeExportacao(item)}x`, layout.colunas.xQuantidade, centroY);
+            ctx.font = "700 16px Arial, Helvetica, sans-serif";
+            ctx.fillText(`${formatarEuroExportacao(obterPrecoExportacao(item))} €`, layout.colunas.xPreco, centroY);
+            const linhasNome = quebrarTextoCanvasExportacao(ctx, item.nome, layout.colunas.larguraNome, 2);
+            const linhaAltura = 19;
+            const inicioNomeY = centroY - ((linhasNome.length - 1) * linhaAltura / 2);
+            linhasNome.forEach((linha, linhaIndice) => {
+                ctx.fillText(linha, layout.colunas.xNome, inicioNomeY + (linhaIndice * linhaAltura));
+            });
+        }
+
+        if (incluirTotal && layout.yTotal != null) {
+            desenharLinhaExportacao(ctx, layout.colunas.xConteudo, layout.colunas.xLinhaFim, layout.yTotal - 24);
+            ctx.font = "700 22px Arial, Helvetica, sans-serif";
+            ctx.textAlign = "center";
+            ctx.fillText(`Total: ${formatarEuroExportacao(totalLote)} €`, EXPORTACAO_LARGURA_FOLHA / 2, layout.yTotal);
+        }
+
+        desenharLinhaExportacao(ctx, layout.colunas.xConteudo, layout.colunas.xLinhaFim, layout.yLinhaRodape);
+        ctx.font = "700 14px Arial, Helvetica, sans-serif";
+        ctx.fillStyle = "#333333";
+        ctx.textAlign = "center";
+        ctx.fillText(
+            `${totalFiguras} ${totalFiguras === 1 ? "figura" : "figuras"} • Página ${numeroPagina} de ${totalPaginas}`,
+            EXPORTACAO_LARGURA_FOLHA / 2,
+            layout.yRodape
+        );
+        return canvas;
+    }
+
+    function canvasParaBlobExportacao(canvas) {
+        return new Promise((resolve, reject) => {
+            canvas.toBlob(blob => blob ? resolve(blob) : reject(new Error("Não foi possível gerar o PNG.")), "image/png");
+        });
+    }
+
+    async function criarFicheirosImagemExportacao(itens) {
+        const paginas = dividirItensExportacao(itens);
+        const totalPaginas = paginas.length;
+        const totalFiguras = calcularTotalFigurasExportacao(itens);
+        const totalLote = calcularSubtotalExportacao(itens);
+        const ficheiros = [];
+        for (let indice = 0; indice < paginas.length; indice += 1) {
+            const canvas = await gerarCanvasFolhaExportacao(paginas[indice], indice + 1, totalPaginas, totalFiguras, totalLote);
+            ficheiros.push({
+                nome: paginas.length === 1 ? "foto anuncio.png" : `foto anuncio ${indice + 1}.png`,
+                conteudo: await canvasParaBlobExportacao(canvas)
+            });
+        }
+        return ficheiros;
+    }
+
+    async function obterPastaBaseExportacao() {
+        if (!window.showDirectoryPicker) {
+            throw new Error("A escolha de pasta não está disponível neste navegador.");
+        }
+        return window.showDirectoryPicker({ id: "figuresplanet-encomendas", mode: "readwrite" });
+    }
+
+    async function escreverFicheiroExportacao(pasta, nome, conteudo) {
+        const ficheiro = await pasta.getFileHandle(nome, { create: true });
+        const escrita = await ficheiro.createWritable({ keepExistingData: false });
+        try {
+            await escrita.write(conteudo);
+            await escrita.close();
+        } catch (error) {
+            try { await escrita.abort(); } catch (_) { /* ignora */ }
+            throw error;
+        }
+    }
+
+    function mensagemErroExportacao(error) {
+        if (error?.name === "AbortError") return "Exportação cancelada.";
+        if (error?.name === "NotAllowedError") return "Sem permissão para gravar na pasta escolhida.";
+        if (/user gesture|showDirectoryPicker/i.test(String(error?.message || ""))) {
+            return "O Chrome bloqueou a escolha da pasta. Clica outra vez em Exportar.";
+        }
+        return "Não foi possível exportar: " + (error?.message || "erro desconhecido");
+    }
+
+    async function exportarEncomendaDireta(encomenda, atualizarStatus = () => {}) {
+        const codigo = String(encomenda?.codigo_encomenda || encomenda?.id || "").trim();
+        if (!codigo) throw new Error("A encomenda não tem código para exportar.");
+        let itens = prepararItensExportacao(encomenda);
+        if (!itens.length) throw new Error("A encomenda não tem produtos para exportar.");
+        const nomePasta = limparNomePastaExportacao(comporNomePastaExportacao(encomenda));
+        if (!nomePasta) throw new Error("Não foi possível criar um nome válido para a pasta.");
+
+        atualizarStatus("Escolhe a pasta", "processando");
+        const pastaBase = await obterPastaBaseExportacao();
+        atualizarStatus("A preparar ficheiros", "processando");
+        await carregarImagensParaEncomendas([encomenda]).catch(error => {
+            console.warn("Nao foi possivel carregar todas as imagens para exportacao.", error);
+        });
+        itens = prepararItensExportacao(encomenda);
+
+        const ficheiros = [];
+        if (origemEncomenda(encomenda) === "olx") {
+            ficheiros.push(
+                { nome: "informacao cliente.txt", conteudo: criarTextoClienteOlxExportacao(encomenda, itens) },
+                { nome: `${nomePasta}.txt`, conteudo: criarTextoInternoExportacao(encomenda, itens) }
+            );
+        } else if (origemUsaTextoAnuncio(encomenda)) {
+            ficheiros.push({ nome: `${nomePasta}.txt`, conteudo: criarTextoAnuncioExportacao(encomenda, itens) });
+        } else {
+            ficheiros.push({ nome: `${nomePasta}.txt`, conteudo: criarTextoInternoExportacao(encomenda, itens) });
+        }
+
+        const notas = criarTextoNotasExportacao(encomenda);
+        if (notas) ficheiros.push({ nome: "notas encomenda.txt", conteudo: notas });
+        if (origemExportaImagem(encomenda)) {
+            atualizarStatus("A gerar imagens", "processando");
+            ficheiros.push(...await criarFicheirosImagemExportacao(itens));
+        }
+
+        atualizarStatus("A gravar ficheiros", "processando");
+        const pastaEncomenda = await pastaBase.getDirectoryHandle(nomePasta, { create: true });
+        for (const ficheiro of ficheiros) {
+            await escreverFicheiroExportacao(pastaEncomenda, ficheiro.nome, ficheiro.conteudo);
+        }
+        atualizarStatus("Exportado");
+        hooks.definirStatus(`Encomenda ${codigo} exportada para a pasta "${nomePasta}".`);
+        return true;
+    }
+
     function dataExibidaEncomenda(encomenda) {
         return encomenda?.data_pagamento || encomenda?.created_at || null;
     }
@@ -2203,6 +2613,29 @@ window.AdminEncomendaVista = (function () {
             editar.href = destinoEditar.pathname + destinoEditar.search;
             editar.addEventListener("click", evento => evento.stopPropagation());
             botoesAcoes.appendChild(editar);
+            if (modoModal) {
+                const exportar = criarElemento("button", "wallapop-botao wallapop-botao-exportar admin-encomenda-exportar", "Exportar");
+                exportar.type = "button";
+                exportar.title = "Exportar ficheiros da encomenda";
+                exportar.addEventListener("click", async evento => {
+                    evento.stopPropagation();
+                    controloNotas?.ignorarProximoBlur?.();
+                    controloSeguimento?.ignorarProximoBlur?.();
+                    const notasAtuais = controloNotas?.elemento?.querySelector("textarea")?.value;
+                    if (notasAtuais !== undefined) encomenda.notas_internas = notasAtuais;
+                    exportar.disabled = true;
+                    try {
+                        await exportarEncomendaDireta(encomenda, mostrarStatusGravacao);
+                    } catch (error) {
+                        const mensagem = mensagemErroExportacao(error);
+                        mostrarStatusGravacao(mensagem, "erro");
+                        hooks.definirStatus(mensagem, true);
+                    } finally {
+                        exportar.disabled = false;
+                    }
+                });
+                botoesAcoes.appendChild(exportar);
+            }
         }
         if (gestaoEncomenda.botaoEscolherAnexos) {
             gestaoEncomenda.botaoEscolherAnexos.classList.add("admin-encomenda-anexos-escolher-acao", "wallapop-botao-exportar");
