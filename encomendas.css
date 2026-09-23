@@ -1896,7 +1896,7 @@ body.pagina-encomendas-admin{
 
 .admin-encomenda-modal-acoes{
     --admin-encomenda-modal-controlo-altura:38px;
-    --admin-encomenda-modal-botao-largura:96px;
+    --admin-encomenda-modal-botao-largura:86px;
     flex:0 1 auto;
     min-width:0;
     display:flex;
@@ -2026,6 +2026,19 @@ html:not(.admin-light-mode) body.cabecalho-com-admin .admin-encomenda-modal-acoe
 html:not(.admin-light-mode) body.cabecalho-com-admin .admin-encomenda-modal-acoes .admin-encomenda-modal-estado .admin-encomenda-estado-caixa select{
     background:transparent !important;
     color:inherit !important;
+}
+
+html:not(.admin-light-mode) body.cabecalho-com-admin .admin-encomenda-modal-acoes .admin-encomenda-modal-botoes > :is(a, button, label),
+html:not(.admin-light-mode) body.cabecalho-com-admin .admin-encomenda-modal-topo .admin-encomenda-modal-botao{
+    flex-basis:var(--admin-encomenda-modal-botao-largura, 86px) !important;
+    width:var(--admin-encomenda-modal-botao-largura, 86px) !important;
+    min-width:var(--admin-encomenda-modal-botao-largura, 86px) !important;
+    max-width:var(--admin-encomenda-modal-botao-largura, 86px) !important;
+    height:var(--admin-encomenda-modal-controlo-altura, 38px) !important;
+    min-height:var(--admin-encomenda-modal-controlo-altura, 38px) !important;
+    max-height:var(--admin-encomenda-modal-controlo-altura, 38px) !important;
+    padding-top:0 !important;
+    padding-bottom:0 !important;
 }
 
 .admin-encomenda-modal-botao{
