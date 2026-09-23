@@ -1856,9 +1856,9 @@ function preencherFichaProdutoMapa(produto) {
     topo.appendChild(secaoMarcas);
     campos.appendChild(topo);
 
-    montarSecaoAvisosStockProdutoMapa(campos, produto);
     montarSecaoHistoricoRececoesMapa(campos, produto);
     montarSecaoHistoricoVendasMapa(campos, produto);
+    montarSecaoAvisosStockProdutoMapa(campos, produto);
 }
 
 function atualizarAcoesModalProdutoMapa(modo) {
