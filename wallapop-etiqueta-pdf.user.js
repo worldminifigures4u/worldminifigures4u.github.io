@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Wallapop etiqueta - PDF
 // @namespace    figuresplanet
-// @version      6.0
+// @version      6.2
 // @description  Guarda etiqueta Wallapop em PDF A4 com nome da encomenda em tamanho compacto
 // @match        https://*.wallapop.com/*
 // @match        https://wallapop-delivery-labels.wallapop.com/*
@@ -24,10 +24,11 @@
   const STORAGE_BLOQUEIO_FALLBACK = 'fp_wallapop_cliente_bloqueio_fallback_ts';
   const STORAGE_NOME_FIGURESPLANET = 'fp_wallapop_cliente_figuresplanet';
   const STORAGE_TS_FIGURESPLANET = 'fp_wallapop_cliente_figuresplanet_ts';
+  const STORAGE_PLATAFORMA_FIGURESPLANET = 'fp_wallapop_cliente_figuresplanet_plataforma';
   const EXPIRACAO_WALLAPOP_MS = 5 * 60 * 1000;
   const EXPIRACAO_WALLAPOP_ETIQUETA_MS = 10 * 60 * 1000;
   const EXPIRACAO_FIGURESPLANET_MS = 30 * 60 * 1000;
-  const EXPIRACAO_BLOQUEIO_FALLBACK_MS = 90 * 1000;
+  const EXPIRACAO_BLOQUEIO_FALLBACK_MS = 10 * 60 * 1000;
 
   const A4_LARGURA_MM = 210;
   const A4_ALTURA_MM = 297;
@@ -60,7 +61,7 @@
       const rotulo = linhas.findIndex((l) => /^Comprado por\s*:?$/i.test(l));
       if (rotulo >= 0 && linhas[rotulo + 1]) {
         const nome = nomeFicheiroSeguro(linhas[rotulo + 1]);
-        if (nome && !/^(produto|preço|mostrar)/i.test(nome)) return nome;
+        if (nome && !/^(produto|preço|mostrar|imprimir)/i.test(nome)) return nome;
       }
       const inline = texto.slice(idx).match(/Comprado por\s*:?\s*([A-Za-zÀ-ÿ][A-Za-zÀ-ÿ0-9 .'\-]{0,60})/i);
       if (inline?.[1]) {
@@ -79,6 +80,14 @@
     return true;
   }
 
+  function normalizarPlataforma(valor) {
+    return String(valor || '')
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .trim()
+      .toLowerCase();
+  }
+
   function limparNomeWallapop() {
     GM_setValue(STORAGE_NOME_WALLAPOP, '');
     GM_setValue(STORAGE_TS_WALLAPOP, 0);
@@ -87,6 +96,12 @@
   function limparNomeWallapopEtiqueta() {
     GM_setValue(STORAGE_NOME_WALLAPOP_ETIQUETA, '');
     GM_setValue(STORAGE_TS_WALLAPOP_ETIQUETA, 0);
+  }
+
+  function limparNomeFiguresPlanet() {
+    GM_setValue(STORAGE_NOME_FIGURESPLANET, '');
+    GM_setValue(STORAGE_TS_FIGURESPLANET, 0);
+    GM_setValue(STORAGE_PLATAFORMA_FIGURESPLANET, '');
   }
 
   function bloquearFallbackNomeEtiqueta() {
@@ -121,8 +136,22 @@
     return false;
   }
 
+  function obterPlataformaFiguresPlanet() {
+    const porFuncao = typeof unsafeWindow !== 'undefined'
+      ? unsafeWindow.obterPlataformaAtual?.()
+      : window.obterPlataformaAtual?.();
+    return porFuncao || document.getElementById('plataforma-tipo')?.value || '';
+  }
+
   function guardarNomeEtiqueta(nome) {
-    guardarNomeComChave(nome, STORAGE_NOME_FIGURESPLANET, STORAGE_TS_FIGURESPLANET);
+    const plataforma = obterPlataformaFiguresPlanet();
+    if (normalizarPlataforma(plataforma) !== 'wallapop') {
+      limparNomeFiguresPlanet();
+      return false;
+    }
+    if (!guardarNomeComChave(nome, STORAGE_NOME_FIGURESPLANET, STORAGE_TS_FIGURESPLANET)) return false;
+    GM_setValue(STORAGE_PLATAFORMA_FIGURESPLANET, 'Wallapop');
+    return true;
   }
 
   function obterNomeEncomendaFiguresPlanet() {
@@ -143,6 +172,22 @@
     return nome;
   }
 
+  function obterNomeFiguresPlanetWallapopRecente() {
+    const nome = obterValorRecente(
+      STORAGE_NOME_FIGURESPLANET,
+      STORAGE_TS_FIGURESPLANET,
+      EXPIRACAO_FIGURESPLANET_MS
+    );
+    if (!nome) return '';
+
+    const plataforma = normalizarPlataforma(GM_getValue(STORAGE_PLATAFORMA_FIGURESPLANET, ''));
+    if (plataforma) return plataforma === 'wallapop' ? nome : '';
+
+    // Valores guardados por versoes antigas nao tinham plataforma. So sao aceites
+    // se o proprio nome indicar Wallapop, para evitar usar OLX/Todocoleccion/etc.
+    return /\bwallapop\b/i.test(nome) ? nome : '';
+  }
+
   function obterNomeEtiqueta() {
     const nomeWallapopEtiqueta = obterValorRecente(
       STORAGE_NOME_WALLAPOP_ETIQUETA,
@@ -150,11 +195,7 @@
       EXPIRACAO_WALLAPOP_ETIQUETA_MS
     );
     const nomeWallapop = obterValorRecente(STORAGE_NOME_WALLAPOP, STORAGE_TS_WALLAPOP, EXPIRACAO_WALLAPOP_MS);
-    const nomeFiguresPlanet = obterValorRecente(
-      STORAGE_NOME_FIGURESPLANET,
-      STORAGE_TS_FIGURESPLANET,
-      EXPIRACAO_FIGURESPLANET_MS
-    );
+    const nomeFiguresPlanet = obterNomeFiguresPlanetWallapopRecente();
     const nome = nomeWallapopEtiqueta || nomeWallapop || (fallbackNomeEtiquetaBloqueado() ? '' : nomeFiguresPlanet);
     return nome ? `Etiqueta - ${nome}` : 'Etiqueta';
   }
@@ -172,7 +213,7 @@
       'click',
       (e) => {
         const alvo = e.target.closest('button, a, [role="button"]');
-        if (alvo && /mostrar etiqueta/i.test(alvo.textContent || '')) {
+        if (alvo && /(imprimir|mostrar) etiqueta/i.test(alvo.textContent || '')) {
           guardarNomeCliente({ limparSeFalhar: true, guardarParaEtiqueta: true });
         }
       },
