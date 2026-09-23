@@ -453,13 +453,13 @@ function moverAcoesParaTopoModalEncomenda(card) {
     const botaoFechar = document.getElementById('admin-encomenda-modal-fechar');
     botoes.classList.add('admin-encomenda-modal-botoes');
     estado?.classList.add('admin-encomenda-modal-estado');
+    const botaoAnexos = botoes.querySelector('.admin-encomenda-anexos-escolher-acao');
     const ordemPreferida = [
         botoes.querySelector('.admin-encomenda-apagar'),
         botoes.querySelector('.admin-encomenda-editar'),
-        botoes.querySelector('.admin-encomenda-anexos-escolher-acao'),
         botoes.querySelector('.admin-encomenda-gravar')
     ].filter(Boolean);
-    const restantes = Array.from(botoes.children).filter(botao => !ordemPreferida.includes(botao));
+    const restantes = Array.from(botoes.children).filter(botao => !ordemPreferida.includes(botao) && botao !== botaoAnexos);
     botoes.replaceChildren(...ordemPreferida, ...restantes);
     botoes.querySelectorAll('a, button, label').forEach(marcarBotaoTopoModalEncomenda);
     marcarBotaoTopoModalEncomenda(botaoFechar);

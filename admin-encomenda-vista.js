@@ -2206,8 +2206,10 @@ window.AdminEncomendaVista = (function () {
         }
         if (gestaoEncomenda.botaoEscolherAnexos) {
             gestaoEncomenda.botaoEscolherAnexos.classList.add("admin-encomenda-anexos-escolher-acao", "wallapop-botao-exportar");
-            botoesAcoes.appendChild(gestaoEncomenda.botaoEscolherAnexos);
-            gestaoEncomenda.removerCaixaUploadAnexos?.();
+            if (!modoModal) {
+                botoesAcoes.appendChild(gestaoEncomenda.botaoEscolherAnexos);
+                gestaoEncomenda.removerCaixaUploadAnexos?.();
+            }
         }
         const emitirMoloni = criarBotaoEmitirFaturaMoloni(encomenda);
         if (emitirMoloni) botoesAcoes.appendChild(emitirMoloni);
