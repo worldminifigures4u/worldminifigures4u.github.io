@@ -214,6 +214,23 @@ body.pagina-gestao-admin > main.gestao-admin{
     color:#fff;
 }
 
+.admin-encomenda-recibo-moloni{
+    border:0 !important;
+    background:#7965f2 !important;
+    color:#fff !important;
+}
+
+.admin-encomenda-recibo-moloni:hover,
+.admin-encomenda-recibo-moloni:focus-visible{
+    background:#654de0 !important;
+    color:#fff !important;
+}
+
+.admin-encomenda-recibo-moloni:disabled{
+    cursor:not-allowed;
+    opacity:.7;
+}
+
 .btn-admin-secundario{
     min-height:40px;
     padding:8px 12px;

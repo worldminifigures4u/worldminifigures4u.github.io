@@ -1973,14 +1973,14 @@ window.AdminEncomendaVista = (function () {
 
     function criarBotaoEmitirFaturaMoloni(encomenda) {
         if (estadoNormalizado(encomenda.estado) !== "Concluído" || !podeEmitirFaturaMoloni(encomenda)) return null;
-        const botao = criarElemento("button", "wallapop-botao admin-encomenda-editar", "Emitir Moloni");
+        const botao = criarElemento("button", "wallapop-botao admin-encomenda-recibo-moloni", "Recibo");
         botao.type = "button";
         botao.addEventListener("click", async evento => {
             evento.stopPropagation();
             const codigo = encomenda.codigo_encomenda || "";
             if (!(await mostrarConfirmacaoSite(`Emitir fatura-recibo Moloni para a encomenda ${codigo}?`, {
-                titulo: "Emitir Moloni",
-                textoConfirmar: "Emitir",
+                titulo: "Recibo Moloni",
+                textoConfirmar: "Emitir recibo",
                 textoCancelar: "Cancelar"
             }))) return;
             botao.disabled = true;
@@ -1991,7 +1991,7 @@ window.AdminEncomendaVista = (function () {
                     const numeroFatura = fatura.numero && String(fatura.numero) !== "0"
                         ? ` n. ${fatura.numero}`
                         : " (rascunho)";
-                    botao.textContent = "Moloni OK";
+                    botao.textContent = "Recibo OK";
                     hooks.definirStatus(`Fatura-recibo Moloni${numeroFatura} criada para ${codigo}.`);
                 } else {
                     botao.disabled = false;
@@ -1999,7 +1999,7 @@ window.AdminEncomendaVista = (function () {
                 }
             } catch (error) {
                 botao.disabled = false;
-                hooks.definirStatus(`Erro ao emitir Moloni para ${codigo}: ${detalheErro(error)}`, true);
+                hooks.definirStatus(`Erro ao emitir recibo para ${codigo}: ${detalheErro(error)}`, true);
             }
         });
         return botao;
