@@ -1895,8 +1895,8 @@ body.pagina-encomendas-admin{
 }
 
 .admin-encomenda-modal-acoes{
-    --admin-encomenda-modal-controlo-altura:38px;
-    --admin-encomenda-modal-botao-largura:86px;
+    --admin-encomenda-modal-controlo-altura:36px;
+    --admin-encomenda-modal-botao-largura:78px;
     flex:0 1 auto;
     min-width:0;
     display:flex;
@@ -2030,26 +2030,26 @@ html:not(.admin-light-mode) body.cabecalho-com-admin .admin-encomenda-modal-acoe
 
 html:not(.admin-light-mode) body.cabecalho-com-admin .admin-encomenda-modal-acoes .admin-encomenda-modal-botoes > :is(a, button, label),
 html:not(.admin-light-mode) body.cabecalho-com-admin .admin-encomenda-modal-topo .admin-encomenda-modal-botao{
-    flex-basis:var(--admin-encomenda-modal-botao-largura, 86px) !important;
-    width:var(--admin-encomenda-modal-botao-largura, 86px) !important;
-    min-width:var(--admin-encomenda-modal-botao-largura, 86px) !important;
-    max-width:var(--admin-encomenda-modal-botao-largura, 86px) !important;
-    height:var(--admin-encomenda-modal-controlo-altura, 38px) !important;
-    min-height:var(--admin-encomenda-modal-controlo-altura, 38px) !important;
-    max-height:var(--admin-encomenda-modal-controlo-altura, 38px) !important;
+    flex-basis:var(--admin-encomenda-modal-botao-largura, 78px) !important;
+    width:var(--admin-encomenda-modal-botao-largura, 78px) !important;
+    min-width:var(--admin-encomenda-modal-botao-largura, 78px) !important;
+    max-width:var(--admin-encomenda-modal-botao-largura, 78px) !important;
+    height:var(--admin-encomenda-modal-controlo-altura, 36px) !important;
+    min-height:var(--admin-encomenda-modal-controlo-altura, 36px) !important;
+    max-height:var(--admin-encomenda-modal-controlo-altura, 36px) !important;
     padding-top:0 !important;
     padding-bottom:0 !important;
 }
 
 .admin-encomenda-modal-botao{
-    flex:0 0 96px !important;
-    width:96px !important;
-    min-width:96px !important;
-    max-width:96px !important;
-    min-height:var(--admin-encomenda-modal-controlo-altura, 38px) !important;
-    height:var(--admin-encomenda-modal-controlo-altura, 38px) !important;
-    max-height:var(--admin-encomenda-modal-controlo-altura, 38px) !important;
-    padding:0 10px !important;
+    flex:0 0 var(--admin-encomenda-modal-botao-largura, 78px) !important;
+    width:var(--admin-encomenda-modal-botao-largura, 78px) !important;
+    min-width:var(--admin-encomenda-modal-botao-largura, 78px) !important;
+    max-width:var(--admin-encomenda-modal-botao-largura, 78px) !important;
+    min-height:var(--admin-encomenda-modal-controlo-altura, 36px) !important;
+    height:var(--admin-encomenda-modal-controlo-altura, 36px) !important;
+    max-height:var(--admin-encomenda-modal-controlo-altura, 36px) !important;
+    padding:0 8px !important;
     margin:0 !important;
     box-sizing:border-box !important;
     display:inline-flex !important;
@@ -2068,14 +2068,14 @@ html:not(.admin-light-mode) body.cabecalho-com-admin .admin-encomenda-modal-topo
 body.cabecalho-com-admin .admin-encomenda-modal-topo .admin-encomenda-modal-botao,
 body.cabecalho-com-admin .admin-encomenda-modal-topo .admin-encomenda-dados-botoes > *,
 .admin-encomenda-modal-acoes .admin-encomenda-modal-botoes > :is(a, button, label){
-    flex:0 0 var(--admin-encomenda-modal-botao-largura, 96px) !important;
-    width:var(--admin-encomenda-modal-botao-largura, 96px) !important;
-    min-width:var(--admin-encomenda-modal-botao-largura, 96px) !important;
-    max-width:var(--admin-encomenda-modal-botao-largura, 96px) !important;
-    height:var(--admin-encomenda-modal-controlo-altura, 38px) !important;
-    min-height:var(--admin-encomenda-modal-controlo-altura, 38px) !important;
-    max-height:var(--admin-encomenda-modal-controlo-altura, 38px) !important;
-    padding:0 10px !important;
+    flex:0 0 var(--admin-encomenda-modal-botao-largura, 78px) !important;
+    width:var(--admin-encomenda-modal-botao-largura, 78px) !important;
+    min-width:var(--admin-encomenda-modal-botao-largura, 78px) !important;
+    max-width:var(--admin-encomenda-modal-botao-largura, 78px) !important;
+    height:var(--admin-encomenda-modal-controlo-altura, 36px) !important;
+    min-height:var(--admin-encomenda-modal-controlo-altura, 36px) !important;
+    max-height:var(--admin-encomenda-modal-controlo-altura, 36px) !important;
+    padding:0 8px !important;
     margin:0 !important;
     box-sizing:border-box !important;
     display:inline-flex !important;
@@ -2089,7 +2089,7 @@ body.cabecalho-com-admin .admin-encomenda-modal-topo .admin-encomenda-dados-boto
 }
 
 .admin-encomenda-modal-acoes .admin-encomenda-modal-botoes > .admin-encomenda-anexos-escolher{
-    min-height:var(--admin-encomenda-modal-controlo-altura, 38px) !important;
+    min-height:var(--admin-encomenda-modal-controlo-altura, 36px) !important;
 }
 
 .admin-encomenda-modal-acoes .admin-encomenda-modal-botoes > .admin-encomenda-anexos-escolher .admin-encomenda-anexos-escolher-texto{
