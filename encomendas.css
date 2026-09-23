@@ -2010,6 +2010,24 @@ body.pagina-encomendas-admin{
     outline:0 !important;
 }
 
+html:not(.admin-light-mode) body.cabecalho-com-admin .admin-encomenda-modal-acoes .admin-encomenda-modal-estado .admin-encomenda-estado-caixa{
+    border:1px solid var(--cor-botao-secundario-borda, #ffc107) !important;
+    background:transparent !important;
+    color:var(--cor-botao-secundario-texto, #fff) !important;
+}
+
+html:not(.admin-light-mode) body.cabecalho-com-admin .admin-encomenda-modal-acoes .admin-encomenda-modal-estado .admin-encomenda-estado-caixa:hover,
+html:not(.admin-light-mode) body.cabecalho-com-admin .admin-encomenda-modal-acoes .admin-encomenda-modal-estado .admin-encomenda-estado-caixa:focus-within{
+    border-color:var(--cor-acao-principal, #ffc107) !important;
+    background:transparent !important;
+    color:var(--cor-acao-principal, #ffc107) !important;
+}
+
+html:not(.admin-light-mode) body.cabecalho-com-admin .admin-encomenda-modal-acoes .admin-encomenda-modal-estado .admin-encomenda-estado-caixa select{
+    background:transparent !important;
+    color:inherit !important;
+}
+
 .admin-encomenda-modal-botao{
     flex:0 0 96px !important;
     width:96px !important;
