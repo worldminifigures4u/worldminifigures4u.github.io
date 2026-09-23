@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Wallapop etiqueta - PDF
 // @namespace    figuresplanet
-// @version      6.2
+// @version      6.3
 // @description  Guarda etiqueta Wallapop em PDF A4 com nome da encomenda em tamanho compacto
 // @match        https://*.wallapop.com/*
 // @match        https://wallapop-delivery-labels.wallapop.com/*
@@ -49,25 +49,55 @@
       .slice(0, 80);
   }
 
-  function extrairNomeCliente() {
-    const texto = document.body?.innerText || '';
-    const idx = texto.search(/Comprado por/i);
+  function nomeCompradorValido(valor) {
+    const nome = nomeFicheiroSeguro(String(valor || '').replace(/^[:\s]+/, ''));
+    if (!nome) return '';
+    if (/^(comprado por|produto|preço|preco|mostrar|imprimir|método|metodo|total|código|codigo)\b/i.test(nome)) {
+      return '';
+    }
+    return nome;
+  }
+
+  function extrairNomeCompradoPorTexto(texto) {
+    const idx = String(texto || '').search(/Comprado\s+por/i);
     if (idx >= 0) {
       const linhas = texto
-        .slice(idx, idx + 300)
+        .slice(idx, idx + 500)
         .split(/\n/)
         .map((l) => l.trim())
         .filter(Boolean);
-      const rotulo = linhas.findIndex((l) => /^Comprado por\s*:?$/i.test(l));
-      if (rotulo >= 0 && linhas[rotulo + 1]) {
-        const nome = nomeFicheiroSeguro(linhas[rotulo + 1]);
-        if (nome && !/^(produto|preço|mostrar|imprimir)/i.test(nome)) return nome;
+      const rotulo = linhas.findIndex((l) => /^Comprado\s+por\s*:?$/i.test(l));
+      if (rotulo >= 0) {
+        for (const linha of linhas.slice(rotulo + 1, rotulo + 5)) {
+          if (/^(método|metodo|total|produto|código|codigo)\b/i.test(linha)) break;
+          const nome = nomeCompradorValido(linha);
+          if (nome) return nome;
+        }
       }
-      const inline = texto.slice(idx).match(/Comprado por\s*:?\s*([A-Za-zÀ-ÿ][A-Za-zÀ-ÿ0-9 .'\-]{0,60})/i);
+      const inline = texto.slice(idx, idx + 200).match(/Comprado\s+por\s*:?\s*([^\n\r]+)/i);
       if (inline?.[1]) {
-        const nome = nomeFicheiroSeguro(inline[1]);
+        const nome = nomeCompradorValido(inline[1]);
         if (nome) return nome;
       }
+    }
+    return '';
+  }
+
+  function extrairNomeCliente() {
+    const nomePagina = extrairNomeCompradoPorTexto(document.body?.innerText || '');
+    if (nomePagina) return nomePagina;
+
+    const candidatos = [];
+    document.querySelectorAll('body *').forEach((el) => {
+      const texto = el.textContent || '';
+      if (!/Comprado\s+por/i.test(texto)) return;
+      if (el.innerText) candidatos.push(el.innerText);
+      if (el.parentElement?.innerText) candidatos.push(el.parentElement.innerText);
+    });
+
+    for (const texto of candidatos) {
+      const nome = extrairNomeCompradoPorTexto(texto);
+      if (nome) return nome;
     }
     return null;
   }
