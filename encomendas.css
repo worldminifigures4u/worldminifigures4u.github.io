@@ -2100,6 +2100,23 @@ body.cabecalho-com-admin .admin-encomenda-modal-topo .admin-encomenda-dados-boto
     height:100%;
 }
 
+html:not(.admin-light-mode) body.cabecalho-com-admin .admin-encomenda-modal-topo .admin-encomenda-topo-compacto{
+    flex:0 0 78px !important;
+    width:78px !important;
+    min-width:78px !important;
+    max-width:78px !important;
+    height:36px !important;
+    min-height:36px !important;
+    max-height:36px !important;
+    padding:0 8px !important;
+    margin:0 !important;
+    box-sizing:border-box !important;
+    display:inline-flex !important;
+    align-items:center !important;
+    justify-content:center !important;
+    line-height:1 !important;
+}
+
 .admin-encomenda-modal-acoes .admin-encomenda-gravar-status-modal{
     flex:1 0 100%;
     width:100%;

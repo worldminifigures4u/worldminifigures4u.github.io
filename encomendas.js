@@ -416,7 +416,7 @@ async function atualizarFichaClienteNaEncomendaAdmin(encomenda) {
 
 function marcarBotaoTopoModalEncomenda(botao) {
     if (!botao) return;
-    botao.classList.add('admin-encomenda-modal-botao');
+    botao.classList.add('admin-encomenda-modal-botao', 'admin-encomenda-topo-compacto');
 }
 
 function preencherTituloModalEncomendaAdmin(titulo, encomenda = {}) {
