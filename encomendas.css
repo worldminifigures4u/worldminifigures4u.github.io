@@ -1950,11 +1950,16 @@ body.pagina-encomendas-admin{
     max-height:var(--admin-encomenda-modal-controlo-altura) !important;
     border:1px solid var(--cor-botao-secundario-borda, #ffc107) !important;
     border-radius:5px !important;
-    background:#222 !important;
+    background:transparent !important;
     box-sizing:border-box !important;
     box-shadow:none !important;
     outline:0 !important;
     overflow:hidden;
+}
+
+.admin-encomenda-modal-acoes .admin-encomenda-modal-estado .admin-encomenda-estado-caixa:hover,
+.admin-encomenda-modal-acoes .admin-encomenda-modal-estado .admin-encomenda-estado-caixa:focus-within{
+    background:rgba(255, 196, 0, 0.12) !important;
 }
 
 .admin-encomenda-modal-acoes .admin-encomenda-modal-estado .admin-encomenda-estado-caixa::after{
