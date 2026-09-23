@@ -61,7 +61,7 @@ var __mapasProdutoModalPromessa = null;
 function garantirMapasProdutoModal() {
     if (window.MapasProdutoModal) return Promise.resolve();
     if (!__mapasProdutoModalPromessa) {
-        __mapasProdutoModalPromessa = carregarScriptAdmin("mapas-produto-modal.js?v=20260923-topo-4-colunas");
+        __mapasProdutoModalPromessa = carregarScriptAdmin("mapas-produto-modal.js?v=20260923-estado-sem-os-qtd");
     }
     return __mapasProdutoModalPromessa;
 }

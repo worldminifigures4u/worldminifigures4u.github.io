@@ -1218,7 +1218,7 @@ function renderizarHistoricoEncomendasFornecedorMapa(conteudo, produto, pedidos)
             tr.classList.add("mapas-produto-historico-pendente");
         }
         const estadoTexto = emFalta
-            ? `Sem stock no fornecedor (OS: ${faltaOs})`
+            ? "Sem stock no fornecedor"
             : emEx
                 ? "Preço muito alto neste fornecedor (EX)"
                 : (pedido.estado || "—");
