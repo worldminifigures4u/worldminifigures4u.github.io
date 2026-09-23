@@ -1819,8 +1819,6 @@ function preencherFichaProdutoMapa(produto) {
     }
     topo.appendChild(secaoDetalhes);
 
-    topo.appendChild(montarSecaoOsFornecedoresLeituraMapa(produto));
-
     const observacoesTexto = String(produto.observacoes || "").trim();
     if (observacoesTexto) {
         topo.classList.add("mapas-produto-ficha-topo-com-obs");
