@@ -314,9 +314,132 @@ async function exportarMapasCsvGestao() {
     }
 }
 
+function normalizarTextoTemaGestao(valor) {
+    return String(valor || '')
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .trim()
+        .toLowerCase();
+}
+
+function prepararProdutoComTemaDcGestao(produto) {
+    return {
+        ...produto,
+        tema: 'DC',
+        subtema: produto.subtema || 'semsubtema',
+        imagens: Array.isArray(produto.imagens) ? produto.imagens : [],
+        fornecedores: produto.fornecedores && typeof produto.fornecedores === 'object' && !Array.isArray(produto.fornecedores)
+            ? produto.fornecedores
+            : {},
+        ativo: produto.ativo !== false,
+        arquivado: Boolean(produto.arquivado),
+        descontinuado: Boolean(produto.descontinuado),
+        novidade: Boolean(produto.novidade),
+        peso: Number(produto.peso || PESO_PADRAO_PRODUTO_GRAMAS || 10),
+        preco: Number(produto.preco || 0),
+        preco_compra: Number(produto.preco_compra || 0),
+        stock: Math.floor(Number(produto.stock || 0))
+    };
+}
+
+function validarProdutoParaNormalizarTemaDcGestao(produto) {
+    const campos = [
+        'id',
+        'sku',
+        'referencia',
+        'lego',
+        'nome',
+        'preco',
+        'preco_compra',
+        'stock',
+        'tema',
+        'subtema',
+        'top',
+        'arquivado',
+        'descontinuado',
+        'observacoes',
+        'notas_gestao',
+        'ativo',
+        'novidade',
+        'imagens',
+        'fornecedores'
+    ];
+    return campos.every((campo) => Object.prototype.hasOwnProperty.call(produto, campo));
+}
+
+async function confirmarAcaoGestao(mensagem, opcoes = {}) {
+    if (typeof mostrarConfirmacaoSite === 'function') {
+        return mostrarConfirmacaoSite(mensagem, opcoes);
+    }
+    return window.confirm(mensagem);
+}
+
+async function normalizarTemaDcCatalogoGestao() {
+    const status = document.getElementById('status-normalizar-tema-dc');
+    const botao = document.getElementById('btn-normalizar-tema-dc');
+    try {
+        const { data: { user }, error } = await gestaoClient.auth.getUser();
+        if (error || !user || !utilizadorAdmin(user)) {
+            throw new Error('Apenas o administrador pode atualizar os temas.');
+        }
+
+        if (botao) botao.disabled = true;
+        mostrarMensagem(status, 'A verificar catálogo...');
+        const produtos = await carregarProdutosImportacaoGestao(true);
+        const afetados = produtos.filter((produto) => normalizarTextoTemaGestao(produto.tema) === 'dc comics');
+
+        if (!afetados.length) {
+            mostrarMensagem(status, 'Não há produtos com DC Comics para trocar.', 'msg-sucesso');
+            return;
+        }
+
+        if (!afetados.every(validarProdutoParaNormalizarTemaDcGestao)) {
+            throw new Error('A listagem de produtos não trouxe todos os campos necessários para uma troca segura.');
+        }
+
+        const confirmado = await confirmarAcaoGestao(
+            `Trocar o tema de ${afetados.length} produto(s) de DC Comics para DC?`,
+            {
+                titulo: 'Atualizar tema',
+                textoConfirmar: 'Trocar para DC',
+                textoCancelar: 'Cancelar'
+            }
+        );
+        if (!confirmado) {
+            mostrarMensagem(status, 'Operação cancelada.');
+            return;
+        }
+
+        let atualizados = 0;
+        for (const produto of afetados) {
+            const produtoAtualizado = prepararProdutoComTemaDcGestao(produto);
+            const { error: erroEdicao } = await gestaoClient.rpc('editar_produto_admin_v2', {
+                p_id: String(produto.id || ''),
+                p_sku_original: String(produto.sku || ''),
+                p_produto: produtoAtualizado
+            });
+            if (erroEdicao) throw erroEdicao;
+            atualizados += 1;
+            mostrarMensagem(status, `A trocar para DC: ${atualizados}/${afetados.length}`);
+        }
+
+        gestaoImportacaoProdutosCarregados = false;
+        await carregarProdutosImportacaoGestao(true);
+        mostrarMensagem(status, `${atualizados} produto(s) atualizados para DC.`, 'msg-sucesso');
+    } catch (erro) {
+        console.error('Erro ao normalizar tema DC:', erro);
+        mostrarMensagem(status, erro.message || 'Não foi possível atualizar o tema.', 'msg-erro');
+    } finally {
+        if (botao) botao.disabled = false;
+    }
+}
+
 function ligarImportacaoGestao() {
     ligarElementoImportacaoGestao('btn-exportar-mapas-csv', 'click', () => {
         exportarMapasCsvGestao().catch(console.error);
+    });
+    ligarElementoImportacaoGestao('btn-normalizar-tema-dc', 'click', () => {
+        normalizarTemaDcCatalogoGestao().catch(console.error);
     });
     ligarElementoImportacaoGestao('admin-ficheiro-stock', 'change', function () {
         prepararImportacaoGestao().then(() => {
