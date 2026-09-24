@@ -1005,7 +1005,26 @@ async function confirmarReferenciasItensFornecedor(itens, contexto = "continuar"
 }
 
 function itemPedidoCorrespondeProdutoFornecedor(item, produto) {
-    if (!item || !produto) return false;
+    return produtoCorrespondeItemPedidoFornecedor(produto, item);
+}
+
+function obterIdProdutoItemFornecedor(item) {
+    return String(item?.id_produto || item?.produto_id || item?.id || "").trim();
+}
+
+function produtoCorrespondeItemPedidoFornecedor(produto, item) {
+    if (!produto || !item) return false;
+
+    const produtoId = String(produto.id || "").trim();
+    const itemId = obterIdProdutoItemFornecedor(item);
+    if (produtoId && itemId && produtoId === itemId) return true;
+
+    const produtoSku = normalizarSkuFornecedor(produto.sku);
+    const itemSku = normalizarSkuFornecedor(item.sku);
+    if (produtoSku && itemSku && produtoSku === itemSku) return true;
+
+    const produtoRef = normalizarReferenciaListaFornecedor(produto.referencia);
+    if (["PERSONALIZADO", "PERSONALIZADA", "CUSTOM"].includes(produtoRef)) return false;
     return correspondeReferenciaListaFornecedor(item.referencia, produto.referencia);
 }
 
@@ -2072,9 +2091,7 @@ function criarBlocoHistoricoFornecedorFicha(form, id, rotulo, valor, opcoes = {}
 }
 
 function produtoCorrespondeItemHistoricoFornecedorEditor(produto, item) {
-    const produtoRef = String(produto?.referencia || "").trim();
-    const itemRef = String(item?.referencia || "").trim();
-    return Boolean(produtoRef && itemRef && correspondeReferenciaListaFornecedor(produtoRef, itemRef));
+    return produtoCorrespondeItemPedidoFornecedor(produto, item);
 }
 
 function obterDataHistoricoPedidoFornecedorEditor(pedido) {
@@ -2444,12 +2461,21 @@ function obterProdutoAtual(id) {
 
 function obterProdutoParaPedidoFornecedor(item, listaProdutos = fornecedorProdutos) {
     if (!item) return null;
+    const itemId = obterIdProdutoItemFornecedor(item);
+    if (itemId) {
+        const porId = listaProdutos.find(produto => String(produto.id || "").trim() === itemId);
+        if (porId) return porId;
+    }
+
+    const itemSku = normalizarSkuFornecedor(item.sku);
+    if (itemSku) {
+        const porSku = listaProdutos.filter(produto => normalizarSkuFornecedor(produto.sku) === itemSku);
+        if (porSku.length === 1) return porSku[0];
+    }
+
     const porReferencia = obterProdutosPorReferenciaFornecedor(item.referencia, listaProdutos);
     if (porReferencia.length === 1) return porReferencia[0];
 
-    if (!String(item.referencia || "").trim()) {
-        return listaProdutos.find(produto => String(produto.id) === String(item.id)) || null;
-    }
     return null;
 }
 
