@@ -2801,6 +2801,43 @@ function elementoTemScrollVerticalFornecedor(elemento) {
         && elemento.scrollHeight > elemento.clientHeight + 1;
 }
 
+function obterInputNumeroRodaFornecedor(alvo) {
+    if (alvo instanceof HTMLInputElement) return alvo;
+    if (alvo instanceof Element) return alvo.closest("input");
+    return null;
+}
+
+function inputNumeroPertenceFornecedores(input) {
+    return input instanceof HTMLInputElement
+        && input.type === "number"
+        && Boolean(input.closest("#fornecedores-aplicacao, #fornecedor-pedido-modal, #fornecedor-edicao-modal"));
+}
+
+function obterContentorScrollNumeroFornecedor(input) {
+    let atual = input?.parentElement || null;
+    while (atual && atual !== document.body) {
+        if (elementoTemScrollVerticalFornecedor(atual)) return atual;
+        atual = atual.parentElement;
+    }
+    return null;
+}
+
+function bloquearAlteracaoNumeroPorRodaFornecedor(evento) {
+    const input = obterInputNumeroRodaFornecedor(evento.target);
+    if (!inputNumeroPertenceFornecedores(input)) return;
+
+    evento.preventDefault();
+    if (document.activeElement === input) input.blur();
+
+    const contentor = obterContentorScrollNumeroFornecedor(input);
+    if (contentor) {
+        contentor.scrollTop += evento.deltaY;
+        contentor.scrollLeft += evento.deltaX;
+    } else {
+        window.scrollBy({ top: evento.deltaY, left: evento.deltaX, behavior: "auto" });
+    }
+}
+
 function ajustarScrollJanelaParaElementoFornecedor(elemento) {
     if (!elemento) return;
     const rect = elemento.getBoundingClientRect();
@@ -5048,6 +5085,7 @@ ligarBloqueioScrollExternoListaFornecedor();
 ligarStickyInfoFornecedor();
 ligarFiltrosMarcacaoFornecedor();
 document.addEventListener("keydown", capturarTabQuantidadeFornecedor, true);
+document.addEventListener("wheel", bloquearAlteracaoNumeroPorRodaFornecedor, { capture: true, passive: false });
 window.addEventListener("scroll", verificarCarregamentoProgressivoFornecedor, { passive: true });
 ligarEventoFornecedor('fornecedor-pesquisa', 'input', agendarRenderizacaoResultadosFornecedor);
 ligarEventoFornecedor('fornecedor-nome', 'change', agendarRenderizacaoResultadosFornecedor);
