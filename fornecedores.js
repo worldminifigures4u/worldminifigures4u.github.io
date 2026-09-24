@@ -2918,8 +2918,9 @@ function obterPendentesProdutoFornecedor(produto) {
 }
 
 function obterQuantidadePedidaPendenteFornecedor(item) {
+    if (itemPedidoEstaExFornecedor(item)) return 0;
     return Math.max(0, Math.floor(Number(
-        item?.quantidade_original ?? item?.quantidade_inicial ?? item?.quantidade ?? item?.qtd ?? 0
+        item?.quantidade ?? item?.qtd ?? item?.quantidade_original ?? item?.quantidade_inicial ?? 0
     )));
 }
 
