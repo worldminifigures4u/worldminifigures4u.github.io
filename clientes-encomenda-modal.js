@@ -47,19 +47,6 @@ function fecharModalEncomendaCliente() {
     clientesEncomendaModalAtual = null;
 }
 
-function atualizarNavegacaoModalEncomendaCliente() {
-    const total = clientesHistoricoConsulta.length;
-    const indice = clientesIndiceConsulta;
-    const contador = document.getElementById("clientes-encomenda-contador");
-    const anterior = document.getElementById("clientes-encomenda-anterior");
-    const seguinte = document.getElementById("clientes-encomenda-seguinte");
-    if (contador) {
-        contador.textContent = total ? `Encomenda ${indice + 1} de ${total}` : "";
-    }
-    if (anterior) anterior.disabled = indice <= 0;
-    if (seguinte) seguinte.disabled = indice >= total - 1;
-}
-
 function sincronizarHistoricoClienteModal(itemResumo) {
     if (!itemResumo) return;
     const linhas = document.querySelectorAll(".admin-cliente-historico-linha");
@@ -84,8 +71,6 @@ async function renderizarModalEncomendaCliente() {
     if (!item?.id || !conteudo) return;
 
     conteudo.replaceChildren(criarElementoModalEncomendaCliente("p", "admin-cliente-carregar", "A carregar encomenda..."));
-    atualizarNavegacaoModalEncomendaCliente();
-
     const supabaseAdmin = obterSupabaseModalEncomendaCliente();
     if (!supabaseAdmin) {
         conteudo.replaceChildren(criarElementoModalEncomendaCliente("p", "admin-cliente-vazio", "Erro ao carregar encomenda."));
@@ -128,14 +113,6 @@ async function renderizarModalEncomendaCliente() {
         ocultarCliente: true
     }));
     sincronizarHistoricoClienteModal(data);
-}
-
-function irParaEncomendaModalCliente(delta) {
-    const novoIndice = clientesIndiceConsulta + delta;
-    if (novoIndice < 0 || novoIndice >= clientesHistoricoConsulta.length) return;
-    clientesIndiceConsulta = novoIndice;
-    definirStatusModalEncomendaCliente("");
-    renderizarModalEncomendaCliente();
 }
 
 function aoApagarEncomendaModalCliente(encomenda) {
@@ -186,8 +163,6 @@ function configurarModalEncomendaCliente() {
     });
 
     document.getElementById("clientes-encomenda-fechar")?.addEventListener("click", fecharModalEncomendaCliente);
-    document.getElementById("clientes-encomenda-anterior")?.addEventListener("click", () => irParaEncomendaModalCliente(-1));
-    document.getElementById("clientes-encomenda-seguinte")?.addEventListener("click", () => irParaEncomendaModalCliente(1));
     ligarFechoModalPorFundo(document.getElementById("clientes-encomenda-modal"), fecharModalEncomendaCliente);
     document.getElementById("admin-imagem-modal-fechar")?.addEventListener("click", () => {
         AdminEncomendaVista.fecharImagemProduto();
@@ -201,7 +176,5 @@ function configurarModalEncomendaCliente() {
             return;
         }
         if (evento.key === "Escape") fecharModalEncomendaCliente();
-        else if (evento.key === "ArrowLeft") irParaEncomendaModalCliente(-1);
-        else if (evento.key === "ArrowRight") irParaEncomendaModalCliente(1);
     });
 }

@@ -34,7 +34,7 @@
         if (!promessaModal) {
             promessaModal = garantirAdminEncomendaVista()
                 .then(function () {
-                    return carregarScript('clientes-encomenda-modal.js?v=20260920-cliente-atualizado-encomenda');
+                    return carregarScript('clientes-encomenda-modal.js?v=20260925-sem-navegacao');
                 })
                 .then(function () {
                     if (typeof configurarModalEncomendaCliente === 'function' && !modalConfigurado) {
