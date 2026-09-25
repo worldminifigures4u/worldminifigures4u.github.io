@@ -2117,8 +2117,8 @@ html:not(.admin-light-mode) body.cabecalho-com-admin .admin-encomenda-modal-topo
     line-height:1 !important;
 }
 
-html:not(.admin-light-mode) body.cabecalho-com-admin #admin-encomenda-modal .admin-encomenda-modal-acoes .admin-encomenda-modal-botoes > :is(a, button, label),
-html:not(.admin-light-mode) body.cabecalho-com-admin #admin-encomenda-modal #admin-encomenda-modal-fechar{
+html:not(.admin-light-mode) body.cabecalho-com-admin :is(#admin-encomenda-modal, #clientes-encomenda-modal) .admin-encomenda-modal-acoes .admin-encomenda-modal-botoes > :is(a, button, label),
+html:not(.admin-light-mode) body.cabecalho-com-admin :is(#admin-encomenda-modal, #clientes-encomenda-modal) .admin-encomenda-modal-fechar{
     flex:0 0 78px !important;
     width:78px !important;
     min-width:78px !important;
@@ -2135,7 +2135,7 @@ html:not(.admin-light-mode) body.cabecalho-com-admin #admin-encomenda-modal #adm
     line-height:1 !important;
 }
 
-html:not(.admin-light-mode) body.cabecalho-com-admin #admin-encomenda-modal .admin-encomenda-anexo .admin-encomenda-anexo-botao{
+html:not(.admin-light-mode) body.cabecalho-com-admin :is(#admin-encomenda-modal, #clientes-encomenda-modal) .admin-encomenda-anexo .admin-encomenda-anexo-botao{
     flex:0 0 78px !important;
     width:78px !important;
     min-width:78px !important;
@@ -2152,7 +2152,7 @@ html:not(.admin-light-mode) body.cabecalho-com-admin #admin-encomenda-modal .adm
     line-height:1 !important;
 }
 
-html:not(.admin-light-mode) body.cabecalho-com-admin #admin-encomenda-modal .admin-encomenda-anexos-upload .admin-encomenda-anexos-escolher{
+html:not(.admin-light-mode) body.cabecalho-com-admin :is(#admin-encomenda-modal, #clientes-encomenda-modal) .admin-encomenda-anexos-upload .admin-encomenda-anexos-escolher{
     flex:0 0 78px !important;
     width:78px !important;
     min-width:78px !important;
