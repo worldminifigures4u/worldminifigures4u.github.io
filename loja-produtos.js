@@ -4,6 +4,7 @@
 const PRODUTOS_POR_LOTE = 48;
 const PRODUTOS_POR_PAGINA_SERVIDOR = 48;
 const TAMANHO_PAGINA_METADADOS = 1000;
+const TAMANHO_PAGINA_PESQUISA_FLEXIVEL = 1000;
 const CACHE_TEMAS_LOJA_CHAVE = 'figures-planet-loja-temas-v2';
 const CACHE_TEMAS_LOJA_TTL_MS = 30 * 60 * 1000;
 const USAR_CACHE_TEMAS_LOJA = false;
@@ -23,6 +24,8 @@ let vitrineModoAleatorio = false;
 let vitrineInicioAleatorio = 0;
 let vitrineCursorCatalogo = 0;
 let vitrineVoltaAoInicio = false;
+let catalogoPesquisaFlexivelLoja = null;
+let promessaCatalogoPesquisaFlexivelLoja = null;
 const mapaTemasLoja = new Map();
 let lojaFotoModalLigado = false;
 let lojaFotoGaleriaUrls = [];
@@ -192,6 +195,135 @@ function rotuloTemaLoja(texto) {
 
 function chaveIconeTemaLoja(texto) {
     return rotuloTemaLoja(texto);
+}
+
+function normalizarTextoBuscaLoja(texto) {
+    return String(texto || '')
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .replace(/[^a-z0-9]+/g, ' ')
+        .trim()
+        .replace(/\s+/g, ' ');
+}
+
+function reduzirLetrasRepetidasBuscaLoja(texto) {
+    return String(texto || '').replace(/([a-z0-9])\1+/g, '$1');
+}
+
+function obterTermosBuscaLoja(texto) {
+    const normalizado = normalizarTextoBuscaLoja(texto);
+    return normalizado ? normalizado.split(' ').filter(Boolean) : [];
+}
+
+function distanciaEdicaoAteUmBuscaLoja(a, b) {
+    if (a === b) return true;
+    if (Math.abs(a.length - b.length) > 1) return false;
+
+    let i = 0;
+    let j = 0;
+    let diferencas = 0;
+
+    while (i < a.length && j < b.length) {
+        if (a[i] === b[j]) {
+            i += 1;
+            j += 1;
+            continue;
+        }
+
+        diferencas += 1;
+        if (diferencas > 1) return false;
+
+        if (a.length > b.length) {
+            i += 1;
+        } else if (b.length > a.length) {
+            j += 1;
+        } else {
+            i += 1;
+            j += 1;
+        }
+    }
+
+    if (i < a.length || j < b.length) diferencas += 1;
+    return diferencas <= 1;
+}
+
+function pontuarTermoBuscaLoja(termo, termosProduto) {
+    const termoReduzido = reduzirLetrasRepetidasBuscaLoja(termo);
+    let melhor = 0;
+
+    termosProduto.forEach((termoProduto) => {
+        const produtoReduzido = reduzirLetrasRepetidasBuscaLoja(termoProduto);
+
+        if (termoProduto === termo) melhor = Math.max(melhor, 80);
+        else if (produtoReduzido === termoReduzido) melhor = Math.max(melhor, 72);
+        else if (termoProduto.startsWith(termo)) melhor = Math.max(melhor, 58);
+        else if (produtoReduzido.startsWith(termoReduzido)) melhor = Math.max(melhor, 54);
+        else if (termoProduto.includes(termo)) melhor = Math.max(melhor, 44);
+        else if (produtoReduzido.includes(termoReduzido)) melhor = Math.max(melhor, 40);
+        else if (
+            termo.length >= 5
+            && termoProduto.length >= 5
+            && distanciaEdicaoAteUmBuscaLoja(termo, termoProduto)
+        ) {
+            melhor = Math.max(melhor, 28);
+        } else if (
+            termoReduzido.length >= 5
+            && produtoReduzido.length >= 5
+            && distanciaEdicaoAteUmBuscaLoja(termoReduzido, produtoReduzido)
+        ) {
+            melhor = Math.max(melhor, 26);
+        }
+    });
+
+    return melhor;
+}
+
+function pontuarProdutoPesquisaFlexivelLoja(produto, pesquisa) {
+    const pesquisaNormalizada = normalizarTextoBuscaLoja(pesquisa);
+    const nomeNormalizado = normalizarTextoBuscaLoja(produto?.nome || '');
+    if (!pesquisaNormalizada || !nomeNormalizado) return 0;
+
+    const termosPesquisa = obterTermosBuscaLoja(pesquisa);
+    const termosProduto = obterTermosBuscaLoja(produto?.nome || '');
+    if (!termosPesquisa.length || !termosProduto.length) return 0;
+
+    let pontos = 0;
+    if (nomeNormalizado === pesquisaNormalizada) {
+        pontos += 220;
+    } else if (nomeNormalizado.startsWith(pesquisaNormalizada)) {
+        pontos += 180;
+    } else if (nomeNormalizado.includes(pesquisaNormalizada)) {
+        pontos += 150;
+    } else {
+        const nomeReduzido = reduzirLetrasRepetidasBuscaLoja(nomeNormalizado);
+        const pesquisaReduzida = reduzirLetrasRepetidasBuscaLoja(pesquisaNormalizada);
+        if (nomeReduzido === pesquisaReduzida) pontos += 170;
+        else if (nomeReduzido.startsWith(pesquisaReduzida)) pontos += 145;
+        else if (nomeReduzido.includes(pesquisaReduzida)) pontos += 120;
+    }
+
+    for (const termo of termosPesquisa) {
+        const pontosTermo = pontuarTermoBuscaLoja(termo, termosProduto);
+        if (pontosTermo <= 0) return 0;
+        pontos += pontosTermo;
+    }
+
+    return pontos;
+}
+
+function filtrarProdutosPesquisaFlexivelLoja(produtos, pesquisa) {
+    return (Array.isArray(produtos) ? produtos : [])
+        .map((produto) => ({
+            produto,
+            pontos: pontuarProdutoPesquisaFlexivelLoja(produto, pesquisa)
+        }))
+        .filter(item => item.pontos > 0)
+        .sort((a, b) => {
+            if (b.pontos !== a.pontos) return b.pontos - a.pontos;
+            return String(a.produto.nome || '').localeCompare(String(b.produto.nome || ''), 'pt-PT');
+        })
+        .map(item => item.produto);
 }
 
 function criarSvgTema(partes = [], opcoes = {}) {
@@ -619,6 +751,46 @@ async function buscarProdutosLojaIntervalo(cliente, filtros, inicio, fimInclusiv
     return Array.isArray(data) ? data : [];
 }
 
+async function carregarCatalogoPesquisaFlexivelLoja(cliente) {
+    if (catalogoPesquisaFlexivelLoja) return catalogoPesquisaFlexivelLoja;
+    if (promessaCatalogoPesquisaFlexivelLoja) return promessaCatalogoPesquisaFlexivelLoja;
+
+    promessaCatalogoPesquisaFlexivelLoja = (async () => {
+        const produtos = [];
+        const filtrosCatalogo = { pesquisa: '', tema: null, subtema: null };
+        let inicio = 0;
+
+        while (true) {
+            const pagina = await buscarProdutosLojaIntervalo(
+                cliente,
+                filtrosCatalogo,
+                inicio,
+                inicio + TAMANHO_PAGINA_PESQUISA_FLEXIVEL - 1
+            );
+            if (!pagina.length) break;
+
+            produtos.push(...pagina);
+            if (pagina.length < TAMANHO_PAGINA_PESQUISA_FLEXIVEL) break;
+            inicio += TAMANHO_PAGINA_PESQUISA_FLEXIVEL;
+        }
+
+        catalogoPesquisaFlexivelLoja = produtos;
+        mesclarProdutosNoCatalogoLocal(produtos);
+        return produtos;
+    })();
+
+    try {
+        return await promessaCatalogoPesquisaFlexivelLoja;
+    } finally {
+        promessaCatalogoPesquisaFlexivelLoja = null;
+    }
+}
+
+async function buscarProdutosPesquisaFlexivelLoja(cliente, pesquisa) {
+    const catalogo = await carregarCatalogoPesquisaFlexivelLoja(cliente);
+    return filtrarProdutosPesquisaFlexivelLoja(catalogo, pesquisa);
+}
+
 async function carregarMetadadosTemasLoja() {
     let metadados = USAR_CACHE_TEMAS_LOJA ? lerCacheTemasLoja() : null;
 
@@ -737,6 +909,14 @@ async function carregarPaginaProdutosLoja({ reiniciar = false } = {}) {
                     haMaisProdutosRemotos = offsetProdutosRemotos < totalProdutosRemotos;
                 }
 
+                if (filtros.pesquisa && totalProdutosRemotos === 0 && produtosPagina.length === 0) {
+                    produtosPagina = await buscarProdutosPesquisaFlexivelLoja(cliente, filtros.pesquisa);
+                    totalProdutosRemotos = produtosPagina.length;
+                    offsetProdutosRemotos = produtosPagina.length;
+                    haMaisProdutosRemotos = false;
+                    vitrineModoAleatorio = false;
+                }
+
                 mesclarProdutosNoCatalogoLocal(produtosPagina);
                 produtosFiltradosAtual = produtosPagina;
                 produtosVitrineAtual = produtosPagina;
@@ -803,6 +983,8 @@ async function carregarProdutosDaNuvem(){
     try{
         todosOsProdutos = [];
         catalogoAdminCarregado = false;
+        catalogoPesquisaFlexivelLoja = null;
+        promessaCatalogoPesquisaFlexivelLoja = null;
         reiniciarEstadoPaginacaoVitrine();
         totalProdutosRemotos = 0;
 
