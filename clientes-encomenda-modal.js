@@ -29,6 +29,17 @@ function formatarEuroModalEncomendaCliente(valor) {
     return String(valor ?? "");
 }
 
+function obterClassePlataformaModalEncomendaCliente(origem) {
+    const normalizada = AdminEncomendaVista.normalizar(origem).replace(/\s+/g, "-");
+    return normalizada ? ` plataforma-${normalizada}` : "";
+}
+
+function obterVoltarAoEditarModalEncomendaCliente() {
+    if (document.body.classList.contains("pagina-clientes-admin")) return "clientes";
+    if (document.body.classList.contains("pagina-encomendas-admin")) return "encomendas";
+    return "";
+}
+
 function definirStatusModalEncomendaCliente(texto, erro = false) {
     const status = document.getElementById("clientes-encomenda-status");
     if (!status) return;
@@ -37,11 +48,86 @@ function definirStatusModalEncomendaCliente(texto, erro = false) {
     status.classList.toggle("msg-sucesso", Boolean(texto) && !erro);
 }
 
+function marcarBotaoTopoModalEncomendaCliente(botao) {
+    if (!botao) return;
+    botao.classList.add("admin-encomenda-modal-botao", "admin-encomenda-topo-compacto");
+}
+
+function reporBotaoFecharTopoModalEncomendaCliente() {
+    const modal = document.getElementById("clientes-encomenda-modal");
+    const topo = modal?.querySelector(".clientes-encomenda-topo");
+    const botaoFechar = document.getElementById("clientes-encomenda-fechar");
+    if (botaoFechar && topo && botaoFechar.parentElement !== topo) {
+        topo.appendChild(botaoFechar);
+    }
+}
+
+function limparTopoModalEncomendaCliente() {
+    reporBotaoFecharTopoModalEncomendaCliente();
+    document.getElementById("clientes-encomenda-modal-acoes")?.replaceChildren();
+    const titulo = document.getElementById("clientes-encomenda-titulo");
+    if (!titulo) return;
+    titulo.classList.remove("admin-encomenda-modal-titulo-resumo");
+    titulo.textContent = "Consulta de encomenda";
+    titulo.removeAttribute("title");
+}
+
+function preencherTituloModalEncomendaCliente(encomenda = {}) {
+    const titulo = document.getElementById("clientes-encomenda-titulo");
+    if (!titulo) return;
+    const codigo = String(encomenda.codigo_encomenda || encomenda.id || "").trim();
+    const data = formatarDataModalEncomendaCliente(encomenda.data_pagamento || encomenda.created_at);
+    const origem = String(encomenda.origem || "Site").trim() || "Site";
+    const cliente = AdminEncomendaVista.obterNomeTituloEncomenda(encomenda) || "Cliente sem nome";
+    const origemClasse = `admin-encomenda-modal-titulo-origem${obterClassePlataformaModalEncomendaCliente(origem)}`;
+    const clienteTexto = criarElementoModalEncomendaCliente("span", "admin-encomenda-modal-titulo-cliente", cliente);
+    titulo.classList.add("admin-encomenda-modal-titulo-resumo");
+    titulo.replaceChildren(...[
+        codigo ? criarElementoModalEncomendaCliente("span", "admin-encomenda-modal-titulo-codigo", codigo) : null,
+        criarElementoModalEncomendaCliente("span", "admin-encomenda-modal-titulo-data", data),
+        criarElementoModalEncomendaCliente("span", origemClasse, origem),
+        clienteTexto
+    ].filter(Boolean));
+    titulo.title = [codigo, data, origem, cliente].filter(Boolean).join(" · ");
+}
+
+function moverAcoesParaTopoModalEncomendaCliente(card) {
+    const acoesTopo = document.getElementById("clientes-encomenda-modal-acoes");
+    const botoes = card?.querySelector(".admin-encomenda-dados-botoes");
+    if (!acoesTopo || !botoes) return;
+
+    const colunaAcoes = botoes.closest(".admin-encomenda-dados-acoes");
+    const estado = card?.querySelector(".admin-encomenda-gestao-estado");
+    const statusGravacao = card?.querySelector(".admin-encomenda-gravar-status-modal");
+    const botaoFechar = document.getElementById("clientes-encomenda-fechar");
+    botoes.classList.add("admin-encomenda-modal-botoes");
+    estado?.classList.add("admin-encomenda-modal-estado");
+
+    const botaoAnexos = botoes.querySelector(".admin-encomenda-anexos-escolher-acao");
+    const ordemPreferida = [
+        botoes.querySelector(".admin-encomenda-apagar"),
+        botoes.querySelector(".admin-encomenda-editar"),
+        botoes.querySelector(".admin-encomenda-exportar"),
+        botoes.querySelector(".admin-encomenda-gravar")
+    ].filter(Boolean);
+    const restantes = Array.from(botoes.children).filter(botao => !ordemPreferida.includes(botao) && botao !== botaoAnexos);
+    botoes.replaceChildren(...ordemPreferida, ...restantes);
+    botoes.querySelectorAll("a, button, label").forEach(marcarBotaoTopoModalEncomendaCliente);
+
+    marcarBotaoTopoModalEncomendaCliente(botaoFechar);
+    if (botaoFechar) botoes.appendChild(botaoFechar);
+    statusGravacao?.classList.add("admin-encomenda-modal-status");
+    acoesTopo.replaceChildren(...[estado, botoes, statusGravacao].filter(Boolean));
+    colunaAcoes?.remove();
+}
+
 function fecharModalEncomendaCliente() {
     const modal = document.getElementById("clientes-encomenda-modal");
     if (!modal) return;
+    reporBotaoFecharTopoModalEncomendaCliente();
     modal.hidden = true;
     document.getElementById("clientes-encomenda-conteudo")?.replaceChildren();
+    document.getElementById("clientes-encomenda-modal-acoes")?.replaceChildren();
     definirStatusModalEncomendaCliente("");
     document.body.classList.remove("clientes-encomenda-modal-aberto");
     clientesEncomendaModalAtual = null;
@@ -70,6 +156,7 @@ async function renderizarModalEncomendaCliente() {
     const conteudo = document.getElementById("clientes-encomenda-conteudo");
     if (!item?.id || !conteudo) return;
 
+    limparTopoModalEncomendaCliente();
     conteudo.replaceChildren(criarElementoModalEncomendaCliente("p", "admin-cliente-carregar", "A carregar encomenda..."));
     const supabaseAdmin = obterSupabaseModalEncomendaCliente();
     if (!supabaseAdmin) {
@@ -108,10 +195,13 @@ async function renderizarModalEncomendaCliente() {
     item.codigo = data.codigo_encomenda || item.codigo;
 
     await AdminEncomendaVista.carregarImagensParaEncomendas([data]);
-    conteudo.replaceChildren(AdminEncomendaVista.criarCardEncomenda(data, {
+    const card = AdminEncomendaVista.criarCardEncomenda(data, {
         modoModal: true,
-        ocultarCliente: true
-    }));
+        voltarAoEditar: obterVoltarAoEditarModalEncomendaCliente()
+    });
+    moverAcoesParaTopoModalEncomendaCliente(card);
+    preencherTituloModalEncomendaCliente(data);
+    conteudo.replaceChildren(card);
     sincronizarHistoricoClienteModal(data);
 }
 

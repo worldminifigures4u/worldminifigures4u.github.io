@@ -23,12 +23,12 @@
     <link rel="stylesheet" href="admin-light.css?v=20260920-guardar-verde">
     <link rel="stylesheet" href="morada-formato.css?v=20260716-morada-meia">
     <link rel="stylesheet" href="styles-tema.css?v=20260721-sem-underline" media="print" data-async-css>
-    <link rel="stylesheet" href="admin-cliente.css?v=20260921-adicionar-aviso-stock" media="print" data-async-css>
+    <link rel="stylesheet" href="admin-cliente.css?v=20260925-modal-encomenda-unico" media="print" data-async-css>
     <link rel="stylesheet" href="admin-imagem.css?v=20260917-fechar-texto" media="print" data-async-css>
     <link rel="stylesheet" href="encomendas.css?v=20260921-estado-uma-moldura" media="print" data-async-css>
     <noscript>
         <link rel="stylesheet" href="styles-tema.css?v=20260721-sem-underline">
-        <link rel="stylesheet" href="admin-cliente.css?v=20260921-adicionar-aviso-stock">
+        <link rel="stylesheet" href="admin-cliente.css?v=20260925-modal-encomenda-unico">
         <link rel="stylesheet" href="admin-imagem.css?v=20260917-fechar-texto">
         <link rel="stylesheet" href="encomendas.css?v=20260921-estado-uma-moldura">
     </noscript>
@@ -101,13 +101,14 @@
         <img id="admin-imagem-modal-foto" alt="">
     </div>
 
-    <div class="clientes-encomenda-modal" id="clientes-encomenda-modal" hidden role="dialog" aria-modal="true" aria-labelledby="clientes-encomenda-titulo">
-        <div class="clientes-encomenda-dialogo">
-            <div class="clientes-encomenda-topo">
+    <div class="clientes-encomenda-modal admin-encomenda-modal" id="clientes-encomenda-modal" hidden role="dialog" aria-modal="true" aria-labelledby="clientes-encomenda-titulo">
+        <div class="clientes-encomenda-dialogo admin-encomenda-modal-dialogo">
+            <div class="clientes-encomenda-topo admin-encomenda-modal-topo">
                 <h2 id="clientes-encomenda-titulo">Consulta de encomenda</h2>
-                <button type="button" class="clientes-encomenda-fechar" id="clientes-encomenda-fechar">Fechar</button>
+                <div class="admin-encomenda-modal-acoes" id="clientes-encomenda-modal-acoes"></div>
+                <button type="button" class="admin-encomenda-modal-fechar admin-encomenda-modal-botao" id="clientes-encomenda-fechar">Fechar</button>
             </div>
-            <div id="clientes-encomenda-conteudo" class="clientes-encomenda-conteudo"></div>
+            <div id="clientes-encomenda-conteudo" class="clientes-encomenda-conteudo admin-encomenda-modal-conteudo"></div>
             <p class="wallapop-status" id="clientes-encomenda-status" aria-live="polite"></p>
         </div>
     </div>
@@ -115,7 +116,7 @@
 <script src="supabase-cdn.js?v=20260913-timeout" defer></script>
 <script src="app-config.js?v=20260920-gravar-texto" defer></script>
 <script src="agenda-alertas.js?v=20260920-entre-abas" defer></script>
-<script src="admin-encomenda-loader.js?v=20260925-sem-navegacao-consulta" defer></script>
+<script src="admin-encomenda-loader.js?v=20260925-modal-encomenda-unico" defer></script>
 <script src="admin-theme.js?v=20260826-light-mode" defer></script>
 <script src="morada-formato.js?v=20260713-morada-formatada" defer></script>
 <script src="paises-cliente.js?v=20260731-wallapop-es" defer></script>
