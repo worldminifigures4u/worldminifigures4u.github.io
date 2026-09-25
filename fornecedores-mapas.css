@@ -1008,7 +1008,7 @@ body.pagina-mapas-admin > main.fornecedores-admin {
 
 .pagina-fornecedores-unificada .fornecedor-controles-unificados select {
     padding-left: 10px;
-    padding-right: 24px;
+    padding-right: 18px;
 }
 
 .pagina-fornecedores-unificada .fornecedor-controles-unificados .fornecedor-btn-editar-ficha {
@@ -1045,15 +1045,15 @@ body.pagina-mapas-admin > main.fornecedores-admin {
 }
 
 .pagina-fornecedores-unificada .fornecedor-controles-unificados label[for="fornecedor-filtro-top"] select {
-    width: 92px;
+    width: 82px;
 }
 
 .pagina-fornecedores-unificada .fornecedor-controles-unificados label[for="fornecedor-filtro-arquivado"] select {
-    width: 96px;
+    width: 88px;
 }
 
 .pagina-fornecedores-unificada .fornecedor-controles-unificados label[for="fornecedor-filtro-descontinuado"] select {
-    width: 108px;
+    width: 100px;
 }
 
 .pagina-fornecedores-unificada .fornecedor-resumo-encomenda {
