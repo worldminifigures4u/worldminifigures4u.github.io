@@ -555,11 +555,14 @@
 
             .produto-galeria-seta{
                 opacity:1;
-                width:40px;
-                height:44px;
-                font-size:20px;
-                background:rgba(0,0,0,0.42);
+                width:32px;
+                height:34px;
+                font-size:17px;
+                background:rgba(0,0,0,0.36);
             }
+
+            .produto-galeria-seta-anterior{ left:4px; }
+            .produto-galeria-seta-seguinte{ right:4px; }
         }
 
         .categoria{
