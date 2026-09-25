@@ -875,7 +875,7 @@ body.pagina-mapas-admin > main.fornecedores-admin {
     --fp-texto-campo: #fff;
     --fp-texto-suave: #bdbdbd;
     --fp-cor-destaque: #ffc400;
-    --fp-altura-controle-topo-fornecedor: 42px;
+    --fp-altura-controle-topo-fornecedor: 36px;
     --fp-foco-campo: 0 0 0 2px rgba(255, 196, 0, 0.18);
     --fp-cabecalho-tabela-fundo: #181818;
     --fp-cabecalho-tabela-texto: #9a9a9a;
@@ -983,7 +983,7 @@ body.pagina-mapas-admin > main.fornecedores-admin {
     padding-top: 0;
     padding-bottom: 0;
     line-height: 1;
-    font-size: 15px;
+    font-size: 13px;
     font-weight: 800;
 }
 
@@ -993,6 +993,62 @@ body.pagina-mapas-admin > main.fornecedores-admin {
     display: inline-flex;
     align-items: center;
     justify-content: center;
+}
+
+.pagina-fornecedores-unificada .fornecedor-controles-unificados .fornecedor-seletor-linha {
+    display: grid;
+    grid-template-columns: 112px 88px;
+    align-items: center;
+    gap: 6px;
+}
+
+.pagina-fornecedores-unificada .fornecedor-controles-unificados .fornecedor-seletor-linha select {
+    width: 112px;
+}
+
+.pagina-fornecedores-unificada .fornecedor-controles-unificados .fornecedor-btn-editar-ficha {
+    width: 88px;
+    min-width: 88px;
+    padding-left: 10px;
+    padding-right: 10px;
+}
+
+.pagina-fornecedores-unificada .fornecedor-controles-unificados .fornecedor-filtro-marcacao-linha {
+    grid-template-columns: 132px 36px;
+    gap: 6px;
+}
+
+.pagina-fornecedores-unificada .fornecedor-controles-unificados .fornecedor-filtro-marcacao-linha .fornecedor-controle-filtro-compacto {
+    width: 100%;
+}
+
+.pagina-fornecedores-unificada .fornecedor-controles-unificados .fornecedor-controle-filtro-compacto select {
+    max-width: 100%;
+}
+
+.pagina-fornecedores-unificada .fornecedor-controles-unificados .fornecedor-filtros-marcacao-bloco {
+    grid-template-columns: max-content 36px;
+    gap: 6px;
+}
+
+.pagina-fornecedores-unificada .fornecedor-controles-unificados .fornecedor-btn-filtro-marcacao,
+.pagina-fornecedores-unificada .fornecedor-controles-unificados .fornecedor-btn-remover-filtro-marcacao {
+    width: 36px;
+    min-width: 36px;
+    padding-left: 0;
+    padding-right: 0;
+}
+
+.pagina-fornecedores-unificada .fornecedor-controles-unificados label[for="fornecedor-filtro-top"] select {
+    width: 88px;
+}
+
+.pagina-fornecedores-unificada .fornecedor-controles-unificados label[for="fornecedor-filtro-arquivado"] select {
+    width: 104px;
+}
+
+.pagina-fornecedores-unificada .fornecedor-controles-unificados label[for="fornecedor-filtro-descontinuado"] select {
+    width: 118px;
 }
 
 .pagina-fornecedores-unificada .fornecedor-resumo-encomenda {
