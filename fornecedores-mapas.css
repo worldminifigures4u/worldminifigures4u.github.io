@@ -1164,6 +1164,30 @@ body.pagina-mapas-admin > main.fornecedores-admin {
     color: #39d353;
 }
 
+.pagina-fornecedores-unificada .fornecedor-resumo-encomenda .fornecedores-status {
+    flex: 0 0 100%;
+    width: 100%;
+    box-sizing: border-box;
+    margin: 0;
+    padding: 5px 10px;
+    border: 1px solid rgba(57, 211, 83, .28);
+    border-radius: 6px;
+    background: rgba(57, 211, 83, .08);
+    text-align: center;
+    font-size: 13px;
+    font-weight: 700;
+    line-height: 1.25;
+}
+
+.pagina-fornecedores-unificada .fornecedor-resumo-encomenda .fornecedores-status:empty {
+    display: none;
+}
+
+.pagina-fornecedores-unificada .fornecedor-resumo-encomenda .fornecedores-status.status-erro {
+    border-color: rgba(255, 107, 107, .34);
+    background: rgba(255, 107, 107, .1);
+}
+
 .pagina-mapas-admin .fornecedor-resultados {
     border: 1px solid #333;
     border-radius: 8px;
