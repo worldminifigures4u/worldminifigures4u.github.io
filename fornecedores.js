@@ -3151,7 +3151,12 @@ function atualizarResumoEncomendaFornecedor(opcoes = {}) {
     const centro = alvo.querySelector(".fornecedor-resumo-encomenda-centro");
     const totalFiguras = document.getElementById("fornecedor-total-figuras-encomenda");
     if (centro) {
-        if (totalFiguras) centro.appendChild(totalFiguras);
+        const status = document.getElementById("fornecedores-status");
+        if (totalFiguras && status?.parentElement === centro) {
+            centro.insertBefore(totalFiguras, status);
+        } else if (totalFiguras) {
+            centro.appendChild(totalFiguras);
+        }
     } else {
         if (totalFiguras) alvo.appendChild(totalFiguras);
     }
