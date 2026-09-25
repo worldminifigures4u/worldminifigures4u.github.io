@@ -910,25 +910,27 @@ function validarReferenciasItensFornecedor(itens, opcoes = {}) {
             return;
         }
         if (!refsNaLista.has(chave)) {
-            refsNaLista.set(chave, { referencia, nomes: [] });
+            refsNaLista.set(chave, { referencia, itens: [] });
         }
-        refsNaLista.get(chave).nomes.push(nome);
+        refsNaLista.get(chave).itens.push(item);
     });
 
-    refsNaLista.forEach(({ referencia, nomes }) => {
+    refsNaLista.forEach(({ referencia, itens }) => {
+        const nomes = itens.map(item => String(item?.nome || "Produto sem nome").trim());
         const unicos = [...new Set(nomes)];
+        const todosComId = itens.every(item => Boolean(obterIdProdutoItemFornecedor(item)));
         if (verificarCatalogo) {
             const produtos = obterProdutosPorReferenciaFornecedor(referencia);
-            if (!produtos.length) {
+            if (!produtos.length && !todosComId) {
                 avisos.push(`${referencia}: nao existe no catalogo`);
                 return;
             }
-            if (produtos.length > 1) {
+            if (produtos.length > 1 && !todosComId) {
                 avisos.push(`${referencia}: Ref. partilhada por ${produtos.length} fichas (${unicos.slice(0, 4).join(", ")})`);
                 return;
             }
         }
-        if (unicos.length > 1) {
+        if (unicos.length > 1 && !todosComId) {
             avisos.push(`${referencia}: repetida na selecao (${unicos.slice(0, 4).join(", ")})`);
         }
     });
