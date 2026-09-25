@@ -32,6 +32,27 @@ function definirStatusEdicaoFornecedor(status, tipo, mensagem) {
     mostrarPopupEdicaoFornecedor(tipo, mensagem);
 }
 
+function normalizarCodigoEdicaoFornecedor(valor) {
+    return String(valor || "").trim();
+}
+
+function encontrarPedidoComCodigoEdicaoFornecedor(codigo, idAtual) {
+    const codigoNormalizado = normalizarCodigoEdicaoFornecedor(codigo);
+    if (!codigoNormalizado) return null;
+    return (fornecedorPedidos || []).find((pedido) =>
+        String(pedido?.id || "") !== String(idAtual || "")
+        && normalizarCodigoEdicaoFornecedor(pedido?.codigo) === codigoNormalizado
+    ) || null;
+}
+
+function obterMensagemErroEdicaoFornecedor(error) {
+    const mensagem = String(error?.message || "Nao foi possivel gravar a ficha.");
+    if (/encomendas_fornecedores_codigo_key|duplicate key value/i.test(mensagem)) {
+        return "Esse código já existe noutra encomenda de fornecedor. Altere o código ou deixe vazio.";
+    }
+    return "Erro: " + mensagem;
+}
+
 function analisarLinhaListaFinalFornecedor(linha, numeroLinha) {
     const partes = dividirLinhaListaFinalFornecedor(linha).map(parte => String(parte || "").trim()).filter(Boolean);
     if (!partes.length) return null;
@@ -1047,7 +1068,8 @@ async function guardarEdicaoPedidoFornecedor(evento) {
         return;
     }
 
-    const codigo = modal.querySelector('#fornecedor-edicao-codigo').value.trim();
+    const codigo = normalizarCodigoEdicaoFornecedor(modal.querySelector('#fornecedor-edicao-codigo').value);
+    const codigoOriginal = normalizarCodigoEdicaoFornecedor(pedido.codigo);
     const fornecedor = modal.querySelector('#fornecedor-edicao-nome').value.trim();
     const referencia = modal.querySelector('#fornecedor-edicao-referencia').value.trim();
     const estado = modal.querySelector('#fornecedor-edicao-estado').value;
@@ -1067,9 +1089,17 @@ async function guardarEdicaoPedidoFornecedor(evento) {
         status.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
         return;
     }
+    const pedidoComMesmoCodigo = codigo !== codigoOriginal
+        ? encontrarPedidoComCodigoEdicaoFornecedor(codigo, id)
+        : null;
+    if (pedidoComMesmoCodigo) {
+        definirStatusEdicaoFornecedor(status, "erro", `Esse código já pertence à encomenda ${pedidoComMesmoCodigo.codigo}.`);
+        status.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+        return;
+    }
 
     if (typeof confirmarReferenciasItensFornecedor === "function"
-        && !confirmarReferenciasItensFornecedor(itens, "gravar a encomenda")) {
+        && !(await confirmarReferenciasItensFornecedor(itens, "gravar a encomenda"))) {
         definirStatusEdicaoFornecedor(status, "aviso", "Gravação cancelada para rever as referencias.");
         return;
     }
@@ -1081,13 +1111,16 @@ async function guardarEdicaoPedidoFornecedor(evento) {
         status.classList.remove('status-erro', 'status-sucesso', 'status-aviso');
         status.classList.add('status-neutro');
         const estadoAnterior = pedido.estado;
-        const atualizado = await atualizarPedidoFornecedor(id, {
-            codigo: codigo || null,
+        const dadosPedido = {
             fornecedor,
             referencia: referencia || null,
             estado,
             itens
-        });
+        };
+        if (codigo !== codigoOriginal) {
+            dadosPedido.codigo = codigo || null;
+        }
+        const atualizado = await atualizarPedidoFornecedor(id, dadosPedido);
         status.textContent = 'A atualizar histórico na ficha do produto...';
         await sincronizarHistoricoPedidosFornecedor(itens, fornecedor, {
             modo: "editar",
@@ -1117,9 +1150,7 @@ async function guardarEdicaoPedidoFornecedor(evento) {
         definirStatusFornecedor(`Ajuste ${atualizado.codigo} gravado.${produtosComPrecoAtualizado ? ` Preço compra atualizado em ${produtosComPrecoAtualizado} produto(s).` : ''}${avisoPrecoCompra}`, Boolean(avisoPrecoCompra));
     } catch (error) {
         console.error(error);
-        status.textContent = 'Erro: ' + (error.message || 'Nao foi possivel gravar a ficha.');
-        status.classList.remove('status-aviso', 'status-sucesso', 'status-neutro');
-        status.classList.add('status-erro');
+        definirStatusEdicaoFornecedor(status, "erro", obterMensagemErroEdicaoFornecedor(error));
     } finally {
         botao.disabled = false;
         if (guardadoComSucesso) fecharEdicaoPedidoFornecedor();
