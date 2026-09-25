@@ -875,6 +875,7 @@ body.pagina-mapas-admin > main.fornecedores-admin {
     --fp-texto-campo: #fff;
     --fp-texto-suave: #bdbdbd;
     --fp-cor-destaque: #ffc400;
+    --fp-altura-controle-topo-fornecedor: 42px;
     --fp-foco-campo: 0 0 0 2px rgba(255, 196, 0, 0.18);
     --fp-cabecalho-tabela-fundo: #181818;
     --fp-cabecalho-tabela-texto: #9a9a9a;
@@ -970,6 +971,28 @@ body.pagina-mapas-admin > main.fornecedores-admin {
     background: var(--fp-fundo-campo);
     outline: none;
     box-shadow: var(--fp-foco-campo);
+}
+
+.pagina-fornecedores-unificada .fornecedor-controles-unificados :is(input, select),
+.pagina-fornecedores-unificada .fornecedor-controles-unificados .fornecedor-btn-editar-ficha,
+.pagina-fornecedores-unificada .fornecedor-controles-unificados .fornecedor-btn-filtro-marcacao,
+.pagina-fornecedores-unificada .fornecedor-controles-unificados .fornecedor-btn-remover-filtro-marcacao {
+    height: var(--fp-altura-controle-topo-fornecedor);
+    min-height: var(--fp-altura-controle-topo-fornecedor);
+    box-sizing: border-box;
+    padding-top: 0;
+    padding-bottom: 0;
+    line-height: 1;
+    font-size: 15px;
+    font-weight: 800;
+}
+
+.pagina-fornecedores-unificada .fornecedor-controles-unificados .fornecedor-btn-editar-ficha,
+.pagina-fornecedores-unificada .fornecedor-controles-unificados .fornecedor-btn-filtro-marcacao,
+.pagina-fornecedores-unificada .fornecedor-controles-unificados .fornecedor-btn-remover-filtro-marcacao {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .pagina-fornecedores-unificada .fornecedor-resumo-encomenda {
