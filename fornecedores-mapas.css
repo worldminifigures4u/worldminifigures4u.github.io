@@ -1115,15 +1115,6 @@ body.pagina-mapas-admin > main.fornecedores-admin {
     font: inherit;
 }
 
-.fornecedor-resumo-encomenda-texto {
-    display: inline-flex;
-    align-items: center;
-    min-height: 36px;
-    flex: 0 0 auto;
-    text-align: center;
-    white-space: nowrap;
-}
-
 .pagina-fornecedores-unificada .fornecedor-acoes-encomenda-resumo {
     display: inline-flex;
     align-items: center;

@@ -3148,26 +3148,6 @@ function atualizarResumoEncomendaFornecedor(opcoes = {}) {
         fornecedorResumoEncomenda.limite = opcoes.limite;
     }
 
-    const { totalFiltrados, limite } = fornecedorResumoEncomenda;
-
-    let textoProdutos;
-    if (totalFiltrados <= 0) {
-        textoProdutos = "Nenhum produto encontrado.";
-    } else if (totalFiltrados > limite) {
-        textoProdutos = `${Math.min(totalFiltrados, limite)} de ${totalFiltrados} produto(s)`;
-    } else {
-        textoProdutos = `${totalFiltrados} produto(s)`;
-    }
-
-    let texto = document.getElementById("fornecedor-resumo-encomenda-texto");
-    if (!texto) {
-        texto = document.createElement("span");
-        texto.id = "fornecedor-resumo-encomenda-texto";
-        texto.className = "fornecedor-resumo-encomenda-texto";
-        alvo.querySelector(".fornecedor-resumo-encomenda-centro")?.appendChild(texto) || alvo.appendChild(texto);
-    }
-    texto.textContent = textoProdutos;
-
     const centro = alvo.querySelector(".fornecedor-resumo-encomenda-centro");
     const totalFiguras = document.getElementById("fornecedor-total-figuras-encomenda");
     if (centro) {
