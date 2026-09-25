@@ -312,13 +312,28 @@ function pontuarProdutoPesquisaFlexivelLoja(produto, pesquisa) {
     return pontos;
 }
 
+function obterChaveProdutoPesquisaFlexivelLoja(produto) {
+    if (produto?.id !== undefined && produto?.id !== null) return `id:${produto.id}`;
+    const sku = normalizarTextoBuscaLoja(produto?.sku || '');
+    if (sku) return `sku:${sku}`;
+    return `nome:${normalizarTextoBuscaLoja(produto?.nome || '')}`;
+}
+
 function filtrarProdutosPesquisaFlexivelLoja(produtos, pesquisa) {
-    return (Array.isArray(produtos) ? produtos : [])
-        .map((produto) => ({
-            produto,
-            pontos: pontuarProdutoPesquisaFlexivelLoja(produto, pesquisa)
-        }))
-        .filter(item => item.pontos > 0)
+    const melhoresPorProduto = new Map();
+
+    (Array.isArray(produtos) ? produtos : []).forEach((produto) => {
+        const pontos = pontuarProdutoPesquisaFlexivelLoja(produto, pesquisa);
+        if (pontos <= 0) return;
+
+        const chave = obterChaveProdutoPesquisaFlexivelLoja(produto);
+        const atual = melhoresPorProduto.get(chave);
+        if (!atual || pontos > atual.pontos) {
+            melhoresPorProduto.set(chave, { produto, pontos });
+        }
+    });
+
+    return Array.from(melhoresPorProduto.values())
         .sort((a, b) => {
             if (b.pontos !== a.pontos) return b.pontos - a.pontos;
             return String(a.produto.nome || '').localeCompare(String(b.produto.nome || ''), 'pt-PT');
