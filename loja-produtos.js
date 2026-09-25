@@ -1576,9 +1576,14 @@ async function reiniciarVitrinePaginada() {
 
         const texto = document.createElement('p');
         texto.className = 'estado-vitrine-texto';
-        texto.textContent = pesquisaAtiva || filtroTemaAtual !== 'todos'
-            ? 'Nenhuma minifigura encontrada com esse filtro.'
-            : 'Nenhum produto encontrado.';
+        const separadorAtivo = filtroTemaAtual !== 'todos';
+        texto.textContent = pesquisaAtiva && separadorAtivo
+            ? 'Nenhuma minifigura encontrada para esta pesquisa nesta categoria.'
+            : pesquisaAtiva
+                ? 'Nenhuma minifigura encontrada nesta pesquisa.'
+                : separadorAtivo
+                    ? 'Ainda não há minifiguras nesta categoria.'
+                    : 'Nenhum produto encontrado.';
 
         erroDiv.append(figura, texto);
         vitrine.appendChild(erroDiv);
