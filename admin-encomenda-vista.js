@@ -2652,6 +2652,16 @@ window.AdminEncomendaVista = (function () {
         }
         const emitirMoloni = criarBotaoEmitirFaturaMoloni(encomenda);
         if (emitirMoloni) botoesAcoes.appendChild(emitirMoloni);
+        if (estadoRepostoNormalizado(encomenda.estado) && encomenda.stock_reposto) {
+            const apagar = criarElemento("button", "wallapop-botao admin-encomenda-apagar", "Apagar");
+            apagar.type = "button";
+            apagar.title = "Apagar definitivamente a encomenda";
+            apagar.addEventListener("click", evento => {
+                evento.stopPropagation();
+                apagarEncomenda(encomenda, apagar);
+            });
+            botoesAcoes.appendChild(apagar);
+        }
         botoesAcoes.appendChild(gravarTudo);
         if (modoModal) {
             colunaAcoes.append(botoesAcoes, statusGravacao);
