@@ -1051,6 +1051,48 @@ function lerItensEditadosPedidoFornecedor(pedido, modal) {
     }).filter(item => item && (Number(item.quantidade || 0) > 0 || Number(item.falta_os || 0) > 0 || item.marcado_ex));
 }
 
+function obterInteiroCampoEdicaoFornecedor(linha, campo) {
+    return Math.max(0, Math.floor(Number(linha.querySelector(`[data-campo="${campo}"]`)?.value || 0)));
+}
+
+function obterPrecoCampoEdicaoFornecedor(linha) {
+    const valor = linha.querySelector('[data-campo="preco_custo"]')?.value || "";
+    return Math.round(Math.max(0, converterNumeroListaFornecedor(valor)) * 100);
+}
+
+function obterPrecoItemEdicaoFornecedor(item) {
+    return Math.round(Math.max(0, Number(item?.preco_custo ?? item?.custo ?? item?.preco ?? 0) || 0) * 100);
+}
+
+function pedidoTemItensAlteradosEdicaoFornecedor(pedido, modal) {
+    const linhas = Array.from(modal.querySelectorAll('.fornecedor-edicao-produto'));
+    if (linhas.length !== (pedido.itens || []).length) return true;
+
+    return linhas.some(linha => {
+        const indice = Number(linha.dataset.indice);
+        const item = pedido.itens[indice];
+        if (!item) return true;
+        if (linha.querySelector('[data-campo="remover"]')?.checked) return true;
+
+        const quantidadeOriginal = Math.max(0, Number(item.quantidade_original ?? item.quantidade ?? 0));
+        const quantidadeAtual = Math.max(0, Number(item.quantidade || 0));
+        const itemMarcadoEx = itemPedidoEstaExFornecedor(item);
+        const faltaAtual = itemMarcadoEx
+            ? 0
+            : Math.max(0, Number(item.falta_os || Math.max(0, quantidadeOriginal - quantidadeAtual)));
+        const marcarOsAtual = !itemMarcadoEx && (faltaAtual > 0 || item.estado_fornecedor === "OS");
+
+        const marcarEx = Boolean(linha.querySelector('[data-campo="marcar_ex"]')?.checked);
+        const marcarOs = Boolean(linha.querySelector('[data-campo="marcar_os"]')?.checked) && !marcarEx;
+
+        return obterInteiroCampoEdicaoFornecedor(linha, "quantidade") !== Math.floor(quantidadeAtual)
+            || obterInteiroCampoEdicaoFornecedor(linha, "falta_os") !== Math.floor(faltaAtual)
+            || obterPrecoCampoEdicaoFornecedor(linha) !== obterPrecoItemEdicaoFornecedor(item)
+            || marcarEx !== itemMarcadoEx
+            || marcarOs !== marcarOsAtual;
+    });
+}
+
 async function guardarEdicaoPedidoFornecedor(evento) {
     evento.preventDefault();
     const modal = document.getElementById('fornecedor-edicao-modal');
@@ -1073,6 +1115,9 @@ async function guardarEdicaoPedidoFornecedor(evento) {
     const fornecedor = modal.querySelector('#fornecedor-edicao-nome').value.trim();
     const referencia = modal.querySelector('#fornecedor-edicao-referencia').value.trim();
     const estado = modal.querySelector('#fornecedor-edicao-estado').value;
+    const estadoAnterior = pedido.estado;
+    const itensAlterados = pedidoTemItensAlteradosEdicaoFornecedor(pedido, modal);
+    const deveAtualizarHistoricoConfirmacao = deveConfirmarHistoricoPedidoFornecedor(estadoAnterior, estado);
     const itens = lerItensEditadosPedidoFornecedor(pedido, modal);
 
     if (!fornecedor) {
@@ -1098,7 +1143,8 @@ async function guardarEdicaoPedidoFornecedor(evento) {
         return;
     }
 
-    if (typeof confirmarReferenciasItensFornecedor === "function"
+    if (itensAlterados
+        && typeof confirmarReferenciasItensFornecedor === "function"
         && !(await confirmarReferenciasItensFornecedor(itens, "gravar a encomenda"))) {
         definirStatusEdicaoFornecedor(status, "aviso", "Gravação cancelada para rever as referencias.");
         return;
@@ -1110,44 +1156,53 @@ async function guardarEdicaoPedidoFornecedor(evento) {
         status.textContent = 'A gravar ficha...';
         status.classList.remove('status-erro', 'status-sucesso', 'status-aviso');
         status.classList.add('status-neutro');
-        const estadoAnterior = pedido.estado;
         const dadosPedido = {
             fornecedor,
             referencia: referencia || null,
-            estado,
-            itens
+            estado
         };
+        if (itensAlterados) {
+            dadosPedido.itens = itens;
+        }
         if (codigo !== codigoOriginal) {
             dadosPedido.codigo = codigo || null;
         }
         const atualizado = await atualizarPedidoFornecedor(id, dadosPedido);
-        status.textContent = 'A atualizar histórico na ficha do produto...';
-        await sincronizarHistoricoPedidosFornecedor(itens, fornecedor, {
-            modo: "editar",
-            itensAnteriores: pedido.itens || [],
-            estadoPedido: estado,
-            dataPedido: pedido.data_encomendada || pedido.criado_em || ''
-        });
-        if (deveConfirmarHistoricoPedidoFornecedor(estadoAnterior, estado)) {
+        if (itensAlterados) {
+            status.textContent = 'A atualizar histórico na ficha do produto...';
+            await sincronizarHistoricoPedidosFornecedor(itens, fornecedor, {
+                modo: "editar",
+                itensAnteriores: pedido.itens || [],
+                estadoPedido: estado,
+                dataPedido: pedido.data_encomendada || pedido.criado_em || ''
+            });
+        }
+        if (deveAtualizarHistoricoConfirmacao) {
+            status.textContent = 'A confirmar histórico na ficha do produto...';
             await sincronizarHistoricoPedidosFornecedor(itens, fornecedor, {
                 modo: "confirmar",
                 dataPedido: atualizado.data_encomendada || atualizado.criado_em || pedido.data_encomendada || pedido.criado_em || ''
             });
         }
-        status.textContent = 'A atualizar preço compra nos produtos...';
         let produtosComPrecoAtualizado = 0;
         let avisoPrecoCompra = '';
-        try {
-            produtosComPrecoAtualizado = await sincronizarPrecoCompraProdutosFornecedor(itens, fornecedor);
-        } catch (erroPrecoCompra) {
-            console.warn('Nao foi possivel sincronizar preço compra nos produtos.', erroPrecoCompra);
-            avisoPrecoCompra = ' O preço compra ficou gravado na encomenda, mas ainda não foi atualizado na ficha do produto. Execute o SQL atualizado no Supabase.';
+        if (itensAlterados) {
+            status.textContent = 'A atualizar preço compra nos produtos...';
+            try {
+                produtosComPrecoAtualizado = await sincronizarPrecoCompraProdutosFornecedor(itens, fornecedor);
+            } catch (erroPrecoCompra) {
+                console.warn('Nao foi possivel sincronizar preço compra nos produtos.', erroPrecoCompra);
+                avisoPrecoCompra = ' O preço compra ficou gravado na encomenda, mas ainda não foi atualizado na ficha do produto. Execute o SQL atualizado no Supabase.';
+            }
         }
         guardadoComSucesso = true;
         fecharEdicaoPedidoFornecedor();
         renderizarResultadosFornecedor();
         renderizarPedidosFornecedores();
-        definirStatusFornecedor(`Ajuste ${atualizado.codigo} gravado.${produtosComPrecoAtualizado ? ` Preço compra atualizado em ${produtosComPrecoAtualizado} produto(s).` : ''}${avisoPrecoCompra}`, Boolean(avisoPrecoCompra));
+        const detalhe = itensAlterados || deveAtualizarHistoricoConfirmacao
+            ? `${produtosComPrecoAtualizado ? ` Preço compra atualizado em ${produtosComPrecoAtualizado} produto(s).` : ''}${avisoPrecoCompra}`
+            : '';
+        definirStatusFornecedor(`Encomenda ${atualizado.codigo || ''} gravada.${detalhe}`, Boolean(avisoPrecoCompra));
     } catch (error) {
         console.error(error);
         definirStatusEdicaoFornecedor(status, "erro", obterMensagemErroEdicaoFornecedor(error));
