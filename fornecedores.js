@@ -37,6 +37,8 @@ var mapasVendasClienteCache = null;
 var mapasVendasClientePromessa = null;
 var fornecedorVendasRecentesCache = null;
 var fornecedorVendasRecentesPromessa = null;
+var fornecedorStatusTemporizador = null;
+var FORNECEDOR_STATUS_TEMPO_MS = 4500;
 
 
 function carregarScriptAdmin(src) {
@@ -196,12 +198,36 @@ function obterNovidadeParaItemPedidoFornecedor(produtoOuItem) {
     return obterBooleanoProdutoFornecedor(produtoOuItem?.novidade);
 }
 
-function definirStatusFornecedor(texto, erro = false) {
+function limparTemporizadorStatusFornecedor() {
+    if (!fornecedorStatusTemporizador) return;
+    clearTimeout(fornecedorStatusTemporizador);
+    fornecedorStatusTemporizador = null;
+}
+
+function limparStatusFornecedorSeAtual(texto) {
+    const el = document.getElementById('fornecedores-status');
+    if (!el || el.textContent !== texto) return;
+    el.textContent = '';
+    el.classList.remove('status-erro', 'status-sucesso', 'status-aviso', 'status-neutro', 'status-discreto');
+}
+
+function definirStatusFornecedor(texto, erro = false, opcoes = {}) {
     const el = document.getElementById('fornecedores-status');
     if (!el) return;
+    limparTemporizadorStatusFornecedor();
     el.textContent = texto || '';
     el.classList.remove('status-erro', 'status-sucesso', 'status-aviso', 'status-neutro', 'status-discreto');
+    if (!texto) return;
     el.classList.add(erro ? 'status-erro' : 'status-sucesso');
+
+    const temporario = opcoes.temporario !== false;
+    if (!erro && temporario) {
+        const textoAtual = String(texto || '');
+        fornecedorStatusTemporizador = window.setTimeout(function () {
+            fornecedorStatusTemporizador = null;
+            limparStatusFornecedorSeAtual(textoAtual);
+        }, FORNECEDOR_STATUS_TEMPO_MS);
+    }
 }
 
 function prepararContextoProdutoFornecedor() {
@@ -3861,7 +3887,7 @@ async function criarPedidoFornecedor() {
     if (!(await confirmarReferenciasItensFornecedor(itens, "criar a encomenda"))) return;
 
     try {
-        definirStatusFornecedor('A criar encomenda no Supabase...');
+        definirStatusFornecedor('A criar encomenda no Supabase...', false, { temporario: false });
         const { data, error } = await fornecedoresClient.rpc('criar_encomenda_fornecedor_admin', {
             p_fornecedor: fornecedor,
             p_referencia: '',
@@ -4466,7 +4492,7 @@ async function adicionarSelecaoAoPedidoFornecedor(id) {
     });
 
     try {
-        definirStatusFornecedor('A completar encomenda com a selecao...');
+        definirStatusFornecedor('A completar encomenda com a selecao...', false, { temporario: false });
         const atualizado = await atualizarPedidoFornecedor(pedido.id, { itens: consolidarItensPedidoFornecedor(itens) });
         fornecedorSelecao = [];
         guardarSelecaoFornecedor();
@@ -5125,7 +5151,7 @@ document.addEventListener('keydown', (evento) => {
 
 ligarEventoFornecedor('btn-atualizar-catalogo-fornecedor', 'click', async () => {
     try {
-        definirStatusFornecedor('A atualizar catalogo...');
+        definirStatusFornecedor('A atualizar catalogo...', false, { temporario: false });
         await carregarCatalogoFornecedores();
         renderizarResultadosFornecedor();
         renderizarSelecionadosFornecedor();
