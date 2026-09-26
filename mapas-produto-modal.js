@@ -1025,6 +1025,39 @@ function obterOsFornecedoresLeituraMapa(produto) {
         .sort((a, b) => a.nome.localeCompare(b.nome, "pt", { sensitivity: "base" }));
 }
 
+function obterDataMarcacaoAtualFornecedorMapa(marcacao) {
+    const historico = Array.isArray(marcacao?.historico) ? marcacao.historico : [];
+    const tipoAtual = normalizarTipoHistoricoFornecedorMapa(marcacao?.tipo);
+    const tiposEquivalentes = tipoAtual === "os" || tipoAtual === "encomendada_os"
+        ? new Set(["os", "encomendada_os"])
+        : new Set([tipoAtual]);
+
+    for (let i = historico.length - 1; i >= 0; i -= 1) {
+        const item = historico[i];
+        const tipo = normalizarTipoHistoricoFornecedorMapa(item?.tipo);
+        if (tiposEquivalentes.has(tipo) && item?.data) {
+            return formatarDataFornecedorLeituraMapa(item.data);
+        }
+    }
+
+    const ultimoComData = [...historico].reverse().find((item) => item?.data);
+    return ultimoComData ? formatarDataFornecedorLeituraMapa(ultimoComData.data) : "";
+}
+
+function obterResumoMarcacoesFornecedoresMapa(produto) {
+    return Object.entries(obterObjetoFornecedoresProdutoMapa(produto))
+        .map(([nome, valor]) => {
+            const marcacao = normalizarMarcacaoFornecedorLeituraMapa(valor);
+            return {
+                nome: String(nome || "").trim(),
+                marcacao,
+                data: obterDataMarcacaoAtualFornecedorMapa(marcacao)
+            };
+        })
+        .filter((item) => item.nome && ["os", "encomendada_os", "ex"].includes(item.marcacao.tipo))
+        .sort((a, b) => a.nome.localeCompare(b.nome, "pt", { sensitivity: "base" }));
+}
+
 function temLinhaEncomendaFornecedorProdutoMapa(produto, fornecedorNome) {
     const fornecedorChave = normalizarChaveFornecedorMapa(fornecedorNome);
     if (!fornecedorChave) return false;
@@ -1646,6 +1679,47 @@ function montarSecaoOsFornecedoresLeituraMapa(produto) {
     return secao;
 }
 
+function montarSecaoResumoMarcacoesFornecedoresMapa(produto) {
+    const secao = criarSecaoEdicaoMapa("Marcações atuais", "mapas-produto-secao-media mapas-produto-secao-marcacoes-resumo");
+    const linhas = obterResumoMarcacoesFornecedoresMapa(produto);
+
+    if (!linhas.length) {
+        const vazio = document.createElement("p");
+        vazio.className = "mapas-produto-marcacoes-resumo-vazio";
+        vazio.textContent = "Sem marcações atuais.";
+        secao.appendChild(vazio);
+        return secao;
+    }
+
+    const tabela = document.createElement("div");
+    tabela.className = "mapas-produto-marcacoes-resumo-tabela";
+    ["Fornecedor", "Marcação", "Data"].forEach((rotulo) => {
+        const cabecalho = document.createElement("strong");
+        cabecalho.className = "mapas-produto-marcacoes-resumo-cabecalho";
+        cabecalho.textContent = rotulo;
+        tabela.appendChild(cabecalho);
+    });
+
+    linhas.forEach(({ nome, marcacao, data }) => {
+        const fornecedor = document.createElement("span");
+        fornecedor.className = "mapas-produto-marcacoes-resumo-fornecedor";
+        fornecedor.textContent = nome;
+
+        const estado = document.createElement("span");
+        estado.className = `mapas-produto-marcacoes-resumo-estado tipo-${marcacao.tipo}`;
+        estado.textContent = marcacao.tipo === "encomendada_os" ? "OS" : marcacao.texto;
+
+        const dataElemento = document.createElement("span");
+        dataElemento.className = "mapas-produto-marcacoes-resumo-data";
+        dataElemento.textContent = data || "—";
+
+        tabela.append(fornecedor, estado, dataElemento);
+    });
+
+    secao.appendChild(tabela);
+    return secao;
+}
+
 function criarFotoPrincipalFichaMapa(produto) {
     const imagens = normalizarImagensMapa(produto.imagens);
     const figura = document.createElement("figure");
@@ -1835,6 +1909,8 @@ function preencherFichaProdutoMapa(produto) {
         ["Novidade", Boolean(produto.novidade)]
     ].forEach(([rotulo, ativo]) => criarBadgeLeituraMapa(flagsLista, rotulo, ativo));
     topo.appendChild(secaoMarcas);
+
+    topo.appendChild(montarSecaoResumoMarcacoesFornecedoresMapa(produto));
 
     const observacoesTexto = String(produto.observacoes || "").trim();
     if (observacoesTexto) {

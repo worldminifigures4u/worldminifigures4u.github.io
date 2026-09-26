@@ -2645,6 +2645,10 @@ body.pagina-mapas-admin > main.fornecedores-admin {
     grid-column: 2 / -1;
 }
 
+.mapas-produto-ficha-topo .mapas-produto-secao-marcacoes-resumo {
+    grid-column: 2 / -1;
+}
+
 .mapas-produto-foto-principal {
     position: relative;
     margin: 0;
@@ -2880,6 +2884,7 @@ body.mapas-produto-galeria-aberta {
 .mapas-produto-ficha-topo .mapas-produto-secao-detalhes,
 .mapas-produto-ficha-topo .mapas-produto-secao-os-fornecedores,
 .mapas-produto-ficha-topo .mapas-produto-secao-marcas,
+.mapas-produto-ficha-topo .mapas-produto-secao-marcacoes-resumo,
 .mapas-produto-ficha-topo .mapas-produto-secao-notas-leitura {
     margin: 0;
 }
@@ -3003,6 +3008,68 @@ body.mapas-produto-galeria-aberta {
 
 .mapas-produto-fornecedores-leitura {
     margin-top: 2px;
+}
+
+.mapas-produto-secao-marcacoes-resumo {
+    align-content: start;
+}
+
+.mapas-produto-marcacoes-resumo-tabela {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(72px, auto) minmax(88px, auto);
+    gap: 0;
+    overflow: hidden;
+    border: 1px solid #2b2b2b;
+    border-radius: 6px;
+    background: #151515;
+}
+
+.mapas-produto-marcacoes-resumo-tabela > * {
+    min-width: 0;
+    padding: 7px 9px;
+    border-bottom: 1px solid #282828;
+    color: #fff;
+    font-size: 12px;
+    font-weight: 800;
+    line-height: 1.2;
+}
+
+.mapas-produto-marcacoes-resumo-tabela > *:nth-last-child(-n + 3) {
+    border-bottom: 0;
+}
+
+.mapas-produto-marcacoes-resumo-cabecalho {
+    color: #aaa;
+    font-size: 11px;
+    text-transform: uppercase;
+}
+
+.mapas-produto-marcacoes-resumo-fornecedor {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.mapas-produto-marcacoes-resumo-estado,
+.mapas-produto-marcacoes-resumo-data {
+    text-align: right;
+    white-space: nowrap;
+}
+
+.mapas-produto-marcacoes-resumo-estado.tipo-os,
+.mapas-produto-marcacoes-resumo-estado.tipo-encomendada_os {
+    color: var(--fp-cor-erro, #ff6b6b);
+}
+
+.mapas-produto-marcacoes-resumo-estado.tipo-ex {
+    color: #ff8a8a;
+}
+
+.mapas-produto-marcacoes-resumo-vazio {
+    margin: 0;
+    color: #aaa;
+    font-size: 13px;
+    font-weight: 700;
 }
 
 .mapas-produto-fornecedores-leitura-lista {
@@ -3778,6 +3845,10 @@ body.mapas-produto-modal-aberto {
     }
 
     .mapas-produto-ficha-topo .mapas-produto-secao-notas-leitura {
+        grid-column: auto;
+    }
+
+    .mapas-produto-ficha-topo .mapas-produto-secao-marcacoes-resumo {
         grid-column: auto;
     }
 
