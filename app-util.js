@@ -192,6 +192,7 @@ const PAGINAS_VISTA = {
     loja: 'index.html',
     favoritos: 'favoritos.html',
     conta: 'conta.html',
+    historico: 'historico.html',
     carrinho: 'carrinho.html',
     sobre: 'sobre.html',
     contactos: 'contactos.html',

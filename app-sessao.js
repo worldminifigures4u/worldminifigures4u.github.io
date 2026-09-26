@@ -128,7 +128,8 @@ function mostrarContaAnonimaSeExistir() {
 }
 
 function concluirVerificacaoContaSeExistir() {
-    if (document.body?.dataset?.page === 'conta') {
+    const pagina = document.body?.dataset?.page;
+    if (pagina === 'conta' || pagina === 'historico') {
         document.body.classList.remove('conta-a-verificar');
     }
 }

@@ -5,9 +5,6 @@
             document.body.classList.add('conta-a-verificar');
         }
         document.getElementById('conteudo-cliente-anonimo')?.classList.add('oculto');
-        document.querySelectorAll('[data-seccao-conta="historico"]').forEach((botao) => {
-            botao.remove();
-        });
     }
 
     function urlTemRecuperacaoConta() {

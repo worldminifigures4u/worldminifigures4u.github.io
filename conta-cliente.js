@@ -688,9 +688,6 @@ function ativarSeccaoConta(alvo) {
     document.querySelectorAll('[data-conta-seccao]').forEach(function (secao) {
         secao.classList.toggle('ativa', secao.dataset.contaSeccao === destino);
     });
-    document.querySelectorAll('.acao-historico-topo').forEach(function (link) {
-        link.classList.toggle('ativa', destino === 'historico');
-    });
 }
 
 function ligarContaCliente() {

@@ -240,6 +240,34 @@
         });
     }
 
+    function ligarPrefetchHistorico() {
+        let prefetchFeito = false;
+        const iniciarPrefetch = function () {
+            if (prefetchFeito) return;
+            prefetchFeito = true;
+            [
+                'historico.html',
+                'conta.css',
+                'styles-tema.css',
+                'app-sessao.js',
+                'conta-cliente-loader.js'
+            ].forEach(function (href) {
+                if (document.querySelector('link[rel="prefetch"][href="' + href + '"]')) return;
+                const link = document.createElement('link');
+                link.rel = 'prefetch';
+                link.href = href;
+                link.as = href.endsWith('.html') ? 'document' : (href.endsWith('.css') ? 'style' : 'script');
+                document.head.appendChild(link);
+            });
+        };
+
+        document.querySelectorAll('.acao-historico-topo, [data-vista-nav="historico"]').forEach(function (elemento) {
+            elemento.addEventListener('mouseenter', iniciarPrefetch, { once: true });
+            elemento.addEventListener('focus', iniciarPrefetch, { once: true });
+            elemento.addEventListener('touchstart', iniciarPrefetch, { once: true, passive: true });
+        });
+    }
+
     function ligarPrefetchCarrinho() {
         let prefetchFeito = false;
         const iniciarPrefetch = function () {
@@ -430,6 +458,7 @@
             ligarPrefetchFavoritos();
             ligarPrefetchCarrinho();
             ligarPrefetchConta();
+            ligarPrefetchHistorico();
             if (config.rodape) inserirRodapeSite();
             atualizarContadorCarrinhoTopo();
             window.addEventListener('storage', atualizarContadorCarrinhoTopo);
@@ -485,7 +514,7 @@
 
     if ('serviceWorker' in navigator && window.location.protocol !== 'file:') {
         window.addEventListener('load', () => {
-            navigator.serviceWorker.register('sw.js?v=20260806-conta-flash-defensivo').then((registo) => {
+            navigator.serviceWorker.register('sw.js?v=20260926-historico-proprio').then((registo) => {
                 registo.addEventListener('updatefound', () => {
                     const novoWorker = registo.installing;
                     if (!novoWorker) return;

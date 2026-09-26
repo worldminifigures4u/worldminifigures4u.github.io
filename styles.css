@@ -210,6 +210,7 @@ body{
         body[data-page="favoritos"],
         body[data-page="carrinho"],
         body[data-page="conta"],
+        body[data-page="historico"],
         body[data-page="sobre"],
         body[data-page="contactos"],
         body[data-page="politicas"]{
@@ -1562,6 +1563,7 @@ html:not(.admin-light-mode) :is(
     body[data-page="favoritos"],
     body[data-page="carrinho"],
     body[data-page="conta"],
+    body[data-page="historico"],
     body[data-page="sobre"],
     body[data-page="contactos"],
     body[data-page="politicas"]
@@ -1586,6 +1588,7 @@ html:not(.admin-light-mode) :is(
     body[data-page="favoritos"],
     body[data-page="carrinho"],
     body[data-page="conta"],
+    body[data-page="historico"],
     body[data-page="sobre"],
     body[data-page="contactos"],
     body[data-page="politicas"]
@@ -1608,7 +1611,8 @@ html:not(.admin-light-mode) :is(
     body[data-page="loja"],
     body[data-page="favoritos"],
     body[data-page="carrinho"],
-    body[data-page="conta"]
+    body[data-page="conta"],
+    body[data-page="historico"]
 ) :is(
     .opcao-envio:not(:has(input:checked)),
     .opcao-pagamento:not(:has(input:checked)),
