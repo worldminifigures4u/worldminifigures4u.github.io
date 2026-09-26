@@ -117,16 +117,115 @@ function normalizarMapa(texto) {
         .trim();
 }
 
+function normalizarBuscaFlexivelMapa(texto) {
+    return String(texto || "")
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .replace(/[\u200B-\u200D\uFEFF]/g, "")
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, " ")
+        .trim()
+        .replace(/\s+/g, " ");
+}
+
+function compactarBuscaFlexivelMapa(texto) {
+    return normalizarBuscaFlexivelMapa(texto).replace(/\s+/g, "");
+}
+
+function reduzirLetrasRepetidasMapa(texto) {
+    return String(texto || "").replace(/([a-z0-9])\1+/g, "$1");
+}
+
+function obterTermosBuscaFlexivelMapa(texto) {
+    const normalizado = normalizarBuscaFlexivelMapa(texto);
+    return normalizado ? normalizado.split(" ").filter(Boolean) : [];
+}
+
+function distanciaEdicaoAteUmMapa(a, b) {
+    if (a === b) return true;
+    if (Math.abs(a.length - b.length) > 1) return false;
+
+    let i = 0;
+    let j = 0;
+    let diferencas = 0;
+
+    while (i < a.length && j < b.length) {
+        if (a[i] === b[j]) {
+            i += 1;
+            j += 1;
+            continue;
+        }
+
+        diferencas += 1;
+        if (diferencas > 1) return false;
+
+        if (a.length > b.length) {
+            i += 1;
+        } else if (b.length > a.length) {
+            j += 1;
+        } else {
+            i += 1;
+            j += 1;
+        }
+    }
+
+    if (i < a.length || j < b.length) diferencas += 1;
+    return diferencas <= 1;
+}
+
+function termoCorrespondeBuscaFlexivelMapa(termo, termosProduto) {
+    const termoReduzido = reduzirLetrasRepetidasMapa(termo);
+    return termosProduto.some((termoProduto) => {
+        const produtoReduzido = reduzirLetrasRepetidasMapa(termoProduto);
+        return termoProduto === termo
+            || produtoReduzido === termoReduzido
+            || termoProduto.startsWith(termo)
+            || produtoReduzido.startsWith(termoReduzido)
+            || termoProduto.includes(termo)
+            || produtoReduzido.includes(termoReduzido)
+            || (
+                termo.length >= 5
+                && termoProduto.length >= 5
+                && distanciaEdicaoAteUmMapa(termo, termoProduto)
+            )
+            || (
+                termoReduzido.length >= 5
+                && produtoReduzido.length >= 5
+                && distanciaEdicaoAteUmMapa(termoReduzido, produtoReduzido)
+            );
+    });
+}
+
 function produtoPassaPesquisaMapa(produto, termo) {
     if (!termo) return true;
-    const haystack = String(produto.pesquisa || "");
+    const textoProduto = [
+        produto.nome,
+        produto.referencia,
+        produto.sku,
+        produto.tema,
+        produto.subtema
+    ].join(" ");
+    const haystack = produto.pesquisa || normalizarMapa(textoProduto);
+    const termoNormalizado = normalizarBuscaFlexivelMapa(termo);
+    const pesquisaFlexivel = produto.pesquisa_flexivel || normalizarBuscaFlexivelMapa(textoProduto);
+    const pesquisaCompacta = produto.pesquisa_compacta || compactarBuscaFlexivelMapa(textoProduto);
+    const termoCompacto = compactarBuscaFlexivelMapa(termoNormalizado);
+
     if (haystack.includes(termo)) return true;
-    // Pesquisa por palavras: "Doctor Evazan" encontra mesmo com espaços a mais no nome
-    const tokens = termo.split(" ").filter(Boolean);
-    const nomeTokens = normalizarMapa(produto.nome || "").split(" ").filter(Boolean);
-    return tokens.length > 0 && tokens.every((token) => {
+    if (pesquisaFlexivel.includes(termoNormalizado)) return true;
+    if (termoCompacto && pesquisaCompacta.includes(termoCompacto)) return true;
+
+    const tokens = obterTermosBuscaFlexivelMapa(termoNormalizado);
+    if (!tokens.length) return true;
+
+    const termosProduto = produto.termos_pesquisa || obterTermosBuscaFlexivelMapa(textoProduto);
+    const nomeTokens = produto.termos_nome || obterTermosBuscaFlexivelMapa(produto.nome || "");
+    return tokens.every((token) => {
+        const tokenCompacto = compactarBuscaFlexivelMapa(token);
         if (/^v\d+$/.test(token)) return nomeTokens.includes(token);
-        return haystack.includes(token);
+        if (pesquisaFlexivel.includes(token)) return true;
+        if (tokenCompacto && pesquisaCompacta.includes(tokenCompacto)) return true;
+        return termoCorrespondeBuscaFlexivelMapa(token, termosProduto);
     });
 }
 
@@ -300,6 +399,22 @@ function normalizarProdutoMapa(produto) {
         normalizado.tema,
         normalizado.subtema
     ].join(" "));
+    normalizado.pesquisa_flexivel = normalizarBuscaFlexivelMapa([
+        normalizado.nome,
+        normalizado.referencia,
+        normalizado.sku,
+        normalizado.tema,
+        normalizado.subtema
+    ].join(" "));
+    normalizado.pesquisa_compacta = compactarBuscaFlexivelMapa([
+        normalizado.nome,
+        normalizado.referencia,
+        normalizado.sku,
+        normalizado.tema,
+        normalizado.subtema
+    ].join(" "));
+    normalizado.termos_pesquisa = obterTermosBuscaFlexivelMapa(normalizado.pesquisa_flexivel);
+    normalizado.termos_nome = obterTermosBuscaFlexivelMapa(normalizado.nome);
     return normalizado;
 }
 
