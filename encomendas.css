@@ -1290,7 +1290,8 @@ body.pagina-encomendas-admin{
         }
 
         .admin-encomenda-produto-nome-botao{
-            width:100%;
+            width:max-content;
+            max-width:100%;
             padding:0;
             border:0;
             background:transparent;
@@ -1304,8 +1305,8 @@ body.pagina-encomendas-admin{
 
         .admin-encomenda-produto-nome-botao:hover,
         .admin-encomenda-produto-nome-botao:focus-visible{
-            color:#ffc400;
-            text-decoration:underline;
+            color:#ffc107;
+            text-decoration:none;
             outline:none;
         }
 
