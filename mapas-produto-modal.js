@@ -1823,27 +1823,6 @@ function preencherFichaProdutoMapa(produto) {
     }
     topo.appendChild(secaoDetalhes);
 
-    const observacoesTexto = String(produto.observacoes || "").trim();
-    if (observacoesTexto) {
-        topo.classList.add("mapas-produto-ficha-topo-com-obs");
-        const secaoObsLeitura = criarSecaoEdicaoMapa("Notas de preparação", "mapas-produto-secao-media");
-        const textoObs = document.createElement("p");
-        textoObs.className = "mapas-produto-observacoes-leitura";
-        textoObs.textContent = observacoesTexto;
-        secaoObsLeitura.appendChild(textoObs);
-        topo.appendChild(secaoObsLeitura);
-    }
-    const notasGestaoTexto = String(produto.notas_gestao || "").trim();
-    if (notasGestaoTexto) {
-        topo.classList.add("mapas-produto-ficha-topo-com-obs");
-        const secaoGestaoLeitura = criarSecaoEdicaoMapa("Notas de gestão", "mapas-produto-secao-media");
-        const textoGestao = document.createElement("p");
-        textoGestao.className = "mapas-produto-observacoes-leitura";
-        textoGestao.textContent = notasGestaoTexto;
-        secaoGestaoLeitura.appendChild(textoGestao);
-        topo.appendChild(secaoGestaoLeitura);
-    }
-
     const secaoMarcas = criarSecaoEdicaoMapa("Estado", "mapas-produto-secao-marcas");
     const flagsLista = document.createElement("div");
     flagsLista.className = "mapas-produto-leitura-badges mapas-produto-leitura-badges-vertical";
@@ -1856,6 +1835,28 @@ function preencherFichaProdutoMapa(produto) {
         ["Novidade", Boolean(produto.novidade)]
     ].forEach(([rotulo, ativo]) => criarBadgeLeituraMapa(flagsLista, rotulo, ativo));
     topo.appendChild(secaoMarcas);
+
+    const observacoesTexto = String(produto.observacoes || "").trim();
+    if (observacoesTexto) {
+        topo.classList.add("mapas-produto-ficha-topo-com-obs");
+        const secaoObsLeitura = criarSecaoEdicaoMapa("Notas de preparação", "mapas-produto-secao-media mapas-produto-secao-notas-leitura");
+        const textoObs = document.createElement("p");
+        textoObs.className = "mapas-produto-observacoes-leitura";
+        textoObs.textContent = observacoesTexto;
+        secaoObsLeitura.appendChild(textoObs);
+        topo.appendChild(secaoObsLeitura);
+    }
+    const notasGestaoTexto = String(produto.notas_gestao || "").trim();
+    if (notasGestaoTexto) {
+        topo.classList.add("mapas-produto-ficha-topo-com-obs");
+        const secaoGestaoLeitura = criarSecaoEdicaoMapa("Notas de gestão", "mapas-produto-secao-media mapas-produto-secao-notas-leitura");
+        const textoGestao = document.createElement("p");
+        textoGestao.className = "mapas-produto-observacoes-leitura";
+        textoGestao.textContent = notasGestaoTexto;
+        secaoGestaoLeitura.appendChild(textoGestao);
+        topo.appendChild(secaoGestaoLeitura);
+    }
+
     campos.appendChild(topo);
 
     montarSecaoHistoricoRececoesMapa(campos, produto);

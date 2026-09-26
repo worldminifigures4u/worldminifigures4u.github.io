@@ -2641,6 +2641,10 @@ body.pagina-mapas-admin > main.fornecedores-admin {
     align-items: stretch;
 }
 
+.mapas-produto-ficha-topo .mapas-produto-secao-notas-leitura {
+    grid-column: 2 / -1;
+}
+
 .mapas-produto-foto-principal {
     position: relative;
     margin: 0;
@@ -2875,7 +2879,8 @@ body.mapas-produto-galeria-aberta {
 .mapas-produto-ficha-topo .mapas-produto-secao-identificacao,
 .mapas-produto-ficha-topo .mapas-produto-secao-detalhes,
 .mapas-produto-ficha-topo .mapas-produto-secao-os-fornecedores,
-.mapas-produto-ficha-topo .mapas-produto-secao-marcas {
+.mapas-produto-ficha-topo .mapas-produto-secao-marcas,
+.mapas-produto-ficha-topo .mapas-produto-secao-notas-leitura {
     margin: 0;
 }
 
@@ -3770,6 +3775,10 @@ body.mapas-produto-modal-aberto {
 
     .mapas-produto-ficha-topo {
         grid-template-columns: 1fr;
+    }
+
+    .mapas-produto-ficha-topo .mapas-produto-secao-notas-leitura {
+        grid-column: auto;
     }
 
     .mapas-produto-foto-principal {
