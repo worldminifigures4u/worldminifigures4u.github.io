@@ -287,6 +287,7 @@ body[data-page].cabecalho-com-admin .navegacao-admin-cabecalho{
         grid-column:1 / -1;
         grid-row:2;
         width:100%;
+        justify-content:center;
         overflow-x:visible;
         scrollbar-width:none;
         flex-wrap:nowrap;

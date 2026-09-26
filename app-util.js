@@ -184,7 +184,7 @@ function garantirEstilosAdmin() {
     if (document.querySelector('link[href*="styles-admin.css"]')) return;
     const folha = document.createElement('link');
     folha.rel = 'stylesheet';
-    folha.href = 'styles-admin.css?v=20260926-admin-nav-linha';
+    folha.href = 'styles-admin.css?v=20260926-admin-nav-centro';
     document.head.appendChild(folha);
 }
 
