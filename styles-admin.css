@@ -278,6 +278,10 @@ body.pagina-gestao-admin > main.gestao-admin{
     scrollbar-width:thin;
 }
 
+body[data-page].cabecalho-com-admin .navegacao-admin-cabecalho{
+    justify-content:flex-start;
+}
+
 .navegacao-admin-cabecalho[hidden]{
     display:none !important;
 }

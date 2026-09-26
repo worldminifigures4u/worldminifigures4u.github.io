@@ -184,7 +184,7 @@ function garantirEstilosAdmin() {
     if (document.querySelector('link[href*="styles-admin.css"]')) return;
     const folha = document.createElement('link');
     folha.rel = 'stylesheet';
-    folha.href = 'styles-admin.css?v=20260920-guardar-verde';
+    folha.href = 'styles-admin.css?v=20260926-admin-nav-mapas';
     document.head.appendChild(folha);
 }
 
