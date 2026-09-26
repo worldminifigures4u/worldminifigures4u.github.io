@@ -1665,10 +1665,7 @@ window.AdminEncomendaVista = (function () {
 
         const ficheiros = [];
         if (origemEncomenda(encomenda) === "olx") {
-            ficheiros.push(
-                { nome: "informacao cliente.txt", conteudo: criarTextoClienteOlxExportacao(encomenda, itens) },
-                { nome: `${nomePasta}.txt`, conteudo: criarTextoInternoExportacao(encomenda, itens) }
-            );
+            ficheiros.push({ nome: `${nomePasta}.txt`, conteudo: criarTextoClienteOlxExportacao(encomenda, itens) });
         } else if (origemUsaTextoAnuncio(encomenda)) {
             ficheiros.push({ nome: `${nomePasta}.txt`, conteudo: criarTextoAnuncioExportacao(encomenda, itens) });
         } else {

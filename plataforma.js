@@ -3129,13 +3129,12 @@ async function guardarFicheirosPlataforma(opcoes = {}) {
         if (plataforma === 'OLX') {
             definirStatusWallapop('A gerar a imagem OLX...');
             const ficheirosImagem = await criarFicheirosImagemPlataforma(obterItensParaFicheirosPlataforma());
-            await escreverFicheiroWallapop(pastaEncomenda, 'informacao cliente.txt', criarTextoClienteOlx());
-            await escreverFicheiroWallapop(pastaEncomenda, `${nomeEncomenda}.txt`, criarTextoInternoPlataforma());
+            await escreverFicheiroWallapop(pastaEncomenda, `${nomeEncomenda}.txt`, criarTextoClienteOlx());
             if (textoNotas) await escreverFicheiroWallapop(pastaEncomenda, 'notas encomenda.txt', textoNotas);
             for (const ficheiro of ficheirosImagem) {
                 await escreverFicheiroWallapop(pastaEncomenda, ficheiro.nome, ficheiro.conteudo);
             }
-            definirStatusWallapop(`Pasta "${nomeEncomenda}" gravada com os dois ficheiros OLX e ${ficheirosImagem.length} imagem(ns).`);
+            definirStatusWallapop(`Pasta "${nomeEncomenda}" gravada com o ficheiro OLX e ${ficheirosImagem.length} imagem(ns).`);
         } else {
             await escreverFicheiroWallapop(pastaEncomenda, `${nomeEncomenda}.txt`, criarTextoInternoPlataforma());
             if (textoNotas) await escreverFicheiroWallapop(pastaEncomenda, 'notas encomenda.txt', textoNotas);
