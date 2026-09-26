@@ -1915,23 +1915,21 @@ function preencherFichaProdutoMapa(produto) {
     linhaSecundaria.appendChild(montarSecaoResumoMarcacoesFornecedoresMapa(produto));
 
     const observacoesTexto = String(produto.observacoes || "").trim();
-    if (observacoesTexto) {
-        const secaoObsLeitura = criarSecaoEdicaoMapa("Notas de preparação", "mapas-produto-secao-media mapas-produto-secao-notas-leitura mapas-produto-secao-notas-preparacao");
-        const textoObs = document.createElement("p");
-        textoObs.className = "mapas-produto-observacoes-leitura";
-        textoObs.textContent = observacoesTexto;
-        secaoObsLeitura.appendChild(textoObs);
-        linhaSecundaria.appendChild(secaoObsLeitura);
-    }
+    const secaoObsLeitura = criarSecaoEdicaoMapa("Notas de preparação", "mapas-produto-secao-media mapas-produto-secao-notas-leitura mapas-produto-secao-notas-preparacao");
+    const textoObs = document.createElement("p");
+    textoObs.className = "mapas-produto-observacoes-leitura";
+    textoObs.textContent = observacoesTexto;
+    secaoObsLeitura.appendChild(textoObs);
+    linhaSecundaria.appendChild(secaoObsLeitura);
+
     const notasGestaoTexto = String(produto.notas_gestao || "").trim();
-    if (notasGestaoTexto) {
-        const secaoGestaoLeitura = criarSecaoEdicaoMapa("Notas de gestão", "mapas-produto-secao-media mapas-produto-secao-notas-leitura mapas-produto-secao-notas-gestao");
-        const textoGestao = document.createElement("p");
-        textoGestao.className = "mapas-produto-observacoes-leitura";
-        textoGestao.textContent = notasGestaoTexto;
-        secaoGestaoLeitura.appendChild(textoGestao);
-        linhaSecundaria.appendChild(secaoGestaoLeitura);
-    }
+    const secaoGestaoLeitura = criarSecaoEdicaoMapa("Notas de gestão", "mapas-produto-secao-media mapas-produto-secao-notas-leitura mapas-produto-secao-notas-gestao");
+    const textoGestao = document.createElement("p");
+    textoGestao.className = "mapas-produto-observacoes-leitura";
+    textoGestao.textContent = notasGestaoTexto;
+    secaoGestaoLeitura.appendChild(textoGestao);
+    linhaSecundaria.appendChild(secaoGestaoLeitura);
+
     topo.appendChild(linhaSecundaria);
 
     campos.appendChild(topo);
