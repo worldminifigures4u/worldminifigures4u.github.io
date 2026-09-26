@@ -33,6 +33,16 @@ let todasConcluidasCarregadas = false;
 let encomendasSelecionadasLote = new Set();
 let promessaFichaClienteEncomendas = null;
 let fichaClienteEncomendasConfigurada = false;
+let promessaProdutoModalEncomendas = null;
+let promessaProdutosMapaEncomendas = null;
+
+var mapasClient = null;
+var mapasProdutos = [];
+var mapasEncomendasFornecedorCache = null;
+var mapasEncomendasFornecedorPromessa = null;
+var mapasVendasClienteCache = null;
+var mapasVendasClientePromessa = null;
+var MAPAS_FORNECEDORES_STORAGE_KEY = 'figures-planet-fornecedores-pedidos';
 
 const ENCOMENDAS_SEM_IMAGEM = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(
     '<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120"><rect width="100%" height="100%" fill="#222"/><text x="50%" y="50%" text-anchor="middle" dominant-baseline="middle" fill="#888" font-family="Arial" font-size="13">Sem foto</text></svg>'
@@ -219,7 +229,8 @@ function configurarVistaEncomendasAdmin() {
             atualizarResumo: atualizarResumoEncomendas,
             obterLista: () => encomendasAdmin,
             definirLista: lista => { encomendasAdmin = lista; },
-            onEncomendaApagada: fecharModalEncomendaAdmin
+            onEncomendaApagada: fecharModalEncomendaAdmin,
+            abrirProduto: abrirProdutoEncomendaAdmin
         }
     });
 }
@@ -268,6 +279,239 @@ function garantirFichaClienteEncomendas() {
             .then(() => configurarFichaClienteEncomendas());
     }
     return promessaFichaClienteEncomendas;
+}
+
+function prepararContextoProdutoEncomendas() {
+    mapasClient = encomendasClient;
+}
+
+function normalizarTextoProdutoEncomenda(valor) {
+    return String(valor || '')
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .trim()
+        .toLowerCase();
+}
+
+function normalizarSkuProdutoEncomenda(valor) {
+    return String(valor || '')
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .trim()
+        .toUpperCase()
+        .replace(/[^A-Z0-9]/g, '');
+}
+
+function normalizarReferenciaProdutoEncomenda(valor) {
+    return String(valor || '').trim().toUpperCase();
+}
+
+function normalizarImagensProdutoEncomenda(imagens) {
+    let lista = imagens;
+    if (typeof lista === 'string') {
+        try {
+            lista = JSON.parse(lista);
+        } catch (_) {
+            lista = lista.split(/[\n,;]+/);
+        }
+    }
+    if (!Array.isArray(lista)) return [];
+    return lista.map(item => {
+        if (typeof item === 'string') return item.trim();
+        if (item && typeof item === 'object') return String(item.url || item.secure_url || item.src || '').trim();
+        return String(item || '').trim();
+    }).filter(Boolean);
+}
+
+function valorBooleanoProdutoEncomenda(valor) {
+    if (typeof valor === 'boolean') return valor;
+    const texto = normalizarTextoProdutoEncomenda(valor);
+    return ['sim', 'true', '1', 'yes', 'ativo'].includes(texto);
+}
+
+function normalizarProdutoParaFichaMapaEncomenda(produto = {}) {
+    const normalizado = {
+        id: produto.id,
+        referencia: produto.referencia || produto.ref || '',
+        lego: produto.lego || '',
+        sku: produto.sku || '',
+        nome: produto.nome || '',
+        preco: Number(produto.preco || produto.preco_unitario || 0),
+        preco_compra: Number(produto.preco_compra || produto.preco_custo || 0),
+        top: produto.top || '',
+        arquivado: valorBooleanoProdutoEncomenda(produto.arquivado),
+        descontinuado: valorBooleanoProdutoEncomenda(produto.descontinuado),
+        novidade: valorBooleanoProdutoEncomenda(produto.novidade),
+        peso: Number(produto.peso || 10),
+        tema: produto.tema || '',
+        subtema: produto.subtema || '',
+        stock: Number.isFinite(Number(produto.stock)) ? Math.floor(Number(produto.stock)) : 0,
+        unidades_por_embalagem: Math.max(1, Number.isFinite(Number(produto.unidades_por_embalagem)) ? Math.floor(Number(produto.unidades_por_embalagem)) : 1),
+        ativo: produto.ativo !== false,
+        imagens: normalizarImagensProdutoEncomenda(produto.imagens),
+        observacoes: produto.observacoes || '',
+        notas_gestao: produto.notas_gestao || '',
+        fornecedores: produto.fornecedores || {}
+    };
+    normalizado.pesquisa = normalizarTextoProdutoEncomenda([
+        normalizado.nome,
+        normalizado.referencia,
+        normalizado.sku,
+        normalizado.tema,
+        normalizado.subtema
+    ].join(' '));
+    return normalizado;
+}
+
+function normalizarProdutoMapa(produto) {
+    return normalizarProdutoParaFichaMapaEncomenda(produto);
+}
+
+function sincronizarEstadoImportacaoMapa() {
+    window.dbClient = mapasClient;
+    window.todosOsProdutos = mapasProdutos;
+}
+
+function atualizarResultadosMapa() {
+    // A página Encomendas só reutiliza a ficha do produto; não tem tabela de Mapas para redesenhar.
+}
+
+function definirStatusMapa(texto, erro = false) {
+    const status = document.getElementById('mapas-produto-status');
+    if (status) {
+        status.textContent = texto || '';
+        status.classList.remove('status-erro', 'status-sucesso', 'status-aviso', 'status-neutro');
+        if (texto) status.classList.add(erro ? 'status-erro' : 'status-sucesso');
+        return;
+    }
+    definirStatusEncomendas(texto, erro);
+}
+
+function obterIdProdutoItemEncomenda(item) {
+    return String(item?.id_produto || item?.produto_id || item?.produtoId || item?.id || '').trim();
+}
+
+function produtoCorrespondeItemEncomenda(produto, item) {
+    if (!produto || !item) return false;
+    const produtoId = String(produto.id || '').trim();
+    const itemId = obterIdProdutoItemEncomenda(item);
+    if (produtoId && itemId && produtoId === itemId) return true;
+
+    const produtoSku = normalizarSkuProdutoEncomenda(produto.sku);
+    const itemSku = normalizarSkuProdutoEncomenda(item.sku);
+    if (produtoSku && itemSku && produtoSku === itemSku) return true;
+
+    const produtoRef = normalizarReferenciaProdutoEncomenda(produto.referencia);
+    const itemRef = normalizarReferenciaProdutoEncomenda(item.referencia || item.ref);
+    if (produtoRef && itemRef && produtoRef === itemRef && !['PERSONALIZADO', 'PERSONALIZADA', 'CUSTOM'].includes(produtoRef)) return true;
+
+    const produtoNome = normalizarTextoProdutoEncomenda(produto.nome);
+    const itemNome = normalizarTextoProdutoEncomenda(item.nome);
+    return Boolean(produtoNome && itemNome && produtoNome === itemNome);
+}
+
+async function carregarProdutosMapaEncomendas() {
+    prepararContextoProdutoEncomendas();
+    if (mapasProdutos.length) return mapasProdutos;
+    if (promessaProdutosMapaEncomendas) return promessaProdutosMapaEncomendas;
+
+    promessaProdutosMapaEncomendas = (async () => {
+        const tamanhoPagina = 500;
+        let produtos = [];
+        let inicio = 0;
+        let usarFallback = false;
+
+        while (true) {
+            const resposta = await encomendasClient.rpc('listar_produtos_mapas_admin', { p_limite: tamanhoPagina, p_offset: inicio });
+            if (resposta.error) {
+                usarFallback = true;
+                break;
+            }
+            const pagina = Array.isArray(resposta.data) ? resposta.data : [];
+            if (inicio === 0 && pagina.length && !Object.prototype.hasOwnProperty.call(pagina[0], 'imagens')) {
+                usarFallback = true;
+                break;
+            }
+            produtos.push(...pagina);
+            if (pagina.length < tamanhoPagina) break;
+            inicio += tamanhoPagina;
+        }
+
+        if (usarFallback) {
+            produtos = [];
+            inicio = 0;
+            while (true) {
+                const resposta = await encomendasClient.rpc('listar_produtos_admin', { p_limite: tamanhoPagina, p_offset: inicio });
+                if (resposta.error) throw resposta.error;
+                const pagina = Array.isArray(resposta.data) ? resposta.data : [];
+                produtos.push(...pagina);
+                if (pagina.length < tamanhoPagina) break;
+                inicio += tamanhoPagina;
+            }
+        }
+
+        mapasProdutos = produtos.map(normalizarProdutoParaFichaMapaEncomenda);
+        sincronizarEstadoImportacaoMapa();
+        return mapasProdutos;
+    })().finally(() => {
+        promessaProdutosMapaEncomendas = null;
+    });
+
+    return promessaProdutosMapaEncomendas;
+}
+
+function criarProdutoFallbackEncomenda(item) {
+    const id = obterIdProdutoItemEncomenda(item);
+    if (!id) return null;
+    return normalizarProdutoParaFichaMapaEncomenda({
+        id,
+        nome: item.nome || 'Produto',
+        sku: item.sku || '',
+        referencia: item.referencia || item.ref || '',
+        tema: item.tema || '',
+        subtema: item.subtema || '',
+        preco: item.preco_unitario ?? item.preco ?? 0,
+        imagens: item.imagens || []
+    });
+}
+
+async function obterProdutoMapaParaItemEncomenda(item) {
+    const produtos = await carregarProdutosMapaEncomendas();
+    let produto = produtos.find(candidato => produtoCorrespondeItemEncomenda(candidato, item));
+    if (!produto) produto = criarProdutoFallbackEncomenda(item);
+    if (produto && !mapasProdutos.some(candidato => String(candidato.id) === String(produto.id))) {
+        mapasProdutos = [produto, ...mapasProdutos];
+    }
+    return produto;
+}
+
+function garantirProdutoModalEncomendas() {
+    prepararContextoProdutoEncomendas();
+    if (window.MapasProdutoModal) return Promise.resolve();
+    if (!promessaProdutoModalEncomendas) {
+        promessaProdutoModalEncomendas = carregarScriptEncomendasAdmin('mapas-produto-modal.js?v=20260926-encomendas')
+            .then(() => {
+                prepararContextoProdutoEncomendas();
+            });
+    }
+    return promessaProdutoModalEncomendas;
+}
+
+async function abrirProdutoEncomendaAdmin(item) {
+    try {
+        prepararContextoProdutoEncomendas();
+        await garantirProdutoModalEncomendas();
+        const produto = await obterProdutoMapaParaItemEncomenda(item);
+        if (!produto?.id) {
+            definirStatusEncomendas('Não foi possível encontrar a ficha deste produto.', true);
+            return;
+        }
+        prepararContextoProdutoEncomendas();
+        await window.MapasProdutoModal.abrirFicha(produto.id);
+    } catch (error) {
+        console.warn('Nao foi possivel abrir ficha do produto.', error);
+        definirStatusEncomendas('Erro ao abrir ficha do produto: ' + (error?.message || 'sem detalhe'), true);
+    }
 }
 
 async function abrirFichaClienteAdmin(encomenda) {
@@ -1180,8 +1424,14 @@ document.getElementById('admin-imagem-modal-fechar').addEventListener('click', f
 document.getElementById('admin-encomenda-modal-fechar')?.addEventListener('click', fecharModalEncomendaAdmin);
 ligarFechoModalPorFundo(document.getElementById('admin-imagem-modal'), fecharImagemProdutoEncomenda);
 document.addEventListener('keydown', evento => {
+    const galeriaProduto = document.getElementById('mapas-produto-galeria-modal');
+    const modalProduto = document.getElementById('mapas-produto-modal');
     if (evento.key === 'Escape' && !document.getElementById('admin-imagem-modal').hidden) {
         fecharImagemProdutoEncomenda();
+    } else if (evento.key === 'Escape' && galeriaProduto && !galeriaProduto.hidden) {
+        return;
+    } else if (evento.key === 'Escape' && modalProduto && !modalProduto.hidden) {
+        window.MapasProdutoModal?.fechar?.();
     } else if (evento.key === 'Escape' && !document.getElementById('admin-encomenda-modal')?.hidden) {
         fecharModalEncomendaAdmin();
     }

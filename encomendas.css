@@ -1289,6 +1289,26 @@ body.pagina-encomendas-admin{
             font-weight:900;
         }
 
+        .admin-encomenda-produto-nome-botao{
+            width:100%;
+            padding:0;
+            border:0;
+            background:transparent;
+            color:inherit;
+            font:inherit;
+            font-weight:800;
+            line-height:inherit;
+            text-align:left;
+            cursor:pointer;
+        }
+
+        .admin-encomenda-produto-nome-botao:hover,
+        .admin-encomenda-produto-nome-botao:focus-visible{
+            color:#ffc400;
+            text-decoration:underline;
+            outline:none;
+        }
+
         .admin-encomenda-produto-marcacao-penultimo{
             margin-left:18px;
         }

@@ -31,7 +31,8 @@ window.AdminEncomendaVista = (function () {
         atualizarResumo: () => {},
         obterLista: () => [],
         definirLista: () => {},
-        onEncomendaApagada: () => {}
+        onEncomendaApagada: () => {},
+        abrirProduto: null
     };
 
     let imagensProdutos = new Map();
@@ -838,6 +839,42 @@ window.AdminEncomendaVista = (function () {
         };
         if (url) botao.onclick = () => abrirImagemProduto(imagens, item.nome);
         botao.appendChild(imagem);
+        return botao;
+    }
+
+    function obterIdProdutoEncomenda(item) {
+        return String(
+            item?.id_produto
+            || item?.produto_id
+            || item?.produtoId
+            || item?.id
+            || ""
+        ).trim();
+    }
+
+    function criarNomeProdutoEncomenda(item) {
+        const nome = item?.nome || "Produto";
+        const podeAbrir = typeof hooks.abrirProduto === "function"
+            && (
+                obterIdProdutoEncomenda(item)
+                || String(item?.sku || "").trim()
+                || chaveReferenciaProduto(item)
+                || String(item?.nome || "").trim()
+            );
+        if (!podeAbrir) {
+            return criarElemento("strong", "admin-encomenda-produto-nome", nome);
+        }
+
+        const botao = criarElemento("button", "admin-encomenda-produto-nome admin-encomenda-produto-nome-botao", nome);
+        botao.type = "button";
+        botao.title = "Abrir ficha do produto";
+        botao.addEventListener("click", evento => {
+            evento.preventDefault();
+            evento.stopPropagation();
+            Promise.resolve(hooks.abrirProduto(item)).catch(error => {
+                hooks.definirStatus("Erro ao abrir ficha do produto: " + detalheErro(error), true);
+            });
+        });
         return botao;
     }
 
@@ -2689,7 +2726,7 @@ window.AdminEncomendaVista = (function () {
             linhaProduto.append(
                 criarMiniaturaProduto(item),
                 criarElemento("span", "admin-encomenda-produto-quantidade", quantidade > 1 ? `${quantidade} x` : ""),
-                criarElemento("strong", "admin-encomenda-produto-nome", item.nome || "Produto"),
+                criarNomeProdutoEncomenda(item),
                 criarElemento(
                     "span",
                     `admin-encomenda-produto-observacoes${observacoesTexto ? " com-nota" : " sem-nota"}`,
