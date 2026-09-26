@@ -2641,12 +2641,26 @@ body.pagina-mapas-admin > main.fornecedores-admin {
     align-items: stretch;
 }
 
-.mapas-produto-ficha-topo .mapas-produto-secao-notas-leitura {
-    grid-column: 2 / -1;
+.mapas-produto-ficha-secundaria {
+    grid-column: 1 / -1;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-areas: "marcacoes preparacao gestao";
+    gap: 14px;
+    align-items: stretch;
+    min-width: 0;
 }
 
-.mapas-produto-ficha-topo .mapas-produto-secao-marcacoes-resumo {
-    grid-column: 2 / -1;
+.mapas-produto-ficha-secundaria .mapas-produto-secao-marcacoes-resumo {
+    grid-area: marcacoes;
+}
+
+.mapas-produto-ficha-secundaria .mapas-produto-secao-notas-preparacao {
+    grid-area: preparacao;
+}
+
+.mapas-produto-ficha-secundaria .mapas-produto-secao-notas-gestao {
+    grid-area: gestao;
 }
 
 .mapas-produto-foto-principal {
@@ -3844,12 +3858,12 @@ body.mapas-produto-modal-aberto {
         grid-template-columns: 1fr;
     }
 
-    .mapas-produto-ficha-topo .mapas-produto-secao-notas-leitura {
-        grid-column: auto;
-    }
-
-    .mapas-produto-ficha-topo .mapas-produto-secao-marcacoes-resumo {
-        grid-column: auto;
+    .mapas-produto-ficha-secundaria {
+        grid-template-columns: 1fr;
+        grid-template-areas:
+            "marcacoes"
+            "preparacao"
+            "gestao";
     }
 
     .mapas-produto-foto-principal {
