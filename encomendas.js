@@ -323,6 +323,10 @@ function normalizarImagensProdutoEncomenda(imagens) {
     }).filter(Boolean);
 }
 
+function normalizarImagensMapa(imagens) {
+    return normalizarImagensProdutoEncomenda(imagens);
+}
+
 function valorBooleanoProdutoEncomenda(valor) {
     if (typeof valor === 'boolean') return valor;
     const texto = normalizarTextoProdutoEncomenda(valor);
