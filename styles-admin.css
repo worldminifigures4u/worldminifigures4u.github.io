@@ -282,6 +282,17 @@ body[data-page].cabecalho-com-admin .navegacao-admin-cabecalho{
     justify-content:flex-start;
 }
 
+@media(min-width:1101px){
+    body[data-page].cabecalho-com-admin .navegacao-admin-cabecalho{
+        grid-column:1 / -1;
+        grid-row:2;
+        width:100%;
+        overflow-x:visible;
+        scrollbar-width:none;
+        flex-wrap:nowrap;
+    }
+}
+
 .navegacao-admin-cabecalho[hidden]{
     display:none !important;
 }
