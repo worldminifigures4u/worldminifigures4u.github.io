@@ -2130,10 +2130,35 @@ function preencherFormularioProdutoMapa(produto, modo = "editar") {
     const nomeInput = modal.querySelector("#mapas-editar-nome");
     const skuInput = modal.querySelector("#mapas-editar-sku");
     if (modo === "criar" && nomeInput && skuInput) {
-        nomeInput.addEventListener("blur", () => {
-            if (String(skuInput.value || "").trim()) return;
-            if (typeof gerarSkuProduto === "function") {
-                skuInput.value = gerarSkuProduto(nomeInput.value, mapasProdutos);
+        const atualizarSkuAutomatico = () => {
+            const nome = String(nomeInput.value || "").trim();
+            if (!nome) {
+                if (skuInput.dataset.skuAutomatico === "1") {
+                    skuInput.value = "";
+                    delete skuInput.dataset.skuAutomatico;
+                    delete skuInput.dataset.skuOrigemNome;
+                }
+                return;
+            }
+            if (skuInput.dataset.skuManual === "1") return;
+            if (typeof gerarSkuProduto !== "function") return;
+
+            const origemAnterior = skuInput.dataset.skuOrigemNome || "";
+            if (skuInput.dataset.skuAutomatico === "1" && origemAnterior === nome) return;
+
+            skuInput.value = gerarSkuProduto(nome, mapasProdutos);
+            skuInput.dataset.skuAutomatico = "1";
+            skuInput.dataset.skuOrigemNome = nome;
+        };
+
+        nomeInput.addEventListener("blur", atualizarSkuAutomatico);
+        skuInput.addEventListener("input", () => {
+            delete skuInput.dataset.skuAutomatico;
+            delete skuInput.dataset.skuOrigemNome;
+            if (String(skuInput.value || "").trim()) {
+                skuInput.dataset.skuManual = "1";
+            } else {
+                delete skuInput.dataset.skuManual;
             }
         });
     }
