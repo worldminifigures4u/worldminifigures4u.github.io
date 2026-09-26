@@ -211,6 +211,10 @@ function reduzirLetrasRepetidasBuscaLoja(texto) {
     return String(texto || '').replace(/([a-z0-9])\1+/g, '$1');
 }
 
+function compactarTextoBuscaLoja(texto) {
+    return normalizarTextoBuscaLoja(texto).replace(/\s+/g, '');
+}
+
 function obterTermosBuscaLoja(texto) {
     const normalizado = normalizarTextoBuscaLoja(texto);
     return normalizado ? normalizado.split(' ').filter(Boolean) : [];
@@ -289,21 +293,46 @@ function pontuarProdutoPesquisaFlexivelLoja(produto, pesquisa) {
     if (!termosPesquisa.length || !termosProduto.length) return 0;
 
     let pontos = 0;
+    const nomeCompacto = compactarTextoBuscaLoja(nomeNormalizado);
+    const pesquisaCompacta = compactarTextoBuscaLoja(pesquisaNormalizada);
     if (nomeNormalizado === pesquisaNormalizada) {
         pontos += 220;
+    } else if (nomeCompacto === pesquisaCompacta) {
+        pontos += 205;
     } else if (nomeNormalizado.startsWith(pesquisaNormalizada)) {
         pontos += 180;
+    } else if (nomeCompacto.startsWith(pesquisaCompacta)) {
+        pontos += 165;
     } else if (nomeNormalizado.includes(pesquisaNormalizada)) {
         pontos += 150;
+    } else if (nomeCompacto.includes(pesquisaCompacta)) {
+        pontos += 135;
     } else {
         const nomeReduzido = reduzirLetrasRepetidasBuscaLoja(nomeNormalizado);
         const pesquisaReduzida = reduzirLetrasRepetidasBuscaLoja(pesquisaNormalizada);
+        const nomeCompactoReduzido = reduzirLetrasRepetidasBuscaLoja(nomeCompacto);
+        const pesquisaCompactaReduzida = reduzirLetrasRepetidasBuscaLoja(pesquisaCompacta);
         if (nomeReduzido === pesquisaReduzida) pontos += 170;
+        else if (nomeCompactoReduzido === pesquisaCompactaReduzida) pontos += 160;
         else if (nomeReduzido.startsWith(pesquisaReduzida)) pontos += 145;
+        else if (nomeCompactoReduzido.startsWith(pesquisaCompactaReduzida)) pontos += 135;
         else if (nomeReduzido.includes(pesquisaReduzida)) pontos += 120;
+        else if (nomeCompactoReduzido.includes(pesquisaCompactaReduzida)) pontos += 110;
     }
 
     for (const termo of termosPesquisa) {
+        const termoCompacto = compactarTextoBuscaLoja(termo);
+        const termoCompactoReduzido = reduzirLetrasRepetidasBuscaLoja(termoCompacto);
+        if (
+            termoCompacto
+            && (
+                nomeCompacto.includes(termoCompacto)
+                || reduzirLetrasRepetidasBuscaLoja(nomeCompacto).includes(termoCompactoReduzido)
+            )
+        ) {
+            pontos += 64;
+            continue;
+        }
         const pontosTermo = pontuarTermoBuscaLoja(termo, termosProduto);
         if (pontosTermo <= 0) return 0;
         pontos += pontosTermo;
