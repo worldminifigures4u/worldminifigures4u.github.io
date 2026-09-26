@@ -467,17 +467,18 @@ html:not(.admin-light-mode) .clientes-admin #btn-criar-cliente.wallapop-botao-de
     padding:0;
     border:0;
     background:transparent;
-    color:var(--cor-acao-principal, #ffc107);
+    color:var(--cor-texto-principal, #fff);
     font:inherit;
     font-weight:700;
     cursor:pointer;
     text-align:left;
+    text-decoration:none;
 }
 
 .clientes-historico-codigo:hover,
 .clientes-historico-codigo:focus-visible{
-    color:#ffe082;
-    text-decoration:underline;
+    color:#ffc107;
+    text-decoration:none;
     outline:none;
 }
 

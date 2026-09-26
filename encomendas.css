@@ -175,17 +175,18 @@ body.pagina-encomendas-admin{
             padding:0;
             border:0;
             background:transparent;
-            color:var(--cor-acao-principal, #ffc107);
+            color:var(--cor-texto-principal, #fff);
             font:inherit;
             font-weight:700;
             cursor:pointer;
             text-align:left;
+            text-decoration:none;
         }
 
         .admin-encomendas-vendas-figura-codigo:hover,
         .admin-encomendas-vendas-figura-codigo:focus-visible{
-            color:#ffe082;
-            text-decoration:underline;
+            color:#ffc107;
+            text-decoration:none;
             outline:none;
         }
 

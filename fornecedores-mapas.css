@@ -1793,8 +1793,11 @@ body.pagina-mapas-admin > main.fornecedores-admin {
     white-space: nowrap;
 }
 
-.mapas-celula-nome:hover {
-    color: #ffc400;
+.mapas-celula-nome:hover,
+.mapas-celula-nome:focus-visible {
+    color: #ffc107;
+    text-decoration: none;
+    outline: none;
 }
 
 .mapas-col-lego { width: 70px; }
@@ -2472,24 +2475,25 @@ body.pagina-mapas-admin > main.fornecedores-admin {
     width: 100%;
     border: 0;
     background: transparent;
-    color: #fff;
+    color: var(--cor-texto-principal, #fff);
     padding: 0;
     text-align: left;
     font: inherit;
     font-weight: 700;
     cursor: pointer;
+    text-decoration: none;
 }
 
 .mapas-produto-nome-botao:hover,
 .mapas-produto-nome-botao:focus-visible {
-    color: #ffc400;
-    text-decoration: underline;
+    color: #ffc107 !important;
+    text-decoration: none;
     outline: none;
 }
 
 .pagina-fornecedores-unificada .mapas-produto-nome-botao:hover,
 .pagina-fornecedores-unificada .mapas-produto-nome-botao:focus-visible {
-    color: #ffc400 !important;
+    color: #ffc107 !important;
     text-decoration: none !important;
 }
 
