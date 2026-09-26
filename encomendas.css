@@ -408,9 +408,7 @@ body.pagina-encomendas-admin{
             font-size:14px;
             font-weight:800;
             text-align:left;
-            text-decoration:underline;
-            text-decoration-color:#ffc107;
-            text-underline-offset:3px;
+            text-decoration:none;
             cursor:pointer;
             overflow:hidden;
             text-overflow:ellipsis;
@@ -419,7 +417,9 @@ body.pagina-encomendas-admin{
 
         .admin-encomenda-linha .admin-encomenda-cliente-link:hover,
         .admin-encomenda-linha .admin-encomenda-cliente-link:focus-visible{
-            color:var(--cor-texto-principal, #fff);
+            color:#ffc107;
+            text-decoration:none;
+            outline:none;
         }
 
         .admin-encomenda-valor-linha{
