@@ -2965,6 +2965,16 @@ function normalizarMetodoEnvioTxtPlataforma(valor) {
         .replace(/^_+|_+$/g, '');
 }
 
+function envioInPostTxtPlataforma(opcao) {
+    const id = normalizarMetodoEnvioTxtPlataforma(opcao?.id || opcao?.metodo_envio);
+    const nome = normalizarTextoPlataforma(opcao?.nome || opcao?.nome_exibicao || opcao?.metodo_envio_nome);
+    return id.includes('inpost') || nome.includes('inpost');
+}
+
+function criarNotaInPostTxtPlataforma() {
+    return 'Nota InPost: entrega num ponto de recolha escolhido por si, não ao domicílio. Envie-me o seu e-mail para receber o pedido de escolha do ponto e completar os restantes dados de envio.';
+}
+
 function criarLinhasOutrosEnviosOlxPlataforma(envio) {
     const regiao = envio?.regiao || document.getElementById('plataforma-pais-envio')?.value || 'portugal';
     const peso = Number(envio?.peso || calcularPesoPlataforma());
@@ -2978,9 +2988,13 @@ function criarLinhasOutrosEnviosOlxPlataforma(envio) {
         if (nomeAtual && nome === nomeAtual) return false;
         return true;
     });
+    const incluirNotaInPost = envioInPostTxtPlataforma(envio) || alternativas.some(envioInPostTxtPlataforma);
 
     if (!alternativas.length) {
-        return ['Pode ainda optar por outros tipos de envio disponíveis de acordo com as opções configuradas no site.'];
+        return [
+            'Pode ainda optar por outros tipos de envio disponíveis de acordo com as opções configuradas no site.',
+            ...(incluirNotaInPost ? [criarNotaInPostTxtPlataforma()] : [])
+        ];
     }
 
     return [
@@ -2988,7 +3002,8 @@ function criarLinhasOutrosEnviosOlxPlataforma(envio) {
         ...alternativas.map(opcao => {
             const nome = String(opcao?.nome || opcao?.nome_exibicao || opcao?.id || 'Envio').trim();
             return `- ${nome}: ${formatarEuroWallapop(calcularPortesPlataforma(opcao?.valor))} \u20ac`;
-        })
+        }),
+        ...(incluirNotaInPost ? [criarNotaInPostTxtPlataforma()] : [])
     ];
 }
 
