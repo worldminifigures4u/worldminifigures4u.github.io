@@ -870,8 +870,7 @@ function obterOpcoesEnvioTabelaPlataforma(regiao, peso) {
     return (zona.find(linha => peso <= linha.ate) || zona[zona.length - 1]).opcoes || [];
 }
 
-function obterOpcoesEnvioPlataforma(regiao, peso) {
-    const plataforma = obterPlataformaAtual();
+function obterOpcoesEnvioPlataforma(regiao, peso, plataforma = obterPlataformaAtual()) {
     const padrao = obterOpcaoEnvioPadraoPlataforma(plataforma);
     let opcoesTabela = obterOpcoesEnvioTabelaPlataforma(regiao, peso);
     if (plataforma === 'Todocoleccion' && !opcoesTabela.some(opcao => opcao.id === 'inpost_registado')) {
@@ -2960,6 +2959,39 @@ function formatarLinhaTxtProdutoPlataforma(item) {
     return `${quantidade}x ${nome} ${formatarEuroWallapop(totalLinha)} \u20ac`;
 }
 
+function normalizarMetodoEnvioTxtPlataforma(valor) {
+    return normalizarTextoPlataforma(valor)
+        .replace(/[^\p{L}\p{N}]+/gu, '_')
+        .replace(/^_+|_+$/g, '');
+}
+
+function criarLinhasOutrosEnviosOlxPlataforma(envio) {
+    const regiao = envio?.regiao || document.getElementById('plataforma-pais-envio')?.value || 'portugal';
+    const peso = Number(envio?.peso || calcularPesoPlataforma());
+    const opcoes = obterOpcoesEnvioPlataforma(regiao, peso, obterPlataformaParaFicheiros());
+    const metodoAtual = normalizarMetodoEnvioTxtPlataforma(envio?.id || envio?.metodo_envio);
+    const nomeAtual = normalizarTextoPlataforma(envio?.nome);
+    const alternativas = opcoes.filter(opcao => {
+        const id = normalizarMetodoEnvioTxtPlataforma(opcao?.id);
+        const nome = normalizarTextoPlataforma(opcao?.nome || opcao?.nome_exibicao);
+        if (metodoAtual && id === metodoAtual) return false;
+        if (nomeAtual && nome === nomeAtual) return false;
+        return true;
+    });
+
+    if (!alternativas.length) {
+        return ['Pode ainda optar por outros tipos de envio disponíveis de acordo com as opções configuradas no site.'];
+    }
+
+    return [
+        'Pode ainda optar por outros tipos de envio disponíveis:',
+        ...alternativas.map(opcao => {
+            const nome = String(opcao?.nome || opcao?.nome_exibicao || opcao?.id || 'Envio').trim();
+            return `- ${nome}: ${formatarEuroWallapop(calcularPortesPlataforma(opcao?.valor))} \u20ac`;
+        })
+    ];
+}
+
 function criarTextoClienteOlx() {
     const itens = obterItensParaFicheirosPlataforma();
     const envio = obterEnvioParaFicheirosPlataforma();
@@ -2976,6 +3008,8 @@ function criarTextoClienteOlx() {
         `Portes de envio (${envio.nome}):\t${formatarEuroWallapop(envio.portes)} \u20ac`,
         '',
         `Total geral:\t${formatarEuroWallapop(totalGeral)} \u20ac`,
+        '',
+        ...criarLinhasOutrosEnviosOlxPlataforma(envio),
         '',
         ...criarLinhasDadosClienteOlx()
     );

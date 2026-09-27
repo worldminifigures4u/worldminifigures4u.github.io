@@ -1396,6 +1396,86 @@ window.AdminEncomendaVista = (function () {
         return (itens || []).reduce((total, item) => total + obterQuantidadeExportacao(item), 0);
     }
 
+    function normalizarChaveEnvioExportacao(valor) {
+        return normalizarTextoEnvio(valor)
+            .replace(/[^\p{L}\p{N}]+/gu, "_")
+            .replace(/^_+|_+$/g, "");
+    }
+
+    function calcularPesoExportacao(itens) {
+        return (itens || []).reduce((total, item) => {
+            const peso = Number(
+                item?.peso
+                ?? item?.peso_g
+                ?? item?.peso_gramas
+                ?? item?.peso_produto
+                ?? 10
+            ) || 10;
+            return total + obterQuantidadeExportacao(item) * peso;
+        }, 0);
+    }
+
+    function obterPaisEnvioExportacao(encomenda) {
+        const dados = obterEncomendaComDadosCliente(encomenda);
+        return normalizarChaveEnvioExportacao(
+            encomenda?.regiao_envio
+            || encomenda?.pais_envio
+            || dados?.pais_cliente
+            || encomenda?.pais_cliente
+            || "portugal"
+        ) || "portugal";
+    }
+
+    function obterTabelaPortesExportacao() {
+        if (typeof TABELA_PORTES_POR_PESO !== "undefined" && TABELA_PORTES_POR_PESO) {
+            return TABELA_PORTES_POR_PESO;
+        }
+        return null;
+    }
+
+    function obterOpcoesEnvioExportacao(encomenda, itens) {
+        const tabela = obterTabelaPortesExportacao();
+        const peso = calcularPesoExportacao(itens);
+        if (!tabela || peso <= 0) return [];
+        const pais = obterPaisEnvioExportacao(encomenda);
+        const zona = typeof obterZonaPortesPorPais === "function"
+            ? obterZonaPortesPorPais(pais)
+            : (pais === "portugal" ? "portugal" : (pais === "espanha" ? "espanha" : "europa"));
+        const escaloes = tabela[zona] || tabela.portugal || [];
+        const escalao = escaloes.find(linha => peso <= linha.ate) || escaloes[escaloes.length - 1];
+        return Array.isArray(escalao?.opcoes) ? escalao.opcoes : [];
+    }
+
+    function formatarValorEnvioExportacao(valor) {
+        if (typeof valorPortesComIva === "function") return valorPortesComIva(valor);
+        return Math.round(Number(valor || 0) * 100) / 100;
+    }
+
+    function criarLinhasOutrosEnviosOlxExportacao(encomenda, itens) {
+        const opcoes = obterOpcoesEnvioExportacao(encomenda, itens);
+        const metodoAtual = normalizarChaveEnvioExportacao(encomenda?.metodo_envio);
+        const nomeAtual = normalizarTextoEnvio(encomenda?.metodo_envio_nome);
+        const alternativas = opcoes.filter(opcao => {
+            const id = normalizarChaveEnvioExportacao(opcao?.id);
+            const nome = normalizarTextoEnvio(opcao?.nome || opcao?.nome_exibicao);
+            if (metodoAtual && id === metodoAtual) return false;
+            if (nomeAtual && nome === nomeAtual) return false;
+            return true;
+        });
+
+        if (!alternativas.length) {
+            return ["Pode ainda optar por outros tipos de envio disponíveis de acordo com as opções configuradas no site."];
+        }
+
+        return [
+            "Pode ainda optar por outros tipos de envio disponíveis:",
+            ...alternativas.map(opcao => {
+                const nome = String(opcao?.nome || opcao?.nome_exibicao || opcao?.id || "Envio").trim();
+                return `- ${nome}: ${formatarEuroExportacao(formatarValorEnvioExportacao(opcao?.valor))} €`;
+            })
+        ];
+    }
+
     function criarCabecalhoTxtExportacao(encomenda) {
         const codigo = String(encomenda?.codigo_encomenda || encomenda?.id || "").trim();
         if (!codigo) return [];
@@ -1451,6 +1531,8 @@ window.AdminEncomendaVista = (function () {
             `Portes de envio (${envio}):\t${formatarEuroExportacao(portes)} €`,
             "",
             `Total geral:\t${formatarEuroExportacao(total)} €`,
+            "",
+            ...criarLinhasOutrosEnviosOlxExportacao(encomenda, itens),
             "",
             ...criarLinhasDadosClienteExportacao(encomenda)
         );
@@ -1698,6 +1780,11 @@ window.AdminEncomendaVista = (function () {
         await carregarImagensParaEncomendas([encomenda]).catch(error => {
             console.warn("Nao foi possivel carregar todas as imagens para exportacao.", error);
         });
+        if (origemEncomenda(encomenda) === "olx" && typeof garantirTabelaPortesCarregada === "function") {
+            await garantirTabelaPortesCarregada().catch(error => {
+                console.warn("Nao foi possivel carregar a tabela de portes para a exportacao OLX.", error);
+            });
+        }
         itens = prepararItensExportacao(encomenda);
 
         const ficheiros = [];

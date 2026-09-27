@@ -16,12 +16,20 @@
         });
     }
 
+    function garantirAppPortes() {
+        if (typeof window.garantirTabelaPortesCarregada === 'function') return Promise.resolve();
+        return carregarScript('app-portes.js?v=20260927-olx-envios-txt');
+    }
+
     function garantirAdminEncomendaVista() {
         if (window.AdminEncomendaVista) return Promise.resolve();
         if (!promessaVista) {
-            promessaVista = carregarScript('morada-formato.js?v=20260713-morada-formatada')
+            promessaVista = garantirAppPortes()
                 .then(function () {
-                    return carregarScript('admin-encomenda-vista.js?v=20260926-produto-link');
+                    return carregarScript('morada-formato.js?v=20260713-morada-formatada');
+                })
+                .then(function () {
+                    return carregarScript('admin-encomenda-vista.js?v=20260927-olx-envios-txt');
                 });
         }
         return promessaVista;
