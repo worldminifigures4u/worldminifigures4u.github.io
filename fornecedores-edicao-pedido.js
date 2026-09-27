@@ -156,9 +156,9 @@ function analisarLinhaTabelaListaFinalFornecedor(linha, partes, colunas, numeroL
 
     const nota = obterValorColunaListaFinalFornecedor(partes, colunas.nota);
     const semStock = textoIndicaSemStockListaFinalFornecedor(nota) || textoIndicaSemStockListaFinalFornecedor(partes.join(" "));
-    let quantidade = Math.floor(converterNumeroListaFornecedor(obterValorColunaListaFinalFornecedor(partes, colunas.quantidade)));
-    if (quantidade <= 0 && semStock) quantidade = 1;
-    if (quantidade <= 0) {
+    const quantidadeTexto = obterValorColunaListaFinalFornecedor(partes, colunas.quantidade);
+    const quantidade = Math.floor(converterNumeroListaFornecedor(quantidadeTexto));
+    if (quantidade <= 0 && !semStock) {
         return { erro: `linha ${numeroLinha}: quantidade inválida`, original: linha };
     }
 
@@ -169,7 +169,7 @@ function analisarLinhaTabelaListaFinalFornecedor(linha, partes, colunas, numeroL
         quantidade,
         preco_custo: precoCusto,
         sem_stock_fornecedor: semStock,
-        quantidade_os: semStock ? quantidade : 0,
+        quantidade_os: semStock && quantidade > 0 ? quantidade : null,
         original: linha
     };
 }
@@ -216,7 +216,7 @@ function analisarLinhaListaFinalFornecedor(linha, numeroLinha, estadoParser = nu
         quantidade,
         preco_custo: precoCusto,
         sem_stock_fornecedor: semStock,
-        quantidade_os: semStock ? quantidade : 0,
+        quantidade_os: semStock ? quantidade : null,
         original: linha
     };
 }
@@ -242,10 +242,12 @@ function fundirItemListaFinalComExistenteFornecedor(importado, existente) {
             quantidadeAtualAnterior,
             Math.floor(Number(base.quantidade_original ?? base.quantidade_inicial ?? base.quantidade ?? quantidadeAtualAnterior) || quantidadeAtualAnterior)
         );
-        const quantidadeInformada = Math.max(0, Math.floor(Number(importado.quantidade_os || importado.quantidade || 0)));
-        const quantidadeOriginal = Math.max(quantidadeOriginalAnterior, quantidadeInformada);
+        const quantidadeOsIndicada = Math.floor(Number(importado.quantidade_os || 0));
+        const temQuantidadeOsIndicada = Number.isFinite(quantidadeOsIndicada) && quantidadeOsIndicada > 0;
+        const quantidadeInformada = temQuantidadeOsIndicada ? quantidadeOsIndicada : 0;
+        const quantidadeOriginal = Math.max(quantidadeOriginalAnterior, quantidadeInformada, 1);
         if (quantidadeOriginal <= 0) return null;
-        const faltaOs = Math.max(1, Math.min(quantidadeOriginal, quantidadeInformada || quantidadeOriginal));
+        const faltaOs = Math.max(1, Math.min(quantidadeOriginal, temQuantidadeOsIndicada ? quantidadeInformada : quantidadeOriginal));
         const quantidadeFinal = Math.max(0, quantidadeOriginal - faltaOs);
         const precoImportado = Math.max(0, Number(importado.preco_custo ?? importado.preco ?? 0) || 0);
         const precoExistente = Math.max(0, Number(base.preco_custo ?? base.preco ?? base.custo ?? 0) || 0);
@@ -372,7 +374,9 @@ function processarLinhasListaFinalFornecedor(texto, itensAtuais = []) {
         if (!produto) foraCatalogo.push(analisada.referencia);
         let item = criarItemFornecedorAPartirListaFinal(analisada, produto);
         item.sem_stock_fornecedor = Boolean(analisada.sem_stock_fornecedor);
-        item.quantidade_os = analisada.sem_stock_fornecedor ? Math.max(1, Math.floor(Number(analisada.quantidade_os || analisada.quantidade || 1))) : 0;
+        item.quantidade_os = analisada.sem_stock_fornecedor && Number(analisada.quantidade_os) > 0
+            ? Math.floor(Number(analisada.quantidade_os))
+            : null;
         if (produto) {
             item.referencia = analisada.referencia;
             item.nome = produto.nome || item.nome;
