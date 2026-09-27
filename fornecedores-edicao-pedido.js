@@ -53,22 +53,172 @@ function obterMensagemErroEdicaoFornecedor(error) {
     return "Erro: " + mensagem;
 }
 
-function analisarLinhaListaFinalFornecedor(linha, numeroLinha) {
+function normalizarCabecalhoListaFinalFornecedor(valor) {
+    return String(valor || "")
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .trim()
+        .toUpperCase()
+        .replace(/[^A-Z0-9]/g, "");
+}
+
+function tipoCabecalhoListaFinalFornecedor(valor) {
+    const texto = normalizarCabecalhoListaFinalFornecedor(valor);
+    if (!texto) return "";
+    if (["CODE", "COD", "CODIGO", "REF", "REFERENCIA", "REFERENCE", "PRODUCTCODE", "ITEMCODE", "ITEM", "ITEMNO", "MODEL", "MODELNO", "PART", "PARTNO", "ARTIGO"].includes(texto)) return "referencia";
+    if (["QTY", "QT", "QTD", "QTDE", "QUANTITY", "QUANTIDADE", "UNIDADES", "UNID", "PCS", "PIECES"].includes(texto)) return "quantidade";
+    if (["PRICE", "UNITPRICE", "PRECO", "PRECOCOMPRA", "PRECOUNITARIO", "COST", "UNITCOST", "USD", "USDPRICE", "UNITUSD", "FOB"].includes(texto)) return "preco";
+    if (["NOTE", "NOTES", "OBS", "OBSERVACAO", "OBSERVACOES", "STATUS", "REMARK", "REMARKS", "COMMENT", "COMMENTS", "COMENTARIO", "COMENTARIOS"].includes(texto)) return "nota";
+    return "";
+}
+
+function dividirLinhaTabelaListaFinalFornecedor(linha) {
+    const original = String(linha ?? "");
+    const texto = original.trim();
+    if (!texto) return [];
+    if (original.includes("\t")) return original.split("\t").map((parte) => String(parte || "").trim());
+    if (texto.includes(";")) return texto.split(";").map((parte) => String(parte || "").trim());
+    return [];
+}
+
+function pareceReferenciaListaFinalFornecedor(valor) {
+    const texto = normalizarReferenciaListaFornecedor(valor);
+    return /[A-Z]/.test(texto) && /\d/.test(texto) && texto.length >= 3;
+}
+
+function pareceQuantidadeListaFinalFornecedor(valor) {
+    const texto = String(valor || "").trim();
+    if (!/^\d+$/.test(texto)) return false;
+    const numero = Number(texto);
+    return Number.isInteger(numero) && numero > 0 && numero < 10000;
+}
+
+function parecePrecoListaFinalFornecedor(valor) {
+    const texto = String(valor || "").trim();
+    if (!texto) return false;
+    if (/[$€]/.test(texto)) return true;
+    return /^\d+[,.]\d{1,4}$/.test(texto);
+}
+
+function textoIndicaSemStockListaFinalFornecedor(valor) {
+    const texto = String(valor || "")
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .trim()
+        .toUpperCase();
+    if (!texto) return false;
+    return /\bOUT\s*(OF|DE|QE)?\s*STOCK\b/.test(texto)
+        || /\bNO\s*STOCK\b/.test(texto)
+        || /\bSEM\s*(STOCK|ESTOQUE)\b/.test(texto)
+        || /\bESGOTAD[OA]S?\b/.test(texto)
+        || /\bOOS\b/.test(texto)
+        || texto === "OS";
+}
+
+function obterMapaCabecalhoListaFinalFornecedor(partes) {
+    const mapa = {};
+    let reconhecidas = 0;
+    (partes || []).forEach((parte, indice) => {
+        const tipo = tipoCabecalhoListaFinalFornecedor(parte);
+        if (!tipo) return;
+        reconhecidas += 1;
+        if (mapa[tipo] == null) mapa[tipo] = indice;
+    });
+    if (mapa.referencia != null && mapa.quantidade != null && reconhecidas >= 2) return mapa;
+    return null;
+}
+
+function inferirMapaTabelaListaFinalFornecedor(partes) {
+    if (!Array.isArray(partes) || partes.length < 4) return null;
+    const indiceReferencia = partes.findIndex(pareceReferenciaListaFinalFornecedor);
+    if (indiceReferencia < 0) return null;
+    const indiceQuantidade = partes.findIndex((parte, indice) => indice > indiceReferencia && pareceQuantidadeListaFinalFornecedor(parte));
+    if (indiceQuantidade < 0) return null;
+    const indicePreco = partes.findIndex((parte, indice) => indice > indiceQuantidade && parecePrecoListaFinalFornecedor(parte));
+    const indiceNota = partes.findIndex((parte, indice) => indice > indiceQuantidade && textoIndicaSemStockListaFinalFornecedor(parte));
+    if (indicePreco < 0 && indiceNota < 0) return null;
+    return {
+        referencia: indiceReferencia,
+        quantidade: indiceQuantidade,
+        preco: indicePreco >= 0 ? indicePreco : null,
+        nota: indiceNota >= 0 ? indiceNota : null
+    };
+}
+
+function obterValorColunaListaFinalFornecedor(partes, indice) {
+    return Number.isInteger(indice) && indice >= 0 ? String(partes[indice] || "").trim() : "";
+}
+
+function analisarLinhaTabelaListaFinalFornecedor(linha, partes, colunas, numeroLinha) {
+    const referencia = obterValorColunaListaFinalFornecedor(partes, colunas.referencia);
+    if (!referencia) return null;
+    if (!pareceReferenciaListaFinalFornecedor(referencia) && !encontrarProdutoListaFinalFornecedor(referencia)) return null;
+
+    const nota = obterValorColunaListaFinalFornecedor(partes, colunas.nota);
+    const semStock = textoIndicaSemStockListaFinalFornecedor(nota) || textoIndicaSemStockListaFinalFornecedor(partes.join(" "));
+    let quantidade = Math.floor(converterNumeroListaFornecedor(obterValorColunaListaFinalFornecedor(partes, colunas.quantidade)));
+    if (quantidade <= 0 && semStock) quantidade = 1;
+    if (quantidade <= 0) {
+        return { erro: `linha ${numeroLinha}: quantidade inválida`, original: linha };
+    }
+
+    const precoTexto = obterValorColunaListaFinalFornecedor(partes, colunas.preco);
+    const precoCusto = semStock ? 0 : Math.max(0, converterNumeroListaFornecedor(precoTexto));
+    return {
+        referencia,
+        quantidade,
+        preco_custo: precoCusto,
+        sem_stock_fornecedor: semStock,
+        quantidade_os: semStock ? quantidade : 0,
+        original: linha
+    };
+}
+
+function analisarLinhaListaFinalFornecedor(linha, numeroLinha, estadoParser = null) {
+    estadoParser = estadoParser || {};
+    const partesTabela = dividirLinhaTabelaListaFinalFornecedor(linha);
+    if (partesTabela.length) {
+        if (!estadoParser.colunas) {
+            const cabecalho = obterMapaCabecalhoListaFinalFornecedor(partesTabela);
+            if (cabecalho) {
+                estadoParser.colunas = cabecalho;
+                return { cabecalho: true };
+            }
+            if (partesTabela.some(tipoCabecalhoListaFinalFornecedor) && !partesTabela.some(pareceReferenciaListaFinalFornecedor)) {
+                return { cabecalho: true };
+            }
+            const inferido = inferirMapaTabelaListaFinalFornecedor(partesTabela);
+            if (inferido) estadoParser.colunas = inferido;
+        }
+        if (estadoParser.colunas) {
+            return analisarLinhaTabelaListaFinalFornecedor(linha, partesTabela, estadoParser.colunas, numeroLinha);
+        }
+    }
+
     const partes = dividirLinhaListaFinalFornecedor(linha).map(parte => String(parte || "").trim()).filter(Boolean);
     if (!partes.length) return null;
+    if (obterMapaCabecalhoListaFinalFornecedor(partes)) return { cabecalho: true };
     if (partes.length < 2) {
         return { erro: `linha ${numeroLinha}: falta quantidade`, original: linha };
     }
 
     const referencia = partes[0];
     const quantidade = Math.floor(converterNumeroListaFornecedor(partes[1]));
+    const semStock = textoIndicaSemStockListaFinalFornecedor(partes.slice(2).join(" "));
     if (!referencia || quantidade <= 0) {
         return { erro: `linha ${numeroLinha}: referência ou quantidade inválida`, original: linha };
     }
 
     const precoTexto = partes.slice(2).join(" ");
-    const precoCusto = Math.max(0, converterNumeroListaFornecedor(precoTexto));
-    return { referencia, quantidade, preco_custo: precoCusto, original: linha };
+    const precoCusto = semStock ? 0 : Math.max(0, converterNumeroListaFornecedor(precoTexto));
+    return {
+        referencia,
+        quantidade,
+        preco_custo: precoCusto,
+        sem_stock_fornecedor: semStock,
+        quantidade_os: semStock ? quantidade : 0,
+        original: linha
+    };
 }
 
 function obterItemExistenteListaFinalFornecedor(itensAtuais, item) {
@@ -84,6 +234,44 @@ function obterItemExistenteListaFinalFornecedor(itensAtuais, item) {
 }
 
 function fundirItemListaFinalComExistenteFornecedor(importado, existente) {
+    const veioSemStock = Boolean(importado?.sem_stock_fornecedor);
+    if (veioSemStock) {
+        const base = existente || importado;
+        const quantidadeAtualAnterior = Math.max(0, Math.floor(Number(base.quantidade || 0)));
+        const quantidadeOriginalAnterior = Math.max(
+            quantidadeAtualAnterior,
+            Math.floor(Number(base.quantidade_original ?? base.quantidade_inicial ?? base.quantidade ?? quantidadeAtualAnterior) || quantidadeAtualAnterior)
+        );
+        const quantidadeInformada = Math.max(0, Math.floor(Number(importado.quantidade_os || importado.quantidade || 0)));
+        const quantidadeOriginal = Math.max(quantidadeOriginalAnterior, quantidadeInformada);
+        if (quantidadeOriginal <= 0) return null;
+        const faltaOs = Math.max(1, Math.min(quantidadeOriginal, quantidadeInformada || quantidadeOriginal));
+        const quantidadeFinal = Math.max(0, quantidadeOriginal - faltaOs);
+        const precoImportado = Math.max(0, Number(importado.preco_custo ?? importado.preco ?? 0) || 0);
+        const precoExistente = Math.max(0, Number(base.preco_custo ?? base.preco ?? base.custo ?? 0) || 0);
+        const precoCusto = precoImportado > 0 ? precoImportado : precoExistente;
+        return normalizarItemPedidoFornecedor({
+            ...base,
+            id: importado.id || base.id,
+            nome: importado.nome || base.nome,
+            sku: importado.sku || base.sku || "",
+            referencia: importado.referencia || base.referencia || "",
+            tema: importado.tema || base.tema || "",
+            subtema: importado.subtema || base.subtema || "",
+            imagens: importado.imagens || base.imagens || [],
+            quantidade: quantidadeFinal,
+            quantidade_original: quantidadeOriginal,
+            falta_os: faltaOs,
+            data_os: base.data_os || dataOsHojeFornecedor(),
+            estado_fornecedor: "OS",
+            marcado_ex: false,
+            origem_ajuste: base.origem_ajuste || "lista-final",
+            data_origem_ajuste: base.data_origem_ajuste || dataOsAgoraFornecedor(),
+            recebido: Math.min(Math.max(0, Number(base.recebido || 0)), quantidadeFinal),
+            preco_custo: precoCusto,
+            preco: precoCusto
+        });
+    }
     if (!existente) return importado;
     const quantidadeAnterior = Math.max(0, Math.floor(Number(existente.quantidade || 0)));
     const quantidadeNova = Math.max(0, Math.floor(Number(importado.quantidade || 0)));
@@ -129,6 +317,13 @@ function fundirItemListaFinalComExistenteFornecedor(importado, existente) {
     });
 }
 
+function limparMetadadosImportacaoListaFinalFornecedor(item) {
+    if (!item) return item;
+    delete item.sem_stock_fornecedor;
+    delete item.quantidade_os;
+    return item;
+}
+
 function criarItemAusenteListaFinalFornecedor(item) {
     if (!item) return false;
     const quantidadeAtual = Math.max(0, Math.floor(Number(item.quantidade || 0)));
@@ -158,20 +353,26 @@ function processarLinhasListaFinalFornecedor(texto, itensAtuais = []) {
     const erros = [];
     const foraCatalogo = [];
     const itensUsados = new Set();
+    const estadoParser = {};
     let linhasImportadas = 0;
+    let osImportadas = 0;
 
     linhas.forEach((linha, indice) => {
-        const analisada = analisarLinhaListaFinalFornecedor(linha, indice + 1);
+        const analisada = analisarLinhaListaFinalFornecedor(linha, indice + 1, estadoParser);
         if (!analisada) return;
+        if (analisada.cabecalho) return;
         if (analisada.erro) {
             erros.push(analisada.erro);
             return;
         }
         linhasImportadas += 1;
+        if (analisada.sem_stock_fornecedor) osImportadas += 1;
 
         const produto = encontrarProdutoListaFinalFornecedor(analisada.referencia);
         if (!produto) foraCatalogo.push(analisada.referencia);
         let item = criarItemFornecedorAPartirListaFinal(analisada, produto);
+        item.sem_stock_fornecedor = Boolean(analisada.sem_stock_fornecedor);
+        item.quantidade_os = analisada.sem_stock_fornecedor ? Math.max(1, Math.floor(Number(analisada.quantidade_os || analisada.quantidade || 1))) : 0;
         if (produto) {
             item.referencia = analisada.referencia;
             item.nome = produto.nome || item.nome;
@@ -182,8 +383,8 @@ function processarLinhasListaFinalFornecedor(texto, itensAtuais = []) {
         }
         const existente = obterItemExistenteListaFinalFornecedor(itensAtuais, item);
         if (existente) itensUsados.add(existente);
-        item = fundirItemListaFinalComExistenteFornecedor(item, existente);
-        itens.push(item);
+        item = limparMetadadosImportacaoListaFinalFornecedor(fundirItemListaFinalComExistenteFornecedor(item, existente));
+        if (item) itens.push(item);
     });
 
     (Array.isArray(itensAtuais) ? itensAtuais : []).forEach((existente) => {
@@ -193,7 +394,7 @@ function processarLinhasListaFinalFornecedor(texto, itensAtuais = []) {
     });
 
     const unidades = itens.reduce((total, item) => total + Math.max(0, Number(item.quantidade || 0)), 0);
-    return { itens, erros, foraCatalogo, unidades, linhasImportadas };
+    return { itens, erros, foraCatalogo, unidades, linhasImportadas, osImportadas };
 }
 
 async function aplicarListaFinalFornecedor() {
@@ -209,7 +410,7 @@ async function aplicarListaFinalFornecedor() {
         return;
     }
 
-    const { itens: importados, erros, foraCatalogo, unidades, linhasImportadas } = processarLinhasListaFinalFornecedor(textoLista, fornecedorSelecao);
+    const { itens: importados, erros, foraCatalogo, unidades, linhasImportadas, osImportadas } = processarLinhasListaFinalFornecedor(textoLista, fornecedorSelecao);
     if (!linhasImportadas || !importados.length) {
         const detalhe = erros.length ? ` ${erros.join("; ")}` : "";
         definirStatusFornecedor(`Cole pelo menos uma referência válida antes de aplicar a lista final.${detalhe}`, true);
@@ -217,7 +418,7 @@ async function aplicarListaFinalFornecedor() {
     }
 
     if (!(await mostrarConfirmacaoSite(
-        `Aplicar esta lista final à encomenda?\n\n${linhasImportadas} referência(s) lida(s), ${unidades} unidade(s).\nA lista atual será substituída e as referências que não vierem na lista ficam marcadas como OS/Falta.`,
+        `Aplicar esta lista final à encomenda?\n\n${linhasImportadas} referência(s) lida(s), ${unidades} unidade(s) a receber${osImportadas ? ` e ${osImportadas} referência(s) OS` : ""}.\nA lista atual será substituída e as referências que não vierem na lista ficam marcadas como OS/Falta.`,
         { titulo: "Confirmar lista final", textoConfirmar: "Aplicar", textoCancelar: "Cancelar" }
     ))) {
         return;
@@ -231,7 +432,7 @@ async function aplicarListaFinalFornecedor() {
     const avisos = [];
     if (foraCatalogo.length) avisos.push(`${foraCatalogo.length} referência(s) fora do catálogo incluída(s): ${foraCatalogo.join(", ")}`);
     if (erros.length) avisos.push(erros.join("; "));
-    definirStatusFornecedor(`${importados.length} linha(s), ${unidades} unidade(s) aplicadas à encomenda.${avisos.length ? " " + avisos.join(" | ") : ""}`, Boolean(avisos.length));
+    definirStatusFornecedor(`${importados.length} linha(s), ${unidades} unidade(s) a receber${osImportadas ? ` e ${osImportadas} OS` : ""} aplicadas à encomenda.${avisos.length ? " " + avisos.join(" | ") : ""}`, Boolean(avisos.length));
 }
 
 function limparTextoListaFinalFornecedor() {
@@ -537,14 +738,14 @@ async function aplicarListaFinalNaEdicaoFornecedor() {
         return;
     }
 
-    const { itens, erros, foraCatalogo, unidades, linhasImportadas } = processarLinhasListaFinalFornecedor(texto, pedido.itens || []);
+    const { itens, erros, foraCatalogo, unidades, linhasImportadas, osImportadas } = processarLinhasListaFinalFornecedor(texto, pedido.itens || []);
     if (!linhasImportadas || !itens.length) {
         definirStatusEdicaoFornecedor(status, "erro", erros.length ? erros.join("; ") : "Cole pelo menos uma referência válida antes de aplicar a lista final.");
         return;
     }
 
     if (!(await mostrarConfirmacaoSite(
-        `Aplicar esta lista final à encomenda?\n\n${linhasImportadas} referência(s) lida(s), ${unidades} unidade(s).\nA lista atual será substituída e as referências que não vierem na lista ficam marcadas como OS/Falta.`,
+        `Aplicar esta lista final à encomenda?\n\n${linhasImportadas} referência(s) lida(s), ${unidades} unidade(s) a receber${osImportadas ? ` e ${osImportadas} referência(s) OS` : ""}.\nA lista atual será substituída e as referências que não vierem na lista ficam marcadas como OS/Falta.`,
         { titulo: "Confirmar lista final", textoConfirmar: "Aplicar", textoCancelar: "Cancelar" }
     ))) {
         return;
@@ -565,7 +766,7 @@ async function aplicarListaFinalNaEdicaoFornecedor() {
     definirStatusEdicaoFornecedor(
         status,
         avisos.length ? "aviso" : "sucesso",
-        `Lista aplicada: ${itens.length} linha(s), ${unidades} unidade(s).${avisos.length ? " " + avisos.join(" | ") : ""}`
+        `Lista aplicada: ${itens.length} linha(s), ${unidades} unidade(s) a receber${osImportadas ? ` e ${osImportadas} OS` : ""}.${avisos.length ? " " + avisos.join(" | ") : ""}`
     );
 }
 
@@ -901,16 +1102,16 @@ function garantirModalEdicaoFornecedor() {
                     <p class="fornecedor-edicao-aviso-guardar">As alterações aos campos acima só ficam gravadas ao clicar <strong>Gravar encomenda</strong>.</p>
                     <section class="fornecedor-lista-final-box fornecedor-lista-final-edicao" aria-label="Lista final enviada pelo fornecedor">
                         <h4>Colar lista final do fornecedor</h4>
-                        <p>Depois de o fornecedor responder, cola aqui referência, quantidade e preço compra. A encomenda abaixo é corrigida automaticamente.</p>
-                        <textarea id="fornecedor-edicao-lista-final" rows="5" placeholder="Ex.:&#10;AF301	2	1,25&#10;PG634	1	0,85"></textarea>
+                        <p>Cola aqui a tabela do fornecedor. O campo CODE é usado como referência; SKU e AMOUNT são ignorados. Se a nota indicar OUT OF STOCK, a figura é marcada como OS automaticamente.</p>
+                        <textarea id="fornecedor-edicao-lista-final" rows="5" placeholder="Ex.:&#10;CODE	SKU	QTY	PRICE	AMOUNT	NOTE&#10;AF301	AF301	2	$1,25	$2,50&#10;PG634	PG634	1		$0,00	OUT OF STOCK"></textarea>
                         <div class="fornecedor-lista-final-acoes">
                             <button type="button" id="fornecedor-edicao-limpar-lista-final">Limpar texto</button>
                             <button type="button" id="fornecedor-edicao-aplicar-lista-final" class="wallapop-botao-destaque">Aplicar à encomenda</button>
                         </div>
                     </section>
                     <section class="fornecedor-lista-final-box fornecedor-lista-os-edicao" aria-label="Lista OS enviada pelo fornecedor">
-                        <h4>Colar lista OS do fornecedor</h4>
-                        <p>Cola as referências sem stock. São marcadas como OS e saem do “a receber” (a quantidade OS fica na ficha ao gravar).</p>
+                        <h4>Colar lista OS do fornecedor (opcional)</h4>
+                        <p>Usa só se a lista final não trouxer a nota OUT OF STOCK. As referências coladas aqui são marcadas como OS e saem do “a receber”.</p>
                         <textarea id="fornecedor-edicao-lista-os" rows="4" placeholder="Ex.:&#10;AF301&#10;PG634&#10;ou com quantidade:&#10;AF301	2"></textarea>
                         <div class="fornecedor-lista-final-acoes">
                             <button type="button" id="fornecedor-edicao-limpar-lista-os">Limpar texto</button>
