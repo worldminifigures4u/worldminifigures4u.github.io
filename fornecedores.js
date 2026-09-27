@@ -110,7 +110,7 @@ function garantirFornecedoresProdutoModal() {
 function garantirFornecedoresEdicaoPedido() {
     if (window.FornecedoresEdicaoPedido) return Promise.resolve();
     if (!__fornecedoresEdicaoPromessa) {
-        __fornecedoresEdicaoPromessa = carregarScriptAdmin("fornecedores-edicao-pedido.js?v=20260927-lista-final-os-total");
+        __fornecedoresEdicaoPromessa = carregarScriptAdmin("fornecedores-edicao-pedido.js?v=20260927-ignorado-lista");
     }
     return __fornecedoresEdicaoPromessa;
 }
@@ -866,8 +866,9 @@ function normalizarItemPedidoFornecedor(item) {
         Math.floor(Number(item.quantidade_original ?? item.quantidade_inicial ?? quantidade) || quantidade)
     );
     const estadoFornecedor = String(item.estado_fornecedor || "").trim();
+    const ignoradoLista = itemPedidoIgnoradoListaFornecedor(item);
     const marcadoEx = Boolean(item.marcado_ex) || estadoFornecedor.toUpperCase() === "EX";
-    const faltaOs = marcadoEx
+    const faltaOs = marcadoEx || ignoradoLista
         ? 0
         : Math.max(0, Math.floor(Number(item.falta_os || Math.max(0, quantidadeOriginal - quantidade)) || 0));
     const precoCusto = Number(item.preco_custo ?? item.custo ?? item.preco_compra ?? item.preco_fornecedor ?? item.preco ?? 0);
@@ -879,9 +880,9 @@ function normalizarItemPedidoFornecedor(item) {
         data_os: item.data_os || null,
         data_recebida: item.data_recebida || item.recebido_em || null,
         preco_custo: Number.isFinite(precoCusto) ? Math.max(0, precoCusto) : 0,
-        estado_fornecedor: estadoFornecedor || (faltaOs > 0 ? 'OS' : ''),
+        estado_fornecedor: ignoradoLista ? 'IGNORADO_LISTA' : (estadoFornecedor || (faltaOs > 0 ? 'OS' : '')),
         marcado_ex: marcadoEx,
-        origem_ajuste: item.origem_ajuste || '',
+        origem_ajuste: ignoradoLista ? 'ignorado-lista' : (item.origem_ajuste || ''),
         data_origem_ajuste: item.data_origem_ajuste || null
     };
 }
@@ -1215,6 +1216,7 @@ function obterTextoOrigemAjustePedidoFornecedor(origemAjuste) {
     if (origemAjuste === "substituicao") return "Adicionado depois";
     if (origemAjuste === "reforco") return "Quantidade aumentada";
     if (origemAjuste === "lista-final") return "Ajustado pela lista final";
+    if (origemAjuste === "ignorado-lista") return "Ignorado na lista";
     return "";
 }
 
@@ -4111,9 +4113,17 @@ function chaveItemHistoricoPedidoFornecedor(item) {
 
 function itemPedidoEstavaOsFornecedor(item) {
     if (!item) return false;
+    if (itemPedidoIgnoradoListaFornecedor(item)) return false;
     if (itemPedidoEstaExFornecedor(item)) return false;
     return Math.max(0, Number(item.falta_os || 0)) > 0
         || String(item.estado_fornecedor || "").trim().toUpperCase() === "OS";
+}
+
+function itemPedidoIgnoradoListaFornecedor(item) {
+    if (!item) return false;
+    const estado = String(item.estado_fornecedor || "").trim().toUpperCase();
+    const origem = String(item.origem_ajuste || "").trim();
+    return estado === "IGNORADO_LISTA" || origem === "ignorado-lista";
 }
 
 function itemPedidoEstaExFornecedor(item) {

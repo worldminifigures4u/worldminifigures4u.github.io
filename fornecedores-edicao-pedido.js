@@ -53,6 +53,15 @@ function obterMensagemErroEdicaoFornecedor(error) {
     return "Erro: " + mensagem;
 }
 
+function itemIgnoradoListaEdicaoFornecedor(item) {
+    if (typeof itemPedidoIgnoradoListaFornecedor === "function") {
+        return itemPedidoIgnoradoListaFornecedor(item);
+    }
+    const estado = String(item?.estado_fornecedor || "").trim().toUpperCase();
+    const origem = String(item?.origem_ajuste || "").trim();
+    return estado === "IGNORADO_LISTA" || origem === "ignorado-lista";
+}
+
 function normalizarCabecalhoListaFinalFornecedor(valor) {
     return String(valor || "")
         .normalize("NFD")
@@ -341,9 +350,11 @@ function criarItemAusenteListaFinalFornecedor(item) {
         ...item,
         quantidade: 0,
         quantidade_original: quantidadeOriginal,
-        falta_os: quantidadeOriginal,
-        data_os: item.data_os || dataOsHojeFornecedor(),
-        estado_fornecedor: "OS",
+        falta_os: 0,
+        data_os: null,
+        estado_fornecedor: "IGNORADO_LISTA",
+        origem_ajuste: "ignorado-lista",
+        data_origem_ajuste: item.data_origem_ajuste || dataOsAgoraFornecedor(),
         marcado_ex: false,
         recebido: 0
     });
@@ -422,7 +433,7 @@ async function aplicarListaFinalFornecedor() {
     }
 
     if (!(await mostrarConfirmacaoSite(
-        `Aplicar esta lista final à encomenda?\n\n${linhasImportadas} referência(s) lida(s), ${unidades} unidade(s) a receber${osImportadas ? ` e ${osImportadas} referência(s) OS` : ""}.\nA lista atual será substituída e as referências que não vierem na lista ficam marcadas como OS/Falta.`,
+        `Aplicar esta lista final à encomenda?\n\n${linhasImportadas} referência(s) lida(s), ${unidades} unidade(s) a receber${osImportadas ? ` e ${osImportadas} referência(s) OS` : ""}.\nA lista atual será substituída e as referências que não vierem na lista ficam como Ignorado na lista.`,
         { titulo: "Confirmar lista final", textoConfirmar: "Aplicar", textoCancelar: "Cancelar" }
     ))) {
         return;
@@ -502,7 +513,10 @@ function montarLinhaEdicaoProdutoFornecedor(pedido, item, indice) {
     const quantidadeOriginal = Math.max(0, Number(item.quantidade_original ?? item.quantidade ?? 0));
     const quantidadeAtual = Math.max(0, Number(item.quantidade || 0));
     const itemMarcadoEx = item.estado_fornecedor === "EX" || item.marcado_ex === true;
+    const itemIgnoradoLista = itemIgnoradoListaEdicaoFornecedor(item);
     const faltaAtual = itemMarcadoEx
+        ? 0
+        : itemIgnoradoLista
         ? 0
         : Math.max(0, Number(item.falta_os || Math.max(0, quantidadeOriginal - quantidadeAtual)));
     const precoCustoAtual = Number(item.preco_custo ?? item.custo ?? item.preco ?? 0) || 0;
@@ -523,14 +537,20 @@ function montarLinhaEdicaoProdutoFornecedor(pedido, item, indice) {
     ids.className = "fornecedor-identificadores";
     ids.textContent = `Ref. ${produtoAtual.referencia || item.referencia || "-"} | SKU ${produtoAtual.sku || item.sku || "-"}`;
     const ajuste = document.createElement("span");
-    ajuste.className = itemMarcadoEx ? "fornecedor-ajuste-os fornecedor-ajuste-ex ativo" : (faltaAtual > 0 ? "fornecedor-ajuste-os ativo" : "fornecedor-ajuste-os");
+    ajuste.className = itemMarcadoEx
+        ? "fornecedor-ajuste-os fornecedor-ajuste-ex ativo"
+        : itemIgnoradoLista
+        ? "fornecedor-ajuste-os ativo"
+        : (faltaAtual > 0 ? "fornecedor-ajuste-os ativo" : "fornecedor-ajuste-os");
     const dataOsTexto = item.data_os ? ` | desde ${formatarDataOsCurtaFornecedor(item.data_os)}` : "";
     ajuste.textContent = itemMarcadoEx
         ? `Inicial: ${quantidadeOriginal} | EX${dataOsTexto}`
+        : itemIgnoradoLista
+        ? `Inicial: ${quantidadeOriginal} | Ignorado na lista`
         : faltaAtual > 0
         ? `Inicial: ${quantidadeOriginal} | OS: ${faltaAtual}${dataOsTexto}`
         : `Inicial: ${quantidadeOriginal}`;
-    if (item.origem_ajuste) {
+    if (item.origem_ajuste && !itemIgnoradoLista) {
         const textoOrigem = obterTextoOrigemAjustePedidoFornecedor(item.origem_ajuste);
         if (textoOrigem) ajuste.textContent += ` | ${textoOrigem}`;
     }
@@ -587,7 +607,7 @@ function montarLinhaEdicaoProdutoFornecedor(pedido, item, indice) {
     const marcarOsInput = document.createElement("input");
     marcarOsInput.type = "checkbox";
     marcarOsInput.dataset.campo = "marcar_os";
-    marcarOsInput.checked = !itemMarcadoEx && (faltaAtual > 0 || item.estado_fornecedor === "OS");
+    marcarOsInput.checked = !itemMarcadoEx && !itemIgnoradoLista && (faltaAtual > 0 || item.estado_fornecedor === "OS");
     marcarOs.append(marcarOsInput, document.createTextNode(" Marcar OS"));
 
     const marcarEx = document.createElement("label");
@@ -749,13 +769,14 @@ async function aplicarListaFinalNaEdicaoFornecedor() {
     }
 
     if (!(await mostrarConfirmacaoSite(
-        `Aplicar esta lista final à encomenda?\n\n${linhasImportadas} referência(s) lida(s), ${unidades} unidade(s) a receber${osImportadas ? ` e ${osImportadas} referência(s) OS` : ""}.\nA lista atual será substituída e as referências que não vierem na lista ficam marcadas como OS/Falta.`,
+        `Aplicar esta lista final à encomenda?\n\n${linhasImportadas} referência(s) lida(s), ${unidades} unidade(s) a receber${osImportadas ? ` e ${osImportadas} referência(s) OS` : ""}.\nA lista atual será substituída e as referências que não vierem na lista ficam como Ignorado na lista.`,
         { titulo: "Confirmar lista final", textoConfirmar: "Aplicar", textoCancelar: "Cancelar" }
     ))) {
         return;
     }
 
     pedido.itens = itens;
+    modal.dataset.itensAlteradosListaFinal = "1";
     const lista = modal.querySelector("#fornecedor-edicao-produtos");
     if (lista) {
         lista.replaceChildren();
@@ -1183,6 +1204,7 @@ function abrirEdicaoPedidoFornecedor(id) {
     modal.querySelector('#fornecedor-edicao-nome').value = pedido.fornecedor || '';
     modal.querySelector('#fornecedor-edicao-referencia').value = pedido.referencia || '';
     modal.querySelector('#fornecedor-edicao-status').textContent = '';
+    delete modal.dataset.itensAlteradosListaFinal;
     modal.querySelector('#fornecedor-edicao-lista-final').value = '';
     const listaOs = modal.querySelector('#fornecedor-edicao-lista-os');
     if (listaOs) listaOs.value = '';
@@ -1223,12 +1245,14 @@ function lerItensEditadosPedidoFornecedor(pedido, modal) {
         if (marcarOs && faltaOsIndicada === 0) {
             faltaOsIndicada = Math.max(1, quantidadeOriginal - quantidade);
         }
+        const itemIgnoradoLista = itemIgnoradoListaEdicaoFornecedor(item);
+        const continuarIgnoradoLista = itemIgnoradoLista && !marcarEx && !marcarOs && quantidade <= 0;
         // A diferença entre quantidade original e a receber só implica OS quando
         // não é um caso de EX (aí a quantidade foi reduzida por preço, não por falta).
-        const faltaOs = marcarEx ? 0 : Math.max(faltaOsIndicada, quantidadeOriginal - quantidade);
+        const faltaOs = marcarEx || continuarIgnoradoLista ? 0 : Math.max(faltaOsIndicada, quantidadeOriginal - quantidade);
         const precoCusto = Math.max(0, Number(String(linha.querySelector('[data-campo="preco_custo"]')?.value || '').replace(',', '.')) || 0);
         const recebido = Math.max(0, Math.floor(Number(linha.querySelector('[data-campo="recebido"]')?.dataset.valor || item.recebido || 0)));
-        const estaOs = !marcarEx && (faltaOs > 0 || marcarOs);
+        const estaOs = !marcarEx && !continuarIgnoradoLista && (faltaOs > 0 || marcarOs);
         const quantidadeFinal = estaOs ? Math.max(0, quantidadeOriginal - faltaOs) : quantidade;
         const estavaOs = itemPedidoEstavaOsFornecedor(item);
         const estavaEx = itemPedidoEstaExFornecedor(item);
@@ -1249,11 +1273,13 @@ function lerItensEditadosPedidoFornecedor(pedido, modal) {
             data_os: (estaOs || marcarEx) ? (item.data_os || (mudouParaOsOuEx ? dataOsHojeFornecedor() : null)) : null,
             preco_custo: precoCusto,
             preco: precoCusto,
-            estado_fornecedor: estaOs ? 'OS' : (marcarEx ? 'EX' : (['OS', 'EX'].includes(item.estado_fornecedor) ? '' : item.estado_fornecedor || '')),
+            estado_fornecedor: continuarIgnoradoLista ? 'IGNORADO_LISTA' : (estaOs ? 'OS' : (marcarEx ? 'EX' : (['OS', 'EX', 'IGNORADO_LISTA'].includes(String(item.estado_fornecedor || '').toUpperCase()) ? '' : item.estado_fornecedor || ''))),
+            origem_ajuste: continuarIgnoradoLista ? 'ignorado-lista' : (item.origem_ajuste === 'ignorado-lista' ? '' : item.origem_ajuste || ''),
+            data_origem_ajuste: continuarIgnoradoLista ? (item.data_origem_ajuste || dataOsAgoraFornecedor()) : (item.origem_ajuste === 'ignorado-lista' ? null : item.data_origem_ajuste || null),
             marcado_ex: marcarEx,
             recebido: Math.min(recebido, quantidadeFinal)
         };
-    }).filter(item => item && (Number(item.quantidade || 0) > 0 || Number(item.falta_os || 0) > 0 || item.marcado_ex));
+    }).filter(item => item && (Number(item.quantidade || 0) > 0 || Number(item.falta_os || 0) > 0 || item.marcado_ex || itemIgnoradoListaEdicaoFornecedor(item)));
 }
 
 function obterInteiroCampoEdicaoFornecedor(linha, campo) {
@@ -1282,10 +1308,13 @@ function pedidoTemItensAlteradosEdicaoFornecedor(pedido, modal) {
         const quantidadeOriginal = Math.max(0, Number(item.quantidade_original ?? item.quantidade ?? 0));
         const quantidadeAtual = Math.max(0, Number(item.quantidade || 0));
         const itemMarcadoEx = itemPedidoEstaExFornecedor(item);
+        const itemIgnoradoLista = itemIgnoradoListaEdicaoFornecedor(item);
         const faltaAtual = itemMarcadoEx
             ? 0
+            : itemIgnoradoLista
+            ? 0
             : Math.max(0, Number(item.falta_os || Math.max(0, quantidadeOriginal - quantidadeAtual)));
-        const marcarOsAtual = !itemMarcadoEx && (faltaAtual > 0 || item.estado_fornecedor === "OS");
+        const marcarOsAtual = !itemMarcadoEx && !itemIgnoradoLista && (faltaAtual > 0 || item.estado_fornecedor === "OS");
 
         const marcarEx = Boolean(linha.querySelector('[data-campo="marcar_ex"]')?.checked);
         const marcarOs = Boolean(linha.querySelector('[data-campo="marcar_os"]')?.checked) && !marcarEx;
@@ -1321,7 +1350,7 @@ async function guardarEdicaoPedidoFornecedor(evento) {
     const referencia = modal.querySelector('#fornecedor-edicao-referencia').value.trim();
     const estado = modal.querySelector('#fornecedor-edicao-estado').value;
     const estadoAnterior = pedido.estado;
-    const itensAlterados = pedidoTemItensAlteradosEdicaoFornecedor(pedido, modal);
+    const itensAlterados = modal.dataset.itensAlteradosListaFinal === "1" || pedidoTemItensAlteradosEdicaoFornecedor(pedido, modal);
     const deveAtualizarHistoricoConfirmacao = deveConfirmarHistoricoPedidoFornecedor(estadoAnterior, estado);
     const itens = lerItensEditadosPedidoFornecedor(pedido, modal);
 
