@@ -4075,3 +4075,61 @@ body.pagina-fornecedores-admin.pagina-fornecedores-unificada {
     z-index: 39;
     box-shadow: 0 8px 14px rgba(0, 0, 0, .28);
 }
+
+.pagina-fornecedores-unificada {
+    --fp-altura-controle-topo-fornecedor: 42px;
+}
+
+.pagina-fornecedores-unificada .fornecedor-controles-unificados .fornecedor-seletor-linha {
+    grid-template-columns: 124px 96px;
+}
+
+.pagina-fornecedores-unificada .fornecedor-controles-unificados .fornecedor-seletor-linha select {
+    width: 124px;
+}
+
+.pagina-fornecedores-unificada .fornecedor-controles-unificados .fornecedor-btn-editar-ficha {
+    width: 96px;
+    min-width: 96px;
+}
+
+.pagina-fornecedores-unificada .fornecedor-controles-unificados .fornecedor-filtros-marcacao-bloco,
+.pagina-fornecedores-unificada .fornecedor-controles-unificados .fornecedor-filtro-marcacao-linha {
+    gap: 8px;
+}
+
+.pagina-fornecedores-unificada .fornecedor-controles-unificados .fornecedor-filtro-marcacao-linha {
+    grid-template-columns: 132px 42px;
+}
+
+.pagina-fornecedores-unificada .fornecedor-controles-unificados .fornecedor-filtros-marcacao-bloco {
+    grid-template-columns: max-content 42px;
+}
+
+.pagina-fornecedores-unificada .fornecedor-controles-unificados .fornecedor-btn-editar-ficha,
+.pagina-fornecedores-unificada .fornecedor-controles-unificados .fornecedor-btn-filtro-marcacao,
+.pagina-fornecedores-unificada .fornecedor-controles-unificados .fornecedor-btn-remover-filtro-marcacao {
+    height: var(--fp-altura-controle-topo-fornecedor) !important;
+    min-height: var(--fp-altura-controle-topo-fornecedor) !important;
+    box-sizing: border-box;
+    border-radius: var(--fp-raio-ui, 6px);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+}
+
+.pagina-fornecedores-unificada .fornecedor-controles-unificados .fornecedor-btn-filtro-marcacao,
+.pagina-fornecedores-unificada .fornecedor-controles-unificados .fornecedor-btn-remover-filtro-marcacao {
+    width: var(--fp-altura-controle-topo-fornecedor) !important;
+    min-width: var(--fp-altura-controle-topo-fornecedor) !important;
+    padding: 0 !important;
+    font-size: 17px;
+}
+
+.pagina-fornecedores-unificada .fornecedor-controles-unificados .fornecedor-btn-editar-ficha,
+.pagina-fornecedores-unificada .fornecedor-controles-unificados .fornecedor-btn-filtro-marcacao {
+    border: 1px solid var(--fp-cor-destaque, #ffc400);
+    background: transparent;
+    color: var(--fp-cor-destaque, #ffc400);
+}

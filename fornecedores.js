@@ -587,8 +587,9 @@ function renderizarLinhasFiltroMarcacaoFornecedor(filtros = null) {
         const remover = document.createElement("button");
         remover.type = "button";
         remover.className = "fornecedor-btn-remover-filtro-marcacao";
-        remover.textContent = "x";
+        remover.textContent = "×";
         remover.title = "Remover linha de filtro";
+        remover.setAttribute("aria-label", "Remover linha de filtro");
         remover.disabled = linhas.length <= 1;
 
         if (indice === 0) {
