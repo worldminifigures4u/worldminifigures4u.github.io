@@ -1186,8 +1186,15 @@ function dividirLinhaListaProdutosPorSeparadoresPlataforma(texto) {
     return [linha];
 }
 
+function removerTemasParentesesListaPlataforma(texto) {
+    return String(texto || '')
+        .replace(/\s*\([^)]*\)/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim();
+}
+
 function obterOcorrenciasNomesProdutosListaPlataforma(texto) {
-    const normalizado = normalizarTextoWallapop(texto);
+    const normalizado = normalizarTextoWallapop(removerTemasParentesesListaPlataforma(texto) || texto);
     if (!normalizado || !wallapopProdutos.length) return [];
 
     const nomes = new Map();
@@ -1261,10 +1268,7 @@ function obterChaveTextoListaPlataforma(texto) {
     const limpo = limparTextoProdutoListaPlataforma(texto);
     if (!limpo) return '';
 
-    const semParenteses = limpo
-        .replace(/\s*\([^)]*\)/g, ' ')
-        .replace(/\s+/g, ' ')
-        .trim();
+    const semParenteses = removerTemasParentesesListaPlataforma(limpo);
 
     return normalizarTextoWallapop(semParenteses || limpo);
 }
@@ -1359,9 +1363,8 @@ function obterTermosPesquisaLinhaPlataforma(texto) {
     termos.add(normalizarTextoWallapop(original));
 
     const semParenteses = original
-        .replace(/\s*\([^)]*\)/g, ' ')
-        .replace(/\s+/g, ' ')
-        .trim();
+        ? removerTemasParentesesListaPlataforma(original)
+        : '';
     if (semParenteses) termos.add(normalizarTextoWallapop(semParenteses));
 
     const codigoFinal = original.match(/\b([A-Za-z]{1,6}\d{2,})\s*$/);
