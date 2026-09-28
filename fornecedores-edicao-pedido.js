@@ -244,6 +244,16 @@ function obterItemExistenteListaFinalFornecedor(itensAtuais, item) {
     }) || null;
 }
 
+function deveCalcularCustoRealListaAtualFornecedor(opcoes = {}) {
+    return Math.max(0, Number(opcoes.totalPagoEur || 0) || 0) > 0;
+}
+
+function obterPrecoBaseSemCustoRealListaAtualFornecedor(existente, produto) {
+    const precoExistente = Math.max(0, Number(existente?.preco_custo ?? existente?.preco ?? existente?.custo ?? 0) || 0);
+    if (precoExistente > 0) return precoExistente;
+    return Math.max(0, Number(produto?.preco_custo ?? produto?.preco_compra ?? produto?.custo ?? 0) || 0);
+}
+
 function fundirItemListaFinalComExistenteFornecedor(importado, existente) {
     const veioSemStock = Boolean(importado?.sem_stock_fornecedor);
     if (veioSemStock) {
@@ -362,7 +372,12 @@ function formatarMoedaResumoCustoListaAtualFornecedor(valor, moeda = "EUR") {
 }
 
 function obterResumoCustoRealListaAtualFornecedor(resumo) {
-    if (!resumo?.aplicado) return "";
+    if (!resumo?.aplicado) {
+        if (resumo?.pendente) {
+            return "\n\nCusto real: ainda não calculado porque falta o Total pago EUR. A lista será aplicada sem alterar o preço compra.";
+        }
+        return "";
+    }
     const modo = resumo.rateioEnvio === "valor" ? "por valor" : "por unidade";
     return `\n\nCusto real: ${formatarMoedaResumoCustoListaAtualFornecedor(resumo.totalPagoEur)} / ${formatarMoedaResumoCustoListaAtualFornecedor(resumo.totalCompraUsd, "USD")} = câmbio ${resumo.cambio.toFixed(4)}. Envio distribuído ${modo}.`;
 }
@@ -370,11 +385,9 @@ function obterResumoCustoRealListaAtualFornecedor(resumo) {
 function calcularCustoRealListaAtualFornecedor(itens, opcoes = {}) {
     const envioUsd = Math.max(0, Number(opcoes.envioUsd || 0) || 0);
     const totalPagoEur = Math.max(0, Number(opcoes.totalPagoEur || 0) || 0);
-    const ativo = Boolean(opcoes.ativo) || envioUsd > 0 || totalPagoEur > 0;
-    if (!ativo) return { aplicado: false };
-    if (totalPagoEur <= 0) {
-        return { aplicado: false, erro: "Indique o total pago em EUR para calcular o custo real." };
-    }
+    const temPrecosUsd = (itens || []).some((item) => Math.max(0, Number(item?.preco_lista_usd || 0)) > 0);
+    const pendente = (envioUsd > 0 || temPrecosUsd) && totalPagoEur <= 0;
+    if (!deveCalcularCustoRealListaAtualFornecedor(opcoes)) return { aplicado: false, pendente };
 
     const itensReceber = (itens || []).filter(itemContaParaCustoRealListaAtualFornecedor);
     const semPreco = itensReceber.filter((item) => Math.max(0, Number(item.preco_lista_usd || 0)) <= 0);
@@ -490,6 +503,11 @@ function processarLinhasListaFinalFornecedor(texto, itensAtuais = [], opcoesCust
         }
         const existente = obterItemExistenteListaFinalFornecedor(itensAtuais, item);
         if (existente) itensUsados.add(existente);
+        if (!deveCalcularCustoRealListaAtualFornecedor(opcoesCusto)) {
+            const precoBase = obterPrecoBaseSemCustoRealListaAtualFornecedor(existente, produto);
+            item.preco_custo = precoBase;
+            item.preco = precoBase;
+        }
         item = fundirItemListaFinalComExistenteFornecedor(item, existente);
         if (item) itens.push(item);
     });
@@ -559,7 +577,7 @@ async function aplicarListaFinalFornecedor() {
     const avisos = [];
     if (foraCatalogo.length) avisos.push(`${foraCatalogo.length} referência(s) fora do catálogo incluída(s): ${foraCatalogo.join(", ")}`);
     if (erros.length) avisos.push(erros.join("; "));
-    definirStatusFornecedor(`${importados.length} linha(s), ${unidades} unidade(s) a receber${osImportadas ? ` e ${osImportadas} OS` : ""} aplicadas à encomenda.${custoReal?.aplicado ? " Preço compra calculado em EUR." : ""}${avisos.length ? " " + avisos.join(" | ") : ""}`, Boolean(avisos.length));
+    definirStatusFornecedor(`${importados.length} linha(s), ${unidades} unidade(s) a receber${osImportadas ? ` e ${osImportadas} OS` : ""} aplicadas à encomenda.${custoReal?.aplicado ? " Preço compra calculado em EUR." : ""}${custoReal?.pendente ? " Preço compra fica por calcular até preencheres o Total pago EUR." : ""}${avisos.length ? " " + avisos.join(" | ") : ""}`, Boolean(avisos.length));
 }
 
 function limparTextoListaFinalFornecedor() {
@@ -908,7 +926,7 @@ async function aplicarListaFinalNaEdicaoFornecedor() {
     definirStatusEdicaoFornecedor(
         status,
         avisos.length ? "aviso" : "sucesso",
-        `Lista aplicada: ${itens.length} linha(s), ${unidades} unidade(s) a receber${osImportadas ? ` e ${osImportadas} OS` : ""}.${custoReal?.aplicado ? " Preço compra calculado em EUR." : ""}${avisos.length ? " " + avisos.join(" | ") : ""}`
+        `Lista aplicada: ${itens.length} linha(s), ${unidades} unidade(s) a receber${osImportadas ? ` e ${osImportadas} OS` : ""}.${custoReal?.aplicado ? " Preço compra calculado em EUR." : ""}${custoReal?.pendente ? " Preço compra fica por calcular até preencheres o Total pago EUR." : ""}${avisos.length ? " " + avisos.join(" | ") : ""}`
     );
 }
 
@@ -1265,7 +1283,7 @@ function garantirModalEdicaoFornecedor() {
                                 <label><input type="radio" name="fornecedor-edicao-rateio-envio" value="valor"> Por valor</label>
                             </fieldset>
                         </div>
-                        <p class="fornecedor-custo-real-ajuda">Se preencheres o total pago em EUR, o preço compra é calculado em euros com o envio incluído.</p>
+                        <p class="fornecedor-custo-real-ajuda">Se ainda não tiveres o total pago em EUR, deixa esse campo vazio. A lista é aplicada e o preço compra fica por calcular.</p>
                         <div class="fornecedor-lista-final-acoes">
                             <button type="button" id="fornecedor-edicao-limpar-lista-final">Limpar texto</button>
                             <button type="button" id="fornecedor-edicao-aplicar-lista-final" class="wallapop-botao-destaque">Aplicar à encomenda</button>
