@@ -110,7 +110,7 @@ function garantirFornecedoresProdutoModal() {
 function garantirFornecedoresEdicaoPedido() {
     if (window.FornecedoresEdicaoPedido) return Promise.resolve();
     if (!__fornecedoresEdicaoPromessa) {
-        __fornecedoresEdicaoPromessa = carregarScriptAdmin("fornecedores-edicao-pedido.js?v=20260928-custo-usd-provisorio");
+        __fornecedoresEdicaoPromessa = carregarScriptAdmin("fornecedores-edicao-pedido.js?v=20260928-preco-pedido-fornecedor");
     }
     return __fornecedoresEdicaoPromessa;
 }
@@ -171,6 +171,24 @@ function normalizarFornecedor(texto) {
 
 function formatarEuroFornecedor(valor) {
     return Number(valor || 0).toLocaleString('pt-PT', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' \u20ac';
+}
+
+function formatarDolarFornecedor(valor) {
+    return '$' + Number(valor || 0).toLocaleString('pt-PT', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+
+function obterMoedaPrecoCustoItemFornecedor(item) {
+    return String(item?.preco_custo_moeda || "").trim().toUpperCase() === "USD" || item?.preco_custo_provisorio
+        ? "USD"
+        : "EUR";
+}
+
+function formatarPrecoCustoItemFornecedor(item) {
+    const preco = Math.max(0, Number(item?.preco_custo ?? item?.preco ?? item?.custo ?? 0) || 0);
+    if (preco <= 0) return "-";
+    return obterMoedaPrecoCustoItemFornecedor(item) === "USD"
+        ? formatarDolarFornecedor(preco)
+        : formatarEuroFornecedor(preco);
 }
 
 function normalizarSkuFornecedor(valor) {
@@ -4552,6 +4570,7 @@ function obterValorOrdenacaoItemPedidoFornecedor(item, coluna) {
     const produtoAtual = obterProdutoParaPedidoFornecedor(item) || item;
     if (coluna === "nome") return item?.nome || "";
     if (coluna === "ref") return item?.referencia || "";
+    if (coluna === "preco") return Math.max(0, Number(item?.preco_custo ?? item?.preco ?? item?.custo ?? 0) || 0);
     if (coluna === "pedido") return Math.max(0, Number(item?.quantidade || 0));
     if (coluna === "recebido") return Math.max(0, Number(item?.recebido || 0));
     if (coluna === "receber") {
@@ -4632,6 +4651,7 @@ function renderizarPedidoFornecedorProdutosTabela(caixa, pedido) {
         ["", "mapas-col-foto", ""],
         ["Nome", "mapas-col-nome", "nome"],
         ["Ref.", "mapas-col-ref", "ref"],
+        ["Preço", "mapas-col-preco-compra", "preco"],
         ["Pedido", "mapas-col-pedido-qtd", "pedido"],
         ["Recebido", "mapas-col-recebido-qtd", "recebido"],
         ["Stock atual", "mapas-col-stock-atual", "stock"],
@@ -4705,6 +4725,17 @@ function renderizarPedidoFornecedorProdutosTabela(caixa, pedido) {
         refCelula.className = "mapas-col-ref";
         refCelula.textContent = produtoAtual.referencia || item.referencia || "-";
         linha.appendChild(refCelula);
+
+        const precoCelula = document.createElement("td");
+        precoCelula.className = "mapas-col-preco-compra";
+        const precoTexto = formatarPrecoCustoItemFornecedor(item);
+        precoCelula.textContent = precoTexto;
+        if (precoTexto !== "-") {
+            precoCelula.title = obterMoedaPrecoCustoItemFornecedor(item) === "USD"
+                ? "Preço provisório em USD com envio incluído"
+                : "Preço final em euros";
+        }
+        linha.appendChild(precoCelula);
 
         const pedidoCelula = document.createElement("td");
         pedidoCelula.className = "mapas-col-pedido-qtd";

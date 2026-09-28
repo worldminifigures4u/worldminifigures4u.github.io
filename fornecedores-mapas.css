@@ -2366,9 +2366,16 @@ body.pagina-mapas-admin > main.fornecedores-admin {
 .pagina-fornecedores-unificada .fornecedor-pedido-produtos .mapas-col-pedido-qtd,
 .pagina-fornecedores-unificada .fornecedor-pedido-produtos .mapas-col-recebido-qtd,
 .pagina-fornecedores-unificada .fornecedor-pedido-produtos .mapas-col-stock-atual,
+.pagina-fornecedores-unificada .fornecedor-pedido-produtos .mapas-col-preco-compra,
 .pagina-fornecedores-unificada .fornecedor-pedido-produtos .mapas-col-origem-ajuste {
     text-align: center;
     white-space: nowrap;
+}
+
+.pagina-fornecedores-unificada .fornecedor-pedido-produtos .mapas-col-preco-compra {
+    width: 92px;
+    min-width: 82px;
+    font-variant-numeric: tabular-nums;
 }
 
 .pagina-fornecedores-unificada .fornecedor-pedido-produtos .mapas-col-pedido-qtd,
@@ -3740,6 +3747,7 @@ body.mapas-produto-modal-aberto {
 
 .fornecedor-pedido-tabela[data-coluna-ativa="nome"] td.mapas-col-nome,
 .fornecedor-pedido-tabela[data-coluna-ativa="ref"] td.mapas-col-ref,
+.fornecedor-pedido-tabela[data-coluna-ativa="preco"] td.mapas-col-preco-compra,
 .fornecedor-pedido-tabela[data-coluna-ativa="pedido"] td.mapas-col-pedido-qtd,
 .fornecedor-pedido-tabela[data-coluna-ativa="recebido"] td.mapas-col-recebido-qtd,
 .fornecedor-pedido-tabela[data-coluna-ativa="stock"] td.mapas-col-stock-atual,
@@ -3756,6 +3764,7 @@ body.mapas-produto-modal-aberto {
 
 .fornecedor-pedido-tabela[data-coluna-ativa="nome"] tbody tr:first-child td.mapas-col-nome,
 .fornecedor-pedido-tabela[data-coluna-ativa="ref"] tbody tr:first-child td.mapas-col-ref,
+.fornecedor-pedido-tabela[data-coluna-ativa="preco"] tbody tr:first-child td.mapas-col-preco-compra,
 .fornecedor-pedido-tabela[data-coluna-ativa="pedido"] tbody tr:first-child td.mapas-col-pedido-qtd,
 .fornecedor-pedido-tabela[data-coluna-ativa="recebido"] tbody tr:first-child td.mapas-col-recebido-qtd,
 .fornecedor-pedido-tabela[data-coluna-ativa="stock"] tbody tr:first-child td.mapas-col-stock-atual,
@@ -3772,6 +3781,7 @@ body.mapas-produto-modal-aberto {
 
 .fornecedor-pedido-tabela[data-coluna-ativa="nome"] tbody tr:last-child td.mapas-col-nome,
 .fornecedor-pedido-tabela[data-coluna-ativa="ref"] tbody tr:last-child td.mapas-col-ref,
+.fornecedor-pedido-tabela[data-coluna-ativa="preco"] tbody tr:last-child td.mapas-col-preco-compra,
 .fornecedor-pedido-tabela[data-coluna-ativa="pedido"] tbody tr:last-child td.mapas-col-pedido-qtd,
 .fornecedor-pedido-tabela[data-coluna-ativa="recebido"] tbody tr:last-child td.mapas-col-recebido-qtd,
 .fornecedor-pedido-tabela[data-coluna-ativa="stock"] tbody tr:last-child td.mapas-col-stock-atual,
