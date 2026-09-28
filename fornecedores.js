@@ -110,7 +110,7 @@ function garantirFornecedoresProdutoModal() {
 function garantirFornecedoresEdicaoPedido() {
     if (window.FornecedoresEdicaoPedido) return Promise.resolve();
     if (!__fornecedoresEdicaoPromessa) {
-        __fornecedoresEdicaoPromessa = carregarScriptAdmin("fornecedores-edicao-pedido.js?v=20260928-custo-pendente-usd");
+        __fornecedoresEdicaoPromessa = carregarScriptAdmin("fornecedores-edicao-pedido.js?v=20260928-custo-usd-provisorio");
     }
     return __fornecedoresEdicaoPromessa;
 }
@@ -872,6 +872,9 @@ function normalizarItemPedidoFornecedor(item) {
         ? 0
         : Math.max(0, Math.floor(Number(item.falta_os || Math.max(0, quantidadeOriginal - quantidade)) || 0));
     const precoCusto = Number(item.preco_custo ?? item.custo ?? item.preco_compra ?? item.preco_fornecedor ?? item.preco ?? 0);
+    const moedaPrecoCusto = String(item.preco_custo_moeda || "").trim().toUpperCase() === "USD" || item.preco_custo_provisorio
+        ? "USD"
+        : "EUR";
     return {
         ...item,
         quantidade,
@@ -883,7 +886,9 @@ function normalizarItemPedidoFornecedor(item) {
         estado_fornecedor: ignoradoLista ? 'IGNORADO_LISTA' : (estadoFornecedor || (faltaOs > 0 ? 'OS' : '')),
         marcado_ex: marcadoEx,
         origem_ajuste: ignoradoLista ? 'ignorado-lista' : (item.origem_ajuste || ''),
-        data_origem_ajuste: item.data_origem_ajuste || null
+        data_origem_ajuste: item.data_origem_ajuste || null,
+        preco_custo_moeda: moedaPrecoCusto,
+        preco_custo_provisorio: moedaPrecoCusto === "USD"
     };
 }
 
@@ -1159,6 +1164,8 @@ function serializarItemPedidoFornecedor(item) {
         })(),
         preco_custo: precoCusto,
         preco: precoCusto,
+        preco_custo_moeda: normalizado.preco_custo_provisorio ? "USD" : "EUR",
+        preco_custo_provisorio: Boolean(normalizado.preco_custo_provisorio),
         imagens
     };
 }
@@ -4286,6 +4293,7 @@ async function sincronizarPrecoCompraProdutosFornecedor(itens, fornecedorNome = 
     if (!fornecedoresClient) return 0;
     const porProduto = new Map();
     (itens || []).forEach(item => {
+        if (item?.preco_custo_provisorio || String(item?.preco_custo_moeda || "").trim().toUpperCase() === "USD") return;
         const precoCompra = Math.max(0, Number(item?.preco_custo ?? item?.preco_compra ?? item?.custo ?? 0) || 0);
         if (precoCompra <= 0) return;
         const produtoAtual = obterProdutoParaPedidoFornecedor(item);
