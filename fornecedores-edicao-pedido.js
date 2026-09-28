@@ -373,18 +373,45 @@ function obterResumoCustoRealListaAtualFornecedor(resumo) {
         }
         return "";
     }
+    if (resumo.precosProvisoriosUsd) {
+        return `\n\nCusto real: ${formatarMoedaResumoCustoListaAtualFornecedor(resumo.totalPagoEur)} / ${formatarMoedaResumoCustoListaAtualFornecedor(resumo.totalCompraUsd, "USD")} = câmbio ${resumo.cambio.toFixed(4)}. Usados os preços provisórios em USD já guardados.`;
+    }
     const modo = resumo.rateioEnvio === "valor" ? "por valor" : "por unidade";
     return `\n\nCusto real: ${formatarMoedaResumoCustoListaAtualFornecedor(resumo.totalPagoEur)} / ${formatarMoedaResumoCustoListaAtualFornecedor(resumo.totalCompraUsd, "USD")} = câmbio ${resumo.cambio.toFixed(4)}. Envio distribuído ${modo}.`;
 }
 
+function itemTemPrecoCustoProvisorioUsdFornecedor(item) {
+    return Boolean(item?.preco_custo_provisorio)
+        || String(item?.preco_custo_moeda || "").trim().toUpperCase() === "USD";
+}
+
+function obterPrecoUsdListaAtualFornecedor(item, usarProvisorio = false) {
+    const precoLista = Math.max(0, Number(item?.preco_lista_usd || 0) || 0);
+    if (precoLista > 0) return precoLista;
+    if (!usarProvisorio || !itemTemPrecoCustoProvisorioUsdFornecedor(item)) return 0;
+    return Math.max(0, Number(item?.preco_custo ?? item?.preco ?? item?.custo ?? 0) || 0);
+}
+
+function itensTemPrecoUsdListaAtualFornecedor(itens) {
+    return (itens || [])
+        .filter(itemContaParaCustoRealListaAtualFornecedor)
+        .some((item) => obterPrecoUsdListaAtualFornecedor(item, true) > 0);
+}
+
 function calcularCustoRealListaAtualFornecedor(itens, opcoes = {}) {
-    const envioUsd = Math.max(0, Number(opcoes.envioUsd || 0) || 0);
+    const envioUsdInformado = Math.max(0, Number(opcoes.envioUsd || 0) || 0);
     const totalPagoEur = Math.max(0, Number(opcoes.totalPagoEur || 0) || 0);
-    const temPrecosUsd = (itens || []).some((item) => Math.max(0, Number(item?.preco_lista_usd || 0)) > 0);
-    const pendente = (envioUsd > 0 || temPrecosUsd) && totalPagoEur <= 0;
 
     const itensReceber = (itens || []).filter(itemContaParaCustoRealListaAtualFornecedor);
-    const semPreco = itensReceber.filter((item) => Math.max(0, Number(item.preco_lista_usd || 0)) <= 0);
+    const temPrecosListaUsd = itensReceber.some((item) => Math.max(0, Number(item?.preco_lista_usd || 0)) > 0);
+    const temPrecosProvisoriosUsd = !temPrecosListaUsd
+        && itensReceber.some((item) => obterPrecoUsdListaAtualFornecedor(item, true) > 0);
+    const usarPrecosProvisoriosUsd = !temPrecosListaUsd && temPrecosProvisoriosUsd;
+    const envioUsd = usarPrecosProvisoriosUsd ? 0 : envioUsdInformado;
+    const temPrecosUsd = temPrecosListaUsd || temPrecosProvisoriosUsd;
+    const pendente = (envioUsdInformado > 0 || temPrecosUsd) && totalPagoEur <= 0;
+
+    const semPreco = itensReceber.filter((item) => obterPrecoUsdListaAtualFornecedor(item, usarPrecosProvisoriosUsd) <= 0);
     if (semPreco.length && deveCalcularCustoRealListaAtualFornecedor(opcoes)) {
         const refs = semPreco.slice(0, 6).map(item => item.referencia || item.sku || item.nome || "sem referência").join(", ");
         return { aplicado: false, erro: `Há ${semPreco.length} referência(s) a receber sem PRICE: ${refs}.` };
@@ -393,7 +420,7 @@ function calcularCustoRealListaAtualFornecedor(itens, opcoes = {}) {
     const totalUnidades = itensReceber.reduce((total, item) => total + Math.max(0, Math.floor(Number(item.quantidade || 0))), 0);
     const totalProdutosUsd = itensReceber.reduce((total, item) => {
         const quantidade = Math.max(0, Math.floor(Number(item.quantidade || 0)));
-        const precoUsd = Math.max(0, Number(item.preco_lista_usd || 0) || 0);
+        const precoUsd = obterPrecoUsdListaAtualFornecedor(item, usarPrecosProvisoriosUsd);
         return total + (quantidade * precoUsd);
     }, 0);
     const totalCompraUsd = totalProdutosUsd + envioUsd;
@@ -411,7 +438,7 @@ function calcularCustoRealListaAtualFornecedor(itens, opcoes = {}) {
 
     itensReceber.forEach((item) => {
         const quantidade = Math.max(0, Math.floor(Number(item.quantidade || 0)));
-        const precoUsd = Math.max(0, Number(item.preco_lista_usd || 0) || 0);
+        const precoUsd = obterPrecoUsdListaAtualFornecedor(item, usarPrecosProvisoriosUsd);
         const linhaUsd = quantidade * precoUsd;
         const envioLinhaUsd = rateioEnvio === "valor" && totalProdutosUsd > 0
             ? envioUsd * (linhaUsd / totalProdutosUsd)
@@ -435,7 +462,8 @@ function calcularCustoRealListaAtualFornecedor(itens, opcoes = {}) {
             envioUsd,
             totalCompraUsd,
             totalUnidades,
-            rateioEnvio
+            rateioEnvio,
+            precosProvisoriosUsd: usarPrecosProvisoriosUsd
         };
     }
 
@@ -448,6 +476,7 @@ function calcularCustoRealListaAtualFornecedor(itens, opcoes = {}) {
         cambio,
         totalUnidades,
         rateioEnvio,
+        precosProvisoriosUsd: usarPrecosProvisoriosUsd,
         moeda: "EUR"
     };
 }
@@ -1380,7 +1409,7 @@ function garantirModalEdicaoFornecedor() {
                                 <label><input type="radio" name="fornecedor-edicao-rateio-envio" value="valor"> Por valor</label>
                             </fieldset>
                         </div>
-                        <p class="fornecedor-custo-real-ajuda">Se ainda não tiveres o total pago em EUR, deixa esse campo vazio. O preço compra fica provisório em USD com o envio incluído.</p>
+                        <p class="fornecedor-custo-real-ajuda">Se ainda não tiveres o total pago em EUR, deixa esse campo vazio. O preço compra fica provisório em USD com o envio incluído. Quando souberes o total, podes preencher só o Total pago EUR e gravar a encomenda.</p>
                         <div class="fornecedor-lista-final-acoes">
                             <button type="button" id="fornecedor-edicao-limpar-lista-final">Limpar texto</button>
                             <button type="button" id="fornecedor-edicao-aplicar-lista-final" class="wallapop-botao-destaque">Aplicar à encomenda</button>
@@ -1629,6 +1658,19 @@ async function guardarEdicaoPedidoFornecedor(evento) {
     let itensAlterados = modal.dataset.itensAlteradosListaFinal === "1" || pedidoTemItensAlteradosEdicaoFornecedor(pedido, modal);
     const deveAtualizarHistoricoConfirmacao = deveConfirmarHistoricoPedidoFornecedor(estadoAnterior, estado);
     const itens = lerItensEditadosPedidoFornecedor(pedido, modal);
+    const opcoesCustoListaAtual = lerOpcoesCustoListaAtualFornecedor(modal);
+    const resumoCustoRealListaAtual = deveCalcularCustoRealListaAtualFornecedor(opcoesCustoListaAtual)
+        && itensTemPrecoUsdListaAtualFornecedor(itens)
+        ? calcularCustoRealListaAtualFornecedor(itens, opcoesCustoListaAtual)
+        : { aplicado: false };
+    if (resumoCustoRealListaAtual.erro) {
+        definirStatusEdicaoFornecedor(status, "erro", resumoCustoRealListaAtual.erro);
+        status.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+        return;
+    }
+    if (resumoCustoRealListaAtual.aplicado) {
+        itensAlterados = true;
+    }
     const resumoCustoFixoEur = aplicarCustoFixoEurItensFornecedor(itens, lerOpcoesCustoFixoEurFornecedor(modal));
     if (resumoCustoFixoEur.erro) {
         definirStatusEdicaoFornecedor(status, "erro", resumoCustoFixoEur.erro);
@@ -1719,7 +1761,7 @@ async function guardarEdicaoPedidoFornecedor(evento) {
         renderizarResultadosFornecedor();
         renderizarPedidosFornecedores();
         const detalhe = itensAlterados || deveAtualizarHistoricoConfirmacao
-            ? `${resumoCustoFixoEur.aplicado ? obterResumoCustoFixoEurFornecedor(resumoCustoFixoEur) : ''}${produtosComPrecoAtualizado ? ` Preço compra atualizado em ${produtosComPrecoAtualizado} produto(s).` : ''}${avisoPrecoCompra}`
+            ? `${resumoCustoRealListaAtual.aplicado ? obterResumoCustoRealListaAtualFornecedor(resumoCustoRealListaAtual).replace(/\n+/g, ' ') : ''}${resumoCustoFixoEur.aplicado ? obterResumoCustoFixoEurFornecedor(resumoCustoFixoEur) : ''}${produtosComPrecoAtualizado ? ` Preço compra atualizado em ${produtosComPrecoAtualizado} produto(s).` : ''}${avisoPrecoCompra}`
             : '';
         definirStatusFornecedor(`Encomenda ${atualizado.codigo || ''} gravada.${detalhe}`, Boolean(avisoPrecoCompra));
     } catch (error) {
