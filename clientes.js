@@ -950,7 +950,10 @@ function renderizarEdicaoCliente(dados) {
     if (checkboxAviso) {
         acoesTopo.appendChild(checkboxAviso);
     }
-    acoesTopo.append(guardar, cancelar);
+    const apagar = criarElementoCliente("button", "wallapop-botao clientes-botao-apagar", "Apagar");
+    apagar.type = "button";
+    apagar.addEventListener("click", () => apagarFichaCliente(dados, apagar));
+    acoesTopo.append(guardar, cancelar, apagar);
     topo.appendChild(acoesTopo);
 
     ficha.append(topo, formulario);
@@ -967,6 +970,7 @@ function criarClienteNovo() {
 
 async function apagarFichaCliente(dados, botao) {
     const cliente = dados.cliente || {};
+    if (!cliente.id) return;
     const nome = obterNomeUtilizadorCliente(cliente) || "Cliente sem nome";
     const encomendas = Number(dados.resumo?.encomendas || 0);
     const avisoHistorico = encomendas > 0
@@ -977,7 +981,7 @@ async function apagarFichaCliente(dados, botao) {
         textoConfirmar: "Continuar",
         textoCancelar: "Cancelar"
     }))) return;
-    if (!(await mostrarConfirmacaoSite("Confirmar eliminação definitiva da ficha do cliente?", {
+    if (!(await mostrarConfirmacaoSite(`Última confirmação: apagar definitivamente a ficha de ${nome}?\n\nEsta ação não pode ser anulada.`, {
         titulo: "Confirmação final",
         textoConfirmar: "Apagar",
         textoCancelar: "Cancelar"
@@ -1028,11 +1032,8 @@ function renderizarFichaCliente(dados) {
     const editar = criarElementoCliente("button", "wallapop-botao wallapop-botao-destaque", "Editar");
     editar.type = "button";
     editar.addEventListener("click", () => renderizarEdicaoCliente(dados));
-    const apagar = criarElementoCliente("button", "wallapop-botao clientes-botao-apagar", "Apagar");
-    apagar.type = "button";
-    apagar.addEventListener("click", () => apagarFichaCliente(dados, apagar));
     const acoesTopo = criarElementoCliente("div", "clientes-ficha-acoes");
-    acoesTopo.append(editar, apagar);
+    acoesTopo.appendChild(editar);
     topo.appendChild(acoesTopo);
 
     ficha.append(
