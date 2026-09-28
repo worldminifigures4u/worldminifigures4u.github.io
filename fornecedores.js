@@ -1122,6 +1122,8 @@ function fundirItemPedidoFornecedor(destino, origem) {
     if (precoCusto > 0) {
         destino.preco_custo = precoCusto;
         destino.preco = precoCusto;
+        destino.preco_custo_moeda = obterMoedaPrecoCustoItemFornecedor(origem);
+        destino.preco_custo_provisorio = destino.preco_custo_moeda === "USD";
     }
     if (!destino.origem_ajuste && origem.origem_ajuste) {
         destino.origem_ajuste = origem.origem_ajuste;
@@ -3910,6 +3912,8 @@ async function criarPedidoFornecedor() {
         stock_no_momento: Number(item.stock || 0),
         preco_custo: Number(item.preco_custo ?? item.custo ?? 0) || 0,
         preco: Number(item.preco_custo ?? item.custo ?? 0) || 0,
+        preco_custo_moeda: obterMoedaPrecoCustoItemFornecedor(item),
+        preco_custo_provisorio: obterMoedaPrecoCustoItemFornecedor(item) === "USD",
         imagens: item.imagens || []
     }));
     if (!(await confirmarReferenciasItensFornecedor(itens, "criar a encomenda"))) return;
@@ -4075,6 +4079,8 @@ function criarItemFornecedorAPartirSelecao(item, origemAjuste = '') {
         stock_no_momento: Number(item.stock || 0),
         preco_custo: Number(item.preco_custo ?? item.custo ?? 0) || 0,
         preco: Number(item.preco_custo ?? item.custo ?? 0) || 0,
+        preco_custo_moeda: obterMoedaPrecoCustoItemFornecedor(item),
+        preco_custo_provisorio: obterMoedaPrecoCustoItemFornecedor(item) === "USD",
         imagens: item.imagens || []
     });
 }
@@ -4522,6 +4528,8 @@ async function adicionarSelecaoAoPedidoFornecedor(id) {
             if (precoCusto > 0) {
                 existente.preco_custo = precoCusto;
                 existente.preco = precoCusto;
+                existente.preco_custo_moeda = obterMoedaPrecoCustoItemFornecedor(selecionado);
+                existente.preco_custo_provisorio = existente.preco_custo_moeda === "USD";
             }
         } else {
             itens.push(serializarItemPedidoFornecedor(criarItemFornecedorAPartirSelecao(selecionado, 'substituicao')));
