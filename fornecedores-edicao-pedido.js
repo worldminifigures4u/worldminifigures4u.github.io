@@ -662,6 +662,24 @@ function lerOpcoesCustoListaAtualFornecedor(contexto = document) {
     };
 }
 
+function calcularTotalPagoEurSobreItensAtuaisFornecedor(itensAtuais = [], opcoesCusto = {}) {
+    if (!(Math.max(0, Number(opcoesCusto?.totalPagoEur || 0)) > 0)) {
+        return { aplicado: false, erro: "Preenche o Total pago EUR para recalcular o preço compra." };
+    }
+    const itens = (Array.isArray(itensAtuais) ? itensAtuais : [])
+        .map(item => normalizarItemPedidoFornecedor({ ...item }))
+        .filter(Boolean);
+    const custoReal = calcularCustoRealListaAtualFornecedor(itens, opcoesCusto);
+    if (custoReal?.erro) return { aplicado: false, erro: custoReal.erro };
+    if (!custoReal?.aplicado) {
+        return { aplicado: false, erro: "Não há preços provisórios em USD suficientes para calcular o preço compra em EUR." };
+    }
+    const unidades = itens
+        .filter(itemContaParaCustoRealListaAtualFornecedor)
+        .reduce((total, item) => total + Math.max(0, Math.floor(Number(item.quantidade || 0))), 0);
+    return { aplicado: true, itens, custoReal, unidades };
+}
+
 async function aplicarListaFinalFornecedor() {
     const area = document.getElementById("fornecedor-lista-final");
     if (!area) return;
@@ -678,6 +696,25 @@ async function aplicarListaFinalFornecedor() {
     const opcoesCusto = lerOpcoesCustoListaAtualFornecedor(document);
     const { itens: importados, erros, foraCatalogo, unidades, linhasImportadas, osImportadas, custoReal } = processarLinhasListaFinalFornecedor(textoLista, fornecedorSelecao, opcoesCusto);
     if (!linhasImportadas || !importados.length) {
+        const totalAtual = calcularTotalPagoEurSobreItensAtuaisFornecedor(fornecedorSelecao, opcoesCusto);
+        if (!String(textoLista || "").trim() && totalAtual.aplicado) {
+            if (!(await mostrarConfirmacaoSite(
+                `Aplicar o Total pago EUR aos preços da encomenda?\n\n${totalAtual.unidades} unidade(s) a receber serão recalculadas para preço compra em EUR.${obterResumoCustoRealListaAtualFornecedor(totalAtual.custoReal)}`,
+                { titulo: "Confirmar preço compra", textoConfirmar: "Aplicar", textoCancelar: "Cancelar" }
+            ))) {
+                return;
+            }
+            fornecedorSelecao = totalAtual.itens;
+            guardarSelecaoFornecedor();
+            renderizarResultadosFornecedor();
+            renderizarSelecionadosFornecedor();
+            definirStatusFornecedor(`Preço compra recalculado em EUR para ${totalAtual.unidades} unidade(s).`);
+            return;
+        }
+        if (!String(textoLista || "").trim() && Math.max(0, Number(opcoesCusto.totalPagoEur || 0)) > 0) {
+            definirStatusFornecedor(totalAtual.erro || "Não foi possível aplicar o Total pago EUR aos itens atuais.", true);
+            return;
+        }
         const detalhe = erros.length ? ` ${erros.join("; ")}` : "";
         definirStatusFornecedor(`Cole pelo menos uma referência válida antes de aplicar a lista atual.${detalhe}`, true);
         return;
@@ -1022,6 +1059,28 @@ async function aplicarListaFinalNaEdicaoFornecedor() {
     const opcoesCusto = lerOpcoesCustoListaAtualFornecedor(modal);
     const { itens, erros, foraCatalogo, unidades, linhasImportadas, osImportadas, custoReal } = processarLinhasListaFinalFornecedor(texto, pedido.itens || [], opcoesCusto);
     if (!linhasImportadas || !itens.length) {
+        const totalAtual = calcularTotalPagoEurSobreItensAtuaisFornecedor(pedido.itens || [], opcoesCusto);
+        if (!String(texto || "").trim() && totalAtual.aplicado) {
+            if (!(await mostrarConfirmacaoSite(
+                `Aplicar o Total pago EUR aos preços da encomenda?\n\n${totalAtual.unidades} unidade(s) a receber serão recalculadas para preço compra em EUR.${obterResumoCustoRealListaAtualFornecedor(totalAtual.custoReal)}`,
+                { titulo: "Confirmar preço compra", textoConfirmar: "Aplicar", textoCancelar: "Cancelar" }
+            ))) {
+                return;
+            }
+            pedido.itens = totalAtual.itens;
+            modal.dataset.itensAlteradosListaFinal = "1";
+            renderizarItensEdicaoPedidoFornecedor(modal, pedido, totalAtual.itens);
+            definirStatusEdicaoFornecedor(
+                status,
+                "sucesso",
+                `Preço compra recalculado em EUR para ${totalAtual.unidades} unidade(s). Clica em Gravar encomenda para guardar.`
+            );
+            return;
+        }
+        if (!String(texto || "").trim() && Math.max(0, Number(opcoesCusto.totalPagoEur || 0)) > 0) {
+            definirStatusEdicaoFornecedor(status, "erro", totalAtual.erro || "Não foi possível aplicar o Total pago EUR aos itens atuais.");
+            return;
+        }
         definirStatusEdicaoFornecedor(status, "erro", erros.length ? erros.join("; ") : "Cole pelo menos uma referência válida antes de aplicar a lista atual.");
         return;
     }
@@ -1409,7 +1468,7 @@ function garantirModalEdicaoFornecedor() {
                                 <label><input type="radio" name="fornecedor-edicao-rateio-envio" value="valor"> Por valor</label>
                             </fieldset>
                         </div>
-                        <p class="fornecedor-custo-real-ajuda">Se ainda não tiveres o total pago em EUR, deixa esse campo vazio. O preço compra fica provisório em USD com o envio incluído. Quando souberes o total, podes preencher só o Total pago EUR e gravar a encomenda.</p>
+                        <p class="fornecedor-custo-real-ajuda">Se ainda não tiveres o total pago em EUR, deixa esse campo vazio. O preço compra fica provisório em USD com o envio incluído. Quando souberes o total, podes preencher só o Total pago EUR, aplicar à encomenda e depois gravar.</p>
                         <div class="fornecedor-lista-final-acoes">
                             <button type="button" id="fornecedor-edicao-limpar-lista-final">Limpar texto</button>
                             <button type="button" id="fornecedor-edicao-aplicar-lista-final" class="wallapop-botao-destaque">Aplicar à encomenda</button>
