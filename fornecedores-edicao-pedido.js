@@ -452,6 +452,94 @@ function calcularCustoRealListaAtualFornecedor(itens, opcoes = {}) {
     };
 }
 
+function lerOpcoesCustoFixoEurFornecedor(contexto = document) {
+    const obterValor = (seletor) => converterNumeroListaFornecedor(contexto.querySelector(seletor)?.value || "");
+    const precoUnitarioEur = Math.max(0, obterValor("#fornecedor-edicao-os-preco-unitario-eur"));
+    const envioEur = Math.max(0, obterValor("#fornecedor-edicao-os-envio-eur"));
+    const totalCompraEur = Math.max(0, obterValor("#fornecedor-edicao-os-total-compra-eur"));
+    return {
+        precoUnitarioEur,
+        envioEur,
+        totalCompraEur,
+        ativo: precoUnitarioEur > 0 || envioEur > 0 || totalCompraEur > 0
+    };
+}
+
+function obterResumoCustoFixoEurFornecedor(resumo) {
+    if (!resumo?.aplicado) return "";
+    if (resumo.modo === "total") {
+        return ` Total compra EUR: ${formatarMoedaResumoCustoListaAtualFornecedor(resumo.totalCompraEur)} / ${resumo.totalUnidades} unidade(s) a receber = ${formatarMoedaResumoCustoListaAtualFornecedor(resumo.precoUnitarioFinal)} por unidade.`;
+    }
+    const envio = resumo.envioEur > 0
+        ? ` + envio ${formatarMoedaResumoCustoListaAtualFornecedor(resumo.envioEur)} / ${resumo.totalUnidades}`
+        : "";
+    return ` Preço compra EUR: ${formatarMoedaResumoCustoListaAtualFornecedor(resumo.precoBaseEur)}${envio} = ${formatarMoedaResumoCustoListaAtualFornecedor(resumo.precoUnitarioFinal)} por unidade.`;
+}
+
+function aplicarCustoFixoEurItensFornecedor(itens, opcoes = {}) {
+    if (!opcoes?.ativo) return { aplicado: false };
+    const itensReceber = (itens || []).filter(itemContaParaCustoRealListaAtualFornecedor);
+    const totalUnidades = itensReceber.reduce((total, item) => total + Math.max(0, Math.floor(Number(item.quantidade || 0))), 0);
+    if (totalUnidades <= 0) {
+        return { aplicado: false, erro: "Não há unidades a receber para dividir o custo EUR." };
+    }
+
+    const totalCompraEur = Math.max(0, Number(opcoes.totalCompraEur || 0) || 0);
+    const precoBaseEur = Math.max(0, Number(opcoes.precoUnitarioEur || 0) || 0);
+    const envioEur = Math.max(0, Number(opcoes.envioEur || 0) || 0);
+    const precoUnitarioFinal = totalCompraEur > 0
+        ? totalCompraEur / totalUnidades
+        : precoBaseEur + (envioEur > 0 ? envioEur / totalUnidades : 0);
+
+    if (!Number.isFinite(precoUnitarioFinal) || precoUnitarioFinal <= 0) {
+        return { aplicado: false };
+    }
+
+    const precoCusto = arredondarPrecoCustoListaAtualFornecedor(precoUnitarioFinal);
+    itensReceber.forEach((item) => {
+        item.preco_custo = precoCusto;
+        item.preco = precoCusto;
+        item.preco_custo_moeda = "EUR";
+        item.preco_custo_provisorio = false;
+        item.custo_calculado_lista_atual = true;
+    });
+
+    return {
+        aplicado: true,
+        modo: totalCompraEur > 0 ? "total" : "unitario",
+        totalUnidades,
+        totalCompraEur,
+        precoBaseEur,
+        envioEur,
+        precoUnitarioFinal: precoCusto,
+        moeda: "EUR"
+    };
+}
+
+function renderizarItensEdicaoPedidoFornecedor(modal, pedido, itens) {
+    const lista = modal?.querySelector("#fornecedor-edicao-produtos");
+    if (!lista) return;
+    lista.replaceChildren();
+    (itens || []).forEach((item, indice) => {
+        lista.appendChild(montarLinhaEdicaoProdutoFornecedor(pedido, item, indice));
+    });
+}
+
+function aplicarCustoFixoEurNaEdicaoFornecedor(modal) {
+    const pedido = obterPedidoEdicaoFornecedor(modal);
+    if (!pedido) return { aplicado: false, erro: "Encomenda não encontrada para calcular o custo EUR." };
+    const opcoes = lerOpcoesCustoFixoEurFornecedor(modal);
+    if (!opcoes.ativo) return { aplicado: false };
+    const itens = lerItensEditadosPedidoFornecedor(pedido, modal);
+    const resumo = aplicarCustoFixoEurItensFornecedor(itens, opcoes);
+    if (resumo.erro) return resumo;
+    if (!resumo.aplicado) return resumo;
+    pedido.itens = itens;
+    modal.dataset.itensAlteradosListaFinal = "1";
+    renderizarItensEdicaoPedidoFornecedor(modal, pedido, itens);
+    return resumo;
+}
+
 function criarItemAusenteListaFinalFornecedor(item) {
     if (!item) return false;
     const quantidadeAtual = Math.max(0, Math.floor(Number(item.quantidade || 0)));
@@ -922,13 +1010,7 @@ async function aplicarListaFinalNaEdicaoFornecedor() {
 
     pedido.itens = itens;
     modal.dataset.itensAlteradosListaFinal = "1";
-    const lista = modal.querySelector("#fornecedor-edicao-produtos");
-    if (lista) {
-        lista.replaceChildren();
-        itens.forEach((item, indice) => {
-            lista.appendChild(montarLinhaEdicaoProdutoFornecedor(pedido, item, indice));
-        });
-    }
+    renderizarItensEdicaoPedidoFornecedor(modal, pedido, itens);
 
     const avisos = [];
     if (foraCatalogo.length) avisos.push(`${foraCatalogo.length} referência(s) fora do catálogo incluída(s): ${foraCatalogo.join(", ")}`);
@@ -1142,10 +1224,15 @@ async function aplicarListaOsNaEdicaoFornecedor() {
             aplicadas.push(item.referencia);
         }
     });
+    const resumoCusto = aplicarCustoFixoEurNaEdicaoFornecedor(modal);
+    if (resumoCusto.erro) {
+        definirStatusEdicaoFornecedor(status, "aviso", `${aplicadas.length} figura(s) marcada(s) como OS. ${resumoCusto.erro}`);
+        return;
+    }
     definirStatusEdicaoFornecedor(
         status,
         avisos.length ? "aviso" : "sucesso",
-        `${aplicadas.length} figura(s) marcada(s) como OS (removidas do a receber).${avisos.length ? " " + avisos.join(" | ") : ""}`
+        `${aplicadas.length} figura(s) marcada(s) como OS (removidas do a receber).${resumoCusto.aplicado ? obterResumoCustoFixoEurFornecedor(resumoCusto) : ""}${avisos.length ? " " + avisos.join(" | ") : ""}`
     );
 }
 
@@ -1235,7 +1322,7 @@ function limparListaExEdicaoFornecedor() {
 function garantirModalEdicaoFornecedor() {
     let modal = document.getElementById('fornecedor-edicao-modal');
     // Recria se faltar alguma secção nova (modal antigo em memória)
-    if (modal && (!modal.querySelector('#fornecedor-edicao-lista-os') || !modal.querySelector('#fornecedor-edicao-lista-ex') || !modal.querySelector('#fornecedor-edicao-total-eur'))) {
+    if (modal && (!modal.querySelector('#fornecedor-edicao-lista-os') || !modal.querySelector('#fornecedor-edicao-lista-ex') || !modal.querySelector('#fornecedor-edicao-total-eur') || !modal.querySelector('#fornecedor-edicao-os-total-compra-eur'))) {
         modal.remove();
         modal = null;
     }
@@ -1303,6 +1390,22 @@ function garantirModalEdicaoFornecedor() {
                         <h4>Colar lista OS do fornecedor (opcional)</h4>
                         <p>Usa só se a lista atual não trouxer a nota OUT OF STOCK. As referências coladas aqui são marcadas como OS e saem do “a receber”.</p>
                         <textarea id="fornecedor-edicao-lista-os" rows="4" placeholder="Ex.:&#10;AF301&#10;PG634&#10;ou com quantidade:&#10;AF301	2"></textarea>
+                        <p class="fornecedor-custo-real-ajuda"><strong>Preço fixo EUR</strong></p>
+                        <div class="fornecedor-custo-real-grid fornecedor-custo-fixo-eur-grid" aria-label="Preço fixo EUR da encomenda">
+                            <label>
+                                Preço por unidade EUR
+                                <input type="text" id="fornecedor-edicao-os-preco-unitario-eur" inputmode="decimal" autocomplete="off" placeholder="1,20 €">
+                            </label>
+                            <label>
+                                Envio EUR
+                                <input type="text" id="fornecedor-edicao-os-envio-eur" inputmode="decimal" autocomplete="off" placeholder="9,00 €">
+                            </label>
+                            <label>
+                                Total compra EUR
+                                <input type="text" id="fornecedor-edicao-os-total-compra-eur" inputmode="decimal" autocomplete="off" placeholder="120,00 €">
+                            </label>
+                        </div>
+                        <p class="fornecedor-custo-real-ajuda">Para fornecedores de preço fixo: o Total compra EUR é dividido pelas unidades que ficarem a receber nesta encomenda. Se preencheres o total, ele substitui o preço por unidade + envio.</p>
                         <div class="fornecedor-lista-final-acoes">
                             <button type="button" id="fornecedor-edicao-limpar-lista-os">Limpar texto</button>
                             <button type="button" id="fornecedor-edicao-aplicar-lista-os" class="wallapop-botao-destaque">Marcar OS na encomenda</button>
@@ -1379,14 +1482,16 @@ function abrirEdicaoPedidoFornecedor(id) {
     if (rateioUnidades) rateioUnidades.checked = true;
     const listaOs = modal.querySelector('#fornecedor-edicao-lista-os');
     if (listaOs) listaOs.value = '';
+    const precoUnitarioEur = modal.querySelector('#fornecedor-edicao-os-preco-unitario-eur');
+    const envioEur = modal.querySelector('#fornecedor-edicao-os-envio-eur');
+    const totalCompraEur = modal.querySelector('#fornecedor-edicao-os-total-compra-eur');
+    if (precoUnitarioEur) precoUnitarioEur.value = '';
+    if (envioEur) envioEur.value = '';
+    if (totalCompraEur) totalCompraEur.value = '';
     const listaEx = modal.querySelector('#fornecedor-edicao-lista-ex');
     if (listaEx) listaEx.value = '';
 
-    const lista = modal.querySelector('#fornecedor-edicao-produtos');
-    lista.replaceChildren();
-    pedido.itens.forEach((item, indice) => {
-        lista.appendChild(montarLinhaEdicaoProdutoFornecedor(pedido, item, indice));
-    });
+    renderizarItensEdicaoPedidoFornecedor(modal, pedido, pedido.itens);
 
     modal.hidden = false;
     document.body.classList.add('fornecedor-edicao-modal-aberto');
@@ -1521,9 +1626,18 @@ async function guardarEdicaoPedidoFornecedor(evento) {
     const referencia = modal.querySelector('#fornecedor-edicao-referencia').value.trim();
     const estado = modal.querySelector('#fornecedor-edicao-estado').value;
     const estadoAnterior = pedido.estado;
-    const itensAlterados = modal.dataset.itensAlteradosListaFinal === "1" || pedidoTemItensAlteradosEdicaoFornecedor(pedido, modal);
+    let itensAlterados = modal.dataset.itensAlteradosListaFinal === "1" || pedidoTemItensAlteradosEdicaoFornecedor(pedido, modal);
     const deveAtualizarHistoricoConfirmacao = deveConfirmarHistoricoPedidoFornecedor(estadoAnterior, estado);
     const itens = lerItensEditadosPedidoFornecedor(pedido, modal);
+    const resumoCustoFixoEur = aplicarCustoFixoEurItensFornecedor(itens, lerOpcoesCustoFixoEurFornecedor(modal));
+    if (resumoCustoFixoEur.erro) {
+        definirStatusEdicaoFornecedor(status, "erro", resumoCustoFixoEur.erro);
+        status.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+        return;
+    }
+    if (resumoCustoFixoEur.aplicado) {
+        itensAlterados = true;
+    }
 
     if (!fornecedor) {
         status.textContent = 'Indique o fornecedor.';
@@ -1605,7 +1719,7 @@ async function guardarEdicaoPedidoFornecedor(evento) {
         renderizarResultadosFornecedor();
         renderizarPedidosFornecedores();
         const detalhe = itensAlterados || deveAtualizarHistoricoConfirmacao
-            ? `${produtosComPrecoAtualizado ? ` Preço compra atualizado em ${produtosComPrecoAtualizado} produto(s).` : ''}${avisoPrecoCompra}`
+            ? `${resumoCustoFixoEur.aplicado ? obterResumoCustoFixoEurFornecedor(resumoCustoFixoEur) : ''}${produtosComPrecoAtualizado ? ` Preço compra atualizado em ${produtosComPrecoAtualizado} produto(s).` : ''}${avisoPrecoCompra}`
             : '';
         definirStatusFornecedor(`Encomenda ${atualizado.codigo || ''} gravada.${detalhe}`, Boolean(avisoPrecoCompra));
     } catch (error) {
