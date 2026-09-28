@@ -452,10 +452,6 @@ begin
     raise exception 'Cliente nao encontrado';
   end if;
 
-  if v_cliente.auth_user_id is not null then
-    raise exception 'Os dados de clientes registados no site sao geridos pelo proprio cliente';
-  end if;
-
   if nullif(trim(coalesce(p_nome_utilizador, p_nome, '')), '') is null then
     raise exception 'O nome de utilizador do cliente e obrigatorio';
   end if;
@@ -480,6 +476,29 @@ begin
       updated_at = now()
   where id = p_cliente_id
   returning * into v_cliente;
+
+  if v_cliente.auth_user_id is not null and to_regclass('public.clientes') is not null then
+    insert into public.clientes (
+      id, nome, email, telemovel, morada, cp, cidade, pais
+    ) values (
+      v_cliente.auth_user_id,
+      nullif(trim(coalesce(p_nome, '')), ''),
+      v_email,
+      nullif(trim(coalesce(p_telefone, '')), ''),
+      nullif(trim(coalesce(p_morada, '')), ''),
+      nullif(trim(coalesce(p_cp, '')), ''),
+      nullif(trim(coalesce(p_cidade, '')), ''),
+      nullif(trim(coalesce(p_pais, '')), '')
+    )
+    on conflict (id) do update set
+      nome = excluded.nome,
+      email = excluded.email,
+      telemovel = excluded.telemovel,
+      morada = excluded.morada,
+      cp = excluded.cp,
+      cidade = excluded.cidade,
+      pais = excluded.pais;
+  end if;
 
   return jsonb_build_object('sucesso', true, 'cliente', to_jsonb(v_cliente));
 end;

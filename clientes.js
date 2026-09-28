@@ -305,17 +305,10 @@ function clienteRegistadoNoSite(cliente) {
 
 function aplicarCamposClienteRegistadoSite(formulario, cliente) {
     if (!clienteRegistadoNoSite(cliente)) return;
-    ["nome_utilizador", "nome", "morada", "morada_linha1", "morada_linha2", "cp", "cidade", "pais", "email", "telefone"].forEach((nome) => {
-        const input = formulario.querySelector(`input[name="${nome}"]`);
-        if (!input) return;
-        input.readOnly = true;
-        input.title = "Gerido pelo cliente no site";
-        input.closest(".admin-cliente-formulario-campo")?.classList.add("clientes-campo-site");
-    });
     const aviso = criarElementoCliente(
         "p",
         "admin-cliente-aviso-conta clientes-aviso-edicao-site",
-        "Os dados pessoais desta conta sao geridos pelo proprio cliente no site. Pode alterar aviso, restricoes, links externos e notas internas."
+        "Este cliente tem conta no site. As alteracoes feitas aqui atualizam a ficha administrativa e o perfil da conta."
     );
     formulario.insertBefore(aviso, formulario.firstChild);
 }
@@ -857,23 +850,20 @@ function montarFormularioCliente(dados, opcoes = {}) {
             p_cidade: String(campos.get("cidade") || ""),
             p_pais: String(campos.get("pais") || "")
         };
-        const clienteRegistadoSite = !novoCliente && clienteRegistadoNoSite(cliente);
         let clienteId = cliente.id;
-        if (!clienteRegistadoSite) {
-            const { data, error } = novoCliente
-                ? await chamarRpcClienteComFallback("criar_cliente_externo_admin", parametrosCliente)
-                : await chamarRpcClienteComFallback("atualizar_cliente_externo_admin", {
-                    p_cliente_id: cliente.id,
-                    ...parametrosCliente
-                });
-            if (error || data?.sucesso === false) {
-                guardar.disabled = false;
-                if (cancelar) cancelar.disabled = false;
-                definirStatusClientes("Erro ao gravar dados: " + (error?.message || data?.erro || "sem detalhe"), true);
-                return;
-            }
-            clienteId = data?.cliente?.id || cliente.id;
+        const { data, error } = novoCliente
+            ? await chamarRpcClienteComFallback("criar_cliente_externo_admin", parametrosCliente)
+            : await chamarRpcClienteComFallback("atualizar_cliente_externo_admin", {
+                p_cliente_id: cliente.id,
+                ...parametrosCliente
+            });
+        if (error || data?.sucesso === false) {
+            guardar.disabled = false;
+            if (cancelar) cancelar.disabled = false;
+            definirStatusClientes("Erro ao gravar dados: " + (error?.message || data?.erro || "sem detalhe"), true);
+            return;
         }
+        clienteId = data?.cliente?.id || cliente.id;
         const aviso = novoCliente
             ? { data: null, error: null }
             : await guardarAvisoClienteAdmin(clienteId, campos.get("tem_aviso") === "on");
@@ -917,11 +907,7 @@ function montarFormularioCliente(dados, opcoes = {}) {
             ? "Ficha gravada, mas o aviso nao foi atualizado: " + avisoErro
             : restricoesErro
                 ? "Ficha gravada, mas as restricoes nao foram atualizadas: " + restricoesErro
-                : (novoCliente
-                    ? "Cliente criado."
-                    : (clienteRegistadoSite
-                        ? "Aviso, restricoes, links e notas gravados."
-                        : "Ficha gravada.")),
+                : (novoCliente ? "Cliente criado." : "Ficha gravada."),
             Boolean(avisoErro || restricoesErro)
         );
         await pesquisarClientes();

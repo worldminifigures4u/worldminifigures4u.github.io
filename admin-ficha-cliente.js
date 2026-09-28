@@ -281,6 +281,13 @@
         formulario.appendChild(acoesTopo);
 
         const dadosCliente = criarElemento('div', 'clientes-formulario-dados');
+        if (!modoCriacao && cliente.auth_user_id) {
+            dadosCliente.appendChild(criarElemento(
+                'p',
+                'admin-cliente-aviso-conta clientes-aviso-edicao-site',
+                'Este cliente tem conta no site. As alterações feitas aqui atualizam a ficha administrativa e o perfil da conta.'
+            ));
+        }
         dadosCliente.append(
             criarCampoEdicaoCliente('Nome de utilizador', 'nome_utilizador', obterNomeUtilizadorCliente(cliente), 'text', true),
             criarCampoEdicaoCliente('Nome', 'nome', obterNomePessoaCliente(cliente), 'text'),
@@ -576,14 +583,10 @@
 
         const dadosPessoais = criarElemento('section', 'admin-cliente-secao clientes-ficha-consulta-dados');
         const cabecalhoDados = criarElemento('div', 'admin-cliente-secao-cabecalho');
-        if (!cliente.auth_user_id) {
-            const editar = criarElemento('button', 'wallapop-botao wallapop-botao-destaque admin-cliente-editar', 'Editar');
-            editar.type = 'button';
-            editar.addEventListener('click', () => renderizarFormularioClienteExterno(dados));
-            definirAcoesTopoFichaCliente([editar]);
-        } else {
-            definirAcoesTopoFichaCliente();
-        }
+        const editar = criarElemento('button', 'wallapop-botao wallapop-botao-destaque admin-cliente-editar', 'Editar');
+        editar.type = 'button';
+        editar.addEventListener('click', () => renderizarFormularioClienteExterno(dados));
+        definirAcoesTopoFichaCliente([editar]);
         if (cabecalhoDados.childNodes.length) dadosPessoais.appendChild(cabecalhoDados);
         const grelha = criarElemento('div', 'admin-cliente-grelha');
         grelha.append(
