@@ -374,7 +374,8 @@ function obterResumoCustoRealListaAtualFornecedor(resumo) {
         return "";
     }
     if (resumo.precosProvisoriosUsd) {
-        return `\n\nCusto real: ${formatarMoedaResumoCustoListaAtualFornecedor(resumo.totalPagoEur)} / ${formatarMoedaResumoCustoListaAtualFornecedor(resumo.totalCompraUsd, "USD")} = câmbio ${resumo.cambio.toFixed(4)}. Usados os preços provisórios em USD já guardados.`;
+        const origemTotal = resumo.totalCompraUsdManual ? "o total USD indicado manualmente" : "os preços provisórios em USD já guardados";
+        return `\n\nCusto real: ${formatarMoedaResumoCustoListaAtualFornecedor(resumo.totalPagoEur)} / ${formatarMoedaResumoCustoListaAtualFornecedor(resumo.totalCompraUsd, "USD")} = câmbio ${resumo.cambio.toFixed(4)}. Usado ${origemTotal}.`;
     }
     const modo = resumo.rateioEnvio === "valor" ? "por valor" : "por unidade";
     return `\n\nCusto real: ${formatarMoedaResumoCustoListaAtualFornecedor(resumo.totalPagoEur)} / ${formatarMoedaResumoCustoListaAtualFornecedor(resumo.totalCompraUsd, "USD")} = câmbio ${resumo.cambio.toFixed(4)}. Envio distribuído ${modo}.`;
@@ -401,6 +402,7 @@ function itensTemPrecoUsdListaAtualFornecedor(itens) {
 function calcularCustoRealListaAtualFornecedor(itens, opcoes = {}) {
     const envioUsdInformado = Math.max(0, Number(opcoes.envioUsd || 0) || 0);
     const totalPagoEur = Math.max(0, Number(opcoes.totalPagoEur || 0) || 0);
+    const totalCompraUsdManual = Math.max(0, Number(opcoes.totalCompraUsd || 0) || 0);
 
     const itensReceber = (itens || []).filter(itemContaParaCustoRealListaAtualFornecedor);
     const temPrecosListaUsd = itensReceber.some((item) => Math.max(0, Number(item?.preco_lista_usd || 0)) > 0);
@@ -423,7 +425,7 @@ function calcularCustoRealListaAtualFornecedor(itens, opcoes = {}) {
         const precoUsd = obterPrecoUsdListaAtualFornecedor(item, usarPrecosProvisoriosUsd);
         return total + (quantidade * precoUsd);
     }, 0);
-    const totalCompraUsd = totalProdutosUsd + envioUsd;
+    const totalCompraUsd = totalCompraUsdManual > 0 ? totalCompraUsdManual : totalProdutosUsd + envioUsd;
     if (!itensReceber.length || totalUnidades <= 0 || totalProdutosUsd <= 0 || totalCompraUsd <= 0) {
         if (deveCalcularCustoRealListaAtualFornecedor(opcoes)) {
             return { aplicado: false, erro: "A lista precisa de quantidades e PRICE em USD para calcular o custo real." };
@@ -463,7 +465,8 @@ function calcularCustoRealListaAtualFornecedor(itens, opcoes = {}) {
             totalCompraUsd,
             totalUnidades,
             rateioEnvio,
-            precosProvisoriosUsd: usarPrecosProvisoriosUsd
+            precosProvisoriosUsd: usarPrecosProvisoriosUsd,
+            totalCompraUsdManual: totalCompraUsdManual > 0
         };
     }
 
@@ -477,6 +480,7 @@ function calcularCustoRealListaAtualFornecedor(itens, opcoes = {}) {
         totalUnidades,
         rateioEnvio,
         precosProvisoriosUsd: usarPrecosProvisoriosUsd,
+        totalCompraUsdManual: totalCompraUsdManual > 0,
         moeda: "EUR"
     };
 }
@@ -652,13 +656,15 @@ function processarLinhasListaFinalFornecedor(texto, itensAtuais = [], opcoesCust
 function lerOpcoesCustoListaAtualFornecedor(contexto = document) {
     const obterValor = (seletor) => converterNumeroListaFornecedor(contexto.querySelector(seletor)?.value || "");
     const envioUsd = obterValor("#fornecedor-edicao-envio-usd, #fornecedor-envio-usd");
+    const totalCompraUsd = obterValor("#fornecedor-edicao-total-compra-usd, #fornecedor-total-compra-usd");
     const totalPagoEur = obterValor("#fornecedor-edicao-total-eur, #fornecedor-total-eur");
     const rateioSelecionado = contexto.querySelector('input[name="fornecedor-edicao-rateio-envio"]:checked, input[name="fornecedor-rateio-envio"]:checked')?.value || "unidades";
     return {
         envioUsd,
+        totalCompraUsd,
         totalPagoEur,
         rateioEnvio: rateioSelecionado === "valor" ? "valor" : "unidades",
-        ativo: envioUsd > 0 || totalPagoEur > 0
+        ativo: envioUsd > 0 || totalCompraUsd > 0 || totalPagoEur > 0
     };
 }
 
@@ -1115,8 +1121,10 @@ function limparListaFinalEdicaoFornecedor() {
     const area = modal?.querySelector("#fornecedor-edicao-lista-final");
     if (area) area.value = "";
     const envio = modal?.querySelector("#fornecedor-edicao-envio-usd");
+    const totalCompraUsd = modal?.querySelector("#fornecedor-edicao-total-compra-usd");
     const total = modal?.querySelector("#fornecedor-edicao-total-eur");
     if (envio) envio.value = "";
+    if (totalCompraUsd) totalCompraUsd.value = "";
     if (total) total.value = "";
 }
 
@@ -1410,7 +1418,7 @@ function limparListaExEdicaoFornecedor() {
 function garantirModalEdicaoFornecedor() {
     let modal = document.getElementById('fornecedor-edicao-modal');
     // Recria se faltar alguma secção nova (modal antigo em memória)
-    if (modal && (!modal.querySelector('#fornecedor-edicao-lista-os') || !modal.querySelector('#fornecedor-edicao-lista-ex') || !modal.querySelector('#fornecedor-edicao-total-eur') || !modal.querySelector('#fornecedor-edicao-os-total-compra-eur'))) {
+    if (modal && (!modal.querySelector('#fornecedor-edicao-lista-os') || !modal.querySelector('#fornecedor-edicao-lista-ex') || !modal.querySelector('#fornecedor-edicao-total-eur') || !modal.querySelector('#fornecedor-edicao-total-compra-usd') || !modal.querySelector('#fornecedor-edicao-os-total-compra-eur'))) {
         modal.remove();
         modal = null;
     }
@@ -1459,6 +1467,10 @@ function garantirModalEdicaoFornecedor() {
                                 <input type="text" id="fornecedor-edicao-envio-usd" inputmode="decimal" autocomplete="off" placeholder="$83,00">
                             </label>
                             <label>
+                                Total compra USD
+                                <input type="text" id="fornecedor-edicao-total-compra-usd" inputmode="decimal" autocomplete="off" placeholder="$415,27">
+                            </label>
+                            <label>
                                 Total pago EUR
                                 <input type="text" id="fornecedor-edicao-total-eur" inputmode="decimal" autocomplete="off" placeholder="365,40 €">
                             </label>
@@ -1468,7 +1480,7 @@ function garantirModalEdicaoFornecedor() {
                                 <label><input type="radio" name="fornecedor-edicao-rateio-envio" value="valor"> Por valor</label>
                             </fieldset>
                         </div>
-                        <p class="fornecedor-custo-real-ajuda">Se ainda não tiveres o total pago em EUR, deixa esse campo vazio. O preço compra fica provisório em USD com o envio incluído. Quando souberes o total, podes preencher só o Total pago EUR, aplicar à encomenda e depois gravar.</p>
+                        <p class="fornecedor-custo-real-ajuda">Se ainda não tiveres o total pago em EUR, deixa esse campo vazio. O preço compra fica provisório em USD com o envio incluído. Quando souberes o total, podes preencher o Total pago EUR; se a soma em USD não bater certo por arredondamentos, preenche também o Total compra USD da folha.</p>
                         <div class="fornecedor-lista-final-acoes">
                             <button type="button" id="fornecedor-edicao-limpar-lista-final">Limpar texto</button>
                             <button type="button" id="fornecedor-edicao-aplicar-lista-final" class="wallapop-botao-destaque">Aplicar à encomenda</button>
