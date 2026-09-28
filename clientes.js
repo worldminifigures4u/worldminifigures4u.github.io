@@ -953,7 +953,7 @@ function renderizarEdicaoCliente(dados) {
     const apagar = criarElementoCliente("button", "wallapop-botao clientes-botao-apagar", "Apagar");
     apagar.type = "button";
     apagar.addEventListener("click", () => apagarFichaCliente(dados, apagar));
-    acoesTopo.append(guardar, cancelar, apagar);
+    acoesTopo.append(apagar, guardar, cancelar);
     topo.appendChild(acoesTopo);
 
     ficha.append(topo, formulario);
