@@ -110,7 +110,7 @@ function garantirFornecedoresProdutoModal() {
 function garantirFornecedoresEdicaoPedido() {
     if (window.FornecedoresEdicaoPedido) return Promise.resolve();
     if (!__fornecedoresEdicaoPromessa) {
-        __fornecedoresEdicaoPromessa = carregarScriptAdmin("fornecedores-edicao-pedido.js?v=20260927-ignorado-lista");
+        __fornecedoresEdicaoPromessa = carregarScriptAdmin("fornecedores-edicao-pedido.js?v=20260927-lista-atual");
     }
     return __fornecedoresEdicaoPromessa;
 }
@@ -1215,7 +1215,7 @@ function pedidoFornecedorPassaFiltroEstado(pedido, filtro) {
 function obterTextoOrigemAjustePedidoFornecedor(origemAjuste) {
     if (origemAjuste === "substituicao") return "Adicionado depois";
     if (origemAjuste === "reforco") return "Quantidade aumentada";
-    if (origemAjuste === "lista-final") return "Ajustado pela lista final";
+    if (origemAjuste === "lista-final") return "Ajustado pela lista atual";
     if (origemAjuste === "ignorado-lista") return "Ignorado na lista";
     return "";
 }

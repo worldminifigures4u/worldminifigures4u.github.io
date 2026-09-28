@@ -428,13 +428,13 @@ async function aplicarListaFinalFornecedor() {
     const { itens: importados, erros, foraCatalogo, unidades, linhasImportadas, osImportadas } = processarLinhasListaFinalFornecedor(textoLista, fornecedorSelecao);
     if (!linhasImportadas || !importados.length) {
         const detalhe = erros.length ? ` ${erros.join("; ")}` : "";
-        definirStatusFornecedor(`Cole pelo menos uma referência válida antes de aplicar a lista final.${detalhe}`, true);
+        definirStatusFornecedor(`Cole pelo menos uma referência válida antes de aplicar a lista atual.${detalhe}`, true);
         return;
     }
 
     if (!(await mostrarConfirmacaoSite(
-        `Aplicar esta lista final à encomenda?\n\n${linhasImportadas} referência(s) lida(s), ${unidades} unidade(s) a receber${osImportadas ? ` e ${osImportadas} referência(s) OS` : ""}.\nA lista atual será substituída e as referências que não vierem na lista ficam como Ignorado na lista.`,
-        { titulo: "Confirmar lista final", textoConfirmar: "Aplicar", textoCancelar: "Cancelar" }
+        `Aplicar esta lista atual à encomenda?\n\n${linhasImportadas} referência(s) lida(s), ${unidades} unidade(s) a receber${osImportadas ? ` e ${osImportadas} referência(s) OS` : ""}.\nA lista atual da encomenda será substituída e as referências que não vierem na lista ficam como Ignorado na lista.`,
+        { titulo: "Confirmar lista atual", textoConfirmar: "Aplicar", textoCancelar: "Cancelar" }
     ))) {
         return;
     }
@@ -453,7 +453,7 @@ async function aplicarListaFinalFornecedor() {
 function limparTextoListaFinalFornecedor() {
     const area = document.getElementById("fornecedor-lista-final");
     if (area) area.value = "";
-    definirStatusFornecedor("Texto da lista final limpo.");
+    definirStatusFornecedor("Texto da lista atual limpo.");
 }
 
 function obterPedidoEdicaoFornecedor(modal) {
@@ -764,13 +764,13 @@ async function aplicarListaFinalNaEdicaoFornecedor() {
 
     const { itens, erros, foraCatalogo, unidades, linhasImportadas, osImportadas } = processarLinhasListaFinalFornecedor(texto, pedido.itens || []);
     if (!linhasImportadas || !itens.length) {
-        definirStatusEdicaoFornecedor(status, "erro", erros.length ? erros.join("; ") : "Cole pelo menos uma referência válida antes de aplicar a lista final.");
+        definirStatusEdicaoFornecedor(status, "erro", erros.length ? erros.join("; ") : "Cole pelo menos uma referência válida antes de aplicar a lista atual.");
         return;
     }
 
     if (!(await mostrarConfirmacaoSite(
-        `Aplicar esta lista final à encomenda?\n\n${linhasImportadas} referência(s) lida(s), ${unidades} unidade(s) a receber${osImportadas ? ` e ${osImportadas} referência(s) OS` : ""}.\nA lista atual será substituída e as referências que não vierem na lista ficam como Ignorado na lista.`,
-        { titulo: "Confirmar lista final", textoConfirmar: "Aplicar", textoCancelar: "Cancelar" }
+        `Aplicar esta lista atual à encomenda?\n\n${linhasImportadas} referência(s) lida(s), ${unidades} unidade(s) a receber${osImportadas ? ` e ${osImportadas} referência(s) OS` : ""}.\nA lista atual da encomenda será substituída e as referências que não vierem na lista ficam como Ignorado na lista.`,
+        { titulo: "Confirmar lista atual", textoConfirmar: "Aplicar", textoCancelar: "Cancelar" }
     ))) {
         return;
     }
@@ -1125,8 +1125,8 @@ function garantirModalEdicaoFornecedor() {
                         </label>
                     </div>
                     <p class="fornecedor-edicao-aviso-guardar">As alterações aos campos acima só ficam gravadas ao clicar <strong>Gravar encomenda</strong>.</p>
-                    <section class="fornecedor-lista-final-box fornecedor-lista-final-edicao" aria-label="Lista final enviada pelo fornecedor">
-                        <h4>Colar lista final do fornecedor</h4>
+                    <section class="fornecedor-lista-final-box fornecedor-lista-final-edicao" aria-label="Lista atual enviada pelo fornecedor">
+                        <h4>Colar lista atual do fornecedor</h4>
                         <p>Cola aqui a tabela do fornecedor. O campo CODE é usado como referência; SKU e AMOUNT são ignorados. Se a nota indicar OUT OF STOCK, a figura é marcada como OS automaticamente.</p>
                         <textarea id="fornecedor-edicao-lista-final" rows="5" placeholder="Ex.:&#10;CODE	SKU	QTY	PRICE	AMOUNT	NOTE&#10;AF301	AF301	2	$1,25	$2,50&#10;PG634	PG634	1		$0,00	OUT OF STOCK"></textarea>
                         <div class="fornecedor-lista-final-acoes">
@@ -1136,7 +1136,7 @@ function garantirModalEdicaoFornecedor() {
                     </section>
                     <section class="fornecedor-lista-final-box fornecedor-lista-os-edicao" aria-label="Lista OS enviada pelo fornecedor">
                         <h4>Colar lista OS do fornecedor (opcional)</h4>
-                        <p>Usa só se a lista final não trouxer a nota OUT OF STOCK. As referências coladas aqui são marcadas como OS e saem do “a receber”.</p>
+                        <p>Usa só se a lista atual não trouxer a nota OUT OF STOCK. As referências coladas aqui são marcadas como OS e saem do “a receber”.</p>
                         <textarea id="fornecedor-edicao-lista-os" rows="4" placeholder="Ex.:&#10;AF301&#10;PG634&#10;ou com quantidade:&#10;AF301	2"></textarea>
                         <div class="fornecedor-lista-final-acoes">
                             <button type="button" id="fornecedor-edicao-limpar-lista-os">Limpar texto</button>
@@ -1362,7 +1362,7 @@ async function guardarEdicaoPedidoFornecedor(evento) {
         return;
     }
     if (!itens.length) {
-        status.textContent = 'A encomenda precisa de pelo menos um produto. Cole a lista final e clique em "Aplicar à encomenda", ou desmarque "Remover" nos produtos que quer manter.';
+        status.textContent = 'A encomenda precisa de pelo menos um produto. Cole a lista atual e clique em "Aplicar à encomenda", ou desmarque "Remover" nos produtos que quer manter.';
         status.classList.remove('status-aviso', 'status-sucesso', 'status-neutro');
         status.classList.add('status-erro');
         status.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
