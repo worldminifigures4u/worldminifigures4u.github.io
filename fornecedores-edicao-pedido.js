@@ -177,6 +177,7 @@ function analisarLinhaTabelaListaFinalFornecedor(linha, partes, colunas, numeroL
         referencia,
         quantidade,
         preco_custo: precoCusto,
+        preco_lista_usd: precoCusto,
         sem_stock_fornecedor: semStock,
         quantidade_os: semStock && quantidade > 0 ? quantidade : null,
         original: linha
@@ -224,6 +225,7 @@ function analisarLinhaListaFinalFornecedor(linha, numeroLinha, estadoParser = nu
         referencia,
         quantidade,
         preco_custo: precoCusto,
+        preco_lista_usd: precoCusto,
         sem_stock_fornecedor: semStock,
         quantidade_os: semStock ? quantidade : null,
         original: linha
@@ -323,6 +325,7 @@ function fundirItemListaFinalComExistenteFornecedor(importado, existente) {
         origem_ajuste: origemAjuste,
         data_origem_ajuste: dataOrigemAjuste,
         recebido: Math.min(Math.max(0, Number(existente.recebido || 0)), quantidadeNova),
+        preco_lista_usd: Math.max(0, Number(importado.preco_lista_usd ?? importado.preco_custo ?? importado.preco ?? 0) || 0),
         preco_custo: precoCusto,
         preco: precoCusto
     });
@@ -332,7 +335,95 @@ function limparMetadadosImportacaoListaFinalFornecedor(item) {
     if (!item) return item;
     delete item.sem_stock_fornecedor;
     delete item.quantidade_os;
+    delete item.preco_lista_usd;
+    delete item.custo_calculado_lista_atual;
     return item;
+}
+
+function arredondarPrecoCustoListaAtualFornecedor(valor) {
+    const numero = Number(valor);
+    if (!Number.isFinite(numero) || numero <= 0) return 0;
+    return Math.round(numero * 100) / 100;
+}
+
+function itemContaParaCustoRealListaAtualFornecedor(item) {
+    if (!item) return false;
+    if (itemIgnoradoListaEdicaoFornecedor(item)) return false;
+    const estado = String(item.estado_fornecedor || "").trim().toUpperCase();
+    if (estado === "EX" || item.marcado_ex === true) return false;
+    return Math.max(0, Number(item.quantidade || 0)) > 0;
+}
+
+function formatarMoedaResumoCustoListaAtualFornecedor(valor, moeda = "EUR") {
+    const numero = Number(valor);
+    if (!Number.isFinite(numero)) return moeda === "USD" ? "$0,00" : "0,00 €";
+    if (moeda === "USD") return `$${numero.toFixed(2).replace(".", ",")}`;
+    return `${numero.toFixed(2).replace(".", ",")} €`;
+}
+
+function obterResumoCustoRealListaAtualFornecedor(resumo) {
+    if (!resumo?.aplicado) return "";
+    const modo = resumo.rateioEnvio === "valor" ? "por valor" : "por unidade";
+    return `\n\nCusto real: ${formatarMoedaResumoCustoListaAtualFornecedor(resumo.totalPagoEur)} / ${formatarMoedaResumoCustoListaAtualFornecedor(resumo.totalCompraUsd, "USD")} = câmbio ${resumo.cambio.toFixed(4)}. Envio distribuído ${modo}.`;
+}
+
+function calcularCustoRealListaAtualFornecedor(itens, opcoes = {}) {
+    const envioUsd = Math.max(0, Number(opcoes.envioUsd || 0) || 0);
+    const totalPagoEur = Math.max(0, Number(opcoes.totalPagoEur || 0) || 0);
+    const ativo = Boolean(opcoes.ativo) || envioUsd > 0 || totalPagoEur > 0;
+    if (!ativo) return { aplicado: false };
+    if (totalPagoEur <= 0) {
+        return { aplicado: false, erro: "Indique o total pago em EUR para calcular o custo real." };
+    }
+
+    const itensReceber = (itens || []).filter(itemContaParaCustoRealListaAtualFornecedor);
+    const semPreco = itensReceber.filter((item) => Math.max(0, Number(item.preco_lista_usd || 0)) <= 0);
+    if (semPreco.length) {
+        const refs = semPreco.slice(0, 6).map(item => item.referencia || item.sku || item.nome || "sem referência").join(", ");
+        return { aplicado: false, erro: `Há ${semPreco.length} referência(s) a receber sem PRICE: ${refs}.` };
+    }
+
+    const totalUnidades = itensReceber.reduce((total, item) => total + Math.max(0, Math.floor(Number(item.quantidade || 0))), 0);
+    const totalProdutosUsd = itensReceber.reduce((total, item) => {
+        const quantidade = Math.max(0, Math.floor(Number(item.quantidade || 0)));
+        const precoUsd = Math.max(0, Number(item.preco_lista_usd || 0) || 0);
+        return total + (quantidade * precoUsd);
+    }, 0);
+    const totalCompraUsd = totalProdutosUsd + envioUsd;
+    if (!itensReceber.length || totalUnidades <= 0 || totalProdutosUsd <= 0 || totalCompraUsd <= 0) {
+        return { aplicado: false, erro: "A lista precisa de quantidades e PRICE em USD para calcular o custo real." };
+    }
+
+    const rateioEnvio = opcoes.rateioEnvio === "valor" ? "valor" : "unidades";
+    const cambio = totalPagoEur / totalCompraUsd;
+    const envioPorUnidadeUsd = rateioEnvio === "unidades" ? envioUsd / totalUnidades : 0;
+
+    itensReceber.forEach((item) => {
+        const quantidade = Math.max(0, Math.floor(Number(item.quantidade || 0)));
+        const precoUsd = Math.max(0, Number(item.preco_lista_usd || 0) || 0);
+        const linhaUsd = quantidade * precoUsd;
+        const envioLinhaUsd = rateioEnvio === "valor" && totalProdutosUsd > 0
+            ? envioUsd * (linhaUsd / totalProdutosUsd)
+            : 0;
+        const envioUnitarioUsd = rateioEnvio === "valor"
+            ? (quantidade > 0 ? envioLinhaUsd / quantidade : 0)
+            : envioPorUnidadeUsd;
+        const precoCusto = arredondarPrecoCustoListaAtualFornecedor((precoUsd + envioUnitarioUsd) * cambio);
+        item.preco_custo = precoCusto;
+        item.preco = precoCusto;
+        item.custo_calculado_lista_atual = true;
+    });
+
+    return {
+        aplicado: true,
+        totalProdutosUsd,
+        envioUsd,
+        totalCompraUsd,
+        totalPagoEur,
+        cambio,
+        totalUnidades,
+        rateioEnvio
+    };
 }
 
 function criarItemAusenteListaFinalFornecedor(item) {
@@ -360,7 +451,7 @@ function criarItemAusenteListaFinalFornecedor(item) {
     });
 }
 
-function processarLinhasListaFinalFornecedor(texto, itensAtuais = []) {
+function processarLinhasListaFinalFornecedor(texto, itensAtuais = [], opcoesCusto = {}) {
     const linhas = String(texto || "").split(/\r?\n/);
     const itens = [];
     const erros = [];
@@ -388,6 +479,7 @@ function processarLinhasListaFinalFornecedor(texto, itensAtuais = []) {
         item.quantidade_os = analisada.sem_stock_fornecedor && Number(analisada.quantidade_os) > 0
             ? Math.floor(Number(analisada.quantidade_os))
             : null;
+        item.preco_lista_usd = Math.max(0, Number(analisada.preco_lista_usd ?? analisada.preco_custo ?? 0) || 0);
         if (produto) {
             item.referencia = analisada.referencia;
             item.nome = produto.nome || item.nome;
@@ -398,7 +490,7 @@ function processarLinhasListaFinalFornecedor(texto, itensAtuais = []) {
         }
         const existente = obterItemExistenteListaFinalFornecedor(itensAtuais, item);
         if (existente) itensUsados.add(existente);
-        item = limparMetadadosImportacaoListaFinalFornecedor(fundirItemListaFinalComExistenteFornecedor(item, existente));
+        item = fundirItemListaFinalComExistenteFornecedor(item, existente);
         if (item) itens.push(item);
     });
 
@@ -408,8 +500,23 @@ function processarLinhasListaFinalFornecedor(texto, itensAtuais = []) {
         if (ausente) itens.push(ausente);
     });
 
+    const custoReal = calcularCustoRealListaAtualFornecedor(itens, opcoesCusto);
+    itens.forEach(limparMetadadosImportacaoListaFinalFornecedor);
     const unidades = itens.reduce((total, item) => total + Math.max(0, Number(item.quantidade || 0)), 0);
-    return { itens, erros, foraCatalogo, unidades, linhasImportadas, osImportadas };
+    return { itens, erros, foraCatalogo, unidades, linhasImportadas, osImportadas, custoReal };
+}
+
+function lerOpcoesCustoListaAtualFornecedor(contexto = document) {
+    const obterValor = (seletor) => converterNumeroListaFornecedor(contexto.querySelector(seletor)?.value || "");
+    const envioUsd = obterValor("#fornecedor-edicao-envio-usd, #fornecedor-envio-usd");
+    const totalPagoEur = obterValor("#fornecedor-edicao-total-eur, #fornecedor-total-eur");
+    const rateioSelecionado = contexto.querySelector('input[name="fornecedor-edicao-rateio-envio"]:checked, input[name="fornecedor-rateio-envio"]:checked')?.value || "unidades";
+    return {
+        envioUsd,
+        totalPagoEur,
+        rateioEnvio: rateioSelecionado === "valor" ? "valor" : "unidades",
+        ativo: envioUsd > 0 || totalPagoEur > 0
+    };
 }
 
 async function aplicarListaFinalFornecedor() {
@@ -425,15 +532,20 @@ async function aplicarListaFinalFornecedor() {
         return;
     }
 
-    const { itens: importados, erros, foraCatalogo, unidades, linhasImportadas, osImportadas } = processarLinhasListaFinalFornecedor(textoLista, fornecedorSelecao);
+    const opcoesCusto = lerOpcoesCustoListaAtualFornecedor(document);
+    const { itens: importados, erros, foraCatalogo, unidades, linhasImportadas, osImportadas, custoReal } = processarLinhasListaFinalFornecedor(textoLista, fornecedorSelecao, opcoesCusto);
     if (!linhasImportadas || !importados.length) {
         const detalhe = erros.length ? ` ${erros.join("; ")}` : "";
         definirStatusFornecedor(`Cole pelo menos uma referência válida antes de aplicar a lista atual.${detalhe}`, true);
         return;
     }
+    if (custoReal?.erro) {
+        definirStatusFornecedor(custoReal.erro, true);
+        return;
+    }
 
     if (!(await mostrarConfirmacaoSite(
-        `Aplicar esta lista atual à encomenda?\n\n${linhasImportadas} referência(s) lida(s), ${unidades} unidade(s) a receber${osImportadas ? ` e ${osImportadas} referência(s) OS` : ""}.\nA lista atual da encomenda será substituída e as referências que não vierem na lista ficam como Ignorado na lista.`,
+        `Aplicar esta lista atual à encomenda?\n\n${linhasImportadas} referência(s) lida(s), ${unidades} unidade(s) a receber${osImportadas ? ` e ${osImportadas} referência(s) OS` : ""}.\nA lista atual da encomenda será substituída e as referências que não vierem na lista ficam como Ignorado na lista.${obterResumoCustoRealListaAtualFornecedor(custoReal)}`,
         { titulo: "Confirmar lista atual", textoConfirmar: "Aplicar", textoCancelar: "Cancelar" }
     ))) {
         return;
@@ -447,7 +559,7 @@ async function aplicarListaFinalFornecedor() {
     const avisos = [];
     if (foraCatalogo.length) avisos.push(`${foraCatalogo.length} referência(s) fora do catálogo incluída(s): ${foraCatalogo.join(", ")}`);
     if (erros.length) avisos.push(erros.join("; "));
-    definirStatusFornecedor(`${importados.length} linha(s), ${unidades} unidade(s) a receber${osImportadas ? ` e ${osImportadas} OS` : ""} aplicadas à encomenda.${avisos.length ? " " + avisos.join(" | ") : ""}`, Boolean(avisos.length));
+    definirStatusFornecedor(`${importados.length} linha(s), ${unidades} unidade(s) a receber${osImportadas ? ` e ${osImportadas} OS` : ""} aplicadas à encomenda.${custoReal?.aplicado ? " Preço compra calculado em EUR." : ""}${avisos.length ? " " + avisos.join(" | ") : ""}`, Boolean(avisos.length));
 }
 
 function limparTextoListaFinalFornecedor() {
@@ -762,14 +874,19 @@ async function aplicarListaFinalNaEdicaoFornecedor() {
         return;
     }
 
-    const { itens, erros, foraCatalogo, unidades, linhasImportadas, osImportadas } = processarLinhasListaFinalFornecedor(texto, pedido.itens || []);
+    const opcoesCusto = lerOpcoesCustoListaAtualFornecedor(modal);
+    const { itens, erros, foraCatalogo, unidades, linhasImportadas, osImportadas, custoReal } = processarLinhasListaFinalFornecedor(texto, pedido.itens || [], opcoesCusto);
     if (!linhasImportadas || !itens.length) {
         definirStatusEdicaoFornecedor(status, "erro", erros.length ? erros.join("; ") : "Cole pelo menos uma referência válida antes de aplicar a lista atual.");
         return;
     }
+    if (custoReal?.erro) {
+        definirStatusEdicaoFornecedor(status, "erro", custoReal.erro);
+        return;
+    }
 
     if (!(await mostrarConfirmacaoSite(
-        `Aplicar esta lista atual à encomenda?\n\n${linhasImportadas} referência(s) lida(s), ${unidades} unidade(s) a receber${osImportadas ? ` e ${osImportadas} referência(s) OS` : ""}.\nA lista atual da encomenda será substituída e as referências que não vierem na lista ficam como Ignorado na lista.`,
+        `Aplicar esta lista atual à encomenda?\n\n${linhasImportadas} referência(s) lida(s), ${unidades} unidade(s) a receber${osImportadas ? ` e ${osImportadas} referência(s) OS` : ""}.\nA lista atual da encomenda será substituída e as referências que não vierem na lista ficam como Ignorado na lista.${obterResumoCustoRealListaAtualFornecedor(custoReal)}`,
         { titulo: "Confirmar lista atual", textoConfirmar: "Aplicar", textoCancelar: "Cancelar" }
     ))) {
         return;
@@ -791,7 +908,7 @@ async function aplicarListaFinalNaEdicaoFornecedor() {
     definirStatusEdicaoFornecedor(
         status,
         avisos.length ? "aviso" : "sucesso",
-        `Lista aplicada: ${itens.length} linha(s), ${unidades} unidade(s) a receber${osImportadas ? ` e ${osImportadas} OS` : ""}.${avisos.length ? " " + avisos.join(" | ") : ""}`
+        `Lista aplicada: ${itens.length} linha(s), ${unidades} unidade(s) a receber${osImportadas ? ` e ${osImportadas} OS` : ""}.${custoReal?.aplicado ? " Preço compra calculado em EUR." : ""}${avisos.length ? " " + avisos.join(" | ") : ""}`
     );
 }
 
@@ -799,6 +916,10 @@ function limparListaFinalEdicaoFornecedor() {
     const modal = document.getElementById("fornecedor-edicao-modal");
     const area = modal?.querySelector("#fornecedor-edicao-lista-final");
     if (area) area.value = "";
+    const envio = modal?.querySelector("#fornecedor-edicao-envio-usd");
+    const total = modal?.querySelector("#fornecedor-edicao-total-eur");
+    if (envio) envio.value = "";
+    if (total) total.value = "";
 }
 
 function analisarLinhaListaOsFornecedor(linha, numeroLinha) {
@@ -1086,7 +1207,7 @@ function limparListaExEdicaoFornecedor() {
 function garantirModalEdicaoFornecedor() {
     let modal = document.getElementById('fornecedor-edicao-modal');
     // Recria se faltar alguma secção nova (modal antigo em memória)
-    if (modal && (!modal.querySelector('#fornecedor-edicao-lista-os') || !modal.querySelector('#fornecedor-edicao-lista-ex'))) {
+    if (modal && (!modal.querySelector('#fornecedor-edicao-lista-os') || !modal.querySelector('#fornecedor-edicao-lista-ex') || !modal.querySelector('#fornecedor-edicao-total-eur'))) {
         modal.remove();
         modal = null;
     }
@@ -1127,8 +1248,24 @@ function garantirModalEdicaoFornecedor() {
                     <p class="fornecedor-edicao-aviso-guardar">As alterações aos campos acima só ficam gravadas ao clicar <strong>Gravar encomenda</strong>.</p>
                     <section class="fornecedor-lista-final-box fornecedor-lista-final-edicao" aria-label="Lista atual enviada pelo fornecedor">
                         <h4>Colar lista atual do fornecedor</h4>
-                        <p>Cola aqui a tabela do fornecedor. O campo CODE é usado como referência; SKU e AMOUNT são ignorados. Se a nota indicar OUT OF STOCK, a figura é marcada como OS automaticamente.</p>
+                        <p>Cola aqui a tabela do fornecedor. O campo CODE é usado como referência; PRICE é lido como preço unitário em USD; SKU e AMOUNT são ignorados. Se a nota indicar OUT OF STOCK, a figura é marcada como OS automaticamente.</p>
                         <textarea id="fornecedor-edicao-lista-final" rows="5" placeholder="Ex.:&#10;CODE	SKU	QTY	PRICE	AMOUNT	NOTE&#10;AF301	AF301	2	$1,25	$2,50&#10;PG634	PG634	1		$0,00	OUT OF STOCK"></textarea>
+                        <div class="fornecedor-custo-real-grid" aria-label="Custo real da compra">
+                            <label>
+                                Envio USD
+                                <input type="text" id="fornecedor-edicao-envio-usd" inputmode="decimal" autocomplete="off" placeholder="$83,00">
+                            </label>
+                            <label>
+                                Total pago EUR
+                                <input type="text" id="fornecedor-edicao-total-eur" inputmode="decimal" autocomplete="off" placeholder="365,40 €">
+                            </label>
+                            <fieldset>
+                                <legend>Distribuir envio</legend>
+                                <label><input type="radio" name="fornecedor-edicao-rateio-envio" value="unidades" checked> Por unidade</label>
+                                <label><input type="radio" name="fornecedor-edicao-rateio-envio" value="valor"> Por valor</label>
+                            </fieldset>
+                        </div>
+                        <p class="fornecedor-custo-real-ajuda">Se preencheres o total pago em EUR, o preço compra é calculado em euros com o envio incluído.</p>
                         <div class="fornecedor-lista-final-acoes">
                             <button type="button" id="fornecedor-edicao-limpar-lista-final">Limpar texto</button>
                             <button type="button" id="fornecedor-edicao-aplicar-lista-final" class="wallapop-botao-destaque">Aplicar à encomenda</button>
@@ -1206,6 +1343,12 @@ function abrirEdicaoPedidoFornecedor(id) {
     modal.querySelector('#fornecedor-edicao-status').textContent = '';
     delete modal.dataset.itensAlteradosListaFinal;
     modal.querySelector('#fornecedor-edicao-lista-final').value = '';
+    const envioUsd = modal.querySelector('#fornecedor-edicao-envio-usd');
+    const totalEur = modal.querySelector('#fornecedor-edicao-total-eur');
+    const rateioUnidades = modal.querySelector('input[name="fornecedor-edicao-rateio-envio"][value="unidades"]');
+    if (envioUsd) envioUsd.value = '';
+    if (totalEur) totalEur.value = '';
+    if (rateioUnidades) rateioUnidades.checked = true;
     const listaOs = modal.querySelector('#fornecedor-edicao-lista-os');
     if (listaOs) listaOs.value = '';
     const listaEx = modal.querySelector('#fornecedor-edicao-lista-ex');

@@ -67,6 +67,15 @@ body.pagina-fornecedores-admin{ margin:0; padding-left:0; padding-right:0; paddi
         .fornecedor-lista-final-box h4{ margin:0; color:var(--cor-texto-principal, #fff); font-size:16px; }
         .fornecedor-lista-final-box p{ margin:0; color:#cfcfcf; font-size:13px; }
         .fornecedor-lista-final-box textarea{ width:100%; box-sizing:border-box; border:1px solid #444; border-radius:6px; background:#242424; color:#fff; padding:10px 11px; font:inherit; min-height:104px; resize:vertical; }
+        .fornecedor-custo-real-grid{ display:grid; grid-template-columns:minmax(140px,1fr) minmax(160px,1fr) minmax(220px,1.25fr); gap:10px; align-items:end; }
+        .fornecedor-custo-real-grid label{ display:grid; gap:5px; color:#ddd; font-weight:800; font-size:12px; }
+        .fornecedor-custo-real-grid input[type="text"]{ width:100%; box-sizing:border-box; border:1px solid #444; border-radius:6px; background:#242424; color:#fff; padding:9px 10px; font:inherit; min-width:0; }
+        .fornecedor-custo-real-grid input[type="text"]:focus{ border-color:#ffc400; outline:none; box-shadow:0 0 0 2px rgba(255,196,0,.16); }
+        .fornecedor-custo-real-grid fieldset{ display:flex; align-items:center; gap:10px; min-height:40px; margin:0; padding:8px 10px; border:1px solid #444; border-radius:6px; background:#1a1a1a; }
+        .fornecedor-custo-real-grid legend{ padding:0 5px; color:#cfcfcf; font-size:12px; font-weight:800; }
+        .fornecedor-custo-real-grid fieldset label{ display:flex; align-items:center; gap:5px; white-space:nowrap; }
+        .fornecedor-custo-real-grid input[type="radio"]{ width:auto; margin:0; accent-color:#ffc400; }
+        .fornecedor-custo-real-ajuda{ color:#aaa !important; }
         .fornecedor-lista-os-edicao{ border-color:#80612d; background:#1a160f; }
         .fornecedor-lista-os-edicao h4{ color:#f0c36d; }
         .fornecedor-lista-final-acoes{ display:flex; gap:8px; justify-content:flex-end; flex-wrap:wrap; }
@@ -737,6 +746,8 @@ body.pagina-fornecedores-admin{ margin:0; padding-left:0; padding-right:0; paddi
         }
         @media (max-width:900px){
             .fornecedor-lista-controles:not(.fornecedor-controles-unificados){ grid-template-columns:1fr; }
+            .fornecedor-custo-real-grid{ grid-template-columns:1fr; }
+            .fornecedor-custo-real-grid fieldset{ align-items:flex-start; flex-direction:column; }
             .pagina-fornecedores-unificada .fornecedor-lista-controles.fornecedor-controles-unificados{
                 grid-template-columns:minmax(0,1fr);
                 grid-template-areas:
