@@ -4336,25 +4336,21 @@ html:not(.admin-light-mode) #fornecedores-aplicacao .fornecedor-pedido-imprimir-
     max-width: 100% !important;
 }
 
+#fornecedores-aplicacao .fornecedor-resultados .fornecedor-tabela-wrapper-centro {
+    display: block !important;
+    max-width: 100%;
+}
+
 #fornecedores-aplicacao .fornecedor-resultados .fornecedor-tabela-encomenda :is(th, td):not(.mapas-col-nome) {
     width: 1%;
     white-space: nowrap;
 }
 
-#fornecedores-aplicacao .fornecedor-resultados .fornecedor-tabela-encomenda :is(th, td).mapas-col-stock,
-#fornecedores-aplicacao .fornecedor-resultados .fornecedor-tabela-encomenda :is(th, td).mapas-col-previsto,
-#fornecedores-aplicacao .fornecedor-resultados .fornecedor-tabela-encomenda :is(th, td).mapas-col-qtd,
-#fornecedores-aplicacao .fornecedor-resultados .fornecedor-tabela-encomenda :is(th, td).mapas-col-vendas-3m {
-    min-width: 72px;
-}
-
-#fornecedores-aplicacao .fornecedor-resultados .fornecedor-tabela-encomenda :is(th, td).mapas-col-ref {
-    min-width: 110px;
-}
-
 #fornecedores-aplicacao .fornecedor-resultados .fornecedor-tabela-encomenda .mapas-col-nome {
     width: auto;
     max-width: none !important;
+    white-space: normal !important;
+    overflow-wrap: anywhere;
 }
 
 /* Cabecalho da tabela fixo por baixo dos filtros e da linha de pesquisa */
@@ -4366,7 +4362,17 @@ html:not(.admin-light-mode) #fornecedores-aplicacao .fornecedor-pedido-imprimir-
 
 /* Seletor de estado com espaco para a contagem */
 #fornecedores-aplicacao .fornecedores-coluna-direita .fornecedor-filtro-estado-select {
-    min-width: 210px;
+    width: 170px !important;
+    min-width: 0 !important;
+    max-width: 100%;
+    text-overflow: ellipsis;
+}
+
+/* Painel das encomendas a fornecedores mais estreito */
+@media (min-width: 1221px) {
+    body.pagina-fornecedores-unificada .fornecedores-grid-unificada {
+        grid-template-columns: minmax(0, 1fr) 440px !important;
+    }
 }
 
 /* Resumo "A caminho" por baixo dos cartoes */
@@ -4411,4 +4417,39 @@ html.admin-light-mode #fornecedores-aplicacao .fornecedor-pedidos-resumo-valor {
 html.admin-light-mode #fornecedores-aplicacao .fornecedor-tabela-encomenda .mapa-stock-celula.valor-zero,
 html.admin-light-mode #fornecedores-aplicacao .fornecedor-tabela-encomenda .mapa-previsto-celula.valor-zero {
     color: #8a94a3 !important;
+}
+
+#fornecedores-aplicacao .fornecedor-resultados .fornecedor-tabela-encomenda .mapas-produto-nome-botao {
+    white-space: normal !important;
+    text-align: left;
+}
+
+#fornecedores-aplicacao .fornecedores-coluna-direita .fornecedores-cabecalho-titulo-filtro {
+    display: flex !important;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+}
+
+#fornecedores-aplicacao .fornecedores-coluna-direita #fornecedores-encomendas {
+    flex: 1 1 auto;
+    min-width: 0;
+    margin: 0;
+    font-size: 16px !important;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+#fornecedores-aplicacao .fornecedores-coluna-direita .fornecedores-cabecalho-titulo-filtro .fornecedor-filtro-estado-select {
+    flex: 0 0 160px;
+    width: 160px !important;
+}
+
+#fornecedores-aplicacao .fornecedor-resultados .fornecedor-tabela-encomenda :is(th, td).mapas-col-ref {
+    min-width: 100px;
+}
+
+#fornecedores-aplicacao .fornecedor-resultados .fornecedor-tabela-encomenda :is(th, td):is(.mapas-col-stock, .mapas-col-previsto, .mapas-col-qtd, .mapas-col-vendas-3m) {
+    min-width: 72px;
 }
