@@ -4546,11 +4546,25 @@ html.admin-light-mode #fornecedores-aplicacao .fornecedor-tabela-encomenda .mapa
         justify-self: stretch;
     }
 
-    body #mapas-produto-modal .mapas-produto-foto-principal img {
+    /* Safari (iPhone) calcula mal larguras em % dentro de <button> flex:
+       botao em bloco e imagem limitada a largura disponivel */
+    body #mapas-produto-modal .mapas-produto-foto-botao {
+        display: block !important;
         width: 100% !important;
+        min-width: 0 !important;
+        height: auto !important;
+        min-height: 0 !important;
+        text-align: center;
+        overflow: hidden;
+    }
+
+    body #mapas-produto-modal .mapas-produto-foto-principal img {
+        display: block !important;
+        width: auto !important;
+        height: auto !important;
         max-width: 100% !important;
         max-height: 55vh !important;
-        margin: 0 auto;
+        margin: 0 auto !important;
         object-fit: contain;
     }
 }
