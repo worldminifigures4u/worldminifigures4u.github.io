@@ -4635,3 +4635,23 @@ html.admin-light-mode #fornecedores-aplicacao .fornecedor-tabela-encomenda .mapa
     body #mapas-produto-modal .mapas-produto-secao-detalhes > .mapas-produto-leitura:nth-of-type(5) { order: 5; }
     body #mapas-produto-modal .mapas-produto-secao-detalhes > .mapas-produto-leitura:nth-of-type(6) { order: 6; }
 }
+
+/* Telemovel: botoes do bloco Estado em duas colunas */
+@media (max-width: 700px) {
+    body #mapas-produto-modal .mapas-produto-secao-marcas {
+        grid-template-columns: minmax(0, 1fr) !important;
+    }
+
+    body #mapas-produto-modal .mapas-produto-secao-marcas .mapas-produto-leitura-badges {
+        display: grid !important;
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+        gap: 8px !important;
+    }
+
+    body #mapas-produto-modal .mapas-produto-secao-marcas .mapas-produto-leitura-badge {
+        width: 100% !important;
+        min-width: 0 !important;
+        margin: 0 !important;
+        box-sizing: border-box;
+    }
+}
