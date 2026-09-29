@@ -2240,3 +2240,50 @@ body.admin-encomenda-modal-aberto{
         margin-left:auto;
     }
 }
+
+/* ===== Modal de encomenda: seletor de estado e Fechar neutros (padrao dos Fornecedores) ===== */
+html:not(.admin-light-mode) body.cabecalho-com-admin :is(#admin-encomenda-modal, #clientes-encomenda-modal) .admin-encomenda-modal-acoes .admin-encomenda-modal-estado .admin-encomenda-estado-caixa {
+    border: 1px solid #444 !important;
+    border-radius: 5px !important;
+    background: #242424 !important;
+    color: #fff !important;
+}
+
+html:not(.admin-light-mode) body.cabecalho-com-admin :is(#admin-encomenda-modal, #clientes-encomenda-modal) .admin-encomenda-modal-acoes .admin-encomenda-modal-estado .admin-encomenda-estado-caixa:is(:hover, :focus-within) {
+    border-color: var(--cor-acao-principal, #ffc107) !important;
+    background: #242424 !important;
+    color: #fff !important;
+}
+
+html:not(.admin-light-mode) body.cabecalho-com-admin :is(#admin-encomenda-modal, #clientes-encomenda-modal) .admin-encomenda-modal-acoes .admin-encomenda-modal-estado .admin-encomenda-estado-caixa select {
+    color: #fff !important;
+    -webkit-text-fill-color: #fff !important;
+}
+
+/* Seta fina clara em vez do triangulo amarelo */
+:is(#admin-encomenda-modal, #clientes-encomenda-modal) .admin-encomenda-modal-acoes .admin-encomenda-modal-estado .admin-encomenda-estado-caixa::after {
+    right: 12px !important;
+    width: 10px !important;
+    height: 6px !important;
+    border: 0 !important;
+    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%23d0d0d0' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") no-repeat center / 10px 6px !important;
+    transform: translateY(-50%) !important;
+}
+
+html.admin-light-mode :is(#admin-encomenda-modal, #clientes-encomenda-modal) .admin-encomenda-modal-acoes .admin-encomenda-modal-estado .admin-encomenda-estado-caixa::after {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%23475569' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") !important;
+}
+
+/* Fechar: contorno cinzento, amarelo apenas em hover */
+html:not(.admin-light-mode) body.cabecalho-com-admin :is(#admin-encomenda-modal, #clientes-encomenda-modal) .admin-encomenda-modal-fechar {
+    border: 1px solid #444 !important;
+    background: transparent !important;
+    color: #fff !important;
+}
+
+html:not(.admin-light-mode) body.cabecalho-com-admin :is(#admin-encomenda-modal, #clientes-encomenda-modal) .admin-encomenda-modal-fechar:is(:hover, :focus-visible) {
+    border-color: var(--cor-acao-principal, #ffc107) !important;
+    background: transparent !important;
+    color: var(--cor-acao-principal, #ffc107) !important;
+    outline: none;
+}
