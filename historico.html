@@ -24,6 +24,8 @@
     <noscript><link rel="stylesheet" href="styles-tema.css?v=20260721-sem-underline"></noscript>
     <link rel="stylesheet" href="conta.css?v=20260926-historico-proprio">
     <script src="async-css.js?v=20260713-r25"></script>
+    <link rel="stylesheet" href="aviso-flutuante.css?v=20260929-aviso-site">
+    <script src="aviso-flutuante.js?v=20260929-aviso-site" defer></script>
 </head>
 <body data-page="historico" class="conta-a-verificar">
 
@@ -95,7 +97,7 @@
                 <section class="historico-encomendas historico-encomendas-pagina">
                     <p class="historico-vazio">Entra na conta para veres o hist&oacute;rico das tuas encomendas.</p>
                     <a class="btn-acao-cliente historico-login-link" href="conta.html">Entrar na Conta</a>
-                    <div id="status-cliente" class="msg-status"></div>
+                    <div id="status-cliente" data-aviso-flutuante="sucesso" class="msg-status"></div>
                 </section>
             </div>
         </aside>

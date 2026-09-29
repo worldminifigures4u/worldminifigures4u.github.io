@@ -23,6 +23,8 @@
     <link rel="stylesheet" href="styles-tema.css?v=20260721-sem-underline" media="print" data-async-css>
     <noscript><link rel="stylesheet" href="styles-tema.css?v=20260721-sem-underline"></noscript>
     <script src="async-css.js?v=20260713-r25"></script>
+    <link rel="stylesheet" href="aviso-flutuante.css?v=20260929-aviso-site">
+    <script src="aviso-flutuante.js?v=20260929-aviso-site" defer></script>
 </head>
 <body class="pagina-portes-admin cabecalho-com-admin pagina-com-cabecalho-site">
     <header class="cabecalho-site-admin">
@@ -108,7 +110,7 @@
         </div>
 
         <section class="portes-painel" id="portes-painel" aria-label="Tabela de tarifas"></section>
-        <p class="wallapop-status" id="portes-status" aria-live="polite"></p>
+        <p class="wallapop-status" id="portes-status" data-aviso-flutuante="todos" aria-live="polite"></p>
     </main>
 
     <script src="supabase-cdn.js?v=20260913-timeout" defer></script>

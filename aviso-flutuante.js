@@ -49,32 +49,64 @@
         if (tipo === "sucesso") temporizador = setTimeout(esconder, TEMPO_SUCESSO_MS);
     }
 
+    // Mensagens informativas (contagens, estado de edicao) ficam na propria pagina
+    const REGEX_INFO_NA_PAGINA = /(encontrad[oa]\(?s?\)?\.?$|^\d+ banner|^sem banners|^\d+ tarifa|n[aã]o gravad)/i;
+    const REGEX_ERRO_TEXTO = /^(erro\b|n[aã]o foi poss[ií]vel|n[aã]o [eé] poss[ií]vel|acesso reservado|indica\b|indique\b|escolhe\b|escolha\b)/i;
+    const TAMANHO_MAX_AVISO_PUBLICO = 90;
+
+    function classificar(origem, texto) {
+        const classes = origem.classList;
+        if (classes.contains("status-erro") || classes.contains("msg-erro")) return "erro";
+        if (classes.contains("msg-processando") || /(\.\.\.|…)\s*$/.test(texto)) return "em-curso";
+        if (REGEX_ERRO_TEXTO.test(texto)) return "erro";
+        if (REGEX_INFO_NA_PAGINA.test(texto)) return "info";
+        return "sucesso";
+    }
+
+    function mostrarNaPagina(origem, visivel) {
+        origem.style.display = visivel ? "" : "none";
+    }
+
     function sincronizar(origem) {
         const texto = String(origem.textContent || "").trim();
         const aviso = document.getElementById("fp-aviso-flutuante");
+        const modo = origem.dataset.avisoFlutuante || "todos";
         if (!texto) {
+            mostrarNaPagina(origem, false);
             // Mensagem limpa pela pagina: esconde, exceto erros (fecham-se no x)
             if (aviso && !aviso.classList.contains("erro")) esconder();
             return;
         }
-        const erro = origem.classList.contains("status-erro");
-        const emCurso = !erro && /(\.\.\.|…)\s*$/.test(texto);
-        mostrar(texto, erro ? "erro" : (emCurso ? "em-curso" : "sucesso"));
+        const tipo = classificar(origem, texto);
+        const longo = texto.length > TAMANHO_MAX_AVISO_PUBLICO || origem.querySelector("br");
+        const ficaNaPagina = tipo === "info" || (modo === "sucesso" && (tipo !== "sucesso" || longo));
+        if (ficaNaPagina) {
+            mostrarNaPagina(origem, true);
+            return;
+        }
+        mostrarNaPagina(origem, false);
+        mostrar(texto, tipo);
     }
 
-    function iniciar() {
-        const origem = document.getElementById("fornecedores-status");
-        if (!origem || origem.dataset.avisoFlutuante === "1") return;
-        origem.dataset.avisoFlutuante = "1";
-        origem.classList.add("fp-status-espelhado");
+    function ligarOrigem(origem) {
+        if (!origem || origem.dataset.avisoFlutuanteLigado === "1") return;
+        origem.dataset.avisoFlutuanteLigado = "1";
         // Cada escrita na mensagem (mesmo repetida) volta a mostrar o aviso
         const observador = new MutationObserver(() => sincronizar(origem));
         observador.observe(origem, { childList: true, characterData: true, subtree: true, attributes: true, attributeFilter: ["class"] });
-        if (String(origem.textContent || "").trim()) sincronizar(origem);
+        sincronizar(origem);
+    }
+
+    function iniciar() {
+        const fornecedores = document.getElementById("fornecedores-status");
+        if (fornecedores && !fornecedores.dataset.avisoFlutuante) fornecedores.dataset.avisoFlutuante = "todos";
+        document.querySelectorAll("[data-aviso-flutuante]").forEach(ligarOrigem);
         document.addEventListener("keydown", (evento) => {
             if (evento.key === "Escape" && document.getElementById("fp-aviso-flutuante")?.classList.contains("erro")) esconder();
         });
     }
+
+    window.mostrarAvisoFlutuante = mostrar;
 
     if (document.readyState === "loading") {
         document.addEventListener("DOMContentLoaded", iniciar);

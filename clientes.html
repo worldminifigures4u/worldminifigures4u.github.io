@@ -33,6 +33,8 @@
         <link rel="stylesheet" href="encomendas.css?v=20260926-links-padrao">
     </noscript>
     <script src="async-css.js?v=20260713-r25"></script>
+    <link rel="stylesheet" href="aviso-flutuante.css?v=20260929-aviso-site">
+    <script src="aviso-flutuante.js?v=20260929-aviso-site" defer></script>
 </head>
 <body class="pagina-clientes-admin cabecalho-com-admin pagina-com-cabecalho-site">
     <header class="cabecalho-site-admin">
@@ -88,7 +90,7 @@
                     </div>
                 </section>
                 <div class="clientes-lista" id="clientes-lista"></div>
-                <p class="wallapop-status" id="clientes-status" aria-live="polite"></p>
+                <p class="wallapop-status" id="clientes-status" data-aviso-flutuante="todos" aria-live="polite"></p>
             </div>
             <article class="clientes-ficha" id="clientes-ficha">
                 <p class="admin-cliente-vazio">Escolha um cliente para abrir a ficha.</p>

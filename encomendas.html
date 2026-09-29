@@ -32,6 +32,8 @@
         <link rel="stylesheet" href="admin-imagem.css?v=20260917-fechar-texto">
     </noscript>
     <script src="async-css.js?v=20260713-r25"></script>
+    <link rel="stylesheet" href="aviso-flutuante.css?v=20260929-aviso-site">
+    <script src="aviso-flutuante.js?v=20260929-aviso-site" defer></script>
 </head>
 <body class="pagina-encomendas-admin cabecalho-com-admin pagina-com-cabecalho-site">
     <header class="cabecalho-site-admin">
@@ -115,7 +117,7 @@
         <p class="admin-encomendas-contagem" id="resumo-vendas-figura-admin" hidden></p>
         <section class="admin-encomendas-vendas-figura" id="lista-vendas-figura-admin" hidden aria-label="Vendas da figura pesquisada"></section>
 
-        <p class="wallapop-status" id="status-encomendas-admin" aria-live="polite"></p>
+        <p class="wallapop-status" id="status-encomendas-admin" data-aviso-flutuante="todos" aria-live="polite"></p>
         <section class="admin-encomendas-lista" id="lista-encomendas-admin"></section>
     </main>
 

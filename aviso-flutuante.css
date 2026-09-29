@@ -1,10 +1,10 @@
-/* Aviso flutuante (toast) - Mapas e Fornecedores */
-#fornecedores-status.fp-status-espelhado { display: none !important; }
+/* Aviso flutuante (toast) partilhado pelas paginas admin e publicas */
+
 .fp-aviso-flutuante {
     position: fixed;
     top: calc(var(--cabecalho-offset, 112px) - var(--espaco-abaixo-cabecalho, 24px) + 8px);
     left: 50%;
-    z-index: 5000;
+    z-index: 40000;
     display: flex;
     align-items: center;
     gap: 12px;
