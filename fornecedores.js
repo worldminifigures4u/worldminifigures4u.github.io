@@ -4643,6 +4643,16 @@ function obterTotaisPedidoFornecedor(pedido) {
     }, { itens: 0, quantidade: 0, os: 0, ex: 0, pendente: 0 });
 }
 
+function formatarResumoCartaoPedidoFornecedor(totaisPedido) {
+    const partes = [
+        `${totaisPedido.itens} ${totaisPedido.itens === 1 ? "artigo" : "artigos"}`,
+        `${totaisPedido.quantidade} ${totaisPedido.quantidade === 1 ? "unidade" : "unidades"}`
+    ];
+    // "por receber" so aparece quando ja houve rececao parcial (OS/EX ficam apenas no detalhe)
+    if (totaisPedido.pendente !== totaisPedido.quantidade) partes.push(`${totaisPedido.pendente} por receber`);
+    return partes.join(" · ");
+}
+
 function formatarResumoPedidoFornecedor(totaisPedido) {
     return `${totaisPedido.itens} artigo(s) | ${totaisPedido.quantidade} unidade(s) | ${totaisPedido.pendente} por receber${totaisPedido.os > 0 ? ` | ${totaisPedido.os} OS` : ""}${totaisPedido.ex > 0 ? ` | ${totaisPedido.ex} EX` : ""}`;
 }
@@ -5033,7 +5043,7 @@ function renderizarPedidosFornecedores() {
         });
 
         const linha = criarElementoPedidoFornecedor("div", "admin-encomenda-linha fornecedor-pedido-linha-cabecalho");
-        const resumo = formatarResumoPedidoFornecedor(totaisPedido);
+        const resumo = formatarResumoCartaoPedidoFornecedor(totaisPedido);
         linha.append(
             criarElementoPedidoFornecedor("strong", "admin-encomenda-codigo", obterTextoCodigoPedidoFornecedor(pedido)),
             criarElementoPedidoFornecedor("span", "admin-encomenda-data", formatarDataPedidoFornecedor(obterDataExibicaoPedidoFornecedor(pedido))),
