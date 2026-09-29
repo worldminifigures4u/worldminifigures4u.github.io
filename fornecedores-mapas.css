@@ -4655,3 +4655,98 @@ html.admin-light-mode #fornecedores-aplicacao .fornecedor-tabela-encomenda .mapa
         box-sizing: border-box;
     }
 }
+
+/* ===== Telemovel: historicos da ficha do produto em blocos de duas linhas ===== */
+@media (max-width: 700px) {
+    body #mapas-produto-modal .mapas-produto-historico-rececoes-tabela,
+    body #mapas-produto-modal .mapas-produto-historico-rececoes-tabela tbody {
+        display: block !important;
+        width: 100% !important;
+        min-width: 0 !important;
+    }
+
+    body #mapas-produto-modal .mapas-produto-historico-rececoes-tabela thead {
+        display: none !important;
+    }
+
+    body #mapas-produto-modal .mapas-produto-historico-rececoes-tabela tr {
+        display: flex !important;
+        flex-wrap: wrap;
+        align-items: baseline;
+        column-gap: 0;
+        row-gap: 3px;
+        padding: 8px 0;
+        border-bottom: 1px solid #2a2a2a;
+    }
+
+    body #mapas-produto-modal .mapas-produto-historico-rececoes-tabela tr:last-child {
+        border-bottom: 0;
+    }
+
+    /* quebra de linha entre a 1.a e a 2.a linha do bloco */
+    body #mapas-produto-modal .mapas-produto-historico-rececoes-tabela tr::before {
+        content: "";
+        order: 2;
+        flex: 0 0 100%;
+        height: 0;
+    }
+
+    body #mapas-produto-modal .mapas-produto-historico-rececoes-tabela td {
+        display: inline !important;
+        order: 3;
+        padding: 0 !important;
+        border: 0 !important;
+        white-space: normal !important;
+        font-size: 14px;
+        color: #cfcfcf;
+    }
+
+    body #mapas-produto-modal .mapas-produto-historico-rececoes-tabela td + td::before {
+        content: "\00a0·\00a0";
+        color: #666;
+    }
+
+    /* 1.a linha: data e encomenda (e quantidade nas vendas) a negrito */
+    body #mapas-produto-modal .mapas-produto-historico-rececoes-tabela td[data-coluna="1"],
+    body #mapas-produto-modal .mapas-produto-historico-rececoes-tabela td[data-coluna="2"],
+    body #mapas-produto-modal .mapas-produto-historico-vendas-tabela td[data-coluna="5"] {
+        order: 1;
+        color: #fff;
+        font-weight: 700;
+    }
+
+    body #mapas-produto-modal .mapas-produto-historico-rececoes-tabela td[data-coluna="1"]::before,
+    body #mapas-produto-modal .mapas-produto-historico-rececoes-tabela td[data-coluna="3"]::before {
+        content: none !important;
+    }
+
+    body #mapas-produto-modal .mapas-produto-historico-vendas-tabela td[data-coluna="5"]::after {
+        content: " un.";
+    }
+
+    body #mapas-produto-modal .mapas-produto-historico-fornecedores-tabela td[data-coluna="4"]::before {
+        content: "\00a0·\00a0Pedido\00a0";
+    }
+
+    body #mapas-produto-modal .mapas-produto-historico-fornecedores-tabela td[data-coluna="5"]::before {
+        content: "\00a0·\00a0Recebido\00a0";
+    }
+
+    /* Notas vazias: so uma linha discreta */
+    body #mapas-produto-modal .mapas-produto-secao-notas-leitura {
+        min-height: 0 !important;
+        height: auto !important;
+    }
+
+    body #mapas-produto-modal .mapas-produto-observacoes-leitura:empty {
+        margin: 0;
+        min-height: 0 !important;
+    }
+
+    body #mapas-produto-modal .mapas-produto-observacoes-leitura:empty::before {
+        content: "Sem notas.";
+        color: #777;
+        font-size: 14px;
+        font-weight: 600;
+    }
+}

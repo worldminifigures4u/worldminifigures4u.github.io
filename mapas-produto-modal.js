@@ -1206,7 +1206,7 @@ function renderizarHistoricoEncomendasFornecedorMapa(conteudo, produto, pedidos)
     }
 
     const tabela = document.createElement("table");
-    tabela.className = "mapas-produto-historico-rececoes-tabela";
+    tabela.className = "mapas-produto-historico-rececoes-tabela mapas-produto-historico-fornecedores-tabela";
     const thead = document.createElement("thead");
     const linhaCabecalho = document.createElement("tr");
     ["Data", "Encomenda", "Fornecedor", "Pedido", "Recebido", "Estado"].forEach((rotulo) => {
@@ -1234,9 +1234,10 @@ function renderizarHistoricoEncomendasFornecedorMapa(conteudo, produto, pedidos)
                 "—",
                 "—",
                 linha.estadoTexto || "—"
-            ].forEach((valor) => {
+            ].forEach((valor, indiceColuna) => {
                 const td = document.createElement("td");
                 td.textContent = valor;
+                td.dataset.coluna = String(indiceColuna + 1);
                 tr.appendChild(td);
             });
             tbody.appendChild(tr);
@@ -1266,9 +1267,10 @@ function renderizarHistoricoEncomendasFornecedorMapa(conteudo, produto, pedidos)
             String(pedidoQtd || "—"),
             String(recebido),
             estadoTexto
-        ].forEach((valor) => {
+        ].forEach((valor, indiceColuna) => {
             const td = document.createElement("td");
             td.textContent = valor;
+            td.dataset.coluna = String(indiceColuna + 1);
             tr.appendChild(td);
         });
         tbody.appendChild(tr);
@@ -1456,7 +1458,7 @@ function renderizarHistoricoVendasMapa(conteudo, produto, encomendas) {
     }
 
     const tabela = document.createElement("table");
-    tabela.className = "mapas-produto-historico-rececoes-tabela";
+    tabela.className = "mapas-produto-historico-rececoes-tabela mapas-produto-historico-vendas-tabela";
     const thead = document.createElement("thead");
     const linhaCabecalho = document.createElement("tr");
     ["Data", "Encomenda", "Cliente", "Origem", "Qtd.", "Total", "Estado"].forEach((rotulo) => {
@@ -1477,9 +1479,10 @@ function renderizarHistoricoVendasMapa(conteudo, produto, encomendas) {
             String(quantidade),
             `${formatarEuroProdutoModal(subtotal)} €`,
             encomenda.estado || "—"
-        ].forEach((valor) => {
+        ].forEach((valor, indiceColuna) => {
             const td = document.createElement("td");
             td.textContent = valor;
+            td.dataset.coluna = String(indiceColuna + 1);
             tr.appendChild(td);
         });
         tbody.appendChild(tr);
