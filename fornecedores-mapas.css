@@ -4442,8 +4442,8 @@ html.admin-light-mode #fornecedores-aplicacao .fornecedor-tabela-encomenda .mapa
 }
 
 #fornecedores-aplicacao .fornecedores-coluna-direita .fornecedores-cabecalho-titulo-filtro .fornecedor-filtro-estado-select {
-    flex: 0 0 160px;
-    width: 160px !important;
+    flex: 0 0 210px;
+    width: 210px !important;
 }
 
 #fornecedores-aplicacao .fornecedor-resultados .fornecedor-tabela-encomenda :is(th, td).mapas-col-ref {
