@@ -2354,3 +2354,29 @@ html:not(.admin-light-mode) body.cabecalho-com-admin :is(#admin-encomenda-modal,
         text-align: left;
     }
 }
+
+/* ===== Telemovel: modal de encomenda em ecra inteiro, a comecar no topo ===== */
+@media (max-width: 700px) {
+    body :is(#admin-encomenda-modal, #clientes-encomenda-modal).admin-encomenda-modal {
+        align-items: flex-start !important;
+        padding: 0 !important;
+    }
+
+    body :is(#admin-encomenda-modal, #clientes-encomenda-modal) .admin-encomenda-modal-dialogo {
+        width: 100% !important;
+        height: 100vh;
+        height: 100dvh;
+        max-height: 100vh !important;
+        max-height: 100dvh !important;
+        border: 0 !important;
+        border-radius: 0 !important;
+        padding: calc(env(safe-area-inset-top, 0px) + 12px) 12px calc(env(safe-area-inset-bottom, 0px) + 16px) !important;
+        overflow-y: auto !important;
+        -webkit-overflow-scrolling: touch;
+        overscroll-behavior: contain;
+    }
+
+    body .admin-encomenda-produtos-lista .admin-encomenda-produto > .admin-encomenda-produto-preco {
+        white-space: nowrap;
+    }
+}
