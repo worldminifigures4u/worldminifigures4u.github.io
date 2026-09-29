@@ -4265,3 +4265,16 @@ html:not(.admin-light-mode) #fornecedores-aplicacao .fornecedor-controles-unific
 .pagina-fornecedores-unificada .fornecedores-coluna-direita .fornecedor-pedido-cabecalho {
     padding-right: 10px;
 }
+
+/* Limpar / Juntar / Criar: contorno acompanha a cor do texto em hover */
+#fornecedores-aplicacao .fornecedor-acoes-encomenda-resumo #btn-limpar-fornecedor:is(:hover, :focus-visible):not(:disabled) {
+    border-color: var(--fp-cor-erro, #ff6b6b) !important;
+}
+
+#fornecedores-aplicacao .fornecedor-acoes-encomenda-resumo #btn-juntar-selecao-fornecedor:is(:hover, :focus-visible):not(:disabled) {
+    border-color: #00aeea !important;
+}
+
+#fornecedores-aplicacao .fornecedor-acoes-encomenda-resumo #btn-criar-fornecedor:is(:hover, :focus-visible):not(:disabled) {
+    border-color: #39d353 !important;
+}
