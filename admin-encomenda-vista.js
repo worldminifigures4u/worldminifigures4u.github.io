@@ -2614,6 +2614,19 @@ window.AdminEncomendaVista = (function () {
         }
 
         function mostrarStatusGravacao(mensagem, tipo = "sucesso") {
+            const tipoAviso = tipo === true ? "erro" : tipo;
+            if (typeof window.mostrarAvisoFlutuante === "function") {
+                // Aviso flutuante partilhado (em cima ao centro, por cima dos modais)
+                const textos = { Gravado: "Encomenda gravada.", "A gravar": "A gravar...", Erro: "Erro ao gravar a encomenda." };
+                const texto = textos[mensagem] || mensagem;
+                window.clearTimeout(temporizadorStatusGravacao);
+                if (statusGravacao) {
+                    statusGravacao.textContent = "";
+                    statusGravacao.classList.remove("sucesso", "erro", "processando");
+                }
+                window.mostrarAvisoFlutuante(texto, tipoAviso === "processando" ? "em-curso" : (tipoAviso === "erro" ? "erro" : "sucesso"));
+                return;
+            }
             if (!statusGravacao) return;
             window.clearTimeout(temporizadorStatusGravacao);
             statusGravacao.textContent = mensagem;
