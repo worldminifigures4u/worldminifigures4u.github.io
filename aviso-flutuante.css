@@ -1,0 +1,52 @@
+/* Aviso flutuante (toast) - Mapas e Fornecedores */
+#fornecedores-status.fp-status-espelhado { display: none !important; }
+.fp-aviso-flutuante {
+    position: fixed;
+    top: calc(var(--cabecalho-offset, 112px) - var(--espaco-abaixo-cabecalho, 24px) + 8px);
+    left: 50%;
+    z-index: 5000;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    max-width: min(560px, calc(100vw - 32px));
+    padding: 10px 14px;
+    border: 1px solid #444;
+    border-left-width: 4px;
+    border-radius: 5px;
+    background: #1b1b1b;
+    color: #fff;
+    font-size: 14px;
+    font-weight: 700;
+    line-height: 1.3;
+    box-shadow: 0 10px 28px rgba(0, 0, 0, .45);
+    transform: translate(-50%, -8px);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .18s ease, transform .18s ease;
+    box-sizing: border-box;
+}
+.fp-aviso-flutuante.visivel { opacity: 1; transform: translate(-50%, 0); pointer-events: auto; }
+.fp-aviso-flutuante.sucesso { border-color: #2f6b3a; border-left-color: #39d353; }
+.fp-aviso-flutuante.erro { border-color: #7a2a2a; border-left-color: #ff6b6b; }
+.fp-aviso-flutuante.em-curso { border-left-color: #18c4ff; }
+.fp-aviso-flutuante-texto { flex: 1 1 auto; min-width: 0; overflow-wrap: anywhere; }
+.fp-aviso-flutuante-fechar {
+    flex: 0 0 auto;
+    display: none;
+    width: 26px;
+    height: 26px;
+    padding: 0;
+    border: 1px solid #555;
+    border-radius: 5px;
+    background: transparent;
+    color: #fff;
+    font-size: 15px;
+    line-height: 1;
+    cursor: pointer;
+}
+.fp-aviso-flutuante.erro .fp-aviso-flutuante-fechar { display: inline-flex; align-items: center; justify-content: center; }
+.fp-aviso-flutuante-fechar:hover, .fp-aviso-flutuante-fechar:focus-visible { border-color: #ff6b6b; color: #ff6b6b; outline: none; }
+html.admin-light-mode .fp-aviso-flutuante { background: #fff; color: #182231; border-color: #c3ccd8; box-shadow: 0 10px 24px rgba(31, 41, 55, .18); }
+html.admin-light-mode .fp-aviso-flutuante.sucesso { border-left-color: #1f9d45; }
+html.admin-light-mode .fp-aviso-flutuante.erro { border-left-color: #c53030; }
+html.admin-light-mode .fp-aviso-flutuante-fechar { color: #182231; border-color: #c3ccd8; }
