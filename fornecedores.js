@@ -509,7 +509,7 @@ function obterOpcoesMarcacaoFornecedor() {
         { valor: "os", texto: "OS" },
         { valor: "ex", texto: "EX" },
         { valor: "os-ou-ex", texto: "OS ou EX" },
-        { valor: "disponivel", texto: "Disponivel" },
+        { valor: "disponivel", texto: "Disponível" },
     ];
 }
 
@@ -581,7 +581,7 @@ function renderizarLinhasFiltroMarcacaoFornecedor(filtros = null) {
 
         const grupoMarcacao = document.createElement("label");
         grupoMarcacao.className = "fornecedor-controle-filtro-compacto";
-        grupoMarcacao.textContent = "Marcacao";
+        grupoMarcacao.textContent = "Marcação";
         grupoMarcacao.appendChild(criarSelectEstadoMarcacaoFornecedor(filtro.marcacao));
 
         const remover = document.createElement("button");
@@ -591,6 +591,7 @@ function renderizarLinhasFiltroMarcacaoFornecedor(filtros = null) {
         remover.title = "Remover linha de filtro";
         remover.setAttribute("aria-label", "Remover linha de filtro");
         remover.disabled = linhas.length <= 1;
+        remover.hidden = linhas.length <= 1;
 
         if (indice === 0) {
             const fornecedorEscondido = document.createElement("input");
@@ -1707,7 +1708,7 @@ function formatarResumoHistoricoFornecedor(historico, estadoAtual = "") {
         if (/^-?\d+(?:[,.]\d+)?$/.test(estado)) return `Marcado no mapa: ${estado}`;
         return estado;
     }
-    if (!lista.length) return "Disponivel";
+    if (!lista.length) return "Disponível";
     const ultimo = lista[lista.length - 1];
     const rotulo = rotuloHistoricoFornecedor(ultimo.tipo);
     if (lista.length === 1) {
@@ -1748,7 +1749,7 @@ function normalizarMarcacaoFornecedor(valor) {
         desde: historico[0]?.data || null,
         datas,
         historico,
-        texto: marcacaoAtualLimpa && !estado ? "Disponivel" : formatarResumoHistoricoFornecedor(historico, estado)
+        texto: marcacaoAtualLimpa && !estado ? "Disponível" : formatarResumoHistoricoFornecedor(historico, estado)
     };
 }
 
@@ -3175,7 +3176,8 @@ function obterTextoTotalFigurasEncomendaFornecedor() {
 function atualizarTotalFigurasEncomendaFornecedor() {
     const alvo = document.getElementById("fornecedor-total-figuras-encomenda");
     if (!alvo || !estaPaginaFornecedoresUnificada()) return;
-    alvo.textContent = obterTextoTotalFigurasEncomendaFornecedor();
+    alvo.textContent = `${obterTextoTotalFigurasEncomendaFornecedor()} un.`;
+    alvo.title = "Total de unidades na encomenda";
     alvo.hidden = false;
 }
 
@@ -3228,7 +3230,7 @@ function obterTextoResumoMarcacaoFornecedor(fornecedor, fornecedorMarcacao, filt
         os: "OS",
         ex: "EX",
         "os-ou-ex": "OS ou EX",
-        disponivel: "Disponivel"
+        disponivel: "Disponível"
     };
     const rotulo = rotulos[filtroFornecedor] || filtroFornecedor;
     if (fornecedorMarcacao && fornecedor && fornecedorMarcacao !== fornecedor) {
@@ -3252,7 +3254,7 @@ function obterTextoResumoFiltrosMarcacaoFornecedor(fornecedor, filtrosMarcacao) 
         os: "OS",
         ex: "EX",
         "os-ou-ex": "OS ou EX",
-        disponivel: "Disponivel"
+        disponivel: "Disponível"
     };
     const texto = ativos.map(filtro => {
         const fornecedorMarcacao = resolverFornecedorMarcacaoFiltro(filtro.fornecedor, fornecedor);
@@ -3463,11 +3465,12 @@ function renderizarResultadosFornecedorTabelaEncomenda(caixa, resultados) {
         refCelula.textContent = atual.referencia || "-";
         linha.appendChild(refCelula);
 
-        linha.appendChild(criarCelulaMapaFornecedor(stockNumero, `mapas-col-stock mapa-stock-celula ${stockNumero <= 0 ? "sem-stock" : ""}`));
+        linha.appendChild(criarCelulaMapaFornecedor(stockNumero, `mapas-col-stock mapa-stock-celula ${stockNumero < 0 ? "sem-stock" : ""} ${stockNumero === 0 ? "valor-zero" : ""}`));
         const previstoClasses = [
             "mapas-col-previsto",
             "mapa-previsto-celula",
-            previsto <= 0 ? "sem-stock" : "",
+            previsto < 0 ? "sem-stock" : "",
+            previsto === 0 && pendente <= 0 ? "valor-zero" : "",
             pendente > 0 ? "com-pendente" : "",
         ].filter(Boolean).join(" ");
         const previstoCelula = criarCelulaMapaFornecedor(previsto, previstoClasses);
@@ -3487,7 +3490,11 @@ function renderizarResultadosFornecedorTabelaEncomenda(caixa, resultados) {
         if (quantidadeSelecionada <= 0) input.removeAttribute("value");
         input.className = "mapa-quantidade-input";
         input.setAttribute("aria-label", `Quantidade de ${atual.nome || "produto"}`);
-        input.addEventListener("input", () => definirQuantidadeMapaFornecedor(atual, input.value));
+        if (quantidadeSelecionada > 0) linha.classList.add("fornecedor-linha-com-quantidade");
+        input.addEventListener("input", () => {
+            linha.classList.toggle("fornecedor-linha-com-quantidade", Math.floor(Number(input.value) || 0) > 0);
+            definirQuantidadeMapaFornecedor(atual, input.value);
+        });
         input.addEventListener("change", () => definirQuantidadeMapaFornecedor(atual, input.value));
         input.addEventListener("blur", () => definirQuantidadeMapaFornecedor(atual, input.value));
         ligarSelecaoLinhaQuantidadeMapa(input);
@@ -4551,7 +4558,7 @@ async function adicionarSelecaoAoPedidoFornecedor(id) {
 }
 
 function formatarDataPedidoFornecedor(valor) {
-    if (!valor) return "Data indisponivel";
+    if (!valor) return "Data indisponível";
     const data = new Date(valor);
     if (Number.isNaN(data.getTime())) return String(valor);
     return new Intl.DateTimeFormat("pt-PT", {
@@ -5006,17 +5013,67 @@ function abrirModalPedidoFornecedor(id) {
     renderizarModalPedidoFornecedor(id);
 }
 
+const ESTADOS_PEDIDO_FORNECEDOR_A_CAMINHO = ["encomendada", "caixote_recebido", "recebida_parcialmente"];
+
+function pedidoFornecedorEstaACaminho(pedido) {
+    return ESTADOS_PEDIDO_FORNECEDOR_A_CAMINHO.includes(normalizarEstadoPedidoFornecedor(pedido?.estado));
+}
+
+function formatarTempoDesdePedidoFornecedor(valor) {
+    if (!valor) return "";
+    const data = new Date(valor);
+    if (Number.isNaN(data.getTime())) return "";
+    const inicioDia = (d) => new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
+    const dias = Math.max(0, Math.round((inicioDia(new Date()) - inicioDia(data)) / 86400000));
+    if (dias === 0) return "hoje";
+    return dias === 1 ? "há 1 dia" : `há ${dias} dias`;
+}
+
+function atualizarContagensFiltroEstadoPedidosFornecedor() {
+    const select = document.getElementById("fornecedor-filtro-estado");
+    if (!select) return;
+    Array.from(select.options).forEach(option => {
+        if (!option.dataset.rotulo) option.dataset.rotulo = option.textContent.replace(/\s*\(\d+\)$/, "");
+        const total = fornecedorPedidos.filter(pedido => pedidoFornecedorPassaFiltroEstado(pedido, option.value)).length;
+        option.textContent = `${option.dataset.rotulo} (${total})`;
+    });
+}
+
+function atualizarResumoACaminhoPedidosFornecedor(caixa) {
+    let resumo = document.getElementById("fornecedor-pedidos-resumo");
+    if (!resumo) {
+        resumo = document.createElement("p");
+        resumo.id = "fornecedor-pedidos-resumo";
+        resumo.className = "fornecedor-pedidos-resumo";
+        caixa.after(resumo);
+    }
+    const aCaminho = fornecedorPedidos.filter(pedidoFornecedorEstaACaminho);
+    if (!aCaminho.length) {
+        resumo.hidden = true;
+        return;
+    }
+    const unidades = aCaminho.reduce((total, pedido) => total + obterTotaisPedidoFornecedor(pedido).pendente, 0);
+    resumo.hidden = false;
+    resumo.replaceChildren(
+        criarElementoPedidoFornecedor("span", "fornecedor-pedidos-resumo-rotulo", "A caminho"),
+        criarElementoPedidoFornecedor("span", "fornecedor-pedidos-resumo-valor",
+            `${unidades} ${unidades === 1 ? "unidade" : "unidades"} em ${aCaminho.length} ${aCaminho.length === 1 ? "encomenda" : "encomendas"}`)
+    );
+}
+
 function renderizarPedidosFornecedores() {
     const caixa = document.getElementById('fornecedor-pedidos');
     if (!caixa) return;
     // Pre-definição: começar por "Encomendada" (em vez de "A preparar")
     const filtro = document.getElementById('fornecedor-filtro-estado')?.value || 'encomendada';
     caixa.replaceChildren();
+    atualizarContagensFiltroEstadoPedidosFornecedor();
+    atualizarResumoACaminhoPedidosFornecedor(caixa);
     const pedidos = fornecedorPedidos.filter(pedido => pedidoFornecedorPassaFiltroEstado(pedido, filtro));
     if (!pedidos.length) {
         const vazio = document.createElement('p');
         vazio.className = 'fornecedor-vazio';
-        vazio.textContent = 'Ainda nao existem encomendas neste estado.';
+        vazio.textContent = 'Ainda não existem encomendas neste estado.';
         caixa.appendChild(vazio);
         atualizarBotaoJuntarSelecaoFornecedor();
         return;
@@ -5046,7 +5103,10 @@ function renderizarPedidosFornecedores() {
         const resumo = formatarResumoCartaoPedidoFornecedor(totaisPedido);
         linha.append(
             criarElementoPedidoFornecedor("strong", "admin-encomenda-codigo", obterTextoCodigoPedidoFornecedor(pedido)),
-            criarElementoPedidoFornecedor("span", "admin-encomenda-data", formatarDataPedidoFornecedor(obterDataExibicaoPedidoFornecedor(pedido))),
+            criarElementoPedidoFornecedor("span", "admin-encomenda-data", [
+                formatarDataPedidoFornecedor(obterDataExibicaoPedidoFornecedor(pedido)),
+                pedidoFornecedorEstaACaminho(pedido) ? formatarTempoDesdePedidoFornecedor(obterDataExibicaoPedidoFornecedor(pedido)) : ""
+            ].filter(Boolean).join(" · ")),
             criarElementoPedidoFornecedor("span", "fornecedor-pedido-fornecedor-nome", pedido.fornecedor || "Fornecedor"),
             criarElementoPedidoFornecedor("span", "fornecedor-pedido-resumo", resumo)
         );
@@ -5138,6 +5198,9 @@ function atualizarAlturaStickyControlesFornecedor() {
 
     const altura = Math.ceil(controles.getBoundingClientRect().height);
     document.body.style.setProperty("--fornecedor-controles-sticky-altura", `${altura}px`);
+    const resumo = document.getElementById("fornecedor-resumo-encomenda");
+    const alturaResumo = resumo ? Math.ceil(resumo.getBoundingClientRect().height) : 0;
+    document.body.style.setProperty("--fornecedor-resumo-sticky-altura", `${alturaResumo}px`);
 }
 
 function ligarStickyInfoFornecedor() {
@@ -5152,6 +5215,8 @@ function ligarStickyInfoFornecedor() {
     if ("ResizeObserver" in window) {
         const observador = new ResizeObserver(atualizarAlturaStickyControlesFornecedor);
         observador.observe(controles);
+        const resumo = document.getElementById("fornecedor-resumo-encomenda");
+        if (resumo) observador.observe(resumo);
     }
 }
 

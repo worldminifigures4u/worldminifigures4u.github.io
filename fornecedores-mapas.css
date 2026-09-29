@@ -4303,3 +4303,112 @@ html:not(.admin-light-mode) #fornecedores-aplicacao .fornecedor-pedido-imprimir-
     color: var(--cor-acao-principal, #ffc107) !important;
     outline: none;
 }
+
+/* ===== Melhorias gerais da pagina de fornecedores (29/09/2026) ===== */
+
+/* Botao remover filtro escondido quando so ha uma linha */
+#fornecedores-aplicacao .fornecedor-btn-remover-filtro-marcacao[hidden] {
+    display: none !important;
+}
+
+#fornecedores-aplicacao .fornecedor-controles-unificados .fornecedor-filtro-marcacao-linha:has(> .fornecedor-btn-remover-filtro-marcacao[hidden]) {
+    grid-template-columns: 132px !important;
+}
+
+/* Zeros a cinzento; vermelho so para negativos */
+#fornecedores-aplicacao .fornecedor-tabela-encomenda .mapa-stock-celula.valor-zero,
+#fornecedores-aplicacao .fornecedor-tabela-encomenda .mapa-previsto-celula.valor-zero {
+    color: #777 !important;
+}
+
+/* Linhas com quantidade preenchida */
+#fornecedores-aplicacao .fornecedor-resultados .fornecedor-tabela-encomenda tbody tr.fornecedor-linha-com-quantidade > td {
+    background: rgba(255, 193, 7, 0.08) !important;
+}
+
+#fornecedores-aplicacao .fornecedor-resultados .fornecedor-tabela-encomenda tbody tr.fornecedor-linha-com-quantidade > td:first-child {
+    box-shadow: inset 3px 0 0 var(--cor-acao-principal, #ffc107) !important;
+}
+
+/* Tabela a ocupar a largura toda; o nome fica com o espaco que sobra */
+#fornecedores-aplicacao .fornecedor-resultados .fornecedor-tabela-encomenda {
+    width: 100% !important;
+    max-width: 100% !important;
+}
+
+#fornecedores-aplicacao .fornecedor-resultados .fornecedor-tabela-encomenda :is(th, td):not(.mapas-col-nome) {
+    width: 1%;
+    white-space: nowrap;
+}
+
+#fornecedores-aplicacao .fornecedor-resultados .fornecedor-tabela-encomenda :is(th, td).mapas-col-stock,
+#fornecedores-aplicacao .fornecedor-resultados .fornecedor-tabela-encomenda :is(th, td).mapas-col-previsto,
+#fornecedores-aplicacao .fornecedor-resultados .fornecedor-tabela-encomenda :is(th, td).mapas-col-qtd,
+#fornecedores-aplicacao .fornecedor-resultados .fornecedor-tabela-encomenda :is(th, td).mapas-col-vendas-3m {
+    min-width: 72px;
+}
+
+#fornecedores-aplicacao .fornecedor-resultados .fornecedor-tabela-encomenda :is(th, td).mapas-col-ref {
+    min-width: 110px;
+}
+
+#fornecedores-aplicacao .fornecedor-resultados .fornecedor-tabela-encomenda .mapas-col-nome {
+    width: auto;
+    max-width: none !important;
+}
+
+/* Cabecalho da tabela fixo por baixo dos filtros e da linha de pesquisa */
+#fornecedores-aplicacao .fornecedor-resultados .fornecedor-tabela-encomenda thead th {
+    position: sticky !important;
+    top: calc(var(--fornecedor-info-sticky-topo, 104px) + var(--fornecedor-controles-sticky-altura, 0px) + var(--fornecedor-resumo-sticky-altura, 0px)) !important;
+    z-index: 30 !important;
+}
+
+/* Seletor de estado com espaco para a contagem */
+#fornecedores-aplicacao .fornecedores-coluna-direita .fornecedor-filtro-estado-select {
+    min-width: 210px;
+}
+
+/* Resumo "A caminho" por baixo dos cartoes */
+#fornecedores-aplicacao .fornecedor-pedidos-resumo {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin: 12px 0 0;
+    padding: 10px 12px;
+    border: 1px solid #333;
+    border-radius: 5px;
+    background: #161616;
+    font-size: 13px;
+    font-weight: 700;
+}
+
+#fornecedores-aplicacao .fornecedor-pedidos-resumo[hidden] {
+    display: none;
+}
+
+#fornecedores-aplicacao .fornecedor-pedidos-resumo-rotulo {
+    color: #9a9a9a;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    font-size: 11px;
+}
+
+#fornecedores-aplicacao .fornecedor-pedidos-resumo-valor {
+    color: #18c4ff;
+}
+
+html.admin-light-mode #fornecedores-aplicacao .fornecedor-pedidos-resumo {
+    border-color: var(--fp-light-borda, #d7dee8);
+    background: var(--fp-light-superficie, #fbfcfe);
+}
+
+html.admin-light-mode #fornecedores-aplicacao .fornecedor-pedidos-resumo-valor {
+    color: var(--fp-light-acento, #256d9f);
+}
+
+html.admin-light-mode #fornecedores-aplicacao .fornecedor-tabela-encomenda .mapa-stock-celula.valor-zero,
+html.admin-light-mode #fornecedores-aplicacao .fornecedor-tabela-encomenda .mapa-previsto-celula.valor-zero {
+    color: #8a94a3 !important;
+}
