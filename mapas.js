@@ -978,7 +978,7 @@ async function iniciarMapas() {
         window.AvisosStockAdmin?.configurar({ client: mapasClient, status: definirStatusMapa });
         const user = await validarAdminRapido(mapasClient, document.getElementById("fornecedores-bloqueio"));
         if (!user) return;
-        mostrarNavegacaoAdminValidada();
+        if (typeof window.mostrarNavegacaoAdminValidada === 'function') window.mostrarNavegacaoAdminValidada(); else document.addEventListener('DOMContentLoaded', () => window.mostrarNavegacaoAdminValidada?.(), { once: true });
         document.getElementById("fornecedores-bloqueio").hidden = true;
         document.getElementById("fornecedores-aplicacao").hidden = false;
         carregarPreferenciasColunasMapa();

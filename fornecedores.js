@@ -5142,7 +5142,7 @@ async function iniciarFornecedoresAdmin() {
         fornecedoresClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
         const user = await validarAdminRapido(fornecedoresClient, bloqueio);
         if (!user) return;
-        mostrarNavegacaoAdminValidada();
+        if (typeof window.mostrarNavegacaoAdminValidada === 'function') window.mostrarNavegacaoAdminValidada(); else document.addEventListener('DOMContentLoaded', () => window.mostrarNavegacaoAdminValidada?.(), { once: true });
         await carregarFichasFornecedoresRemotas();
         renderizarFornecedoresGuardados();
         preencherFormularioFichaFornecedor();

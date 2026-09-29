@@ -1402,7 +1402,7 @@ async function iniciarPainelEncomendas() {
         configurarVistaEncomendasAdmin();
         const user = await validarAdminRapido(encomendasClient, bloqueio);
         if (!user) return;
-        mostrarNavegacaoAdminValidada();
+        if (typeof window.mostrarNavegacaoAdminValidada === 'function') window.mostrarNavegacaoAdminValidada(); else document.addEventListener('DOMContentLoaded', () => window.mostrarNavegacaoAdminValidada?.(), { once: true });
         bloqueio.hidden = true;
         document.getElementById('encomendas-aplicacao').hidden = false;
         const filtroEstado = document.getElementById('filtro-estado-encomendas-admin');

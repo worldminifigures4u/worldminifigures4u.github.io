@@ -566,7 +566,7 @@ async function iniciarEstatisticasAdmin() {
         estatisticasClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
         const user = await validarAdminRapido(estatisticasClient, bloqueio);
         if (!user) return;
-        mostrarNavegacaoAdminValidada();
+        if (typeof window.mostrarNavegacaoAdminValidada === 'function') window.mostrarNavegacaoAdminValidada(); else document.addEventListener('DOMContentLoaded', () => window.mostrarNavegacaoAdminValidada?.(), { once: true });
         bloqueio.hidden = true;
         document.getElementById('estatisticas-aplicacao').hidden = false;
         await carregarEncomendasEstatisticas();

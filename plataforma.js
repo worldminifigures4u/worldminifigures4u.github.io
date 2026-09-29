@@ -3918,7 +3918,7 @@ async function iniciarWallapopAdmin() {
         const user = await validarAdminRapido(wallapopClient, bloqueio);
         if (!user) return;
 
-        mostrarNavegacaoAdminValidada();
+        if (typeof window.mostrarNavegacaoAdminValidada === 'function') window.mostrarNavegacaoAdminValidada(); else document.addEventListener('DOMContentLoaded', () => window.mostrarNavegacaoAdminValidada?.(), { once: true });
         if (typeof garantirTabelaPortesCarregada === 'function') {
             await garantirTabelaPortesCarregada().catch(() => {});
         }
