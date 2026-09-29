@@ -1199,8 +1199,8 @@ function renderizarHistoricoEncomendasFornecedorMapa(conteudo, produto, pedidos)
 
     if (!linhas.length) {
         const vazio = document.createElement("p");
-        vazio.className = "mapas-produto-ajuda-media";
-        vazio.textContent = "Ainda não há encomendas a fornecedores com esta figura.";
+        vazio.className = "mapas-produto-ajuda-media mapas-produto-vazio";
+        vazio.textContent = "";
         conteudo.appendChild(vazio);
         return;
     }
@@ -1451,8 +1451,8 @@ function renderizarHistoricoVendasMapa(conteudo, produto, encomendas) {
 
     if (!linhas.length) {
         const vazio = document.createElement("p");
-        vazio.className = "mapas-produto-ajuda-media";
-        vazio.textContent = "Ainda não há vendas desta figura em encomendas de clientes.";
+        vazio.className = "mapas-produto-ajuda-media mapas-produto-vazio";
+        vazio.textContent = "";
         conteudo.appendChild(vazio);
         return;
     }
@@ -1566,8 +1566,8 @@ async function carregarSecaoAvisosStockProdutoMapa(produto, conteudo) {
         const pendentes = avisos.filter(aviso => String(aviso.estado || "").toLowerCase() === "por avisar");
         if (!pendentes.length) {
             const vazio = document.createElement("p");
-            vazio.className = "mapas-produto-ajuda-media";
-            vazio.textContent = "Sem clientes a avisar.";
+            vazio.className = "mapas-produto-ajuda-media mapas-produto-vazio";
+            vazio.textContent = "";
             conteudo.appendChild(vazio);
             return;
         }
@@ -1688,8 +1688,8 @@ function montarSecaoResumoMarcacoesFornecedoresMapa(produto) {
 
     if (!linhas.length) {
         const vazio = document.createElement("p");
-        vazio.className = "mapas-produto-marcacoes-resumo-vazio";
-        vazio.textContent = "Sem marcações atuais.";
+        vazio.className = "mapas-produto-marcacoes-resumo-vazio mapas-produto-vazio";
+        vazio.textContent = "";
         secao.appendChild(vazio);
         return secao;
     }

@@ -4743,10 +4743,35 @@ html.admin-light-mode #fornecedores-aplicacao .fornecedor-tabela-encomenda .mapa
         min-height: 0 !important;
     }
 
-    body #mapas-produto-modal .mapas-produto-observacoes-leitura:empty::before {
-        content: "Sem notas.";
-        color: #777;
-        font-size: 14px;
-        font-weight: 600;
+}
+
+/* Ficha do produto: blocos sem conteudo ficam vazios, baixos e com titulo cinzento */
+#mapas-produto-modal .mapas-produto-vazio,
+#mapas-produto-modal .mapas-produto-observacoes-leitura:empty {
+    display: none !important;
+}
+
+#mapas-produto-modal fieldset.mapas-produto-secao:has(.mapas-produto-vazio),
+#mapas-produto-modal fieldset.mapas-produto-secao-notas-leitura:has(.mapas-produto-observacoes-leitura:empty) {
+    min-height: 0 !important;
+    height: auto !important;
+    padding-top: 4px !important;
+    padding-bottom: 8px !important;
+}
+
+@media (max-width: 700px) {
+    #mapas-produto-modal fieldset.mapas-produto-secao:has(.mapas-produto-vazio),
+    #mapas-produto-modal fieldset.mapas-produto-secao-notas-leitura:has(.mapas-produto-observacoes-leitura:empty) {
+        align-self: start;
     }
+}
+
+#mapas-produto-modal fieldset.mapas-produto-secao:has(.mapas-produto-vazio) > legend,
+#mapas-produto-modal fieldset.mapas-produto-secao-notas-leitura:has(.mapas-produto-observacoes-leitura:empty) > legend {
+    color: #6f6f6f !important;
+}
+
+html.admin-light-mode #mapas-produto-modal fieldset.mapas-produto-secao:has(.mapas-produto-vazio) > legend,
+html.admin-light-mode #mapas-produto-modal fieldset.mapas-produto-secao-notas-leitura:has(.mapas-produto-observacoes-leitura:empty) > legend {
+    color: #9aa3ae !important;
 }
