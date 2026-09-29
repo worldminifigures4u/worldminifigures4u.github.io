@@ -4133,3 +4133,22 @@ body.pagina-fornecedores-admin.pagina-fornecedores-unificada {
     background: transparent;
     color: var(--fp-cor-destaque, #ffc400);
 }
+
+/* Selects dos filtros do topo: seta propria junto ao texto (sem espaco vazio) */
+#fornecedores-aplicacao .fornecedor-controles-unificados select,
+#fornecedores-aplicacao .fornecedor-filtros-marcacao-extra select {
+    -webkit-appearance: none !important;
+    appearance: none !important;
+    padding-left: 10px !important;
+    padding-right: 24px !important;
+    text-overflow: ellipsis;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%23d0d0d0' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") !important;
+    background-repeat: no-repeat !important;
+    background-position: right 9px center !important;
+    background-size: 10px 6px !important;
+}
+
+html.admin-light-mode #fornecedores-aplicacao .fornecedor-controles-unificados select,
+html.admin-light-mode #fornecedores-aplicacao .fornecedor-filtros-marcacao-extra select {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%23475569' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") !important;
+}
