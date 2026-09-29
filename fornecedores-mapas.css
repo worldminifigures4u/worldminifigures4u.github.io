@@ -4459,3 +4459,18 @@ html.admin-light-mode #fornecedores-aplicacao .fornecedor-tabela-encomenda .mapa
     min-height: 0 !important;
     align-content: start;
 }
+
+/* Linha ativa (cursor no QTD) diferente da linha com quantidade:
+   ativa = so contorno amarelo; com quantidade = fundo + barra amarela */
+#fornecedores-aplicacao .fornecedor-resultados .fornecedor-tabela-encomenda tbody tr.mapa-linha-quantidade-ativa:not(.fornecedor-linha-com-quantidade) > td {
+    background: transparent !important;
+    box-shadow: inset 0 1px 0 #80612d, inset 0 -1px 0 #80612d !important;
+}
+
+#fornecedores-aplicacao .fornecedor-resultados .fornecedor-tabela-encomenda tbody tr.mapa-linha-quantidade-ativa.fornecedor-linha-com-quantidade > td {
+    box-shadow: inset 0 1px 0 #80612d, inset 0 -1px 0 #80612d !important;
+}
+
+#fornecedores-aplicacao .fornecedor-resultados .fornecedor-tabela-encomenda tbody tr.mapa-linha-quantidade-ativa.fornecedor-linha-com-quantidade > td:first-child {
+    box-shadow: inset 3px 0 0 var(--cor-acao-principal, #ffc107), inset 0 1px 0 #80612d, inset 0 -1px 0 #80612d !important;
+}
