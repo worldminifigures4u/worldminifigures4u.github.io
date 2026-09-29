@@ -4453,3 +4453,9 @@ html.admin-light-mode #fornecedores-aplicacao .fornecedor-tabela-encomenda .mapa
 #fornecedores-aplicacao .fornecedor-resultados .fornecedor-tabela-encomenda :is(th, td):is(.mapas-col-stock, .mapas-col-previsto, .mapas-col-qtd, .mapas-col-vendas-3m) {
     min-width: 72px;
 }
+
+/* Lista de encomendas sem altura minima: a mensagem de vazio fica compacta */
+#fornecedores-aplicacao .fornecedores-coluna-direita .fornecedor-pedidos {
+    min-height: 0 !important;
+    align-content: start;
+}

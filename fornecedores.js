@@ -5055,7 +5055,7 @@ function atualizarResumoACaminhoPedidosFornecedor(caixa) {
     const unidades = aCaminho.reduce((total, pedido) => total + obterTotaisPedidoFornecedor(pedido).pendente, 0);
     resumo.hidden = false;
     resumo.replaceChildren(
-        criarElementoPedidoFornecedor("span", "fornecedor-pedidos-resumo-rotulo", "A caminho"),
+        criarElementoPedidoFornecedor("span", "fornecedor-pedidos-resumo-rotulo", "A caminho (total)"),
         criarElementoPedidoFornecedor("span", "fornecedor-pedidos-resumo-valor",
             `${unidades} ${unidades === 1 ? "unidade" : "unidades"} em ${aCaminho.length} ${aCaminho.length === 1 ? "encomenda" : "encomendas"}`)
     );
