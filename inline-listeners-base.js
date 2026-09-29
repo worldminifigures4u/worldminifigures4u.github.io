@@ -75,10 +75,23 @@
         nomeEl.classList.remove('oculto');
     }
 
+    // Telemovel: o menu desliza ate ao separador da pagina atual
+    function mostrarSeparadorAtivoNavegacao() {
+        const navegacao = document.querySelector('.navegacao-admin-cabecalho');
+        if (!navegacao || navegacao.hidden || navegacao.scrollWidth <= navegacao.clientWidth + 1) return;
+        const ativo = navegacao.querySelector('a.ativa, a[aria-current="page"]');
+        if (!ativo) return;
+        const destino = ativo.offsetLeft - navegacao.offsetLeft - ((navegacao.clientWidth - ativo.offsetWidth) / 2);
+        navegacao.scrollLeft = Math.max(0, destino);
+    }
+    window.mostrarSeparadorAtivoNavegacao = mostrarSeparadorAtivoNavegacao;
+    window.addEventListener('load', () => window.requestAnimationFrame(mostrarSeparadorAtivoNavegacao));
+
     function mostrarNavegacaoAdminValidada() {
         const navegacao = document.querySelector('.navegacao-admin-cabecalho');
         if (navegacao) navegacao.hidden = false;
         atualizarCabecalhoAdmin();
+        window.requestAnimationFrame(mostrarSeparadorAtivoNavegacao);
         if (typeof window.sincronizarEspacamentoCabecalho === 'function') {
             window.requestAnimationFrame(window.sincronizarEspacamentoCabecalho);
         }

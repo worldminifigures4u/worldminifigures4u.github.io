@@ -1623,3 +1623,16 @@ html:not(.admin-light-mode) :is(
     border-color: var(--fp-publico-borda, #2a2a2a) !important;
     background: var(--fp-publico-cartao-fundo, #151515) !important;
 }
+
+/* Menu de separadores: centrado quando cabe, encostado a esquerda quando desliza (telemovel).
+   Os pseudo-elementos centram o conteudo sem cortar os primeiros separadores. */
+body .navegacao-admin-cabecalho {
+    justify-content: flex-start !important;
+}
+
+body .navegacao-admin-cabecalho::before,
+body .navegacao-admin-cabecalho::after {
+    content: "";
+    flex: 1 0 0;
+    min-width: 0;
+}
