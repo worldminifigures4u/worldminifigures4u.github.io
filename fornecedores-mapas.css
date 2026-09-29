@@ -4278,3 +4278,15 @@ html:not(.admin-light-mode) #fornecedores-aplicacao .fornecedor-controles-unific
 #fornecedores-aplicacao .fornecedor-acoes-encomenda-resumo #btn-criar-fornecedor:is(:hover, :focus-visible):not(:disabled) {
     border-color: #39d353 !important;
 }
+
+/* Limpar / Juntar / Criar e contador com a mesma largura do botao Editar (96px) */
+#fornecedores-aplicacao .fornecedor-resumo-encomenda-centro .fornecedor-acoes-encomenda-resumo .wallapop-botao,
+#fornecedores-aplicacao .fornecedor-resumo-encomenda-centro #fornecedor-total-figuras-encomenda {
+    flex: 0 0 96px !important;
+    width: 96px !important;
+    min-width: 96px !important;
+    max-width: 96px !important;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+    justify-content: center !important;
+}
