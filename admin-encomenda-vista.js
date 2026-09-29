@@ -1066,6 +1066,18 @@ window.AdminEncomendaVista = (function () {
         let valorGravado = encomenda.notas_internas || "";
         notas.value = valorGravado;
         notas.placeholder = "";
+        // Telemovel: a caixa de notas fica com a altura do texto
+        const ajustarAlturaNotasTelemovel = () => {
+            if (!window.matchMedia || !window.matchMedia("(max-width: 700px)").matches) {
+                notas.style.height = "";
+                return;
+            }
+            notas.style.height = "auto";
+            notas.style.height = `${notas.scrollHeight + 2}px`;
+        };
+        notas.addEventListener("input", ajustarAlturaNotasTelemovel);
+        requestAnimationFrame(() => requestAnimationFrame(ajustarAlturaNotasTelemovel));
+        window.addEventListener("resize", ajustarAlturaNotasTelemovel);
         notas.addEventListener("click", evento => evento.stopPropagation());
         notas.addEventListener("keydown", evento => evento.stopPropagation());
         const statusNotas = criarElemento("p", "admin-encomenda-gestao-status");

@@ -2380,3 +2380,22 @@ html:not(.admin-light-mode) body.cabecalho-com-admin :is(#admin-encomenda-modal,
         white-space: nowrap;
     }
 }
+
+/* Telemovel: notas da encomenda justas ao texto (altura ajustada no JS) */
+@media (max-width: 700px) {
+    body :is(#admin-encomenda-modal, #clientes-encomenda-modal) .admin-encomenda-notas-cabecalho textarea {
+        min-height: 44px !important;
+        max-height: none !important;
+        flex: 0 0 auto !important;
+        align-self: flex-start;
+        resize: none;
+        overflow: hidden;
+    }
+}
+
+@media (max-width: 700px) {
+    body :is(#admin-encomenda-modal, #clientes-encomenda-modal) :is(.admin-encomenda-dados-notas, .admin-encomenda-notas-cabecalho) {
+        height: auto !important;
+        min-height: 0 !important;
+    }
+}
