@@ -4240,3 +4240,33 @@ html:not(.admin-light-mode) #fornecedores-aplicacao .fornecedor-controles-unific
     line-height: 1 !important;
     white-space: nowrap;
 }
+
+/* Cartoes de pedidos: Imprimir a direita, centrado na altura do cartao, junto a seta */
+.pagina-fornecedores-unificada .fornecedores-coluna-direita .fornecedor-pedido-cabecalho .admin-encomenda-linha.fornecedor-pedido-linha-cabecalho,
+.pagina-fornecedores-unificada .fornecedores-coluna-direita .fornecedor-pedido-cabecalho .admin-encomenda-linha.fornecedor-pedido-linha-cabecalho.com-destino-selecao {
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas:
+        "codigo imprimir"
+        "data imprimir"
+        "fornecedor imprimir"
+        "estado imprimir"
+        "resumo imprimir"
+        "destino destino";
+    column-gap: 12px;
+}
+
+#fornecedores-aplicacao .fornecedores-coluna-direita .fornecedor-pedido-imprimir-rapido {
+    grid-area: imprimir;
+    align-self: center;
+    justify-self: end;
+}
+
+.pagina-fornecedores-unificada .fornecedores-coluna-direita .fornecedor-pedido-cabecalho .admin-encomenda-seta {
+    top: 50%;
+    bottom: auto;
+    transform: translateY(-50%);
+}
+
+.pagina-fornecedores-unificada .fornecedores-coluna-direita .admin-encomenda-card.aberta .fornecedor-pedido-cabecalho .admin-encomenda-seta {
+    transform: translateY(-50%) rotate(180deg);
+}
