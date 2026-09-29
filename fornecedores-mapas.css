@@ -4200,3 +4200,23 @@ html:not(.admin-light-mode) #fornecedores-aplicacao .fornecedor-controles-unific
     color: #000 !important;
     box-shadow: none !important;
 }
+
+/* Linha da pesquisa com a mesma altura dos filtros do topo */
+#fornecedores-aplicacao .fornecedor-resumo-encomenda-centro #fornecedor-pesquisa,
+#fornecedores-aplicacao .fornecedor-resumo-encomenda-centro .fornecedor-acoes-encomenda-resumo .wallapop-botao,
+#fornecedores-aplicacao .fornecedor-resumo-encomenda-centro #fornecedor-total-figuras-encomenda {
+    height: 36px !important;
+    min-height: 36px !important;
+    max-height: 36px !important;
+    border-radius: 5px !important;
+    box-sizing: border-box !important;
+}
+
+#fornecedores-aplicacao .fornecedor-resumo-encomenda-centro .fornecedor-acoes-encomenda-resumo .wallapop-botao {
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    line-height: 1 !important;
+}
