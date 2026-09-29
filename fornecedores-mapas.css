@@ -4474,3 +4474,83 @@ html.admin-light-mode #fornecedores-aplicacao .fornecedor-tabela-encomenda .mapa
 #fornecedores-aplicacao .fornecedor-resultados .fornecedor-tabela-encomenda tbody tr.mapa-linha-quantidade-ativa.fornecedor-linha-com-quantidade > td:first-child {
     box-shadow: inset 3px 0 0 var(--cor-acao-principal, #ffc107), inset 0 1px 0 #80612d, inset 0 -1px 0 #80612d !important;
 }
+
+/* ===== Telemovel: ficha do produto em ecra inteiro ===== */
+@media (max-width: 700px) {
+    body #mapas-produto-modal.mapas-produto-modal {
+        padding: 0 !important;
+        place-items: start stretch !important;
+    }
+
+    body #mapas-produto-modal .mapas-produto-modal-dialog {
+        width: 100% !important;
+        height: 100vh;
+        height: 100dvh;
+        max-height: 100vh !important;
+        max-height: 100dvh !important;
+        border: 0 !important;
+        border-radius: 0 !important;
+        box-shadow: none !important;
+    }
+
+    body #mapas-produto-modal .mapas-produto-modal-topo {
+        flex-wrap: wrap;
+        gap: 10px;
+        padding: calc(env(safe-area-inset-top, 0px) + 12px) 12px 12px;
+    }
+
+    body #mapas-produto-modal .mapas-produto-modal-topo h3 {
+        flex: 1 1 100%;
+        font-size: 20px;
+        line-height: 1.25;
+    }
+
+    body #mapas-produto-modal .mapas-produto-acoes-topo:not([hidden]) {
+        flex: 1 1 100%;
+        display: grid !important;
+        grid-template-columns: repeat(auto-fit, minmax(0, 1fr));
+        grid-auto-flow: column;
+        gap: 8px;
+        width: 100%;
+    }
+
+    body #mapas-produto-modal .mapas-produto-acoes-topo > button:not([hidden]) {
+        width: 100% !important;
+        min-width: 0 !important;
+    }
+
+    body #mapas-produto-modal .mapas-produto-form {
+        padding: 12px 12px calc(env(safe-area-inset-bottom, 0px) + 16px);
+        -webkit-overflow-scrolling: touch;
+        overscroll-behavior: contain;
+    }
+
+    body #mapas-produto-modal .mapas-produto-ficha-topo,
+    body #mapas-produto-modal .mapas-produto-ficha-secundaria {
+        grid-template-columns: minmax(0, 1fr) !important;
+        grid-template-areas: none !important;
+    }
+
+    body #mapas-produto-modal .mapas-produto-ficha-topo > *,
+    body #mapas-produto-modal .mapas-produto-ficha-secundaria > * {
+        grid-column: 1 / -1 !important;
+        grid-area: auto !important;
+        min-width: 0 !important;
+        max-width: 100% !important;
+        width: 100% !important;
+        box-sizing: border-box;
+    }
+
+    body #mapas-produto-modal .mapas-produto-foto-principal {
+        margin: 0 auto !important;
+        justify-self: stretch;
+    }
+
+    body #mapas-produto-modal .mapas-produto-foto-principal img {
+        width: 100% !important;
+        max-width: 100% !important;
+        max-height: 55vh !important;
+        margin: 0 auto;
+        object-fit: contain;
+    }
+}
