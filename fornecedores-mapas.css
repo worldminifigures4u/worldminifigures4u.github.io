@@ -4220,3 +4220,23 @@ html:not(.admin-light-mode) #fornecedores-aplicacao .fornecedor-controles-unific
     justify-content: center !important;
     line-height: 1 !important;
 }
+
+/* Botao Imprimir dos pedidos igual aos restantes botoes (36px) */
+#fornecedores-aplicacao .fornecedor-pedido-imprimir-rapido {
+    --fp-botao-altura: 36px;
+    --fp-botao-raio: 5px;
+    height: 36px !important;
+    min-height: 36px !important;
+    max-height: 36px !important;
+    padding: 0 14px !important;
+    border-radius: 5px !important;
+    box-sizing: border-box !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    align-self: center;
+    font-size: 13px !important;
+    font-weight: 800 !important;
+    line-height: 1 !important;
+    white-space: nowrap;
+}
