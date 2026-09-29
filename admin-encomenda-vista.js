@@ -1784,6 +1784,90 @@ window.AdminEncomendaVista = (function () {
         return "Não foi possível exportar: " + (error?.message || "erro desconhecido");
     }
 
+    // --- Exportacao sem escolha de pasta (telemovel): ficheiro .zip descarregado ---
+    const TABELA_CRC32_EXPORTACAO = (() => {
+        const tabela = new Uint32Array(256);
+        for (let n = 0; n < 256; n += 1) {
+            let c = n;
+            for (let k = 0; k < 8; k += 1) c = (c & 1) ? (0xEDB88320 ^ (c >>> 1)) : (c >>> 1);
+            tabela[n] = c >>> 0;
+        }
+        return tabela;
+    })();
+
+    function crc32Exportacao(bytes) {
+        let crc = 0xFFFFFFFF;
+        for (let i = 0; i < bytes.length; i += 1) crc = TABELA_CRC32_EXPORTACAO[(crc ^ bytes[i]) & 0xFF] ^ (crc >>> 8);
+        return (crc ^ 0xFFFFFFFF) >>> 0;
+    }
+
+    async function bytesFicheiroExportacao(conteudo) {
+        if (conteudo instanceof Blob) return new Uint8Array(await conteudo.arrayBuffer());
+        return new TextEncoder().encode(String(conteudo ?? ""));
+    }
+
+    async function criarZipExportacao(nomePasta, ficheiros) {
+        const codificador = new TextEncoder();
+        const partes = [];
+        const central = [];
+        let deslocamento = 0;
+        const agora = new Date();
+        const horaDos = (agora.getHours() << 11) | (agora.getMinutes() << 5) | Math.floor(agora.getSeconds() / 2);
+        const dataDos = ((agora.getFullYear() - 1980) << 9) | ((agora.getMonth() + 1) << 5) | agora.getDate();
+        for (const ficheiro of ficheiros) {
+            const nome = codificador.encode(`${nomePasta}/${ficheiro.nome}`);
+            const dados = await bytesFicheiroExportacao(ficheiro.conteudo);
+            const crc = crc32Exportacao(dados);
+            const local = new DataView(new ArrayBuffer(30));
+            local.setUint32(0, 0x04034b50, true);
+            local.setUint16(4, 20, true);
+            local.setUint16(6, 0x0800, true);
+            local.setUint16(8, 0, true);
+            local.setUint16(10, horaDos, true);
+            local.setUint16(12, dataDos, true);
+            local.setUint32(14, crc, true);
+            local.setUint32(18, dados.length, true);
+            local.setUint32(22, dados.length, true);
+            local.setUint16(26, nome.length, true);
+            local.setUint16(28, 0, true);
+            partes.push(new Uint8Array(local.buffer), nome, dados);
+            const registo = new DataView(new ArrayBuffer(46));
+            registo.setUint32(0, 0x02014b50, true);
+            registo.setUint16(4, 20, true);
+            registo.setUint16(6, 20, true);
+            registo.setUint16(8, 0x0800, true);
+            registo.setUint16(10, 0, true);
+            registo.setUint16(12, horaDos, true);
+            registo.setUint16(14, dataDos, true);
+            registo.setUint32(16, crc, true);
+            registo.setUint32(20, dados.length, true);
+            registo.setUint32(24, dados.length, true);
+            registo.setUint16(28, nome.length, true);
+            registo.setUint32(42, deslocamento, true);
+            central.push(new Uint8Array(registo.buffer), nome);
+            deslocamento += 30 + nome.length + dados.length;
+        }
+        const tamanhoCentral = central.reduce((total, parte) => total + parte.length, 0);
+        const fim = new DataView(new ArrayBuffer(22));
+        fim.setUint32(0, 0x06054b50, true);
+        fim.setUint16(8, ficheiros.length, true);
+        fim.setUint16(10, ficheiros.length, true);
+        fim.setUint32(12, tamanhoCentral, true);
+        fim.setUint32(16, deslocamento, true);
+        return new Blob([...partes, ...central, new Uint8Array(fim.buffer)], { type: "application/zip" });
+    }
+
+    function descarregarBlobExportacao(blob, nome) {
+        const url = URL.createObjectURL(blob);
+        const ligacao = document.createElement("a");
+        ligacao.href = url;
+        ligacao.download = nome;
+        document.body.appendChild(ligacao);
+        ligacao.click();
+        ligacao.remove();
+        setTimeout(() => URL.revokeObjectURL(url), 60000);
+    }
+
     async function exportarEncomendaDireta(encomenda, atualizarStatus = () => {}) {
         const codigo = String(encomenda?.codigo_encomenda || encomenda?.id || "").trim();
         if (!codigo) throw new Error("A encomenda não tem código para exportar.");
@@ -1792,8 +1876,12 @@ window.AdminEncomendaVista = (function () {
         const nomePasta = limparNomePastaExportacao(comporNomePastaExportacao(encomenda));
         if (!nomePasta) throw new Error("Não foi possível criar um nome válido para a pasta.");
 
-        atualizarStatus("Escolhe a pasta", "processando");
-        const pastaBase = await obterPastaBaseExportacao();
+        const usarPasta = typeof window.showDirectoryPicker === "function";
+        let pastaBase = null;
+        if (usarPasta) {
+            atualizarStatus("Escolhe a pasta", "processando");
+            pastaBase = await obterPastaBaseExportacao();
+        }
         atualizarStatus("A preparar ficheiros", "processando");
         await carregarImagensParaEncomendas([encomenda]).catch(error => {
             console.warn("Nao foi possivel carregar todas as imagens para exportacao.", error);
@@ -1821,6 +1909,13 @@ window.AdminEncomendaVista = (function () {
             ficheiros.push(...await criarFicheirosImagemExportacao(itens));
         }
 
+        if (!usarPasta) {
+            atualizarStatus("A criar o ficheiro .zip...", "processando");
+            descarregarBlobExportacao(await criarZipExportacao(nomePasta, ficheiros), `${nomePasta}.zip`);
+            atualizarStatus(`Descarregado: ${nomePasta}.zip`);
+            hooks.definirStatus(`Encomenda ${codigo} exportada para "${nomePasta}.zip".`);
+            return true;
+        }
         atualizarStatus("A gravar ficheiros", "processando");
         const pastaEncomenda = await pastaBase.getDirectoryHandle(nomePasta, { create: true });
         for (const ficheiro of ficheiros) {

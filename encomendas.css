@@ -2287,3 +2287,70 @@ html:not(.admin-light-mode) body.cabecalho-com-admin :is(#admin-encomenda-modal,
     color: var(--cor-acao-principal, #ffc107) !important;
     outline: none;
 }
+
+/* ===== Telemovel: linhas de produto da encomenda sem sobreposicao =====
+   foto | qtd | nome
+   foto | qtd | preco | penultimo | ultimo */
+@media (max-width: 600px) {
+    body .admin-encomenda-produtos-lista .admin-encomenda-produto {
+        grid-template-columns: 52px 30px minmax(0, 1fr) auto auto !important;
+        grid-template-rows: auto auto;
+        column-gap: 8px !important;
+        row-gap: 4px !important;
+        align-items: center;
+    }
+
+    body .admin-encomenda-produtos-lista .admin-encomenda-produto > :first-child {
+        grid-column: 1;
+        grid-row: 1 / span 2;
+    }
+
+    body .admin-encomenda-produtos-lista .admin-encomenda-produto > .admin-encomenda-produto-quantidade {
+        grid-column: 2;
+        grid-row: 1 / span 2;
+        font-size: 14px;
+    }
+
+    body .admin-encomenda-produtos-lista .admin-encomenda-produto > .admin-encomenda-produto-nome {
+        grid-column: 3 / -1;
+        grid-row: 1;
+        min-width: 0;
+        overflow-wrap: anywhere;
+    }
+
+    body .admin-encomenda-produtos-lista .admin-encomenda-produto > .admin-encomenda-produto-referencia,
+    body .admin-encomenda-produtos-lista .admin-encomenda-produto > .admin-encomenda-produto-tema,
+    body .admin-encomenda-produtos-lista .admin-encomenda-produto > .admin-encomenda-produto-subtema,
+    body .admin-encomenda-produtos-lista .admin-encomenda-produto > .admin-encomenda-produto-observacoes.sem-nota {
+        display: none !important;
+    }
+
+    body .admin-encomenda-produtos-lista .admin-encomenda-produto > .admin-encomenda-produto-observacoes.com-nota {
+        grid-column: 3 / -1;
+        grid-row: 3;
+    }
+
+    body .admin-encomenda-produtos-lista .admin-encomenda-produto > .admin-encomenda-produto-preco {
+        grid-column: 3;
+        grid-row: 2;
+        text-align: left;
+    }
+
+    body .admin-encomenda-produtos-lista .admin-encomenda-produto > .admin-encomenda-produto-marcacao-penultimo {
+        grid-column: 4;
+        grid-row: 2;
+    }
+
+    body .admin-encomenda-produtos-lista .admin-encomenda-produto > .admin-encomenda-produto-marcacao-ultimo {
+        grid-column: 5;
+        grid-row: 2;
+    }
+}
+
+@media (max-width: 600px) {
+    body .admin-encomenda-produtos-lista .admin-encomenda-produto > .admin-encomenda-produto-nome-botao {
+        width: auto !important;
+        white-space: normal !important;
+        text-align: left;
+    }
+}

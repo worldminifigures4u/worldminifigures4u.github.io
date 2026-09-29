@@ -50,3 +50,27 @@ html.admin-light-mode .fp-aviso-flutuante { background: #fff; color: #182231; bo
 html.admin-light-mode .fp-aviso-flutuante.sucesso { border-left-color: #1f9d45; }
 html.admin-light-mode .fp-aviso-flutuante.erro { border-left-color: #c53030; }
 html.admin-light-mode .fp-aviso-flutuante-fechar { color: #182231; border-color: #c3ccd8; }
+
+/* Telemovel: aviso compacto, largura do ecra, colado ao topo */
+@media (max-width: 700px) {
+    .fp-aviso-flutuante {
+        top: calc(env(safe-area-inset-top, 0px) + 8px);
+        left: 8px;
+        right: 8px;
+        max-width: none;
+        padding: 8px 10px;
+        gap: 8px;
+        font-size: 13px;
+        transform: translateY(-8px);
+    }
+
+    .fp-aviso-flutuante.visivel {
+        transform: translateY(0);
+    }
+
+    .fp-aviso-flutuante-fechar {
+        width: 24px;
+        height: 24px;
+        font-size: 14px;
+    }
+}
