@@ -5053,7 +5053,7 @@ function renderizarPedidosFornecedores() {
         });
         imprimirRapido.addEventListener("keydown", evento => evento.stopPropagation());
         linha.appendChild(imprimirRapido);
-        cabecalho.append(linha, criarElementoPedidoFornecedor("span", "admin-encomenda-seta", "▾"));
+        cabecalho.appendChild(linha);
 
         card.appendChild(cabecalho);
         caixa.appendChild(card);

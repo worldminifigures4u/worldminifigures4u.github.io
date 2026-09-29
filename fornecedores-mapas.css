@@ -4261,12 +4261,7 @@ html:not(.admin-light-mode) #fornecedores-aplicacao .fornecedor-controles-unific
     justify-self: end;
 }
 
-.pagina-fornecedores-unificada .fornecedores-coluna-direita .fornecedor-pedido-cabecalho .admin-encomenda-seta {
-    top: 50%;
-    bottom: auto;
-    transform: translateY(-50%);
-}
-
-.pagina-fornecedores-unificada .fornecedores-coluna-direita .admin-encomenda-card.aberta .fornecedor-pedido-cabecalho .admin-encomenda-seta {
-    transform: translateY(-50%) rotate(180deg);
+/* Cartoes de pedidos sem seta: menos espaco a direita */
+.pagina-fornecedores-unificada .fornecedores-coluna-direita .fornecedor-pedido-cabecalho {
+    padding-right: 10px;
 }
