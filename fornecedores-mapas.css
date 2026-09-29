@@ -4568,3 +4568,44 @@ html.admin-light-mode #fornecedores-aplicacao .fornecedor-tabela-encomenda .mapa
         object-fit: contain;
     }
 }
+
+/* Telemovel: impedir que a foto alargue a ficha para la do ecra (Safari) */
+@media (max-width: 700px) {
+    body #mapas-produto-modal .mapas-produto-form,
+    body #mapas-produto-modal .mapas-produto-form-grid,
+    body #mapas-produto-modal .mapas-produto-ficha-topo {
+        width: 100% !important;
+        max-width: 100% !important;
+        min-width: 0 !important;
+        box-sizing: border-box;
+    }
+
+    body #mapas-produto-modal .mapas-produto-form {
+        overflow-x: hidden !important;
+    }
+
+    body #mapas-produto-modal .mapas-produto-form-grid {
+        grid-template-columns: minmax(0, 1fr) !important;
+    }
+
+    body #mapas-produto-modal .mapas-produto-form-grid > * {
+        min-width: 0 !important;
+        max-width: 100% !important;
+    }
+
+    body #mapas-produto-modal .mapas-produto-foto-principal,
+    body #mapas-produto-modal .mapas-produto-foto-botao {
+        min-width: 0 !important;
+        max-width: 100% !important;
+        contain: inline-size;
+    }
+}
+
+@media (max-width: 700px) {
+    body #mapas-produto-modal fieldset {
+        min-width: 0 !important;
+        min-inline-size: 0 !important;
+        max-width: 100% !important;
+        box-sizing: border-box;
+    }
+}
