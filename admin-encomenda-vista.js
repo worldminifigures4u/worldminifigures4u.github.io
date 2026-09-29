@@ -1069,7 +1069,6 @@ window.AdminEncomendaVista = (function () {
         // Telemovel: a caixa de notas fica com a altura do texto
         const ajustarAlturaNotasTelemovel = () => {
             if (!window.matchMedia || !window.matchMedia("(max-width: 700px)").matches) {
-                notas.style.height = "";
                 return;
             }
             notas.style.height = "auto";
@@ -2589,6 +2588,17 @@ window.AdminEncomendaVista = (function () {
         if (!grupoInfo || !textarea) return;
 
         const ajustar = () => {
+            // Telemovel: as notas ficam com a altura do proprio texto
+            if (window.matchMedia && window.matchMedia("(max-width: 700px)").matches) {
+                textarea.style.minHeight = "";
+                textarea.style.height = "auto";
+                textarea.style.height = `${textarea.scrollHeight + 2}px`;
+                if (colunaAcoes) {
+                    colunaAcoes.style.height = "";
+                    colunaAcoes.style.maxHeight = "";
+                }
+                return;
+            }
             const altura = Math.round(grupoInfo.offsetHeight);
             if (altura > 0) {
                 textarea.style.height = `${altura}px`;
