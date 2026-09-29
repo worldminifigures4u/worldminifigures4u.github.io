@@ -4290,3 +4290,16 @@ html:not(.admin-light-mode) #fornecedores-aplicacao .fornecedor-controles-unific
     padding-right: 0 !important;
     justify-content: center !important;
 }
+
+/* Imprimir dos pedidos: contorno cinzento, amarelo apenas em hover (como Limpar/Juntar/Criar) */
+html:not(.admin-light-mode) #fornecedores-aplicacao .fornecedor-pedido-imprimir-rapido {
+    border: 1px solid #444 !important;
+    background: transparent !important;
+    color: #fff !important;
+}
+
+html:not(.admin-light-mode) #fornecedores-aplicacao .fornecedor-pedido-imprimir-rapido:is(:hover, :focus-visible) {
+    border-color: var(--cor-acao-principal, #ffc107) !important;
+    color: var(--cor-acao-principal, #ffc107) !important;
+    outline: none;
+}
