@@ -765,3 +765,64 @@
 body.clientes-encomenda-modal-aberto{
     overflow:hidden;
 }
+
+
+/* ===== Ficha de cliente (modal Plataformas/Encomendas): dados sem caixas, notas ajustadas ===== */
+.admin-cliente-dialogo .clientes-ficha-consulta-principal{
+    grid-template-columns:minmax(0, 1fr);
+    align-items:start;
+}
+.admin-cliente-dialogo .clientes-ficha-consulta .clientes-ficha-consulta-dados .admin-cliente-grelha{
+    grid-template-columns:repeat(2, minmax(0, 1fr));
+    gap:14px 24px;
+}
+.admin-cliente-dialogo .clientes-ficha-consulta-dados .admin-cliente-campo{
+    padding:0;
+    border:0;
+    border-radius:0;
+    background:transparent;
+    gap:4px;
+}
+.admin-cliente-dialogo .clientes-ficha-consulta .clientes-ficha-consulta-dados .admin-cliente-campo-morada-bloco{
+    grid-column:1 / -1;
+}
+.admin-cliente-dialogo .clientes-ficha-consulta-notas{
+    display:block;
+    min-height:0;
+    align-self:start;
+}
+.admin-cliente-dialogo .clientes-ficha-consulta-notas .admin-cliente-notas-titulo{
+    margin:0 0 8px;
+}
+.admin-cliente-dialogo .clientes-ficha-consulta-notas.admin-cliente-notas-vazias .admin-cliente-notas-titulo{
+    margin:0;
+    color:#777;
+}
+.admin-cliente-dialogo .clientes-ficha-consulta-notas .admin-cliente-notas-consulta{
+    min-height:0;
+    height:auto;
+    flex:none;
+    margin-bottom:0;
+}
+html:not(.admin-light-mode) body #admin-cliente-modal .admin-cliente-fechar{
+    border:1px solid #444 !important;
+    background:transparent !important;
+    color:#fff !important;
+}
+html:not(.admin-light-mode) body #admin-cliente-modal .admin-cliente-fechar:is(:hover, :focus-visible){
+    border-color:var(--cor-acao-principal, #ffc107) !important;
+    color:var(--cor-acao-principal, #ffc107) !important;
+    outline:none;
+}
+@media (max-width:700px){
+    .admin-cliente-dialogo .clientes-ficha-consulta .clientes-ficha-consulta-dados .admin-cliente-grelha{
+        gap:12px 16px;
+    }
+    .admin-cliente-dialogo .clientes-ficha-consulta .clientes-ficha-consulta-dados .admin-cliente-campo-ver-email{
+        grid-column:1 / -1;
+        order:6;
+    }
+    .admin-cliente-dialogo .clientes-ficha-consulta .clientes-ficha-consulta-dados .admin-cliente-campo-morada-bloco{
+        order:5;
+    }
+}

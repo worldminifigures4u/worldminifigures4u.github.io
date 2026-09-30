@@ -275,7 +275,7 @@ function garantirFichaClienteEncomendas() {
         return Promise.resolve();
     }
     if (!promessaFichaClienteEncomendas) {
-        promessaFichaClienteEncomendas = carregarScriptEncomendasAdmin('admin-ficha-cliente.js?v=20260928-editar-cliente-site')
+        promessaFichaClienteEncomendas = carregarScriptEncomendasAdmin('admin-ficha-cliente.js?v=20260930-ficha-sem-caixas')
             .then(() => configurarFichaClienteEncomendas());
     }
     return promessaFichaClienteEncomendas;

@@ -142,8 +142,8 @@
         }));
     }
 
-    function criarCampoFichaCliente(rotulo, valor) {
-        const linha = criarElemento('div', 'admin-cliente-campo');
+    function criarCampoFichaCliente(rotulo, valor, classeExtra = '') {
+        const linha = criarElemento('div', classeExtra ? `admin-cliente-campo ${classeExtra}` : 'admin-cliente-campo');
         linha.append(
             criarElemento('strong', '', rotulo),
             criarElemento('span', '', valor || '\u2014')
@@ -590,10 +590,10 @@
         if (cabecalhoDados.childNodes.length) dadosPessoais.appendChild(cabecalhoDados);
         const grelha = criarElemento('div', 'admin-cliente-grelha');
         grelha.append(
-            criarCampoFichaCliente('Nome de utilizador', obterNomeUtilizadorCliente(cliente)),
-            criarCampoFichaCliente('Nome', obterNomePessoaCliente(cliente)),
-            criarCampoFichaCliente('E-mail', cliente.email),
-            criarCampoFichaCliente('Telem\u00f3vel', cliente.telefone),
+            criarCampoFichaCliente('Nome de utilizador', obterNomeUtilizadorCliente(cliente), 'admin-cliente-campo-ver-utilizador'),
+            criarCampoFichaCliente('Nome', obterNomePessoaCliente(cliente), 'admin-cliente-campo-ver-nome'),
+            criarCampoFichaCliente('E-mail', cliente.email, 'admin-cliente-campo-ver-email'),
+            criarCampoFichaCliente('Telem\u00f3vel', cliente.telefone, 'admin-cliente-campo-ver-telefone'),
             criarCampoFichaMorada(cliente)
         );
         dadosPessoais.appendChild(grelha);
@@ -664,11 +664,13 @@
         const avisosSecao = criarSecaoAvisosStockClienteModal(String(cliente.id || dados.cliente_id || '').trim());
 
         const notasSecao = criarElemento('section', 'admin-cliente-secao clientes-ficha-consulta-notas');
-        notasSecao.appendChild(criarElemento(
-            'div',
-            'admin-cliente-notas admin-cliente-notas-consulta',
-            String(cliente.notas || '').trim() || 'Sem notas internas.'
-        ));
+        const notasTexto = String(cliente.notas || '').trim();
+        notasSecao.appendChild(criarElemento('h3', 'admin-cliente-notas-titulo', 'Notas internas'));
+        if (notasTexto) {
+            notasSecao.appendChild(criarElemento('div', 'admin-cliente-notas admin-cliente-notas-consulta', notasTexto));
+        } else {
+            notasSecao.classList.add('admin-cliente-notas-vazias');
+        }
 
         colunaEsquerda.append(indicadores, dadosPessoais);
         linhaPrincipal.append(colunaEsquerda, notasSecao);

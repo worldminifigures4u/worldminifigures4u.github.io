@@ -23,7 +23,7 @@
                 return carregarScript('paises-cliente.js?v=20260731-wallapop-es');
             })
             .then(function () {
-                return carregarScript('encomendas.js?v=20260929-blocos-vazios');
+                return carregarScript('encomendas.js?v=20260930-ficha-sem-caixas');
             });
 
         return promessaEncomendasJs;
