@@ -82,6 +82,8 @@
         const ficaNaPagina = tipo === "info" || (modo === "sucesso" && (tipo !== "sucesso" || longo));
         if (ficaNaPagina) {
             mostrarNaPagina(origem, true);
+            // A mensagem na pagina substitui o aviso "em curso" (ex.: "A pesquisar..." -> "3 clientes encontrados")
+            if (aviso && !aviso.classList.contains("erro")) esconder();
             return;
         }
         mostrarNaPagina(origem, false);
