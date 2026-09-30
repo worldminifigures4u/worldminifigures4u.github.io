@@ -2405,7 +2405,7 @@ html:not(.admin-light-mode) body.cabecalho-com-admin :is(#admin-encomenda-modal,
     flex: 0 0 auto !important;
     width: auto !important;
     min-width: 0 !important;
-    gap: 8px !important;
+    gap: 6px !important;
 }
 
 .admin-encomenda-modal-acoes .admin-encomenda-modal-estado .admin-encomenda-estado-caixa {
@@ -2422,12 +2422,18 @@ body .admin-encomenda-estado-avancar {
     margin: 0 !important;
     height: var(--admin-encomenda-modal-controlo-altura, 36px);
     min-height: 0 !important;
-    padding: 0 12px !important;
+    width: var(--admin-encomenda-modal-controlo-altura, 36px) !important;
+    min-width: var(--admin-encomenda-modal-controlo-altura, 36px) !important;
+    max-width: var(--admin-encomenda-modal-controlo-altura, 36px) !important;
+    padding: 0 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
     border: 1px solid #444 !important;
     border-radius: 5px !important;
     background: transparent !important;
     color: #fff !important;
-    font-size: 13px !important;
+    font-size: 18px !important;
     font-weight: 800 !important;
     line-height: 1 !important;
     white-space: nowrap;

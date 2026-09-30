@@ -3024,9 +3024,10 @@ window.AdminEncomendaVista = (function () {
         const indiceFluxoAtual = FLUXO_AVANCO_ESTADO.indexOf(estadoAtual);
         const proximoEstado = indiceFluxoAtual >= 0 ? FLUXO_AVANCO_ESTADO[indiceFluxoAtual + 1] : null;
         if (proximoEstado) {
-            const avancar = criarElemento("button", "wallapop-botao admin-encomenda-estado-avancar", `→ ${proximoEstado}`);
+            const avancar = criarElemento("button", "wallapop-botao admin-encomenda-estado-avancar", "→");
             avancar.type = "button";
-            avancar.title = `Avançar para «${proximoEstado}»`;
+            avancar.title = `Avançar para ${proximoEstado}`;
+            avancar.setAttribute("aria-label", `Avançar para ${proximoEstado}`);
             avancar.addEventListener("click", evento => {
                 evento.stopPropagation();
                 avancar.blur();
