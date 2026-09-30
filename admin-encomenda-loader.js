@@ -29,7 +29,7 @@
                     return carregarScript('morada-formato.js?v=20260713-morada-formatada');
                 })
                 .then(function () {
-                    return carregarScript('admin-encomenda-vista.js?v=20260929-notas-justas2');
+                    return carregarScript('admin-encomenda-vista.js?v=20260930-estado-seguro');
                 });
         }
         return promessaVista;

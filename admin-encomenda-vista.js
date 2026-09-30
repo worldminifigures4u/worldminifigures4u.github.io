@@ -2277,6 +2277,25 @@ window.AdminEncomendaVista = (function () {
             }
         }
 
+        // Recuar no fluxo (ex.: Pago -> A aguardar pagamento) pede confirmacao
+        const indiceAnteriorFluxo = ESTADOS_ENCOMENDA.indexOf(estadoAnterior);
+        const indiceNovoFluxo = ESTADOS_ENCOMENDA.indexOf(estado);
+        const recuaNoFluxo = !estadoRepostoNormalizado(estadoAnterior)
+            && !estadoRepostoNormalizado(estado)
+            && indiceAnteriorFluxo >= 0 && indiceNovoFluxo >= 0
+            && indiceNovoFluxo < indiceAnteriorFluxo;
+        if (recuaNoFluxo) {
+            const codigoRecuo = encomenda.codigo_encomenda || "";
+            const confirmouRecuo = await mostrarConfirmacaoSite(
+                `Mudar a encomenda ${codigoRecuo} de «${estadoAnterior}» para «${estado}»?`,
+                { titulo: "Voltar a um estado anterior", textoConfirmar: "Mudar", textoCancelar: "Cancelar" }
+            );
+            if (!confirmouRecuo) {
+                select.value = estadoAnterior;
+                return;
+            }
+        }
+
         if (estadoRepostoNormalizado(estadoAnterior) && !estadoRepostoNormalizado(estado)) {
             const codigo = encomenda.codigo_encomenda || "";
             let mensagemRecuperacao = `Recuperar a encomenda ${codigo} para o estado «${estado}»?`;
@@ -2993,6 +3012,8 @@ window.AdminEncomendaVista = (function () {
         select.addEventListener("keydown", evento => evento.stopPropagation());
         select.addEventListener("change", evento => {
             evento.stopPropagation();
+            // Tira o foco para teclas soltas (setas/letras) nao mudarem o estado sem querer
+            select.blur();
             if (select.value === select.dataset.estadoAtual) return;
             atualizarEstado(encomenda, select.value, select, opcoes);
         });
