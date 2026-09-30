@@ -1751,11 +1751,11 @@ window.AdminEncomendaVista = (function () {
         });
     }
 
-    async function criarFicheirosImagemExportacao(itens) {
+    async function criarFicheirosImagemExportacao(itens, { incluirTotal = true } = {}) {
         const paginas = dividirItensExportacao(itens);
         const totalPaginas = paginas.length;
         const totalFiguras = calcularTotalFigurasExportacao(itens);
-        const totalLote = calcularSubtotalExportacao(itens);
+        const totalLote = incluirTotal ? calcularSubtotalExportacao(itens) : null;
         const ficheiros = [];
         for (let indice = 0; indice < paginas.length; indice += 1) {
             const canvas = await gerarCanvasFolhaExportacao(paginas[indice], indice + 1, totalPaginas, totalFiguras, totalLote);
@@ -1917,7 +1917,7 @@ window.AdminEncomendaVista = (function () {
         if (notas) ficheiros.push({ nome: "notas encomenda.txt", conteudo: notas });
         if (origemExportaImagem(encomenda)) {
             atualizarStatus("A gerar imagens", "processando");
-            ficheiros.push(...await criarFicheirosImagemExportacao(itens));
+            ficheiros.push(...await criarFicheirosImagemExportacao(itens, { incluirTotal: origemEncomenda(encomenda) !== "olx" }));
         }
 
         if (!usarPasta) {
