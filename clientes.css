@@ -938,3 +938,45 @@ body.clientes-encomenda-modal-aberto{
     color:#ff8a80;
     text-transform:uppercase;
 }
+
+/* ===== Telemovel: ficha do cliente mais compacta ===== */
+@media (max-width: 700px) {
+    /* Encomendas | Total comprado | Ultima compra numa linha */
+    body .clientes-ficha .clientes-resumo-grelha {
+        grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+        gap: 8px !important;
+    }
+
+    body .clientes-ficha .clientes-resumo-grelha .admin-cliente-campo {
+        padding: 8px !important;
+        gap: 3px !important;
+    }
+
+    body .clientes-ficha .clientes-resumo-grelha .admin-cliente-campo strong {
+        font-size: 11px !important;
+    }
+
+    body .clientes-ficha .clientes-resumo-grelha .admin-cliente-campo span {
+        font-size: 14px !important;
+        font-weight: 700;
+    }
+
+    /* Dados do cliente em duas colunas, sem caixa em cada campo */
+    body .clientes-ficha .clientes-ficha-consulta .admin-cliente-grelha {
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+        column-gap: 14px !important;
+        row-gap: 12px !important;
+    }
+
+    body .clientes-ficha .clientes-ficha-consulta .admin-cliente-grelha > .admin-cliente-campo {
+        padding: 0 !important;
+        border: 0 !important;
+        background: transparent !important;
+        gap: 3px !important;
+    }
+
+    body .clientes-ficha .clientes-ficha-consulta .admin-cliente-grelha > .admin-cliente-campo-nome-pessoa { order: 1; grid-column: 1 !important; }
+    body .clientes-ficha .clientes-ficha-consulta .admin-cliente-grelha > .admin-cliente-campo-telefone { order: 2; grid-column: 2 !important; }
+    body .clientes-ficha .clientes-ficha-consulta .admin-cliente-grelha > .admin-cliente-campo-morada-bloco { order: 3; grid-column: 1 / -1 !important; }
+    body .clientes-ficha .clientes-ficha-consulta .admin-cliente-grelha > .admin-cliente-campo-email { order: 4; grid-column: 1 / -1 !important; }
+}
