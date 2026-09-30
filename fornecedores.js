@@ -110,7 +110,7 @@ function garantirFornecedoresProdutoModal() {
 function garantirFornecedoresEdicaoPedido() {
     if (window.FornecedoresEdicaoPedido) return Promise.resolve();
     if (!__fornecedoresEdicaoPromessa) {
-        __fornecedoresEdicaoPromessa = carregarScriptAdmin("fornecedores-edicao-pedido.js?v=20260928-total-usd-manual");
+        __fornecedoresEdicaoPromessa = carregarScriptAdmin("fornecedores-edicao-pedido.js?v=20260930-dialogo-fechar");
     }
     return __fornecedoresEdicaoPromessa;
 }
@@ -118,7 +118,7 @@ function garantirFornecedoresEdicaoPedido() {
 function garantirFornecedoresPrintReceive() {
     if (window.FornecedoresPrintReceive) return Promise.resolve();
     if (!__fornecedoresPrintPromessa) {
-        __fornecedoresPrintPromessa = carregarScriptAdmin("fornecedores-print-receive.js?v=20260917-fechar-receber-stock");
+        __fornecedoresPrintPromessa = carregarScriptAdmin("fornecedores-print-receive.js?v=20260930-dialogo-fechar");
     }
     return __fornecedoresPrintPromessa;
 }

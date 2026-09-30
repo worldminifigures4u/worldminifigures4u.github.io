@@ -134,14 +134,6 @@ function abrirDialogoSite(opcoes = {}) {
             resolve(valor);
         };
 
-        if (opcoes.tipo !== 'alert') {
-            acoes.appendChild(criarBotaoDialogoSite(
-                opcoes.textoCancelar || 'Cancelar',
-                'fp-dialogo-site-botao fp-dialogo-site-botao-secundario',
-                () => fechar(opcoes.tipo === 'prompt' ? null : false)
-            ));
-        }
-
         const textoConfirmar = opcoes.textoConfirmar || 'OK';
         const classeConfirmar = /^gravar|^guardar/i.test(textoConfirmar)
             ? 'fp-dialogo-site-botao fp-dialogo-site-botao-principal fp-dialogo-site-botao-guardar'
@@ -151,6 +143,14 @@ function abrirDialogoSite(opcoes = {}) {
             classeConfirmar,
             () => fechar(opcoes.tipo === 'prompt' ? String(input?.value || '') : true)
         ));
+
+        if (opcoes.tipo !== 'alert') {
+            acoes.appendChild(criarBotaoDialogoSite(
+                opcoes.textoCancelar || 'Fechar',
+                'fp-dialogo-site-botao fp-dialogo-site-botao-secundario',
+                () => fechar(opcoes.tipo === 'prompt' ? null : false)
+            ));
+        }
 
         caixa.appendChild(acoes);
         modal.appendChild(caixa);
@@ -176,7 +176,7 @@ function mostrarConfirmacaoSite(mensagem, opcoes = {}) {
         mensagem,
         titulo: opcoes.titulo || 'Confirmar',
         textoConfirmar: opcoes.textoConfirmar || 'Confirmar',
-        textoCancelar: opcoes.textoCancelar || 'Cancelar'
+        textoCancelar: opcoes.textoCancelar || 'Fechar'
     });
 }
 
@@ -198,6 +198,6 @@ function pedirTextoSite(mensagem, valorInicial = '', opcoes = {}) {
         valorInicial,
         titulo: opcoes.titulo || 'Indicar valor',
         textoConfirmar: opcoes.textoConfirmar || 'Gravar',
-        textoCancelar: opcoes.textoCancelar || 'Cancelar'
+        textoCancelar: opcoes.textoCancelar || 'Fechar'
     });
 }

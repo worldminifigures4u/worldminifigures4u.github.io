@@ -397,7 +397,7 @@ window.AdminEncomendaVista = (function () {
             + detalhes
             + "\n\nConfirmas que queres recuperar mesmo assim? O stock pode ficar negativo.\n"
             + "Quando receberes a encomenda do fornecedor, o stock soma a esse valor (ex.: -1 + 5 = 4).",
-            { titulo: "Stock insuficiente", textoConfirmar: "Recuperar", textoCancelar: "Cancelar" }
+            { titulo: "Stock insuficiente", textoConfirmar: "Recuperar", textoCancelar: "Fechar" }
         );
     }
 
@@ -1031,7 +1031,7 @@ window.AdminEncomendaVista = (function () {
                         if (!(await mostrarConfirmacaoSite(`Eliminar o anexo "${nome.textContent}"?`, {
                             titulo: "Eliminar anexo",
                             textoConfirmar: "Eliminar",
-                            textoCancelar: "Cancelar"
+                            textoCancelar: "Fechar"
                         }))) return;
                         apagar.disabled = true;
                         const caminho = `${pastaAnexos(encomenda)}/${anexo.name}`;
@@ -1916,9 +1916,9 @@ window.AdminEncomendaVista = (function () {
             };
             const semTotal = criarBotao("Sem total", "fp-dialogo-site-botao fp-dialogo-site-botao-principal", false);
             acoes.append(
-                criarBotao("Cancelar", "fp-dialogo-site-botao fp-dialogo-site-botao-secundario", null),
+                semTotal,
                 criarBotao("Com total", "fp-dialogo-site-botao fp-dialogo-site-botao-secundario", true),
-                semTotal
+                criarBotao("Fechar", "fp-dialogo-site-botao fp-dialogo-site-botao-secundario", null)
             );
             caixa.append(titulo, mensagem, acoes);
             modal.appendChild(caixa);
@@ -2288,7 +2288,7 @@ window.AdminEncomendaVista = (function () {
             if (!(await mostrarConfirmacaoSite(`Emitir fatura-recibo Moloni para a encomenda ${codigo}?`, {
                 titulo: "Recibo Moloni",
                 textoConfirmar: "Emitir recibo",
-                textoCancelar: "Cancelar"
+                textoCancelar: "Fechar"
             }))) return;
             botao.disabled = true;
             hooks.definirStatus(`A emitir fatura-recibo Moloni para ${codigo}...`, "processando");
@@ -2344,7 +2344,7 @@ window.AdminEncomendaVista = (function () {
             const codigoRecuo = encomenda.codigo_encomenda || "";
             const confirmouRecuo = await mostrarConfirmacaoSite(
                 `Mudar a encomenda ${codigoRecuo} de «${estadoAnterior}» para «${estado}»?`,
-                { titulo: "Voltar a um estado anterior", textoConfirmar: "Mudar", textoCancelar: "Cancelar" }
+                { titulo: "Voltar a um estado anterior", textoConfirmar: "Mudar", textoCancelar: "Fechar" }
             );
             if (!confirmouRecuo) {
                 select.value = estadoAnterior;
@@ -2361,7 +2361,7 @@ window.AdminEncomendaVista = (function () {
             if (!(await mostrarConfirmacaoSite(mensagemRecuperacao, {
                 titulo: "Recuperar encomenda",
                 textoConfirmar: "Recuperar",
-                textoCancelar: "Cancelar"
+                textoCancelar: "Fechar"
             }))) {
                 select.value = estadoAnterior;
                 return;
@@ -2391,7 +2391,7 @@ window.AdminEncomendaVista = (function () {
             if (!(await mostrarConfirmacaoSite(`Marcar a encomenda ${codigo} (${origem}) como Pago?`, {
                 titulo: "Marcar como pago",
                 textoConfirmar: "Marcar pago",
-                textoCancelar: "Cancelar"
+                textoCancelar: "Fechar"
             }))) {
                 select.value = estadoAnterior;
                 return;
@@ -2605,7 +2605,7 @@ window.AdminEncomendaVista = (function () {
         if (!(await mostrarConfirmacaoSite(`Apagar definitivamente a encomenda ${codigo}? Esta ação não pode ser desfeita.`, {
             titulo: "Apagar encomenda",
             textoConfirmar: "Apagar",
-            textoCancelar: "Cancelar"
+            textoCancelar: "Fechar"
         }))) return;
 
         botao.disabled = true;

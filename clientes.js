@@ -979,12 +979,12 @@ async function apagarFichaCliente(dados, botao) {
     if (!(await mostrarConfirmacaoSite(`Apagar definitivamente a ficha de ${nome}?${avisoHistorico}`, {
         titulo: "Apagar cliente",
         textoConfirmar: "Continuar",
-        textoCancelar: "Cancelar"
+        textoCancelar: "Fechar"
     }))) return;
     if (!(await mostrarConfirmacaoSite(`Última confirmação: apagar definitivamente a ficha de ${nome}?\n\nEsta ação não pode ser anulada.`, {
         titulo: "Confirmação final",
         textoConfirmar: "Apagar",
-        textoCancelar: "Cancelar"
+        textoCancelar: "Fechar"
     }))) return;
 
     botao.disabled = true;

@@ -346,7 +346,7 @@ async function eliminarContaUtilizador(event) {
 
         const confirmou = await mostrarConfirmacaoSite(
             'Eliminar definitivamente a sua conta? Esta ação não pode ser anulada.',
-            { titulo: "Eliminar conta", textoConfirmar: "Eliminar", textoCancelar: "Cancelar" }
+            { titulo: "Eliminar conta", textoConfirmar: "Eliminar", textoCancelar: "Fechar" }
         );
         if (!confirmou) return;
 

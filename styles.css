@@ -1108,10 +1108,24 @@ input[type="number"]::-webkit-inner-spin-button{
     color: #fff;
 }
 
+.fp-dialogo-site-botao-secundario {
+    border-color: #444;
+    background: transparent;
+    color: #fff;
+}
+
 .fp-dialogo-site-botao:hover,
 .fp-dialogo-site-botao:focus-visible {
     filter: brightness(1.08);
     outline: none;
+}
+
+.fp-dialogo-site-botao-secundario:hover,
+.fp-dialogo-site-botao-secundario:focus-visible {
+    filter: none;
+    border-color: var(--cor-acao-principal, #ffc107);
+    background: transparent;
+    color: var(--cor-acao-principal, #ffc107);
 }
 
 .fp-dialogo-site-botao-guardar:hover,

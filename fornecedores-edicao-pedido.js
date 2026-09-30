@@ -706,7 +706,7 @@ async function aplicarListaFinalFornecedor() {
         if (!String(textoLista || "").trim() && totalAtual.aplicado) {
             if (!(await mostrarConfirmacaoSite(
                 `Aplicar o Total pago EUR aos preços da encomenda?\n\n${totalAtual.unidades} unidade(s) a receber serão recalculadas para preço compra em EUR.${obterResumoCustoRealListaAtualFornecedor(totalAtual.custoReal)}`,
-                { titulo: "Confirmar preço compra", textoConfirmar: "Aplicar", textoCancelar: "Cancelar" }
+                { titulo: "Confirmar preço compra", textoConfirmar: "Aplicar", textoCancelar: "Fechar" }
             ))) {
                 return;
             }
@@ -732,7 +732,7 @@ async function aplicarListaFinalFornecedor() {
 
     if (!(await mostrarConfirmacaoSite(
         `Aplicar esta lista atual à encomenda?\n\n${linhasImportadas} referência(s) lida(s), ${unidades} unidade(s) a receber${osImportadas ? ` e ${osImportadas} referência(s) OS` : ""}.\nA lista atual da encomenda será substituída e as referências que não vierem na lista ficam como Ignorado na lista.${obterResumoCustoRealListaAtualFornecedor(custoReal)}`,
-        { titulo: "Confirmar lista atual", textoConfirmar: "Aplicar", textoCancelar: "Cancelar" }
+        { titulo: "Confirmar lista atual", textoConfirmar: "Aplicar", textoCancelar: "Fechar" }
     ))) {
         return;
     }
@@ -1069,7 +1069,7 @@ async function aplicarListaFinalNaEdicaoFornecedor() {
         if (!String(texto || "").trim() && totalAtual.aplicado) {
             if (!(await mostrarConfirmacaoSite(
                 `Aplicar o Total pago EUR aos preços da encomenda?\n\n${totalAtual.unidades} unidade(s) a receber serão recalculadas para preço compra em EUR.${obterResumoCustoRealListaAtualFornecedor(totalAtual.custoReal)}`,
-                { titulo: "Confirmar preço compra", textoConfirmar: "Aplicar", textoCancelar: "Cancelar" }
+                { titulo: "Confirmar preço compra", textoConfirmar: "Aplicar", textoCancelar: "Fechar" }
             ))) {
                 return;
             }
@@ -1097,7 +1097,7 @@ async function aplicarListaFinalNaEdicaoFornecedor() {
 
     if (!(await mostrarConfirmacaoSite(
         `Aplicar esta lista atual à encomenda?\n\n${linhasImportadas} referência(s) lida(s), ${unidades} unidade(s) a receber${osImportadas ? ` e ${osImportadas} referência(s) OS` : ""}.\nA lista atual da encomenda será substituída e as referências que não vierem na lista ficam como Ignorado na lista.${obterResumoCustoRealListaAtualFornecedor(custoReal)}`,
-        { titulo: "Confirmar lista atual", textoConfirmar: "Aplicar", textoCancelar: "Cancelar" }
+        { titulo: "Confirmar lista atual", textoConfirmar: "Aplicar", textoCancelar: "Fechar" }
     ))) {
         return;
     }
@@ -1309,7 +1309,7 @@ async function aplicarListaOsNaEdicaoFornecedor() {
 
     if (!(await mostrarConfirmacaoSite(
         `Marcar ${aplicar.length} figura(s) como OS?\n\nEssas figuras vão sair do “a receber” e ficar marcadas como OS/Falta.${avisos.length ? "\n\nAtenção: " + avisos.join(" | ") : ""}`,
-        { titulo: "Confirmar lista OS", textoConfirmar: "Marcar OS", textoCancelar: "Cancelar" }
+        { titulo: "Confirmar lista OS", textoConfirmar: "Marcar OS", textoCancelar: "Fechar" }
     ))) {
         return;
     }
@@ -1390,7 +1390,7 @@ async function aplicarListaExNaEdicaoFornecedor() {
 
     if (!(await mostrarConfirmacaoSite(
         `Marcar ${aplicar.length} figura(s) como EX?\n\nEssas figuras vão sair do “a receber” sem criar OS/Falta.${avisos.length ? "\n\nAtenção: " + avisos.join(" | ") : ""}`,
-        { titulo: "Confirmar lista EX", textoConfirmar: "Marcar EX", textoCancelar: "Cancelar" }
+        { titulo: "Confirmar lista EX", textoConfirmar: "Marcar EX", textoCancelar: "Fechar" }
     ))) {
         return;
     }

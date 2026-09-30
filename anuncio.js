@@ -430,7 +430,7 @@ async function registarEncomendaWallapop() {
     }, 0);
     const confirmado = await mostrarConfirmacaoSite(
         `Registar a encomenda Wallapop de ${nomeCliente} por ${formatarEuroWallapop(total)} € e descontar o stock?`,
-        { titulo: "Registar encomenda", textoConfirmar: "Registar", textoCancelar: "Cancelar" }
+        { titulo: "Registar encomenda", textoConfirmar: "Registar", textoCancelar: "Fechar" }
     );
     if (!confirmado) return;
 
@@ -472,7 +472,7 @@ async function limparListaWallapop() {
     if (!(await mostrarConfirmacaoSite('Limpar todos os produtos desta imagem?', {
         titulo: "Limpar lista",
         textoConfirmar: "Limpar",
-        textoCancelar: "Cancelar"
+        textoCancelar: "Fechar"
     }))) return;
     wallapopItens = [];
     guardarItensWallapop();

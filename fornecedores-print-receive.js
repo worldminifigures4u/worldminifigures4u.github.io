@@ -336,7 +336,7 @@ async function receberPedidoFornecedor(id) {
     }
     const confirmouRececao = await mostrarConfirmacaoSite(
         `Atualizar stock de ${rececoes.length} produto(s) da encomenda ${obterTextoCodigoPedidoFornecedor(pedido)}?`,
-        { titulo: "Receber stock", textoConfirmar: "Atualizar", textoCancelar: "Cancelar" }
+        { titulo: "Receber stock", textoConfirmar: "Atualizar", textoCancelar: "Fechar" }
     );
     if (!confirmouRececao) return;
 
