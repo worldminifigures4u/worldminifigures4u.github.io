@@ -2399,3 +2399,53 @@ html:not(.admin-light-mode) body.cabecalho-com-admin :is(#admin-encomenda-modal,
         min-height: 0 !important;
     }
 }
+
+/* Botao "→ proximo estado" ao lado do seletor de estado */
+.admin-encomenda-modal-acoes .admin-encomenda-modal-estado:has(.admin-encomenda-estado-avancar) {
+    flex: 0 0 auto !important;
+    width: auto !important;
+    min-width: 0 !important;
+    gap: 8px !important;
+}
+
+.admin-encomenda-modal-acoes .admin-encomenda-modal-estado .admin-encomenda-estado-caixa {
+    flex: 0 0 220px;
+}
+
+body .admin-encomenda-estado-avancar {
+    flex: 0 0 auto;
+    height: var(--admin-encomenda-modal-controlo-altura, 36px);
+    min-height: 0 !important;
+    padding: 0 12px !important;
+    border: 1px solid #444 !important;
+    border-radius: 5px !important;
+    background: transparent !important;
+    color: #fff !important;
+    font-size: 13px !important;
+    font-weight: 800 !important;
+    line-height: 1 !important;
+    white-space: nowrap;
+    cursor: pointer;
+}
+
+body .admin-encomenda-estado-avancar:is(:hover, :focus-visible) {
+    border-color: var(--cor-acao-principal, #ffc107) !important;
+    color: var(--cor-acao-principal, #ffc107) !important;
+    outline: none;
+}
+
+html.admin-light-mode body .admin-encomenda-estado-avancar {
+    border-color: var(--fp-light-borda-forte, #c3ccd8) !important;
+    color: var(--fp-light-texto, #182231) !important;
+}
+
+@media (max-width: 700px) {
+    .admin-encomenda-modal-acoes .admin-encomenda-modal-estado:has(.admin-encomenda-estado-avancar) {
+        width: 100% !important;
+    }
+
+    .admin-encomenda-modal-acoes .admin-encomenda-modal-estado .admin-encomenda-estado-caixa {
+        flex: 1 1 auto;
+        min-width: 0;
+    }
+}

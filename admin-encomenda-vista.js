@@ -3019,6 +3019,22 @@ window.AdminEncomendaVista = (function () {
         });
         caixaEstado.appendChild(select);
         blocoEstado.appendChild(caixaEstado);
+        // Botao para avancar um passo no fluxo normal (ex.: Pago -> Em preparacao)
+        const FLUXO_AVANCO_ESTADO = ["A aguardar pagamento", "Pago", "Em preparação", "Enviado", "Concluído"];
+        const indiceFluxoAtual = FLUXO_AVANCO_ESTADO.indexOf(estadoAtual);
+        const proximoEstado = indiceFluxoAtual >= 0 ? FLUXO_AVANCO_ESTADO[indiceFluxoAtual + 1] : null;
+        if (proximoEstado) {
+            const avancar = criarElemento("button", "wallapop-botao admin-encomenda-estado-avancar", `→ ${proximoEstado}`);
+            avancar.type = "button";
+            avancar.title = `Avançar para «${proximoEstado}»`;
+            avancar.addEventListener("click", evento => {
+                evento.stopPropagation();
+                avancar.blur();
+                select.value = proximoEstado;
+                atualizarEstado(encomenda, proximoEstado, select, opcoes);
+            });
+            blocoEstado.appendChild(avancar);
+        }
 
         gestaoLinha.append(blocoEstado, gestaoEncomenda);
 
