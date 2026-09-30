@@ -1922,10 +1922,7 @@ window.AdminEncomendaVista = (function () {
             );
             caixa.append(titulo, mensagem, acoes);
             modal.appendChild(caixa);
-            modal.addEventListener("click", evento => {
-                evento.stopPropagation();
-                if (evento.target === modal) fechar(null);
-            });
+            modal.addEventListener("click", evento => evento.stopPropagation());
             modal.addEventListener("keydown", evento => {
                 if (evento.key === "Escape") {
                     evento.stopPropagation();
