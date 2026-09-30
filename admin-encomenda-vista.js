@@ -1879,7 +1879,66 @@ window.AdminEncomendaVista = (function () {
         setTimeout(() => URL.revokeObjectURL(url), 60000);
     }
 
-    async function exportarEncomendaDireta(encomenda, atualizarStatus = () => {}) {
+    function perguntarTotalFotoExportacao() {
+        return new Promise(resolve => {
+            document.getElementById("fp-dialogo-site")?.remove();
+            const modal = document.createElement("div");
+            modal.id = "fp-dialogo-site";
+            modal.className = "fp-dialogo-site";
+            modal.setAttribute("role", "dialog");
+            modal.setAttribute("aria-modal", "true");
+            modal.setAttribute("aria-labelledby", "fp-dialogo-site-titulo");
+            const caixa = document.createElement("div");
+            caixa.className = "fp-dialogo-site-caixa";
+            const titulo = document.createElement("h2");
+            titulo.id = "fp-dialogo-site-titulo";
+            titulo.textContent = "Exportar";
+            const mensagem = document.createElement("p");
+            mensagem.className = "fp-dialogo-site-mensagem";
+            mensagem.textContent = "Incluir o preço total na foto?";
+            const acoes = document.createElement("div");
+            acoes.className = "fp-dialogo-site-acoes";
+            const fechar = valor => {
+                modal.remove();
+                document.body.classList.remove("fp-dialogo-site-aberto");
+                resolve(valor);
+            };
+            const criarBotao = (texto, classe, valor) => {
+                const botao = document.createElement("button");
+                botao.type = "button";
+                botao.className = classe;
+                botao.textContent = texto;
+                botao.addEventListener("click", evento => {
+                    evento.stopPropagation();
+                    fechar(valor);
+                });
+                return botao;
+            };
+            const semTotal = criarBotao("Sem total", "fp-dialogo-site-botao fp-dialogo-site-botao-principal", false);
+            acoes.append(
+                criarBotao("Cancelar", "fp-dialogo-site-botao fp-dialogo-site-botao-secundario", null),
+                criarBotao("Com total", "fp-dialogo-site-botao fp-dialogo-site-botao-secundario", true),
+                semTotal
+            );
+            caixa.append(titulo, mensagem, acoes);
+            modal.appendChild(caixa);
+            modal.addEventListener("click", evento => {
+                evento.stopPropagation();
+                if (evento.target === modal) fechar(null);
+            });
+            modal.addEventListener("keydown", evento => {
+                if (evento.key === "Escape") {
+                    evento.stopPropagation();
+                    fechar(null);
+                }
+            });
+            document.body.appendChild(modal);
+            document.body.classList.add("fp-dialogo-site-aberto");
+            semTotal.focus();
+        });
+    }
+
+    async function exportarEncomendaDireta(encomenda, atualizarStatus = () => {}, opcoesExportacao = {}) {
         const codigo = String(encomenda?.codigo_encomenda || encomenda?.id || "").trim();
         if (!codigo) throw new Error("A encomenda não tem código para exportar.");
         let itens = prepararItensExportacao(encomenda);
@@ -1917,7 +1976,7 @@ window.AdminEncomendaVista = (function () {
         if (notas) ficheiros.push({ nome: "notas encomenda.txt", conteudo: notas });
         if (origemExportaImagem(encomenda)) {
             atualizarStatus("A gerar imagens", "processando");
-            ficheiros.push(...await criarFicheirosImagemExportacao(itens, { incluirTotal: origemEncomenda(encomenda) !== "olx" }));
+            ficheiros.push(...await criarFicheirosImagemExportacao(itens, { incluirTotal: opcoesExportacao.incluirTotal === true }));
         }
 
         if (!usarPasta) {
@@ -2917,9 +2976,15 @@ window.AdminEncomendaVista = (function () {
                     controloSeguimento?.ignorarProximoBlur?.();
                     const notasAtuais = controloNotas?.elemento?.querySelector("textarea")?.value;
                     if (notasAtuais !== undefined) encomenda.notas_internas = notasAtuais;
+                    let incluirTotal = false;
+                    if (origemExportaImagem(encomenda)) {
+                        const escolha = await perguntarTotalFotoExportacao();
+                        if (escolha === null) return;
+                        incluirTotal = escolha;
+                    }
                     exportar.disabled = true;
                     try {
-                        await exportarEncomendaDireta(encomenda, mostrarStatusGravacao);
+                        await exportarEncomendaDireta(encomenda, mostrarStatusGravacao, { incluirTotal });
                     } catch (error) {
                         const mensagem = mensagemErroExportacao(error);
                         mostrarStatusGravacao(mensagem, "erro");
