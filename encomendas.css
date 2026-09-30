@@ -2413,7 +2413,13 @@ html:not(.admin-light-mode) body.cabecalho-com-admin :is(#admin-encomenda-modal,
 }
 
 body .admin-encomenda-estado-avancar {
+    --fp-botao-altura: var(--admin-encomenda-modal-controlo-altura, 36px);
+    --fp-botao-raio: 5px;
     flex: 0 0 auto;
+    max-height: var(--admin-encomenda-modal-controlo-altura, 36px) !important;
+    box-sizing: border-box !important;
+    box-shadow: none !important;
+    margin: 0 !important;
     height: var(--admin-encomenda-modal-controlo-altura, 36px);
     min-height: 0 !important;
     padding: 0 12px !important;
