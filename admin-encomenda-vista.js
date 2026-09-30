@@ -3024,7 +3024,23 @@ window.AdminEncomendaVista = (function () {
         const indiceFluxoAtual = FLUXO_AVANCO_ESTADO.indexOf(estadoAtual);
         const proximoEstado = indiceFluxoAtual >= 0 ? FLUXO_AVANCO_ESTADO[indiceFluxoAtual + 1] : null;
         if (proximoEstado) {
-            const avancar = criarElemento("button", "wallapop-botao admin-encomenda-estado-avancar", "→");
+            const avancar = criarElemento("button", "wallapop-botao admin-encomenda-estado-avancar");
+            const svgNs = "http://www.w3.org/2000/svg";
+            const seta = document.createElementNS(svgNs, "svg");
+            seta.setAttribute("viewBox", "0 0 24 24");
+            seta.setAttribute("width", "20");
+            seta.setAttribute("height", "20");
+            seta.setAttribute("aria-hidden", "true");
+            seta.setAttribute("focusable", "false");
+            const caminho = document.createElementNS(svgNs, "path");
+            caminho.setAttribute("d", "M4 12h15M13 6l6 6-6 6");
+            caminho.setAttribute("fill", "none");
+            caminho.setAttribute("stroke", "currentColor");
+            caminho.setAttribute("stroke-width", "2.6");
+            caminho.setAttribute("stroke-linecap", "round");
+            caminho.setAttribute("stroke-linejoin", "round");
+            seta.appendChild(caminho);
+            avancar.appendChild(seta);
             avancar.type = "button";
             avancar.title = `Avançar para ${proximoEstado}`;
             avancar.setAttribute("aria-label", `Avançar para ${proximoEstado}`);

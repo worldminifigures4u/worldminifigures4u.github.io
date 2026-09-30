@@ -2440,6 +2440,12 @@ body .admin-encomenda-estado-avancar {
     cursor: pointer;
 }
 
+body .admin-encomenda-estado-avancar svg {
+    display: block;
+    flex: 0 0 auto;
+    pointer-events: none;
+}
+
 body .admin-encomenda-estado-avancar:is(:hover, :focus-visible) {
     border-color: var(--cor-acao-principal, #ffc107) !important;
     color: var(--cor-acao-principal, #ffc107) !important;

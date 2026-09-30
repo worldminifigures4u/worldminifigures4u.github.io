@@ -29,7 +29,7 @@
                     return carregarScript('morada-formato.js?v=20260713-morada-formatada');
                 })
                 .then(function () {
-                    return carregarScript('admin-encomenda-vista.js?v=20260930-seta-estado');
+                    return carregarScript('admin-encomenda-vista.js?v=20260930-seta-svg');
                 });
         }
         return promessaVista;
