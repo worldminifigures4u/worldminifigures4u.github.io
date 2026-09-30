@@ -49,12 +49,15 @@ order by criado_em;
 -- ---------------------------------------------------------------------
 begin;
 
--- Cópias de segurança (ficam na base de dados; podem ser apagadas mais tarde)
-create table if not exists public.backup_20260930_encomendas_fornecedores_lote50 as
+-- Cópias de segurança num esquema privado "backups" (não fica acessível pelo site/API)
+create schema if not exists backups;
+revoke all on schema backups from anon, authenticated;
+
+create table if not exists backups.encomendas_fornecedores_lote50_20260930 as
 select * from public.encomendas_fornecedores
 where regexp_replace(lower(fornecedor), '\s', '', 'g') = 'lote50';
 
-create table if not exists public.backup_20260930_produtos_lote50 as
+create table if not exists backups.produtos_lote50_20260930 as
 select distinct p.*
 from public.produtos p
 join public.encomendas_fornecedores e
@@ -128,7 +131,29 @@ select
             jsonb_array_elements(e.itens) item
       where regexp_replace(lower(e.fornecedor), '\s', '', 'g') = 'lote50'
         and (item->>'preco_custo')::numeric <> 0.57)        as artigos_ainda_diferentes,
-    (select count(*) from public.backup_20260930_produtos_lote50) as produtos_alterados;
+    (select count(*) from backups.produtos_lote50_20260930) as produtos_alterados;
 
 commit;
 -- Se algo parecer errado ANTES do commit, corre "rollback;" em vez de "commit;".
+
+
+-- =====================================================================
+-- REPOR (só se for preciso desfazer) — volta a pôr os valores guardados na cópia
+-- =====================================================================
+-- begin;
+-- update public.encomendas_fornecedores e
+-- set itens = b.itens, atualizado_em = b.atualizado_em
+-- from backups.encomendas_fornecedores_lote50_20260930 b
+-- where e.id = b.id;
+--
+-- update public.produtos p
+-- set preco_compra = b.preco_compra, fornecedores = b.fornecedores
+-- from backups.produtos_lote50_20260930 b
+-- where p.id = b.id;
+-- commit;
+
+-- =====================================================================
+-- APAGAR AS CÓPIAS (quando tiveres a certeza de que está tudo bem)
+-- =====================================================================
+-- drop table backups.encomendas_fornecedores_lote50_20260930;
+-- drop table backups.produtos_lote50_20260930;
