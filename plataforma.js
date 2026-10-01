@@ -402,29 +402,34 @@ function limparDadosClientePlataforma() {
     });
 }
 
+function obterEncomendaGravadaFicheirosPlataforma() {
+    if (!encomendaPlataformaParaFicheiros || encomendaPlataformaEmEdicao) return null;
+    return Array.isArray(wallapopItens) && wallapopItens.length ? null : encomendaPlataformaParaFicheiros;
+}
+
 function obterCodigoEncomendaAtual() {
     return String(
         encomendaPlataformaEmEdicao?.codigo_encomenda
-        || encomendaPlataformaParaFicheiros?.codigo_encomenda
+        || obterEncomendaGravadaFicheirosPlataforma()?.codigo_encomenda
         || ''
     ).trim();
 }
 
 function obterItensParaFicheirosPlataforma() {
     if (encomendaPlataformaEmEdicao) return wallapopItens;
-    return encomendaPlataformaParaFicheiros?.itens || wallapopItens;
+    return obterEncomendaGravadaFicheirosPlataforma()?.itens || wallapopItens;
 }
 
 function obterPlataformaParaFicheiros() {
-    return encomendaPlataformaParaFicheiros?.plataforma || obterPlataformaAtual();
+    return obterEncomendaGravadaFicheirosPlataforma()?.plataforma || obterPlataformaAtual();
 }
 
 function obterEnvioParaFicheirosPlataforma() {
-    return encomendaPlataformaParaFicheiros?.envio || obterEnvioPlataforma();
+    return obterEncomendaGravadaFicheirosPlataforma()?.envio || obterEnvioPlataforma();
 }
 
 function obterTotalParaFicheirosPlataforma(subtotal, portes) {
-    const totalGravado = Number(encomendaPlataformaParaFicheiros?.envio?.total);
+    const totalGravado = Number(obterEncomendaGravadaFicheirosPlataforma()?.envio?.total);
     if (!encomendaPlataformaEmEdicao && Number.isFinite(totalGravado) && totalGravado > 0) {
         return Math.round(totalGravado * 100) / 100;
     }
@@ -442,8 +447,8 @@ function edicaoVeioDaPaginaEncomendasPlataforma() {
 }
 
 function obterNomeParaFicheirosPlataforma() {
-    if (encomendaPlataformaParaFicheiros?.nome_encomenda) {
-        return encomendaPlataformaParaFicheiros.nome_encomenda;
+    if (obterEncomendaGravadaFicheirosPlataforma()?.nome_encomenda) {
+        return obterEncomendaGravadaFicheirosPlataforma().nome_encomenda;
     }
 
     const campoNome = document.getElementById('wallapop-nome-encomenda')?.value.trim() || '';
@@ -1539,7 +1544,7 @@ function limparFigurasRepetidasListaPlataforma() {
 }
 
 function obterFigurasRepetidasParaFicheirosPlataforma() {
-    const guardadas = encomendaPlataformaParaFicheiros?.figuras_repetidas;
+    const guardadas = obterEncomendaGravadaFicheirosPlataforma()?.figuras_repetidas;
     if (Array.isArray(guardadas) && guardadas.length) {
         return guardadas.map(nome => String(nome || '').trim()).filter(Boolean);
     }
@@ -1788,7 +1793,7 @@ function limparNotasAnuncioPlataforma() {
 }
 
 function obterNotasAnuncioParaFicheirosPlataforma() {
-    return (plataformaNotasAnuncioAtual || encomendaPlataformaParaFicheiros?.notas_anuncio || '').trim();
+    return (plataformaNotasAnuncioAtual || obterEncomendaGravadaFicheirosPlataforma()?.notas_anuncio || '').trim();
 }
 
 function criarTextoNotasAnuncioPlataforma() {
@@ -2994,7 +2999,7 @@ function criarTextoEncomendaWallapop() {
 }
 
 function criarLinhasDadosClienteOlx() {
-    const dadosCliente = encomendaPlataformaParaFicheiros?.cliente || obterDadosClientePlataforma();
+    const dadosCliente = obterEncomendaGravadaFicheirosPlataforma()?.cliente || obterDadosClientePlataforma();
     const moradaCliente = [
         dadosCliente.morada,
         dadosCliente.cp,
@@ -3002,7 +3007,7 @@ function criarLinhasDadosClienteOlx() {
         dadosCliente.pais
     ].filter(Boolean).join(', ');
     return [
-        `Nome:\t${encomendaPlataformaParaFicheiros?.nome_cliente || obterNomeClientePlataforma()}`,
+        `Nome:\t${obterEncomendaGravadaFicheirosPlataforma()?.nome_cliente || obterNomeClientePlataforma()}`,
         `Morada:\t${moradaCliente}`,
         `Telefone:\t${dadosCliente.telefone}`
     ];
@@ -3106,7 +3111,7 @@ function criarTextoClienteOlx() {
 }
 
 function obterNomeClienteParaCabecalhoTxt() {
-    return encomendaPlataformaParaFicheiros?.nome_cliente || obterNomeClientePlataforma();
+    return obterEncomendaGravadaFicheirosPlataforma()?.nome_cliente || obterNomeClientePlataforma();
 }
 
 function criarCabecalhoCodigoEncomenda() {
