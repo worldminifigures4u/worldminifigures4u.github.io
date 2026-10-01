@@ -14,9 +14,16 @@ function obterEscalaoEnvio(paisEnvio, pesoTotal) {
     return tabela.find(linha => pesoTotal <= linha.ate) || tabela[tabela.length - 1];
 }
 
+const OPCAO_ENTREGA_MAO_TOMAR = { id: 'entrega_tomar', nome: 'Entrega em m\u00e3o em Tomar', valor: 0 };
+
 function obterOpcoesEnvio(paisEnvio, pesoTotal) {
     if (pesoTotal <= 0) return [];
-    return obterEscalaoEnvio(paisEnvio, pesoTotal).opcoes;
+    const opcoes = obterEscalaoEnvio(paisEnvio, pesoTotal).opcoes
+        .filter(opcao => opcao.id !== OPCAO_ENTREGA_MAO_TOMAR.id);
+    if (obterZonaPortesPorPais(paisEnvio) === 'portugal') {
+        return [...opcoes, { ...OPCAO_ENTREGA_MAO_TOMAR }];
+    }
+    return opcoes;
 }
 
 function obterOpcaoEnvioSelecionada(paisEnvio, pesoTotal, metodoEnvio) {
@@ -42,6 +49,7 @@ function calcularSubtotalCarrinho() {
 }
 
 function metodoEnvioSemRastreamento(id) {
+    if (id === 'entrega_tomar') return false;
     const meta = typeof obterMetaMetodoEnvio === 'function' ? obterMetaMetodoEnvio(id) : null;
     if (meta) return meta.registado !== true;
     return METODOS_ENVIO_SEM_RASTREAMENTO.has(id);
@@ -63,6 +71,9 @@ function metodoEnvioEmMao(id) {
 }
 
 function obterAvisoMetodoEnvioSelecionado(metodoId) {
+    if (metodoEnvioEmMao(metodoId)) {
+        return 'A entrega ser\u00e1 combinada ap\u00f3s a confirma\u00e7\u00e3o da encomenda.';
+    }
     if (metodoEnvioSemRastreamento(metodoId)) {
         return 'Este método não inclui rastreamento. Para maior segurança, recomendamos um envio registado.';
     }
@@ -76,7 +87,7 @@ function obterAvisoMetodoEnvioSelecionado(metodoId) {
 }
 
 function mostrarBadgeRecomendadoEnvio(opcoes) {
-    return opcoes.some(opcao => !metodoEnvioRegistado(opcao.id));
+    return opcoes.some(opcao => !metodoEnvioRegistado(opcao.id) && !metodoEnvioEmMao(opcao.id));
 }
 
 function obterRotuloOpcaoEnvio(opcao, opcoesVisiveis) {

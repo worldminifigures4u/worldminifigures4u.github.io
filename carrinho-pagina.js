@@ -35,7 +35,7 @@
         }
         if (!promessaEnvio) {
             promessaEnvio = garantirAppPortes()
-                .then(() => carregarScript('carrinho-envio.js?v=20260718-metodos'));
+                .then(() => carregarScript('carrinho-envio.js?v=20261001-entrega-tomar'));
         }
         return promessaEnvio;
     }

@@ -239,12 +239,16 @@ async function carregarTabelaPortesRemota(adminClient: ReturnType<typeof createC
   TABELA_PORTES_POR_PESO = montada || TABELA_PORTES_FALLBACK;
 }
 
+const OPCAO_ENTREGA_MAO_TOMAR: OpcaoEnvio = { id: "entrega_tomar", nome: "Entrega em m\u00e3o em Tomar", valor: 0 };
+
 function obterOpcoesEnvio(regiao: string, pesoTotal: number) {
   if (pesoTotal <= 0) return [];
   const zonaEnvio = obterZonaPortesPorPais(regiao);
   const tabela = TABELA_PORTES_POR_PESO[zonaEnvio] || TABELA_PORTES_POR_PESO.portugal;
   const escalao = tabela.find((linha) => pesoTotal <= linha.ate) || tabela[tabela.length - 1];
-  return escalao.opcoes;
+  const opcoes = escalao.opcoes.filter((opcao) => opcao.id !== OPCAO_ENTREGA_MAO_TOMAR.id);
+  if (zonaEnvio === "portugal") return [...opcoes, { ...OPCAO_ENTREGA_MAO_TOMAR }];
+  return opcoes;
 }
 
 function obterOpcaoEnvio(regiao: string, pesoTotal: number, metodoEnvio: string) {
