@@ -1133,12 +1133,65 @@ function distanciaLevenshteinPlataforma(a, b) {
     return linha[segundo.length];
 }
 
+const PLATAFORMA_PALAVRAS_ENCHIMENTO = new Set([
+    'el', 'la', 'los', 'las', 'lo', 'de', 'del', 'do', 'da', 'dos', 'das', 'o', 'a', 'os', 'as',
+    'the', 'of', 'y', 'e', 'and', 'un', 'una', 'unos', 'unas', 'um', 'uma', 'con', 'com', 'para',
+    'por', 'en', 'em', 'que', 'es', 'clasico', 'clasica', 'classico', 'classica', 'classic',
+    'version', 'versao', 'figura', 'figuras', 'minifigura', 'minifiguras', 'minifigure',
+    'minifigures', 'muneco', 'muñeco', 'boneco', 'lego', 'compatible', 'compativel', 'nuevo',
+    'nueva', 'novo', 'nova', 'personaje', 'personagem'
+]);
+
+function palavrasSignificativasPlataforma(texto) {
+    return normalizarTextoWallapop(texto)
+        .split(' ')
+        .filter(palavra => palavra && !PLATAFORMA_PALAVRAS_ENCHIMENTO.has(palavra));
+}
+
+function palavraCorrespondePlataforma(palavra, lista) {
+    return lista.some(outra => {
+        if (outra === palavra) return true;
+        if (palavra.length >= 5 && outra.length >= 5) {
+            return distanciaLevenshteinPlataforma(palavra, outra) <= 1;
+        }
+        return false;
+    });
+}
+
+function pontuarPalavrasPlataforma(termo, produto) {
+    const palavrasTermo = [...new Set(palavrasSignificativasPlataforma(termo))];
+    const palavrasNome = [...new Set(palavrasSignificativasPlataforma(produto.nome))];
+    if (!palavrasTermo.length || !palavrasNome.length) return 0;
+    const extras = [...new Set(palavrasSignificativasPlataforma(
+        [produto.tema, produto.serie, produto.categoria, produto.colecao].filter(Boolean).join(' ')
+    ))];
+
+    const nomeEncontradas = palavrasNome.filter(palavra => palavraCorrespondePlataforma(palavra, palavrasTermo)).length;
+    const coberturaNome = nomeEncontradas / palavrasNome.length;
+    const termoNoNome = palavrasTermo.filter(palavra => palavraCorrespondePlataforma(palavra, palavrasNome)).length;
+    const termoNosExtras = palavrasTermo.filter(palavra =>
+        !palavraCorrespondePlataforma(palavra, palavrasNome) && palavraCorrespondePlataforma(palavra, extras)
+    ).length;
+    const coberturaTermo = (termoNoNome + termoNosExtras * 0.5) / palavrasTermo.length;
+
+    if (coberturaNome === 1) {
+        const nomeMuitoCurto = palavrasNome.length === 1 && palavrasNome[0].length < 4;
+        return Math.min(0.97, (nomeMuitoCurto ? 0.6 : 0.8) + coberturaTermo * 0.15);
+    }
+    const temPalavraForte = palavrasNome.some(palavra =>
+        palavra.length >= 4 && palavraCorrespondePlataforma(palavra, palavrasTermo)
+    );
+    if (!temPalavraForte) return 0;
+    return 0.3 + coberturaNome * 0.3 + coberturaTermo * 0.1;
+}
+
 function pontuarCorrespondenciaPlataforma(termo, produto) {
     const nome = normalizarTextoWallapop(produto.nome);
     const sku = normalizarTextoWallapop(produto.sku);
     const referencia = normalizarTextoWallapop(produto.referencia);
     if (!termo) return 0;
     if (termo === nome || termo === sku || termo === referencia) return 1;
+    const pontuacaoPalavras = pontuarPalavrasPlataforma(termo, produto);
 
     const distancia = distanciaLevenshteinPlataforma(termo, nome);
     const similaridade = 1 - (distancia / Math.max(termo.length, nome.length, 1));
@@ -1147,7 +1200,7 @@ function pontuarCorrespondenciaPlataforma(termo, produto) {
     const comuns = [...palavrasTermo].filter(palavra => palavrasNome.has(palavra)).length;
     const cobertura = comuns / Math.max(palavrasTermo.size, palavrasNome.size, 1);
     const contem = nome.includes(termo) || termo.includes(nome) ? 0.9 : 0;
-    return Math.max(similaridade, similaridade * 0.72 + cobertura * 0.28, contem);
+    return Math.max(similaridade, similaridade * 0.72 + cobertura * 0.28, contem, pontuacaoPalavras);
 }
 
 const PLATAFORMA_PRECO_LISTA_PADRAO = String.raw`\b\d{1,4}[,.]\d{2}\b(?:\s*(?:€|eur(?:os?)?))?`;
@@ -1377,11 +1430,17 @@ function obterCandidatosLinhaListaPlataforma(textoOriginal) {
     const termos = obterTermosPesquisaLinhaPlataforma(textoOriginal);
     const mapa = new Map();
 
+    const fracos = new Map();
     termos.forEach(termo => {
         wallapopProdutos.forEach(produto => {
             const pontuacao = pontuarCorrespondenciaPlataforma(termo, produto);
-            if (pontuacao < 0.48) return;
             const id = String(produto.id);
+            if (pontuacao < 0.48) {
+                if (pontuacao <= 0.2) return;
+                const fraco = fracos.get(id);
+                if (!fraco || pontuacao > fraco.pontuacao) fracos.set(id, { produto, pontuacao, fraca: true });
+                return;
+            }
             const existente = mapa.get(id);
             if (!existente || pontuacao > existente.pontuacao) {
                 mapa.set(id, { produto, pontuacao });
@@ -1389,9 +1448,21 @@ function obterCandidatosLinhaListaPlataforma(textoOriginal) {
         });
     });
 
+    if (!mapa.size) {
+        return [...fracos.values()]
+            .sort(compararCandidatosListaPlataforma)
+            .slice(0, 5);
+    }
+
     return [...mapa.values()]
         .sort(compararCandidatosListaPlataforma)
         .slice(0, 8);
+}
+
+function textoVazioCandidatosListaPlataforma(candidatos) {
+    if (!candidatos?.length) return 'Nenhuma correspond\u00eancia encontrada';
+    if (candidatos.every(candidato => candidato.fraca)) return 'Sugest\u00f5es fracas \u2014 escolhe o produto';
+    return 'Ignorar / escolher produto';
 }
 
 function compararCandidatosListaPlataforma(a, b) {
@@ -1578,8 +1649,8 @@ function analisarListaProdutosPlataforma(texto) {
         const candidatos = obterCandidatosLinhaListaPlataforma(linha.original);
         const melhor = candidatos[0];
         const segundo = candidatos[1];
-        const exata = melhor?.pontuacao === 1;
-        const segura = Boolean(melhor && melhor.pontuacao >= 0.78
+        const exata = !melhor?.fraca && melhor?.pontuacao === 1;
+        const segura = Boolean(melhor && !melhor.fraca && melhor.pontuacao >= 0.78
             && (!segundo || melhor.pontuacao - segundo.pontuacao >= 0.045));
         return {
             ...linha,
@@ -1839,7 +1910,7 @@ function abrirRevisaoListaProdutosPlataforma() {
         select.setAttribute('aria-label', `Produto correspondente a ${linha.original}`);
         const vazio = document.createElement('option');
         vazio.value = '';
-        vazio.textContent = linha.candidatos.length ? 'Ignorar / escolher produto' : 'Nenhuma correspond\u00eancia encontrada';
+        vazio.textContent = textoVazioCandidatosListaPlataforma(linha.candidatos);
         select.appendChild(vazio);
         linha.candidatos.forEach(candidato => {
             const option = document.createElement('option');
@@ -1881,7 +1952,7 @@ function abrirRevisaoListaProdutosPlataforma() {
                     preencherSelectProdutosPlataforma(
                         select,
                         linha.candidatos.map(candidato => candidato.produto),
-                        linha.candidatos.length ? 'Ignorar / escolher produto' : 'Nenhuma correspondencia encontrada',
+                        textoVazioCandidatosListaPlataforma(linha.candidatos),
                         select.value
                     );
                     item.classList.toggle('estado-rever', !select.value);
