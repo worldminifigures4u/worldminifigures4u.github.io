@@ -2946,7 +2946,7 @@ window.AdminEncomendaVista = (function () {
         });
         const origem = normalizar(encomenda.origem);
         const plataformaExterna = ["wallapop", "vinted", "olx", "todocoleccion", "whatsapp"].includes(origem);
-        const podeEditar = plataformaExterna
+        const podeEditar = (plataformaExterna || origemEncomenda(encomenda) === "site")
             && !estadoRepostoNormalizado(encomenda.estado)
             && encomenda.codigo_encomenda;
 
@@ -2963,7 +2963,7 @@ window.AdminEncomendaVista = (function () {
             editar.href = destinoEditar.pathname + destinoEditar.search;
             editar.addEventListener("click", evento => evento.stopPropagation());
             botoesAcoes.appendChild(editar);
-            if (modoModal) {
+            if (modoModal && plataformaExterna) {
                 const exportar = criarElemento("button", "wallapop-botao wallapop-botao-exportar admin-encomenda-exportar", "Exportar");
                 exportar.type = "button";
                 exportar.title = "Exportar ficheiros da encomenda";

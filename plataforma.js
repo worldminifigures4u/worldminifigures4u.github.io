@@ -2116,7 +2116,7 @@ async function restaurarRascunhoClientePlataforma() {
     plataformaARestaurarRascunhoCliente = true;
     try {
         const seletor = document.getElementById('plataforma-tipo');
-        if (seletor && rascunho.plataforma && [...seletor.options].some(opcao => opcao.value === rascunho.plataforma)) {
+        if (seletor && rascunho.plataforma && rascunho.plataforma !== 'Site' && [...seletor.options].some(opcao => opcao.value === rascunho.plataforma)) {
             seletor.value = rascunho.plataforma;
         }
         atualizarModoPlataforma();
@@ -3528,10 +3528,13 @@ async function carregarEncomendaPlataformaPorCodigo(codigo) {
             quantidade: Math.max(1, Number(reservado?.quantidade) || 1)
         };
     });
+    const origemSiteEdicao = !String(encomenda.origem || '').trim()
+        || String(encomenda.origem).trim().toLowerCase() === 'site';
+    const origemEdicao = origemSiteEdicao ? 'Site' : encomenda.origem;
     encomendaPlataformaEmEdicao = {
         id: encomenda.id,
         codigo_encomenda: encomenda.codigo_encomenda,
-        origem: encomenda.origem,
+        origem: origemEdicao,
         estado: encomenda.estado,
         stock_reposto: Boolean(encomenda.stock_reposto),
         telefone_cliente: encomenda.telefone_cliente || '',
@@ -3549,8 +3552,8 @@ async function carregarEncomendaPlataformaPorCodigo(codigo) {
     wallapopRegistoConcluido = true;
 
     const seletor = document.getElementById('plataforma-tipo');
-    seletor.value = encomenda.origem;
-    seletor.disabled = false;
+    seletor.value = origemEdicao;
+    seletor.disabled = origemSiteEdicao;
     atualizarModoPlataforma();
     document.getElementById('wallapop-nome-encomenda').value = encomenda.nome_cliente || '';
     document.getElementById('wallapop-nome-cliente').value = '';
@@ -3648,6 +3651,7 @@ async function novaEncomendaPlataforma() {
     limparRascunhoClientePlataforma();
     guardarItensWallapop();
     const seletor = document.getElementById('plataforma-tipo');
+    if (seletor.value === 'Site') seletor.value = 'Wallapop';
     seletor.disabled = false;
     document.getElementById('wallapop-nome-encomenda').value = '';
     document.getElementById('wallapop-nome-cliente').value = '';
@@ -3842,7 +3846,8 @@ async function registarEncomendaWallapop() {
         let avisoPerfil = '';
 
         const encomendaId = String(data.encomenda?.id || encomendaPlataformaEmEdicao?.id || '');
-        if (encomendaId && eraEdicao && plataformaOriginalEdicao && plataformaOriginalEdicao !== plataforma) {
+        if (encomendaId && eraEdicao && plataformaOriginalEdicao && plataformaOriginalEdicao !== 'Site'
+            && plataforma !== 'Site' && plataformaOriginalEdicao !== plataforma) {
             const origemAtualizada = {
                 origem: plataforma,
                 metodo_pagamento: plataforma
@@ -3908,7 +3913,9 @@ async function registarEncomendaWallapop() {
         limparRascunhoClientePlataforma();
         stockNegativoConfirmado = new Set();
         guardarItensWallapop();
-        document.getElementById('plataforma-tipo').disabled = false;
+        const seletorTipoLimpar = document.getElementById('plataforma-tipo');
+        if (seletorTipoLimpar.value === 'Site') seletorTipoLimpar.value = 'Wallapop';
+        seletorTipoLimpar.disabled = false;
         document.getElementById('wallapop-nome-encomenda').value = '';
         document.getElementById('wallapop-nome-cliente').value = '';
         document.getElementById('plataforma-link-perfil').value = '';
@@ -4014,7 +4021,10 @@ async function iniciarWallapopAdmin() {
             try {
                 definirStatusWallapop('A abrir a encomenda...');
                 const encomenda = await carregarEncomendaPlataformaPorCodigo(codigoEditar);
-                definirStatusWallapop(`Encomenda ${encomenda.codigo_encomenda} aberta. Pode alterar produtos, quantidades e dados.`);
+                const avisoFatura = encomenda?.moloni_document_id || encomenda?.moloni_fatura_numero
+                    ? ' Aten\u00e7\u00e3o: esta encomenda j\u00e1 tem fatura no Moloni, que n\u00e3o muda com estas altera\u00e7\u00f5es.'
+                    : '';
+                definirStatusWallapop(`Encomenda ${encomenda.codigo_encomenda} aberta. Pode alterar produtos, quantidades e dados.${avisoFatura}`, Boolean(avisoFatura));
             } catch (error) {
                 console.error(error);
                 definirStatusWallapop('Erro ao abrir: ' + (error.message || 'erro desconhecido'), true);
