@@ -5378,3 +5378,12 @@ html:not(.admin-light-mode) body #fornecedor-edicao-modal .fornecedor-edicao-fec
 @media (max-width: 700px) {
     #fornecedor-edicao-modal .fornecedor-custo-fixo-eur-grid { grid-template-columns: 1fr; }
 }
+
+/* Editar encomenda: miniaturas sem fundo branco ao lado da foto */
+#fornecedor-edicao-modal .fornecedor-edicao-produto .fornecedor-miniatura,
+#fornecedor-edicao-modal .fornecedor-edicao-produto .fornecedor-produto-foto {
+    background: transparent !important;
+}
+#fornecedor-edicao-modal .fornecedor-edicao-produto .fornecedor-produto-foto {
+    border-color: transparent;
+}
