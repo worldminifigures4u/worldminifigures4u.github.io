@@ -4913,9 +4913,21 @@ html:not(.admin-light-mode) body #fornecedor-pedido-modal .fornecedor-pedido-mod
     overflow: visible !important;
     max-height: none !important;
 }
+#fornecedor-pedido-modal .fornecedor-pedido-modal-corpo {
+    padding-top: 0 !important;
+}
+#fornecedor-pedido-modal .fornecedor-pedido-card-modal,
+#fornecedor-pedido-modal .fornecedor-pedido-card-modal .fornecedor-pedido-detalhes,
+#fornecedor-pedido-modal .fornecedor-pedido-produtos,
+#fornecedor-pedido-modal .fornecedor-pedido-produtos .mapas-tabela-wrapper,
+#fornecedor-pedido-modal .fornecedor-pedido-tabela {
+    margin-top: 0 !important;
+    padding-top: 0 !important;
+    border-top-width: 0 !important;
+}
 #fornecedor-pedido-modal .fornecedor-pedido-tabela thead th {
     position: sticky !important;
-    top: -14px !important;
+    top: 0 !important;
     z-index: 5 !important;
     background: #1b1b1b !important;
     box-shadow: inset 0 -1px 0 #333;
