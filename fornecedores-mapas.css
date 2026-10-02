@@ -5101,3 +5101,22 @@ html:not(.admin-light-mode) body #fornecedor-edicao-modal .fornecedor-edicao-fec
 #fornecedor-edicao-modal .fornecedor-edicao-produto:has(.fornecedor-edicao-remover input:checked):hover {
     background: rgba(122, 31, 31, .36);
 }
+
+/* Modais de encomenda a fornecedor: largura a medida do conteudo, centrados e fundo mais escuro */
+#fornecedor-pedido-modal.fornecedor-pedido-modal,
+#fornecedor-edicao-modal.fornecedor-edicao-modal {
+    background: rgba(0, 0, 0, .92);
+}
+#fornecedor-pedido-modal.fornecedor-pedido-modal {
+    justify-content: center;
+}
+#fornecedor-pedido-modal .fornecedor-pedido-modal-dialog {
+    width: min(1280px, calc(100vw - 16px));
+}
+#fornecedor-edicao-modal.fornecedor-edicao-modal {
+    justify-items: center;
+    align-items: stretch;
+}
+#fornecedor-edicao-modal .fornecedor-edicao-dialog {
+    width: min(1160px, calc(100vw - 16px));
+}
