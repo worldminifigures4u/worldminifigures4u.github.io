@@ -4058,6 +4058,7 @@ async function criarPedidoFornecedor() {
         renderizarSelecionadosFornecedor();
         renderizarPedidosFornecedores();
         exportarTxtPedidoFornecedor(pedido);
+        mostrarVistaFornecedores("lista");
         definirStatusFornecedor(
             pedido.codigo
                 ? `Encomenda ${pedido.codigo} criada.`
@@ -5218,6 +5219,60 @@ function garantirBotaoRecolherPainelEncomendasFornecedor() {
     aplicarPainelEncomendasRecolhidoFornecedor(recolhido);
 }
 
+function mostrarVistaFornecedores(vista, opcoes = {}) {
+    const preparar = vista === "preparar";
+    document.body.classList.toggle("fornecedores-vista-preparar", preparar);
+    document.body.classList.toggle("fornecedores-vista-lista", !preparar);
+    const hashDesejado = preparar ? "#preparar" : "";
+    if (!opcoes.semHistorico && window.location.hash !== hashDesejado) {
+        const url = window.location.pathname + window.location.search + hashDesejado;
+        if (opcoes.substituir) history.replaceState(null, "", url);
+        else history.pushState(null, "", url);
+    }
+    if (preparar) {
+        requestAnimationFrame(() => {
+            atualizarAlturaStickyControlesFornecedor();
+            if (typeof sincronizarLargurasColunasTabelaEncomendaFornecedor === "function") sincronizarLargurasColunasTabelaEncomendaFornecedor();
+        });
+    }
+    window.scrollTo(0, 0);
+}
+
+function iniciarVistasFornecedores() {
+    if (document.body.dataset.vistasFornecedores === "1") return;
+    document.body.dataset.vistasFornecedores = "1";
+
+    const cabecalhoLista = document.querySelector(".fornecedores-painel-lista .fornecedores-cabecalho-lista");
+    if (cabecalhoLista && !document.getElementById("btn-nova-encomenda-fornecedor")) {
+        const nova = document.createElement("button");
+        nova.type = "button";
+        nova.id = "btn-nova-encomenda-fornecedor";
+        nova.className = "wallapop-botao wallapop-botao-destaque fornecedores-btn-nova-encomenda";
+        nova.textContent = "+ Nova encomenda";
+        nova.addEventListener("click", () => mostrarVistaFornecedores("preparar"));
+        cabecalhoLista.appendChild(nova);
+    }
+
+    const controles = document.querySelector("#fornecedores-escolher .fornecedor-controles-unificados");
+    if (controles && !document.getElementById("btn-voltar-encomendas-fornecedor")) {
+        const voltar = document.createElement("button");
+        voltar.type = "button";
+        voltar.id = "btn-voltar-encomendas-fornecedor";
+        voltar.className = "fornecedores-btn-voltar-lista";
+        voltar.textContent = "\u2190 Encomendas";
+        voltar.title = "Voltar à lista de encomendas (a preparação fica guardada)";
+        voltar.addEventListener("click", () => mostrarVistaFornecedores("lista"));
+        controles.prepend(voltar);
+    }
+
+    window.addEventListener("popstate", () => {
+        mostrarVistaFornecedores(window.location.hash === "#preparar" ? "preparar" : "lista", { semHistorico: true });
+    });
+
+    const inicial = window.location.hash === "#preparar" || fornecedorSelecao.length > 0 ? "preparar" : "lista";
+    mostrarVistaFornecedores(inicial, { substituir: true });
+}
+
 function renderizarPedidosFornecedores() {
     garantirBotaoRecolherPainelEncomendasFornecedor();
     const caixa = document.getElementById('fornecedor-pedidos');
@@ -5309,6 +5364,7 @@ async function iniciarFornecedoresAdmin() {
         await carregarPedidosFornecedoresRemotos();
         bloqueio.hidden = true;
         document.getElementById('fornecedores-aplicacao').hidden = false;
+        iniciarVistasFornecedores();
         atualizarAlturaStickyControlesFornecedor();
         renderizarResultadosFornecedor();
         renderizarSelecionadosFornecedor();

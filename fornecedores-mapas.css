@@ -5619,3 +5619,87 @@ html:not(.admin-light-mode) .fornecedor-pedido-modal-acoes .admin-encomenda-esta
 #fornecedores-aplicacao #fornecedores-escolher #fornecedor-resultados {
     margin-top: 0 !important;
 }
+
+/* ===== Dois ecras: lista de encomendas / preparar encomenda ===== */
+body.pagina-fornecedores-unificada.fornecedores-vista-lista .fornecedores-grid-unificada,
+body.pagina-fornecedores-unificada.fornecedores-vista-preparar .fornecedores-grid-unificada,
+body.pagina-fornecedores-unificada.fornecedores-painel-encomendas-recolhido .fornecedores-grid-unificada {
+    grid-template-columns: minmax(0, 1fr) !important;
+}
+body.fornecedores-vista-lista #fornecedores-escolher { display: none !important; }
+body.fornecedores-vista-preparar .fornecedores-coluna-direita { display: none !important; }
+body.fornecedores-vista-lista .fornecedores-coluna-direita,
+body.fornecedores-vista-preparar #fornecedores-escolher {
+    grid-column: 1 !important;
+}
+body.fornecedores-vista-lista .fornecedores-coluna-direita {
+    width: min(1100px, 100%);
+    justify-self: center;
+}
+.fornecedores-recolher-painel { display: none !important; }
+body.fornecedores-vista-lista .fornecedores-coluna-direita .fornecedores-cabecalho-lista {
+    display: flex !important;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+body.fornecedores-vista-lista .fornecedores-coluna-direita .fornecedores-cabecalho-titulo-filtro {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex: 1 1 auto;
+}
+.fornecedores-btn-nova-encomenda {
+    margin-left: auto;
+    height: 36px !important;
+    min-height: 36px !important;
+    padding: 0 16px !important;
+    border-radius: 5px !important;
+    font-size: 13px !important;
+    font-weight: 800 !important;
+    box-shadow: none !important;
+}
+#fornecedores-aplicacao .fornecedor-lista-controles.mapas-lista-controles.fornecedor-controles-unificados {
+    grid-template-columns: max-content max-content max-content max-content max-content max-content !important;
+    grid-template-areas: "voltar fornecedor marcacoes top arquivado descontinuado" !important;
+    column-gap: 8px;
+}
+.fornecedores-btn-voltar-lista {
+    grid-area: voltar;
+    align-self: end;
+    height: 42px;
+    padding: 0 14px;
+    margin-right: 16px;
+    border: 1px solid #444;
+    border-radius: 5px;
+    background: transparent;
+    color: #fff;
+    font: inherit;
+    font-size: 13px;
+    font-weight: 800;
+    cursor: pointer;
+    white-space: nowrap;
+}
+.fornecedores-btn-voltar-lista:is(:hover, :focus-visible) {
+    border-color: var(--cor-acao-principal, #ffc107);
+    color: var(--cor-acao-principal, #ffc107);
+    outline: none;
+}
+@media (max-width: 900px) {
+    #fornecedores-aplicacao .fornecedor-lista-controles.mapas-lista-controles.fornecedor-controles-unificados {
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+        grid-template-areas: "voltar voltar" "fornecedor fornecedor" "marcacoes marcacoes" "top arquivado" "descontinuado descontinuado" !important;
+    }
+    .fornecedores-btn-voltar-lista { justify-self: start; margin-right: 0; }
+}
+body.fornecedores-vista-preparar #fornecedores-aplicacao .fornecedor-resultados .fornecedor-tabela-encomenda {
+    width: auto !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+}
+body.fornecedores-vista-preparar #fornecedores-aplicacao .fornecedor-resultados .fornecedor-tabela-wrapper-centro {
+    display: flex !important;
+    justify-content: center;
+}
