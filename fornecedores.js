@@ -5353,7 +5353,7 @@ function atualizarTopoStickyFornecedor() {
     if (!estaPaginaFornecedoresUnificada()) return;
     const cabecalho = document.querySelector("header");
     if (!cabecalho) return;
-    const fundo = Math.max(0, Math.ceil(cabecalho.getBoundingClientRect().bottom));
+    const fundo = Math.max(0, Math.floor(cabecalho.getBoundingClientRect().bottom) - 1);
     if (document.body.dataset.fornecedorStickyTopo !== String(fundo)) {
         document.body.dataset.fornecedorStickyTopo = String(fundo);
         document.body.style.setProperty("--fornecedor-info-sticky-topo", `${fundo}px`);

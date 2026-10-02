@@ -5575,3 +5575,8 @@ html:not(.admin-light-mode) .fornecedor-pedido-modal-acoes .admin-encomenda-esta
 @media (max-width: 1220px) {
     .fornecedores-recolher-painel { display: none; }
 }
+
+/* Barra dos filtros fixa: tapar a faixa por cima dela, onde se viam as linhas da tabela a passar */
+#fornecedores-aplicacao .fornecedor-lista-controles.mapas-lista-controles.fornecedor-controles-unificados {
+    box-shadow: 0 -40px 0 0 #141414, 0 8px 14px rgba(0, 0, 0, .34) !important;
+}
