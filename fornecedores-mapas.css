@@ -5331,3 +5331,19 @@ html:not(.admin-light-mode) body #fornecedor-edicao-modal .fornecedor-edicao-fec
     height: 34px;
     min-height: 34px;
 }
+/* Distribuir envio: caixa com exatamente a altura dos campos ao lado */
+#fornecedor-edicao-modal .fornecedor-edicao-painel-preco[data-modo-preco="usd"] .fornecedor-custo-real-grid {
+    align-items: stretch;
+}
+#fornecedor-edicao-modal .fornecedor-custo-real-campo-opcoes {
+    grid-template-rows: auto 1fr;
+    line-height: normal;
+}
+#fornecedor-edicao-modal .fornecedor-custo-real-campo-rotulo { line-height: inherit; }
+#fornecedor-edicao-modal .fornecedor-custo-real-campo-caixa {
+    height: auto;
+    min-height: 0;
+}
+#fornecedor-edicao-modal .fornecedor-edicao-painel-preco[data-modo-preco="usd"] .fornecedor-custo-real-grid > label {
+    align-content: end;
+}
