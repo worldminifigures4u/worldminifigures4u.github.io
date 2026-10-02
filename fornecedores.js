@@ -2884,6 +2884,8 @@ function obterContentorScrollNumeroFornecedor(input) {
 function bloquearAlteracaoNumeroPorRodaFornecedor(evento) {
     const input = obterInputNumeroRodaFornecedor(evento.target);
     if (!inputNumeroPertenceFornecedores(input)) return;
+    // Sem foco, a roda nao altera o numero: deixa o scroll normal (suave) do navegador.
+    if (document.activeElement !== input) return;
 
     evento.preventDefault();
     if (document.activeElement === input) input.blur();
