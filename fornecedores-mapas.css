@@ -5289,3 +5289,45 @@ html:not(.admin-light-mode) body #fornecedor-edicao-modal .fornecedor-edicao-fec
         grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 }
+#fornecedor-edicao-modal .fornecedor-custo-real-campo-opcoes {
+    display: grid;
+    gap: 5px;
+    min-width: 0;
+}
+#fornecedor-edicao-modal .fornecedor-custo-real-campo-rotulo {
+    color: #ddd;
+    font-weight: 800;
+    font-size: 12px;
+}
+#fornecedor-edicao-modal .fornecedor-custo-real-campo-caixa {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    box-sizing: border-box;
+    padding: 0 10px;
+    border: 1px solid var(--fp-campo-borda, #444);
+    border-radius: var(--fp-campo-raio, 6px);
+    background: var(--fp-campo-fundo, #242424);
+    color: #fff;
+    font-size: 13px;
+    font-weight: 700;
+}
+#fornecedor-edicao-modal .fornecedor-custo-real-campo-caixa label {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    white-space: nowrap;
+    cursor: pointer;
+}
+#fornecedor-edicao-modal .fornecedor-custo-real-campo-caixa input[type="radio"] {
+    width: auto;
+    margin: 0;
+    accent-color: #ffc400;
+}
+#fornecedor-edicao-modal .fornecedor-edicao-painel-preco[data-modo-preco="usd"] .fornecedor-custo-real-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+#fornecedor-edicao-modal .fornecedor-custo-real-campo-caixa {
+    height: 34px;
+    min-height: 34px;
+}

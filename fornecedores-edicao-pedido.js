@@ -1608,11 +1608,13 @@ function garantirModalEdicaoFornecedor() {
                                         Total pago EUR
                                         <input type="text" id="fornecedor-edicao-total-eur" inputmode="decimal" autocomplete="off" placeholder="365,40 €">
                                     </label>
-                                    <fieldset>
-                                        <legend>Distribuir envio</legend>
-                                        <label><input type="radio" name="fornecedor-edicao-rateio-envio" value="unidades" checked> Por unidade</label>
-                                        <label><input type="radio" name="fornecedor-edicao-rateio-envio" value="valor"> Por valor</label>
-                                    </fieldset>
+                                    <div class="fornecedor-custo-real-campo-opcoes" role="radiogroup" aria-label="Distribuir envio">
+                                        <span class="fornecedor-custo-real-campo-rotulo">Distribuir envio</span>
+                                        <div class="fornecedor-custo-real-campo-caixa">
+                                            <label><input type="radio" name="fornecedor-edicao-rateio-envio" value="unidades" checked> Por unidade</label>
+                                            <label><input type="radio" name="fornecedor-edicao-rateio-envio" value="valor"> Por valor</label>
+                                        </div>
+                                    </div>
                                 </div>
                                 <p class="fornecedor-custo-real-ajuda">Sem o Total pago EUR, o preço fica provisório em USD com o envio incluído. Com ele, passa a EUR.</p>
                             </div>
