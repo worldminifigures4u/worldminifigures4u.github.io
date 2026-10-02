@@ -5387,3 +5387,18 @@ html:not(.admin-light-mode) body #fornecedor-edicao-modal .fornecedor-edicao-fec
 #fornecedor-edicao-modal .fornecedor-edicao-produto .fornecedor-produto-foto {
     border-color: transparent;
 }
+
+/* Seletor do estado no topo do modal: so a largura do texto mais longo */
+html:not(.admin-light-mode) .pagina-fornecedores-unificada .fornecedor-pedido-modal-acoes .admin-encomenda-estado-edicao .fornecedor-status-select,
+html:not(.admin-light-mode) .fornecedor-pedido-modal-acoes .admin-encomenda-estado-edicao .fornecedor-status-select {
+    width: auto !important;
+    min-width: 0 !important;
+    max-width: none;
+    padding-left: 10px;
+    padding-right: 28px;
+}
+.fornecedor-pedido-modal-acoes .admin-encomenda-estado-edicao { width: auto; flex: 0 0 auto; }
+@media (max-width: 700px) {
+    html:not(.admin-light-mode) .fornecedor-pedido-modal-acoes .admin-encomenda-estado-edicao .fornecedor-status-select { width: 100% !important; }
+    .fornecedor-pedido-modal-acoes .admin-encomenda-estado-edicao { width: 100%; }
+}
