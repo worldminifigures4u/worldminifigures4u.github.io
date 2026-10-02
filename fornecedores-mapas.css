@@ -5451,3 +5451,9 @@ html:not(.admin-light-mode) .fornecedor-pedido-modal-acoes .admin-encomenda-esta
     padding-left: 12px;
     padding-right: 12px;
 }
+
+/* Filtros do topo (Encomendar a, Marcacao, Top, Arquivado, Descontinuado) centrados */
+#fornecedores-aplicacao .fornecedor-lista-controles.mapas-lista-controles.fornecedor-controles-unificados {
+    justify-content: center !important;
+    justify-items: start;
+}
