@@ -5703,3 +5703,49 @@ body.fornecedores-vista-preparar #fornecedores-aplicacao .fornecedor-resultados 
     display: flex !important;
     justify-content: center;
 }
+
+/* Lista de encomendas (ecra inicial): cada encomenda numa linha compacta */
+body.fornecedores-vista-lista .fornecedores-coluna-direita .fornecedor-pedidos {
+    display: grid !important;
+    gap: 6px !important;
+}
+body.fornecedores-vista-lista .fornecedores-coluna-direita .fornecedor-pedido-cabecalho {
+    padding: 8px 12px !important;
+}
+body.fornecedores-vista-lista .fornecedores-coluna-direita .fornecedor-pedido-cabecalho .admin-encomenda-linha.fornecedor-pedido-linha-cabecalho,
+body.fornecedores-vista-lista .fornecedores-coluna-direita .fornecedor-pedido-cabecalho .admin-encomenda-linha.fornecedor-pedido-linha-cabecalho.com-destino-selecao {
+    display: grid !important;
+    grid-template-columns: 170px 210px minmax(110px, 1fr) minmax(170px, 1.2fr) 150px auto !important;
+    grid-template-areas: "codigo data fornecedor resumo estado imprimir" "destino destino destino destino destino destino" !important;
+    align-items: center !important;
+    column-gap: 14px !important;
+    row-gap: 4px !important;
+}
+body.fornecedores-vista-lista .fornecedores-coluna-direita .fornecedor-pedido-linha-cabecalho > * {
+    margin: 0 !important;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+body.fornecedores-vista-lista .fornecedores-coluna-direita .fornecedor-pedido-linha-cabecalho .fornecedor-pedido-estado-linha {
+    grid-area: estado;
+    display: inline-flex !important;
+    justify-self: start;
+}
+body:not(.fornecedores-vista-lista) .fornecedor-pedido-estado-linha { display: none !important; }
+body.fornecedores-vista-lista .fornecedores-coluna-direita .fornecedor-pedido-linha-cabecalho .fornecedor-pedido-destino-selecao {
+    grid-area: destino;
+}
+@media (max-width: 900px) {
+    body.fornecedores-vista-lista .fornecedores-coluna-direita .fornecedor-pedido-cabecalho .admin-encomenda-linha.fornecedor-pedido-linha-cabecalho,
+    body.fornecedores-vista-lista .fornecedores-coluna-direita .fornecedor-pedido-cabecalho .admin-encomenda-linha.fornecedor-pedido-linha-cabecalho.com-destino-selecao {
+        grid-template-columns: minmax(0, 1fr) auto !important;
+        grid-template-areas: "codigo imprimir" "data imprimir" "fornecedor estado" "resumo resumo" "destino destino" !important;
+    }
+}
+body.fornecedores-vista-lista .fornecedores-coluna-direita .fornecedor-pedido-linha-cabecalho .fornecedor-pedido-estado-linha {
+    align-self: center !important;
+    align-items: center;
+    padding: 4px 8px !important;
+}

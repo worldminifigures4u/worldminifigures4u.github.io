@@ -5321,7 +5321,8 @@ function renderizarPedidosFornecedores() {
                 pedidoFornecedorEstaACaminho(pedido) ? formatarTempoDesdePedidoFornecedor(obterDataExibicaoPedidoFornecedor(pedido)) : ""
             ].filter(Boolean).join(" · ")),
             criarElementoPedidoFornecedor("span", "fornecedor-pedido-fornecedor-nome", pedido.fornecedor || "Fornecedor"),
-            criarElementoPedidoFornecedor("span", "fornecedor-pedido-resumo", resumo)
+            criarElementoPedidoFornecedor("span", "fornecedor-pedido-resumo", resumo),
+            criarElementoPedidoFornecedor("span", `estado-encomenda fornecedor-pedido-estado-linha ${obterClasseBadgeEstadoPedidoFornecedor(pedido.estado)}`, pedido.estado || "A preparar")
         );
         if (alvoJuntar) {
             linha.classList.add("com-destino-selecao");
