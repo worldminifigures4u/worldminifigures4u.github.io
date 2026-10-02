@@ -4978,24 +4978,34 @@ function renderizarModalPedidoFornecedor(id) {
 
     const titulo = modal.querySelector("#fornecedor-pedido-modal-titulo");
     const corpo = modal.querySelector(".fornecedor-pedido-modal-corpo");
-    if (titulo) titulo.textContent = `Encomenda ${obterTextoCodigoPedidoFornecedor(pedido)}`;
+    if (titulo) {
+        titulo.classList.add("fornecedor-pedido-modal-titulo-resumo");
+        titulo.replaceChildren(
+            criarElementoPedidoFornecedor("span", "admin-encomenda-modal-titulo-codigo", obterTextoCodigoPedidoFornecedor(pedido)),
+            criarElementoPedidoFornecedor("span", "admin-encomenda-modal-titulo-data", formatarDataPedidoFornecedor(obterDataExibicaoPedidoFornecedor(pedido))),
+            criarElementoPedidoFornecedor("span", "admin-encomenda-modal-titulo-origem fornecedor-pedido-modal-fornecedor", pedido.fornecedor || "Fornecedor")
+        );
+    }
     if (!corpo) return;
     corpo.replaceChildren();
 
     const card = criarElementoPedidoFornecedor("article", "admin-encomenda-card fornecedor-pedido-card aberta fornecedor-pedido-card-modal");
-    const cabecalho = criarElementoPedidoFornecedor("div", "admin-encomenda-cabecalho fornecedor-pedido-cabecalho fornecedor-pedido-cabecalho-modal");
     const totaisPedido = obterTotaisPedidoFornecedor(pedido);
     const resumo = formatarResumoPedidoFornecedor(totaisPedido);
-    const linha = criarElementoPedidoFornecedor("div", "admin-encomenda-linha fornecedor-pedido-linha-cabecalho");
-    linha.append(
-        criarElementoPedidoFornecedor("strong", "admin-encomenda-codigo", obterTextoCodigoPedidoFornecedor(pedido)),
-        criarElementoPedidoFornecedor("span", "admin-encomenda-data", formatarDataPedidoFornecedor(obterDataExibicaoPedidoFornecedor(pedido))),
-        criarElementoPedidoFornecedor("span", "fornecedor-pedido-fornecedor-nome", pedido.fornecedor || "Fornecedor"),
-        criarElementoPedidoFornecedor("span", "fornecedor-pedido-resumo", resumo),
-        criarElementoPedidoFornecedor("span", `estado-encomenda ${obterClasseBadgeEstadoPedidoFornecedor(pedido.estado)}`, pedido.estado || "A preparar")
-    );
-    cabecalho.appendChild(linha);
-    card.append(cabecalho, criarDetalhesPedidoFornecedor(pedido));
+    const detalhes = criarDetalhesPedidoFornecedor(pedido);
+    const acoes = detalhes.querySelector(".fornecedor-pedido-acoes");
+    const topo = modal.querySelector(".fornecedor-pedido-modal-topo");
+    const fecharTopo = modal.querySelector(".fornecedor-pedido-modal-fechar");
+    const grupoAnterior = topo?.querySelector(".fornecedor-pedido-modal-acoes");
+    if (topo && fecharTopo) {
+        const grupoTopo = criarElementoPedidoFornecedor("div", "fornecedor-pedido-modal-acoes");
+        if (acoes) grupoTopo.appendChild(acoes);
+        grupoTopo.appendChild(fecharTopo);
+        topo.appendChild(grupoTopo);
+    }
+    grupoAnterior?.remove();
+    detalhes.prepend(criarElementoPedidoFornecedor("p", "fornecedor-pedido-modal-resumo", resumo));
+    card.append(detalhes);
     corpo.appendChild(card);
 
     modal.hidden = false;
