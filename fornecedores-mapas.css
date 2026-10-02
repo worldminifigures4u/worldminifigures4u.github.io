@@ -5120,3 +5120,28 @@ html:not(.admin-light-mode) body #fornecedor-edicao-modal .fornecedor-edicao-fec
 #fornecedor-edicao-modal .fornecedor-edicao-dialog {
     width: min(1160px, calc(100vw - 16px));
 }
+
+/* Editar encomenda: botao vermelho com cruz para remover a figura */
+#fornecedor-edicao-modal .fornecedor-edicao-remover-x {
+    align-self: end;
+    width: 34px;
+    height: 34px;
+    min-width: 34px;
+    padding: 0;
+    border: 0;
+    border-radius: 6px;
+    background: var(--fp-cor-perigo, #7a1f1f);
+    color: #fff;
+    font-size: 16px;
+    font-weight: 800;
+    line-height: 1;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+#fornecedor-edicao-modal .fornecedor-edicao-remover-x:is(:hover, :focus-visible) {
+    background: var(--fp-cor-perigo-hover, #a52828);
+    outline: none;
+}
+#fornecedor-edicao-modal .fornecedor-edicao-produto[hidden] { display: none !important; }

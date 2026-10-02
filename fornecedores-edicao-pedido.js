@@ -936,12 +936,30 @@ function montarLinhaEdicaoProdutoFornecedor(pedido, item, indice) {
         if (marcarOsInput.checked && marcarExInput.checked) marcarExInput.checked = false;
     });
 
-    const remover = document.createElement("label");
-    remover.className = "fornecedor-edicao-remover";
+    const remover = document.createElement("button");
+    remover.type = "button";
+    remover.className = "fornecedor-edicao-remover-x";
+    remover.textContent = "\u2715";
+    remover.title = "Remover figura da encomenda";
+    remover.setAttribute("aria-label", `Remover ${nome.textContent} da encomenda`);
     const removerInput = document.createElement("input");
     removerInput.type = "checkbox";
+    removerInput.hidden = true;
     removerInput.dataset.campo = "remover";
-    remover.append(removerInput, document.createTextNode(" Remover"));
+    remover.addEventListener("click", async () => {
+        const confirmado = typeof mostrarConfirmacaoSite === "function"
+            ? await mostrarConfirmacaoSite(`Remover ${nome.textContent} da encomenda?`, {
+                titulo: "Remover figura",
+                textoConfirmar: "Remover"
+            })
+            : window.confirm(`Remover ${nome.textContent} da encomenda?`);
+        if (!confirmado) return;
+        removerInput.checked = true;
+        linha.dataset.removido = "1";
+        linha.hidden = true;
+        const status = linha.closest("#fornecedor-edicao-modal")?.querySelector("#fornecedor-edicao-status");
+        definirStatusEdicaoFornecedor(status, "aviso", `${nome.textContent} removida da lista. Clica em Gravar para guardar.`);
+    });
 
     const lerNumeroCampo = (input, casas = 0) => {
         const bruto = String(input?.value || "").trim().replace(",", ".");
@@ -1031,7 +1049,7 @@ function montarLinhaEdicaoProdutoFornecedor(pedido, item, indice) {
         });
     });
 
-    campos.append(quantidade, falta, precoCusto, recebido, marcarOs, marcarEx, remover);
+    campos.append(quantidade, falta, precoCusto, recebido, marcarOs, marcarEx, remover, removerInput);
     linha.append(info, campos);
     return linha;
 }
@@ -1197,6 +1215,7 @@ function processarLinhasListaExFornecedor(texto) {
 }
 
 function aplicarListaOsNaLinhaEdicaoFornecedor(linha, quantidadeOsIndicada = null) {
+    if (linha?.dataset?.removido === "1") return false;
     const quantidadeOriginal = Math.max(0, Math.floor(Number(linha.dataset.quantidadeOriginal || 0)));
     const quantidadeInput = linha.querySelector('[data-campo="quantidade"]');
     const faltaInput = linha.querySelector('[data-campo="falta_os"]');
@@ -1228,6 +1247,7 @@ function aplicarListaOsNaLinhaEdicaoFornecedor(linha, quantidadeOsIndicada = nul
 }
 
 function aplicarListaExNaLinhaEdicaoFornecedor(linha) {
+    if (linha?.dataset?.removido === "1") return false;
     const quantidadeOriginal = Math.max(0, Math.floor(Number(linha.dataset.quantidadeOriginal || 0)));
     const quantidadeInput = linha.querySelector('[data-campo="quantidade"]');
     const faltaInput = linha.querySelector('[data-campo="falta_os"]');
