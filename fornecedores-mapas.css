@@ -5402,3 +5402,34 @@ html:not(.admin-light-mode) .fornecedor-pedido-modal-acoes .admin-encomenda-esta
     html:not(.admin-light-mode) .fornecedor-pedido-modal-acoes .admin-encomenda-estado-edicao .fornecedor-status-select { width: 100% !important; }
     .fornecedor-pedido-modal-acoes .admin-encomenda-estado-edicao { width: 100%; }
 }
+
+/* Alvo de unidades ao lado do contador da encomenda (so informativo) */
+#fornecedores-aplicacao .fornecedor-resumo-encomenda-centro #fornecedor-total-figuras-encomenda {
+    flex: 0 0 auto !important;
+    width: auto !important;
+    min-width: 96px !important;
+    max-width: none !important;
+    padding-left: 10px !important;
+    padding-right: 10px !important;
+    white-space: nowrap;
+}
+#fornecedores-aplicacao .fornecedor-resumo-encomenda-centro #fornecedor-total-figuras-encomenda.alvo-atingido {
+    color: #3ddc84 !important;
+    border-color: #2e8b57 !important;
+}
+#fornecedores-aplicacao .fornecedor-resumo-encomenda-centro #fornecedor-total-figuras-encomenda.alvo-acima {
+    color: #ff9f1c !important;
+    border-color: #a8650f !important;
+}
+#fornecedores-aplicacao .fornecedor-resumo-encomenda-centro .fornecedor-alvo-unidades {
+    flex: 0 0 72px;
+    width: 72px;
+    height: 36px;
+    box-sizing: border-box;
+    padding: 0 8px;
+    text-align: center;
+    font: inherit;
+    font-size: 13px;
+    font-weight: 800;
+    border-radius: 5px !important;
+}

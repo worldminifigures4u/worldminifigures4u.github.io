@@ -764,7 +764,7 @@ async function apagarFichaFornecedor() {
 
     const confirmou = await mostrarConfirmacaoSite(
         `Apagar o fornecedor "${ficha.nome}"?\n\nIsto remove a ficha do fornecedor, mas nao apaga produtos nem encomendas ja criadas.`,
-        { titulo: "Apagar fornecedor", textoConfirmar: "Apagar", textoCancelar: "Cancelar" }
+        { titulo: "Apagar fornecedor", textoConfirmar: "Apagar", textoCancelar: "Fechar" }
     );
     if (!confirmou) return;
 
@@ -2113,7 +2113,7 @@ function criarBlocoHistoricoFornecedorFicha(form, id, rotulo, valor, opcoes = {}
                 const rotuloLinha = `${item.data ? formatarDataOsCurtaFornecedor(item.data) : "sem data"} — ${rotuloHistoricoFornecedor(item.tipo)}`;
                 if (!(await mostrarConfirmacaoSite(
                     `Apagar esta linha do histórico de ${rotulo}?\n\n${rotuloLinha}\n\nSó fica definitivo ao gravar o produto.`,
-                    { titulo: "Apagar histórico", textoConfirmar: "Apagar", textoCancelar: "Cancelar" }
+                    { titulo: "Apagar histórico", textoConfirmar: "Apagar", textoCancelar: "Fechar" }
                 ))) {
                     return;
                 }
@@ -2135,7 +2135,7 @@ function criarBlocoHistoricoFornecedorFicha(form, id, rotulo, valor, opcoes = {}
     botaoLimpar.addEventListener("click", async () => {
         if (!(await mostrarConfirmacaoSite(
             `Limpar o histórico de ${rotulo} nesta ficha?\n\nA marcação atual também fica vazia. Só fica definitivo ao gravar o produto.`,
-            { titulo: "Limpar histórico", textoConfirmar: "Limpar", textoCancelar: "Cancelar" }
+            { titulo: "Limpar histórico", textoConfirmar: "Limpar", textoCancelar: "Fechar" }
         ))) {
             return;
         }
@@ -2229,7 +2229,7 @@ function montarHistoricoEncomendasFornecedorEditor(bloco, produto, fornecedorNom
         apagar.addEventListener("click", async () => {
             if (!(await mostrarConfirmacaoSite(
                 `Remover ${produto.nome || "este produto"} da encomenda ${codigo}?\n\nIsto apaga esta linha do histórico a fornecedores.`,
-                { titulo: "Remover da encomenda", textoConfirmar: "Remover", textoCancelar: "Cancelar" }
+                { titulo: "Remover da encomenda", textoConfirmar: "Remover", textoCancelar: "Fechar" }
             ))) {
                 return;
             }
@@ -3173,11 +3173,65 @@ function obterTextoTotalFigurasEncomendaFornecedor() {
     return String(obterTotalUnidadesEncomendaFornecedor());
 }
 
+const CHAVE_ALVO_UNIDADES_FORNECEDOR = "fp-fornecedor-alvo-unidades";
+
+function lerAlvoUnidadesFornecedor() {
+    const campo = document.getElementById("fornecedor-alvo-unidades");
+    const valor = Math.floor(Number(String(campo?.value || "").replace(/[^0-9]/g, "")) || 0);
+    return valor > 0 ? valor : 0;
+}
+
+function limparAlvoUnidadesFornecedor() {
+    const campo = document.getElementById("fornecedor-alvo-unidades");
+    if (campo) campo.value = "";
+    try { localStorage.removeItem(CHAVE_ALVO_UNIDADES_FORNECEDOR); } catch (erro) { /* sem armazenamento */ }
+    atualizarTotalFigurasEncomendaFornecedor();
+}
+
+function garantirCampoAlvoUnidadesFornecedor(contador) {
+    let campo = document.getElementById("fornecedor-alvo-unidades");
+    if (campo || !contador?.parentNode) return campo;
+    campo = document.createElement("input");
+    campo.type = "text";
+    campo.id = "fornecedor-alvo-unidades";
+    campo.className = "fornecedor-alvo-unidades";
+    campo.inputMode = "numeric";
+    campo.autocomplete = "off";
+    campo.placeholder = "Alvo";
+    campo.title = "Unidades que queres nesta encomenda (só informativo)";
+    campo.setAttribute("aria-label", "Unidades alvo da encomenda");
+    campo.dataset.semLimparCampo = "1";
+    try { campo.value = localStorage.getItem(CHAVE_ALVO_UNIDADES_FORNECEDOR) || ""; } catch (erro) { campo.value = ""; }
+    campo.addEventListener("input", () => {
+        const limpo = campo.value.replace(/[^0-9]/g, "").slice(0, 5);
+        if (limpo !== campo.value) campo.value = limpo;
+        try {
+            if (limpo) localStorage.setItem(CHAVE_ALVO_UNIDADES_FORNECEDOR, limpo);
+            else localStorage.removeItem(CHAVE_ALVO_UNIDADES_FORNECEDOR);
+        } catch (erro) { /* sem armazenamento */ }
+        atualizarTotalFigurasEncomendaFornecedor();
+    });
+    contador.insertAdjacentElement("afterend", campo);
+    return campo;
+}
+
 function atualizarTotalFigurasEncomendaFornecedor() {
     const alvo = document.getElementById("fornecedor-total-figuras-encomenda");
     if (!alvo || !estaPaginaFornecedoresUnificada()) return;
-    alvo.textContent = `${obterTextoTotalFigurasEncomendaFornecedor()} un.`;
-    alvo.title = "Total de unidades na encomenda";
+    garantirCampoAlvoUnidadesFornecedor(alvo);
+    const total = obterTotalUnidadesEncomendaFornecedor();
+    const objetivo = lerAlvoUnidadesFornecedor();
+    alvo.classList.remove("alvo-abaixo", "alvo-atingido", "alvo-acima");
+    if (objetivo > 0) {
+        alvo.textContent = `${total} / ${objetivo} un.`;
+        alvo.classList.add(total === objetivo ? "alvo-atingido" : (total > objetivo ? "alvo-acima" : "alvo-abaixo"));
+        alvo.title = total === objetivo
+            ? "Alvo atingido"
+            : (total > objetivo ? `${total - objetivo} unidade(s) acima do alvo` : `Faltam ${objetivo - total} unidade(s) para o alvo`);
+    } else {
+        alvo.textContent = `${obterTextoTotalFigurasEncomendaFornecedor()} un.`;
+        alvo.title = "Total de unidades na encomenda";
+    }
     alvo.hidden = false;
 }
 
@@ -3887,9 +3941,10 @@ async function limparSelecaoFornecedor() {
     if (!(await mostrarConfirmacaoSite('Limpar todos os produtos da encomenda a fornecedor?', {
         titulo: "Limpar lista",
         textoConfirmar: "Limpar",
-        textoCancelar: "Cancelar"
+        textoCancelar: "Fechar"
     }))) return;
     fornecedorSelecao = [];
+    limparAlvoUnidadesFornecedor();
     guardarSelecaoFornecedor();
     renderizarResultadosFornecedor();
     renderizarSelecionadosFornecedor();
@@ -3942,6 +3997,7 @@ async function criarPedidoFornecedor() {
             console.warn("Nao foi possivel registar histórico Solicitada na ficha.", erroHistorico);
         }
         fornecedorSelecao = [];
+        limparAlvoUnidadesFornecedor();
         guardarSelecaoFornecedor();
         renderizarResultadosFornecedor();
         renderizarSelecionadosFornecedor();
@@ -4020,7 +4076,7 @@ async function apagarPedidoFornecedor(id) {
     if (!(await mostrarConfirmacaoSite(`Apagar a encomenda ${obterTextoCodigoPedidoFornecedor(pedido)}? Isto nao altera o stock.`, {
         titulo: "Apagar encomenda",
         textoConfirmar: "Apagar",
-        textoCancelar: "Cancelar"
+        textoCancelar: "Fechar"
     }))) return;
     try {
         const { error } = await fornecedoresClient.rpc('apagar_encomenda_fornecedor_admin', { p_id: id });
@@ -4516,7 +4572,7 @@ async function adicionarSelecaoAoPedidoFornecedor(id) {
     if (!(await confirmarFornecedorNoSite({
         titulo: "Adicionar a encomenda",
         texto: `Adicionar ${total} unidade(s) selecionada(s) a ${obterTextoCodigoPedidoFornecedor(pedido)}?`,
-        textoCancelar: "Cancelar",
+        textoCancelar: "Fechar",
         textoConfirmar: "Adicionar"
     }))) return;
 
@@ -4547,6 +4603,7 @@ async function adicionarSelecaoAoPedidoFornecedor(id) {
         definirStatusFornecedor('A completar encomenda com a selecao...', false, { temporario: false });
         const atualizado = await atualizarPedidoFornecedor(pedido.id, { itens: consolidarItensPedidoFornecedor(itens) });
         fornecedorSelecao = [];
+        limparAlvoUnidadesFornecedor();
         guardarSelecaoFornecedor();
         renderizarSelecionadosFornecedor();
         exportarTxtItensFornecedor(itensExportar, `${atualizado.codigo}-selecao`);
