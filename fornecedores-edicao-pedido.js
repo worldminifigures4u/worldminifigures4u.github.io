@@ -1591,8 +1591,8 @@ function garantirModalEdicaoFornecedor() {
                         <summary>Preço de compra</summary>
                         <div class="fornecedor-edicao-bloco-conteudo">
                             <div class="fornecedor-edicao-modo-preco" role="radiogroup" aria-label="Tipo de preço">
-                                <label><input type="radio" name="fornecedor-edicao-modo-preco" value="usd" checked> Preço do fornecedor (USD)</label>
-                                <label><input type="radio" name="fornecedor-edicao-modo-preco" value="eur"> Preço fixo (€)</label>
+                                <label><input type="radio" name="fornecedor-edicao-modo-preco" value="usd" checked> Preço por figura (USD)</label>
+                                <label><input type="radio" name="fornecedor-edicao-modo-preco" value="eur"> Preço igual para todas (€)</label>
                             </div>
                             <div class="fornecedor-edicao-painel-preco" data-modo-preco="usd">
                                 <div class="fornecedor-custo-real-grid" aria-label="Custo real da compra">
