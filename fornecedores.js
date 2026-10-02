@@ -4661,7 +4661,14 @@ function formatarResumoCartaoPedidoFornecedor(totaisPedido) {
 }
 
 function formatarResumoPedidoFornecedor(totaisPedido) {
-    return `${totaisPedido.itens} artigo(s) · ${totaisPedido.quantidade} unidade(s) · ${totaisPedido.pendente} por receber${totaisPedido.os > 0 ? ` · ${totaisPedido.os} OS` : ""}${totaisPedido.ex > 0 ? ` · ${totaisPedido.ex} EX` : ""}`;
+    const partes = [
+        `${totaisPedido.itens} ${totaisPedido.itens === 1 ? "artigo" : "artigos"}`,
+        `${totaisPedido.quantidade} ${totaisPedido.quantidade === 1 ? "unidade" : "unidades"}`,
+        `${totaisPedido.pendente} por receber`
+    ];
+    if (totaisPedido.os > 0) partes.push(`${totaisPedido.os} OS`);
+    if (totaisPedido.ex > 0) partes.push(`${totaisPedido.ex} EX`);
+    return partes.join(" · ");
 }
 
 function renderizarPedidoFornecedorProdutosTabela(caixa, pedido) {
