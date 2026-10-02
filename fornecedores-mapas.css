@@ -4970,7 +4970,7 @@ html:not(.admin-light-mode) body #fornecedor-pedido-modal .fornecedor-pedido-mod
     font-weight: 700;
     cursor: pointer;
 }
-#fornecedor-edicao-modal .fornecedor-edicao-marcar-ex { color: #9ecbff; }
+#fornecedor-edicao-modal .fornecedor-edicao-marcar-ex { color: #ff9f1c; }
 #fornecedor-edicao-modal .fornecedor-edicao-produto-campos :is(.fornecedor-edicao-marcar-os, .fornecedor-edicao-marcar-ex, .fornecedor-edicao-remover) input {
     width: auto;
     margin: 0;

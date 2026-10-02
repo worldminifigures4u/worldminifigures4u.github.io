@@ -879,7 +879,7 @@ function montarLinhaEdicaoProdutoFornecedor(pedido, item, indice) {
     falta.appendChild(faltaInput);
 
     const precoCusto = document.createElement("label");
-    precoCusto.textContent = precoProvisorioUsd ? "preço compra USD" : "preço compra";
+    precoCusto.textContent = precoProvisorioUsd ? "Preço compra USD" : "Preço compra";
     const precoCustoInput = document.createElement("input");
     precoCustoInput.type = "text";
     precoCustoInput.inputMode = "decimal";
