@@ -1435,10 +1435,86 @@ function limparListaExEdicaoFornecedor() {
 }
 
 
+function mostrarSeparadorListaEdicaoFornecedor(modal, separador) {
+    modal?.querySelectorAll('.fornecedor-edicao-separador').forEach(botao => {
+        const ativo = botao.dataset.separador === separador;
+        botao.classList.toggle('ativo', ativo);
+        botao.setAttribute('aria-selected', ativo ? 'true' : 'false');
+    });
+    modal?.querySelectorAll('.fornecedor-edicao-painel-lista').forEach(painel => {
+        painel.hidden = painel.dataset.painel !== separador;
+    });
+}
+
+function chaveModoPrecoFornecedor(fornecedor) {
+    return 'fp-fornecedor-modo-preco:' + String(fornecedor || '').trim().toLowerCase().replace(/\s+/g, '');
+}
+
+function mostrarModoPrecoEdicaoFornecedor(modal, modo, limparOutro = false) {
+    const modoFinal = modo === 'eur' ? 'eur' : 'usd';
+    const radio = modal?.querySelector(`input[name="fornecedor-edicao-modo-preco"][value="${modoFinal}"]`);
+    if (radio) radio.checked = true;
+    modal?.querySelectorAll('.fornecedor-edicao-painel-preco').forEach(painel => {
+        const visivel = painel.dataset.modoPreco === modoFinal;
+        painel.hidden = !visivel;
+        if (!visivel && limparOutro) {
+            painel.querySelectorAll('input[type="text"]').forEach(input => { input.value = ''; });
+        }
+    });
+}
+
+function ligarBlocosEdicaoFornecedor(modal) {
+    modal.querySelectorAll('.fornecedor-edicao-painel-lista textarea').forEach(area => {
+        const envoltorio = document.createElement('div');
+        envoltorio.className = 'fornecedor-edicao-lista-campo';
+        area.parentNode.insertBefore(envoltorio, area);
+        envoltorio.appendChild(area);
+        const limpar = document.createElement('button');
+        limpar.type = 'button';
+        limpar.className = 'fornecedor-edicao-lista-limpar';
+        limpar.textContent = '\u2715';
+        limpar.title = 'Limpar texto';
+        limpar.setAttribute('aria-label', 'Limpar texto');
+        const atualizar = () => { limpar.hidden = !area.value; };
+        limpar.addEventListener('click', () => {
+            area.value = '';
+            atualizar();
+            area.focus();
+        });
+        area.addEventListener('input', atualizar);
+        area.addEventListener('change', atualizar);
+        envoltorio.appendChild(limpar);
+        atualizar();
+    });
+    modal.querySelectorAll('.fornecedor-edicao-separador').forEach(botao => {
+        botao.addEventListener('click', () => mostrarSeparadorListaEdicaoFornecedor(modal, botao.dataset.separador));
+    });
+    modal.querySelectorAll('input[name="fornecedor-edicao-modo-preco"]').forEach(radio => {
+        radio.addEventListener('change', () => {
+            if (!radio.checked) return;
+            mostrarModoPrecoEdicaoFornecedor(modal, radio.value, true);
+            const fornecedor = modal.querySelector('#fornecedor-edicao-nome')?.value || '';
+            try { localStorage.setItem(chaveModoPrecoFornecedor(fornecedor), radio.value); } catch (erro) { /* sem armazenamento */ }
+        });
+    });
+}
+
+function prepararBlocosAoAbrirEdicaoFornecedor(modal, pedido) {
+    modal.querySelectorAll('.fornecedor-edicao-bloco').forEach(bloco => { bloco.open = false; });
+    modal.querySelectorAll('.fornecedor-edicao-lista-limpar').forEach(botao => {
+        const area = botao.parentElement?.querySelector('textarea');
+        botao.hidden = !area?.value;
+    });
+    mostrarSeparadorListaEdicaoFornecedor(modal, 'final');
+    let modo = '';
+    try { modo = localStorage.getItem(chaveModoPrecoFornecedor(pedido?.fornecedor)) || ''; } catch (erro) { modo = ''; }
+    mostrarModoPrecoEdicaoFornecedor(modal, modo || 'usd', false);
+}
+
 function garantirModalEdicaoFornecedor() {
     let modal = document.getElementById('fornecedor-edicao-modal');
     // Recria se faltar alguma secção nova (modal antigo em memória)
-    if (modal && (!modal.querySelector('#fornecedor-edicao-lista-os') || !modal.querySelector('#fornecedor-edicao-lista-ex') || !modal.querySelector('#fornecedor-edicao-total-eur') || !modal.querySelector('#fornecedor-edicao-total-compra-usd') || !modal.querySelector('#fornecedor-edicao-os-total-compra-eur'))) {
+    if (modal && (!modal.querySelector('#fornecedor-edicao-lista-os') || !modal.querySelector('#fornecedor-edicao-lista-ex') || !modal.querySelector('#fornecedor-edicao-total-eur') || !modal.querySelector('#fornecedor-edicao-total-compra-usd') || !modal.querySelector('#fornecedor-edicao-os-total-compra-eur') || !modal.querySelector('#fornecedor-edicao-bloco-listas'))) {
         modal.remove();
         modal = null;
     }
@@ -1480,69 +1556,85 @@ function garantirModalEdicaoFornecedor() {
                         </label>
                     </div>
                     <p class="fornecedor-edicao-aviso-guardar">As alterações aos campos acima só ficam gravadas ao clicar <strong>Gravar</strong>.</p>
-                    <section class="fornecedor-lista-final-box fornecedor-lista-final-edicao" aria-label="Lista atual enviada pelo fornecedor">
-                        <h4>Colar lista atual do fornecedor</h4>
-                        <p>Cola aqui a tabela do fornecedor. O campo CODE é usado como referência; PRICE é lido como preço unitário em USD; SKU e AMOUNT são ignorados. Se a nota indicar OUT OF STOCK, a figura é marcada como OS automaticamente.</p>
-                        <textarea id="fornecedor-edicao-lista-final" rows="5" placeholder="Ex.:&#10;CODE	SKU	QTY	PRICE	AMOUNT	NOTE&#10;AF301	AF301	2	$1,25	$2,50&#10;PG634	PG634	1		$0,00	OUT OF STOCK"></textarea>
-                        <div class="fornecedor-custo-real-grid" aria-label="Custo real da compra">
-                            <label>
-                                Envio USD
-                                <input type="text" id="fornecedor-edicao-envio-usd" inputmode="decimal" autocomplete="off" placeholder="$83,00">
-                            </label>
-                            <label>
-                                Total compra USD
-                                <input type="text" id="fornecedor-edicao-total-compra-usd" inputmode="decimal" autocomplete="off" placeholder="$415,27">
-                            </label>
-                            <label>
-                                Total pago EUR
-                                <input type="text" id="fornecedor-edicao-total-eur" inputmode="decimal" autocomplete="off" placeholder="365,40 €">
-                            </label>
-                            <fieldset>
-                                <legend>Distribuir envio</legend>
-                                <label><input type="radio" name="fornecedor-edicao-rateio-envio" value="unidades" checked> Por unidade</label>
-                                <label><input type="radio" name="fornecedor-edicao-rateio-envio" value="valor"> Por valor</label>
-                            </fieldset>
+                    <details class="fornecedor-edicao-bloco" id="fornecedor-edicao-bloco-listas">
+                        <summary>Importar lista do fornecedor</summary>
+                        <div class="fornecedor-edicao-bloco-conteudo">
+                            <div class="fornecedor-edicao-separadores" role="tablist" aria-label="Tipo de lista">
+                                <button type="button" role="tab" class="fornecedor-edicao-separador ativo" data-separador="final" aria-selected="true">Lista atual</button>
+                                <button type="button" role="tab" class="fornecedor-edicao-separador" data-separador="os" aria-selected="false">Lista OS</button>
+                                <button type="button" role="tab" class="fornecedor-edicao-separador" data-separador="ex" aria-selected="false">Lista EX</button>
+                            </div>
+                            <section class="fornecedor-edicao-painel-lista fornecedor-lista-final-edicao" data-painel="final" aria-label="Lista atual enviada pelo fornecedor">
+                                <p class="fornecedor-custo-real-ajuda">Cola a tabela do fornecedor (CODE, QTY, PRICE, NOTE). As figuras com OUT OF STOCK ficam marcadas como OS.</p>
+                                <textarea id="fornecedor-edicao-lista-final" rows="5" placeholder="Ex.:&#10;CODE	SKU	QTY	PRICE	AMOUNT	NOTE&#10;AF301	AF301	2	$1,25	$2,50&#10;PG634	PG634	1		$0,00	OUT OF STOCK"></textarea>
+                                <div class="fornecedor-lista-final-acoes">
+                                    <button type="button" id="fornecedor-edicao-aplicar-lista-final" class="wallapop-botao-destaque">Aplicar lista</button>
+                                </div>
+                            </section>
+                            <section class="fornecedor-edicao-painel-lista fornecedor-lista-os-edicao" data-painel="os" aria-label="Lista OS enviada pelo fornecedor" hidden>
+                                <p class="fornecedor-custo-real-ajuda">Usa só se a lista atual não trouxer OUT OF STOCK. Uma referência por linha, com quantidade opcional.</p>
+                                <textarea id="fornecedor-edicao-lista-os" rows="5" placeholder="Ex.:&#10;AF301&#10;PG634&#10;ou com quantidade:&#10;AF301	2"></textarea>
+                                <div class="fornecedor-lista-final-acoes">
+                                    <button type="button" id="fornecedor-edicao-aplicar-lista-os" class="wallapop-botao-destaque">Marcar OS</button>
+                                </div>
+                            </section>
+                            <section class="fornecedor-edicao-painel-lista fornecedor-lista-ex-edicao" data-painel="ex" aria-label="Lista EX enviada pelo fornecedor" hidden>
+                                <p class="fornecedor-custo-real-ajuda">Referências que o fornecedor indicou como EX. Saem do a receber sem criar OS.</p>
+                                <textarea id="fornecedor-edicao-lista-ex" rows="5" placeholder="Ex.:&#10;AF301&#10;PG634"></textarea>
+                                <div class="fornecedor-lista-final-acoes">
+                                    <button type="button" id="fornecedor-edicao-aplicar-lista-ex" class="wallapop-botao-destaque">Marcar EX</button>
+                                </div>
+                            </section>
                         </div>
-                        <p class="fornecedor-custo-real-ajuda">Se ainda não tiveres o total pago em EUR, deixa esse campo vazio. O preço compra fica provisório em USD com o envio incluído. Quando souberes o total, podes preencher o Total pago EUR; se a soma em USD não bater certo por arredondamentos, preenche também o Total compra USD da folha.</p>
-                        <div class="fornecedor-lista-final-acoes">
-                            <button type="button" id="fornecedor-edicao-limpar-lista-final">Limpar texto</button>
-                            <button type="button" id="fornecedor-edicao-aplicar-lista-final" class="wallapop-botao-destaque">Aplicar à encomenda</button>
+                    </details>
+                    <details class="fornecedor-edicao-bloco" id="fornecedor-edicao-bloco-preco">
+                        <summary>Preço de compra</summary>
+                        <div class="fornecedor-edicao-bloco-conteudo">
+                            <div class="fornecedor-edicao-modo-preco" role="radiogroup" aria-label="Tipo de preço">
+                                <label><input type="radio" name="fornecedor-edicao-modo-preco" value="usd" checked> Preço do fornecedor (USD)</label>
+                                <label><input type="radio" name="fornecedor-edicao-modo-preco" value="eur"> Preço fixo (€)</label>
+                            </div>
+                            <div class="fornecedor-edicao-painel-preco" data-modo-preco="usd">
+                                <div class="fornecedor-custo-real-grid" aria-label="Custo real da compra">
+                                    <label>
+                                        Envio USD
+                                        <input type="text" id="fornecedor-edicao-envio-usd" inputmode="decimal" autocomplete="off" placeholder="$83,00">
+                                    </label>
+                                    <label>
+                                        Total compra USD
+                                        <input type="text" id="fornecedor-edicao-total-compra-usd" inputmode="decimal" autocomplete="off" placeholder="$415,27">
+                                    </label>
+                                    <label>
+                                        Total pago EUR
+                                        <input type="text" id="fornecedor-edicao-total-eur" inputmode="decimal" autocomplete="off" placeholder="365,40 €">
+                                    </label>
+                                    <fieldset>
+                                        <legend>Distribuir envio</legend>
+                                        <label><input type="radio" name="fornecedor-edicao-rateio-envio" value="unidades" checked> Por unidade</label>
+                                        <label><input type="radio" name="fornecedor-edicao-rateio-envio" value="valor"> Por valor</label>
+                                    </fieldset>
+                                </div>
+                                <p class="fornecedor-custo-real-ajuda">Sem o Total pago EUR, o preço fica provisório em USD com o envio incluído. Com ele, passa a EUR.</p>
+                            </div>
+                            <div class="fornecedor-edicao-painel-preco" data-modo-preco="eur" hidden>
+                                <div class="fornecedor-custo-real-grid fornecedor-custo-fixo-eur-grid" aria-label="Preço fixo EUR da encomenda">
+                                    <label>
+                                        Preço por unidade €
+                                        <input type="text" id="fornecedor-edicao-os-preco-unitario-eur" inputmode="decimal" autocomplete="off" placeholder="1,20 €">
+                                    </label>
+                                    <label>
+                                        Envio €
+                                        <input type="text" id="fornecedor-edicao-os-envio-eur" inputmode="decimal" autocomplete="off" placeholder="9,00 €">
+                                    </label>
+                                    <label>
+                                        Total compra €
+                                        <input type="text" id="fornecedor-edicao-os-total-compra-eur" inputmode="decimal" autocomplete="off" placeholder="120,00 €">
+                                    </label>
+                                </div>
+                                <p class="fornecedor-custo-real-ajuda">Usa o Preço por unidade + Envio, ou só o Total compra (já com envio), que é dividido pelas unidades a receber.</p>
+                            </div>
                         </div>
-                    </section>
-                    <section class="fornecedor-lista-final-box fornecedor-lista-os-edicao" aria-label="Lista OS enviada pelo fornecedor">
-                        <h4>Colar lista OS do fornecedor (opcional)</h4>
-                        <p>Usa só se a lista atual não trouxer a nota OUT OF STOCK. As referências coladas aqui são marcadas como OS e saem do “a receber”.</p>
-                        <textarea id="fornecedor-edicao-lista-os" rows="4" placeholder="Ex.:&#10;AF301&#10;PG634&#10;ou com quantidade:&#10;AF301	2"></textarea>
-                        <p class="fornecedor-custo-real-ajuda"><strong>Preço fixo EUR</strong></p>
-                        <div class="fornecedor-custo-real-grid fornecedor-custo-fixo-eur-grid" aria-label="Preço fixo EUR da encomenda">
-                            <label>
-                                Preço por unidade EUR
-                                <input type="text" id="fornecedor-edicao-os-preco-unitario-eur" inputmode="decimal" autocomplete="off" placeholder="1,20 €">
-                            </label>
-                            <label>
-                                Envio EUR
-                                <input type="text" id="fornecedor-edicao-os-envio-eur" inputmode="decimal" autocomplete="off" placeholder="9,00 €">
-                            </label>
-                            <label>
-                                Total compra EUR
-                                <input type="text" id="fornecedor-edicao-os-total-compra-eur" inputmode="decimal" autocomplete="off" placeholder="120,00 €">
-                            </label>
-                        </div>
-                        <p class="fornecedor-custo-real-ajuda">Para fornecedores de preço fixo: o Total compra EUR é dividido pelas unidades que ficarem a receber nesta encomenda. Se preencheres o total, ele substitui o preço por unidade + envio.</p>
-                        <div class="fornecedor-lista-final-acoes">
-                            <button type="button" id="fornecedor-edicao-limpar-lista-os">Limpar texto</button>
-                            <button type="button" id="fornecedor-edicao-aplicar-lista-os" class="wallapop-botao-destaque">Marcar OS na encomenda</button>
-                        </div>
-                    </section>
-                    <section class="fornecedor-lista-final-box fornecedor-lista-ex-edicao" aria-label="Lista EX enviada pelo fornecedor">
-                        <h4>Colar lista EX do fornecedor</h4>
-                        <p>Cola as referências que o fornecedor indicou como EX. São marcadas como EX e saem do “a receber” sem criar OS.</p>
-                        <textarea id="fornecedor-edicao-lista-ex" rows="4" placeholder="Ex.:&#10;AF301&#10;PG634"></textarea>
-                        <div class="fornecedor-lista-final-acoes">
-                            <button type="button" id="fornecedor-edicao-limpar-lista-ex">Limpar texto</button>
-                            <button type="button" id="fornecedor-edicao-aplicar-lista-ex" class="wallapop-botao-destaque">Marcar EX na encomenda</button>
-                        </div>
-                    </section>
+                    </details>
                     <div class="fornecedor-edicao-produtos" id="fornecedor-edicao-produtos"></div>
                 </div>
             </form>
@@ -1551,6 +1643,7 @@ function garantirModalEdicaoFornecedor() {
 
     document.body.appendChild(modal);
     modal.querySelector('#fornecedor-edicao-fechar')?.addEventListener('click', fecharEdicaoPedidoFornecedor);
+    ligarBlocosEdicaoFornecedor(modal);
     modal.querySelector('#fornecedor-edicao-aplicar-lista-final')?.addEventListener('click', aplicarListaFinalNaEdicaoFornecedor);
     modal.querySelector('#fornecedor-edicao-limpar-lista-final')?.addEventListener('click', limparListaFinalEdicaoFornecedor);
     modal.querySelector('#fornecedor-edicao-aplicar-lista-os')?.addEventListener('click', aplicarListaOsNaEdicaoFornecedor);
@@ -1610,6 +1703,7 @@ function abrirEdicaoPedidoFornecedor(id) {
     if (listaEx) listaEx.value = '';
 
     renderizarItensEdicaoPedidoFornecedor(modal, pedido, pedido.itens);
+    prepararBlocosAoAbrirEdicaoFornecedor(modal, pedido);
 
     modal.hidden = false;
     document.body.classList.add('fornecedor-edicao-modal-aberto');
@@ -1778,7 +1872,7 @@ async function guardarEdicaoPedidoFornecedor(evento) {
         return;
     }
     if (!itens.length) {
-        status.textContent = 'A encomenda precisa de pelo menos um produto. Cole a lista atual e clique em "Aplicar à encomenda", ou desmarque "Remover" nos produtos que quer manter.';
+        status.textContent = 'A encomenda precisa de pelo menos um produto. Cola a lista atual em Importar lista do fornecedor e clica em "Aplicar lista", ou fecha sem gravar para recuperar os produtos removidos.';
         status.classList.remove('status-aviso', 'status-sucesso', 'status-neutro');
         status.classList.add('status-erro');
         status.scrollIntoView({ block: 'nearest', behavior: 'smooth' });

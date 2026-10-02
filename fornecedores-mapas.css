@@ -5145,3 +5145,130 @@ html:not(.admin-light-mode) body #fornecedor-edicao-modal .fornecedor-edicao-fec
     outline: none;
 }
 #fornecedor-edicao-modal .fornecedor-edicao-produto[hidden] { display: none !important; }
+
+/* Editar encomenda: blocos "Importar lista" e "Preco de compra" fechaveis */
+#fornecedor-edicao-modal .fornecedor-edicao-bloco {
+    border: 1px solid #333;
+    border-radius: 8px;
+    background: #101010;
+}
+#fornecedor-edicao-modal .fornecedor-edicao-bloco > summary {
+    list-style: none;
+    cursor: pointer;
+    padding: 12px 14px;
+    color: #fff;
+    font-size: 15px;
+    font-weight: 800;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    user-select: none;
+}
+#fornecedor-edicao-modal .fornecedor-edicao-bloco > summary::-webkit-details-marker { display: none; }
+#fornecedor-edicao-modal .fornecedor-edicao-bloco > summary::before {
+    content: "\25B8";
+    color: var(--cor-acao-principal, #ffc107);
+    font-size: 14px;
+    transition: transform .15s ease;
+}
+#fornecedor-edicao-modal .fornecedor-edicao-bloco[open] > summary::before { transform: rotate(90deg); }
+#fornecedor-edicao-modal .fornecedor-edicao-bloco > summary:hover { color: var(--cor-acao-principal, #ffc107); }
+#fornecedor-edicao-modal .fornecedor-edicao-bloco-conteudo {
+    display: grid;
+    gap: 10px;
+    padding: 0 14px 14px;
+}
+#fornecedor-edicao-modal .fornecedor-edicao-separadores {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+}
+#fornecedor-edicao-modal .fornecedor-edicao-separador {
+    height: 32px;
+    padding: 0 12px;
+    border: 1px solid #444;
+    border-radius: 5px;
+    background: transparent;
+    color: #fff;
+    font-size: 13px;
+    font-weight: 800;
+    cursor: pointer;
+}
+#fornecedor-edicao-modal .fornecedor-edicao-separador:is(:hover, :focus-visible) {
+    border-color: var(--cor-acao-principal, #ffc107);
+    color: var(--cor-acao-principal, #ffc107);
+    outline: none;
+}
+#fornecedor-edicao-modal .fornecedor-edicao-separador.ativo {
+    border-color: var(--cor-acao-principal, #ffc107);
+    background: var(--cor-acao-principal, #ffc107);
+    color: #000;
+}
+#fornecedor-edicao-modal .fornecedor-edicao-painel-lista,
+#fornecedor-edicao-modal .fornecedor-edicao-painel-preco {
+    display: grid;
+    gap: 8px;
+}
+#fornecedor-edicao-modal :is(.fornecedor-edicao-painel-lista, .fornecedor-edicao-painel-preco)[hidden] { display: none; }
+#fornecedor-edicao-modal .fornecedor-edicao-painel-lista textarea {
+    width: 100%;
+    box-sizing: border-box;
+    min-height: 110px;
+    resize: vertical;
+    padding: 10px 11px;
+    font: inherit;
+}
+#fornecedor-edicao-modal .fornecedor-edicao-bloco .fornecedor-custo-real-ajuda {
+    margin: 0;
+    color: #aaa;
+    font-size: 12px;
+}
+#fornecedor-edicao-modal .fornecedor-edicao-modo-preco {
+    display: flex;
+    gap: 18px;
+    flex-wrap: wrap;
+    font-size: 13px;
+    font-weight: 700;
+    color: #ddd;
+}
+#fornecedor-edicao-modal .fornecedor-edicao-modo-preco label {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+}
+#fornecedor-edicao-modal .fornecedor-edicao-bloco .fornecedor-lista-final-acoes button {
+    height: 34px;
+    padding: 0 14px;
+    border-radius: 5px;
+    font-size: 13px;
+}
+#fornecedor-edicao-modal .fornecedor-edicao-painel-lista.fornecedor-lista-os-edicao,
+#fornecedor-edicao-modal .fornecedor-edicao-painel-lista.fornecedor-lista-final-edicao,
+#fornecedor-edicao-modal .fornecedor-edicao-painel-lista.fornecedor-lista-ex-edicao {
+    margin: 0;
+    padding: 0;
+    border: 0;
+    background: transparent;
+}
+#fornecedor-edicao-modal .fornecedor-edicao-lista-campo { position: relative; }
+#fornecedor-edicao-modal .fornecedor-edicao-lista-limpar {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    width: 26px;
+    height: 26px;
+    padding: 0;
+    border: 0;
+    border-radius: 6px;
+    background: var(--fp-cor-perigo, #7a1f1f);
+    color: #fff;
+    font-size: 14px;
+    font-weight: 800;
+    line-height: 1;
+    cursor: pointer;
+}
+#fornecedor-edicao-modal .fornecedor-edicao-lista-limpar:is(:hover, :focus-visible) { background: var(--fp-cor-perigo-hover, #a52828); outline: none; }
+#fornecedor-edicao-modal .fornecedor-edicao-lista-limpar[hidden] { display: none; }
+#fornecedor-edicao-modal .fornecedor-edicao-corpo { align-content: start; }
+#fornecedor-edicao-modal .fornecedor-edicao-modo-preco input[type="radio"] { accent-color: #ffc400; margin: 0; }

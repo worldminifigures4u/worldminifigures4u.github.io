@@ -16,6 +16,8 @@
         '.fornecedor-preco-custo-input',
         '.fornecedor-edicao-produto-campos input',
         '#fornecedor-edicao-lista-final',
+        '#fornecedor-edicao-lista-os',
+        '#fornecedor-edicao-lista-ex',
         '.fornecedor-lista-final-box textarea',
     ].join(', ');
 
