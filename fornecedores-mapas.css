@@ -5347,3 +5347,18 @@ html:not(.admin-light-mode) body #fornecedor-edicao-modal .fornecedor-edicao-fec
 #fornecedor-edicao-modal .fornecedor-edicao-painel-preco[data-modo-preco="usd"] .fornecedor-custo-real-grid > label {
     align-content: end;
 }
+
+/* Editar encomenda: titulo "Recebido" igual aos outros titulos dos campos */
+#fornecedor-edicao-modal .fornecedor-edicao-produto-campos label,
+#fornecedor-edicao-modal .fornecedor-edicao-recebido-info strong {
+    font-family: inherit;
+    font-size: 12px !important;
+    font-weight: 700 !important;
+    line-height: 1.2 !important;
+    color: #ddd;
+    letter-spacing: normal;
+}
+#fornecedor-edicao-modal .fornecedor-edicao-recebido-info {
+    align-self: end;
+    gap: 4px;
+}
