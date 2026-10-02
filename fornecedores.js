@@ -4896,9 +4896,6 @@ function criarDetalhesPedidoFornecedor(pedido) {
     const editar = criarElementoPedidoFornecedor("button", "wallapop-botao wallapop-botao-destaque fornecedor-pedido-botao-editar", "Editar");
     editar.type = "button";
     editar.addEventListener("click", () => abrirEdicaoPedidoFornecedor(pedido.id));
-    const imprimir = criarElementoPedidoFornecedor("button", "wallapop-botao fornecedor-pedido-botao-neutro", "Imprimir");
-    imprimir.type = "button";
-    imprimir.addEventListener("click", () => imprimirPedidoFornecedor(pedido.id));
     const exportarTxt = criarElementoPedidoFornecedor("button", "wallapop-botao wallapop-botao-exportar", "Exportar");
     exportarTxt.type = "button";
     exportarTxt.addEventListener("click", () => {
@@ -4916,7 +4913,7 @@ function criarDetalhesPedidoFornecedor(pedido) {
     const apagar = criarElementoPedidoFornecedor("button", "wallapop-botao admin-encomenda-apagar", "Apagar");
     apagar.type = "button";
     apagar.addEventListener("click", () => apagarPedidoFornecedor(pedido.id));
-    botoes.append(editar, imprimir, exportarTxt, receber, apagar);
+    botoes.append(editar, exportarTxt, receber, apagar);
     acoes.append(grupoEstado, botoes);
 
     detalhes.append(acoes, produtos);
