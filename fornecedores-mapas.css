@@ -5079,3 +5079,25 @@ html:not(.admin-light-mode) body #fornecedor-edicao-modal .fornecedor-edicao-fec
 @media (max-width: 700px) {
     #fornecedor-edicao-modal .fornecedor-edicao-topo .fornecedor-edicao-status:empty { display: none; }
 }
+
+/* Editar encomenda: nome com largura fixa e campos logo a seguir */
+@media (min-width: 1101px) {
+    #fornecedor-edicao-modal .fornecedor-edicao-produto {
+        grid-template-columns: 48px 320px max-content;
+        justify-content: start;
+    }
+}
+#fornecedor-edicao-modal .fornecedor-edicao-produto > .fornecedor-info strong {
+    white-space: normal;
+    overflow: visible;
+    text-overflow: clip;
+    overflow-wrap: anywhere;
+    line-height: 1.2;
+}
+#fornecedor-edicao-modal .fornecedor-edicao-produto:hover {
+    background: #262626;
+    border-color: #444;
+}
+#fornecedor-edicao-modal .fornecedor-edicao-produto:has(.fornecedor-edicao-remover input:checked):hover {
+    background: rgba(122, 31, 31, .36);
+}
