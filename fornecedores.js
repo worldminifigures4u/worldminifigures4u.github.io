@@ -5347,8 +5347,20 @@ function ligarBloqueioScrollExternoListaFornecedor() {
     }, { passive: false });
 }
 
+function atualizarTopoStickyFornecedor() {
+    if (!estaPaginaFornecedoresUnificada()) return;
+    const cabecalho = document.querySelector("header");
+    if (!cabecalho) return;
+    const fundo = Math.max(0, Math.ceil(cabecalho.getBoundingClientRect().bottom));
+    if (document.body.dataset.fornecedorStickyTopo !== String(fundo)) {
+        document.body.dataset.fornecedorStickyTopo = String(fundo);
+        document.body.style.setProperty("--fornecedor-info-sticky-topo", `${fundo}px`);
+    }
+}
+
 function atualizarAlturaStickyControlesFornecedor() {
     if (!estaPaginaFornecedoresUnificada()) return;
+    atualizarTopoStickyFornecedor();
     const controles = document.querySelector(".fornecedor-controles-unificados");
     if (!controles) return;
 
@@ -5367,6 +5379,15 @@ function ligarStickyInfoFornecedor() {
     controles.dataset.stickyInfoLigado = "1";
     atualizarAlturaStickyControlesFornecedor();
     window.addEventListener("resize", atualizarAlturaStickyControlesFornecedor);
+    let topoAgendado = false;
+    window.addEventListener("scroll", () => {
+        if (topoAgendado) return;
+        topoAgendado = true;
+        requestAnimationFrame(() => {
+            topoAgendado = false;
+            atualizarTopoStickyFornecedor();
+        });
+    }, { passive: true });
 
     if ("ResizeObserver" in window) {
         const observador = new ResizeObserver(atualizarAlturaStickyControlesFornecedor);
