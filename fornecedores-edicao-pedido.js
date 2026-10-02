@@ -1463,7 +1463,38 @@ function mostrarModoPrecoEdicaoFornecedor(modal, modo, limparOutro = false) {
     });
 }
 
+function atualizarResultadoPrecoIgualEdicaoFornecedor(modal) {
+    const destino = modal?.querySelector('#fornecedor-edicao-preco-resultado');
+    if (!destino) return;
+    const totalTexto = modal.querySelector('#fornecedor-edicao-os-total-compra-eur')?.value || '';
+    const total = converterNumeroListaFornecedor(totalTexto);
+    let unidades = 0;
+    modal.querySelectorAll('.fornecedor-edicao-produto').forEach(linha => {
+        if (linha.hidden || linha.dataset.removido === '1') return;
+        if (linha.querySelector('[data-campo="marcar_ex"]')?.checked) return;
+        const quantidade = Math.max(0, Math.floor(Number(String(linha.querySelector('[data-campo="quantidade"]')?.value || '0').replace(',', '.')) || 0));
+        unidades += quantidade;
+    });
+    if (!(total > 0)) {
+        destino.textContent = unidades > 0 ? `${unidades} ${unidades === 1 ? 'unidade' : 'unidades'} a receber` : '';
+        return;
+    }
+    if (unidades <= 0) {
+        destino.textContent = 'Não há unidades a receber para dividir o total.';
+        return;
+    }
+    const porFigura = total / unidades;
+    destino.textContent = `= ${porFigura.toFixed(2).replace('.', ',')} € por figura (${unidades} ${unidades === 1 ? 'unidade' : 'unidades'} a receber)`;
+}
+
 function ligarBlocosEdicaoFornecedor(modal) {
+    const atualizarPreco = () => atualizarResultadoPrecoIgualEdicaoFornecedor(modal);
+    modal.addEventListener('input', atualizarPreco);
+    modal.addEventListener('change', atualizarPreco);
+    modal.addEventListener('click', evento => {
+        if (evento.target.closest('.fornecedor-edicao-produto, .fornecedor-lista-final-acoes')) setTimeout(atualizarPreco, 0);
+    });
+    new MutationObserver(atualizarPreco).observe(modal.querySelector('#fornecedor-edicao-produtos') || modal, { childList: true, subtree: true, attributes: true, attributeFilter: ['hidden'] });
     modal.querySelectorAll('.fornecedor-edicao-painel-lista textarea').forEach(area => {
         const envoltorio = document.createElement('div');
         envoltorio.className = 'fornecedor-edicao-lista-campo';
@@ -1509,6 +1540,7 @@ function prepararBlocosAoAbrirEdicaoFornecedor(modal, pedido) {
     let modo = '';
     try { modo = localStorage.getItem(chaveModoPrecoFornecedor(pedido?.fornecedor)) || ''; } catch (erro) { modo = ''; }
     mostrarModoPrecoEdicaoFornecedor(modal, modo || 'usd', false);
+    atualizarResultadoPrecoIgualEdicaoFornecedor(modal);
 }
 
 function garantirModalEdicaoFornecedor() {
@@ -1619,21 +1651,16 @@ function garantirModalEdicaoFornecedor() {
                                 <p class="fornecedor-custo-real-ajuda">Sem o Total pago EUR, o preço fica provisório em USD com o envio incluído. Com ele, passa a EUR.</p>
                             </div>
                             <div class="fornecedor-edicao-painel-preco" data-modo-preco="eur" hidden>
-                                <div class="fornecedor-custo-real-grid fornecedor-custo-fixo-eur-grid" aria-label="Preço fixo EUR da encomenda">
+                                <div class="fornecedor-custo-real-grid fornecedor-custo-fixo-eur-grid" aria-label="Preço igual para todas as figuras">
                                     <label>
-                                        Preço por unidade €
-                                        <input type="text" id="fornecedor-edicao-os-preco-unitario-eur" inputmode="decimal" autocomplete="off" placeholder="1,20 €">
-                                    </label>
-                                    <label>
-                                        Envio €
-                                        <input type="text" id="fornecedor-edicao-os-envio-eur" inputmode="decimal" autocomplete="off" placeholder="9,00 €">
-                                    </label>
-                                    <label>
-                                        Total compra €
+                                        Total pago €
                                         <input type="text" id="fornecedor-edicao-os-total-compra-eur" inputmode="decimal" autocomplete="off" placeholder="120,00 €">
                                     </label>
+                                    <p class="fornecedor-edicao-preco-resultado" id="fornecedor-edicao-preco-resultado" aria-live="polite"></p>
+                                    <input type="hidden" id="fornecedor-edicao-os-preco-unitario-eur">
+                                    <input type="hidden" id="fornecedor-edicao-os-envio-eur">
                                 </div>
-                                <p class="fornecedor-custo-real-ajuda">Usa o Preço por unidade + Envio, ou só o Total compra (já com envio), que é dividido pelas unidades a receber.</p>
+                                <p class="fornecedor-custo-real-ajuda">O total pago (já com envio) é dividido pelas unidades a receber. As figuras OS, EX ou removidas não contam.</p>
                             </div>
                         </div>
                     </details>
