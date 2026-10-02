@@ -369,7 +369,7 @@ function obterResumoCustoRealListaAtualFornecedor(resumo) {
     if (!resumo?.aplicado) {
         if (resumo?.pendente) {
             const modo = resumo.rateioEnvio === "valor" ? "por valor" : "por unidade";
-            return `\n\nCusto provisório: ainda falta o Total pago EUR. O preço compra será preenchido em USD, com o envio distribuído ${modo}.`;
+            return `\n\nCusto provisório: ainda falta o Total pago €. O preço compra será preenchido em USD, com o envio distribuído ${modo}.`;
         }
         return "";
     }
@@ -671,7 +671,7 @@ function lerOpcoesCustoListaAtualFornecedor(contexto = document) {
 
 function calcularTotalPagoEurSobreItensAtuaisFornecedor(itensAtuais = [], opcoesCusto = {}) {
     if (!(Math.max(0, Number(opcoesCusto?.totalPagoEur || 0)) > 0)) {
-        return { aplicado: false, erro: "Preenche o Total pago EUR para recalcular o preço compra." };
+        return { aplicado: false, erro: "Preenche o Total pago € para recalcular o preço compra." };
     }
     const itens = (Array.isArray(itensAtuais) ? itensAtuais : [])
         .map(item => normalizarItemPedidoFornecedor({ ...item }))
@@ -679,7 +679,7 @@ function calcularTotalPagoEurSobreItensAtuaisFornecedor(itensAtuais = [], opcoes
     const custoReal = calcularCustoRealListaAtualFornecedor(itens, opcoesCusto);
     if (custoReal?.erro) return { aplicado: false, erro: custoReal.erro };
     if (!custoReal?.aplicado) {
-        return { aplicado: false, erro: "Não há preços provisórios em USD suficientes para calcular o preço compra em EUR." };
+        return { aplicado: false, erro: "Não há preços provisórios em USD suficientes para calcular o preço compra em €." };
     }
     const unidades = itens
         .filter(itemContaParaCustoRealListaAtualFornecedor)
@@ -706,7 +706,7 @@ async function aplicarListaFinalFornecedor() {
         const totalAtual = calcularTotalPagoEurSobreItensAtuaisFornecedor(fornecedorSelecao, opcoesCusto);
         if (!String(textoLista || "").trim() && totalAtual.aplicado) {
             if (!(await mostrarConfirmacaoSite(
-                `Aplicar o Total pago EUR aos preços da encomenda?\n\n${totalAtual.unidades} unidade(s) a receber serão recalculadas para preço compra em EUR.${obterResumoCustoRealListaAtualFornecedor(totalAtual.custoReal)}`,
+                `Aplicar o Total pago € aos preços da encomenda?\n\n${totalAtual.unidades} unidade(s) a receber serão recalculadas para preço compra em €.${obterResumoCustoRealListaAtualFornecedor(totalAtual.custoReal)}`,
                 { titulo: "Confirmar preço compra", textoConfirmar: "Aplicar", textoCancelar: "Fechar" }
             ))) {
                 return;
@@ -719,7 +719,7 @@ async function aplicarListaFinalFornecedor() {
             return;
         }
         if (!String(textoLista || "").trim() && Math.max(0, Number(opcoesCusto.totalPagoEur || 0)) > 0) {
-            definirStatusFornecedor(totalAtual.erro || "Não foi possível aplicar o Total pago EUR aos itens atuais.", true);
+            definirStatusFornecedor(totalAtual.erro || "Não foi possível aplicar o Total pago € aos itens atuais.", true);
             return;
         }
         const detalhe = erros.length ? ` ${erros.join("; ")}` : "";
@@ -1087,7 +1087,7 @@ async function aplicarListaFinalNaEdicaoFornecedor() {
         const totalAtual = calcularTotalPagoEurSobreItensAtuaisFornecedor(pedido.itens || [], opcoesCusto);
         if (!String(texto || "").trim() && totalAtual.aplicado) {
             if (!(await mostrarConfirmacaoSite(
-                `Aplicar o Total pago EUR aos preços da encomenda?\n\n${totalAtual.unidades} unidade(s) a receber serão recalculadas para preço compra em EUR.${obterResumoCustoRealListaAtualFornecedor(totalAtual.custoReal)}`,
+                `Aplicar o Total pago € aos preços da encomenda?\n\n${totalAtual.unidades} unidade(s) a receber serão recalculadas para preço compra em €.${obterResumoCustoRealListaAtualFornecedor(totalAtual.custoReal)}`,
                 { titulo: "Confirmar preço compra", textoConfirmar: "Aplicar", textoCancelar: "Fechar" }
             ))) {
                 return;
@@ -1103,7 +1103,7 @@ async function aplicarListaFinalNaEdicaoFornecedor() {
             return;
         }
         if (!String(texto || "").trim() && Math.max(0, Number(opcoesCusto.totalPagoEur || 0)) > 0) {
-            definirStatusEdicaoFornecedor(status, "erro", totalAtual.erro || "Não foi possível aplicar o Total pago EUR aos itens atuais.");
+            definirStatusEdicaoFornecedor(status, "erro", totalAtual.erro || "Não foi possível aplicar o Total pago € aos itens atuais.");
             return;
         }
         definirStatusEdicaoFornecedor(status, "erro", erros.length ? erros.join("; ") : "Cole pelo menos uma referência válida antes de aplicar a lista atual.");
@@ -1653,7 +1653,7 @@ function garantirModalEdicaoFornecedor() {
                                         <input type="text" id="fornecedor-edicao-total-compra-usd" inputmode="decimal" autocomplete="off" placeholder="$415,27">
                                     </label>
                                     <label>
-                                        Total pago EUR
+                                        Total pago €
                                         <input type="text" id="fornecedor-edicao-total-eur" inputmode="decimal" autocomplete="off" placeholder="365,40 €">
                                     </label>
                                     <div class="fornecedor-custo-real-campo-opcoes" role="radiogroup" aria-label="Distribuir envio">
@@ -1664,16 +1664,16 @@ function garantirModalEdicaoFornecedor() {
                                         </div>
                                     </div>
                                 </div>
-                                <p class="fornecedor-custo-real-ajuda">Sem o Total pago EUR, o preço fica provisório em USD com o envio incluído. Com ele, passa a EUR.</p>
+                                <p class="fornecedor-custo-real-ajuda">Sem o Total pago €, o preço fica provisório em USD com o envio incluído. Com ele, passa a €.</p>
                             </div>
                             <div class="fornecedor-edicao-painel-preco" data-modo-preco="eur" hidden>
                                 <div class="fornecedor-custo-real-grid fornecedor-custo-fixo-eur-grid" aria-label="Preço igual para todas as figuras">
                                     <label>
-                                        Pagamento 1 €
+                                        Pagamento 1
                                         <input type="text" id="fornecedor-edicao-pagamento-1-eur" inputmode="decimal" autocomplete="off" placeholder="120,00 €">
                                     </label>
                                     <label>
-                                        Pagamento 2 € (opcional)
+                                        Pagamento 2 (opcional)
                                         <input type="text" id="fornecedor-edicao-pagamento-2-eur" inputmode="decimal" autocomplete="off" placeholder="0,00 €">
                                     </label>
                                     <p class="fornecedor-edicao-preco-resultado" id="fornecedor-edicao-preco-resultado" aria-live="polite"></p>
