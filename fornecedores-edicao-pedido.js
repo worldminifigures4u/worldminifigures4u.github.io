@@ -1639,8 +1639,8 @@ function garantirModalEdicaoFornecedor() {
                         <summary>Preço de compra</summary>
                         <div class="fornecedor-edicao-bloco-conteudo">
                             <div class="fornecedor-edicao-modo-preco" role="radiogroup" aria-label="Tipo de preço">
-                                <label><input type="radio" name="fornecedor-edicao-modo-preco" value="usd" checked> Preço por figura (USD)</label>
-                                <label><input type="radio" name="fornecedor-edicao-modo-preco" value="eur"> Preço igual para todas (€)</label>
+                                <label><input type="radio" name="fornecedor-edicao-modo-preco" value="usd" checked> Preço por figura</label>
+                                <label><input type="radio" name="fornecedor-edicao-modo-preco" value="eur"> Preço igual para todas</label>
                             </div>
                             <div class="fornecedor-edicao-painel-preco" data-modo-preco="usd">
                                 <div class="fornecedor-custo-real-grid" aria-label="Custo real da compra">
@@ -1669,11 +1669,11 @@ function garantirModalEdicaoFornecedor() {
                             <div class="fornecedor-edicao-painel-preco" data-modo-preco="eur" hidden>
                                 <div class="fornecedor-custo-real-grid fornecedor-custo-fixo-eur-grid" aria-label="Preço igual para todas as figuras">
                                     <label>
-                                        Pagamento 1
+                                        Pagamento 1 €
                                         <input type="text" id="fornecedor-edicao-pagamento-1-eur" inputmode="decimal" autocomplete="off" placeholder="120,00 €">
                                     </label>
                                     <label>
-                                        Pagamento 2 (opcional)
+                                        Pagamento 2 € (opcional)
                                         <input type="text" id="fornecedor-edicao-pagamento-2-eur" inputmode="decimal" autocomplete="off" placeholder="0,00 €">
                                     </label>
                                     <p class="fornecedor-edicao-preco-resultado" id="fornecedor-edicao-preco-resultado" aria-live="polite"></p>
