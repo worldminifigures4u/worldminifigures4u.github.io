@@ -5457,3 +5457,23 @@ html:not(.admin-light-mode) .fornecedor-pedido-modal-acoes .admin-encomenda-esta
     justify-content: center !important;
     justify-items: start;
 }
+
+/* Editar encomenda: nome da figura abre a ficha */
+#fornecedor-edicao-modal .fornecedor-edicao-nome-botao {
+    display: block;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: #fff;
+    font: inherit;
+    font-size: 16px;
+    font-weight: 800;
+    line-height: 1.2;
+    text-align: left;
+    cursor: pointer;
+    overflow-wrap: anywhere;
+}
+#fornecedor-edicao-modal .fornecedor-edicao-nome-botao:is(:hover, :focus-visible) {
+    color: var(--cor-acao-principal, #ffc107);
+    outline: none;
+}

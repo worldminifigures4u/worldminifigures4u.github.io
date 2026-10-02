@@ -832,8 +832,17 @@ function montarLinhaEdicaoProdutoFornecedor(pedido, item, indice) {
 
     const info = document.createElement("div");
     info.className = "fornecedor-info";
-    const nome = document.createElement("strong");
+    const produtoIdFicha = produtoAtual?.id || item.id_produto || item.produto_id || "";
+    const nome = document.createElement(produtoIdFicha ? "button" : "strong");
     nome.textContent = produtoAtual.nome || item.nome || "Produto";
+    if (produtoIdFicha) {
+        nome.type = "button";
+        nome.className = "fornecedor-edicao-nome-botao";
+        nome.title = "Abrir ficha da figura";
+        nome.addEventListener("click", () => {
+            if (typeof abrirEdicaoProdutoMapa === "function") abrirEdicaoProdutoMapa(produtoIdFicha);
+        });
+    }
     const ids = document.createElement("span");
     ids.className = "fornecedor-identificadores";
     ids.textContent = `Ref. ${produtoAtual.referencia || item.referencia || "-"} | SKU ${produtoAtual.sku || item.sku || "-"}`;
