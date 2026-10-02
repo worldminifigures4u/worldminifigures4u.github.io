@@ -4893,13 +4893,13 @@ function criarDetalhesPedidoFornecedor(pedido) {
     grupoEstado.appendChild(estado);
 
     const botoes = criarElementoPedidoFornecedor("div", "admin-encomenda-botoes");
-    const editar = criarElementoPedidoFornecedor("button", "wallapop-botao", "Editar encomenda");
+    const editar = criarElementoPedidoFornecedor("button", "wallapop-botao", "Editar");
     editar.type = "button";
     editar.addEventListener("click", () => abrirEdicaoPedidoFornecedor(pedido.id));
     const imprimir = criarElementoPedidoFornecedor("button", "wallapop-botao", "Imprimir");
     imprimir.type = "button";
     imprimir.addEventListener("click", () => imprimirPedidoFornecedor(pedido.id));
-    const exportarTxt = criarElementoPedidoFornecedor("button", "wallapop-botao", "Exportar TXT");
+    const exportarTxt = criarElementoPedidoFornecedor("button", "wallapop-botao", "Exportar");
     exportarTxt.type = "button";
     exportarTxt.addEventListener("click", () => {
         const temItens = (pedido.itens || []).some(item => Math.max(0, Math.floor(Number(item.quantidade || 0))) > 0);
@@ -4910,10 +4910,10 @@ function criarDetalhesPedidoFornecedor(pedido) {
         exportarTxtPedidoFornecedor(pedido);
         definirStatusFornecedor(`TXT da encomenda ${pedido.codigo || pedido.id} exportado.`);
     });
-    const receber = criarElementoPedidoFornecedor("button", "wallapop-botao wallapop-botao-destaque", "Receber stock");
+    const receber = criarElementoPedidoFornecedor("button", "wallapop-botao wallapop-botao-destaque", "Receber");
     receber.type = "button";
     receber.addEventListener("click", () => receberPedidoFornecedor(pedido.id));
-    const apagar = criarElementoPedidoFornecedor("button", "wallapop-botao admin-encomenda-apagar", "Apagar pedido");
+    const apagar = criarElementoPedidoFornecedor("button", "wallapop-botao admin-encomenda-apagar", "Apagar");
     apagar.type = "button";
     apagar.addEventListener("click", () => apagarPedidoFornecedor(pedido.id));
     botoes.append(editar, imprimir, exportarTxt, receber, apagar);
