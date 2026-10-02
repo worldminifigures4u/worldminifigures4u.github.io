@@ -486,6 +486,7 @@ function calcularCustoRealListaAtualFornecedor(itens, opcoes = {}) {
 }
 
 function lerOpcoesCustoFixoEurFornecedor(contexto = document) {
+    if (contexto?.querySelector?.('#fornecedor-edicao-pagamento-1-eur')) sincronizarTotalPagamentosEdicaoFornecedor(contexto);
     const obterValor = (seletor) => converterNumeroListaFornecedor(contexto.querySelector(seletor)?.value || "");
     const precoUnitarioEur = Math.max(0, obterValor("#fornecedor-edicao-os-preco-unitario-eur"));
     const envioEur = Math.max(0, obterValor("#fornecedor-edicao-os-envio-eur"));
@@ -1463,11 +1464,20 @@ function mostrarModoPrecoEdicaoFornecedor(modal, modo, limparOutro = false) {
     });
 }
 
+function sincronizarTotalPagamentosEdicaoFornecedor(modal) {
+    const campoTotal = modal?.querySelector('#fornecedor-edicao-os-total-compra-eur');
+    if (!campoTotal) return 0;
+    const valor = (id) => Math.max(0, converterNumeroListaFornecedor(modal.querySelector(id)?.value || '') || 0);
+    const total = Math.round((valor('#fornecedor-edicao-pagamento-1-eur') + valor('#fornecedor-edicao-pagamento-2-eur')) * 100) / 100;
+    campoTotal.value = total > 0 ? total.toFixed(2).replace('.', ',') : '';
+    return total;
+}
+
 function atualizarResultadoPrecoIgualEdicaoFornecedor(modal) {
     const destino = modal?.querySelector('#fornecedor-edicao-preco-resultado');
     if (!destino) return;
-    const totalTexto = modal.querySelector('#fornecedor-edicao-os-total-compra-eur')?.value || '';
-    const total = converterNumeroListaFornecedor(totalTexto);
+    const total = sincronizarTotalPagamentosEdicaoFornecedor(modal);
+    const temSegundo = Boolean(String(modal.querySelector('#fornecedor-edicao-pagamento-2-eur')?.value || '').trim());
     let unidades = 0;
     modal.querySelectorAll('.fornecedor-edicao-produto').forEach(linha => {
         if (linha.hidden || linha.dataset.removido === '1') return;
@@ -1484,7 +1494,8 @@ function atualizarResultadoPrecoIgualEdicaoFornecedor(modal) {
         return;
     }
     const porFigura = total / unidades;
-    destino.textContent = `= ${porFigura.toFixed(2).replace('.', ',')} € por figura (${unidades} ${unidades === 1 ? 'unidade' : 'unidades'} a receber)`;
+    const prefixo = temSegundo ? `Total ${total.toFixed(2).replace('.', ',')} € ` : '';
+    destino.textContent = `${prefixo}= ${porFigura.toFixed(2).replace('.', ',')} € por figura (${unidades} ${unidades === 1 ? 'unidade' : 'unidades'} a receber)`;
 }
 
 function ligarBlocosEdicaoFornecedor(modal) {
@@ -1524,6 +1535,7 @@ function ligarBlocosEdicaoFornecedor(modal) {
         radio.addEventListener('change', () => {
             if (!radio.checked) return;
             mostrarModoPrecoEdicaoFornecedor(modal, radio.value, true);
+            atualizarResultadoPrecoIgualEdicaoFornecedor(modal);
             const fornecedor = modal.querySelector('#fornecedor-edicao-nome')?.value || '';
             try { localStorage.setItem(chaveModoPrecoFornecedor(fornecedor), radio.value); } catch (erro) { /* sem armazenamento */ }
         });
@@ -1532,6 +1544,10 @@ function ligarBlocosEdicaoFornecedor(modal) {
 
 function prepararBlocosAoAbrirEdicaoFornecedor(modal, pedido) {
     modal.querySelectorAll('.fornecedor-edicao-bloco').forEach(bloco => { bloco.open = false; });
+    ['#fornecedor-edicao-pagamento-1-eur', '#fornecedor-edicao-pagamento-2-eur'].forEach(id => {
+        const campo = modal.querySelector(id);
+        if (campo) campo.value = '';
+    });
     modal.querySelectorAll('.fornecedor-edicao-lista-limpar').forEach(botao => {
         const area = botao.parentElement?.querySelector('textarea');
         botao.hidden = !area?.value;
@@ -1653,14 +1669,19 @@ function garantirModalEdicaoFornecedor() {
                             <div class="fornecedor-edicao-painel-preco" data-modo-preco="eur" hidden>
                                 <div class="fornecedor-custo-real-grid fornecedor-custo-fixo-eur-grid" aria-label="Preço igual para todas as figuras">
                                     <label>
-                                        Total pago €
-                                        <input type="text" id="fornecedor-edicao-os-total-compra-eur" inputmode="decimal" autocomplete="off" placeholder="120,00 €">
+                                        Pagamento 1 €
+                                        <input type="text" id="fornecedor-edicao-pagamento-1-eur" inputmode="decimal" autocomplete="off" placeholder="120,00 €">
+                                    </label>
+                                    <label>
+                                        Pagamento 2 € (opcional)
+                                        <input type="text" id="fornecedor-edicao-pagamento-2-eur" inputmode="decimal" autocomplete="off" placeholder="0,00 €">
                                     </label>
                                     <p class="fornecedor-edicao-preco-resultado" id="fornecedor-edicao-preco-resultado" aria-live="polite"></p>
+                                    <input type="hidden" id="fornecedor-edicao-os-total-compra-eur">
                                     <input type="hidden" id="fornecedor-edicao-os-preco-unitario-eur">
                                     <input type="hidden" id="fornecedor-edicao-os-envio-eur">
                                 </div>
-                                <p class="fornecedor-custo-real-ajuda">O total pago (já com envio) é dividido pelas unidades a receber. As figuras OS, EX ou removidas não contam.</p>
+                                <p class="fornecedor-custo-real-ajuda">O total pago (soma dos pagamentos, já com envio) é dividido pelas unidades a receber. As figuras OS, EX ou removidas não contam.</p>
                             </div>
                         </div>
                     </details>
