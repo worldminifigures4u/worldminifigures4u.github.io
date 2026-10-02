@@ -4775,3 +4775,13 @@ html.admin-light-mode #mapas-produto-modal fieldset.mapas-produto-secao:has(.map
 html.admin-light-mode #mapas-produto-modal fieldset.mapas-produto-secao-notas-leitura:has(.mapas-produto-observacoes-leitura:empty) > legend {
     color: #9aa3ae !important;
 }
+
+/* Seletor de estado das encomendas a fornecedores com a altura dos botoes ao lado */
+.pagina-fornecedores-unificada .fornecedor-pedido-acoes .admin-encomenda-estado-edicao .fornecedor-status-select {
+    height: var(--fp-botao-altura, 42px);
+    min-height: var(--fp-botao-altura, 42px);
+    padding-top: 0;
+    padding-bottom: 0;
+    box-sizing: border-box;
+    border-radius: var(--fp-botao-raio, var(--fp-raio-ui));
+}
