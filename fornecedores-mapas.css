@@ -4825,11 +4825,12 @@ html.admin-light-mode #mapas-produto-modal fieldset.mapas-produto-secao-notas-le
     justify-content: flex-end;
     margin: 0;
 }
-.fornecedor-pedido-modal-resumo {
-    margin: 0 0 12px;
+.fornecedor-pedido-modal-topo .fornecedor-pedido-modal-resumo {
+    margin: 0;
     color: #aaa;
     font-size: 13px;
     font-weight: 700;
+    white-space: normal;
 }
 .fornecedor-pedido-card-modal .fornecedor-pedido-detalhes {
     padding: 14px 16px;

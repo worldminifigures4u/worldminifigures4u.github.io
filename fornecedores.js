@@ -4975,20 +4975,21 @@ function renderizarModalPedidoFornecedor(id) {
 
     const titulo = modal.querySelector("#fornecedor-pedido-modal-titulo");
     const corpo = modal.querySelector(".fornecedor-pedido-modal-corpo");
+    const totaisPedido = obterTotaisPedidoFornecedor(pedido);
+    const resumo = formatarResumoPedidoFornecedor(totaisPedido);
     if (titulo) {
         titulo.classList.add("fornecedor-pedido-modal-titulo-resumo");
         titulo.replaceChildren(
             criarElementoPedidoFornecedor("span", "admin-encomenda-modal-titulo-codigo", obterTextoCodigoPedidoFornecedor(pedido)),
             criarElementoPedidoFornecedor("span", "admin-encomenda-modal-titulo-data", formatarDataPedidoFornecedor(obterDataExibicaoPedidoFornecedor(pedido))),
-            criarElementoPedidoFornecedor("span", "admin-encomenda-modal-titulo-origem fornecedor-pedido-modal-fornecedor", pedido.fornecedor || "Fornecedor")
+            criarElementoPedidoFornecedor("span", "admin-encomenda-modal-titulo-origem fornecedor-pedido-modal-fornecedor", pedido.fornecedor || "Fornecedor"),
+            criarElementoPedidoFornecedor("span", "fornecedor-pedido-modal-resumo", resumo)
         );
     }
     if (!corpo) return;
     corpo.replaceChildren();
 
     const card = criarElementoPedidoFornecedor("article", "admin-encomenda-card fornecedor-pedido-card aberta fornecedor-pedido-card-modal");
-    const totaisPedido = obterTotaisPedidoFornecedor(pedido);
-    const resumo = formatarResumoPedidoFornecedor(totaisPedido);
     const detalhes = criarDetalhesPedidoFornecedor(pedido);
     const acoes = detalhes.querySelector(".fornecedor-pedido-acoes");
     const topo = modal.querySelector(".fornecedor-pedido-modal-topo");
@@ -5001,7 +5002,6 @@ function renderizarModalPedidoFornecedor(id) {
         topo.appendChild(grupoTopo);
     }
     grupoAnterior?.remove();
-    detalhes.prepend(criarElementoPedidoFornecedor("p", "fornecedor-pedido-modal-resumo", resumo));
     card.append(detalhes);
     corpo.appendChild(card);
 
