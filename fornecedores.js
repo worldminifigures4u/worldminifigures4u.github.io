@@ -3223,7 +3223,7 @@ function atualizarTotalFigurasEncomendaFornecedor() {
     const objetivo = lerAlvoUnidadesFornecedor();
     alvo.classList.remove("alvo-abaixo", "alvo-atingido", "alvo-acima");
     if (objetivo > 0) {
-        alvo.textContent = `${total} / ${objetivo} un.`;
+        alvo.textContent = `${total} un.`;
         alvo.classList.add(total === objetivo ? "alvo-atingido" : (total > objetivo ? "alvo-acima" : "alvo-abaixo"));
         alvo.title = total === objetivo
             ? "Alvo atingido"
