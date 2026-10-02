@@ -4945,3 +4945,72 @@ html:not(.admin-light-mode) body #fornecedor-pedido-modal .fornecedor-pedido-mod
     height: calc(100dvh - 16px);
     max-height: none;
 }
+
+/* Editar encomenda do fornecedor: cada produto numa so linha (campos + OS/EX/Remover) */
+#fornecedor-edicao-modal .fornecedor-edicao-produto {
+    grid-template-columns: 48px minmax(160px, 1fr) auto;
+    align-items: center;
+    gap: 12px;
+    padding: 8px 10px;
+}
+#fornecedor-edicao-modal .fornecedor-edicao-produto-campos {
+    grid-template-columns: repeat(4, 96px) auto auto auto;
+    align-items: end;
+    gap: 8px 10px;
+}
+#fornecedor-edicao-modal .fornecedor-edicao-produto-campos :is(.fornecedor-edicao-marcar-os, .fornecedor-edicao-marcar-ex, .fornecedor-edicao-remover) {
+    grid-column: auto;
+    display: flex !important;
+    align-items: center;
+    gap: 5px !important;
+    min-height: 36px;
+    padding: 0 2px;
+    white-space: nowrap;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+}
+#fornecedor-edicao-modal .fornecedor-edicao-marcar-ex { color: #9ecbff; }
+#fornecedor-edicao-modal .fornecedor-edicao-produto-campos :is(.fornecedor-edicao-marcar-os, .fornecedor-edicao-marcar-ex, .fornecedor-edicao-remover) input {
+    width: auto;
+    margin: 0;
+}
+html:not(.admin-light-mode) #fornecedor-edicao-modal .fornecedor-edicao-remover,
+html:not(.admin-light-mode) #fornecedor-edicao-modal .fornecedor-edicao-remover:is(:hover, :focus-visible) {
+    background: transparent !important;
+    color: #ff8a80 !important;
+    border: 0 !important;
+}
+#fornecedor-edicao-modal .fornecedor-edicao-produto:has(.fornecedor-edicao-remover input:checked) {
+    background: rgba(122, 31, 31, .28);
+    border-color: #7a1f1f;
+}
+@media (max-width: 1100px) {
+    #fornecedor-edicao-modal .fornecedor-edicao-produto {
+        grid-template-columns: 48px minmax(0, 1fr);
+    }
+    #fornecedor-edicao-modal .fornecedor-edicao-produto-campos {
+        grid-column: 1 / -1;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+}
+@media (max-width: 700px) {
+    #fornecedor-edicao-modal .fornecedor-edicao-produto-campos {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 6px 8px;
+    }
+}
+#fornecedor-edicao-modal .fornecedor-edicao-produto-campos input:not([type="checkbox"]),
+#fornecedor-edicao-modal .fornecedor-edicao-recebido-info span {
+    height: 34px;
+    min-height: 34px;
+    box-sizing: border-box;
+}
+#fornecedor-edicao-modal .fornecedor-edicao-recebido-info { gap: 4px; }
+#fornecedor-edicao-modal .fornecedor-edicao-produto-campos :is(.fornecedor-edicao-marcar-os, .fornecedor-edicao-marcar-ex, .fornecedor-edicao-remover) input[type="checkbox"] {
+    width: 16px !important;
+    height: 16px !important;
+    min-width: 16px;
+    flex: 0 0 16px;
+}
+#fornecedor-edicao-modal .fornecedor-edicao-produto-campos label { white-space: nowrap; }
