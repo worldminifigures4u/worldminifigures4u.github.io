@@ -4661,7 +4661,7 @@ function formatarResumoCartaoPedidoFornecedor(totaisPedido) {
 }
 
 function formatarResumoPedidoFornecedor(totaisPedido) {
-    return `${totaisPedido.itens} artigo(s) | ${totaisPedido.quantidade} unidade(s) | ${totaisPedido.pendente} por receber${totaisPedido.os > 0 ? ` | ${totaisPedido.os} OS` : ""}${totaisPedido.ex > 0 ? ` | ${totaisPedido.ex} EX` : ""}`;
+    return `${totaisPedido.itens} artigo(s) · ${totaisPedido.quantidade} unidade(s) · ${totaisPedido.pendente} por receber${totaisPedido.os > 0 ? ` · ${totaisPedido.os} OS` : ""}${totaisPedido.ex > 0 ? ` · ${totaisPedido.ex} EX` : ""}`;
 }
 
 function renderizarPedidoFornecedorProdutosTabela(caixa, pedido) {
