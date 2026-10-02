@@ -4932,3 +4932,16 @@ html:not(.admin-light-mode) body #fornecedor-pedido-modal .fornecedor-pedido-mod
     background: #1b1b1b !important;
     box-shadow: inset 0 -1px 0 #333;
 }
+
+/* Modal da encomenda a fornecedor encostado ao topo e com a altura toda do ecra */
+#fornecedor-pedido-modal.fornecedor-pedido-modal {
+    align-items: stretch;
+    padding: 8px;
+}
+#fornecedor-pedido-modal .fornecedor-pedido-modal-dialog {
+    width: calc(100vw - 16px);
+    max-width: none;
+    height: calc(100vh - 16px);
+    height: calc(100dvh - 16px);
+    max-height: none;
+}
