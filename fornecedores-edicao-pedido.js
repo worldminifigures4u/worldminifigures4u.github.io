@@ -1079,7 +1079,7 @@ async function aplicarListaFinalNaEdicaoFornecedor() {
             definirStatusEdicaoFornecedor(
                 status,
                 "sucesso",
-                `Preço compra recalculado em EUR para ${totalAtual.unidades} unidade(s). Clica em Gravar encomenda para guardar.`
+                `Preço compra recalculado em EUR para ${totalAtual.unidades} unidade(s). Clica em Gravar para guardar.`
             );
             return;
         }
@@ -1433,7 +1433,10 @@ function garantirModalEdicaoFornecedor() {
             <div class="fornecedor-edicao-topo">
                 <h3 id="fornecedor-edicao-titulo">Editar encomenda do fornecedor</h3>
                 <p class="fornecedores-status fornecedor-edicao-status" id="fornecedor-edicao-status" role="status"></p>
-                <button type="button" class="fornecedor-edicao-fechar" id="fornecedor-edicao-fechar">Fechar</button>
+                <div class="fornecedor-edicao-topo-acoes">
+                    <button type="submit" form="fornecedor-edicao-form" id="fornecedor-edicao-guardar" class="wallapop-botao wallapop-botao-destaque wallapop-botao-guardar">Gravar</button>
+                    <button type="button" class="fornecedor-edicao-fechar" id="fornecedor-edicao-fechar">Fechar</button>
+                </div>
             </div>
             <form id="fornecedor-edicao-form" class="fornecedor-edicao-form">
                 <input type="hidden" id="fornecedor-edicao-id">
@@ -1456,7 +1459,7 @@ function garantirModalEdicaoFornecedor() {
                             <select id="fornecedor-edicao-estado"></select>
                         </label>
                     </div>
-                    <p class="fornecedor-edicao-aviso-guardar">As alterações aos campos acima só ficam gravadas ao clicar <strong>Gravar encomenda</strong>.</p>
+                    <p class="fornecedor-edicao-aviso-guardar">As alterações aos campos acima só ficam gravadas ao clicar <strong>Gravar</strong>.</p>
                     <section class="fornecedor-lista-final-box fornecedor-lista-final-edicao" aria-label="Lista atual enviada pelo fornecedor">
                         <h4>Colar lista atual do fornecedor</h4>
                         <p>Cola aqui a tabela do fornecedor. O campo CODE é usado como referência; PRICE é lido como preço unitário em USD; SKU e AMOUNT são ignorados. Se a nota indicar OUT OF STOCK, a figura é marcada como OS automaticamente.</p>
@@ -1522,17 +1525,12 @@ function garantirModalEdicaoFornecedor() {
                     </section>
                     <div class="fornecedor-edicao-produtos" id="fornecedor-edicao-produtos"></div>
                 </div>
-                <div class="fornecedores-acoes fornecedor-edicao-acoes">
-                    <button type="button" id="fornecedor-edicao-cancelar" class="wallapop-botao">Fechar</button>
-                    <button type="submit" id="fornecedor-edicao-guardar" class="wallapop-botao wallapop-botao-destaque wallapop-botao-guardar">Gravar encomenda</button>
-                </div>
             </form>
         </div>
     `;
 
     document.body.appendChild(modal);
     modal.querySelector('#fornecedor-edicao-fechar')?.addEventListener('click', fecharEdicaoPedidoFornecedor);
-    modal.querySelector('#fornecedor-edicao-cancelar')?.addEventListener('click', fecharEdicaoPedidoFornecedor);
     modal.querySelector('#fornecedor-edicao-aplicar-lista-final')?.addEventListener('click', aplicarListaFinalNaEdicaoFornecedor);
     modal.querySelector('#fornecedor-edicao-limpar-lista-final')?.addEventListener('click', limparListaFinalEdicaoFornecedor);
     modal.querySelector('#fornecedor-edicao-aplicar-lista-os')?.addEventListener('click', aplicarListaOsNaEdicaoFornecedor);

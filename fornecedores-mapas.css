@@ -5014,3 +5014,68 @@ html:not(.admin-light-mode) #fornecedor-edicao-modal .fornecedor-edicao-remover:
     flex: 0 0 16px;
 }
 #fornecedor-edicao-modal .fornecedor-edicao-produto-campos label { white-space: nowrap; }
+
+/* Editar encomenda do fornecedor: ecra todo, encostado ao topo, Gravar e Fechar no cabecalho */
+#fornecedor-edicao-modal.fornecedor-edicao-modal {
+    place-items: stretch;
+    padding: 8px;
+}
+#fornecedor-edicao-modal .fornecedor-edicao-dialog {
+    width: calc(100vw - 16px);
+    max-width: none;
+    height: calc(100vh - 16px);
+    height: calc(100dvh - 16px);
+    max-height: none;
+}
+#fornecedor-edicao-modal .fornecedor-edicao-topo {
+    padding: 12px 16px;
+}
+#fornecedor-edicao-modal .fornecedor-edicao-topo-acoes {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+html:not(.admin-light-mode) #fornecedor-edicao-modal .fornecedor-edicao-topo-acoes :is(.wallapop-botao, .fornecedor-edicao-fechar) {
+    height: 36px !important;
+    min-height: 36px !important;
+    max-height: 36px !important;
+    min-width: 78px;
+    padding: 0 12px !important;
+    box-sizing: border-box !important;
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+    border-radius: 5px !important;
+    box-shadow: none !important;
+    font-size: 13px !important;
+    font-weight: 800 !important;
+    line-height: 1 !important;
+    white-space: nowrap;
+}
+html:not(.admin-light-mode) body #fornecedor-edicao-modal .fornecedor-edicao-fechar {
+    border: 1px solid #444 !important;
+    background: transparent !important;
+    color: #fff !important;
+}
+html:not(.admin-light-mode) body #fornecedor-edicao-modal .fornecedor-edicao-fechar:is(:hover, :focus-visible) {
+    border-color: var(--cor-acao-principal, #ffc107) !important;
+    background: transparent !important;
+    color: var(--cor-acao-principal, #ffc107) !important;
+    outline: none;
+}
+#fornecedor-edicao-modal .fornecedor-edicao-corpo {
+    flex: 1 1 auto;
+    min-height: 0;
+}
+@media (max-width: 700px) {
+    #fornecedor-edicao-modal .fornecedor-edicao-topo {
+        grid-template-columns: minmax(0, 1fr) auto;
+    }
+    #fornecedor-edicao-modal .fornecedor-edicao-topo .fornecedor-edicao-status {
+        grid-column: 1 / -1;
+        order: 3;
+    }
+}
+@media (max-width: 700px) {
+    #fornecedor-edicao-modal .fornecedor-edicao-topo .fornecedor-edicao-status:empty { display: none; }
+}
