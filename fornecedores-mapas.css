@@ -5477,3 +5477,101 @@ html:not(.admin-light-mode) .fornecedor-pedido-modal-acoes .admin-encomenda-esta
     color: var(--cor-acao-principal, #ffc107);
     outline: none;
 }
+
+/* ===== Reorganizacao da pagina dos Fornecedores (02/10/2026) ===== */
+
+/* 1. Linhas da tabela mais baixas */
+#fornecedores-aplicacao .fornecedor-resultados .fornecedor-tabela-encomenda tbody td {
+    padding-top: 3px !important;
+    padding-bottom: 3px !important;
+    height: auto !important;
+}
+#fornecedores-aplicacao .fornecedor-resultados .fornecedor-tabela-encomenda .mapas-col-foto .fornecedor-miniatura,
+#fornecedores-aplicacao .fornecedor-resultados .fornecedor-tabela-encomenda .mapas-col-foto .fornecedor-miniatura.pequena {
+    width: 38px !important;
+    height: 38px !important;
+}
+#fornecedores-aplicacao .fornecedor-resultados .fornecedor-tabela-encomenda .mapa-quantidade-input {
+    height: 30px !important;
+    min-height: 30px !important;
+}
+
+/* 2. Botao "So na encomenda" */
+#fornecedores-aplicacao .fornecedor-resumo-encomenda-centro .fornecedor-so-na-encomenda {
+    height: 36px !important;
+    min-height: 36px !important;
+    padding: 0 12px !important;
+    border: 1px solid #444 !important;
+    border-radius: 5px !important;
+    background: transparent !important;
+    color: #fff !important;
+    font-size: 13px !important;
+    font-weight: 800 !important;
+    white-space: nowrap;
+    box-shadow: none !important;
+}
+#fornecedores-aplicacao .fornecedor-resumo-encomenda-centro .fornecedor-so-na-encomenda:is(:hover, :focus-visible) {
+    border-color: var(--cor-acao-principal, #ffc107) !important;
+    color: var(--cor-acao-principal, #ffc107) !important;
+}
+#fornecedores-aplicacao .fornecedor-resumo-encomenda-centro .fornecedor-so-na-encomenda.ativo {
+    border-color: var(--cor-acao-principal, #ffc107) !important;
+    background: var(--cor-acao-principal, #ffc107) !important;
+    color: #000 !important;
+}
+
+/* 3. Menos espaco entre a barra dos filtros e a da pesquisa */
+#fornecedores-aplicacao .fornecedor-lista-controles.fornecedor-controles-unificados {
+    padding-bottom: 8px !important;
+    margin-bottom: 0 !important;
+}
+#fornecedores-aplicacao .fornecedor-resumo-encomenda {
+    padding-top: 6px !important;
+    padding-bottom: 6px !important;
+}
+
+/* 5. Painel das encomendas: resumo no topo, cartoes compactos e painel recolhivel */
+#fornecedores-aplicacao .fornecedores-coluna-direita .fornecedor-pedidos-resumo {
+    margin: 0 0 10px !important;
+}
+#fornecedores-aplicacao .fornecedores-coluna-direita .fornecedor-pedido-cabecalho {
+    padding-top: 8px !important;
+    padding-bottom: 8px !important;
+}
+#fornecedores-aplicacao .fornecedores-coluna-direita .fornecedor-pedidos {
+    gap: 6px !important;
+}
+.fornecedores-recolher-painel {
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    border: 1px solid #444;
+    border-radius: 5px;
+    background: transparent;
+    color: #fff;
+    font-size: 14px;
+    cursor: pointer;
+    flex: 0 0 32px;
+}
+.fornecedores-recolher-painel:is(:hover, :focus-visible) {
+    border-color: var(--cor-acao-principal, #ffc107);
+    color: var(--cor-acao-principal, #ffc107);
+    outline: none;
+}
+@media (min-width: 1221px) {
+    body.pagina-fornecedores-unificada.fornecedores-painel-encomendas-recolhido .fornecedores-grid-unificada {
+        grid-template-columns: minmax(0, 1fr) 52px !important;
+    }
+    body.fornecedores-painel-encomendas-recolhido .fornecedores-coluna-direita .fornecedores-painel-lista {
+        padding: 10px !important;
+        overflow: hidden;
+    }
+    body.fornecedores-painel-encomendas-recolhido .fornecedores-coluna-direita .fornecedores-cabecalho-lista > :not(.fornecedores-recolher-painel),
+    body.fornecedores-painel-encomendas-recolhido .fornecedores-coluna-direita .fornecedor-pedidos,
+    body.fornecedores-painel-encomendas-recolhido .fornecedores-coluna-direita .fornecedor-pedidos-resumo {
+        display: none !important;
+    }
+}
+@media (max-width: 1220px) {
+    .fornecedores-recolher-painel { display: none; }
+}

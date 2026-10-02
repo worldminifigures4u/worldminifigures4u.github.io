@@ -3174,6 +3174,28 @@ function obterTextoTotalFigurasEncomendaFornecedor() {
 }
 
 const CHAVE_ALVO_UNIDADES_FORNECEDOR = "fp-fornecedor-alvo-unidades";
+var fornecedorSoNaEncomenda = false;
+
+function garantirBotaoSoNaEncomendaFornecedor(referencia) {
+    let botao = document.getElementById("fornecedor-so-na-encomenda");
+    if (botao || !referencia?.parentNode) return botao;
+    botao = document.createElement("button");
+    botao.type = "button";
+    botao.id = "fornecedor-so-na-encomenda";
+    botao.className = "wallapop-botao fornecedor-so-na-encomenda";
+    botao.textContent = "Só na encomenda";
+    botao.title = "Mostrar só os produtos com quantidade nesta encomenda";
+    botao.setAttribute("aria-pressed", "false");
+    botao.addEventListener("click", () => {
+        fornecedorSoNaEncomenda = !fornecedorSoNaEncomenda;
+        botao.classList.toggle("ativo", fornecedorSoNaEncomenda);
+        botao.setAttribute("aria-pressed", fornecedorSoNaEncomenda ? "true" : "false");
+        if (typeof reiniciarLimiteResultadosFornecedor === "function") reiniciarLimiteResultadosFornecedor();
+        renderizarResultadosFornecedor();
+    });
+    referencia.insertAdjacentElement("afterend", botao);
+    return botao;
+}
 
 function lerAlvoUnidadesFornecedor() {
     const campo = document.getElementById("fornecedor-alvo-unidades");
@@ -3218,6 +3240,7 @@ function garantirCampoAlvoUnidadesFornecedor(contador) {
 function atualizarTotalFigurasEncomendaFornecedor() {
     const alvo = document.getElementById("fornecedor-total-figuras-encomenda");
     if (!alvo || !estaPaginaFornecedoresUnificada()) return;
+    garantirBotaoSoNaEncomendaFornecedor(alvo);
     garantirCampoAlvoUnidadesFornecedor(alvo);
     const total = obterTotalUnidadesEncomendaFornecedor();
     const objetivo = lerAlvoUnidadesFornecedor();
@@ -3384,7 +3407,7 @@ function sincronizarLargurasColunasTabelaEncomendaFornecedor() {
         const linhas = [...corpo.querySelectorAll("tbody tr")];
         if (!ths.length || !linhas.length) return;
 
-        const minimos = [58, 88, 68, 42, 52, 56, 56];
+        const minimos = [58, 88, 68, 56, 42, 52, 56];
         const larguras = ths.map((_, indice) => minimos[indice] || 0);
 
         linhas.forEach((linha) => {
@@ -3420,9 +3443,9 @@ function criarTheadTabelaEncomendaFornecedor() {
         ["", "mapas-col-foto", ""],
         ["Nome", "mapas-col-nome", "nome"],
         ["Ref.", "mapas-col-ref", "ref"],
+        ["Qtd", "mapas-col-qtd", "qtd"],
         ["Stock", "mapas-col-stock", "stock"],
         ["Prev.", "mapas-col-previsto", "previsto"],
-        ["Qtd", "mapas-col-qtd", "qtd"],
         ["3M", "mapas-col-vendas-3m", "vendas_3m"],
     ].forEach(([texto, classe, coluna]) => {
         const th = document.createElement("th");
@@ -3552,8 +3575,20 @@ function renderizarResultadosFornecedorTabelaEncomenda(caixa, resultados) {
         input.addEventListener("change", () => definirQuantidadeMapaFornecedor(atual, input.value));
         input.addEventListener("blur", () => definirQuantidadeMapaFornecedor(atual, input.value));
         ligarSelecaoLinhaQuantidadeMapa(input);
+        input.addEventListener("keydown", (evento) => {
+            if (evento.key !== "Enter") return;
+            evento.preventDefault();
+            definirQuantidadeMapaFornecedor(atual, input.value);
+            const proximo = linha.nextElementSibling?.querySelector(".mapa-quantidade-input");
+            if (proximo) {
+                proximo.focus();
+                proximo.select?.();
+            } else {
+                input.blur();
+            }
+        });
         qtdCelula.appendChild(input);
-        linha.appendChild(qtdCelula);
+        linha.insertBefore(qtdCelula, linha.children[3] || null);
 
         const vendasRecentes = Number(vendas_3m || 0);
         const vendasCelula = criarCelulaMapaFornecedor(vendasRecentes, `mapas-col-vendas-3m ${vendasRecentes > 0 ? "com-vendas-recentes" : ""}`);
@@ -3601,6 +3636,24 @@ function renderizarResultadosFornecedor() {
         .sort((a, b) => compararProdutosFornecedor(a, b, ordenacao));
 
     if (estaPaginaFornecedoresUnificada()) {
+        if (fornecedorSoNaEncomenda) {
+            const naEncomenda = fornecedorProdutos
+                .filter((produto) => obterQuantidadeSelecionadaFornecedor(produto.id) > 0)
+                .map((produto) => ({
+                    produto,
+                    score: calcularScoreResultadoFornecedor(produto, termo),
+                    vendas_3m: obterVendasRecentesProdutoPorIndiceFornecedor(produto, indiceVendasRecentes),
+                }))
+                .filter((item) => !termo || item.score < 99);
+            renderizarResultadosFornecedorTabelaEncomenda(caixa, naEncomenda);
+            if (!naEncomenda.length) {
+                const vazio = document.createElement("p");
+                vazio.className = "fornecedor-vazio";
+                vazio.textContent = "Ainda não há produtos nesta encomenda.";
+                caixa.appendChild(vazio);
+            }
+            return;
+        }
         renderizarResultadosFornecedorTabelaEncomenda(caixa, resultados);
         return;
     }
@@ -5116,7 +5169,7 @@ function atualizarResumoACaminhoPedidosFornecedor(caixa) {
         resumo = document.createElement("p");
         resumo.id = "fornecedor-pedidos-resumo";
         resumo.className = "fornecedor-pedidos-resumo";
-        caixa.after(resumo);
+        caixa.before(resumo);
     }
     const aCaminho = fornecedorPedidos.filter(pedidoFornecedorEstaACaminho);
     if (!aCaminho.length) {
@@ -5132,7 +5185,39 @@ function atualizarResumoACaminhoPedidosFornecedor(caixa) {
     );
 }
 
+const CHAVE_PAINEL_ENCOMENDAS_RECOLHIDO = "fp-fornecedores-painel-encomendas-recolhido";
+
+function aplicarPainelEncomendasRecolhidoFornecedor(recolhido) {
+    document.body.classList.toggle("fornecedores-painel-encomendas-recolhido", recolhido);
+    const botao = document.getElementById("fornecedores-recolher-painel");
+    if (botao) {
+        botao.textContent = recolhido ? "\u25C2" : "\u25B8";
+        botao.title = recolhido ? "Mostrar encomendas" : "Recolher encomendas";
+        botao.setAttribute("aria-expanded", recolhido ? "false" : "true");
+    }
+}
+
+function garantirBotaoRecolherPainelEncomendasFornecedor() {
+    if (document.getElementById("fornecedores-recolher-painel")) return;
+    const cabecalho = document.querySelector(".fornecedores-painel-lista .fornecedores-cabecalho-lista");
+    if (!cabecalho) return;
+    const botao = document.createElement("button");
+    botao.type = "button";
+    botao.id = "fornecedores-recolher-painel";
+    botao.className = "fornecedores-recolher-painel";
+    botao.addEventListener("click", () => {
+        const recolhido = !document.body.classList.contains("fornecedores-painel-encomendas-recolhido");
+        try { localStorage.setItem(CHAVE_PAINEL_ENCOMENDAS_RECOLHIDO, recolhido ? "1" : "0"); } catch (erro) { /* sem armazenamento */ }
+        aplicarPainelEncomendasRecolhidoFornecedor(recolhido);
+    });
+    cabecalho.prepend(botao);
+    let recolhido = false;
+    try { recolhido = localStorage.getItem(CHAVE_PAINEL_ENCOMENDAS_RECOLHIDO) === "1"; } catch (erro) { recolhido = false; }
+    aplicarPainelEncomendasRecolhidoFornecedor(recolhido);
+}
+
 function renderizarPedidosFornecedores() {
+    garantirBotaoRecolherPainelEncomendasFornecedor();
     const caixa = document.getElementById('fornecedor-pedidos');
     if (!caixa) return;
     // Pre-definição: começar por "Encomendada" (em vez de "A preparar")
