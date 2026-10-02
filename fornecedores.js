@@ -5353,7 +5353,15 @@ function atualizarTopoStickyFornecedor() {
     if (!estaPaginaFornecedoresUnificada()) return;
     const cabecalho = document.querySelector("header");
     if (!cabecalho) return;
-    const fundo = Math.max(0, Math.floor(cabecalho.getBoundingClientRect().bottom) - 1);
+    const fundoCabecalho = Math.max(0, Math.floor(cabecalho.getBoundingClientRect().bottom) - 1);
+    // A barra dos filtros fica sempre na sua posicao inicial (nao sobe com o scroll).
+    const painel = document.getElementById("fornecedores-escolher");
+    let fundo = fundoCabecalho;
+    if (painel) {
+        const estilos = getComputedStyle(painel);
+        const topoNatural = Math.round(painel.getBoundingClientRect().top + window.scrollY + (parseFloat(estilos.paddingTop) || 0) + (parseFloat(estilos.borderTopWidth) || 0));
+        fundo = Math.max(fundoCabecalho, topoNatural);
+    }
     if (document.body.dataset.fornecedorStickyTopo !== String(fundo)) {
         document.body.dataset.fornecedorStickyTopo = String(fundo);
         document.body.style.setProperty("--fornecedor-info-sticky-topo", `${fundo}px`);

@@ -5578,5 +5578,44 @@ html:not(.admin-light-mode) .fornecedor-pedido-modal-acoes .admin-encomenda-esta
 
 /* Barra dos filtros fixa: tapar a faixa por cima dela, onde se viam as linhas da tabela a passar */
 #fornecedores-aplicacao .fornecedor-lista-controles.mapas-lista-controles.fornecedor-controles-unificados {
-    box-shadow: 0 -40px 0 0 #141414, 0 8px 14px rgba(0, 0, 0, .34) !important;
+    box-shadow: 0 8px 14px rgba(0, 0, 0, .34) !important;
+}
+
+/* Barra dos filtros parada no sitio: passa a ser o topo do painel e tapa o espaco acima dela */
+#fornecedores-aplicacao #fornecedores-escolher.fornecedores-painel {
+    padding-top: 0 !important;
+    border-top: 0 !important;
+    border-top-left-radius: 0;
+    border-top-right-radius: 0;
+}
+#fornecedores-aplicacao #fornecedores-escolher > .fornecedor-lista-controles.fornecedor-controles-unificados {
+    margin-left: -19px !important;
+    margin-right: -19px !important;
+    padding: 18px 19px 8px !important;
+    border: 1px solid #333;
+    border-bottom: 1px solid #333;
+    border-radius: 8px 8px 0 0;
+    background: #141414 !important;
+}
+#fornecedores-aplicacao #fornecedores-escolher > .fornecedor-lista-controles.fornecedor-controles-unificados::before {
+    content: "" !important;
+    position: absolute;
+    left: -2px;
+    right: -2px;
+    bottom: 100%;
+    height: 60px;
+    background: #000;
+    pointer-events: none;
+}
+/* Sem espacos entre as barras fixas, para nada subir antes de ficar preso */
+#fornecedores-aplicacao #fornecedores-escolher .fornecedor-tabela-encomenda-bloco {
+    margin-top: 0 !important;
+    border-top: 0 !important;
+}
+#fornecedores-aplicacao #fornecedores-escolher #fornecedor-resumo-encomenda {
+    padding-top: 12px !important;
+    padding-bottom: 12px !important;
+}
+#fornecedores-aplicacao #fornecedores-escolher #fornecedor-resultados {
+    margin-top: 0 !important;
 }
