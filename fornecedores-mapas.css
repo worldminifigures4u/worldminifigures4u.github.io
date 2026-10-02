@@ -4861,3 +4861,46 @@ html.admin-light-mode #mapas-produto-modal fieldset.mapas-produto-secao-notas-le
 .fornecedor-pedido-modal .fornecedor-pedido-card-modal .fornecedor-pedido-detalhes {
     padding: 0;
 }
+
+/* Modal da encomenda a fornecedor: botoes e seletor com o tamanho e as cores do modal das encomendas de clientes */
+html:not(.admin-light-mode) .fornecedor-pedido-modal-acoes {
+    --fp-botao-altura: 36px;
+    --fp-botao-raio: 5px;
+}
+html:not(.admin-light-mode) .fornecedor-pedido-modal-acoes :is(.wallapop-botao, .fornecedor-pedido-modal-fechar) {
+    height: 36px !important;
+    min-height: 36px !important;
+    max-height: 36px !important;
+    min-width: 78px;
+    padding: 0 12px !important;
+    box-sizing: border-box !important;
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+    border-radius: 5px !important;
+    box-shadow: none !important;
+    font-size: 13px !important;
+    font-weight: 800 !important;
+    line-height: 1 !important;
+    white-space: nowrap;
+}
+html:not(.admin-light-mode) .pagina-fornecedores-unificada .fornecedor-pedido-modal-acoes .admin-encomenda-estado-edicao .fornecedor-status-select,
+html:not(.admin-light-mode) .fornecedor-pedido-modal-acoes .admin-encomenda-estado-edicao .fornecedor-status-select {
+    height: 36px;
+    min-height: 36px;
+    min-width: 180px;
+    border-radius: 5px;
+    font-size: 13px;
+    font-weight: 800;
+}
+html:not(.admin-light-mode) body #fornecedor-pedido-modal .fornecedor-pedido-modal-acoes :is(.fornecedor-pedido-botao-neutro, .fornecedor-pedido-modal-fechar) {
+    border: 1px solid #444 !important;
+    background: transparent !important;
+    color: #fff !important;
+}
+html:not(.admin-light-mode) body #fornecedor-pedido-modal .fornecedor-pedido-modal-acoes :is(.fornecedor-pedido-botao-neutro, .fornecedor-pedido-modal-fechar):is(:hover, :focus-visible) {
+    border-color: var(--cor-acao-principal, #ffc107) !important;
+    background: transparent !important;
+    color: var(--cor-acao-principal, #ffc107) !important;
+    outline: none;
+}
