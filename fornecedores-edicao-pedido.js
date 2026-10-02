@@ -1603,7 +1603,6 @@ function garantirModalEdicaoFornecedor() {
                             <select id="fornecedor-edicao-estado"></select>
                         </label>
                     </div>
-                    <p class="fornecedor-edicao-aviso-guardar">As alterações aos campos acima só ficam gravadas ao clicar <strong>Gravar</strong>.</p>
                     <details class="fornecedor-edicao-bloco" id="fornecedor-edicao-bloco-listas">
                         <summary>Importar lista do fornecedor</summary>
                         <div class="fornecedor-edicao-bloco-conteudo">
