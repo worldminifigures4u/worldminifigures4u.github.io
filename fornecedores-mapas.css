@@ -5828,3 +5828,19 @@ html body #btn-nova-encomenda-fornecedor.fornecedores-btn-nova-encomenda {
     border-radius: 5px !important;
     box-sizing: border-box !important;
 }
+
+/* Estado nas linhas das compras: etiqueta com a cor do estado (como em Encomendas), nao parece botao */
+body.fornecedores-vista-lista .fornecedores-coluna-direita .fornecedor-pedido-linha-cabecalho .fornecedor-pedido-estado-linha {
+    padding: 2px 8px !important;
+    border-radius: 3px !important;
+    font-size: 11px !important;
+    font-weight: 700 !important;
+    line-height: 1.35 !important;
+    cursor: default;
+}
+html:not(.admin-light-mode) .fornecedor-pedido-estado-linha.estado-fornecedor-a-preparar { background: rgba(255,225,132,.08) !important; border: 1px solid rgba(255,225,132,.28) !important; color: #d9c878 !important; }
+html:not(.admin-light-mode) .fornecedor-pedido-estado-linha.estado-fornecedor-encomendada { background: rgba(139,216,255,.08) !important; border: 1px solid rgba(139,216,255,.28) !important; color: #8bd8ff !important; }
+html:not(.admin-light-mode) .fornecedor-pedido-estado-linha.estado-fornecedor-caixote-recebido { background: rgba(190,162,255,.1) !important; border: 1px solid rgba(190,162,255,.34) !important; color: #c9b8ff !important; }
+html:not(.admin-light-mode) .fornecedor-pedido-estado-linha.estado-fornecedor-recebida-parcialmente { background: rgba(255,193,7,.06) !important; border: 1px solid rgba(255,193,7,.22) !important; color: #b8a56a !important; }
+html:not(.admin-light-mode) .fornecedor-pedido-estado-linha.estado-fornecedor-recebida { background: rgba(40,167,69,.1) !important; border: 1px solid rgba(143,227,165,.28) !important; color: #7fd899 !important; }
+html:not(.admin-light-mode) .fornecedor-pedido-estado-linha.estado-fornecedor-cancelada { background: rgba(255,157,165,.08) !important; border: 1px solid rgba(255,157,165,.28) !important; color: #ff9da5 !important; }
