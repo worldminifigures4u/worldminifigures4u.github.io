@@ -2477,3 +2477,19 @@ html:not(.admin-light-mode) .admin-encomenda-resumo-lucro .admin-encomenda-resum
     .admin-encomenda-resumo-valores { flex-wrap: wrap; gap: 8px 16px; }
     .admin-encomenda-resumo-valor-item + .admin-encomenda-resumo-valor-item { padding-left: 0; border-left: 0; }
 }
+
+/* Modal da encomenda: largura toda do ecra, encostado ao topo e fundo escuro (padrao do modal das Compras) */
+.admin-encomenda-modal{
+    align-items:flex-start;
+    padding:8px;
+    background:rgba(0,0,0,.92);
+}
+.admin-encomenda-modal-dialogo{
+    width:calc(100vw - 16px);
+    max-width:none;
+    max-height:calc(100vh - 16px);
+    max-height:calc(100dvh - 16px);
+}
+.admin-encomenda-modal-topo h2.admin-encomenda-modal-titulo-resumo{
+    min-width:0;
+}
