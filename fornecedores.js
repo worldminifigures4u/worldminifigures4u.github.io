@@ -3409,7 +3409,7 @@ function sincronizarLargurasColunasTabelaEncomendaFornecedor() {
         const linhas = [...corpo.querySelectorAll("tbody tr")];
         if (!ths.length || !linhas.length) return;
 
-        const minimos = [58, 88, 68, 56, 42, 52, 56];
+        const minimos = [58, 88, 68, 42, 52, 56, 56];
         const larguras = ths.map((_, indice) => minimos[indice] || 0);
 
         linhas.forEach((linha) => {
@@ -3445,9 +3445,9 @@ function criarTheadTabelaEncomendaFornecedor() {
         ["", "mapas-col-foto", ""],
         ["Nome", "mapas-col-nome", "nome"],
         ["Ref.", "mapas-col-ref", "ref"],
-        ["Qtd", "mapas-col-qtd", "qtd"],
         ["Stock", "mapas-col-stock", "stock"],
         ["Prev.", "mapas-col-previsto", "previsto"],
+        ["Qtd", "mapas-col-qtd", "qtd"],
         ["3M", "mapas-col-vendas-3m", "vendas_3m"],
     ].forEach(([texto, classe, coluna]) => {
         const th = document.createElement("th");
@@ -3590,7 +3590,7 @@ function renderizarResultadosFornecedorTabelaEncomenda(caixa, resultados) {
             }
         });
         qtdCelula.appendChild(input);
-        linha.insertBefore(qtdCelula, linha.children[3] || null);
+        linha.appendChild(qtdCelula);
 
         const vendasRecentes = Number(vendas_3m || 0);
         const vendasCelula = criarCelulaMapaFornecedor(vendasRecentes, `mapas-col-vendas-3m ${vendasRecentes > 0 ? "com-vendas-recentes" : ""}`);
