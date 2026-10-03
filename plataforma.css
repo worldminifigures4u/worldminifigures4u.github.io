@@ -1586,3 +1586,13 @@ html .plataforma-painel-cabecalho #btn-nova-encomenda-plataforma.wallapop-botao:
     color: var(--fp-cor-erro, #ff6b6b) !important;
     outline: none;
 }
+
+/* Lista de produtos: titulo e Analisar lista juntos e centrados por cima da caixa */
+.wallapop-editor .plataforma-selecionados-cabecalho.plataforma-lista-cabecalho {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+    flex-wrap: wrap;
+}
+.plataforma-lista-cabecalho .plataforma-analisar-lista { justify-self: auto; }
