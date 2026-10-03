@@ -3204,6 +3204,166 @@ function garantirBotaoSoNaEncomendaFornecedor(referencia) {
     return botao;
 }
 
+/* ===== Sugerir quantidades (vendas dos ultimos 3 meses x meses a cobrir - previsto) ===== */
+const CHAVE_SUGERIR_MESES_FORNECEDOR = "fp-fornecedor-sugerir-meses";
+
+function obterResultadosFiltradosSugestaoFornecedor() {
+    const { termo, fornecedor, filtrosMarcacao, filtroTop, filtroArquivado, filtroDescontinuado } = obterControlosResultadosFornecedor();
+    const indiceVendasRecentes = criarIndiceVendasRecentesFornecedor();
+    return fornecedorProdutos
+        .map((produto) => ({
+            produto,
+            score: calcularScoreResultadoFornecedor(produto, termo),
+            vendas_3m: obterVendasRecentesProdutoPorIndiceFornecedor(produto, indiceVendasRecentes),
+        }))
+        .filter((item) => (
+            (!termo || item.score < 99)
+            && produtoPassaFiltrosMarcacaoFornecedor(item.produto, fornecedor, filtrosMarcacao)
+            && produtoPassaFiltroTopFornecedor(item.produto, filtroTop)
+            && produtoPassaFiltroArquivadoFornecedor(item.produto, filtroArquivado)
+            && produtoPassaFiltroDescontinuadoFornecedor(item.produto, filtroDescontinuado)
+        ));
+}
+
+function calcularSugestoesFornecedor(meses, substituir) {
+    const grupos = new Set();
+    const sugestoes = [];
+    obterResultadosFiltradosSugestaoFornecedor().forEach(({ produto, vendas_3m }) => {
+        const vendas = Math.max(0, Number(vendas_3m) || 0);
+        if (vendas <= 0) return;
+        const referencia = normalizarReferenciaListaFornecedor(produto?.referencia);
+        const grupo = referencia ? `ref:${referencia}` : `id:${produto.id}`;
+        if (grupos.has(grupo)) return;
+        grupos.add(grupo);
+        const atual = obterQuantidadeSelecionadaFornecedor(produto.id);
+        if (atual > 0 && !substituir) return;
+        const previsto = Number(produto.stock || 0) + obterPendentesProdutoFornecedor(produto);
+        let necessario = Math.ceil((vendas / 3) * meses - previsto);
+        if (necessario <= 0) return;
+        const embalagem = Math.max(1, Math.floor(Number(produto.unidades_por_embalagem) || 1));
+        if (embalagem > 1) necessario = Math.ceil(necessario / embalagem) * embalagem;
+        sugestoes.push({ produto, vendas, necessario, embalagem, atual });
+    });
+    return sugestoes;
+}
+
+function aplicarSugestoesFornecedor(meses, substituir) {
+    let sugestoes = calcularSugestoesFornecedor(meses, substituir);
+    const alvo = lerAlvoUnidadesFornecedor();
+    // Unidades que ficam como estao (escritas a mao e nao substituidas).
+    const idsSugeridos = new Set(sugestoes.map(item => String(item.produto.id)));
+    const existentes = fornecedorSelecao
+        .filter(item => !idsSugeridos.has(String(item.id)))
+        .reduce((soma, item) => soma + Math.max(0, Number(item.quantidade || 0)), 0);
+    let avisoAlvo = "";
+
+    if (alvo > 0) {
+        let restante = Math.max(0, alvo - existentes);
+        const ordenadas = sugestoes.slice().sort((a, b) => b.vendas - a.vendas || b.necessario - a.necessario);
+        const escolhidas = [];
+        ordenadas.forEach(item => {
+            if (restante <= 0) return;
+            let quantidade = Math.min(item.necessario, restante);
+            if (item.embalagem > 1) quantidade = Math.floor(quantidade / item.embalagem) * item.embalagem;
+            if (quantidade <= 0) return;
+            escolhidas.push({ ...item, necessario: quantidade });
+            restante -= quantidade;
+        });
+        sugestoes = escolhidas;
+        const totalFinal = existentes + sugestoes.reduce((soma, item) => soma + item.necessario, 0);
+        if (totalFinal < alvo) avisoAlvo = ` Faltam ${alvo - totalFinal} un. para o alvo de ${alvo}.`;
+    }
+
+    sugestoes.forEach(({ produto, necessario }) => {
+        obterProdutosRelacionadosQuantidadeFornecedor(produto).forEach((relacionado) => {
+            const id = String(relacionado.id);
+            const indice = fornecedorSelecao.findIndex(item => String(item.id) === id);
+            if (indice >= 0) fornecedorSelecao[indice] = { ...fornecedorSelecao[indice], ...relacionado, quantidade: necessario };
+            else fornecedorSelecao.push({ ...relacionado, quantidade: necessario });
+        });
+    });
+
+    const unidades = sugestoes.reduce((soma, item) => soma + item.necessario, 0);
+    if (!sugestoes.length) {
+        definirStatusFornecedor(`Nada a sugerir: com as vendas dos últimos 3 meses, o previsto já cobre ${meses} ${meses === 1 ? "mês" : "meses"}.${avisoAlvo}`);
+        return;
+    }
+    guardarSelecaoFornecedor();
+    if (!fornecedorSoNaEncomenda) {
+        document.getElementById("fornecedor-so-na-encomenda")?.click();
+    }
+    executarPreservandoScrollFornecedor(() => {
+        renderizarResultadosFornecedor();
+        renderizarSelecionadosFornecedor();
+    });
+    definirStatusFornecedor(`Sugeridas ${sugestoes.length} ${sugestoes.length === 1 ? "figura" : "figuras"} · ${unidades} un. (cobrir ${meses} ${meses === 1 ? "mês" : "meses"}).${avisoAlvo}`);
+}
+
+function fecharModalSugerirFornecedor() {
+    const modal = document.getElementById("fornecedor-sugerir-modal");
+    if (modal) modal.hidden = true;
+    document.removeEventListener("keydown", teclaModalSugerirFornecedor);
+}
+
+function teclaModalSugerirFornecedor(evento) {
+    if (evento.key === "Escape") fecharModalSugerirFornecedor();
+}
+
+function abrirModalSugerirFornecedor() {
+    let modal = document.getElementById("fornecedor-sugerir-modal");
+    if (!modal) {
+        modal = document.createElement("div");
+        modal.id = "fornecedor-sugerir-modal";
+        modal.className = "fornecedor-edicao-modal";
+        modal.setAttribute("role", "dialog");
+        modal.setAttribute("aria-modal", "true");
+        modal.setAttribute("aria-labelledby", "fornecedor-sugerir-titulo");
+        modal.innerHTML = `
+            <div class="fornecedor-edicao-dialog fornecedor-sugerir-dialog">
+                <div class="fornecedor-edicao-topo fornecedor-sugerir-topo">
+                    <h3 id="fornecedor-sugerir-titulo">Sugerir quantidades</h3>
+                    <div class="fornecedor-edicao-topo-acoes">
+                        <button type="button" id="fornecedor-sugerir-aplicar" class="wallapop-botao wallapop-botao-destaque wallapop-botao-guardar">Sugerir</button>
+                        <button type="button" id="fornecedor-sugerir-fechar" class="fornecedor-edicao-fechar">Fechar</button>
+                    </div>
+                </div>
+                <div class="fornecedor-sugerir-corpo">
+                    <label for="fornecedor-sugerir-meses">
+                        Cobrir vendas de
+                        <select id="fornecedor-sugerir-meses">
+                            <option value="1">1 mês</option>
+                            <option value="2">2 meses</option>
+                            <option value="3">3 meses</option>
+                            <option value="6">6 meses</option>
+                        </select>
+                    </label>
+                    <label class="fornecedor-sugerir-substituir">
+                        <input type="checkbox" id="fornecedor-sugerir-substituir">
+                        Substituir quantidades já escritas
+                    </label>
+                    <p class="fornecedor-sugerir-ajuda">Por figura: vendas dos últimos 3 meses ÷ 3 × meses a cobrir − Prev. (stock + a caminho), arredondado à embalagem. Só entram as figuras da lista com os filtros atuais.</p>
+                </div>
+            </div>`;
+        document.body.appendChild(modal);
+        modal.querySelector("#fornecedor-sugerir-fechar").addEventListener("click", fecharModalSugerirFornecedor);
+        modal.querySelector("#fornecedor-sugerir-aplicar").addEventListener("click", () => {
+            const meses = Math.max(1, Number(modal.querySelector("#fornecedor-sugerir-meses").value) || 3);
+            const substituir = modal.querySelector("#fornecedor-sugerir-substituir").checked;
+            try { localStorage.setItem(CHAVE_SUGERIR_MESES_FORNECEDOR, String(meses)); } catch (erro) { /* sem armazenamento */ }
+            fecharModalSugerirFornecedor();
+            aplicarSugestoesFornecedor(meses, substituir);
+        });
+    }
+    let mesesGuardados = "3";
+    try { mesesGuardados = localStorage.getItem(CHAVE_SUGERIR_MESES_FORNECEDOR) || "3"; } catch (erro) { mesesGuardados = "3"; }
+    const select = modal.querySelector("#fornecedor-sugerir-meses");
+    select.value = ["1", "2", "3", "6"].includes(mesesGuardados) ? mesesGuardados : "3";
+    modal.querySelector("#fornecedor-sugerir-substituir").checked = false;
+    modal.hidden = false;
+    document.addEventListener("keydown", teclaModalSugerirFornecedor);
+    modal.querySelector("#fornecedor-sugerir-aplicar").focus();
+}
+
 function lerAlvoUnidadesFornecedor() {
     const campo = document.getElementById("fornecedor-alvo-unidades");
     const valor = Math.floor(Number(String(campo?.value || "").replace(/[^0-9]/g, "")) || 0);
@@ -5517,6 +5677,7 @@ ligarEventoFornecedor('fornecedor-filtro-top', 'change', agendarRenderizacaoResu
 ligarEventoFornecedor('fornecedor-filtro-arquivado', 'change', agendarRenderizacaoResultadosFornecedor);
 ligarEventoFornecedor('fornecedor-filtro-descontinuado', 'change', agendarRenderizacaoResultadosFornecedor);
 ligarEventoFornecedor('btn-limpar-fornecedor', 'click', limparSelecaoFornecedor);
+ligarEventoFornecedor('btn-sugerir-fornecedor', 'click', abrirModalSugerirFornecedor);
 ligarEventoFornecedor('btn-juntar-selecao-fornecedor', 'click', juntarSelecaoAEncomendaExistenteFornecedor);
 ligarEventoFornecedor('btn-criar-fornecedor', 'click', criarPedidoFornecedor);
 ligarEventoFornecedor('fornecedor-filtro-estado', 'change', renderizarPedidosFornecedores);

@@ -738,7 +738,7 @@ function garantirFichaProdutoEstatisticas() {
     if (window.MapasProdutoModal) return Promise.resolve();
     if (!promessaFichaProdutoEstatisticas) {
         promessaFichaProdutoEstatisticas = Promise.all([
-            carregarRecursoEstatisticas('css', 'fornecedores-mapas.css?v=20261003-botao-fornecedores'),
+            carregarRecursoEstatisticas('css', 'fornecedores-mapas.css?v=20261003-sugerir'),
             carregarRecursoEstatisticas('js', 'mapas-produto-modal.js?v=20261003-preco-dividido')
         ]).catch(erro => {
             promessaFichaProdutoEstatisticas = null;
