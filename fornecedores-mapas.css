@@ -5749,3 +5749,24 @@ body.fornecedores-vista-lista .fornecedores-coluna-direita .fornecedor-pedido-li
     align-items: center;
     padding: 4px 8px !important;
 }
+/* Cabecalho da lista de encomendas numa so linha */
+body.fornecedores-vista-lista .fornecedores-coluna-direita .fornecedores-cabecalho-lista {
+    flex-wrap: nowrap !important;
+}
+body.fornecedores-vista-lista .fornecedores-coluna-direita .fornecedores-cabecalho-titulo-filtro {
+    display: flex !important;
+    flex: 1 1 auto;
+    justify-content: space-between;
+    width: auto !important;
+    min-width: 0;
+}
+body.fornecedores-vista-lista .fornecedores-btn-nova-encomenda {
+    margin-left: 0;
+    flex: 0 0 auto;
+    height: 40px !important;
+    min-height: 40px !important;
+}
+@media (max-width: 700px) {
+    body.fornecedores-vista-lista .fornecedores-coluna-direita .fornecedores-cabecalho-lista { flex-wrap: wrap !important; }
+    body.fornecedores-vista-lista .fornecedores-btn-nova-encomenda { width: 100%; }
+}

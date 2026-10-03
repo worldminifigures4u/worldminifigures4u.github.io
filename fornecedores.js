@@ -5248,7 +5248,8 @@ function iniciarVistasFornecedores() {
         nova.type = "button";
         nova.id = "btn-nova-encomenda-fornecedor";
         nova.className = "wallapop-botao wallapop-botao-destaque fornecedores-btn-nova-encomenda";
-        nova.textContent = "+ Nova encomenda";
+        nova.textContent = "Escolher figuras";
+        nova.title = "Escolher figuras para uma encomenda nova ou para juntar a uma existente";
         nova.addEventListener("click", () => mostrarVistaFornecedores("preparar"));
         cabecalhoLista.appendChild(nova);
     }
