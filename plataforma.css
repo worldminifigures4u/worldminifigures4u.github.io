@@ -1531,3 +1531,6 @@ html:not(.admin-light-mode) .plataforma-totais strong:last-child{ color:var(--co
     .wallapop-preview-wrap{ margin-inline:0; width:100%; }
     .wallapop-preview-acoes{ width:100%; }
 }
+
+/* Painel Encomenda (link do perfil, o primeiro a usar) a esquerda; produtos a direita */
+body.pagina-wallapop main.wallapop-layout > .wallapop-preview-wrap{ order:-1; }

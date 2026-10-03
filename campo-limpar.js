@@ -39,7 +39,7 @@
     }
 
     function atualizarBotao(campo, botao) {
-        const temValor = String(campo.value || "").length > 0;
+        const temValor = String(campo.value || "").trim().length > 0;
         botao.hidden = !temValor;
         campo.classList.toggle("tem-limpar-campo", temValor);
     }
