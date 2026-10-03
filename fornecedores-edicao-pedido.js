@@ -449,6 +449,14 @@ function calcularCustoRealListaAtualFornecedor(itens, opcoes = {}) {
             ? (quantidade > 0 ? envioLinhaUsd / quantidade : 0)
             : envioPorUnidadeUsd;
         const precoCusto = arredondarPrecoCustoListaAtualFornecedor((precoUsd + envioUnitarioUsd) * cambio);
+        if (calcularEur) {
+            const portesEur = Math.round(envioUnitarioUsd * cambio * 100) / 100;
+            item.preco_custo_portes = portesEur;
+            item.preco_custo_figura = Math.max(0, Math.round((precoCusto - portesEur) * 100) / 100);
+        } else {
+            delete item.preco_custo_portes;
+            delete item.preco_custo_figura;
+        }
         item.preco_custo = precoCusto;
         item.preco = precoCusto;
         item.preco_custo_moeda = calcularEur ? "EUR" : "USD";
@@ -530,7 +538,16 @@ function aplicarCustoFixoEurItensFornecedor(itens, opcoes = {}) {
     }
 
     const precoCusto = arredondarPrecoCustoListaAtualFornecedor(precoUnitarioFinal);
+    const portesUnidade = envioEur > 0 ? Math.round((envioEur / totalUnidades) * 100) / 100 : 0;
+    const figuraUnidade = Math.max(0, Math.round((precoCusto - portesUnidade) * 100) / 100);
     itensReceber.forEach((item) => {
+        if (envioEur > 0) {
+            item.preco_custo_portes = portesUnidade;
+            item.preco_custo_figura = figuraUnidade;
+        } else {
+            delete item.preco_custo_portes;
+            delete item.preco_custo_figura;
+        }
         item.preco_custo = precoCusto;
         item.preco = precoCusto;
         item.preco_custo_moeda = "EUR";
@@ -1504,7 +1521,12 @@ function atualizarResultadoPrecoIgualEdicaoFornecedor(modal) {
     }
     const porFigura = total / unidades;
     const prefixo = temSegundo ? `Total ${total.toFixed(2).replace('.', ',')} € ` : '';
-    destino.textContent = `${prefixo}= ${porFigura.toFixed(2).replace('.', ',')} € por figura (${unidades} ${unidades === 1 ? 'unidade' : 'unidades'} a receber)`;
+    const portesTotal = Math.max(0, converterNumeroListaFornecedor(modal.querySelector('#fornecedor-edicao-os-envio-eur')?.value || '') || 0);
+    const fmt = (v) => v.toFixed(2).replace('.', ',');
+    const divisao = portesTotal > 0 && portesTotal < total
+        ? ` · figura ${fmt(porFigura - portesTotal / unidades)} € + portes ${fmt(portesTotal / unidades)} €`
+        : '';
+    destino.textContent = `${prefixo}= ${fmt(porFigura)} € por figura${divisao} (${unidades} ${unidades === 1 ? 'unidade' : 'unidades'} a receber)`;
 }
 
 function ligarBlocosEdicaoFornecedor(modal) {
@@ -1684,10 +1706,14 @@ function garantirModalEdicaoFornecedor() {
                                         Pagamento 2 € (opcional)
                                         <input type="text" id="fornecedor-edicao-pagamento-2-eur" inputmode="decimal" autocomplete="off" placeholder="0,00 €">
                                     </label>
+                                    <label>
+                                        Portes € (incluídos, opcional)
+                                        <input type="text" id="fornecedor-edicao-os-envio-eur" inputmode="decimal" autocomplete="off" placeholder="9,25 €">
+                                    </label>
                                     <p class="fornecedor-edicao-preco-resultado" id="fornecedor-edicao-preco-resultado" aria-live="polite"></p>
                                     <input type="hidden" id="fornecedor-edicao-os-total-compra-eur">
                                     <input type="hidden" id="fornecedor-edicao-os-preco-unitario-eur">
-                                    <input type="hidden" id="fornecedor-edicao-os-envio-eur">
+
                                 </div>
                                 <p class="fornecedor-custo-real-ajuda">O total pago (soma dos pagamentos, já com envio) é dividido pelas unidades a receber. As figuras OS, EX ou removidas não contam.</p>
                             </div>
@@ -1804,8 +1830,15 @@ function lerItensEditadosPedidoFornecedor(pedido, modal) {
         const estavaEx = itemPedidoEstaExFornecedor(item);
         const mudouParaOsOuEx = (estaOs && !estavaOs) || (marcarEx && !estavaEx);
         const produtoAtual = obterProdutoParaPedidoFornecedor(item) || item;
+        const divisaoValida = Number.isFinite(Number(item.preco_custo_figura)) && Number.isFinite(Number(item.preco_custo_portes))
+            && Math.abs(Number(item.preco_custo_figura) + Number(item.preco_custo_portes) - precoCusto) <= 0.011;
+        const itemBase = { ...item };
+        if (!divisaoValida) {
+            delete itemBase.preco_custo_figura;
+            delete itemBase.preco_custo_portes;
+        }
         return {
-            ...item,
+            ...itemBase,
             id: produtoAtual.id || item.id,
             nome: produtoAtual.nome || item.nome,
             sku: produtoAtual.sku || item.sku || "",

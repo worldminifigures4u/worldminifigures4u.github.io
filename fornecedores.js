@@ -91,7 +91,7 @@ function garantirFornecedoresProdutoModal() {
     if (window.FornecedoresProdutoModal) return Promise.resolve();
     if (!__fornecedoresProdutoPromessa) {
         prepararContextoProdutoFornecedor();
-        __fornecedoresProdutoPromessa = carregarScriptAdmin("mapas-produto-modal.js?v=20260929-blocos-vazios")
+        __fornecedoresProdutoPromessa = carregarScriptAdmin("mapas-produto-modal.js?v=20261003-preco-dividido")
             .then(function () {
                 window.FornecedoresProdutoModal = {
                     abrir: function () {
@@ -110,7 +110,7 @@ function garantirFornecedoresProdutoModal() {
 function garantirFornecedoresEdicaoPedido() {
     if (window.FornecedoresEdicaoPedido) return Promise.resolve();
     if (!__fornecedoresEdicaoPromessa) {
-        __fornecedoresEdicaoPromessa = carregarScriptAdmin("fornecedores-edicao-pedido.js?v=20261002-nome-abre-ficha");
+        __fornecedoresEdicaoPromessa = carregarScriptAdmin("fornecedores-edicao-pedido.js?v=20261003-preco-dividido");
     }
     return __fornecedoresEdicaoPromessa;
 }
@@ -4237,7 +4237,7 @@ function definirEventoFornecedorNoProduto(produto, fornecedorNome, tipo, data = 
     return fornecedores;
 }
 
-function definirPrecoCompraFornecedorNoProduto(produto, fornecedorNome, precoCompra, data = dataOsAgoraFornecedor()) {
+function definirPrecoCompraFornecedorNoProduto(produto, fornecedorNome, precoCompra, data = dataOsAgoraFornecedor(), divisao = null) {
     const chaveNormalizada = normalizarChaveFornecedor(fornecedorNome);
     const preco = Math.max(0, Number(precoCompra || 0) || 0);
     if (!produto || !chaveNormalizada || fornecedorNome === "Outro" || preco <= 0) return null;
@@ -4249,11 +4249,22 @@ function definirPrecoCompraFornecedorNoProduto(produto, fornecedorNome, precoCom
     const base = anterior && typeof anterior === "object" && !Array.isArray(anterior)
         ? { ...anterior }
         : montarMarcacaoComHistorico(marcacao.historico || [], obterEstadoMarcacaoPreservado(anterior));
-    fornecedores[chave] = {
+    const figura = Number(divisao?.figura);
+    const portes = Number(divisao?.portes);
+    const temDivisao = Number.isFinite(figura) && Number.isFinite(portes) && figura >= 0 && portes >= 0 && (figura + portes) > 0;
+    const novo = {
         ...base,
         preco_compra: preco,
         data_preco_compra: String(data || dataOsAgoraFornecedor())
     };
+    if (temDivisao) {
+        novo.preco_compra_figura = Math.round(figura * 100) / 100;
+        novo.preco_compra_portes = Math.round(portes * 100) / 100;
+    } else {
+        delete novo.preco_compra_figura;
+        delete novo.preco_compra_portes;
+    }
+    fornecedores[chave] = novo;
     return fornecedores;
 }
 
@@ -4459,7 +4470,10 @@ async function sincronizarPrecoCompraProdutosFornecedor(itens, fornecedorNome = 
         const idAtualizado = String(data?.id || produtoAtual?.id || item.id || "");
         let fornecedoresAtualizados = null;
         const produtoLocal = fornecedorProdutos.find(produto => String(produto.id || "") === idAtualizado) || produtoAtual;
-        fornecedoresAtualizados = definirPrecoCompraFornecedorNoProduto(produtoLocal, fornecedorNome, precoCompra);
+        fornecedoresAtualizados = definirPrecoCompraFornecedorNoProduto(produtoLocal, fornecedorNome, precoCompra, undefined, {
+            figura: item?.preco_custo_figura,
+            portes: item?.preco_custo_portes
+        });
         if (fornecedoresAtualizados) {
             const { error: erroFornecedores } = await fornecedoresClient.rpc("atualizar_fornecedores_produto_admin", {
                 p_id: String(produtoAtual.id),

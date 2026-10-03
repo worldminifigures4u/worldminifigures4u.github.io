@@ -509,6 +509,13 @@ function criarBlocoFornecedorFallbackMapa(form, id, rotulo, valor, opcoes = {}) 
         const precoCompra = document.createElement("span");
         precoCompra.className = "mapas-produto-fornecedor-preco-compra";
         precoCompra.textContent = `Compra: ${formatarEuroProdutoModal(precoFornecedor)} €`;
+        const divisao = obterDivisaoPrecoCompraFornecedorMapa(valor);
+        if (divisao) {
+            const detalheDivisao = document.createElement("small");
+            detalheDivisao.className = "mapas-produto-fornecedor-preco-divisao";
+            detalheDivisao.textContent = divisao;
+            precoCompra.appendChild(detalheDivisao);
+        }
         cabecalho.appendChild(precoCompra);
     }
 
@@ -963,15 +970,25 @@ function normalizarMarcacaoFornecedorLeituraMapa(valor) {
 
     const ultimoHistorico = historico[historico.length - 1] || null;
     const precoCompra = obterPrecoCompraMarcacaoFornecedorLeituraMapa(valor);
+    const divisaoCompra = obterDivisaoPrecoCompraFornecedorMapa(valor);
     return {
         tipo,
         texto,
         historico,
         precoCompra,
+        divisaoCompra,
         detalhe: ultimoHistorico
             ? `${rotuloHistoricoFornecedorLeituraMapa(ultimoHistorico.tipo)} ${formatarDataFornecedorLeituraMapa(ultimoHistorico.data)}`.trim()
             : ""
     };
+}
+
+function obterDivisaoPrecoCompraFornecedorMapa(valor) {
+    if (!valor || typeof valor !== "object" || Array.isArray(valor)) return "";
+    const figura = Number(valor.preco_compra_figura);
+    const portes = Number(valor.preco_compra_portes);
+    if (!Number.isFinite(figura) || !Number.isFinite(portes) || figura < 0 || portes < 0 || (figura <= 0 && portes <= 0)) return "";
+    return `figura ${formatarEuroProdutoModal(figura)} € + portes ${formatarEuroProdutoModal(portes)} €`;
 }
 
 function obterPrecoCompraMarcacaoFornecedorLeituraMapa(valor) {
@@ -1637,6 +1654,12 @@ function montarSecaoFornecedoresLeituraMapa(campos, produto) {
             const preco = document.createElement("small");
             preco.className = "mapas-produto-fornecedor-leitura-preco";
             preco.textContent = `Compra: ${formatarEuroProdutoModal(marcacao.precoCompra)} €`;
+            if (marcacao.divisaoCompra) {
+                const detalheDivisao = document.createElement("small");
+                detalheDivisao.className = "mapas-produto-fornecedor-preco-divisao";
+                detalheDivisao.textContent = marcacao.divisaoCompra;
+                preco.appendChild(detalheDivisao);
+            }
             item.appendChild(preco);
         }
         if (marcacao.detalhe) {
