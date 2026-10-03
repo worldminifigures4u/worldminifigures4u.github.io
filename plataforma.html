@@ -19,7 +19,7 @@
     <link rel="apple-touch-icon" href="fp-ring-favicon-192.png">
     <link rel="stylesheet" href="styles.css?v=20260930-dialogo-fechar">
     <link rel="stylesheet" href="styles-admin.css?v=20260920-exportar-azul">
-    <link rel="stylesheet" href="plataforma.css?v=20261003-lista-produtos">
+    <link rel="stylesheet" href="plataforma.css?v=20261003-botao-nova">
     <link rel="stylesheet" href="admin-light.css?v=20260926-links-padrao">
     <link rel="stylesheet" href="admin-cliente.css?v=20260930-ficha-com-molduras" media="print" data-async-css>
     <link rel="stylesheet" href="clientes.css?v=20260926-links-padrao" media="print" data-async-css>
@@ -90,10 +90,6 @@
                 <p class="plataforma-lista-previa" id="plataforma-lista-previa" hidden></p>
             </div>
 
-            <div class="plataforma-selecionados-cabecalho">
-                <h2>Produtos selecionados</h2>
-                <button class="wallapop-botao plataforma-limpar-lista" type="button" id="btn-limpar-wallapop" hidden>Limpar lista</button>
-            </div>
             <div class="wallapop-selecionados" id="wallapop-selecionados"></div>
         </section>
 
@@ -102,6 +98,7 @@
                 <div class="plataforma-painel-cabecalho">
                     <h2>Encomenda</h2>
                     <div class="wallapop-acoes-encomenda">
+                        <button class="wallapop-botao plataforma-nova-encomenda" type="button" id="btn-nova-encomenda-plataforma" title="Começar uma nova encomenda (limpa produtos e dados do cliente)">Nova</button>
                         <button class="wallapop-botao wallapop-botao-registar" type="button" id="btn-registar-wallapop">Registar</button>
                         <button class="wallapop-botao wallapop-botao-destaque wallapop-botao-exportar" type="button" id="btn-descarregar-wallapop">Exportar</button>
                         <button class="wallapop-botao admin-encomenda-apagar plataforma-apagar-encomenda" type="button" id="btn-apagar-encomenda-plataforma" hidden>Apagar</button>
@@ -238,7 +235,7 @@
 <script src="app-portes.js?v=20260915-ctt-azul-internacional-v3" defer></script>
 <script src="admin-theme.js?v=20260826-light-mode" defer></script>
 <script src="avisos-stock-admin.js?v=20260920-gravar-texto" defer></script>
-    <script src="plataforma.js?v=20261003-sem-seguimento" defer></script>
+    <script src="plataforma.js?v=20261003-botao-nova" defer></script>
 <script src="campo-limpar.js?v=20261003-lados-trocados" defer></script>
 <script src="inline-listeners-base.js?v=20260929-menu-telemovel" defer></script>
 <script src="inline-listeners-admin.js?v=20260713-r25" defer></script>

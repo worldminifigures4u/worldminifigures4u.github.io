@@ -3650,7 +3650,11 @@ async function abrirEncomendaPlataformaPeloTxt(evento) {
 }
 
 async function novaEncomendaPlataforma() {
-    if (wallapopItens.length && !(await mostrarConfirmacaoSite('Come\u00e7ar uma nova encomenda e limpar a lista atual?', {
+    const temDados = wallapopItens.length
+        || String(document.getElementById('plataforma-link-perfil')?.value || '').trim()
+        || String(document.getElementById('plataforma-notas-anuncio')?.value || '').trim()
+        || encomendaPlataformaEmEdicao;
+    if (temDados && !(await mostrarConfirmacaoSite('Come\u00e7ar uma nova encomenda e limpar a lista atual?', {
         titulo: "Nova encomenda",
         textoConfirmar: "Começar",
         textoCancelar: "Fechar"
@@ -3673,6 +3677,16 @@ async function novaEncomendaPlataforma() {
     selecionarPaisEnvioPlataforma('portugal');
     const campoSeguimento = document.getElementById('plataforma-codigo-seguimento');
     if (campoSeguimento) campoSeguimento.value = '';
+    ['plataforma-portes-manual', 'plataforma-total-manual', 'plataforma-lista-produtos', 'plataforma-notas-anuncio'].forEach(id => {
+        const campo = document.getElementById(id);
+        if (campo) {
+            campo.value = '';
+            campo.dispatchEvent(new Event('input', { bubbles: true }));
+        }
+    });
+    plataformaPortesManualAlterado = false;
+    plataformaTotalManualAlterado = false;
+    atualizarPreviaListaProdutosPlataforma();
     perfilExternoDetetado = null;
     fichaClientePlataformaAtual = null;
     atualizarPerfilExternoPlataforma();
@@ -4074,7 +4088,7 @@ document.getElementById('plataforma-lista-produtos')?.addEventListener('keydown'
         abrirRevisaoListaProdutosPlataforma();
     }
 });
-document.getElementById('btn-limpar-wallapop').addEventListener('click', limparListaWallapop);
+document.getElementById('btn-limpar-wallapop')?.addEventListener('click', limparListaWallapop);
 document.getElementById('btn-descarregar-wallapop').addEventListener('click', guardarFicheirosPlataforma);
 document.getElementById('btn-registar-wallapop').addEventListener('click', registarEncomendaWallapop);
 document.getElementById('btn-apagar-encomenda-plataforma')?.addEventListener('click', apagarEncomendaPlataformaEmEdicao);

@@ -1567,3 +1567,22 @@ html:not(.admin-light-mode) .plataforma-lista-cabecalho #btn-analisar-lista-prod
     border-color: var(--cor-acao-principal, #ffc107) !important;
     color: var(--cor-acao-principal, #ffc107) !important;
 }
+
+/* Sem titulo "Produtos selecionados": separador entre a caixa e a lista */
+.wallapop-editor .plataforma-importar-lista { margin-bottom: 14px; }
+.wallapop-editor .wallapop-selecionados:not(:empty) {
+    padding-top: 14px;
+    border-top: 1px solid #333;
+}
+
+/* Nova encomenda no cabecalho: contorno cinzento, vermelho ao passar o rato */
+html:not(.admin-light-mode) .plataforma-painel-cabecalho #btn-nova-encomenda-plataforma.wallapop-botao {
+    border: 1px solid #444 !important;
+    background: transparent !important;
+    color: #fff !important;
+}
+html .plataforma-painel-cabecalho #btn-nova-encomenda-plataforma.wallapop-botao:is(:hover, :focus-visible) {
+    border-color: var(--fp-cor-erro, #ff6b6b) !important;
+    color: var(--fp-cor-erro, #ff6b6b) !important;
+    outline: none;
+}
