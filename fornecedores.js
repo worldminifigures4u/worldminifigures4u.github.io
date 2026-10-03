@@ -5260,8 +5260,8 @@ function iniciarVistasFornecedores() {
         voltar.type = "button";
         voltar.id = "btn-voltar-encomendas-fornecedor";
         voltar.className = "fornecedores-btn-voltar-lista";
-        voltar.textContent = "\u2190 Encomendas";
-        voltar.title = "Voltar à lista de encomendas (a preparação fica guardada)";
+        voltar.textContent = "\u2190 Compras";
+        voltar.title = "Voltar à lista de compras a fornecedores (as figuras escolhidas ficam guardadas)";
         voltar.addEventListener("click", () => mostrarVistaFornecedores("lista"));
         controles.prepend(voltar);
     }
