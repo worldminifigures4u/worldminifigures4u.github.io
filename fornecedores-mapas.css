@@ -5797,8 +5797,9 @@ body.fornecedores-vista-lista .fornecedores-coluna-direita .fornecedor-pedido-li
 }
 /* Botao "← Compras" com o tamanho dos outros controlos do topo */
 #fornecedores-aplicacao .fornecedor-controles-unificados .fornecedores-btn-voltar-lista {
-    height: var(--fp-altura-controle-topo-fornecedor) !important;
-    min-height: var(--fp-altura-controle-topo-fornecedor) !important;
+    height: 36px !important;
+    min-height: 36px !important;
+    max-height: 36px !important;
     box-sizing: border-box !important;
     padding: 0 14px !important;
     border-radius: var(--fp-raio-ui, 6px) !important;
