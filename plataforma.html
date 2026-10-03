@@ -19,7 +19,7 @@
     <link rel="apple-touch-icon" href="fp-ring-favicon-192.png">
     <link rel="stylesheet" href="styles.css?v=20260930-dialogo-fechar">
     <link rel="stylesheet" href="styles-admin.css?v=20260920-exportar-azul">
-    <link rel="stylesheet" href="plataforma.css?v=20260923-exportar-rodape">
+    <link rel="stylesheet" href="plataforma.css?v=20261003-reorganizada">
     <link rel="stylesheet" href="admin-light.css?v=20260926-links-padrao">
     <link rel="stylesheet" href="admin-cliente.css?v=20260930-ficha-com-molduras" media="print" data-async-css>
     <link rel="stylesheet" href="clientes.css?v=20260926-links-padrao" media="print" data-async-css>
@@ -81,29 +81,30 @@
 
     <main class="wallapop-layout" id="wallapop-aplicacao" hidden>
         <section class="wallapop-editor" aria-label="Produtos da encomenda">
-            <h2>Adicionar produtos</h2>
-            <div class="wallapop-pesquisa">
-                <input type="search" id="wallapop-pesquisa" placeholder="Nome ou SKU" autocomplete="off">
-            </div>
-            <div class="wallapop-resultados" id="wallapop-resultados"></div>
-
             <div class="plataforma-importar-lista">
-                <h3 class="plataforma-importar-lista-titulo">Colar lista de produtos</h3>
+                <h2 class="plataforma-importar-lista-titulo">Colar lista de produtos</h2>
                 <textarea id="plataforma-lista-produtos" rows="7" aria-label="Lista de produtos" placeholder="Jonathan Byers (Stranger Things) Jonathan Byers (Stranger Things) 1,75 €&#10;Robin Buckley v1 (Stranger Things) Robin Buckley v1 (Stranger Things) 1,95 €&#10;3x Clone Trooper"></textarea>
                 <p class="plataforma-lista-previa" id="plataforma-lista-previa" hidden></p>
-                <button class="wallapop-botao" type="button" id="btn-analisar-lista-produtos">Analisar lista</button>
+                <button class="wallapop-botao" type="button" id="btn-analisar-lista-produtos" disabled>Analisar lista</button>
             </div>
 
-            <h2>Produtos selecionados</h2>
-            <p class="plataforma-resumo-figuras" id="plataforma-resumo-figuras" aria-live="polite">0 figuras</p>
-            <div class="wallapop-selecionados" id="wallapop-selecionados"></div>
-            <div class="wallapop-controlos-finais">
-                <button class="wallapop-botao" type="button" id="btn-limpar-wallapop">Limpar lista</button>
+            <div class="plataforma-selecionados-cabecalho">
+                <h2>Produtos selecionados</h2>
+                <button class="wallapop-botao plataforma-limpar-lista" type="button" id="btn-limpar-wallapop" hidden>Limpar lista</button>
             </div>
+            <div class="wallapop-selecionados" id="wallapop-selecionados"></div>
         </section>
 
         <section class="wallapop-preview-wrap" aria-label="Dados da plataforma">
             <div class="wallapop-preview-acoes">
+                <div class="plataforma-painel-cabecalho">
+                    <h2>Encomenda</h2>
+                    <div class="wallapop-acoes-encomenda">
+                        <button class="wallapop-botao wallapop-botao-registar" type="button" id="btn-registar-wallapop">Registar</button>
+                        <button class="wallapop-botao wallapop-botao-destaque wallapop-botao-exportar" type="button" id="btn-descarregar-wallapop">Exportar</button>
+                        <button class="wallapop-botao admin-encomenda-apagar plataforma-apagar-encomenda" type="button" id="btn-apagar-encomenda-plataforma" hidden>Apagar</button>
+                    </div>
+                </div>
                 <div class="wallapop-dados-encomenda">
                     <label for="plataforma-link-perfil">Link do perfil ou WhatsApp</label>
                     <input type="text" id="plataforma-link-perfil" placeholder="Cole o link do perfil ou o número WhatsApp" autocomplete="off" required>
@@ -117,21 +118,23 @@
                     <label for="wallapop-nome-cliente" id="label-cliente-plataforma" hidden>Nome de utilizador</label>
                     <input type="text" id="wallapop-nome-cliente" placeholder="Nome ou utilizador" autocomplete="off" hidden>
 
-                    <label for="plataforma-tipo">Origem da encomenda</label>
-                    <select id="plataforma-tipo">
-                        <option value="Wallapop">Wallapop</option>
-                        <option value="Vinted">Vinted</option>
-                        <option value="OLX">OLX</option>
-                        <option value="Todocoleccion">Todocoleccion</option>
-                        <option value="WhatsApp">WhatsApp</option>
-                        <option value="Site" hidden>Site</option>
-                    </select>
-
                     <p class="plataforma-edicao" id="plataforma-edicao" hidden></p>
-
-                    <div id="plataforma-seguimento-bloco">
-                        <label for="plataforma-codigo-seguimento">C&oacute;digo de envio / seguimento</label>
-                        <input type="text" id="plataforma-codigo-seguimento" placeholder="Ex.: c&oacute;digo CTT ou InPost" autocomplete="off">
+                    <div class="plataforma-origem-linha">
+                        <div class="plataforma-origem-campo">
+                        <label for="plataforma-tipo">Origem da encomenda</label>
+                        <select id="plataforma-tipo">
+                            <option value="Wallapop">Wallapop</option>
+                            <option value="Vinted">Vinted</option>
+                            <option value="OLX">OLX</option>
+                            <option value="Todocoleccion">Todocoleccion</option>
+                            <option value="WhatsApp">WhatsApp</option>
+                            <option value="Site" hidden>Site</option>
+                        </select>
+                        </div>
+                        <div id="plataforma-seguimento-bloco">
+                            <label for="plataforma-codigo-seguimento">C&oacute;digo de envio / seguimento</label>
+                            <input type="text" id="plataforma-codigo-seguimento" placeholder="Ex.: c&oacute;digo CTT ou InPost" autocomplete="off">
+                        </div>
                     </div>
 
                     <div class="plataforma-envio" id="plataforma-envio" hidden>
@@ -214,19 +217,8 @@
                     <label for="plataforma-notas-anuncio">Notas da encomenda</label>
                     <textarea id="plataforma-notas-anuncio" rows="2" placeholder="Notas para gravar no TXT do anúncio"></textarea>
                 </div>
-                <div class="wallapop-acoes-encomenda">
-                    <button class="wallapop-botao wallapop-botao-registar" type="button" id="btn-registar-wallapop">Registar encomenda</button>
-                    <button class="wallapop-botao wallapop-botao-destaque wallapop-botao-exportar" type="button" id="btn-descarregar-wallapop">Exportar</button>
-                    <button class="wallapop-botao admin-encomenda-apagar plataforma-apagar-encomenda" type="button" id="btn-apagar-encomenda-plataforma" hidden>Apagar</button>
-                </div>
             </div>
             <p class="wallapop-status" id="wallapop-status" data-aviso-flutuante="todos" aria-live="polite"></p>
-
-            <div class="wallapop-preview-folha-cartao">
-                <div class="wallapop-folha-escala" id="wallapop-folha-escala">
-                    <div class="wallapop-folha" id="wallapop-folha"></div>
-                </div>
-            </div>
 
             <div class="plataforma-resumo" id="plataforma-resumo" hidden>
                 <h2 id="plataforma-resumo-titulo">Ficheiros da plataforma</h2>
@@ -248,7 +240,7 @@
 <script src="app-portes.js?v=20260915-ctt-azul-internacional-v3" defer></script>
 <script src="admin-theme.js?v=20260826-light-mode" defer></script>
 <script src="avisos-stock-admin.js?v=20260920-gravar-texto" defer></script>
-    <script src="plataforma.js?v=20261001-editar-site" defer></script>
+    <script src="plataforma.js?v=20261003-reorganizada" defer></script>
 <script src="campo-limpar.js?v=20261002-edicao-blocos" defer></script>
 <script src="inline-listeners-base.js?v=20260929-menu-telemovel" defer></script>
 <script src="inline-listeners-admin.js?v=20260713-r25" defer></script>

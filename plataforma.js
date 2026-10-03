@@ -480,7 +480,7 @@ function atualizarBotaoRegistoPlataforma() {
     if (!botao) return;
     botao.textContent = encomendaPlataformaEmEdicao
         ? 'Gravar'
-        : 'Registar encomenda';
+        : 'Registar';
     botao.disabled = wallapopRegistoConcluido;
     const apagar = document.getElementById('btn-apagar-encomenda-plataforma');
     if (apagar) apagar.hidden = !encomendaPlataformaEmEdicao;
@@ -510,7 +510,7 @@ async function apagarEncomendaPlataformaEmEdicao() {
     if (!(await mostrarConfirmacaoSite(`Apagar definitivamente a encomenda ${codigo}? Esta ação não pode ser desfeita.`, {
         titulo: 'Apagar encomenda',
         textoConfirmar: 'Apagar',
-        textoCancelar: 'Cancelar'
+        textoCancelar: 'Fechar'
     }))) return;
 
     if (botao) botao.disabled = true;
@@ -1083,7 +1083,6 @@ function atualizarModoPlataforma() {
     document.getElementById('label-cliente-plataforma').textContent = 'Nome de utilizador';
     document.getElementById('wallapop-nome-cliente').placeholder = `Nome ou utilizador no ${plataforma}`;
     document.getElementById('plataforma-envio').hidden = false;
-    document.getElementById('wallapop-folha-escala').hidden = !geraImagens;
     document.getElementById('plataforma-resumo').hidden = true;
     const linhaEnvio = document.getElementById('plataforma-envio-linha');
     const blocoPais = document.getElementById('plataforma-pais-envio-bloco');
@@ -1810,9 +1809,16 @@ async function adicionarListaAnalisadaPlataforma(linhas) {
     return aplicarSelecoesListaProdutosPlataforma(selecoes);
 }
 
+function atualizarBotaoAnalisarListaPlataforma() {
+    const textarea = document.getElementById('plataforma-lista-produtos');
+    const botao = document.getElementById('btn-analisar-lista-produtos');
+    if (botao) botao.disabled = !String(textarea?.value || '').trim();
+}
+
 function atualizarPreviaListaProdutosPlataforma() {
     const textarea = document.getElementById('plataforma-lista-produtos');
     const previa = document.getElementById('plataforma-lista-previa');
+    atualizarBotaoAnalisarListaPlataforma();
     if (!textarea || !previa) return;
 
     const texto = textarea.value;
@@ -2308,7 +2314,7 @@ async function confirmarStockNegativoPlataforma(produto, quantidadePretendida) {
     if (!(await mostrarConfirmacaoSite(mensagem, {
         titulo: "Stock insuficiente",
         textoConfirmar: "Avançar",
-        textoCancelar: "Cancelar"
+        textoCancelar: "Fechar"
     }))) return false;
     if (produtoId) stockNegativoConfirmado.add(produtoId);
     return true;
@@ -2372,8 +2378,10 @@ function moverProdutoWallapop(id, diferenca) {
 }
 
 function renderizarResultadosWallapop() {
-    const termo = normalizarTextoWallapop(document.getElementById('wallapop-pesquisa').value);
+    const campoPesquisa = document.getElementById('wallapop-pesquisa');
     const contentor = document.getElementById('wallapop-resultados');
+    if (!campoPesquisa || !contentor) return;
+    const termo = normalizarTextoWallapop(campoPesquisa.value);
     contentor.replaceChildren();
 
     if (!termo) {
@@ -2497,6 +2505,9 @@ function renderizarSelecionadosWallapop() {
         if (avisoStockSelecionado) linha.appendChild(avisoStockSelecionado);
         contentor.appendChild(linha);
     });
+
+    const limpar = document.getElementById('btn-limpar-wallapop');
+    if (limpar) limpar.hidden = !wallapopItens.length;
 
     atualizarOpcoesEnvioPlataforma();
     atualizarContagemFigurasPlataforma();
@@ -2874,6 +2885,8 @@ async function gerarCanvasFolhaWallapop(itensPagina, numeroPagina, totalPaginas,
 }
 function renderizarFolhaWallapop(itens = wallapopItens) {
     const folha = document.getElementById('wallapop-folha');
+    // A pre-visualizacao foi removida da pagina; as imagens sao geradas no Exportar.
+    if (!folha) return;
     folha.replaceChildren();
     const paginas = dividirItensWallapop(itens);
     const totalPaginas = paginas.length;
@@ -3640,7 +3653,7 @@ async function novaEncomendaPlataforma() {
     if (wallapopItens.length && !(await mostrarConfirmacaoSite('Come\u00e7ar uma nova encomenda e limpar a lista atual?', {
         titulo: "Nova encomenda",
         textoConfirmar: "Começar",
-        textoCancelar: "Cancelar"
+        textoCancelar: "Fechar"
     }))) return;
     encomendaPlataformaEmEdicao = null;
     stockNegativoConfirmado = new Set();
@@ -3793,7 +3806,7 @@ async function registarEncomendaWallapop() {
         ? await confirmarResumoAlteracoesStockPlataforma(naoReporStock)
         : await mostrarConfirmacaoSite(
             `Registar a encomenda ${plataforma} de ${nomeCliente} por ${formatarEuroWallapop(total)} € e descontar o stock?`,
-            { titulo: "Registar encomenda", textoConfirmar: "Registar", textoCancelar: "Cancelar" }
+            { titulo: "Registar encomenda", textoConfirmar: "Registar", textoCancelar: "Fechar" }
         );
     if (!confirmado) return;
 
@@ -3927,6 +3940,7 @@ async function registarEncomendaWallapop() {
         if (campoTotalLimpar) campoTotalLimpar.value = '';
         const listaProdutos = document.getElementById('plataforma-lista-produtos');
         if (listaProdutos) listaProdutos.value = '';
+        atualizarBotaoAnalisarListaPlataforma();
         const previaLista = document.getElementById('plataforma-lista-previa');
         if (previaLista) {
             previaLista.hidden = true;
@@ -3975,10 +3989,10 @@ async function registarEncomendaWallapop() {
 
 async function limparListaWallapop() {
     if (!wallapopItens.length) return;
-    if (!(await mostrarConfirmacaoSite('Limpar todos os produtos desta imagem?', {
+    if (!(await mostrarConfirmacaoSite('Limpar todos os produtos da lista?', {
         titulo: "Limpar lista",
         textoConfirmar: "Limpar",
-        textoCancelar: "Cancelar"
+        textoCancelar: "Fechar"
     }))) return;
     wallapopItens = [];
     limparFigurasRepetidasListaPlataforma();
@@ -4038,12 +4052,13 @@ async function iniciarWallapopAdmin() {
     }
 }
 
-document.getElementById('wallapop-pesquisa').addEventListener('input', renderizarResultadosWallapop);
+document.getElementById('wallapop-pesquisa')?.addEventListener('input', renderizarResultadosWallapop);
 document.getElementById('plataforma-notas-anuncio')?.addEventListener('input', evento => {
     atualizarNotasAnuncioPlataforma(evento.target.value);
 });
 document.getElementById('btn-analisar-lista-produtos').addEventListener('click', abrirRevisaoListaProdutosPlataforma);
 document.getElementById('plataforma-lista-produtos')?.addEventListener('input', () => {
+    atualizarBotaoAnalisarListaPlataforma();
     clearTimeout(window.__plataformaListaPreviaTimer);
     window.__plataformaListaPreviaTimer = setTimeout(atualizarPreviaListaProdutosPlataforma, 180);
 });
@@ -4133,3 +4148,5 @@ document.getElementById('plataforma-total-manual')?.addEventListener('input', ()
     guardarRascunhoClientePlataforma();
 });
 window.addEventListener('load', iniciarWallapopAdmin);
+
+atualizarBotaoAnalisarListaPlataforma();

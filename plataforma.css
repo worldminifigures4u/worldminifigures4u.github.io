@@ -1334,3 +1334,200 @@ html.admin-light-mode .plataforma-cliente-aviso-preparacao:not(:disabled):focus-
         grid-template-columns:1fr;
     }
 }
+
+/* ===== Pagina reorganizada (out 2026) ===== */
+
+/* Titulos dos paineis */
+.wallapop-editor .plataforma-importar-lista-titulo,
+.wallapop-editor .plataforma-selecionados-cabecalho h2,
+.plataforma-painel-cabecalho h2{
+    margin:0;
+    color:#fff;
+    font-size:18px;
+    font-weight:800;
+    line-height:1.2;
+}
+.wallapop-editor .plataforma-importar-lista{ margin:0 0 20px; }
+.wallapop-editor .plataforma-importar-lista-titulo{ margin:0 0 14px; text-align:center; }
+.plataforma-importar-lista #btn-analisar-lista-produtos{
+    display:flex;
+    width:auto;
+    min-width:140px;
+    margin:10px auto 0;
+    padding:0 18px;
+    align-items:center;
+    justify-content:center;
+}
+.plataforma-importar-lista #btn-analisar-lista-produtos:disabled{
+    opacity:.45;
+    cursor:not-allowed;
+}
+
+/* Produtos selecionados: titulo centrado e Limpar lista a direita */
+.plataforma-selecionados-cabecalho{
+    display:grid;
+    grid-template-columns:1fr auto 1fr;
+    align-items:center;
+    gap:10px;
+    margin:0 0 12px;
+}
+.plataforma-selecionados-cabecalho h2{ grid-column:2; text-align:center; }
+.plataforma-selecionados-cabecalho .plataforma-limpar-lista{
+    grid-column:3;
+    justify-self:end;
+    width:auto;
+    height:36px !important;
+    min-height:36px !important;
+    padding:0 12px;
+    font-size:13px;
+    white-space:nowrap;
+}
+html .plataforma-selecionados-cabecalho #btn-limpar-wallapop.wallapop-botao{
+    height:36px !important;
+    min-height:36px !important;
+}
+html:not(.admin-light-mode) .plataforma-selecionados-cabecalho .plataforma-limpar-lista{
+    border:1px solid #444;
+    background:transparent;
+    color:#fff;
+}
+.plataforma-selecionados-cabecalho .plataforma-limpar-lista:is(:hover, :focus-visible){
+    border-color:var(--fp-cor-erro, #ff6b6b) !important;
+    color:var(--fp-cor-erro, #ff6b6b) !important;
+}
+
+/* Lista de selecionados mais compacta */
+.wallapop-selecionados{ gap:5px; }
+.wallapop-selecionados .wallapop-selecionado{
+    grid-template-columns:48px minmax(0, 1fr) auto;
+    gap:10px;
+    padding:6px 8px;
+}
+.wallapop-selecionados .wallapop-miniatura{
+    width:48px;
+    height:48px;
+}
+.wallapop-selecionados .wallapop-selecionado-info strong{ font-size:14px; }
+.wallapop-selecionados .wallapop-selecionado-info span{ font-size:13px; }
+.wallapop-selecionados .wallapop-quantidade{ gap:5px; }
+.wallapop-selecionados .wallapop-quantidade strong{
+    min-width:22px;
+    text-align:center;
+}
+.wallapop-selecionados .plataforma-selecionado-aviso-stock{ grid-column:1 / -1; }
+
+/* Cabecalho do painel Encomenda com Registar / Exportar / Apagar sempre visiveis */
+.plataforma-painel-cabecalho{
+    position:sticky;
+    top:var(--cabecalho-offset, 56px);
+    z-index:5;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:12px;
+    margin:-18px -18px 0;
+    padding:14px 18px;
+    border-bottom:1px solid #333;
+    border-radius:8px 8px 0 0;
+    background:#111;
+}
+.plataforma-painel-cabecalho .wallapop-acoes-encomenda{
+    width:auto;
+    display:flex;
+    flex-wrap:wrap;
+    justify-content:flex-end;
+    gap:8px;
+}
+.plataforma-painel-cabecalho .wallapop-acoes-encomenda .wallapop-botao{
+    width:96px;
+    height:36px;
+    min-height:36px;
+    padding:0 10px;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+}
+.wallapop-preview-acoes{ gap:0; }
+.wallapop-preview-acoes > .wallapop-dados-encomenda{ margin-top:14px; }
+
+/* Etiquetas todas iguais e espaco igual entre campos */
+.wallapop-dados-encomenda > label[for="plataforma-link-perfil"],
+.wallapop-dados-encomenda label,
+.plataforma-envio-campo label,
+.plataforma-portes-manual label,
+.plataforma-lista-notas-bloco label{
+    display:block;
+    margin:0 0 6px;
+    font-size:13px;
+    font-weight:800;
+    line-height:1.2;
+    text-align:left;
+    text-transform:none;
+    letter-spacing:0;
+}
+html:not(.admin-light-mode) .wallapop-dados-encomenda label,
+html:not(.admin-light-mode) .plataforma-envio-campo label,
+html:not(.admin-light-mode) .plataforma-portes-manual label,
+html:not(.admin-light-mode) .plataforma-lista-notas-bloco label{
+    color:#fff;
+}
+.wallapop-dados-encomenda label:not(:first-child){ margin-top:0; }
+.plataforma-origem-linha,
+.plataforma-envio-linha,
+.plataforma-portes-manual{ margin-top:12px; }
+.plataforma-envio{ margin-top:14px; padding-top:0; border-top:0; }
+.plataforma-edicao{ margin:12px 0 0; }
+
+/* Origem e codigo de envio na mesma linha */
+.plataforma-origem-linha{
+    display:flex;
+    gap:12px;
+    align-items:end;
+}
+.plataforma-origem-linha > *{ flex:1 1 0; min-width:0; }
+@media (max-width:640px){
+    .plataforma-origem-linha{ flex-direction:column; align-items:stretch; }
+}
+
+/* Notas como campo normal (sem caixa propria) */
+.plataforma-lista-notas-bloco.plataforma-notas-anuncio-fixas{
+    margin:12px 0 0;
+    padding:0;
+    border:0;
+    background:transparent;
+    gap:0;
+}
+
+/* Resumo: valores a branco e Total geral em destaque */
+html:not(.admin-light-mode) .plataforma-totais strong{ color:#fff; }
+.plataforma-totais{ column-gap:0; }
+.plataforma-totais strong{ padding-left:16px; }
+.plataforma-totais strong:last-child,
+.plataforma-totais span:nth-last-child(2){
+    padding-top:9px;
+    border-top:1px solid #333;
+    font-size:17px;
+    font-weight:900;
+}
+html:not(.admin-light-mode) .plataforma-totais strong:last-child{ color:var(--cor-acao-principal, #ffc107); }
+
+@media (max-width:560px){
+    .plataforma-painel-cabecalho{ flex-direction:column; align-items:stretch; }
+    .plataforma-painel-cabecalho h2{ text-align:center; }
+    .plataforma-painel-cabecalho .wallapop-acoes-encomenda{ justify-content:center; }
+}
+
+@media (max-width:560px){
+    .wallapop-selecionados .wallapop-selecionado{ grid-template-columns:48px minmax(0, 1fr); }
+    .wallapop-selecionados .wallapop-quantidade{ grid-column:1 / -1; justify-content:flex-end; flex-wrap:wrap; }
+    .plataforma-selecionados-cabecalho{ grid-template-columns:1fr auto; }
+    .plataforma-selecionados-cabecalho h2{ grid-column:1; text-align:left; }
+    .plataforma-selecionados-cabecalho .plataforma-limpar-lista{ grid-column:2; }
+}
+@media (max-width:1000px){
+    body.pagina-wallapop.pagina-com-cabecalho-site > main.wallapop-layout,
+    .wallapop-layout{ grid-template-columns:minmax(0, 1fr); }
+    .wallapop-editor{ min-width:0; }
+    .wallapop-preview-wrap{ margin-inline:0; width:100%; }
+    .wallapop-preview-acoes{ width:100%; }
+}
