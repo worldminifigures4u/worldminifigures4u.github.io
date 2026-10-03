@@ -3448,7 +3448,7 @@ function criarTheadTabelaEncomendaFornecedor() {
         ["Stock", "mapas-col-stock", "stock"],
         ["Prev.", "mapas-col-previsto", "previsto"],
         ["Qtd", "mapas-col-qtd", "qtd"],
-        ["3M", "mapas-col-vendas-3m", "vendas_3m"],
+        ["3 meses", "mapas-col-vendas-3m", "vendas_3m"],
     ].forEach(([texto, classe, coluna]) => {
         const th = document.createElement("th");
         th.className = `${classe} mapas-th-ordenavel`;
