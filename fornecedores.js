@@ -3185,7 +3185,7 @@ function garantirBotaoSoNaEncomendaFornecedor(referencia) {
     botao.type = "button";
     botao.id = "fornecedor-so-na-encomenda";
     botao.className = "wallapop-botao fornecedor-so-na-encomenda";
-    botao.textContent = "Selecionadas (0)";
+    botao.textContent = "Selecionadas";
     botao.title = "Mostrar só as figuras selecionadas (com quantidade)";
     botao.setAttribute("aria-pressed", "false");
     botao.addEventListener("click", () => {
@@ -3242,11 +3242,7 @@ function garantirCampoAlvoUnidadesFornecedor(contador) {
 function atualizarTotalFigurasEncomendaFornecedor() {
     const alvo = document.getElementById("fornecedor-total-figuras-encomenda");
     if (!alvo || !estaPaginaFornecedoresUnificada()) return;
-    const botaoSelecionadas = garantirBotaoSoNaEncomendaFornecedor(alvo);
-    if (botaoSelecionadas) {
-        const selecionadas = fornecedorSelecao.filter(item => Math.max(0, Number(item.quantidade || 0)) > 0).length;
-        botaoSelecionadas.textContent = `Selecionadas (${selecionadas})`;
-    }
+    garantirBotaoSoNaEncomendaFornecedor(alvo);
     garantirCampoAlvoUnidadesFornecedor(alvo);
     const total = obterTotalUnidadesEncomendaFornecedor();
     const objetivo = lerAlvoUnidadesFornecedor();
