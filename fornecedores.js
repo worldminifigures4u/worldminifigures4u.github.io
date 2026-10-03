@@ -717,6 +717,8 @@ function preencherFormularioFichaFornecedor(ficha = null) {
     if (contacto) contacto.value = atual.contacto || "";
     if (notas) notas.value = atual.notas || "";
     if (ativo) ativo.checked = atual.ativo !== false;
+    const apagar = document.getElementById("fornecedor-ficha-apagar");
+    if (apagar) apagar.hidden = !atual.id;
 }
 
 function novaFichaFornecedor() {
