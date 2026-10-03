@@ -5813,3 +5813,9 @@ body.fornecedores-vista-lista .fornecedores-coluna-direita .fornecedor-pedido-li
     font-weight: inherit;
     font-variant-numeric: normal;
 }
+
+/* Ver selecionadas / Ver todas: largura fixa para nao saltar ao trocar o texto */
+#fornecedores-aplicacao .fornecedor-resumo-encomenda-centro .fornecedor-so-na-encomenda {
+    min-width: 136px !important;
+    justify-content: center !important;
+}

@@ -3185,13 +3185,16 @@ function garantirBotaoSoNaEncomendaFornecedor(referencia) {
     botao.type = "button";
     botao.id = "fornecedor-so-na-encomenda";
     botao.className = "wallapop-botao fornecedor-so-na-encomenda";
-    botao.textContent = "Selecionadas";
-    botao.title = "Mostrar só as figuras selecionadas (com quantidade)";
-    botao.setAttribute("aria-pressed", "false");
+    const atualizarTextoBotao = () => {
+        botao.textContent = fornecedorSoNaEncomenda ? "Ver todas" : "Ver selecionadas";
+        botao.title = fornecedorSoNaEncomenda
+            ? "Mostrar todas as figuras"
+            : "Mostrar só as figuras selecionadas (com quantidade)";
+    };
+    atualizarTextoBotao();
     botao.addEventListener("click", () => {
         fornecedorSoNaEncomenda = !fornecedorSoNaEncomenda;
-        botao.classList.toggle("ativo", fornecedorSoNaEncomenda);
-        botao.setAttribute("aria-pressed", fornecedorSoNaEncomenda ? "true" : "false");
+        atualizarTextoBotao();
         if (typeof reiniciarLimiteResultadosFornecedor === "function") reiniciarLimiteResultadosFornecedor();
         renderizarResultadosFornecedor();
     });
