@@ -2467,3 +2467,13 @@ html.admin-light-mode body .admin-encomenda-estado-avancar {
         min-width: 0;
     }
 }
+
+/* Custo e lucro das figuras no resumo da encomenda */
+html:not(.admin-light-mode) .admin-encomenda-resumo-lucro .admin-encomenda-resumo-valor { color: #39d353; }
+.admin-encomenda-resumo-lucro.negativo .admin-encomenda-resumo-valor { color: #ff6b6b !important; }
+.admin-encomenda-resumo-custo,
+.admin-encomenda-resumo-lucro { cursor: help; }
+@media (max-width: 700px) {
+    .admin-encomenda-resumo-valores { flex-wrap: wrap; gap: 8px 16px; }
+    .admin-encomenda-resumo-valor-item + .admin-encomenda-resumo-valor-item { padding-left: 0; border-left: 0; }
+}

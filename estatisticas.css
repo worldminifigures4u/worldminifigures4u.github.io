@@ -432,3 +432,31 @@
         grid-template-columns: minmax(0, 1fr) 76px 76px;
     }
 }
+
+/* Lucro das figuras */
+.estatisticas-metricas.estatisticas-metricas-lucro {
+    grid-template-columns: repeat(4, minmax(160px, 1fr));
+}
+html:not(.admin-light-mode) .estatisticas-metrica-lucro strong { color: #39d353; }
+.estatisticas-metricas strong.negativo,
+.estatisticas-linha span.negativo { color: #ff6b6b !important; }
+.estatisticas-lucro-aviso {
+    margin: -4px 0 14px;
+    color: #bbb;
+    font-size: 13px;
+    line-height: 1.45;
+}
+.estatisticas-grid.estatisticas-grid-lucro {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    margin-top: 0;
+    margin-bottom: 14px;
+}
+.estatisticas-grid-lucro .estatisticas-linha {
+    grid-template-columns: minmax(0, 1fr) 92px 112px;
+}
+@media (max-width: 1100px) {
+    .estatisticas-grid.estatisticas-grid-lucro { grid-template-columns: 1fr; }
+}
+@media (max-width: 700px) {
+    .estatisticas-metricas.estatisticas-metricas-lucro { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}

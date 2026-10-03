@@ -19,7 +19,7 @@
     <link rel="apple-touch-icon" href="fp-ring-favicon-192.png">
     <link rel="stylesheet" href="styles.css?v=20260930-dialogo-fechar">
     <link rel="stylesheet" href="styles-admin.css?v=20260920-guardar-verde">
-    <link rel="stylesheet" href="estatisticas.css?v=20260918-comparar-anos">
+    <link rel="stylesheet" href="estatisticas.css?v=20261003-lucro">
     <link rel="stylesheet" href="admin-light.css?v=20260926-links-padrao">
     <link rel="stylesheet" href="styles-tema.css?v=20260721-sem-underline" media="print" data-async-css>
     <noscript><link rel="stylesheet" href="styles-tema.css?v=20260721-sem-underline"></noscript>
@@ -114,6 +114,29 @@
             <article><span>Preço médio por figura</span><strong id="estatisticas-preco-medio-figura">0,00 €</strong></article>
         </section>
 
+        <section class="estatisticas-metricas estatisticas-metricas-lucro" aria-label="Lucro das figuras">
+            <article><span>Receita das figuras</span><strong id="estatisticas-lucro-receita">0,00 €</strong></article>
+            <article><span>Custo das figuras</span><strong id="estatisticas-lucro-custo">0,00 €</strong></article>
+            <article class="estatisticas-metrica-lucro"><span>Lucro</span><strong id="estatisticas-lucro-total">0,00 €</strong></article>
+            <article><span>Margem</span><strong id="estatisticas-lucro-margem">0 %</strong></article>
+        </section>
+        <p class="estatisticas-lucro-aviso" id="estatisticas-lucro-aviso" hidden></p>
+
+        <section class="estatisticas-grid estatisticas-grid-lucro">
+            <article class="estatisticas-painel">
+                <h2>Lucro por mês</h2>
+                <div class="estatisticas-barras" id="estatisticas-lucro-meses"></div>
+            </article>
+            <article class="estatisticas-painel">
+                <h2>Lucro por plataforma/site</h2>
+                <div class="estatisticas-barras" id="estatisticas-lucro-plataformas"></div>
+            </article>
+            <article class="estatisticas-painel">
+                <h2>Top figuras por lucro</h2>
+                <div class="estatisticas-tabela" id="estatisticas-top-lucro"></div>
+            </article>
+        </section>
+
         <section class="estatisticas-grid estatisticas-grid-principal">
             <article class="estatisticas-painel">
                 <h2>Vendas por dia</h2>
@@ -177,7 +200,7 @@
     <script src="app-config.js?v=20260930-dialogo-fechar" defer></script>
 <script src="agenda-alertas.js?v=20260920-entre-abas" defer></script>
     <script src="admin-theme.js?v=20260826-light-mode" defer></script>
-    <script src="estatisticas.js?v=20260929-nav-segura" defer></script>
+    <script src="estatisticas.js?v=20261003-lucro" defer></script>
 <script src="campo-limpar.js?v=20261003-lados-trocados" defer></script>
 <script src="inline-listeners-base.js?v=20260929-menu-telemovel" defer></script>
 <script src="inline-listeners-admin.js?v=20260713-r25" defer></script>

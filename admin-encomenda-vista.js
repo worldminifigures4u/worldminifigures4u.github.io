@@ -599,7 +599,108 @@ window.AdminEncomendaVista = (function () {
 
         adicionarValor("Portes:", Number(encomenda?.portes || 0));
         adicionarValor("Total:", Number(encomenda?.total || 0), true);
+        adicionarLucroResumoEncomenda(resumo, encomenda);
         return resumo;
+    }
+
+    // Lucro das figuras: custo gravado na venda (custo_unitario) ou, em vendas antigas, o preco de compra atual.
+    let custosProdutosLucro = null;
+    let promessaCustosProdutosLucro = null;
+
+    function carregarCustosProdutosLucro() {
+        if (custosProdutosLucro) return Promise.resolve(custosProdutosLucro);
+        if (promessaCustosProdutosLucro) return promessaCustosProdutosLucro;
+        promessaCustosProdutosLucro = (async () => {
+            const custos = new Map();
+            for (const nomeRpc of ["listar_produtos_mapas_admin", "listar_produtos_admin"]) {
+                try {
+                    custos.clear();
+                    const tamanhoPagina = 500;
+                    for (let inicio = 0; ; inicio += tamanhoPagina) {
+                        const { data, error } = await obterClient().rpc(nomeRpc, { p_limite: tamanhoPagina, p_offset: inicio });
+                        if (error) throw error;
+                        const pagina = Array.isArray(data) ? data : [];
+                        pagina.forEach(produto => {
+                            const custo = Number(produto?.preco_compra);
+                            if (produto?.id != null && Number.isFinite(custo) && custo > 0) custos.set(String(produto.id), custo);
+                        });
+                        if (pagina.length < tamanhoPagina) break;
+                    }
+                    custosProdutosLucro = custos;
+                    return custos;
+                } catch (erro) {
+                    console.warn(`Custos dos produtos indisponiveis (${nomeRpc}).`, erro);
+                }
+            }
+            custosProdutosLucro = custos;
+            return custos;
+        })();
+        return promessaCustosProdutosLucro;
+    }
+
+    function calcularLucroEncomenda(encomenda, custos) {
+        let receita = 0;
+        let custo = 0;
+        let semCusto = 0;
+        let estimado = false;
+        obterProdutos(encomenda).forEach(item => {
+            const quantidade = Math.max(1, Number(item.quantidade || item.qtd || 1) || 1);
+            const preco = Number(item?.preco_unitario ?? item?.preco ?? 0) || 0;
+            const gravado = Number(item?.custo_unitario);
+            let unitario = Number.isFinite(gravado) && gravado > 0 ? gravado : 0;
+            if (!unitario) {
+                const atual = Number(custos?.get(String(item.id_produto || item.id || "")));
+                if (Number.isFinite(atual) && atual > 0) {
+                    unitario = atual;
+                    estimado = true;
+                }
+            }
+            if (!unitario) {
+                semCusto += quantidade;
+                return;
+            }
+            receita += quantidade * preco;
+            custo += quantidade * unitario;
+        });
+        return { receita, custo, lucro: receita - custo, semCusto, estimado };
+    }
+
+    function adicionarLucroResumoEncomenda(resumo, encomenda) {
+        if (!obterProdutos(encomenda).length) return;
+        const itemCusto = criarElemento("span", "admin-encomenda-resumo-valor-item admin-encomenda-resumo-custo");
+        const valorCusto = criarElemento("strong", "admin-encomenda-resumo-valor", "…");
+        itemCusto.append(criarElemento("span", "admin-encomenda-resumo-rotulo", "Custo:"), valorCusto);
+        const itemLucro = criarElemento("span", "admin-encomenda-resumo-valor-item admin-encomenda-resumo-lucro");
+        const valorLucro = criarElemento("strong", "admin-encomenda-resumo-valor", "…");
+        itemLucro.append(criarElemento("span", "admin-encomenda-resumo-rotulo", "Lucro:"), valorLucro);
+        resumo.prepend(itemCusto, itemLucro);
+
+        const preencher = custos => {
+            const dados = calcularLucroEncomenda(encomenda, custos);
+            if (!dados.receita && dados.semCusto) {
+                valorCusto.textContent = "—";
+                valorLucro.textContent = "—";
+                itemLucro.title = "Nenhuma figura desta encomenda tem preço de compra.";
+                return;
+            }
+            const margem = dados.receita ? (dados.lucro / dados.receita * 100) : 0;
+            valorCusto.textContent = formatarEuro(dados.custo);
+            valorLucro.textContent = `${formatarEuro(dados.lucro)} (${margem.toLocaleString("pt-PT", { maximumFractionDigits: 1 })} %)`;
+            itemLucro.classList.toggle("negativo", dados.lucro < 0);
+            const notas = ["Lucro das figuras (sem portes)."];
+            if (dados.estimado) notas.push("Custo estimado com o preço de compra atual.");
+            if (dados.semCusto) notas.push(`${dados.semCusto} un. sem preço de compra ficam fora do cálculo.`);
+            itemLucro.title = notas.join(" ");
+            itemCusto.title = notas.join(" ");
+            if (dados.estimado || dados.semCusto) valorLucro.textContent += " *";
+        };
+
+        const todosComCusto = obterProdutos(encomenda).every(item => Number(item?.custo_unitario) > 0);
+        if (todosComCusto) preencher(null);
+        else carregarCustosProdutosLucro().then(preencher).catch(() => {
+            valorCusto.textContent = "—";
+            valorLucro.textContent = "—";
+        });
     }
 
     function normalizarListaImagensProduto(imagens) {

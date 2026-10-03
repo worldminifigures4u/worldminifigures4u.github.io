@@ -25,6 +25,7 @@ const ESTATISTICAS_MESES_ANO = [
 
 let estatisticasClient = null;
 let estatisticasEncomendas = [];
+let estatisticasCustosProdutos = new Map();
 
 function criarElementoEstatisticas(tag, classe, texto) {
     const elemento = document.createElement(tag);
@@ -160,6 +161,19 @@ function obterQuantidadeItem(item) {
 
 function obterPrecoItem(item) {
     return Number(item.preco_unitario ?? item.preco ?? item.valor_unitario ?? 0) || 0;
+}
+
+function obterIdProdutoItem(item) {
+    return String(item?.id_produto ?? item?.produto_id ?? item?.id ?? '').trim();
+}
+
+// Custo de uma unidade: o gravado na venda (custo_unitario) ou, para vendas antigas, o preco de compra atual.
+function obterCustoItemEstatisticas(item) {
+    const gravado = Number(item?.custo_unitario);
+    if (Number.isFinite(gravado) && gravado > 0) return { custo: gravado, estimado: false };
+    const atual = Number(estatisticasCustosProdutos.get(obterIdProdutoItem(item)));
+    if (Number.isFinite(atual) && atual > 0) return { custo: atual, estimado: true };
+    return null;
 }
 
 function obterTotalItensEncomenda(encomenda) {
@@ -320,6 +334,20 @@ function renderizarComparacaoMensalAnos(encomendasBase, filtro) {
     });
 }
 
+function adicionarLucro(mapa, chave, receita, custo) {
+    const atual = mapa.get(chave) || { chave, receita: 0, custo: 0, lucro: 0, quantidade: 0, encomendas: 0 };
+    atual.receita += receita;
+    atual.custo += custo;
+    atual.lucro = atual.receita - atual.custo;
+    mapa.set(chave, atual);
+    return atual;
+}
+
+function formatarMargemEstatisticas(lucro, receita) {
+    if (!receita) return '0 %';
+    return `${(lucro / receita * 100).toLocaleString('pt-PT', { maximumFractionDigits: 1 })} %`;
+}
+
 function adicionarGrupo(mapa, chave, receita = 0, quantidade = 0, encomendas = 0) {
     const atual = mapa.get(chave) || { chave, receita: 0, quantidade: 0, encomendas: 0 };
     atual.receita += receita;
@@ -355,7 +383,7 @@ function renderizarBarras(id, itens, opcoes = {}) {
     const lista = [...itens].filter(item => {
         if (!item) return false;
         if (opcoes.manterZeros) return true;
-        return item.receita || item.quantidade || item.encomendas;
+        return item.receita || item.quantidade || item.encomendas || item.lucro;
     });
     if (!lista.length) {
         container.appendChild(criarElementoEstatisticas('p', 'estatisticas-vazio', 'Sem dados para apresentar.'));
@@ -375,7 +403,9 @@ function renderizarBarras(id, itens, opcoes = {}) {
         const sufixo = opcoes.valorCampo === 'quantidade'
             ? formatarNumeroEstatisticas(valor)
             : formatarEuroEstatisticas(valor);
-        const detalhe = opcoes.mostrarEncomendas
+        const detalhe = opcoes.formatarDetalhe
+            ? opcoes.formatarDetalhe(item)
+            : opcoes.mostrarEncomendas
             ? `${sufixo} · ${formatarNumeroEstatisticas(item.encomendas)} enc.`
             : sufixo;
         const valorEl = criarElementoEstatisticas('strong', 'estatisticas-barra-valor', detalhe);
@@ -414,9 +444,18 @@ function calcularEstatisticas(encomendas, filtro = {}) {
     const estados = new Map();
     const figuras = new Map();
 
+    const lucroMeses = new Map();
+    const lucroPlataformas = new Map();
+    const lucroFiguras = new Map();
+
     let totalVendido = 0;
     let unidadesVendidas = 0;
     let somaPrecoFiguras = 0;
+    let lucroReceita = 0;
+    let lucroCusto = 0;
+    let custoEstimado = 0;
+    let unidadesSemCusto = 0;
+    let receitaSemCusto = 0;
 
     encomendas.forEach(encomenda => {
         const total = obterTotalEncomenda(encomenda, filtro);
@@ -441,6 +480,20 @@ function calcularEstatisticas(encomendas, filtro = {}) {
             const receita = quantidade * preco;
             somaPrecoFiguras += receita;
             adicionarFigura(figuras, item);
+
+            const custoItem = obterCustoItemEstatisticas(item);
+            if (!custoItem) {
+                unidadesSemCusto += quantidade;
+                receitaSemCusto += receita;
+                return;
+            }
+            const custo = quantidade * custoItem.custo;
+            lucroReceita += receita;
+            lucroCusto += custo;
+            if (custoItem.estimado) custoEstimado += custo;
+            adicionarLucro(lucroMeses, obterChaveMes(encomenda), receita, custo).quantidade += quantidade;
+            adicionarLucro(lucroPlataformas, plataforma, receita, custo).quantidade += quantidade;
+            adicionarLucro(lucroFiguras, obterNomeFigura(item), receita, custo).quantidade += quantidade;
         });
     });
 
@@ -458,6 +511,17 @@ function calcularEstatisticas(encomendas, filtro = {}) {
         figurasReceita: ordenarPorReceita([...figuras.values()]),
         figurasQuantidade: ordenarPorQuantidade([...figuras.values()]),
         melhoresMeses: ordenarPorReceita([...meses.values()]),
+        lucro: {
+            receita: lucroReceita,
+            custo: lucroCusto,
+            lucro: lucroReceita - lucroCusto,
+            custoEstimado,
+            unidadesSemCusto,
+            receitaSemCusto,
+            meses: [...lucroMeses.values()].sort((a, b) => String(a.chave).localeCompare(String(b.chave))),
+            plataformas: [...lucroPlataformas.values()].sort((a, b) => b.lucro - a.lucro),
+            figuras: [...lucroFiguras.values()].sort((a, b) => b.lucro - a.lucro || b.quantidade - a.quantidade)
+        },
         ticketPlataformas: [...plataformas.values()].sort((a, b) => (b.receita / Math.max(1, b.encomendas)) - (a.receita / Math.max(1, a.encomendas)))
     };
 }
@@ -492,6 +556,72 @@ function renderizarEstatisticas() {
         quantidade: item.encomendas
     })), { limite: 10, rotuloQuantidade: 'enc.' });
     renderizarComparacaoMensalAnos(encomendasComparacao, filtro);
+    renderizarLucroEstatisticas(dados.lucro);
+}
+
+function renderizarLucroEstatisticas(lucro) {
+    document.getElementById('estatisticas-lucro-receita').textContent = formatarEuroEstatisticas(lucro.receita);
+    document.getElementById('estatisticas-lucro-custo').textContent = formatarEuroEstatisticas(lucro.custo);
+    const total = document.getElementById('estatisticas-lucro-total');
+    total.textContent = formatarEuroEstatisticas(lucro.lucro);
+    total.classList.toggle('negativo', lucro.lucro < 0);
+    document.getElementById('estatisticas-lucro-margem').textContent = formatarMargemEstatisticas(lucro.lucro, lucro.receita);
+
+    const avisos = [];
+    if (lucro.unidadesSemCusto) {
+        avisos.push(`${formatarNumeroEstatisticas(lucro.unidadesSemCusto)} ${lucro.unidadesSemCusto === 1 ? 'unidade vendida' : 'unidades vendidas'} sem preço de compra (${formatarEuroEstatisticas(lucro.receitaSemCusto)}) ${lucro.unidadesSemCusto === 1 ? 'fica' : 'ficam'} fora do lucro.`);
+    }
+    if (lucro.custoEstimado > 0.005) {
+        avisos.push(`${formatarEuroEstatisticas(lucro.custoEstimado)} do custo é estimado com o preço de compra atual (vendas registadas antes de o custo ser guardado na venda).`);
+    }
+    const aviso = document.getElementById('estatisticas-lucro-aviso');
+    aviso.textContent = avisos.join(' ');
+    aviso.hidden = !avisos.length;
+
+    const detalheLucro = item => `${formatarEuroEstatisticas(item.lucro)} · ${formatarMargemEstatisticas(item.lucro, item.receita)}`;
+    renderizarBarras('estatisticas-lucro-meses', lucro.meses, { valorCampo: 'lucro', formatarLabel: formatarMesEstatisticas, formatarDetalhe: detalheLucro, limite: 18 });
+    renderizarBarras('estatisticas-lucro-plataformas', lucro.plataformas, { valorCampo: 'lucro', formatarDetalhe: detalheLucro, limite: 10 });
+
+    const container = document.getElementById('estatisticas-top-lucro');
+    container.replaceChildren();
+    if (!lucro.figuras.length) {
+        container.appendChild(criarElementoEstatisticas('p', 'estatisticas-vazio', 'Sem dados para apresentar.'));
+        return;
+    }
+    lucro.figuras.slice(0, 10).forEach(item => {
+        const linha = criarElementoEstatisticas('div', 'estatisticas-linha');
+        const valor = criarElementoEstatisticas('span', item.lucro < 0 ? 'negativo' : '', formatarEuroEstatisticas(item.lucro));
+        linha.append(
+            criarElementoEstatisticas('span', '', item.chave),
+            valor,
+            criarElementoEstatisticas('span', '', `${formatarMargemEstatisticas(item.lucro, item.receita)} · ${formatarNumeroEstatisticas(item.quantidade)} un.`)
+        );
+        container.appendChild(linha);
+    });
+}
+
+async function carregarCustosProdutosEstatisticas() {
+    const custos = new Map();
+    for (const nomeRpc of ['listar_produtos_mapas_admin', 'listar_produtos_admin']) {
+        try {
+            custos.clear();
+            const tamanhoPagina = 500;
+            for (let inicio = 0; ; inicio += tamanhoPagina) {
+                const { data, error } = await estatisticasClient.rpc(nomeRpc, { p_limite: tamanhoPagina, p_offset: inicio });
+                if (error) throw error;
+                const pagina = Array.isArray(data) ? data : [];
+                pagina.forEach(produto => {
+                    const custo = Number(produto?.preco_compra);
+                    if (produto?.id != null && Number.isFinite(custo) && custo > 0) custos.set(String(produto.id), custo);
+                });
+                if (pagina.length < tamanhoPagina) break;
+            }
+            estatisticasCustosProdutos = custos;
+            return;
+        } catch (erro) {
+            console.warn(`Custos dos produtos indisponíveis (${nomeRpc}).`, erro);
+        }
+    }
 }
 
 function atualizarOpcoesPlataforma() {
@@ -552,6 +682,7 @@ async function carregarEncomendasEstatisticas() {
         if (lote.length < tamanhoLote) break;
     }
     estatisticasEncomendas = todas;
+    await carregarCustosProdutosEstatisticas();
     atualizarOpcoesPlataforma();
     definirPeriodoInicial();
     renderizarEstatisticas();
