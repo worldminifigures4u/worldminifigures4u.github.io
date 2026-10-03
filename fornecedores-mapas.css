@@ -5806,3 +5806,9 @@ body.fornecedores-vista-lista .fornecedores-coluna-direita .fornecedor-pedido-li
     align-items: center;
     line-height: 1;
 }
+/* Titulo "3 meses" com a mesma letra dos outros titulos da tabela */
+.pagina-fornecedores-unificada .fornecedor-resultados .fornecedor-tabela-encomenda th.mapas-col-vendas-3m {
+    color: inherit;
+    font-weight: inherit;
+    font-variant-numeric: normal;
+}
