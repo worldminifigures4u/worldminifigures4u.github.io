@@ -5819,3 +5819,12 @@ body.fornecedores-vista-lista .fornecedores-coluna-direita .fornecedor-pedido-li
     min-width: 136px !important;
     justify-content: center !important;
 }
+
+/* Selecionar figuras: mesma altura do seletor de estado (36px), como os outros botoes do topo */
+html body #btn-nova-encomenda-fornecedor.fornecedores-btn-nova-encomenda {
+    height: 36px !important;
+    min-height: 36px !important;
+    max-height: 36px !important;
+    border-radius: 5px !important;
+    box-sizing: border-box !important;
+}
