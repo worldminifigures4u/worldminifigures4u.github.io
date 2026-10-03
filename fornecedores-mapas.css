@@ -5945,3 +5945,32 @@ html:not(.admin-light-mode) #fornecedor-ficha-modal .fornecedor-ficha-form label
     html body #fornecedor-ficha-modal .fornecedor-edicao-topo-acoes { flex-wrap: nowrap; }
     html body #fornecedor-ficha-modal .fornecedor-edicao-topo-acoes :is(.wallapop-botao, .fornecedor-edicao-fechar) { flex: 1 1 0; min-width: 0; padding: 0 6px !important; }
 }
+
+/* Botao Fornecedores (fichas) no cabecalho da lista de compras */
+html body #btn-fichas-fornecedores-lista.fornecedores-btn-fichas {
+    height: 36px !important;
+    min-height: 36px !important;
+    max-height: 36px !important;
+    padding: 0 16px !important;
+    border-radius: 5px !important;
+    box-sizing: border-box !important;
+    font-size: 13px !important;
+    font-weight: 800 !important;
+    box-shadow: none !important;
+    flex: 0 0 auto;
+}
+html:not(.admin-light-mode) body #btn-fichas-fornecedores-lista.fornecedores-btn-fichas {
+    border: 1px solid #444 !important;
+    background: transparent !important;
+    color: #fff !important;
+}
+html:not(.admin-light-mode) body #btn-fichas-fornecedores-lista.fornecedores-btn-fichas:is(:hover, :focus-visible) {
+    border-color: var(--cor-acao-principal, #ffc107) !important;
+    color: var(--cor-acao-principal, #ffc107) !important;
+    outline: none;
+}
+body:not(.fornecedores-vista-lista) #btn-fichas-fornecedores-lista { display: none !important; }
+@media (max-width: 700px) {
+    body.fornecedores-vista-lista #btn-fichas-fornecedores-lista { flex: 1 1 0; margin-left: 0; }
+    body.fornecedores-vista-lista .fornecedores-btn-nova-encomenda { flex: 1 1 0 !important; width: auto !important; }
+}

@@ -5273,7 +5273,14 @@ function iniciarVistasFornecedores() {
         nova.textContent = "Selecionar figuras";
         nova.title = "Selecionar figuras para uma encomenda nova ou para juntar a uma existente";
         nova.addEventListener("click", () => mostrarVistaFornecedores("preparar"));
-        cabecalhoLista.appendChild(nova);
+        const fichas = document.createElement("button");
+        fichas.type = "button";
+        fichas.id = "btn-fichas-fornecedores-lista";
+        fichas.className = "wallapop-botao fornecedores-btn-fichas";
+        fichas.textContent = "Fornecedores";
+        fichas.title = "Abrir as fichas dos fornecedores";
+        fichas.addEventListener("click", editarFornecedorSelecionado);
+        cabecalhoLista.append(fichas, nova);
     }
 
     const controles = document.querySelector("#fornecedores-escolher .fornecedor-controles-unificados");
