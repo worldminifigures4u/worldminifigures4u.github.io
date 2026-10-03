@@ -3875,8 +3875,10 @@ async function registarEncomendaWallapop() {
             }
         }
         const metodoEnvio = obterEnvioPlataforma().id;
-        if (encomendaId && !metodoEnvioEntregaMaoPlataforma(metodoEnvio)) {
-            const codigoSeguimento = document.getElementById('plataforma-codigo-seguimento')?.value.trim() || '';
+        const campoSeguimentoGravar = document.getElementById('plataforma-codigo-seguimento');
+        // O campo saiu desta pagina: o codigo de envio e gerido na ficha da encomenda (Encomendas).
+        if (campoSeguimentoGravar && encomendaId && !metodoEnvioEntregaMaoPlataforma(metodoEnvio)) {
+            const codigoSeguimento = campoSeguimentoGravar.value.trim();
             const { error: erroSeguimento } = await wallapopClient
                 .from('encomendas')
                 .update({ codigo_seguimento: codigoSeguimento || null })
