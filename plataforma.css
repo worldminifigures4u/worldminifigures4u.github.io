@@ -1534,3 +1534,36 @@ html:not(.admin-light-mode) .plataforma-totais strong:last-child{ color:var(--co
 
 /* Painel Encomenda (link do perfil, o primeiro a usar) a esquerda; produtos a direita */
 body.pagina-wallapop main.wallapop-layout > .wallapop-preview-wrap{ order:-1; }
+
+/* Lista de produtos: Analisar lista ao lado do titulo (como Limpar lista) */
+.wallapop-editor .plataforma-lista-cabecalho .plataforma-importar-lista-titulo { margin: 0; }
+.plataforma-lista-cabecalho .plataforma-analisar-lista {
+    grid-column: 3;
+    justify-self: end;
+    width: auto;
+    padding: 0 12px;
+    font-size: 13px;
+    white-space: nowrap;
+}
+html .plataforma-lista-cabecalho #btn-analisar-lista-produtos.wallapop-botao {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 0;
+    height: 36px !important;
+    min-height: 36px !important;
+    margin: 0;
+}
+.plataforma-lista-cabecalho #btn-analisar-lista-produtos:disabled { opacity: .45; cursor: not-allowed; }
+@media (max-width:560px){
+    .plataforma-lista-cabecalho .plataforma-analisar-lista { grid-column: 2; }
+}
+html:not(.admin-light-mode) .plataforma-lista-cabecalho #btn-analisar-lista-produtos.wallapop-botao {
+    border: 1px solid #444 !important;
+    background: transparent !important;
+    color: #fff !important;
+}
+html:not(.admin-light-mode) .plataforma-lista-cabecalho #btn-analisar-lista-produtos.wallapop-botao:not(:disabled):is(:hover, :focus-visible) {
+    border-color: var(--cor-acao-principal, #ffc107) !important;
+    color: var(--cor-acao-principal, #ffc107) !important;
+}

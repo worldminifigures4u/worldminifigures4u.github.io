@@ -19,7 +19,7 @@
     <link rel="apple-touch-icon" href="fp-ring-favicon-192.png">
     <link rel="stylesheet" href="styles.css?v=20260930-dialogo-fechar">
     <link rel="stylesheet" href="styles-admin.css?v=20260920-exportar-azul">
-    <link rel="stylesheet" href="plataforma.css?v=20261003-lados-trocados">
+    <link rel="stylesheet" href="plataforma.css?v=20261003-lista-produtos">
     <link rel="stylesheet" href="admin-light.css?v=20260926-links-padrao">
     <link rel="stylesheet" href="admin-cliente.css?v=20260930-ficha-com-molduras" media="print" data-async-css>
     <link rel="stylesheet" href="clientes.css?v=20260926-links-padrao" media="print" data-async-css>
@@ -82,10 +82,12 @@
     <main class="wallapop-layout" id="wallapop-aplicacao" hidden>
         <section class="wallapop-editor" aria-label="Produtos da encomenda">
             <div class="plataforma-importar-lista">
-                <h2 class="plataforma-importar-lista-titulo">Colar lista de produtos</h2>
+                <div class="plataforma-selecionados-cabecalho plataforma-lista-cabecalho">
+                    <h2 class="plataforma-importar-lista-titulo">Lista de produtos</h2>
+                    <button class="wallapop-botao plataforma-analisar-lista" type="button" id="btn-analisar-lista-produtos" disabled>Analisar lista</button>
+                </div>
                 <textarea id="plataforma-lista-produtos" rows="7" aria-label="Lista de produtos" placeholder="Jonathan Byers (Stranger Things) Jonathan Byers (Stranger Things) 1,75 €&#10;Robin Buckley v1 (Stranger Things) Robin Buckley v1 (Stranger Things) 1,95 €&#10;3x Clone Trooper"></textarea>
                 <p class="plataforma-lista-previa" id="plataforma-lista-previa" hidden></p>
-                <button class="wallapop-botao" type="button" id="btn-analisar-lista-produtos" disabled>Analisar lista</button>
             </div>
 
             <div class="plataforma-selecionados-cabecalho">
