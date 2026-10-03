@@ -3242,8 +3242,11 @@ function garantirCampoAlvoUnidadesFornecedor(contador) {
 function atualizarTotalFigurasEncomendaFornecedor() {
     const alvo = document.getElementById("fornecedor-total-figuras-encomenda");
     if (!alvo || !estaPaginaFornecedoresUnificada()) return;
-    garantirBotaoSoNaEncomendaFornecedor(alvo);
-    garantirCampoAlvoUnidadesFornecedor(alvo);
+    const botaoSelecionadas = garantirBotaoSoNaEncomendaFornecedor(alvo);
+    const campoAlvo = garantirCampoAlvoUnidadesFornecedor(alvo);
+    // Ordem fixa: ... Criar | Alvo | contador | Selecionadas
+    if (campoAlvo && campoAlvo.nextElementSibling !== alvo) alvo.before(campoAlvo);
+    if (botaoSelecionadas && alvo.nextElementSibling !== botaoSelecionadas) alvo.after(botaoSelecionadas);
     const total = obterTotalUnidadesEncomendaFornecedor();
     const objetivo = lerAlvoUnidadesFornecedor();
     alvo.classList.remove("alvo-abaixo", "alvo-atingido", "alvo-acima");
