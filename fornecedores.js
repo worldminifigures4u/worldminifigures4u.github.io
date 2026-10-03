@@ -3185,8 +3185,8 @@ function garantirBotaoSoNaEncomendaFornecedor(referencia) {
     botao.type = "button";
     botao.id = "fornecedor-so-na-encomenda";
     botao.className = "wallapop-botao fornecedor-so-na-encomenda";
-    botao.textContent = "Só na encomenda";
-    botao.title = "Mostrar só os produtos com quantidade nesta encomenda";
+    botao.textContent = "Selecionadas (0)";
+    botao.title = "Mostrar só as figuras selecionadas (com quantidade)";
     botao.setAttribute("aria-pressed", "false");
     botao.addEventListener("click", () => {
         fornecedorSoNaEncomenda = !fornecedorSoNaEncomenda;
@@ -3242,7 +3242,11 @@ function garantirCampoAlvoUnidadesFornecedor(contador) {
 function atualizarTotalFigurasEncomendaFornecedor() {
     const alvo = document.getElementById("fornecedor-total-figuras-encomenda");
     if (!alvo || !estaPaginaFornecedoresUnificada()) return;
-    garantirBotaoSoNaEncomendaFornecedor(alvo);
+    const botaoSelecionadas = garantirBotaoSoNaEncomendaFornecedor(alvo);
+    if (botaoSelecionadas) {
+        const selecionadas = fornecedorSelecao.filter(item => Math.max(0, Number(item.quantidade || 0)) > 0).length;
+        botaoSelecionadas.textContent = `Selecionadas (${selecionadas})`;
+    }
     garantirCampoAlvoUnidadesFornecedor(alvo);
     const total = obterTotalUnidadesEncomendaFornecedor();
     const objetivo = lerAlvoUnidadesFornecedor();
@@ -5262,8 +5266,8 @@ function iniciarVistasFornecedores() {
         nova.type = "button";
         nova.id = "btn-nova-encomenda-fornecedor";
         nova.className = "wallapop-botao wallapop-botao-destaque fornecedores-btn-nova-encomenda";
-        nova.textContent = "Escolher figuras";
-        nova.title = "Escolher figuras para uma encomenda nova ou para juntar a uma existente";
+        nova.textContent = "Selecionar figuras";
+        nova.title = "Selecionar figuras para uma encomenda nova ou para juntar a uma existente";
         nova.addEventListener("click", () => mostrarVistaFornecedores("preparar"));
         cabecalhoLista.appendChild(nova);
     }
