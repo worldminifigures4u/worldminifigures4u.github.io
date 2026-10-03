@@ -26,6 +26,16 @@ const ESTATISTICAS_MESES_ANO = [
 let estatisticasClient = null;
 let estatisticasEncomendas = [];
 let estatisticasCustosProdutos = new Map();
+let estatisticasProdutos = [];
+let estatisticasEntradasProdutos = new Map();
+// Contexto usado pela ficha do produto (mapas-produto-modal.js), carregada so quando e preciso.
+var mapasClient = null;
+var mapasProdutos = [];
+var mapasEncomendasFornecedorCache = null;
+var mapasEncomendasFornecedorPromessa = null;
+var mapasVendasClienteCache = null;
+var mapasVendasClientePromessa = null;
+var MAPAS_FORNECEDORES_STORAGE_KEY = 'figures-planet-fornecedores-pedidos';
 
 function criarElementoEstatisticas(tag, classe, texto) {
     const elemento = document.createElement(tag);
@@ -557,6 +567,197 @@ function renderizarEstatisticas() {
     })), { limite: 10, rotuloQuantidade: 'enc.' });
     renderizarComparacaoMensalAnos(encomendasComparacao, filtro);
     renderizarLucroEstatisticas(dados.lucro);
+    renderizarStockParadoEstatisticas(filtro);
+}
+
+function valorBooleanoEstatisticas(valor) {
+    if (typeof valor === 'boolean') return valor;
+    return ['sim', 'true', '1', 'yes', 'ativo'].includes(normalizarTextoEstatisticas(valor));
+}
+
+function obterDataValidaEstatisticas(valor) {
+    if (!valor) return null;
+    const data = new Date(valor);
+    return Number.isNaN(data.getTime()) ? null : data;
+}
+
+// Ultima entrada de cada figura em stock: data de rececao nas encomendas a fornecedores.
+async function carregarEntradasProdutosEstatisticas() {
+    const entradas = new Map();
+    try {
+        const { data, error } = await estatisticasClient.rpc('listar_encomendas_fornecedores_admin');
+        if (error) throw error;
+        (Array.isArray(data) ? data : []).forEach(pedido => {
+            const dataPedido = obterDataValidaEstatisticas(pedido?.atualizado_em || pedido?.data_encomendada || pedido?.criado_em);
+            let itens = pedido?.itens || [];
+            if (typeof itens === 'string') {
+                try { itens = JSON.parse(itens); } catch (_) { itens = []; }
+            }
+            (Array.isArray(itens) ? itens : []).forEach(item => {
+                if (!(Number(item?.recebido) > 0)) return;
+                const dataEntrada = obterDataValidaEstatisticas(item?.data_recebida || item?.recebido_em) || dataPedido;
+                if (!dataEntrada) return;
+                [String(item?.id || '').trim(), `ref:${String(item?.referencia || '').trim().toUpperCase()}`].forEach(chave => {
+                    if (!chave || chave === 'ref:') return;
+                    const atual = entradas.get(chave);
+                    if (!atual || dataEntrada > atual) entradas.set(chave, dataEntrada);
+                });
+            });
+        });
+    } catch (erro) {
+        console.warn('Entradas de stock indisponíveis (encomendas a fornecedores).', erro);
+    }
+    estatisticasEntradasProdutos = entradas;
+}
+
+function obterUltimasVendasEstatisticas(filtro) {
+    const porId = new Map();
+    const porNome = new Map();
+    estatisticasEncomendas.forEach(encomenda => {
+        if (!encomendaContaNosTotais(encomenda)) return;
+        if (filtro.plataforma !== 'todas' && obterPlataformaEncomenda(encomenda) !== filtro.plataforma) return;
+        const data = obterDataEncomenda(encomenda);
+        if (!data) return;
+        obterProdutosEstatisticas(encomenda).forEach(item => {
+            const id = obterIdProdutoItem(item);
+            if (id && (!porId.get(id) || data > porId.get(id))) porId.set(id, data);
+            const nome = normalizarTextoEstatisticas(obterNomeFigura(item));
+            if (nome && (!porNome.get(nome) || data > porNome.get(nome))) porNome.set(nome, data);
+        });
+    });
+    return { porId, porNome };
+}
+
+function renderizarStockParadoEstatisticas(filtro) {
+    const container = document.getElementById('estatisticas-parado-lista');
+    const resumo = document.getElementById('estatisticas-parado-resumo');
+    if (!container || !resumo) return;
+    container.replaceChildren();
+    if (!estatisticasProdutos.length) {
+        resumo.textContent = '';
+        container.appendChild(criarElementoEstatisticas('p', 'estatisticas-vazio', 'Não foi possível carregar os produtos.'));
+        return;
+    }
+
+    const dias = Number(document.getElementById('estatisticas-parado-dias')?.value || 90) || 90;
+    const limite = new Date(Date.now() - dias * 24 * 60 * 60 * 1000);
+    const { porId, porNome } = obterUltimasVendasEstatisticas(filtro);
+
+    const parados = estatisticasProdutos.map(produto => {
+        const stock = Math.floor(Number(produto?.stock) || 0);
+        if (stock <= 0) return null;
+        if (valorBooleanoEstatisticas(produto?.arquivado) || valorBooleanoEstatisticas(produto?.descontinuado)) return null;
+        if (produto?.ativo === false) return null;
+        const id = String(produto?.id ?? '');
+        const ultimaVenda = porId.get(id) || porNome.get(normalizarTextoEstatisticas(produto?.nome)) || null;
+        if (ultimaVenda && ultimaVenda >= limite) return null;
+        const entrada = estatisticasEntradasProdutos.get(id)
+            || estatisticasEntradasProdutos.get(`ref:${String(produto?.referencia || '').trim().toUpperCase()}`)
+            || null;
+        // Figura que entrou em stock ha menos tempo do que o periodo ainda nao conta como parada.
+        if (entrada && entrada >= limite) return null;
+        const custo = Number(produto?.preco_compra) > 0 ? Number(produto.preco_compra) : 0;
+        return { produto, stock, ultimaVenda, custo, valor: stock * custo };
+    }).filter(Boolean).sort((a, b) => b.valor - a.valor || b.stock - a.stock || String(a.produto.nome).localeCompare(String(b.produto.nome), 'pt'));
+
+    const unidades = parados.reduce((soma, item) => soma + item.stock, 0);
+    const valor = parados.reduce((soma, item) => soma + item.valor, 0);
+    resumo.textContent = parados.length
+        ? `${formatarNumeroEstatisticas(parados.length)} ${parados.length === 1 ? 'figura' : 'figuras'} · ${formatarNumeroEstatisticas(unidades)} un. · ${formatarEuroEstatisticas(valor)} parados`
+        : '';
+    if (!parados.length) {
+        container.appendChild(criarElementoEstatisticas('p', 'estatisticas-vazio', `Nenhuma figura com stock sem vendas há mais de ${dias} dias.`));
+        return;
+    }
+
+    const cabecalho = criarElementoEstatisticas('div', 'estatisticas-parado-linha estatisticas-parado-cabecalho');
+    cabecalho.append(
+        criarElementoEstatisticas('span', '', 'Figura'),
+        criarElementoEstatisticas('span', '', 'Stock'),
+        criarElementoEstatisticas('span', '', 'Última venda'),
+        criarElementoEstatisticas('span', '', 'Valor parado')
+    );
+    container.appendChild(cabecalho);
+    const formatoData = new Intl.DateTimeFormat('pt-PT', { day: '2-digit', month: '2-digit', year: 'numeric' });
+    parados.forEach(item => {
+        const linha = criarElementoEstatisticas('div', 'estatisticas-parado-linha');
+        const nome = criarElementoEstatisticas('button', 'estatisticas-parado-nome', item.produto.nome || 'Produto sem nome');
+        nome.type = 'button';
+        nome.title = 'Abrir a ficha da figura';
+        nome.addEventListener('click', () => abrirFichaProdutoEstatisticas(item.produto));
+        linha.append(
+            nome,
+            criarElementoEstatisticas('span', '', formatarNumeroEstatisticas(item.stock)),
+            criarElementoEstatisticas('span', item.ultimaVenda ? '' : 'estatisticas-parado-nunca', item.ultimaVenda ? formatoData.format(item.ultimaVenda) : 'Nunca vendida'),
+            criarElementoEstatisticas('span', '', item.custo ? formatarEuroEstatisticas(item.valor) : '—')
+        );
+        container.appendChild(linha);
+    });
+}
+
+function normalizarProdutoFichaEstatisticas(produto) {
+    let imagens = produto?.imagens || [];
+    if (typeof imagens === 'string') {
+        try { imagens = JSON.parse(imagens); } catch (_) { imagens = imagens.split(',').map(valor => valor.trim()); }
+    }
+    return {
+        ...produto,
+        preco: Number(produto?.preco || 0),
+        preco_compra: Number(produto?.preco_compra || 0),
+        arquivado: valorBooleanoEstatisticas(produto?.arquivado),
+        descontinuado: valorBooleanoEstatisticas(produto?.descontinuado),
+        novidade: valorBooleanoEstatisticas(produto?.novidade),
+        peso: Number(produto?.peso || 10),
+        stock: Math.floor(Number(produto?.stock) || 0),
+        unidades_por_embalagem: Math.max(1, Math.floor(Number(produto?.unidades_por_embalagem) || 1)),
+        ativo: produto?.ativo !== false,
+        imagens: Array.isArray(imagens) ? imagens.filter(Boolean) : [],
+        fornecedores: produto?.fornecedores || {}
+    };
+}
+
+let promessaFichaProdutoEstatisticas = null;
+
+function carregarRecursoEstatisticas(tipo, src) {
+    return new Promise((resolve, reject) => {
+        const elemento = document.createElement(tipo === 'css' ? 'link' : 'script');
+        if (tipo === 'css') {
+            elemento.rel = 'stylesheet';
+            elemento.href = src;
+        } else {
+            elemento.src = src;
+        }
+        elemento.onload = () => resolve();
+        elemento.onerror = () => reject(new Error('Falha ao carregar ' + src));
+        document.head.appendChild(elemento);
+    });
+}
+
+function garantirFichaProdutoEstatisticas() {
+    mapasClient = estatisticasClient;
+    if (window.MapasProdutoModal) return Promise.resolve();
+    if (!promessaFichaProdutoEstatisticas) {
+        promessaFichaProdutoEstatisticas = Promise.all([
+            carregarRecursoEstatisticas('css', 'fornecedores-mapas.css?v=20261003-botao-fornecedores'),
+            carregarRecursoEstatisticas('js', 'mapas-produto-modal.js?v=20261003-preco-dividido')
+        ]).catch(erro => {
+            promessaFichaProdutoEstatisticas = null;
+            throw erro;
+        });
+    }
+    return promessaFichaProdutoEstatisticas;
+}
+
+async function abrirFichaProdutoEstatisticas(produto) {
+    try {
+        await garantirFichaProdutoEstatisticas();
+        mapasClient = estatisticasClient;
+        if (!mapasProdutos.length) mapasProdutos = estatisticasProdutos.map(normalizarProdutoFichaEstatisticas);
+        await window.MapasProdutoModal.abrirFicha(produto.id);
+    } catch (erro) {
+        console.warn('Não foi possível abrir a ficha do produto.', erro);
+        definirStatusEstatisticas('Erro ao abrir a ficha: ' + (erro?.message || 'sem detalhe'), true);
+    }
 }
 
 function renderizarLucroEstatisticas(lucro) {
@@ -603,6 +804,7 @@ function renderizarLucroEstatisticas(lucro) {
 async function carregarCustosProdutosEstatisticas() {
     const custos = new Map();
     for (const nomeRpc of ['listar_produtos_mapas_admin', 'listar_produtos_admin']) {
+        const produtos = [];
         try {
             custos.clear();
             const tamanhoPagina = 500;
@@ -614,9 +816,11 @@ async function carregarCustosProdutosEstatisticas() {
                     const custo = Number(produto?.preco_compra);
                     if (produto?.id != null && Number.isFinite(custo) && custo > 0) custos.set(String(produto.id), custo);
                 });
+                produtos.push(...pagina);
                 if (pagina.length < tamanhoPagina) break;
             }
             estatisticasCustosProdutos = custos;
+            estatisticasProdutos = produtos;
             return;
         } catch (erro) {
             console.warn(`Custos dos produtos indisponíveis (${nomeRpc}).`, erro);
@@ -682,7 +886,7 @@ async function carregarEncomendasEstatisticas() {
         if (lote.length < tamanhoLote) break;
     }
     estatisticasEncomendas = todas;
-    await carregarCustosProdutosEstatisticas();
+    await Promise.all([carregarCustosProdutosEstatisticas(), carregarEntradasProdutosEstatisticas()]);
     atualizarOpcoesPlataforma();
     definirPeriodoInicial();
     renderizarEstatisticas();
@@ -716,6 +920,7 @@ document.getElementById('estatisticas-data-inicio').addEventListener('change', r
 document.getElementById('estatisticas-data-fim').addEventListener('change', renderizarEstatisticas);
 document.getElementById('estatisticas-filtro-plataforma').addEventListener('change', renderizarEstatisticas);
 document.getElementById('estatisticas-filtro-total').addEventListener('change', renderizarEstatisticas);
+document.getElementById('estatisticas-parado-dias')?.addEventListener('change', () => renderizarStockParadoEstatisticas(obterFiltroData()));
 document.getElementById('btn-atualizar-estatisticas').addEventListener('click', async () => {
     try { await carregarEncomendasEstatisticas(); }
     catch (error) { definirStatusEstatisticas('Erro ao carregar estatísticas: ' + (error.message || 'sem detalhe'), true); }

@@ -460,3 +460,84 @@ html:not(.admin-light-mode) .estatisticas-metrica-lucro strong { color: #39d353;
 @media (max-width: 700px) {
     .estatisticas-metricas.estatisticas-metricas-lucro { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
+
+/* Stock parado */
+.estatisticas-painel-parado { min-height: 0; }
+.estatisticas-parado-resumo {
+    margin: 6px 0 0;
+    color: #ffc107;
+    font-size: 14px;
+    font-weight: 800;
+}
+.estatisticas-parado-periodo {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: #aaa;
+    font-size: 13px;
+    font-weight: 800;
+    white-space: nowrap;
+}
+.estatisticas-parado-periodo select {
+    height: 36px;
+    padding: 0 10px;
+    border: 1px solid #444;
+    border-radius: 5px;
+    background: #1b1b1b;
+    color: #fff;
+    font: inherit;
+    font-weight: 800;
+}
+.estatisticas-parado-lista {
+    max-height: 460px;
+    overflow: auto;
+    padding-right: 6px;
+}
+.estatisticas-parado-linha {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 70px 120px 110px;
+    gap: 10px;
+    align-items: center;
+    padding: 7px 0;
+    border-bottom: 1px solid #252525;
+    font-size: 13px;
+}
+.estatisticas-parado-linha > :nth-child(n+2) {
+    justify-self: end;
+    color: #ddd;
+    font-weight: 800;
+}
+.estatisticas-parado-cabecalho {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    background: #111;
+    color: #888;
+    font-size: 11px;
+    font-weight: 800;
+    text-transform: uppercase;
+}
+.estatisticas-parado-cabecalho > :nth-child(n+2) { color: #888; }
+.estatisticas-parado-nome {
+    min-width: 0;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: #fff;
+    font: inherit;
+    font-weight: 700;
+    text-align: left;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    cursor: pointer;
+}
+.estatisticas-parado-nome:is(:hover, :focus-visible) {
+    color: var(--cor-acao-principal, #ffc107);
+    outline: none;
+}
+.estatisticas-parado-linha .estatisticas-parado-nunca { color: #ff9da5; }
+@media (max-width: 700px) {
+    .estatisticas-parado-linha { grid-template-columns: minmax(0, 1fr) 44px 86px 70px; gap: 6px; font-size: 12px; }
+    .estatisticas-parado-periodo { white-space: normal; }
+}

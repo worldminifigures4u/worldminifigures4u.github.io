@@ -19,7 +19,7 @@
     <link rel="apple-touch-icon" href="fp-ring-favicon-192.png">
     <link rel="stylesheet" href="styles.css?v=20260930-dialogo-fechar">
     <link rel="stylesheet" href="styles-admin.css?v=20260920-guardar-verde">
-    <link rel="stylesheet" href="estatisticas.css?v=20261003-lucro">
+    <link rel="stylesheet" href="estatisticas.css?v=20261003-stock-parado">
     <link rel="stylesheet" href="admin-light.css?v=20260926-links-padrao">
     <link rel="stylesheet" href="styles-tema.css?v=20260721-sem-underline" media="print" data-async-css>
     <noscript><link rel="stylesheet" href="styles-tema.css?v=20260721-sem-underline"></noscript>
@@ -137,6 +137,27 @@
             </article>
         </section>
 
+        <section class="estatisticas-grid estatisticas-grid-comparacao">
+            <article class="estatisticas-painel estatisticas-painel-parado">
+                <div class="estatisticas-painel-cabecalho">
+                    <div>
+                        <h2>Stock parado</h2>
+                        <p class="estatisticas-parado-resumo" id="estatisticas-parado-resumo"></p>
+                    </div>
+                    <label class="estatisticas-parado-periodo">
+                        Sem vendas há
+                        <select id="estatisticas-parado-dias" aria-label="Sem vendas há">
+                            <option value="60">60 dias</option>
+                            <option value="90" selected>90 dias</option>
+                            <option value="180">180 dias</option>
+                            <option value="365">365 dias</option>
+                        </select>
+                    </label>
+                </div>
+                <div class="estatisticas-parado-lista" id="estatisticas-parado-lista"></div>
+            </article>
+        </section>
+
         <section class="estatisticas-grid estatisticas-grid-principal">
             <article class="estatisticas-painel">
                 <h2>Vendas por dia</h2>
@@ -200,7 +221,7 @@
     <script src="app-config.js?v=20260930-dialogo-fechar" defer></script>
 <script src="agenda-alertas.js?v=20260920-entre-abas" defer></script>
     <script src="admin-theme.js?v=20260826-light-mode" defer></script>
-    <script src="estatisticas.js?v=20261003-lucro" defer></script>
+    <script src="estatisticas.js?v=20261003-stock-parado" defer></script>
 <script src="campo-limpar.js?v=20261003-lados-trocados" defer></script>
 <script src="inline-listeners-base.js?v=20260929-menu-telemovel" defer></script>
 <script src="inline-listeners-admin.js?v=20260713-r25" defer></script>
