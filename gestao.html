@@ -79,6 +79,7 @@
             <button type="button" class="gestao-menu-item" data-gestao-seccao="portes" aria-pressed="false">Portes de envio</button>
             <button type="button" class="gestao-menu-item" data-gestao-seccao="importar" aria-pressed="false">Importar</button>
             <button type="button" class="gestao-menu-item" data-gestao-seccao="exportar" aria-pressed="false">Exportar</button>
+            <button type="button" class="gestao-menu-item" data-gestao-seccao="copia" aria-pressed="false">Cópia de segurança</button>
         </nav>
 
         <div class="gestao-painel ativa" data-gestao-painel="banners">
@@ -202,6 +203,21 @@
             </div>
         </section>
 
+        <section class="gestao-painel gestao-importacao-painel mapas-importacao-painel" id="gestao-painel-copia" data-gestao-painel="copia" aria-label="Cópia de segurança" hidden>
+            <h1>Cópia de segurança</h1>
+            <div class="mapas-importacao-corpo gestao-importacao-corpo gestao-exportacao-corpo" role="group" aria-label="Cópia de segurança">
+                <section class="admin-seccao mapas-importacao-bloco gestao-exportacao-bloco" aria-label="Descarregar cópia de segurança">
+                    <h3>Descarregar cópia</h3>
+                    <div class="form-admin">
+                        <p class="ajuda-admin">Descarrega um ficheiro .zip com todas as tabelas do Supabase (produtos, encomendas, clientes, compras, fornecedores, agenda, portes, banners…), um JSON por tabela, e CSV dos produtos e encomendas para abrir no Excel. Guarda-o fora do computador (OneDrive, disco externo).</p>
+                        <p class="ajuda-admin gestao-copia-ultima" id="gestao-copia-ultima"></p>
+                        <button type="button" id="btn-gestao-copia-seguranca" class="btn-acao-cliente">Descarregar cópia</button>
+                        <div id="status-gestao-copia" class="msg-status" aria-live="polite"></div>
+                    </div>
+                </section>
+            </div>
+        </section>
+
         <section class="gestao-painel gestao-importacao-painel mapas-importacao-painel" id="mapas-painel-exportacao" data-gestao-painel="exportar" aria-label="Exportar catálogo" hidden>
             <h1>Exportar</h1>
             <div class="mapas-importacao-corpo gestao-importacao-corpo gestao-exportacao-corpo" role="group" aria-label="Opções de exportação">
@@ -223,7 +239,8 @@
     <script src="app-util.js?v=20260926-admin-nav-centro" defer></script>
     <script src="app-sku.js?v=20260713-r25" defer></script>
     <script src="admin-theme.js?v=20260826-light-mode" defer></script>
-    <script src="gestao.js?v=20260924-remover-botao-dc" defer></script>
+    <script src="gestao.js?v=20261003-copia" defer></script>
+    <script src="gestao-copia.js?v=20261003-copia" defer></script>
     <script src="app-portes.js?v=20260915-ctt-azul-internacional-v3" defer></script>
     <script src="portes.js?v=20260920-gravar-texto" defer></script>
     <script src="campo-limpar.js?v=20261003-lados-trocados" defer></script>
