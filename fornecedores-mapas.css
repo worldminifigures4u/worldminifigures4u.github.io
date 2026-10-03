@@ -5780,3 +5780,18 @@ body.fornecedores-vista-lista .fornecedores-btn-nova-encomenda {
     font-weight: 600;
     white-space: nowrap;
 }
+/* "Destino seleção" por baixo do código da encomenda */
+body.fornecedores-vista-lista .fornecedores-coluna-direita .fornecedor-pedido-cabecalho .admin-encomenda-linha.fornecedor-pedido-linha-cabecalho.com-destino-selecao {
+    grid-template-areas: "codigo data fornecedor resumo estado imprimir" "destino . . . . ." !important;
+}
+body.fornecedores-vista-lista .fornecedores-coluna-direita .fornecedor-pedido-linha-cabecalho .fornecedor-pedido-destino-selecao {
+    grid-area: destino !important;
+    justify-self: start !important;
+    align-self: start !important;
+    margin: 0 !important;
+}
+@media (max-width: 900px) {
+    body.fornecedores-vista-lista .fornecedores-coluna-direita .fornecedor-pedido-cabecalho .admin-encomenda-linha.fornecedor-pedido-linha-cabecalho.com-destino-selecao {
+        grid-template-areas: "codigo imprimir" "destino imprimir" "data data" "fornecedor estado" "resumo resumo" !important;
+    }
+}
