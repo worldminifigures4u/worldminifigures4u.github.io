@@ -3179,7 +3179,8 @@ async function criarFicheirosImagemPlataforma(itensFicheiros) {
     if (!paginasItens.length) throw new Error('Nao existem folhas para exportar.');
     const totalPaginas = paginasItens.length;
     const totalFiguras = calcularTotalFigurasLoteWallapop(itensFicheiros);
-    const totalPrecoLote = calcularTotalFicheirosPlataforma(itensFicheiros);
+    // OLX: a imagem vai sempre sem total.
+    const totalPrecoLote = obterPlataformaParaFicheiros() === 'OLX' ? null : calcularTotalFicheirosPlataforma(itensFicheiros);
     const ficheiros = [];
 
     for (let indice = 0; indice < paginasItens.length; indice += 1) {

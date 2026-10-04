@@ -3105,7 +3105,8 @@ window.AdminEncomendaVista = (function () {
                     const notasAtuais = controloNotas?.elemento?.querySelector("textarea")?.value;
                     if (notasAtuais !== undefined) encomenda.notas_internas = notasAtuais;
                     let incluirTotal = false;
-                    if (origemExportaImagem(encomenda)) {
+                    // OLX: a imagem vai sempre sem total, sem perguntar.
+                    if (origemExportaImagem(encomenda) && origemEncomenda(encomenda) !== "olx") {
                         const escolha = await perguntarTotalFotoExportacao();
                         if (escolha === null) return;
                         incluirTotal = escolha;
