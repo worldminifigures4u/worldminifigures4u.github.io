@@ -3104,13 +3104,8 @@ window.AdminEncomendaVista = (function () {
                     controloSeguimento?.ignorarProximoBlur?.();
                     const notasAtuais = controloNotas?.elemento?.querySelector("textarea")?.value;
                     if (notasAtuais !== undefined) encomenda.notas_internas = notasAtuais;
-                    let incluirTotal = false;
-                    // OLX: a imagem vai sempre sem total, sem perguntar.
-                    if (origemExportaImagem(encomenda) && origemEncomenda(encomenda) !== "olx") {
-                        const escolha = await perguntarTotalFotoExportacao();
-                        if (escolha === null) return;
-                        incluirTotal = escolha;
-                    }
+                    // Imagens: OLX sempre sem total; as outras plataformas sempre com total (sem perguntar).
+                    const incluirTotal = origemExportaImagem(encomenda) && origemEncomenda(encomenda) !== "olx";
                     exportar.disabled = true;
                     try {
                         await exportarEncomendaDireta(encomenda, mostrarStatusGravacao, { incluirTotal });
