@@ -2493,3 +2493,10 @@ html:not(.admin-light-mode) .admin-encomenda-resumo-lucro .admin-encomenda-resum
 .admin-encomenda-modal-topo h2.admin-encomenda-modal-titulo-resumo{
     min-width:0;
 }
+
+/* Seta "proximo estado": largura dos outros botoes do cabecalho (Editar, Exportar...) */
+body .admin-encomenda-estado-avancar {
+    width: var(--admin-encomenda-modal-botao-largura, 78px) !important;
+    min-width: var(--admin-encomenda-modal-botao-largura, 78px) !important;
+    max-width: var(--admin-encomenda-modal-botao-largura, 78px) !important;
+}
