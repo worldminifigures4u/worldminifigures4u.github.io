@@ -3026,7 +3026,33 @@ function criarLinhasDadosClienteOlx() {
     ];
 }
 
+// Encomendas do site: preço em vez do SKU e, no fim, subtotal, portes (ou entrega em mão) e total.
+function criarTextoSitePlataforma() {
+    const itens = obterItensParaFicheirosPlataforma();
+    const envio = obterEnvioParaFicheirosPlataforma() || {};
+    const portes = Number(envio.portes) || 0;
+    const subtotal = calcularTotalPrecoLoteWallapop(itens);
+    const total = obterTotalParaFicheirosPlataforma(subtotal, portes);
+    const linhas = criarCabecalhoCodigoEncomenda().concat(itens.map(item => [
+        Math.max(1, Number(item.quantidade) || 1),
+        String(item.nome || '').trim(),
+        `${formatarEuroWallapop(obterPrecoItemWallapop(item))} \u20ac`
+    ].join('\t')));
+    const nomeEnvio = String(envio.nome || '').trim();
+    const entregaMao = metodoEnvioEntregaMaoPlataforma(envio.id || '')
+        || normalizarTextoPlataforma(nomeEnvio).includes('entrega em mao');
+    linhas.push('', `Subtotal:\t${formatarEuroWallapop(subtotal)} \u20ac`);
+    if (entregaMao) {
+        linhas.push(`${nomeEnvio || 'Entrega em m\u00e3o em Tomar'}:\t${formatarEuroWallapop(portes)} \u20ac`);
+    } else {
+        linhas.push(`Portes de envio${nomeEnvio ? ` (${nomeEnvio})` : ''}:\t${formatarEuroWallapop(portes)} \u20ac`);
+    }
+    linhas.push(`Total:\t${formatarEuroWallapop(total)} \u20ac`);
+    return '\ufeff' + anexarFigurasRepetidasAoTextoPlataforma(linhas).join('\r\n');
+}
+
 function criarTextoInternoPlataforma() {
+    if (obterPlataformaParaFicheiros() === 'Site') return criarTextoSitePlataforma();
     const linhas = criarCabecalhoCodigoEncomenda().concat(obterItensParaFicheirosPlataforma().map(item => [
         Math.max(1, Number(item.quantidade) || 1),
         String(item.nome || '').trim(),
