@@ -3111,7 +3111,7 @@ function criarLinhasOutrosEnviosOlxPlataforma(envio) {
     if (!alternativas.length) {
         return [
             'Pode ainda optar por outros tipos de envio disponíveis de acordo com as opções configuradas no site.',
-            ...(incluirNotaInPost ? [criarNotaInPostTxtPlataforma()] : [])
+            ...(incluirNotaInPost ? ['', criarNotaInPostTxtPlataforma()] : [])
         ];
     }
 
@@ -3121,7 +3121,7 @@ function criarLinhasOutrosEnviosOlxPlataforma(envio) {
             const nome = String(opcao?.nome || opcao?.nome_exibicao || opcao?.id || 'Envio').trim();
             return `- ${nome}: ${formatarEuroWallapop(calcularPortesPlataforma(opcao?.valor))} \u20ac`;
         }),
-        ...(incluirNotaInPost ? [criarNotaInPostTxtPlataforma()] : [])
+        ...(incluirNotaInPost ? ['', criarNotaInPostTxtPlataforma()] : [])
     ];
 }
 

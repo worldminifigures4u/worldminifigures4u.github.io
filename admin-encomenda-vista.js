@@ -1592,7 +1592,7 @@ window.AdminEncomendaVista = (function () {
         if (!alternativas.length) {
             return [
                 "Pode ainda optar por outros tipos de envio disponíveis de acordo com as opções configuradas no site.",
-                ...(incluirNotaInPost ? [criarNotaInPostExportacao()] : [])
+                ...(incluirNotaInPost ? ["", criarNotaInPostExportacao()] : [])
             ];
         }
 
@@ -1602,7 +1602,7 @@ window.AdminEncomendaVista = (function () {
                 const nome = String(opcao?.nome || opcao?.nome_exibicao || opcao?.id || "Envio").trim();
                 return `- ${nome}: ${formatarEuroExportacao(formatarValorEnvioExportacao(opcao?.valor))} €`;
             }),
-            ...(incluirNotaInPost ? [criarNotaInPostExportacao()] : [])
+            ...(incluirNotaInPost ? ["", criarNotaInPostExportacao()] : [])
         ];
     }
 
