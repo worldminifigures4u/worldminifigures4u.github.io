@@ -3090,7 +3090,7 @@ function envioInPostTxtPlataforma(opcao) {
 }
 
 function criarNotaInPostTxtPlataforma() {
-    return 'Nota InPost: a entrega é feita num ponto de recolha à sua escolha, não ao domicílio. Envie-me, por favor, o seu e-mail para que receba a mensagem da InPost, na qual poderá escolher o ponto mais conveniente e completar os dados de envio.';
+    return 'Nota: a entrega InPost é feita num ponto de recolha à sua escolha, mas não é entregue ao domicílio. Caso pretenda este tipo de envio, por favor, diga-me o seu e-mail para que receba a mensagem da InPost, na qual poderá escolher o ponto mais conveniente e completar os dados de envio.';
 }
 
 function criarLinhasOutrosEnviosOlxPlataforma(envio) {
