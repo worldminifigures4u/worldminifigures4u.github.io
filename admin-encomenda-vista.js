@@ -1622,6 +1622,34 @@ window.AdminEncomendaVista = (function () {
         return "\ufeff" + linhas.join("\r\n");
     }
 
+    function envioEntregaMaoExportacao(encomenda) {
+        const metodoId = normalizarTextoEnvio(encomenda?.metodo_envio).replace(/\s+/g, "_");
+        if (metodoId === "entrega_tomar") return true;
+        const nome = normalizarTextoEnvio(encomenda?.metodo_envio_nome);
+        return nome.includes("entrega em mao") || nome.includes("entrega em mão");
+    }
+
+    // Encomendas do site: preço em vez do SKU e, no fim, subtotal, portes (ou entrega em mão) e total.
+    function criarTextoSiteExportacao(encomenda, itens) {
+        const subtotal = calcularSubtotalExportacao(itens);
+        const portes = Number(encomenda?.portes || 0) || 0;
+        const total = Number(encomenda?.total || 0) || (subtotal + portes);
+        const linhas = criarCabecalhoTxtExportacao(encomenda).concat(itens.map(item => [
+            obterQuantidadeExportacao(item),
+            String(item.nome || "").trim(),
+            `${formatarEuroExportacao(obterPrecoExportacao(item))} €`
+        ].join("\t")));
+        linhas.push("", `Subtotal:\t${formatarEuroExportacao(subtotal)} €`);
+        if (envioEntregaMaoExportacao(encomenda)) {
+            linhas.push(`${String(encomenda?.metodo_envio_nome || "").trim() || "Entrega em mão em Tomar"}:\t${formatarEuroExportacao(portes)} €`);
+        } else {
+            const envio = String(encomenda?.metodo_envio_nome || encomenda?.metodo_envio || "").trim();
+            linhas.push(`Portes de envio${envio ? ` (${envio})` : ""}:\t${formatarEuroExportacao(portes)} €`);
+        }
+        linhas.push(`Total:\t${formatarEuroExportacao(total)} €`);
+        return "\ufeff" + linhas.join("\r\n");
+    }
+
     function criarTextoInternoExportacao(encomenda, itens) {
         const linhas = criarCabecalhoTxtExportacao(encomenda).concat(itens.map(item => [
             obterQuantidadeExportacao(item),
@@ -2066,6 +2094,8 @@ window.AdminEncomendaVista = (function () {
             ficheiros.push({ nome: `${nomePasta}.txt`, conteudo: criarTextoClienteOlxExportacao(encomenda, itens) });
         } else if (origemUsaTextoAnuncio(encomenda)) {
             ficheiros.push({ nome: `${nomePasta}.txt`, conteudo: criarTextoAnuncioExportacao(encomenda, itens) });
+        } else if (origemEncomenda(encomenda) === "site" || origemEncomenda(encomenda) === "loja") {
+            ficheiros.push({ nome: `${nomePasta}.txt`, conteudo: criarTextoSiteExportacao(encomenda, itens) });
         } else {
             ficheiros.push({ nome: `${nomePasta}.txt`, conteudo: criarTextoInternoExportacao(encomenda, itens) });
         }
