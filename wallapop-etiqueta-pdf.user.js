@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Wallapop etiqueta - PDF
 // @namespace    figuresplanet
-// @version      6.3
+// @version      6.4
 // @description  Guarda etiqueta Wallapop em PDF A4 com nome da encomenda em tamanho compacto
 // @match        https://*.wallapop.com/*
 // @match        https://wallapop-delivery-labels.wallapop.com/*
@@ -83,9 +83,32 @@
     return '';
   }
 
+  // Texto da pagina incluindo o que esta dentro de componentes (shadow DOM),
+  // que document.body.innerText nao apanha. Uma linha por bloco de texto.
+  function textoProfundo(raiz) {
+    const linhas = [];
+    const visitar = (no) => {
+      if (!no) return;
+      if (no.nodeType === Node.TEXT_NODE) {
+        const t = no.nodeValue.replace(/\s+/g, ' ').trim();
+        if (t) linhas.push(t);
+        return;
+      }
+      if (no.nodeType !== Node.ELEMENT_NODE && no.nodeType !== Node.DOCUMENT_FRAGMENT_NODE) return;
+      if (no.nodeType === Node.ELEMENT_NODE && /^(SCRIPT|STYLE|NOSCRIPT|TEMPLATE)$/.test(no.tagName)) return;
+      if (no.shadowRoot) visitar(no.shadowRoot);
+      no.childNodes.forEach(visitar);
+    };
+    visitar(raiz);
+    return linhas.join('\n');
+  }
+
   function extrairNomeCliente() {
     const nomePagina = extrairNomeCompradoPorTexto(document.body?.innerText || '');
     if (nomePagina) return nomePagina;
+
+    const nomeProfundo = extrairNomeCompradoPorTexto(textoProfundo(document.body));
+    if (nomeProfundo) return nomeProfundo;
 
     const candidatos = [];
     document.querySelectorAll('body *').forEach((el) => {
@@ -242,8 +265,15 @@
     document.addEventListener(
       'click',
       (e) => {
-        const alvo = e.target.closest('button, a, [role="button"]');
-        if (alvo && /(imprimir|mostrar) etiqueta/i.test(alvo.textContent || '')) {
+        // composedPath atravessa os componentes (shadow DOM) ate ao botao real.
+        const caminho = typeof e.composedPath === 'function' ? e.composedPath() : [e.target];
+        const alvo = caminho.find((el) => {
+          if (!(el instanceof Element)) return false;
+          if (!el.matches('button, a, [role="button"]') && !el.tagName.includes('-')) return false;
+          const texto = (el.textContent || '').trim() || textoProfundo(el);
+          return texto.length <= 60 && /(imprimir|mostrar) etiqueta/i.test(texto);
+        });
+        if (alvo) {
           guardarNomeCliente({ limparSeFalhar: true, guardarParaEtiqueta: true });
         }
       },
