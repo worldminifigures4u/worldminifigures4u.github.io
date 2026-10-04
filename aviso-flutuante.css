@@ -74,3 +74,12 @@ html.admin-light-mode .fp-aviso-flutuante-fechar { color: #182231; border-color:
         font-size: 14px;
     }
 }
+
+/* Computador: aviso por cima dos menus (no topo) e numa so linha sempre que caiba */
+@media (min-width: 701px) {
+    .fp-aviso-flutuante {
+        top: 8px;
+        width: max-content;
+        max-width: calc(100vw - 32px);
+    }
+}
