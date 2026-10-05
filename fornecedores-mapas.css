@@ -6076,3 +6076,31 @@ html:not(.admin-light-mode) #fornecedor-sugerir-modal .fornecedor-sugerir-corpo 
     border-color: var(--cor-acao-principal, #ffc107) !important;
     color: var(--cor-acao-principal, #ffc107) !important;
 }
+
+/* Modal da encomenda a fornecedor: largura toda do ecra e cabecalho numa so linha quando cabe */
+#fornecedor-pedido-modal .fornecedor-pedido-modal-dialog {
+    width: calc(100vw - 16px);
+    max-width: none;
+}
+@media (min-width: 1101px) {
+    #fornecedor-pedido-modal .fornecedor-pedido-modal-topo {
+        flex-wrap: nowrap;
+    }
+    #fornecedor-pedido-modal .fornecedor-pedido-modal-topo h3.fornecedor-pedido-modal-titulo-resumo {
+        flex: 1 1 auto;
+        flex-wrap: nowrap;
+        white-space: nowrap;
+        overflow: hidden;
+    }
+    #fornecedor-pedido-modal .fornecedor-pedido-modal-topo .fornecedor-pedido-modal-resumo {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        min-width: 0;
+    }
+    #fornecedor-pedido-modal .fornecedor-pedido-modal-acoes,
+    #fornecedor-pedido-modal .fornecedor-pedido-modal-acoes .fornecedor-pedido-acoes {
+        flex: 0 0 auto;
+        flex-wrap: nowrap;
+    }
+}
