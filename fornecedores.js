@@ -4511,6 +4511,8 @@ async function sincronizarHistoricoPedidosFornecedor(itens, fornecedorNome, opco
                 alterou = true;
             } else if (agoraOs) {
                 atual = acrescentarHistoricoFornecedor(atual, "os", agora);
+                // Sem unidades a receber: a marcação atual passa logo a OS (como no EX).
+                if (quantidade <= 0) atual = aplicarMarcacaoAtualAposConfirmar(atual, "OS", agora);
                 alterou = true;
             } else if (quantidade > 0) {
                 atual = acrescentarHistoricoFornecedor(atual, "solicitada", agora);
@@ -4528,6 +4530,10 @@ async function sincronizarHistoricoPedidosFornecedor(itens, fornecedorNome, opco
                 }
                 const encomendaJaConfirmada = estadoPedidoFornecedorEhEncomendada(opcoes.estadoPedido)
                     || estadoPedidoFornecedorEhRecebida(opcoes.estadoPedido);
+                if (!encomendaJaConfirmada && normalizarMarcacaoFornecedor(atual).estado.toUpperCase() !== "OS") {
+                    // Encomenda ainda "A preparar": a marcação atual passa logo a OS (como no EX).
+                    atual = aplicarMarcacaoAtualAposConfirmar(atual, "OS", agora);
+                }
                 if (encomendaJaConfirmada) {
                     // A encomenda já estava Encomendada/Recebida antes desta edição, por isso o
                     // modo "confirmar" não volta a correr (só dispara em mudança de estado).
