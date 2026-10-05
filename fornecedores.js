@@ -5499,7 +5499,8 @@ function iniciarVistasFornecedores() {
         mostrarVistaFornecedores(window.location.hash === "#preparar" ? "preparar" : "lista", { semHistorico: true });
     });
 
-    const inicial = window.location.hash === "#preparar" || fornecedorSelecao.length > 0 ? "preparar" : "lista";
+    // Ao abrir a página: sempre a lista de compras (a seleção fica guardada). Só #preparar abre a seleção.
+    const inicial = window.location.hash === "#preparar" ? "preparar" : "lista";
     mostrarVistaFornecedores(inicial, { substituir: true });
 }
 
