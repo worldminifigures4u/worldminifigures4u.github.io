@@ -110,7 +110,7 @@ function garantirFornecedoresProdutoModal() {
 function garantirFornecedoresEdicaoPedido() {
     if (window.FornecedoresEdicaoPedido) return Promise.resolve();
     if (!__fornecedoresEdicaoPromessa) {
-        __fornecedoresEdicaoPromessa = carregarScriptAdmin("fornecedores-edicao-pedido.js?v=20261003-preco-dividido");
+        __fornecedoresEdicaoPromessa = carregarScriptAdmin("fornecedores-edicao-pedido.js?v=20261005-acertar-osex");
     }
     return __fornecedoresEdicaoPromessa;
 }
@@ -4460,6 +4460,40 @@ function itemPedidoEstaExFornecedor(item) {
     if (!item) return false;
     return Boolean(item.marcado_ex)
         || String(item.estado_fornecedor || "").trim().toUpperCase() === "EX";
+}
+
+// Gravar sem alterar linhas: acerta só a "Marcação atual" das figuras OS total / EX,
+// sem mexer no histórico. Poucas gravações (só as que estão diferentes).
+async function acertarMarcacoesAtuaisOsExFornecedor(itens, fornecedorNome) {
+    if (!fornecedoresClient || !fornecedorNome || fornecedorNome === "Outro") return 0;
+    const chaveNormalizada = normalizarChaveFornecedor(fornecedorNome);
+    let acertados = 0;
+    for (const item of (itens || [])) {
+        if (itemPedidoIgnoradoListaFornecedor(item)) continue;
+        const quantidade = Math.max(0, Number(item?.quantidade || 0));
+        const ex = itemPedidoEstaExFornecedor(item);
+        const os = !ex && quantidade <= 0
+            && (Math.max(0, Number(item?.falta_os || 0)) > 0 || String(item?.estado_fornecedor || "").trim().toUpperCase() === "OS");
+        if (!ex && !os) continue;
+        const alvo = ex ? "EX" : "OS";
+        const produtoAtual = obterProdutoParaPedidoFornecedor(item);
+        if (!produtoAtual?.id) continue;
+        const fornecedores = obterObjetoFornecedoresProduto(produtoAtual);
+        const chave = Object.keys(fornecedores).find(k => normalizarChaveFornecedor(k) === chaveNormalizada) || fornecedorNome;
+        const atual = fornecedores[chave];
+        if (normalizarMarcacaoFornecedor(atual).estado.toUpperCase() === alvo) continue;
+        const novos = { ...fornecedores, [chave]: aplicarMarcacaoAtualAposConfirmar(atual, alvo) };
+        const { error } = await fornecedoresClient.rpc("atualizar_fornecedores_produto_admin", {
+            p_id: String(produtoAtual.id),
+            p_fornecedores: novos
+        });
+        if (error) throw error;
+        fornecedorProdutos = fornecedorProdutos.map(produto =>
+            String(produto.id) === String(produtoAtual.id) ? { ...produto, fornecedores: novos } : produto
+        );
+        acertados += 1;
+    }
+    return acertados;
 }
 
 async function sincronizarHistoricoPedidosFornecedor(itens, fornecedorNome, opcoes = {}) {

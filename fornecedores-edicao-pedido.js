@@ -2011,6 +2011,13 @@ async function guardarEdicaoPedidoFornecedor(evento) {
                 estadoPedido: estado,
                 dataPedido: pedido.data_encomendada || pedido.criado_em || ''
             });
+        } else if (typeof acertarMarcacoesAtuaisOsExFornecedor === 'function') {
+            status.textContent = 'A verificar marcações OS/EX na ficha do produto...';
+            try {
+                await acertarMarcacoesAtuaisOsExFornecedor(itens, fornecedor);
+            } catch (erroMarcacao) {
+                console.warn('Nao foi possivel acertar a marcação atual OS/EX.', erroMarcacao);
+            }
         }
         if (deveAtualizarHistoricoConfirmacao) {
             status.textContent = 'A confirmar histórico na ficha do produto...';
