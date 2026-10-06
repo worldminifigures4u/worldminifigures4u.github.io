@@ -1634,10 +1634,55 @@ function interpretarLinhaProdutosPlataforma(linha, indice, opcoes = {}) {
         texto = fim[1].trim();
         quantidade = Math.max(1, Number(fim[2]) || 1);
     }
+    // Títulos encurtados (ex. "British Imperial Soldier...") são tratados como início do nome.
+    const truncado = /(?:\.{3}|\u2026)\s*$/.test(texto);
+    if (truncado) texto = texto.replace(/\s*(?:\.{3}|\u2026)\s*$/, '');
     texto = limparTextoProdutoListaPlataforma(texto);
     texto = normalizarNomeClienteListaPlataforma(texto);
     if (!texto) return null;
-    return { indice, original: texto, quantidade };
+    return truncado ? { indice, original: texto, quantidade, truncado: true } : { indice, original: texto, quantidade };
+}
+
+// Nome cortado com "...": procura produtos cujo nome começa pelo texto recebido.
+// Um só produto -> fica escolhido e passa a mostrar o nome completo. Vários -> ficam no topo para escolher.
+function analisarLinhaTruncadaListaPlataforma(linha) {
+    const prefixo = normalizarTextoWallapop(linha.original);
+    if (!prefixo) return null;
+    const comecam = wallapopProdutos.filter(produto => {
+        const nome = normalizarTextoWallapop(produto.nome);
+        return nome.startsWith(prefixo) && nome !== prefixo;
+    });
+    const outros = obterCandidatosLinhaListaPlataforma(linha.original)
+        .filter(candidato => !comecam.some(produto => String(produto.id) === String(candidato.produto.id)));
+    if (!comecam.length) {
+        return {
+            ...linha,
+            original: `${linha.original}...`,
+            candidatos: outros,
+            produtoId: '',
+            estado: 'rever'
+        };
+    }
+    const candidatos = [
+        ...comecam.map(produto => ({ produto, pontuacao: 0.99 })).sort(compararCandidatosListaPlataforma),
+        ...outros
+    ].slice(0, 8);
+    if (comecam.length === 1) {
+        return {
+            ...linha,
+            original: String(comecam[0].nome || linha.original),
+            candidatos,
+            produtoId: String(comecam[0].id),
+            estado: 'sugerida'
+        };
+    }
+    return {
+        ...linha,
+        original: `${linha.original}...`,
+        candidatos,
+        produtoId: '',
+        estado: 'rever'
+    };
 }
 
 function analisarListaProdutosPlataforma(texto) {
@@ -1650,6 +1695,10 @@ function analisarListaProdutosPlataforma(texto) {
         .filter(Boolean);
 
     const linhasAnalisadas = linhasInterpretadas.map(linha => {
+        if (linha.truncado) {
+            const resultado = analisarLinhaTruncadaListaPlataforma(linha);
+            if (resultado) return resultado;
+        }
         const candidatos = obterCandidatosLinhaListaPlataforma(linha.original);
         const melhor = candidatos[0];
         const segundo = candidatos[1];
