@@ -1526,12 +1526,16 @@ function renderizarHistoricoVendasMapa(conteudo, produto, encomendas) {
     tabela.append(thead, tbody);
     conteudo.appendChild(tabela);
 
+    // Total de unidades vendidas a seguir ao título "Histórico de vendas".
     const totalUnidades = linhas.reduce((soma, linha) => soma + linha.quantidade, 0);
-    const linhasValidas = linhas;
-    const resumo = document.createElement("p");
-    resumo.className = "mapas-produto-ajuda-media";
-    resumo.textContent = `${linhasValidas.length} encomenda(s) · ${totalUnidades} unidade(s) vendida(s)`;
-    conteudo.appendChild(resumo);
+    const legenda = conteudo.closest("fieldset")?.querySelector("legend");
+    if (legenda) {
+        legenda.querySelector(".mapas-produto-legenda-resumo")?.remove();
+        const resumo = document.createElement("span");
+        resumo.className = "mapas-produto-legenda-resumo";
+        resumo.textContent = `· ${totalUnidades} ${totalUnidades === 1 ? "unidade" : "unidades"}`;
+        legenda.append(" ", resumo);
+    }
 }
 
 function montarSecaoHistoricoVendasMapa(campos, produto) {
