@@ -3238,7 +3238,7 @@ body.mapas-produto-galeria-aberta {
 }
 
 .mapas-produto-historico-rececoes-tabela tr.mapas-produto-historico-os td {
-    color: #b8862f;
+    color: var(--fp-cor-erro, #ff6b6b);
 }
 
 .mapas-produto-upload-bloco {
