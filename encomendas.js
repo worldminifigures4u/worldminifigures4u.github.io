@@ -479,9 +479,34 @@ function criarProdutoFallbackEncomenda(item) {
     });
 }
 
+// Procura por prioridade em toda a lista: id -> SKU -> referência -> nome (só se o nome for único).
+// Assim um produto com o mesmo nome mas outra referência nunca passa à frente do produto certo.
+function encontrarProdutoMapaItemEncomenda(produtos, item) {
+    if (!Array.isArray(produtos) || !item) return null;
+    const itemId = obterIdProdutoItemEncomenda(item);
+    if (itemId) {
+        const porId = produtos.find(produto => String(produto?.id || '').trim() === itemId);
+        if (porId) return porId;
+    }
+    const itemSku = normalizarSkuProdutoEncomenda(item.sku);
+    if (itemSku) {
+        const porSku = produtos.find(produto => normalizarSkuProdutoEncomenda(produto?.sku) === itemSku);
+        if (porSku) return porSku;
+    }
+    const itemRef = normalizarReferenciaProdutoEncomenda(item.referencia || item.ref);
+    if (itemRef && !['PERSONALIZADO', 'PERSONALIZADA', 'CUSTOM'].includes(itemRef)) {
+        const porRef = produtos.filter(produto => normalizarReferenciaProdutoEncomenda(produto?.referencia) === itemRef);
+        if (porRef.length) return porRef.find(produto => produto?.ativo !== false) || porRef[0];
+    }
+    const itemNome = normalizarTextoProdutoEncomenda(item.nome);
+    if (!itemNome) return null;
+    const porNome = produtos.filter(produto => normalizarTextoProdutoEncomenda(produto?.nome) === itemNome);
+    return porNome.length === 1 ? porNome[0] : null;
+}
+
 async function obterProdutoMapaParaItemEncomenda(item) {
     const produtos = await carregarProdutosMapaEncomendas();
-    let produto = produtos.find(candidato => produtoCorrespondeItemEncomenda(candidato, item));
+    let produto = encontrarProdutoMapaItemEncomenda(produtos, item);
     if (!produto) produto = criarProdutoFallbackEncomenda(item);
     if (produto && !mapasProdutos.some(candidato => String(candidato.id) === String(produto.id))) {
         mapasProdutos = [produto, ...mapasProdutos];
