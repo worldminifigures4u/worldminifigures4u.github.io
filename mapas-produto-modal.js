@@ -1806,7 +1806,6 @@ function garantirGaleriaProdutoMapa() {
     modal.querySelector(".mapas-produto-galeria-seguinte")?.addEventListener("click", () => navegarGaleriaProdutoMapa(1));
     document.addEventListener("keydown", (evento) => {
         if (modal.hidden) return;
-        if (evento.key === "Escape") fecharGaleriaProdutoMapa();
         if (evento.key === "ArrowLeft") navegarGaleriaProdutoMapa(-1);
         if (evento.key === "ArrowRight") navegarGaleriaProdutoMapa(1);
     });
@@ -2466,6 +2465,25 @@ async function guardarEdicaoProdutoMapa(evento) {
     }
 }
 
+
+// Esc: fecha primeiro a galeria de fotos; se não houver galeria aberta, fecha a ficha do produto.
+// Corre na fase de captura e pára o evento para as páginas (Encomendas, Compras...) não fecharem
+// também o modal que está por baixo.
+window.addEventListener("keydown", (evento) => {
+    if (evento.key !== "Escape" || evento.defaultPrevented) return;
+    if (document.body.classList.contains("fp-dialogo-site-aberto")) return;
+    const galeria = document.getElementById("mapas-produto-galeria-modal");
+    const ficha = document.getElementById("mapas-produto-modal");
+    if (galeria && !galeria.hidden) {
+        fecharGaleriaProdutoMapa();
+    } else if (ficha && !ficha.hidden) {
+        fecharEdicaoProdutoMapa();
+    } else {
+        return;
+    }
+    evento.preventDefault();
+    evento.stopImmediatePropagation();
+}, true);
 
 window.MapasProdutoModal = {
   abrirFicha: abrirFichaProdutoMapa,

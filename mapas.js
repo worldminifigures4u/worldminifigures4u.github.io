@@ -61,7 +61,7 @@ var __mapasProdutoModalPromessa = null;
 function garantirMapasProdutoModal() {
     if (window.MapasProdutoModal) return Promise.resolve();
     if (!__mapasProdutoModalPromessa) {
-        __mapasProdutoModalPromessa = carregarScriptAdmin("mapas-produto-modal.js?v=20261003-preco-dividido");
+        __mapasProdutoModalPromessa = carregarScriptAdmin("mapas-produto-modal.js?v=20261006-esc-ficha");
     }
     return __mapasProdutoModalPromessa;
 }
@@ -952,9 +952,6 @@ window.addEventListener("scroll", agendarRenderVirtualMapa, { passive: true });
 window.addEventListener("resize", () => {
     agendarRenderVirtualMapa();
     atualizarScrollHorizontalTopoMapa();
-});
-document.addEventListener("keydown", evento => {
-    if (evento.key === "Escape") fecharEdicaoProdutoMapa();
 });
 
 iniciarMapas();
