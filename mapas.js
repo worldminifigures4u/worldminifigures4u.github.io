@@ -569,15 +569,15 @@ function criarLinhaProdutoMapa(produto) {
             td.appendChild(botao);
         } else {
             const texto = valorCelulaMapa(produto, coluna);
-            if (coluna.chave === "tema" || coluna.chave === "subtema") {
+            if (coluna.chave === "tema" || coluna.chave === "subtema" || coluna.chave === "referencia") {
                 const span = document.createElement("span");
                 span.className = "mapas-celula-texto-2linhas";
-                span.textContent = texto;
+                // Referências compostas (ex. "PG1865/KF123") podem passar à 2.ª linha depois da "/".
+                span.textContent = coluna.chave === "referencia" ? String(texto || "").replace(/\//g, "/\u200B") : texto;
                 if (texto) span.title = String(texto);
                 td.appendChild(span);
             } else {
                 td.textContent = texto;
-                if (coluna.chave === "referencia" && texto) td.title = String(texto);
             }
         }
         if (coluna.chave === "stock" && Number(produto.stock || 0) <= 0) td.classList.add("sem-stock");

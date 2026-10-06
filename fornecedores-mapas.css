@@ -1763,6 +1763,7 @@ body.pagina-mapas-admin > main.fornecedores-admin {
 }
 
 .pagina-mapas-admin .mapas-produtos-tabela.mapas-com-foto .mapas-col-nome,
+.pagina-mapas-admin .mapas-produtos-tabela.mapas-com-foto .mapas-col-ref,
 .pagina-mapas-admin .mapas-produtos-tabela.mapas-com-foto .mapas-col-tema,
 .pagina-mapas-admin .mapas-produtos-tabela.mapas-com-foto .mapas-col-subtema {
     white-space: normal;
@@ -1795,6 +1796,10 @@ body.pagina-mapas-admin > main.fornecedores-admin {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+}
+
+.pagina-mapas-admin .mapas-produtos-tabela.mapas-com-foto .mapas-col-ref .mapas-celula-texto-2linhas {
+    overflow-wrap: anywhere;
 }
 
 .pagina-mapas-admin .mapas-produtos-tabela.mapas-sem-foto .mapas-celula-texto-2linhas {
