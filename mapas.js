@@ -957,4 +957,24 @@ document.addEventListener("keydown", evento => {
     if (evento.key === "Escape") fecharEdicaoProdutoMapa();
 });
 
+// Escrever em qualquer sítio da página (sem campo ativo nem modal aberto) vai direto para a pesquisa.
+function haModalAbertoMapa() {
+    if (/modal-aberto|galeria-aberta/.test(document.body.className)) return true;
+    return Array.from(document.querySelectorAll('[class*="modal"]:not([hidden]), dialog[open]'))
+        .some(elemento => elemento.getClientRects().length && getComputedStyle(elemento).position === "fixed");
+}
+
+document.addEventListener("keydown", evento => {
+    if (evento.defaultPrevented || evento.ctrlKey || evento.metaKey || evento.altKey) return;
+    if (!evento.key || evento.key.length !== 1 || evento.key === " ") return;
+    const ativo = document.activeElement;
+    if (ativo && (ativo.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(ativo.tagName))) return;
+    if (haModalAbertoMapa()) return;
+    const pesquisa = document.getElementById("fornecedor-pesquisa");
+    if (!pesquisa || pesquisa.disabled || !pesquisa.getClientRects().length) return;
+    pesquisa.focus();
+    const fim = pesquisa.value.length;
+    try { pesquisa.setSelectionRange(fim, fim); } catch (_) {}
+});
+
 iniciarMapas();
