@@ -1933,7 +1933,7 @@ function preencherFichaProdutoMapa(produto) {
         secaoDetalhes,
         "Stock",
         Number(produto.stock || 0),
-        { classeValor: Number(produto.stock || 0) <= 0 ? "sem-stock" : "" }
+        { classeValor: Number(produto.stock || 0) < 0 ? "sem-stock" : "" }
     );
     criarCampoLeituraMapa(secaoDetalhes, "preço compra", `${formatarEuroProdutoModal(produto.preco_compra)} €`);
     criarCampoLeituraMapa(secaoDetalhes, "preço venda", `${formatarEuroProdutoModal(produto.preco)} €`);

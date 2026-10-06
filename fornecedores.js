@@ -91,7 +91,7 @@ function garantirFornecedoresProdutoModal() {
     if (window.FornecedoresProdutoModal) return Promise.resolve();
     if (!__fornecedoresProdutoPromessa) {
         prepararContextoProdutoFornecedor();
-        __fornecedoresProdutoPromessa = carregarScriptAdmin("mapas-produto-modal.js?v=20261006-unidades-titulo")
+        __fornecedoresProdutoPromessa = carregarScriptAdmin("mapas-produto-modal.js?v=20261006-zero-sem-vermelho")
             .then(function () {
                 window.FornecedoresProdutoModal = {
                     abrir: function () {
@@ -3867,7 +3867,7 @@ function renderizarResultadosFornecedor() {
         }
 
         const stock = document.createElement("span");
-        stock.className = `fornecedor-stock ${Number(atual.stock || 0) <= 0 ? "sem-stock" : ""}`;
+        stock.className = `fornecedor-stock ${Number(atual.stock || 0) < 0 ? "sem-stock" : ""}`;
         stock.textContent = `Stock: ${Number(atual.stock || 0)}`;
         info.appendChild(stock);
 
@@ -4098,7 +4098,7 @@ function renderizarSelecionadosFornecedor() {
         ids.textContent = `${atual.referencia ? `Ref. ${atual.referencia} | ` : ""}SKU ${atual.sku || "-"}`;
         info.appendChild(ids);
         const stock = document.createElement("span");
-        stock.className = Number(atual.stock || 0) <= 0 ? "fornecedor-stock sem-stock" : "fornecedor-stock";
+        stock.className = Number(atual.stock || 0) < 0 ? "fornecedor-stock sem-stock" : "fornecedor-stock";
         stock.textContent = `Stock atual: ${Number(atual.stock || 0)}`;
         info.appendChild(stock);
         linha.appendChild(info);

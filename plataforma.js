@@ -2462,7 +2462,7 @@ function renderizarResultadosWallapop() {
         if (produto.stock !== null && produto.stock !== undefined && Number.isFinite(Number(produto.stock))) {
             const stock = Number(produto.stock);
             const stockInfo = document.createElement('span');
-            stockInfo.className = stock <= 0 ? 'plataforma-sem-stock' : 'plataforma-produto-stock';
+            stockInfo.className = stock < 0 ? 'plataforma-sem-stock' : 'plataforma-produto-stock';
             stockInfo.textContent = stock <= 0 ? `Stock: ${stock} | Sem stock` : `Stock: ${stock}`;
             info.appendChild(stockInfo);
         }
