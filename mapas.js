@@ -218,14 +218,14 @@ function produtoPassaPesquisaMapa(produto, termo) {
     const tokens = obterTermosBuscaFlexivelMapa(termoNormalizado);
     if (!tokens.length) return true;
 
-    const termosProduto = produto.termos_pesquisa || obterTermosBuscaFlexivelMapa(textoProduto);
+    // Admin: pesquisa exata (sem tolerância a erros de escrita, ao contrário da loja pública).
+    // Cada palavra escrita tem de aparecer tal e qual (ignora maiúsculas, acentos e pontuação).
     const nomeTokens = produto.termos_nome || obterTermosBuscaFlexivelMapa(produto.nome || "");
     return tokens.every((token) => {
         const tokenCompacto = compactarBuscaFlexivelMapa(token);
         if (/^v\d+$/.test(token)) return nomeTokens.includes(token);
         if (pesquisaFlexivel.includes(token)) return true;
-        if (tokenCompacto && pesquisaCompacta.includes(tokenCompacto)) return true;
-        return termoCorrespondeBuscaFlexivelMapa(token, termosProduto);
+        return Boolean(tokenCompacto && pesquisaCompacta.includes(tokenCompacto));
     });
 }
 
