@@ -132,68 +132,9 @@ function compactarBuscaFlexivelMapa(texto) {
     return normalizarBuscaFlexivelMapa(texto).replace(/\s+/g, "");
 }
 
-function reduzirLetrasRepetidasMapa(texto) {
-    return String(texto || "").replace(/([a-z0-9])\1+/g, "$1");
-}
-
 function obterTermosBuscaFlexivelMapa(texto) {
     const normalizado = normalizarBuscaFlexivelMapa(texto);
     return normalizado ? normalizado.split(" ").filter(Boolean) : [];
-}
-
-function distanciaEdicaoAteUmMapa(a, b) {
-    if (a === b) return true;
-    if (Math.abs(a.length - b.length) > 1) return false;
-
-    let i = 0;
-    let j = 0;
-    let diferencas = 0;
-
-    while (i < a.length && j < b.length) {
-        if (a[i] === b[j]) {
-            i += 1;
-            j += 1;
-            continue;
-        }
-
-        diferencas += 1;
-        if (diferencas > 1) return false;
-
-        if (a.length > b.length) {
-            i += 1;
-        } else if (b.length > a.length) {
-            j += 1;
-        } else {
-            i += 1;
-            j += 1;
-        }
-    }
-
-    if (i < a.length || j < b.length) diferencas += 1;
-    return diferencas <= 1;
-}
-
-function termoCorrespondeBuscaFlexivelMapa(termo, termosProduto) {
-    const termoReduzido = reduzirLetrasRepetidasMapa(termo);
-    return termosProduto.some((termoProduto) => {
-        const produtoReduzido = reduzirLetrasRepetidasMapa(termoProduto);
-        return termoProduto === termo
-            || produtoReduzido === termoReduzido
-            || termoProduto.startsWith(termo)
-            || produtoReduzido.startsWith(termoReduzido)
-            || termoProduto.includes(termo)
-            || produtoReduzido.includes(termoReduzido)
-            || (
-                termo.length >= 5
-                && termoProduto.length >= 5
-                && distanciaEdicaoAteUmMapa(termo, termoProduto)
-            )
-            || (
-                termoReduzido.length >= 5
-                && produtoReduzido.length >= 5
-                && distanciaEdicaoAteUmMapa(termoReduzido, produtoReduzido)
-            );
-    });
 }
 
 function produtoPassaPesquisaMapa(produto, termo) {
@@ -211,22 +152,13 @@ function produtoPassaPesquisaMapa(produto, termo) {
     const pesquisaCompacta = produto.pesquisa_compacta || compactarBuscaFlexivelMapa(textoProduto);
     const termoCompacto = compactarBuscaFlexivelMapa(termoNormalizado);
 
+    // Admin: pesquisa exata. O texto escrito tem de aparecer tal e qual, pela mesma ordem
+    // (ignora maiúsculas, acentos e pontuação). Sem tolerância a erros, ao contrário da loja.
+    if (!termoNormalizado) return true;
     if (haystack.includes(termo)) return true;
     if (pesquisaFlexivel.includes(termoNormalizado)) return true;
-    if (termoCompacto && pesquisaCompacta.includes(termoCompacto)) return true;
-
-    const tokens = obterTermosBuscaFlexivelMapa(termoNormalizado);
-    if (!tokens.length) return true;
-
-    // Admin: pesquisa exata (sem tolerância a erros de escrita, ao contrário da loja pública).
-    // Cada palavra escrita tem de aparecer tal e qual (ignora maiúsculas, acentos e pontuação).
-    const nomeTokens = produto.termos_nome || obterTermosBuscaFlexivelMapa(produto.nome || "");
-    return tokens.every((token) => {
-        const tokenCompacto = compactarBuscaFlexivelMapa(token);
-        if (/^v\d+$/.test(token)) return nomeTokens.includes(token);
-        if (pesquisaFlexivel.includes(token)) return true;
-        return Boolean(tokenCompacto && pesquisaCompacta.includes(tokenCompacto));
-    });
+    // Uma só palavra (ex. "wm691a") também encontra "WM691-A".
+    return Boolean(!termoNormalizado.includes(" ") && termoCompacto && pesquisaCompacta.includes(termoCompacto));
 }
 
 function normalizarSkuMapa(valor) {
