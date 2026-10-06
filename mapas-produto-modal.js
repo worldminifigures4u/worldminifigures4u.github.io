@@ -1518,7 +1518,6 @@ function renderizarHistoricoVendasMapa(conteudo, produto, encomendas) {
             const td = document.createElement("td");
             td.textContent = valor;
             td.dataset.coluna = String(indiceColuna + 1);
-            if (indiceColuna === 0) acrescentarDiasDesdeDataFornecedorMapa(td, dataRef);
             tr.appendChild(td);
         });
         tbody.appendChild(tr);
