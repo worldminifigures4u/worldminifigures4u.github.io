@@ -1201,6 +1201,22 @@ function obterChaveHistoricoFornecedorMapa(dataRef, fornecedor, tipo) {
     return `${data}|${fornecedorChave}|${tipoChave}`;
 }
 
+// Dias de calendário desde a data da encomenda ao fornecedor (ex. "12 dias"), ao lado da data.
+function acrescentarDiasDesdeDataFornecedorMapa(td, dataRef) {
+    const timestamp = obterTimestampFornecedorMapa(dataRef);
+    if (!timestamp) return;
+    const data = new Date(timestamp);
+    const inicioDia = new Date(data.getFullYear(), data.getMonth(), data.getDate());
+    const hoje = new Date();
+    const inicioHoje = new Date(hoje.getFullYear(), hoje.getMonth(), hoje.getDate());
+    const dias = Math.round((inicioHoje - inicioDia) / 86400000);
+    if (dias < 0) return;
+    const span = document.createElement("span");
+    span.className = "mapas-produto-historico-dias";
+    span.textContent = dias === 0 ? "hoje" : `${dias} ${dias === 1 ? "dia" : "dias"}`;
+    td.append(" ", span);
+}
+
 function renderizarHistoricoEncomendasFornecedorMapa(conteudo, produto, pedidos) {
     if (!conteudo) return;
     const linhasEncomendas = obterLinhasEncomendaFornecedorProdutoMapa(produto, pedidos).filter(({ item }) => {
@@ -1255,6 +1271,7 @@ function renderizarHistoricoEncomendasFornecedorMapa(conteudo, produto, pedidos)
                 const td = document.createElement("td");
                 td.textContent = valor;
                 td.dataset.coluna = String(indiceColuna + 1);
+                if (indiceColuna === 0) acrescentarDiasDesdeDataFornecedorMapa(td, linha.dataRef);
                 tr.appendChild(td);
             });
             tbody.appendChild(tr);
@@ -1288,6 +1305,7 @@ function renderizarHistoricoEncomendasFornecedorMapa(conteudo, produto, pedidos)
             const td = document.createElement("td");
             td.textContent = valor;
             td.dataset.coluna = String(indiceColuna + 1);
+            if (indiceColuna === 0) acrescentarDiasDesdeDataFornecedorMapa(td, dataRef);
             tr.appendChild(td);
         });
         tbody.appendChild(tr);
@@ -1500,6 +1518,7 @@ function renderizarHistoricoVendasMapa(conteudo, produto, encomendas) {
             const td = document.createElement("td");
             td.textContent = valor;
             td.dataset.coluna = String(indiceColuna + 1);
+            if (indiceColuna === 0) acrescentarDiasDesdeDataFornecedorMapa(td, dataRef);
             tr.appendChild(td);
         });
         tbody.appendChild(tr);
