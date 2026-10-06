@@ -61,7 +61,7 @@ var __mapasProdutoModalPromessa = null;
 function garantirMapasProdutoModal() {
     if (window.MapasProdutoModal) return Promise.resolve();
     if (!__mapasProdutoModalPromessa) {
-        __mapasProdutoModalPromessa = carregarScriptAdmin("mapas-produto-modal.js?v=20261006-zero-sem-vermelho");
+        __mapasProdutoModalPromessa = carregarScriptAdmin("mapas-produto-modal.js?v=20261006-zero-vermelho");
     }
     return __mapasProdutoModalPromessa;
 }
@@ -580,7 +580,7 @@ function criarLinhaProdutoMapa(produto) {
                 td.textContent = texto;
             }
         }
-        if (coluna.chave === "stock" && Number(produto.stock || 0) < 0) td.classList.add("sem-stock");
+        if (coluna.chave === "stock" && Number(produto.stock || 0) <= 0) td.classList.add("sem-stock");
         tr.appendChild(td);
     });
     return tr;
