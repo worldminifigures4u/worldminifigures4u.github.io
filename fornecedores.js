@@ -1290,6 +1290,23 @@ function obterDataOsProdutoFornecedor(produto, fornecedorNome) {
     return formatarDataAjustePedidoFornecedor(datasOs[datasOs.length - 1] || "");
 }
 
+// Data da marcação EX: a gravada no item ao marcar EX (data_os) ou, nas antigas, a última
+// marcação "ex" no histórico do produto com este fornecedor.
+function obterDataExItemPedidoFornecedor(item, produto = null, fornecedorNome = "") {
+    const doItem = formatarDataAjustePedidoFornecedor(item?.data_os || "");
+    if (doItem) return doItem;
+    if (!produto || !fornecedorNome) return "";
+    const fornecedores = obterObjetoFornecedoresProduto(produto);
+    const chaveNormalizada = normalizarChaveFornecedor(fornecedorNome);
+    const chave = Object.keys(fornecedores).find((atual) => normalizarChaveFornecedor(atual) === chaveNormalizada);
+    if (!chave) return "";
+    const datasEx = (normalizarMarcacaoFornecedor(fornecedores[chave]).historico || [])
+        .filter((evento) => String(evento?.tipo || "").toLowerCase() === "ex" && evento.data)
+        .map((evento) => evento.data)
+        .sort();
+    return formatarDataAjustePedidoFornecedor(datasEx[datasEx.length - 1] || "");
+}
+
 function obterDataOsItemPedidoFornecedor(item, produto = null, fornecedorNome = "") {
     return formatarDataAjustePedidoFornecedor(item?.data_os || "")
         || obterDataOsProdutoFornecedor(produto, fornecedorNome);
@@ -5143,8 +5160,16 @@ function renderizarPedidoFornecedorProdutosTabela(caixa, pedido) {
             exSpan.className = "fornecedor-ajuste-os fornecedor-ajuste-ex ativo";
             exSpan.textContent = "EX";
             origemCelula.appendChild(exSpan);
+            // Debaixo do EX vai a data em que foi marcado EX (não a data da substituição).
+            const dataEx = obterDataExItemPedidoFornecedor(item, produtoAtual, pedido.fornecedor);
+            if (dataEx) {
+                const dataExSpan = document.createElement("span");
+                dataExSpan.className = "fornecedor-ajuste-os";
+                dataExSpan.textContent = dataEx;
+                origemCelula.appendChild(dataExSpan);
+            }
         }
-        if (item.origem_ajuste) {
+        if (item.origem_ajuste && !marcadoEx) {
             const textoOrigem = obterTextoOrigemAjusteItemPedidoFornecedor(item, pedido);
             const dataOs = obterDataOsItemPedidoFornecedor(item, produtoAtual, pedido.fornecedor);
             if (textoOrigem && textoOrigem !== dataOs) {
