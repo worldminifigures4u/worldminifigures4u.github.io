@@ -1217,6 +1217,17 @@ function acrescentarDiasDesdeDataFornecedorMapa(td, dataRef) {
     td.append(" ", span);
 }
 
+// Preço da figura nessa encomenda: € estimado (não comprada, com totais), $ (lista do fornecedor) ou €.
+function textoPrecoItemHistoricoFornecedorMapa(item) {
+    const estimado = Number(item?.preco_estimado_eur || 0);
+    if (estimado > 0) return `${formatarEuroProdutoModal(estimado)} € (estimado)`;
+    const preco = Number(item?.preco_custo ?? item?.preco ?? 0);
+    const usd = item?.preco_custo_provisorio || String(item?.preco_custo_moeda || "").toUpperCase() === "USD";
+    if (preco > 0) return usd ? `$${formatarEuroProdutoModal(preco)}` : `${formatarEuroProdutoModal(preco)} €`;
+    const lista = Number(item?.preco_lista_usd || 0);
+    return lista > 0 ? `$${formatarEuroProdutoModal(lista)}` : "—";
+}
+
 function renderizarHistoricoEncomendasFornecedorMapa(conteudo, produto, pedidos) {
     if (!conteudo) return;
     const linhasEncomendas = obterLinhasEncomendaFornecedorProdutoMapa(produto, pedidos).filter(({ item }) => {
@@ -1242,7 +1253,7 @@ function renderizarHistoricoEncomendasFornecedorMapa(conteudo, produto, pedidos)
     tabela.className = "mapas-produto-historico-rececoes-tabela mapas-produto-historico-fornecedores-tabela";
     const thead = document.createElement("thead");
     const linhaCabecalho = document.createElement("tr");
-    ["Data", "Encomenda", "Fornecedor", "Pedido", "Recebido", "Estado"].forEach((rotulo) => {
+    ["Data", "Encomenda", "Fornecedor", "Pedido", "Recebido", "Preço", "Estado"].forEach((rotulo) => {
         const th = document.createElement("th");
         th.textContent = rotulo;
         linhaCabecalho.appendChild(th);
@@ -1266,6 +1277,7 @@ function renderizarHistoricoEncomendasFornecedorMapa(conteudo, produto, pedidos)
                 linha.fornecedor || "—",
                 "—",
                 "—",
+                "—",
                 linha.estadoTexto || "—"
             ].forEach((valor, indiceColuna) => {
                 const td = document.createElement("td");
@@ -1280,7 +1292,9 @@ function renderizarHistoricoEncomendasFornecedorMapa(conteudo, produto, pedidos)
 
         const { pedido, item, pedidoQtd, recebido, dataRef } = linha;
         const faltaOs = Math.max(0, Math.floor(Number(item?.falta_os || 0)));
-        const emFalta = faltaOs > 0;
+        const naoCompradaItem = String(item?.estado_fornecedor || "").trim().toUpperCase() === "NAO_COMPRAR"
+            || String(item?.origem_ajuste || "").trim() === "nao-comprar";
+        const emFalta = faltaOs > 0 && !naoCompradaItem;
         const emEx = Boolean(item?.marcado_ex) || String(item?.estado_fornecedor || "").trim().toUpperCase() === "EX";
         if (emFalta) {
             tr.classList.add("mapas-produto-historico-os");
@@ -1291,8 +1305,9 @@ function renderizarHistoricoEncomendasFornecedorMapa(conteudo, produto, pedidos)
         }
         const naoComprada = String(item?.estado_fornecedor || "").trim().toUpperCase() === "NAO_COMPRAR"
             || String(item?.origem_ajuste || "").trim() === "nao-comprar";
+        const precoTexto = textoPrecoItemHistoricoFornecedorMapa(item);
         if (naoComprada) tr.classList.add("mapas-produto-historico-nao-comprada");
-        const estadoTexto = emFalta
+        const estadoTexto = emFalta && !naoComprada
             ? "Sem stock no fornecedor"
             : emEx
                 ? "Preço muito alto neste fornecedor (EX)"
@@ -1305,6 +1320,7 @@ function renderizarHistoricoEncomendasFornecedorMapa(conteudo, produto, pedidos)
             pedido.fornecedor || "—",
             String(pedidoQtd || "—"),
             String(recebido),
+            precoTexto,
             estadoTexto
         ].forEach((valor, indiceColuna) => {
             const td = document.createElement("td");

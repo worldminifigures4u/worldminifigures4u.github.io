@@ -91,7 +91,7 @@ function garantirFornecedoresProdutoModal() {
     if (window.FornecedoresProdutoModal) return Promise.resolve();
     if (!__fornecedoresProdutoPromessa) {
         prepararContextoProdutoFornecedor();
-        __fornecedoresProdutoPromessa = carregarScriptAdmin("mapas-produto-modal.js?v=20261008-nao-comprar")
+        __fornecedoresProdutoPromessa = carregarScriptAdmin("mapas-produto-modal.js?v=20261008-nc-historico")
             .then(function () {
                 window.FornecedoresProdutoModal = {
                     abrir: function () {
@@ -110,7 +110,7 @@ function garantirFornecedoresProdutoModal() {
 function garantirFornecedoresEdicaoPedido() {
     if (window.FornecedoresEdicaoPedido) return Promise.resolve();
     if (!__fornecedoresEdicaoPromessa) {
-        __fornecedoresEdicaoPromessa = carregarScriptAdmin("fornecedores-edicao-pedido.js?v=20261008-nao-comprar");
+        __fornecedoresEdicaoPromessa = carregarScriptAdmin("fornecedores-edicao-pedido.js?v=20261008-nc-historico");
     }
     return __fornecedoresEdicaoPromessa;
 }
@@ -891,7 +891,9 @@ function normalizarItemPedidoFornecedor(item) {
     const estadoFornecedor = String(item.estado_fornecedor || "").trim();
     const ignoradoLista = itemPedidoIgnoradoListaFornecedor(item);
     const marcadoEx = Boolean(item.marcado_ex) || estadoFornecedor.toUpperCase() === "EX";
-    const faltaOs = marcadoEx || ignoradoLista
+    // "Não comprar" tem 0 a receber por escolha, não por falta: nunca conta como OS.
+    const naoComprar = itemPedidoNaoComprarFornecedor(item);
+    const faltaOs = marcadoEx || ignoradoLista || naoComprar
         ? 0
         : Math.max(0, Math.floor(Number(item.falta_os || Math.max(0, quantidadeOriginal - quantidade)) || 0));
     const precoCusto = Number(item.preco_custo ?? item.custo ?? item.preco_compra ?? item.preco_fornecedor ?? item.preco ?? 0);
