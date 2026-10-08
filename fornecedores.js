@@ -5274,7 +5274,8 @@ function renderizarPedidoFornecedorProdutosTabela(caixa, pedido) {
                 origemCelula.appendChild(dataExSpan);
             }
         }
-        if (item.origem_ajuste && !marcadoEx && !naoComprarItem) {
+        // Uma só data por figura: OS/EX/Não comprar mostram a sua; a data de ajuste só aparece sem marcação.
+        if (item.origem_ajuste && !marcadoEx && !naoComprarItem && !(faltaOs > 0)) {
             // Só a data em que a figura foi adicionada/ajustada (sem texto "Ajustado pela lista…").
             const dataAjuste = formatarDataAjustePedidoFornecedor(item.data_origem_ajuste || pedido?.atualizado_em || "");
             const dataOs = faltaOs > 0 ? obterDataOsItemPedidoFornecedor(item, produtoAtual, pedido.fornecedor) : "";
