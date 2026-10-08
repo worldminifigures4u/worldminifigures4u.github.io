@@ -6199,3 +6199,5 @@ body.fornecedores-vista-lista .fornecedores-coluna-direita .fornecedor-pedido-li
     justify-self: start !important;
     margin-left: 0;
 }
+
+.fornecedor-pedido-por-receber { color: var(--fp-cor-erro, #ff6b6b); font-weight: 800; }

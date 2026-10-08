@@ -5099,9 +5099,14 @@ function formatarResumoCartaoPedidoFornecedor(totaisPedido) {
         `${totaisPedido.itens} ${totaisPedido.itens === 1 ? "artigo" : "artigos"}`,
         `${totaisPedido.quantidade} ${totaisPedido.quantidade === 1 ? "unidade" : "unidades"}`
     ];
-    // "por receber" so aparece quando ja houve rececao parcial (OS/EX ficam apenas no detalhe)
-    if (totaisPedido.pendente !== totaisPedido.quantidade) partes.push(`${totaisPedido.pendente} por receber`);
     return partes.join(" · ");
+}
+
+// "por receber" só quando já houve receção parcial e ainda falta algo (fica a vermelho).
+function obterTextoPorReceberCartaoPedidoFornecedor(totaisPedido) {
+    const pendente = Math.max(0, Number(totaisPedido?.pendente || 0));
+    if (pendente <= 0 || pendente === Number(totaisPedido?.quantidade || 0)) return "";
+    return `${pendente} por receber`;
 }
 
 function formatarResumoPedidoFornecedor(totaisPedido) {
@@ -5723,7 +5728,14 @@ function renderizarPedidosFornecedores() {
                 textoDiasEncomendaFornecedor(pedido)
             ].filter(Boolean).join(" · ")),
             criarElementoPedidoFornecedor("span", "fornecedor-pedido-fornecedor-nome", pedido.fornecedor || "Fornecedor"),
-            criarElementoPedidoFornecedor("span", "fornecedor-pedido-resumo", resumo),
+            (() => {
+                const resumoEl = criarElementoPedidoFornecedor("span", "fornecedor-pedido-resumo", resumo);
+                const porReceber = obterTextoPorReceberCartaoPedidoFornecedor(totaisPedido);
+                if (porReceber) {
+                    resumoEl.append(" · ", criarElementoPedidoFornecedor("span", "fornecedor-pedido-por-receber", porReceber));
+                }
+                return resumoEl;
+            })(),
             criarElementoPedidoFornecedor("span", `estado-encomenda fornecedor-pedido-estado-linha ${obterClasseBadgeEstadoPedidoFornecedor(pedido.estado)}`, pedido.estado || "A preparar")
         );
         if (pedidoFornecedorTemPrecosUsdAntigos(pedido)) {
