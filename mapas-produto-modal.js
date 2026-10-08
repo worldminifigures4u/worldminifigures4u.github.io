@@ -1114,8 +1114,9 @@ function obterDataMarcacaoEncomendadaMapa(produto, fornecedorNome) {
     return "";
 }
 
+// Mesma regra da lista das Compras: data em que passou a "Encomendada"; senão, data de criação.
 function obterDataLinhaEncomendaFornecedorMapa(produto, pedido) {
-    return pedido?.criado_em || pedido?.created_at || pedido?.data || "";
+    return pedido?.data_encomendada || pedido?.criado_em || pedido?.created_at || pedido?.data || "";
 }
 
 function obterDataHistoricoItemFornecedorMapa(produto, pedido, item, pedidoQtd, recebido) {
