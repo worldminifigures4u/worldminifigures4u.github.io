@@ -99,14 +99,15 @@ function pareceQuantidadeListaFinalFornecedor(valor) {
     const texto = String(valor || "").trim();
     if (!/^\d+$/.test(texto)) return false;
     const numero = Number(texto);
-    return Number.isInteger(numero) && numero > 0 && numero < 10000;
+    // 0 também é quantidade válida: as linhas OUT OF STOCK do fornecedor vêm com QTY 0.
+    return Number.isInteger(numero) && numero >= 0 && numero < 10000;
 }
 
 function parecePrecoListaFinalFornecedor(valor) {
     const texto = String(valor || "").trim();
     if (!texto) return false;
     if (/[$€]/.test(texto)) return true;
-    return /^\d+[,.]\d{1,4}$/.test(texto);
+    return /^\d+([,.]\d{1,4})?$/.test(texto);
 }
 
 function textoIndicaSemStockListaFinalFornecedor(valor) {
@@ -215,11 +216,12 @@ function analisarLinhaListaFinalFornecedor(linha, numeroLinha, estadoParser = nu
     const referencia = partes[0];
     const quantidade = Math.floor(converterNumeroListaFornecedor(partes[1]));
     const semStock = textoIndicaSemStockListaFinalFornecedor(partes.slice(2).join(" "));
-    if (!referencia || quantidade <= 0) {
+    if (!referencia || (quantidade <= 0 && !semStock)) {
         return { erro: `linha ${numeroLinha}: referência ou quantidade inválida`, original: linha };
     }
 
-    const precoTexto = partes.slice(2).join(" ");
+    // Só a coluna a seguir à quantidade é o preço (juntar tudo transformava "1  5" em 15).
+    const precoTexto = partes[2] || "";
     const precoCusto = semStock ? 0 : Math.max(0, converterNumeroListaFornecedor(precoTexto));
     return {
         referencia,
@@ -227,7 +229,7 @@ function analisarLinhaListaFinalFornecedor(linha, numeroLinha, estadoParser = nu
         preco_custo: precoCusto,
         preco_lista_usd: precoCusto,
         sem_stock_fornecedor: semStock,
-        quantidade_os: semStock ? quantidade : null,
+        quantidade_os: semStock && quantidade > 0 ? quantidade : null,
         original: linha
     };
 }
@@ -250,6 +252,8 @@ function deveCalcularCustoRealListaAtualFornecedor(opcoes = {}) {
 
 function fundirItemListaFinalComExistenteFornecedor(importado, existente) {
     const veioSemStock = Boolean(importado?.sem_stock_fornecedor);
+    // Se a figura estava "Ignorado na lista" (de uma lista anterior) e voltou nesta lista, deixa de estar ignorada.
+    const existenteIgnorado = Boolean(existente) && itemIgnoradoListaEdicaoFornecedor(existente);
     if (veioSemStock) {
         const base = existente || importado;
         const quantidadeAtualAnterior = Math.max(0, Math.floor(Number(base.quantidade || 0)));
@@ -282,8 +286,8 @@ function fundirItemListaFinalComExistenteFornecedor(importado, existente) {
             data_os: base.data_os || dataOsHojeFornecedor(),
             estado_fornecedor: "OS",
             marcado_ex: false,
-            origem_ajuste: base.origem_ajuste || "lista-final",
-            data_origem_ajuste: base.data_origem_ajuste || dataOsAgoraFornecedor(),
+            origem_ajuste: existenteIgnorado ? "lista-final" : (base.origem_ajuste || "lista-final"),
+            data_origem_ajuste: existenteIgnorado ? dataOsAgoraFornecedor() : (base.data_origem_ajuste || dataOsAgoraFornecedor()),
             recebido: Math.min(Math.max(0, Number(base.recebido || 0)), quantidadeFinal),
             preco_custo: precoCusto,
             preco: precoCusto
@@ -305,9 +309,9 @@ function fundirItemListaFinalComExistenteFornecedor(importado, existente) {
     const estadoFornecedorAnterior = String(existente.estado_fornecedor || "").trim();
     const estadoFornecedor = faltaOs > 0
         ? "OS"
-        : (["OS", "EX"].includes(estadoFornecedorAnterior.toUpperCase()) ? "" : estadoFornecedorAnterior);
-    const origemAtual = String(existente.origem_ajuste || "").trim();
-    const dataOrigemAtual = existente.data_origem_ajuste || null;
+        : (["OS", "EX", "IGNORADO_LISTA"].includes(estadoFornecedorAnterior.toUpperCase()) ? "" : estadoFornecedorAnterior);
+    const origemAtual = existenteIgnorado ? "lista-final" : String(existente.origem_ajuste || "").trim();
+    const dataOrigemAtual = existenteIgnorado ? dataOsAgoraFornecedor() : (existente.data_origem_ajuste || null);
     const origemAjuste = aumentouQuantidade ? (origemAtual || "reforco") : origemAtual;
     const dataOrigemAjuste = aumentouQuantidade ? (dataOrigemAtual || dataOsAgoraFornecedor()) : dataOrigemAtual;
     const precoCusto = Math.max(0, Number(importado.preco_custo ?? importado.preco ?? existente.preco_custo ?? existente.preco ?? 0) || 0);
