@@ -1385,6 +1385,31 @@ function montarSecaoPrecosFornecedoresMapa(campos, produto) {
     tabela.append(thead, tbody);
     secao.appendChild(tabela);
     campos.appendChild(secao);
+
+    // A data mostrada é a da encomenda (como no Histórico a fornecedores): última encomenda desse
+    // fornecedor com esta figura comprada (ou não comprada, se o preço for estimado).
+    const produtoId = String(produto.id || "");
+    secao.dataset.produtoId = produtoId;
+    carregarEncomendasFornecedorMapa(true).then((pedidos) => {
+        if (secao.dataset.produtoId !== produtoId || !secao.isConnected) return;
+        const encomendas = obterLinhasEncomendaFornecedorProdutoMapa(produto, pedidos);
+        Array.from(tbody.rows).forEach((tr, indice) => {
+            const linha = linhas[indice];
+            if (!linha) return;
+            const chave = normalizarTextoProdutoMapa(linha.fornecedor);
+            const encomenda = encomendas.find(({ pedido, item }) => {
+                if (normalizarTextoProdutoMapa(pedido?.fornecedor) !== chave) return false;
+                const naoComprada = String(item?.estado_fornecedor || "").toUpperCase() === "NAO_COMPRAR"
+                    || String(item?.estado_fornecedor || "").toUpperCase() === "EX"
+                    || item?.marcado_ex === true;
+                return linha.estimado ? naoComprada : (!naoComprada && Number(item?.quantidade || 0) > 0);
+            });
+            const celulaData = tr.cells[2];
+            if (!encomenda?.dataRef || !celulaData) return;
+            celulaData.textContent = formatarDataEncomendaFornecedorMapa(encomenda.dataRef);
+            acrescentarDiasDesdeDataFornecedorMapa(celulaData, encomenda.dataRef);
+        });
+    });
 }
 
 function montarSecaoHistoricoRececoesMapa(campos, produto) {

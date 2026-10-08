@@ -91,7 +91,7 @@ function garantirFornecedoresProdutoModal() {
     if (window.FornecedoresProdutoModal) return Promise.resolve();
     if (!__fornecedoresProdutoPromessa) {
         prepararContextoProdutoFornecedor();
-        __fornecedoresProdutoPromessa = carregarScriptAdmin("mapas-produto-modal.js?v=20261008-nc-historico")
+        __fornecedoresProdutoPromessa = carregarScriptAdmin("mapas-produto-modal.js?v=20261008-data-preco")
             .then(function () {
                 window.FornecedoresProdutoModal = {
                     abrir: function () {
@@ -110,7 +110,7 @@ function garantirFornecedoresProdutoModal() {
 function garantirFornecedoresEdicaoPedido() {
     if (window.FornecedoresEdicaoPedido) return Promise.resolve();
     if (!__fornecedoresEdicaoPromessa) {
-        __fornecedoresEdicaoPromessa = carregarScriptAdmin("fornecedores-edicao-pedido.js?v=20261008-so-datas");
+        __fornecedoresEdicaoPromessa = carregarScriptAdmin("fornecedores-edicao-pedido.js?v=20261008-data-preco");
     }
     return __fornecedoresEdicaoPromessa;
 }
@@ -4689,7 +4689,9 @@ async function sincronizarOsProdutosFornecedor(itens, fornecedorNome) {
     return sincronizarHistoricoPedidosFornecedor(itens, fornecedorNome, { modo: "criar" });
 }
 
-async function sincronizarPrecoCompraProdutosFornecedor(itens, fornecedorNome = "") {
+async function sincronizarPrecoCompraProdutosFornecedor(itens, fornecedorNome = "", dataPedido = "") {
+    // Data guardada com o preço = data da encomenda (a mesma do "Histórico a fornecedores"), não o dia em que se grava.
+    const dataPreco = dataPedido || undefined;
     if (!fornecedoresClient) return 0;
     const porProduto = new Map();
     (itens || []).forEach(item => {
@@ -4719,7 +4721,7 @@ async function sincronizarPrecoCompraProdutosFornecedor(itens, fornecedorNome = 
         const idAtualizado = String(data?.id || produtoAtual?.id || item.id || "");
         let fornecedoresAtualizados = null;
         const produtoLocal = fornecedorProdutos.find(produto => String(produto.id || "") === idAtualizado) || produtoAtual;
-        fornecedoresAtualizados = definirPrecoCompraFornecedorNoProduto(produtoLocal, fornecedorNome, precoCompra, undefined, {
+        fornecedoresAtualizados = definirPrecoCompraFornecedorNoProduto(produtoLocal, fornecedorNome, precoCompra, dataPreco, {
             figura: item?.preco_custo_figura,
             portes: item?.preco_custo_portes
         });
@@ -4759,7 +4761,7 @@ async function sincronizarPrecoCompraProdutosFornecedor(itens, fornecedorNome = 
     });
     for (const { produtoAtual, precoEstimado } of estimados.values()) {
         const produtoLocal = fornecedorProdutos.find(produto => String(produto.id || "") === String(produtoAtual.id)) || produtoAtual;
-        const fornecedoresAtualizados = definirPrecoCompraFornecedorNoProduto(produtoLocal, fornecedorNome, precoEstimado, undefined, null, { estimado: true });
+        const fornecedoresAtualizados = definirPrecoCompraFornecedorNoProduto(produtoLocal, fornecedorNome, precoEstimado, dataPreco, null, { estimado: true });
         if (!fornecedoresAtualizados) continue;
         const { error: erroEstimado } = await fornecedoresClient.rpc("atualizar_fornecedores_produto_admin", {
             p_id: String(produtoAtual.id),
