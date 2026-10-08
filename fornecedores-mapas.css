@@ -5723,7 +5723,7 @@ body.fornecedores-vista-lista .fornecedores-coluna-direita .fornecedor-pedido-ca
 body.fornecedores-vista-lista .fornecedores-coluna-direita .fornecedor-pedido-cabecalho .admin-encomenda-linha.fornecedor-pedido-linha-cabecalho,
 body.fornecedores-vista-lista .fornecedores-coluna-direita .fornecedor-pedido-cabecalho .admin-encomenda-linha.fornecedor-pedido-linha-cabecalho.com-destino-selecao {
     display: grid !important;
-    grid-template-columns: 200px 230px minmax(130px, 1fr) minmax(320px, 2fr) 160px auto !important;
+    grid-template-columns: minmax(290px, 1.3fr) minmax(250px, 1fr) minmax(140px, .8fr) minmax(300px, 1.5fr) 150px auto !important;
     grid-template-areas: "codigo data fornecedor resumo estado imprimir" "destino destino destino destino destino destino" !important;
     align-items: center !important;
     column-gap: 14px !important;
