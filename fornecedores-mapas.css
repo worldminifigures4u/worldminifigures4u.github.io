@@ -5640,8 +5640,9 @@ body.fornecedores-vista-preparar #fornecedores-escolher {
     grid-column: 1 !important;
 }
 body.fornecedores-vista-lista .fornecedores-coluna-direita {
-    width: min(1100px, 100%);
-    justify-self: center;
+    /* Lista de encomendas com a largura toda, como os modais, para a informação caber sem cortes. */
+    width: 100%;
+    justify-self: stretch;
 }
 .fornecedores-recolher-painel { display: none !important; }
 body.fornecedores-vista-lista .fornecedores-coluna-direita .fornecedores-cabecalho-lista {
@@ -5722,7 +5723,7 @@ body.fornecedores-vista-lista .fornecedores-coluna-direita .fornecedor-pedido-ca
 body.fornecedores-vista-lista .fornecedores-coluna-direita .fornecedor-pedido-cabecalho .admin-encomenda-linha.fornecedor-pedido-linha-cabecalho,
 body.fornecedores-vista-lista .fornecedores-coluna-direita .fornecedor-pedido-cabecalho .admin-encomenda-linha.fornecedor-pedido-linha-cabecalho.com-destino-selecao {
     display: grid !important;
-    grid-template-columns: 170px 210px minmax(110px, 1fr) minmax(170px, 1.2fr) 150px auto !important;
+    grid-template-columns: 200px 230px minmax(130px, 1fr) minmax(320px, 2fr) 160px auto !important;
     grid-template-areas: "codigo data fornecedor resumo estado imprimir" "destino destino destino destino destino destino" !important;
     align-items: center !important;
     column-gap: 14px !important;
