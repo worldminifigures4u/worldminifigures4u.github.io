@@ -91,7 +91,7 @@ function garantirFornecedoresProdutoModal() {
     if (window.FornecedoresProdutoModal) return Promise.resolve();
     if (!__fornecedoresProdutoPromessa) {
         prepararContextoProdutoFornecedor();
-        __fornecedoresProdutoPromessa = carregarScriptAdmin("mapas-produto-modal.js?v=20261006-zero-vermelho")
+        __fornecedoresProdutoPromessa = carregarScriptAdmin("mapas-produto-modal.js?v=20261008-nao-comprar")
             .then(function () {
                 window.FornecedoresProdutoModal = {
                     abrir: function () {
@@ -110,7 +110,7 @@ function garantirFornecedoresProdutoModal() {
 function garantirFornecedoresEdicaoPedido() {
     if (window.FornecedoresEdicaoPedido) return Promise.resolve();
     if (!__fornecedoresEdicaoPromessa) {
-        __fornecedoresEdicaoPromessa = carregarScriptAdmin("fornecedores-edicao-pedido.js?v=20261008-preco-usd");
+        __fornecedoresEdicaoPromessa = carregarScriptAdmin("fornecedores-edicao-pedido.js?v=20261008-nao-comprar");
     }
     return __fornecedoresEdicaoPromessa;
 }
@@ -1193,6 +1193,7 @@ function serializarItemPedidoFornecedor(item) {
         preco_custo_provisorio: Boolean(normalizado.preco_custo_provisorio),
         // Preço original da lista do fornecedor (USD): permite recalcular o custo ao voltar a gravar.
         ...(Number(normalizado.preco_lista_usd) > 0 ? { preco_lista_usd: Number(normalizado.preco_lista_usd) } : {}),
+        ...(Number(normalizado.preco_estimado_eur) > 0 ? { preco_estimado_eur: Number(normalizado.preco_estimado_eur) } : {}),
         ...(Number.isFinite(Number(normalizado.preco_custo_figura)) && normalizado.preco_custo_figura !== undefined && normalizado.preco_custo_figura !== null
             ? { preco_custo_figura: Number(normalizado.preco_custo_figura) } : {}),
         ...(Number.isFinite(Number(normalizado.preco_custo_portes)) && normalizado.preco_custo_portes !== undefined && normalizado.preco_custo_portes !== null
@@ -4429,7 +4430,7 @@ function definirEventoFornecedorNoProduto(produto, fornecedorNome, tipo, data = 
     return fornecedores;
 }
 
-function definirPrecoCompraFornecedorNoProduto(produto, fornecedorNome, precoCompra, data = dataOsAgoraFornecedor(), divisao = null) {
+function definirPrecoCompraFornecedorNoProduto(produto, fornecedorNome, precoCompra, data = dataOsAgoraFornecedor(), divisao = null, opcoes = {}) {
     const chaveNormalizada = normalizarChaveFornecedor(fornecedorNome);
     const preco = Math.max(0, Number(precoCompra || 0) || 0);
     if (!produto || !chaveNormalizada || fornecedorNome === "Outro" || preco <= 0) return null;
@@ -4456,6 +4457,9 @@ function definirPrecoCompraFornecedorNoProduto(produto, fornecedorNome, precoCom
         delete novo.preco_compra_figura;
         delete novo.preco_compra_portes;
     }
+    // Último preço deste fornecedor: comprado, ou estimado de uma figura não comprada (Não comprar / EX).
+    if (opcoes?.estimado) novo.preco_estimado = true;
+    else delete novo.preco_estimado;
     fornecedores[chave] = novo;
     return fornecedores;
 }
@@ -4478,6 +4482,13 @@ function itemPedidoIgnoradoListaFornecedor(item) {
     const estado = String(item.estado_fornecedor || "").trim().toUpperCase();
     const origem = String(item.origem_ajuste || "").trim();
     return estado === "IGNORADO_LISTA" || origem === "ignorado-lista";
+}
+
+// "Não comprar": figura que fica na encomenda com 0 a receber só para guardar o preço e a data do fornecedor.
+function itemPedidoNaoComprarFornecedor(item) {
+    if (!item) return false;
+    return String(item.estado_fornecedor || "").trim().toUpperCase() === "NAO_COMPRAR"
+        || String(item.origem_ajuste || "").trim() === "nao-comprar";
 }
 
 function itemPedidoEstaExFornecedor(item) {
@@ -4732,6 +4743,31 @@ async function sincronizarPrecoCompraProdutosFornecedor(itens, fornecedorNome = 
     }
 
     if (atualizados) guardarSelecaoFornecedor();
+    // Figuras não compradas (Não comprar / EX) com preço estimado em €: passam a ser o último preço
+    // deste fornecedor na ficha do produto, sem mexer no "preço compra" geral do produto.
+    const estimados = new Map();
+    (itens || []).forEach(item => {
+        if (!itemPedidoNaoComprarFornecedor(item) && !itemPedidoEstaExFornecedor(item)) return;
+        const precoEstimado = Math.max(0, Number(item?.preco_estimado_eur || 0) || 0);
+        if (precoEstimado <= 0) return;
+        const produtoAtual = obterProdutoParaPedidoFornecedor(item);
+        const chave = normalizarReferenciaListaFornecedor(produtoAtual?.referencia || item?.referencia);
+        if (!chave || porProduto.has(chave) || !produtoAtual?.id) return;
+        estimados.set(chave, { produtoAtual, precoEstimado });
+    });
+    for (const { produtoAtual, precoEstimado } of estimados.values()) {
+        const produtoLocal = fornecedorProdutos.find(produto => String(produto.id || "") === String(produtoAtual.id)) || produtoAtual;
+        const fornecedoresAtualizados = definirPrecoCompraFornecedorNoProduto(produtoLocal, fornecedorNome, precoEstimado, undefined, null, { estimado: true });
+        if (!fornecedoresAtualizados) continue;
+        const { error: erroEstimado } = await fornecedoresClient.rpc("atualizar_fornecedores_produto_admin", {
+            p_id: String(produtoAtual.id),
+            p_fornecedores: fornecedoresAtualizados
+        });
+        if (erroEstimado) throw erroEstimado;
+        fornecedorProdutos = fornecedorProdutos.map(produto => String(produto.id || "") === String(produtoAtual.id)
+            ? { ...produto, fornecedores: fornecedoresAtualizados }
+            : produto);
+    }
     return atualizados;
 }
 
@@ -5166,6 +5202,20 @@ function renderizarPedidoFornecedorProdutosTabela(caixa, pedido) {
                 origemCelula.appendChild(dataOsSpan);
             }
         }
+        const naoComprarItem = itemPedidoNaoComprarFornecedor(item);
+        if (naoComprarItem) {
+            const ncSpan = document.createElement("span");
+            ncSpan.className = "fornecedor-ajuste-os fornecedor-ajuste-nc ativo";
+            ncSpan.textContent = "Não comprar";
+            origemCelula.appendChild(ncSpan);
+            const dataNc = formatarDataAjustePedidoFornecedor(item.data_origem_ajuste || "");
+            if (dataNc) {
+                const dataNcSpan = document.createElement("span");
+                dataNcSpan.className = "fornecedor-ajuste-os";
+                dataNcSpan.textContent = dataNc;
+                origemCelula.appendChild(dataNcSpan);
+            }
+        }
         if (marcadoEx) {
             const exSpan = document.createElement("span");
             exSpan.className = "fornecedor-ajuste-os fornecedor-ajuste-ex ativo";
@@ -5180,7 +5230,7 @@ function renderizarPedidoFornecedorProdutosTabela(caixa, pedido) {
                 origemCelula.appendChild(dataExSpan);
             }
         }
-        if (item.origem_ajuste && !marcadoEx) {
+        if (item.origem_ajuste && !marcadoEx && !naoComprarItem) {
             const textoOrigem = obterTextoOrigemAjusteItemPedidoFornecedor(item, pedido);
             const dataOs = obterDataOsItemPedidoFornecedor(item, produtoAtual, pedido.fornecedor);
             if (textoOrigem && textoOrigem !== dataOs) {

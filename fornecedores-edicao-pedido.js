@@ -451,6 +451,21 @@ function calcularCustoRealListaAtualFornecedor(itens, opcoes = {}) {
     const cambio = calcularEur ? totalPagoEur / totalCompraUsd : 1;
     const envioPorUnidadeUsd = rateioEnvio === "unidades" ? envioUsd / totalUnidades : 0;
 
+    // Figuras "Não comprar" e EX: preço estimado em € com o mesmo câmbio e envio por unidade desta
+    // encomenda, para comparar fornecedores na ficha do produto (não mexe no preço da encomenda).
+    if (calcularEur) {
+        (itens || []).forEach((item) => {
+            if (!itemPedidoNaoComprarFornecedor(item) && !itemPedidoEstaExFornecedor(item)) return;
+            const precoUsd = obterPrecoUsdListaAtualFornecedor(item, true)
+                || (String(item?.preco_custo_moeda || "").toUpperCase() !== "EUR" ? Math.max(0, Number(item?.preco_custo || 0)) : 0);
+            if (!(precoUsd > 0)) { delete item.preco_estimado_eur; return; }
+            const envioUnitarioUsd = rateioEnvio === "valor"
+                ? (totalProdutosUsd > 0 ? envioUsd * (precoUsd / totalProdutosUsd) : 0)
+                : envioPorUnidadeUsd;
+            item.preco_estimado_eur = arredondarPrecoCustoListaAtualFornecedor((precoUsd + envioUnitarioUsd) * cambio);
+        });
+    }
+
     itensReceber.forEach((item) => {
         const quantidade = Math.max(0, Math.floor(Number(item.quantidade || 0)));
         const precoUsd = obterPrecoUsdListaAtualFornecedor(item, usarPrecosProvisoriosUsd);
@@ -843,7 +858,8 @@ function montarLinhaEdicaoProdutoFornecedor(pedido, item, indice) {
     const quantidadeAtual = Math.max(0, Number(item.quantidade || 0));
     const itemMarcadoEx = item.estado_fornecedor === "EX" || item.marcado_ex === true;
     const itemIgnoradoLista = itemIgnoradoListaEdicaoFornecedor(item);
-    const faltaAtual = itemMarcadoEx
+    const itemNaoComprar = itemPedidoNaoComprarFornecedor(item);
+    const faltaAtual = itemMarcadoEx || itemNaoComprar
         ? 0
         : itemIgnoradoLista
         ? 0
@@ -885,12 +901,14 @@ function montarLinhaEdicaoProdutoFornecedor(pedido, item, indice) {
     const dataOsTexto = item.data_os ? ` | desde ${formatarDataOsCurtaFornecedor(item.data_os)}` : "";
     ajuste.textContent = itemMarcadoEx
         ? `Inicial: ${quantidadeOriginal} | EX${dataOsTexto}`
+        : itemNaoComprar
+        ? `Inicial: ${quantidadeOriginal} | Não comprar`
         : itemIgnoradoLista
         ? `Inicial: ${quantidadeOriginal} | Ignorado na lista`
         : faltaAtual > 0
         ? `Inicial: ${quantidadeOriginal} | OS: ${faltaAtual}${dataOsTexto}`
         : `Inicial: ${quantidadeOriginal}`;
-    if (item.origem_ajuste && !itemIgnoradoLista) {
+    if (item.origem_ajuste && !itemIgnoradoLista && !itemNaoComprar) {
         const textoOrigem = obterTextoOrigemAjustePedidoFornecedor(item.origem_ajuste);
         if (textoOrigem) ajuste.textContent += ` | ${textoOrigem}`;
     }
@@ -947,7 +965,7 @@ function montarLinhaEdicaoProdutoFornecedor(pedido, item, indice) {
     const marcarOsInput = document.createElement("input");
     marcarOsInput.type = "checkbox";
     marcarOsInput.dataset.campo = "marcar_os";
-    marcarOsInput.checked = !itemMarcadoEx && !itemIgnoradoLista && (faltaAtual > 0 || item.estado_fornecedor === "OS");
+    marcarOsInput.checked = !itemMarcadoEx && !itemIgnoradoLista && !itemNaoComprar && (faltaAtual > 0 || item.estado_fornecedor === "OS");
     marcarOs.append(marcarOsInput, document.createTextNode(" Marcar OS"));
 
     const marcarEx = document.createElement("label");
@@ -958,8 +976,32 @@ function montarLinhaEdicaoProdutoFornecedor(pedido, item, indice) {
     marcarExInput.dataset.campo = "marcar_ex";
     marcarExInput.checked = itemMarcadoEx;
     marcarEx.append(marcarExInput, document.createTextNode(" Marcar EX"));
+
+    // "Não comprar": fica na encomenda com 0 a receber, guarda o preço e a data do fornecedor,
+    // sem OS nem EX na ficha do produto.
+    const naoComprar = document.createElement("label");
+    naoComprar.className = "fornecedor-edicao-marcar-nc";
+    naoComprar.title = "Não comprar nesta encomenda: guarda o preço e a data do fornecedor, sem marcar OS nem EX";
+    const naoComprarInput = document.createElement("input");
+    naoComprarInput.type = "checkbox";
+    naoComprarInput.dataset.campo = "nao_comprar";
+    naoComprarInput.checked = itemNaoComprar;
+    naoComprar.append(naoComprarInput, document.createTextNode(" Não comprar"));
+    naoComprarInput.addEventListener("change", () => {
+        if (naoComprarInput.checked) {
+            marcarOsInput.checked = false;
+            marcarExInput.checked = false;
+            faltaInput.value = "0";
+            quantidadeInput.value = "0";
+        } else {
+            quantidadeInput.value = String(quantidadeOriginal);
+        }
+        atualizarAjuste();
+    });
+
     marcarExInput.addEventListener("change", () => {
         if (marcarExInput.checked) {
+            naoComprarInput.checked = false;
             if (marcarOsInput.checked) {
                 marcarOsInput.checked = false;
             }
@@ -974,6 +1016,7 @@ function montarLinhaEdicaoProdutoFornecedor(pedido, item, indice) {
     });
     marcarOsInput.addEventListener("change", () => {
         if (marcarOsInput.checked && marcarExInput.checked) marcarExInput.checked = false;
+        if (marcarOsInput.checked) naoComprarInput.checked = false;
     });
 
     const remover = document.createElement("button");
@@ -1012,20 +1055,32 @@ function montarLinhaEdicaoProdutoFornecedor(pedido, item, indice) {
         const faltaValor = lerNumeroCampo(faltaInput);
         ajuste.className = marcarExInput.checked
             ? "fornecedor-ajuste-os fornecedor-ajuste-ex ativo"
+            : naoComprarInput.checked
+                ? "fornecedor-ajuste-os fornecedor-ajuste-nc ativo"
             : faltaValor > 0
                 ? "fornecedor-ajuste-os ativo"
                 : "fornecedor-ajuste-os";
         ajuste.textContent = marcarExInput.checked
             ? `Inicial: ${quantidadeOriginal} | EX`
+            : naoComprarInput.checked
+            ? `Inicial: ${quantidadeOriginal} | Não comprar`
             : faltaValor > 0
             ? `Inicial: ${quantidadeOriginal} | OS: ${faltaValor}`
             : `Inicial: ${quantidadeOriginal}`;
-        linha.classList.toggle("tem-os", !marcarExInput.checked && (faltaValor > 0 || marcarOsInput.checked));
+        linha.classList.toggle("tem-os", !marcarExInput.checked && !naoComprarInput.checked && (faltaValor > 0 || marcarOsInput.checked));
     };
 
     const sincronizarFalta = () => {
         const pedidoValor = lerNumeroCampo(quantidadeInput);
         quantidadeInput.value = String(pedidoValor);
+        if (naoComprarInput.checked) {
+            // Pôr quantidade numa figura "Não comprar" volta a comprá-la.
+            if (pedidoValor > 0) naoComprarInput.checked = false;
+            else {
+                atualizarAjuste();
+                return;
+            }
+        }
         if (marcarExInput.checked) {
             // Marcado como EX: a quantidade pode ser ajustada livremente (ex: decidir
             // encomendar apesar do preço) sem que isso mexa em OS/Falta nem desmarque EX.
@@ -1089,7 +1144,7 @@ function montarLinhaEdicaoProdutoFornecedor(pedido, item, indice) {
         });
     });
 
-    campos.append(quantidade, falta, precoCusto, recebido, marcarOs, marcarEx, remover, removerInput);
+    campos.append(quantidade, falta, precoCusto, recebido, marcarOs, marcarEx, naoComprar, remover, removerInput);
     linha.append(info, campos);
     return linha;
 }
@@ -1821,6 +1876,32 @@ function lerItensEditadosPedidoFornecedor(pedido, modal) {
         const quantidadeOriginal = Math.max(quantidade, Math.floor(Number(item.quantidade_original ?? item.quantidade ?? quantidade) || quantidade));
         const marcarEx = Boolean(linha.querySelector('[data-campo="marcar_ex"]')?.checked);
         const marcarOs = Boolean(linha.querySelector('[data-campo="marcar_os"]')?.checked) && !marcarEx;
+        const marcarNaoComprar = Boolean(linha.querySelector('[data-campo="nao_comprar"]')?.checked) && !marcarEx && !marcarOs;
+        if (marcarNaoComprar) {
+            const produtoNc = obterProdutoParaPedidoFornecedor(item) || item;
+            const precoNc = Math.max(0, Number(String(linha.querySelector('[data-campo="preco_custo"]')?.value || '').replace(',', '.')) || 0);
+            return {
+                ...item,
+                id: produtoNc.id || item.id,
+                nome: produtoNc.nome || item.nome,
+                sku: produtoNc.sku || item.sku || "",
+                referencia: produtoNc.referencia || item.referencia || "",
+                tema: produtoNc.tema || item.tema || "",
+                subtema: produtoNc.subtema || item.subtema || "",
+                imagens: produtoNc.imagens || item.imagens || [],
+                quantidade_original: quantidadeOriginal,
+                quantidade: 0,
+                falta_os: 0,
+                data_os: null,
+                preco_custo: precoNc,
+                preco: precoNc,
+                estado_fornecedor: 'NAO_COMPRAR',
+                origem_ajuste: 'nao-comprar',
+                data_origem_ajuste: itemPedidoNaoComprarFornecedor(item) && item.data_origem_ajuste ? item.data_origem_ajuste : dataOsAgoraFornecedor(),
+                marcado_ex: false,
+                recebido: 0
+            };
+        }
         let faltaOsIndicada = Math.max(0, Math.floor(Number(linha.querySelector('[data-campo="falta_os"]')?.value || 0)));
         if (marcarOs && faltaOsIndicada === 0) {
             faltaOsIndicada = Math.max(1, quantidadeOriginal - quantidade);
@@ -1860,13 +1941,13 @@ function lerItensEditadosPedidoFornecedor(pedido, modal) {
             data_os: (estaOs || marcarEx) ? (item.data_os || (mudouParaOsOuEx ? dataOsHojeFornecedor() : null)) : null,
             preco_custo: precoCusto,
             preco: precoCusto,
-            estado_fornecedor: continuarIgnoradoLista ? 'IGNORADO_LISTA' : (estaOs ? 'OS' : (marcarEx ? 'EX' : (['OS', 'EX', 'IGNORADO_LISTA'].includes(String(item.estado_fornecedor || '').toUpperCase()) ? '' : item.estado_fornecedor || ''))),
-            origem_ajuste: continuarIgnoradoLista ? 'ignorado-lista' : (item.origem_ajuste === 'ignorado-lista' ? '' : item.origem_ajuste || ''),
-            data_origem_ajuste: continuarIgnoradoLista ? (item.data_origem_ajuste || dataOsAgoraFornecedor()) : (item.origem_ajuste === 'ignorado-lista' ? null : item.data_origem_ajuste || null),
+            estado_fornecedor: continuarIgnoradoLista ? 'IGNORADO_LISTA' : (estaOs ? 'OS' : (marcarEx ? 'EX' : (['OS', 'EX', 'IGNORADO_LISTA', 'NAO_COMPRAR'].includes(String(item.estado_fornecedor || '').toUpperCase()) ? '' : item.estado_fornecedor || ''))),
+            origem_ajuste: continuarIgnoradoLista ? 'ignorado-lista' : (['ignorado-lista', 'nao-comprar'].includes(item.origem_ajuste) ? '' : item.origem_ajuste || ''),
+            data_origem_ajuste: continuarIgnoradoLista ? (item.data_origem_ajuste || dataOsAgoraFornecedor()) : (['ignorado-lista', 'nao-comprar'].includes(item.origem_ajuste) ? null : item.data_origem_ajuste || null),
             marcado_ex: marcarEx,
             recebido: Math.min(recebido, quantidadeFinal)
         };
-    }).filter(item => item && (Number(item.quantidade || 0) > 0 || Number(item.falta_os || 0) > 0 || item.marcado_ex || itemIgnoradoListaEdicaoFornecedor(item)));
+    }).filter(item => item && (Number(item.quantidade || 0) > 0 || Number(item.falta_os || 0) > 0 || item.marcado_ex || itemIgnoradoListaEdicaoFornecedor(item) || itemPedidoNaoComprarFornecedor(item)));
 }
 
 function obterInteiroCampoEdicaoFornecedor(linha, campo) {
@@ -1905,8 +1986,10 @@ function pedidoTemItensAlteradosEdicaoFornecedor(pedido, modal) {
 
         const marcarEx = Boolean(linha.querySelector('[data-campo="marcar_ex"]')?.checked);
         const marcarOs = Boolean(linha.querySelector('[data-campo="marcar_os"]')?.checked) && !marcarEx;
+        const marcarNaoComprar = Boolean(linha.querySelector('[data-campo="nao_comprar"]')?.checked);
 
-        return obterInteiroCampoEdicaoFornecedor(linha, "quantidade") !== Math.floor(quantidadeAtual)
+        return marcarNaoComprar !== itemPedidoNaoComprarFornecedor(item)
+            || obterInteiroCampoEdicaoFornecedor(linha, "quantidade") !== Math.floor(quantidadeAtual)
             || obterInteiroCampoEdicaoFornecedor(linha, "falta_os") !== Math.floor(faltaAtual)
             || obterPrecoCampoEdicaoFornecedor(linha) !== obterPrecoItemEdicaoFornecedor(item)
             || marcarEx !== itemMarcadoEx

@@ -1289,11 +1289,16 @@ function renderizarHistoricoEncomendasFornecedorMapa(conteudo, produto, pedidos)
         } else if (recebido < pedidoQtd) {
             tr.classList.add("mapas-produto-historico-pendente");
         }
+        const naoComprada = String(item?.estado_fornecedor || "").trim().toUpperCase() === "NAO_COMPRAR"
+            || String(item?.origem_ajuste || "").trim() === "nao-comprar";
+        if (naoComprada) tr.classList.add("mapas-produto-historico-nao-comprada");
         const estadoTexto = emFalta
             ? "Sem stock no fornecedor"
             : emEx
                 ? "Preço muito alto neste fornecedor (EX)"
-                : (pedido.estado || "—");
+                : naoComprada
+                    ? "Não comprada"
+                    : (pedido.estado || "—");
         [
             formatarDataEncomendaFornecedorMapa(dataRef),
             pedido.codigo || pedido.referencia || "—",
@@ -1313,6 +1318,57 @@ function renderizarHistoricoEncomendasFornecedorMapa(conteudo, produto, pedidos)
 
     tabela.append(thead, tbody);
     conteudo.appendChild(tabela);
+}
+
+// Último preço de cada fornecedor (comprado ou estimado de uma figura não comprada), com ★ no mais barato.
+function montarSecaoPrecosFornecedoresMapa(campos, produto) {
+    const linhas = Object.entries(obterObjetoFornecedoresProdutoMapa(produto))
+        .map(([fornecedor, valor]) => ({
+            fornecedor: String(fornecedor || "").trim(),
+            preco: obterPrecoCompraMarcacaoFornecedorLeituraMapa(valor),
+            data: valor && typeof valor === "object" ? (valor.data_preco_compra || "") : "",
+            estimado: Boolean(valor && typeof valor === "object" && valor.preco_estimado)
+        }))
+        .filter((linha) => linha.fornecedor && linha.preco > 0)
+        .sort((a, b) => a.preco - b.preco);
+    if (!linhas.length) return;
+
+    const secao = criarSecaoEdicaoMapa("Preços por fornecedor", "mapas-produto-secao-media mapas-produto-secao-historico");
+    const tabela = document.createElement("table");
+    tabela.className = "mapas-produto-historico-rececoes-tabela mapas-produto-precos-fornecedores-tabela";
+    const thead = document.createElement("thead");
+    const cabecalho = document.createElement("tr");
+    ["Fornecedor", "Último preço", "Data", "Origem", ""].forEach((rotulo) => {
+        const th = document.createElement("th");
+        th.textContent = rotulo;
+        cabecalho.appendChild(th);
+    });
+    thead.appendChild(cabecalho);
+    const tbody = document.createElement("tbody");
+    const maisBarato = linhas[0].preco;
+    linhas.forEach((linha) => {
+        const tr = document.createElement("tr");
+        const melhor = linha.preco === maisBarato;
+        if (melhor) tr.classList.add("mapas-produto-preco-mais-barato");
+        const celulas = [
+            linha.fornecedor,
+            `${formatarEuroProdutoModal(linha.preco)} €${linha.estimado ? " (estimado)" : ""}`,
+            formatarDataEncomendaFornecedorMapa(linha.data),
+            linha.estimado ? "Não comprada" : "Comprada",
+            melhor ? "★ mais barato" : ""
+        ];
+        celulas.forEach((texto, indice) => {
+            const td = document.createElement("td");
+            td.textContent = texto;
+            td.dataset.coluna = String(indice + 1);
+            if (indice === 2 && linha.data) acrescentarDiasDesdeDataFornecedorMapa(td, linha.data);
+            tr.appendChild(td);
+        });
+        tbody.appendChild(tr);
+    });
+    tabela.append(thead, tbody);
+    secao.appendChild(tabela);
+    campos.appendChild(secao);
 }
 
 function montarSecaoHistoricoRececoesMapa(campos, produto) {
@@ -1981,6 +2037,7 @@ function preencherFichaProdutoMapa(produto) {
 
     campos.appendChild(topo);
 
+    montarSecaoPrecosFornecedoresMapa(campos, produto);
     montarSecaoHistoricoRececoesMapa(campos, produto);
     montarSecaoHistoricoVendasMapa(campos, produto);
     montarSecaoAvisosStockProdutoMapa(campos, produto);

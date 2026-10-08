@@ -518,7 +518,7 @@ function garantirProdutoModalEncomendas() {
     prepararContextoProdutoEncomendas();
     if (window.MapasProdutoModal) return Promise.resolve();
     if (!promessaProdutoModalEncomendas) {
-        promessaProdutoModalEncomendas = carregarScriptEncomendasAdmin('mapas-produto-modal.js?v=20261006-zero-vermelho')
+        promessaProdutoModalEncomendas = carregarScriptEncomendasAdmin('mapas-produto-modal.js?v=20261008-nao-comprar')
             .then(() => {
                 prepararContextoProdutoEncomendas();
             });

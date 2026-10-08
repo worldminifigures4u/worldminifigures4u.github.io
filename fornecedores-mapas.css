@@ -6126,3 +6126,36 @@ html:not(.admin-light-mode) #fornecedor-sugerir-modal .fornecedor-sugerir-corpo 
     font-weight: 600;
     color: #9a9a9a;
 }
+
+/* Compras: opção "Não comprar" (guarda preço e data sem comprar) */
+@media (min-width: 1101px) {
+    #fornecedor-edicao-modal .fornecedor-edicao-produto-campos {
+        grid-template-columns: repeat(4, 96px) auto auto auto auto;
+    }
+}
+#fornecedor-edicao-modal .fornecedor-edicao-produto-campos .fornecedor-edicao-marcar-nc {
+    grid-column: auto;
+    display: flex !important;
+    align-items: center;
+    gap: 5px !important;
+    min-height: 36px;
+    padding: 0 2px;
+    white-space: nowrap;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    color: #8ab4f8;
+}
+#fornecedor-edicao-modal .fornecedor-edicao-produto-campos .fornecedor-edicao-marcar-nc input {
+    width: auto;
+    margin: 0;
+}
+.fornecedor-ajuste-os.fornecedor-ajuste-nc.ativo { color: #8ab4f8 !important; }
+.mapas-produto-historico-rececoes-tabela tr.mapas-produto-historico-nao-comprada td { color: #8ab4f8; }
+
+/* Ficha do produto: preços por fornecedor */
+.mapas-produto-precos-fornecedores-tabela { min-width: 0; }
+.mapas-produto-precos-fornecedores-tabela tr.mapas-produto-preco-mais-barato td {
+    color: #7ed321;
+    font-weight: 700;
+}
