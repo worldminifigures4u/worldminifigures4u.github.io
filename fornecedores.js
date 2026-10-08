@@ -2470,8 +2470,9 @@ function calcularScoreResultadoFornecedor(produto, termo) {
     return 99;
 }
 
+const COLLATOR_TEXTO_FORNECEDOR = new Intl.Collator("pt", { numeric: true, sensitivity: "base" });
 function compararTextoFornecedor(a, b) {
-    return String(a || "").localeCompare(String(b || ""), "pt", { numeric: true, sensitivity: "base" });
+    return COLLATOR_TEXTO_FORNECEDOR.compare(String(a || ""), String(b || ""));
 }
 
 function obterValorOrdenacaoFornecedor(item, coluna) {
@@ -3052,29 +3053,68 @@ function obterQuantidadePedidaPendenteFornecedor(item) {
     )));
 }
 
-function obterPendentesDetalhadosProdutoFornecedor(produto) {
-    const pedidosAbertos = fornecedorPedidos.filter(pedido =>
-        pedido
-        && pedido.estado !== "Recebida"
-        && pedido.estado !== "Cancelada"
-        && Array.isArray(pedido.itens)
-    );
+// Índice das linhas por receber (encomendas abertas), com as chaves já normalizadas.
+// É reconstruído no máximo uma vez por tarefa (limpo no fim da tarefa atual), para que
+// ordenar/desenhar centenas de produtos não volte a percorrer todas as encomendas por produto.
+let fornecedorIndicePendentesCache = null;
 
-    const detalhes = [];
-    const total = pedidosAbertos.reduce((soma, pedido) => {
-        return soma + pedido.itens.reduce((subtotal, item) => {
-            if (!itemPedidoCorrespondeProdutoFornecedor(item, produto)) return subtotal;
+function obterIndicePendentesFornecedor() {
+    if (fornecedorIndicePendentesCache) return fornecedorIndicePendentesCache;
+    const indice = { porId: new Map(), porSku: new Map(), porRef: new Map(), cache: new Map() };
+    const juntar = (mapa, chave, entrada) => {
+        if (!chave) return;
+        if (!mapa.has(chave)) mapa.set(chave, []);
+        mapa.get(chave).push(entrada);
+    };
+    let ordem = 0;
+    fornecedorPedidos.forEach(pedido => {
+        if (!pedido || pedido.estado === "Recebida" || pedido.estado === "Cancelada" || !Array.isArray(pedido.itens)) return;
+        pedido.itens.forEach(item => {
+            if (!item) return;
             const quantidade = obterQuantidadePedidaPendenteFornecedor(item);
             const recebido = Math.max(0, Math.floor(Number(item.recebido || 0)));
             const pendente = Math.max(0, quantidade - recebido);
-            if (pendente > 0) {
-                detalhes.push(`${pedido.codigo || "Encomenda"}${pedido.fornecedor ? ` - ${pedido.fornecedor}` : ""}: ${pendente}`);
-            }
-            return subtotal + pendente;
-        }, 0);
-    }, 0);
+            if (pendente <= 0) return;
+            const entrada = {
+                ordem: ordem++,
+                pendente,
+                texto: `${pedido.codigo || "Encomenda"}${pedido.fornecedor ? ` - ${pedido.fornecedor}` : ""}: ${pendente}`
+            };
+            juntar(indice.porId, obterIdProdutoItemFornecedor(item), entrada);
+            juntar(indice.porSku, normalizarSkuFornecedor(item.sku), entrada);
+            obterCandidatosReferenciaListaFornecedor(item.referencia).forEach(chave => juntar(indice.porRef, chave, entrada));
+        });
+    });
+    fornecedorIndicePendentesCache = indice;
+    const limpar = () => { fornecedorIndicePendentesCache = null; };
+    if (typeof window.setTimeout === "function") window.setTimeout(limpar, 0); else limpar();
+    return indice;
+}
 
-    return { total, detalhes };
+function obterPendentesDetalhadosProdutoFornecedor(produto) {
+    if (!produto) return { total: 0, detalhes: [] };
+    const indice = obterIndicePendentesFornecedor();
+    const chaveCache = produto;
+    const emCache = indice.cache.get(chaveCache);
+    if (emCache) return emCache;
+
+    const encontradas = new Set();
+    const somar = (lista) => (lista || []).forEach(entrada => encontradas.add(entrada));
+    somar(indice.porId.get(String(produto.id || "").trim()));
+    const sku = normalizarSkuFornecedor(produto.sku);
+    if (sku) somar(indice.porSku.get(sku));
+    const produtoRef = normalizarReferenciaListaFornecedor(produto.referencia);
+    if (!["PERSONALIZADO", "PERSONALIZADA", "CUSTOM"].includes(produtoRef)) {
+        obterCandidatosReferenciaListaFornecedor(produto.referencia).forEach(chave => somar(indice.porRef.get(chave)));
+    }
+
+    const entradas = Array.from(encontradas).sort((a, b) => a.ordem - b.ordem);
+    const resultado = {
+        total: entradas.reduce((soma, entrada) => soma + entrada.pendente, 0),
+        detalhes: entradas.map(entrada => entrada.texto)
+    };
+    indice.cache.set(chaveCache, resultado);
+    return resultado;
 }
 
 async function carregarCatalogoFornecedores() {
@@ -3939,6 +3979,9 @@ function verificarCarregamentoProgressivoFornecedor() {
 
     const caixa = document.getElementById("fornecedor-resultados");
     if (!caixa) return;
+    // Com a tabela escondida (vista da lista de compras) o retângulo é 0 e isto carregava
+    // o catálogo inteiro de 250 em 250, redesenhando tudo de cada vez. Só carrega mais quando está visível.
+    if (!caixa.getClientRects().length) return;
     const distanciaAteFim = caixa.getBoundingClientRect().bottom - window.innerHeight;
     if (distanciaAteFim > FORNECEDOR_RESULTADOS_LIMIAR_SCROLL) return;
 
@@ -5631,6 +5674,7 @@ function mostrarVistaFornecedores(vista, opcoes = {}) {
         requestAnimationFrame(() => {
             atualizarAlturaStickyControlesFornecedor();
             if (typeof sincronizarLargurasColunasTabelaEncomendaFornecedor === "function") sincronizarLargurasColunasTabelaEncomendaFornecedor();
+            verificarCarregamentoProgressivoFornecedor();
         });
     }
     window.scrollTo(0, 0);
@@ -5780,12 +5824,15 @@ async function iniciarFornecedoresAdmin() {
         const user = await validarAdminRapido(fornecedoresClient, bloqueio);
         if (!user) return;
         if (typeof window.mostrarNavegacaoAdminValidada === 'function') window.mostrarNavegacaoAdminValidada(); else document.addEventListener('DOMContentLoaded', () => window.mostrarNavegacaoAdminValidada?.(), { once: true });
-        await carregarFichasFornecedoresRemotas();
+        // Os 4 pedidos ao Supabase são independentes: correm em paralelo (antes eram um a seguir ao outro).
+        const fichasPromessa = carregarFichasFornecedoresRemotas();
+        const catalogoPromessa = carregarCatalogoFornecedores();
+        const vendasPromessa = carregarVendasClienteFornecedor();
+        const pedidosPromessa = carregarPedidosFornecedoresRemotos();
+        await fichasPromessa;
         renderizarFornecedoresGuardados();
         preencherFormularioFichaFornecedor();
-        await carregarCatalogoFornecedores();
-        await carregarVendasClienteFornecedor();
-        await carregarPedidosFornecedoresRemotos();
+        await Promise.all([catalogoPromessa, vendasPromessa, pedidosPromessa]);
         bloqueio.hidden = true;
         document.getElementById('fornecedores-aplicacao').hidden = false;
         iniciarVistasFornecedores();
