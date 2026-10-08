@@ -4681,6 +4681,10 @@ async function sincronizarPrecoCompraProdutosFornecedor(itens, fornecedorNome = 
     const porProduto = new Map();
     (itens || []).forEach(item => {
         if (item?.preco_custo_provisorio || String(item?.preco_custo_moeda || "").trim().toUpperCase() === "USD") return;
+        // Figuras EX (caras, não compradas) e sem unidades a receber guardam o preço só na encomenda:
+        // não mudam o preço compra do produto.
+        if (itemPedidoEstaExFornecedor(item) || itemPedidoIgnoradoListaFornecedor(item)) return;
+        if (Math.max(0, Math.floor(Number(item?.quantidade || 0))) <= 0) return;
         const precoCompra = Math.max(0, Number(item?.preco_custo ?? item?.preco_compra ?? item?.custo ?? 0) || 0);
         if (precoCompra <= 0) return;
         const produtoAtual = obterProdutoParaPedidoFornecedor(item);
