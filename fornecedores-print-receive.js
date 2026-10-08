@@ -26,9 +26,10 @@ function obterTextoExportacaoPedidoFornecedor(pedido) {
         });
     });
 
+    // Só as figuras a encomendar: OS, EX e "Não comprar" (quantidade 0) não vão para o fornecedor.
     return [...porReferencia.values()]
+        .filter(item => Number(item.quantidade) > 0)
         .map(item => `${item.referencia}\t${item.quantidade}`)
-        .filter(Boolean)
         .join('\r\n');
 }
 
