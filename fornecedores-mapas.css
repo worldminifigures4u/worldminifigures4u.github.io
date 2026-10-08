@@ -6191,3 +6191,10 @@ html:not(.admin-light-mode) #fornecedor-sugerir-modal .fornecedor-sugerir-corpo 
     cursor: pointer;
 }
 #fornecedor-edicao-modal .fornecedor-edicao-precos-usd-antigos input { width: auto; margin: 0; }
+
+body.fornecedores-vista-lista .fornecedores-coluna-direita .fornecedor-pedido-linha-cabecalho > .fornecedor-pedido-aviso-usd,
+.fornecedor-pedido-linha-cabecalho > .fornecedor-pedido-aviso-usd {
+    grid-area: destino !important;
+    justify-self: start !important;
+    margin-left: 0;
+}

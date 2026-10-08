@@ -5729,14 +5729,15 @@ function renderizarPedidosFornecedores() {
         if (pedidoFornecedorTemPrecosUsdAntigos(pedido)) {
             const aviso = criarElementoPedidoFornecedor("span", "fornecedor-pedido-aviso-usd", "preços em USD?");
             aviso.title = "Encomenda antiga: os preços devem ser o PRICE em USD da lista, sem envio nem câmbio. Edita, marca \"Os preços desta encomenda estão em USD\", preenche Envio, Total compra e Total pago € e grava.";
-            // Dentro do resumo (não cria uma coluna nova na grelha da linha).
-            const resumoLinha = linha.querySelector(".fornecedor-pedido-resumo");
-            if (resumoLinha) resumoLinha.append(" ", aviso);
-            else linha.appendChild(aviso);
+            // Na linha de baixo, por baixo do código (zona "destino" da grelha), para não ser cortado.
+            if (!alvoJuntar) linha.appendChild(aviso);
+            else linha._avisoUsd = aviso;
         }
         if (alvoJuntar) {
             linha.classList.add("com-destino-selecao");
-            linha.appendChild(criarElementoPedidoFornecedor("span", "fornecedor-pedido-destino-selecao", "Destino seleção"));
+            const destino = criarElementoPedidoFornecedor("span", "fornecedor-pedido-destino-selecao", "Destino seleção");
+            if (linha._avisoUsd) destino.append(" ", linha._avisoUsd);
+            linha.appendChild(destino);
         }
         const imprimirRapido = criarElementoPedidoFornecedor("button", "wallapop-botao fornecedor-pedido-imprimir-rapido", "Imprimir");
         imprimirRapido.type = "button";

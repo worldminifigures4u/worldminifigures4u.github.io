@@ -738,7 +738,7 @@ function garantirFichaProdutoEstatisticas() {
     if (window.MapasProdutoModal) return Promise.resolve();
     if (!promessaFichaProdutoEstatisticas) {
         promessaFichaProdutoEstatisticas = Promise.all([
-            carregarRecursoEstatisticas('css', 'fornecedores-mapas.css?v=20261008-precos-usd-antigos'),
+            carregarRecursoEstatisticas('css', 'fornecedores-mapas.css?v=20261008-aviso-usd-visivel'),
             carregarRecursoEstatisticas('js', 'mapas-produto-modal.js?v=20261008-dias-caixote')
         ]).catch(erro => {
             promessaFichaProdutoEstatisticas = null;
