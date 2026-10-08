@@ -810,6 +810,7 @@ function normalizarPedidoRececaoMapa(pedido) {
         criado_em: pedido.criado_em || pedido.data || pedido.created_at || "",
         atualizado_em: pedido.atualizado_em || pedido.updated_at || "",
         data_encomendada: pedido.data_encomendada || "",
+        data_caixote_recebido: pedido.data_caixote_recebido || "",
         itens: Array.isArray(itens) ? itens : []
     };
 }
@@ -1203,6 +1204,26 @@ function obterChaveHistoricoFornecedorMapa(dataRef, fornecedor, tipo) {
 }
 
 // Dias de calendário desde a data da encomenda ao fornecedor (ex. "12 dias"), ao lado da data.
+// Dias da encomenda (como nas Compras): desde "Encomendada" até o caixote ser recebido.
+function acrescentarDiasEncomendaFornecedorMapa(td, pedido) {
+    const estado = normalizarTextoProdutoMapa(pedido?.estado).replace(/\s+/g, "_");
+    if (!pedido || estado === "a_preparar" || estado === "cancelada") return;
+    const inicio = pedido.data_encomendada || pedido.criado_em || "";
+    const chegou = ["caixote_recebido", "recebida_parcialmente", "recebida"].includes(estado);
+    const fim = chegou ? (pedido.data_caixote_recebido || pedido.atualizado_em || "") : "";
+    const tInicio = obterTimestampFornecedorMapa(inicio);
+    const tFim = fim ? obterTimestampFornecedorMapa(fim) : Date.now();
+    if (!tInicio || !tFim) return;
+    const dia = (t) => { const d = new Date(t); return new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime(); };
+    const dias = Math.max(0, Math.round((dia(tFim) - dia(tInicio)) / 86400000));
+    const span = document.createElement("span");
+    span.className = "mapas-produto-historico-dias";
+    span.textContent = fim
+        ? `demorou ${dias} ${dias === 1 ? "dia" : "dias"}`
+        : (dias === 0 ? "hoje" : `${dias} ${dias === 1 ? "dia" : "dias"}`);
+    td.append(" ", span);
+}
+
 function acrescentarDiasDesdeDataFornecedorMapa(td, dataRef) {
     const timestamp = obterTimestampFornecedorMapa(dataRef);
     if (!timestamp) return;
@@ -1327,7 +1348,7 @@ function renderizarHistoricoEncomendasFornecedorMapa(conteudo, produto, pedidos)
             const td = document.createElement("td");
             td.textContent = valor;
             td.dataset.coluna = String(indiceColuna + 1);
-            if (indiceColuna === 0) acrescentarDiasDesdeDataFornecedorMapa(td, dataRef);
+            if (indiceColuna === 0) acrescentarDiasEncomendaFornecedorMapa(td, pedido);
             tr.appendChild(td);
         });
         tbody.appendChild(tr);

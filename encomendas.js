@@ -518,7 +518,7 @@ function garantirProdutoModalEncomendas() {
     prepararContextoProdutoEncomendas();
     if (window.MapasProdutoModal) return Promise.resolve();
     if (!promessaProdutoModalEncomendas) {
-        promessaProdutoModalEncomendas = carregarScriptEncomendasAdmin('mapas-produto-modal.js?v=20261008-data-encomendada')
+        promessaProdutoModalEncomendas = carregarScriptEncomendasAdmin('mapas-produto-modal.js?v=20261008-dias-caixote')
             .then(() => {
                 prepararContextoProdutoEncomendas();
             });

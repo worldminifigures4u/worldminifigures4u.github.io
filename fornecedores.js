@@ -91,7 +91,7 @@ function garantirFornecedoresProdutoModal() {
     if (window.FornecedoresProdutoModal) return Promise.resolve();
     if (!__fornecedoresProdutoPromessa) {
         prepararContextoProdutoFornecedor();
-        __fornecedoresProdutoPromessa = carregarScriptAdmin("mapas-produto-modal.js?v=20261008-data-encomendada")
+        __fornecedoresProdutoPromessa = carregarScriptAdmin("mapas-produto-modal.js?v=20261008-dias-caixote")
             .then(function () {
                 window.FornecedoresProdutoModal = {
                     abrir: function () {
@@ -865,6 +865,7 @@ function normalizarPedidoFornecedor(pedido) {
         criado_em: pedido.criado_em || new Date().toISOString(),
         atualizado_em: pedido.atualizado_em || pedido.criado_em || new Date().toISOString(),
         data_encomendada: pedido.data_encomendada || null,
+        data_caixote_recebido: pedido.data_caixote_recebido || null,
         custos: pedido.custos && typeof pedido.custos === 'object' ? pedido.custos : null,
         itens: consolidarItensPedidoFornecedor(
             Array.isArray(pedido.itens) ? pedido.itens.map(normalizarItemPedidoFornecedor).filter(Boolean) : []
@@ -5514,6 +5515,25 @@ function formatarTempoDesdePedidoFornecedor(valor) {
     return dias === 1 ? "há 1 dia" : `há ${dias} dias`;
 }
 
+// Dias da encomenda: contam desde "Encomendada" e param quando o caixote é recebido.
+// "A preparar" e "Cancelada" não mostram dias.
+function textoDiasEncomendaFornecedor(pedido) {
+    const estado = normalizarEstadoPedidoFornecedor(pedido?.estado);
+    if (!pedido || estado === "a_preparar" || estado === "cancelada") return "";
+    const inicio = pedido.data_encomendada || pedido.criado_em || "";
+    const chegou = ["caixote_recebido", "recebida_parcialmente", "recebida"].includes(estado);
+    const fim = chegou ? (pedido.data_caixote_recebido || pedido.atualizado_em || "") : "";
+    const tInicio = new Date(inicio);
+    if (!inicio || Number.isNaN(tInicio.getTime())) return "";
+    const tFim = fim ? new Date(fim) : new Date();
+    if (Number.isNaN(tFim.getTime())) return "";
+    const inicioDia = (d) => new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
+    const dias = Math.max(0, Math.round((inicioDia(tFim) - inicioDia(tInicio)) / 86400000));
+    if (fim) return dias === 1 ? "demorou 1 dia" : `demorou ${dias} dias`;
+    if (dias === 0) return "hoje";
+    return dias === 1 ? "há 1 dia" : `há ${dias} dias`;
+}
+
 function atualizarContagensFiltroEstadoPedidosFornecedor() {
     const select = document.getElementById("fornecedor-filtro-estado");
     if (!select) return;
@@ -5685,7 +5705,7 @@ function renderizarPedidosFornecedores() {
             criarElementoPedidoFornecedor("strong", "admin-encomenda-codigo", obterTextoCodigoPedidoFornecedor(pedido)),
             criarElementoPedidoFornecedor("span", "admin-encomenda-data", [
                 formatarDataPedidoFornecedor(obterDataExibicaoPedidoFornecedor(pedido)),
-                pedidoFornecedorEstaACaminho(pedido) ? formatarTempoDesdePedidoFornecedor(obterDataExibicaoPedidoFornecedor(pedido)) : ""
+                textoDiasEncomendaFornecedor(pedido)
             ].filter(Boolean).join(" · ")),
             criarElementoPedidoFornecedor("span", "fornecedor-pedido-fornecedor-nome", pedido.fornecedor || "Fornecedor"),
             criarElementoPedidoFornecedor("span", "fornecedor-pedido-resumo", resumo),
