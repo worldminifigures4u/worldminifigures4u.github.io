@@ -343,7 +343,7 @@ function limparMetadadosImportacaoListaFinalFornecedor(item) {
     if (!item) return item;
     delete item.sem_stock_fornecedor;
     delete item.quantidade_os;
-    delete item.preco_lista_usd;
+    // preco_lista_usd fica guardado: é a base para recalcular o custo quando se volta a gravar.
     delete item.custo_calculado_lista_atual;
     return item;
 }
@@ -410,6 +410,15 @@ function calcularCustoRealListaAtualFornecedor(itens, opcoes = {}) {
 
     const itensReceber = (itens || []).filter(itemContaParaCustoRealListaAtualFornecedor);
     const temPrecosListaUsd = itensReceber.some((item) => Math.max(0, Number(item?.preco_lista_usd || 0)) > 0);
+    // Figura acrescentada à mão numa encomenda com preços USD do fornecedor: o "Preço compra" escrito
+    // nela conta como preço USD da lista, para receber também a parte do envio e o câmbio.
+    if (temPrecosListaUsd && deveCalcularCustoRealListaAtualFornecedor(opcoes)) {
+        itensReceber.forEach((item) => {
+            if (Math.max(0, Number(item?.preco_lista_usd || 0)) > 0) return;
+            const precoEscrito = Math.max(0, Number(item?.preco_custo ?? item?.preco ?? 0) || 0);
+            if (precoEscrito > 0) item.preco_lista_usd = precoEscrito;
+        });
+    }
     const temPrecosProvisoriosUsd = !temPrecosListaUsd
         && itensReceber.some((item) => obterPrecoUsdListaAtualFornecedor(item, true) > 0);
     const usarPrecosProvisoriosUsd = !temPrecosListaUsd && temPrecosProvisoriosUsd;

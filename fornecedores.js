@@ -110,7 +110,7 @@ function garantirFornecedoresProdutoModal() {
 function garantirFornecedoresEdicaoPedido() {
     if (window.FornecedoresEdicaoPedido) return Promise.resolve();
     if (!__fornecedoresEdicaoPromessa) {
-        __fornecedoresEdicaoPromessa = carregarScriptAdmin("fornecedores-edicao-pedido.js?v=20261008-custos");
+        __fornecedoresEdicaoPromessa = carregarScriptAdmin("fornecedores-edicao-pedido.js?v=20261008-preco-usd");
     }
     return __fornecedoresEdicaoPromessa;
 }
@@ -1191,6 +1191,12 @@ function serializarItemPedidoFornecedor(item) {
         preco: precoCusto,
         preco_custo_moeda: normalizado.preco_custo_provisorio ? "USD" : "EUR",
         preco_custo_provisorio: Boolean(normalizado.preco_custo_provisorio),
+        // Preço original da lista do fornecedor (USD): permite recalcular o custo ao voltar a gravar.
+        ...(Number(normalizado.preco_lista_usd) > 0 ? { preco_lista_usd: Number(normalizado.preco_lista_usd) } : {}),
+        ...(Number.isFinite(Number(normalizado.preco_custo_figura)) && normalizado.preco_custo_figura !== undefined && normalizado.preco_custo_figura !== null
+            ? { preco_custo_figura: Number(normalizado.preco_custo_figura) } : {}),
+        ...(Number.isFinite(Number(normalizado.preco_custo_portes)) && normalizado.preco_custo_portes !== undefined && normalizado.preco_custo_portes !== null
+            ? { preco_custo_portes: Number(normalizado.preco_custo_portes) } : {}),
         imagens
     };
 }
