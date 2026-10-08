@@ -5236,7 +5236,11 @@ function renderizarPedidoFornecedorProdutosTabela(caixa, pedido) {
         if (faltaOs > 0) {
             const osSpan = document.createElement("span");
             osSpan.className = "fornecedor-ajuste-os ativo";
-            osSpan.textContent = `OS/Falta: ${faltaOs}${item.quantidade_original ? ` de ${Number(item.quantidade_original || 0)}` : ""}`;
+            // Falta total: só "OS". Falta parcial (ex. pedi 5, vêm 4): "OS/Falta: 1 de 5".
+            const quantidadeOriginalOs = Number(item.quantidade_original || 0);
+            osSpan.textContent = quantidadeOriginalOs > 0 && faltaOs >= quantidadeOriginalOs
+                ? "OS"
+                : `OS/Falta: ${faltaOs}${quantidadeOriginalOs ? ` de ${quantidadeOriginalOs}` : ""}`;
             origemCelula.appendChild(osSpan);
             const dataOs = obterDataOsItemPedidoFornecedor(item, produtoAtual, pedido.fornecedor);
             if (dataOs) {
