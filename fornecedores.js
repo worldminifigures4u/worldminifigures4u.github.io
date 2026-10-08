@@ -110,7 +110,7 @@ function garantirFornecedoresProdutoModal() {
 function garantirFornecedoresEdicaoPedido() {
     if (window.FornecedoresEdicaoPedido) return Promise.resolve();
     if (!__fornecedoresEdicaoPromessa) {
-        __fornecedoresEdicaoPromessa = carregarScriptAdmin("fornecedores-edicao-pedido.js?v=20261008-lista-os");
+        __fornecedoresEdicaoPromessa = carregarScriptAdmin("fornecedores-edicao-pedido.js?v=20261008-custos");
     }
     return __fornecedoresEdicaoPromessa;
 }
@@ -865,6 +865,7 @@ function normalizarPedidoFornecedor(pedido) {
         criado_em: pedido.criado_em || new Date().toISOString(),
         atualizado_em: pedido.atualizado_em || pedido.criado_em || new Date().toISOString(),
         data_encomendada: pedido.data_encomendada || null,
+        custos: pedido.custos && typeof pedido.custos === 'object' ? pedido.custos : null,
         itens: consolidarItensPedidoFornecedor(
             Array.isArray(pedido.itens) ? pedido.itens.map(normalizarItemPedidoFornecedor).filter(Boolean) : []
         )

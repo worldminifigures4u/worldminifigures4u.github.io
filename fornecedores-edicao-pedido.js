@@ -1680,15 +1680,15 @@ function garantirModalEdicaoFornecedor() {
                                 <div class="fornecedor-custo-real-grid" aria-label="Custo real da compra">
                                     <label>
                                         Envio USD
-                                        <input type="text" id="fornecedor-edicao-envio-usd" inputmode="decimal" autocomplete="off" placeholder="$83,00">
+                                        <input type="text" id="fornecedor-edicao-envio-usd" inputmode="decimal" autocomplete="off" placeholder="$0,00">
                                     </label>
                                     <label>
                                         Total compra USD
-                                        <input type="text" id="fornecedor-edicao-total-compra-usd" inputmode="decimal" autocomplete="off" placeholder="$415,27">
+                                        <input type="text" id="fornecedor-edicao-total-compra-usd" inputmode="decimal" autocomplete="off" placeholder="$0,00">
                                     </label>
                                     <label>
                                         Total pago €
-                                        <input type="text" id="fornecedor-edicao-total-eur" inputmode="decimal" autocomplete="off" placeholder="365,40 €">
+                                        <input type="text" id="fornecedor-edicao-total-eur" inputmode="decimal" autocomplete="off" placeholder="0,00 €">
                                     </label>
                                     <div class="fornecedor-custo-real-campo-opcoes" role="radiogroup" aria-label="Distribuir envio">
                                         <span class="fornecedor-custo-real-campo-rotulo">Distribuir envio</span>
@@ -1773,12 +1773,7 @@ function abrirEdicaoPedidoFornecedor(id) {
     modal.querySelector('#fornecedor-edicao-status').textContent = '';
     delete modal.dataset.itensAlteradosListaFinal;
     modal.querySelector('#fornecedor-edicao-lista-final').value = '';
-    const envioUsd = modal.querySelector('#fornecedor-edicao-envio-usd');
-    const totalEur = modal.querySelector('#fornecedor-edicao-total-eur');
-    const rateioUnidades = modal.querySelector('input[name="fornecedor-edicao-rateio-envio"][value="unidades"]');
-    if (envioUsd) envioUsd.value = '';
-    if (totalEur) totalEur.value = '';
-    if (rateioUnidades) rateioUnidades.checked = true;
+    preencherCustosGuardadosEdicaoFornecedor(modal, pedido.custos);
     const listaOs = modal.querySelector('#fornecedor-edicao-lista-os');
     if (listaOs) listaOs.value = '';
     const precoUnitarioEur = modal.querySelector('#fornecedor-edicao-os-preco-unitario-eur');
@@ -1910,6 +1905,63 @@ function pedidoTemItensAlteradosEdicaoFornecedor(pedido, modal) {
     });
 }
 
+// Valores do "Preço de compra" guardados na encomenda (coluna custos): voltam preenchidos ao editar.
+function formatarValorCustoEdicaoFornecedor(valor) {
+    const numero = Number(valor);
+    if (!Number.isFinite(numero) || numero <= 0) return '';
+    return numero.toLocaleString('pt-PT', { minimumFractionDigits: 2, maximumFractionDigits: 2, useGrouping: false });
+}
+
+function preencherCustosGuardadosEdicaoFornecedor(modal, custos) {
+    const dados = custos && typeof custos === 'object' ? custos : {};
+    const campos = {
+        '#fornecedor-edicao-envio-usd': dados.envio_usd,
+        '#fornecedor-edicao-total-compra-usd': dados.total_compra_usd,
+        '#fornecedor-edicao-total-eur': dados.total_pago_eur
+    };
+    Object.entries(campos).forEach(([seletor, valor]) => {
+        const campo = modal.querySelector(seletor);
+        if (campo) campo.value = formatarValorCustoEdicaoFornecedor(valor);
+    });
+    const rateio = dados.rateio_envio === 'valor' ? 'valor' : 'unidades';
+    const radio = modal.querySelector(`input[name="fornecedor-edicao-rateio-envio"][value="${rateio}"]`);
+    if (radio) radio.checked = true;
+}
+
+function lerCustosParaGuardarEdicaoFornecedor(modal) {
+    const opcoes = lerOpcoesCustoListaAtualFornecedor(modal);
+    const custos = {
+        envio_usd: opcoes.envioUsd > 0 ? opcoes.envioUsd : null,
+        total_compra_usd: opcoes.totalCompraUsd > 0 ? opcoes.totalCompraUsd : null,
+        total_pago_eur: opcoes.totalPagoEur > 0 ? opcoes.totalPagoEur : null,
+        rateio_envio: opcoes.rateioEnvio
+    };
+    const temValores = custos.envio_usd || custos.total_compra_usd || custos.total_pago_eur;
+    return temValores ? custos : null;
+}
+
+function custosIguaisEdicaoFornecedor(a, b) {
+    const normalizar = (c) => JSON.stringify({
+        envio_usd: Number(c?.envio_usd) || null,
+        total_compra_usd: Number(c?.total_compra_usd) || null,
+        total_pago_eur: Number(c?.total_pago_eur) || null,
+        rateio_envio: c ? (c.rateio_envio === 'valor' ? 'valor' : 'unidades') : null
+    });
+    return normalizar(a) === normalizar(b);
+}
+
+async function guardarCustosPedidoFornecedor(id, custos) {
+    const { data, error } = await fornecedoresClient.rpc('guardar_custos_encomenda_fornecedor_admin', {
+        p_id: String(id),
+        p_custos: custos
+    });
+    if (error) throw error;
+    const guardados = data && Object.keys(data).length ? data : null;
+    fornecedorPedidos = fornecedorPedidos.map(item => String(item.id) === String(id) ? { ...item, custos: guardados } : item);
+    guardarPedidosFornecedores();
+    return guardados;
+}
+
 async function guardarEdicaoPedidoFornecedor(evento) {
     evento.preventDefault();
     const modal = document.getElementById('fornecedor-edicao-modal');
@@ -2007,6 +2059,17 @@ async function guardarEdicaoPedidoFornecedor(evento) {
             dadosPedido.codigo = codigo || null;
         }
         const atualizado = await atualizarPedidoFornecedor(id, dadosPedido);
+        let avisoCustos = '';
+        const custosNovos = lerCustosParaGuardarEdicaoFornecedor(modal);
+        if (!custosIguaisEdicaoFornecedor(custosNovos, pedido.custos)) {
+            status.textContent = 'A guardar valores do preço de compra...';
+            try {
+                await guardarCustosPedidoFornecedor(id, custosNovos);
+            } catch (erroCustos) {
+                console.warn('Nao foi possivel guardar os valores do preço de compra.', erroCustos);
+                avisoCustos = ' Os valores do preço de compra (Envio, Total compra, Total pago) não ficaram guardados: falta correr o SQL supabase-custos-encomenda-fornecedor.sql no Supabase.';
+            }
+        }
         if (itensAlterados) {
             status.textContent = 'A atualizar histórico na ficha do produto...';
             await sincronizarHistoricoPedidosFornecedor(itens, fornecedor, {
@@ -2048,7 +2111,7 @@ async function guardarEdicaoPedidoFornecedor(evento) {
         const detalhe = itensAlterados || deveAtualizarHistoricoConfirmacao
             ? `${resumoCustoRealListaAtual.aplicado ? obterResumoCustoRealListaAtualFornecedor(resumoCustoRealListaAtual).replace(/\n+/g, ' ') : ''}${resumoCustoFixoEur.aplicado ? obterResumoCustoFixoEurFornecedor(resumoCustoFixoEur) : ''}${produtosComPrecoAtualizado ? ` Preço compra atualizado em ${produtosComPrecoAtualizado} produto(s).` : ''}${avisoPrecoCompra}`
             : '';
-        definirStatusFornecedor(`Encomenda ${atualizado.codigo || ''} gravada.${detalhe}`, Boolean(avisoPrecoCompra));
+        definirStatusFornecedor(`Encomenda ${atualizado.codigo || ''} gravada.${detalhe}${avisoCustos}`, Boolean(avisoPrecoCompra || avisoCustos));
     } catch (error) {
         console.error(error);
         definirStatusEdicaoFornecedor(status, "erro", obterMensagemErroEdicaoFornecedor(error));
