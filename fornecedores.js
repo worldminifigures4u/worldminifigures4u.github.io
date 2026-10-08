@@ -110,7 +110,7 @@ function garantirFornecedoresProdutoModal() {
 function garantirFornecedoresEdicaoPedido() {
     if (window.FornecedoresEdicaoPedido) return Promise.resolve();
     if (!__fornecedoresEdicaoPromessa) {
-        __fornecedoresEdicaoPromessa = carregarScriptAdmin("fornecedores-edicao-pedido.js?v=20261008-nc-historico");
+        __fornecedoresEdicaoPromessa = carregarScriptAdmin("fornecedores-edicao-pedido.js?v=20261008-so-datas");
     }
     return __fornecedoresEdicaoPromessa;
 }
@@ -5237,13 +5237,14 @@ function renderizarPedidoFornecedorProdutosTabela(caixa, pedido) {
             }
         }
         if (item.origem_ajuste && !marcadoEx && !naoComprarItem) {
-            const textoOrigem = obterTextoOrigemAjusteItemPedidoFornecedor(item, pedido);
-            const dataOs = obterDataOsItemPedidoFornecedor(item, produtoAtual, pedido.fornecedor);
-            if (textoOrigem && textoOrigem !== dataOs) {
-            const origemSpan = document.createElement("span");
-            origemSpan.className = "fornecedor-ajuste-os";
-                origemSpan.textContent = textoOrigem;
-            origemCelula.appendChild(origemSpan);
+            // Só a data em que a figura foi adicionada/ajustada (sem texto "Ajustado pela lista…").
+            const dataAjuste = formatarDataAjustePedidoFornecedor(item.data_origem_ajuste || pedido?.atualizado_em || "");
+            const dataOs = faltaOs > 0 ? obterDataOsItemPedidoFornecedor(item, produtoAtual, pedido.fornecedor) : "";
+            if (dataAjuste && dataAjuste !== dataOs) {
+                const origemSpan = document.createElement("span");
+                origemSpan.className = "fornecedor-ajuste-os";
+                origemSpan.textContent = dataAjuste;
+                origemCelula.appendChild(origemSpan);
             }
         }
         if (!origemCelula.childElementCount) origemCelula.textContent = "-";

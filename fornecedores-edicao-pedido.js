@@ -908,9 +908,10 @@ function montarLinhaEdicaoProdutoFornecedor(pedido, item, indice) {
         : faltaAtual > 0
         ? `Inicial: ${quantidadeOriginal} | OS: ${faltaAtual}${dataOsTexto}`
         : `Inicial: ${quantidadeOriginal}`;
-    if (item.origem_ajuste && !itemIgnoradoLista && !itemNaoComprar) {
-        const textoOrigem = obterTextoOrigemAjustePedidoFornecedor(item.origem_ajuste);
-        if (textoOrigem) ajuste.textContent += ` | ${textoOrigem}`;
+    if (item.origem_ajuste && !itemIgnoradoLista && !itemNaoComprar && !item.data_os) {
+        // Só a data do ajuste (sem texto "Ajustado pela lista…" / "Adicionado depois").
+        const dataAjuste = item.data_origem_ajuste ? formatarDataOsCurtaFornecedor(item.data_origem_ajuste) : "";
+        if (dataAjuste) ajuste.textContent += ` | ${dataAjuste}`;
     }
     info.append(nome, ids, ajuste);
 
