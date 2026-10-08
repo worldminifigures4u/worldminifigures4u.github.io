@@ -4996,13 +4996,17 @@ function obterValorOrdenacaoItemPedidoFornecedor(item, coluna) {
     }
     if (coluna === "stock") return Number(produtoAtual?.stock || 0);
     if (coluna === "origem") {
+        // Ordena por grupo (descendente): OS > EX > Não comprar > outros ajustes > sem origem.
         const faltaOs = Math.max(0, Number(item?.falta_os || 0));
         const marcadoEx = itemPedidoEstaExFornecedor(item);
-        const partes = [];
-        if (faltaOs > 0) partes.push("OS/Falta");
-        if (marcadoEx) partes.push("EX");
-        if (item?.origem_ajuste) partes.push(obterTextoOrigemAjusteItemPedidoFornecedor(item));
-        return partes.join(" ") || "-";
+        const naoComprar = itemPedidoNaoComprarFornecedor(item);
+        const grupo = faltaOs > 0 && !naoComprar ? 5
+            : marcadoEx ? 4
+            : naoComprar ? 3
+            : item?.origem_ajuste ? 2
+            : 1;
+        const texto = naoComprar ? "" : String(obterTextoOrigemAjusteItemPedidoFornecedor(item) || "");
+        return `${grupo} ${texto}`;
     }
     return item?.nome || "";
 }
