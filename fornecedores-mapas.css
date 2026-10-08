@@ -6131,8 +6131,14 @@ html:not(.admin-light-mode) #fornecedor-sugerir-modal .fornecedor-sugerir-corpo 
 
 /* Compras: opção "Não comprar" (guarda preço e data sem comprar) */
 @media (min-width: 1101px) {
+    /* Modal a toda a largura: colunas de valores mais largas para "Preço compra USD" não colar ao "Recebido". */
     #fornecedor-edicao-modal .fornecedor-edicao-produto-campos {
-        grid-template-columns: repeat(4, 96px) auto auto auto auto;
+        grid-template-columns: repeat(4, 132px) auto auto auto auto;
+        column-gap: 14px;
+    }
+    #fornecedor-edicao-modal .fornecedor-edicao-produto-campos > label,
+    #fornecedor-edicao-modal .fornecedor-edicao-recebido-info strong {
+        white-space: nowrap;
     }
 }
 #fornecedor-edicao-modal .fornecedor-edicao-produto-campos .fornecedor-edicao-marcar-nc {
