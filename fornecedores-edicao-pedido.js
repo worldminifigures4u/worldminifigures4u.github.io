@@ -1764,6 +1764,7 @@ function garantirModalEdicaoFornecedor() {
                                     </div>
                                 </div>
                                 <p class="fornecedor-custo-real-ajuda">Sem o Total pago €, o preço fica provisório em USD com o envio incluído. Com ele, passa a €.</p>
+                                <label class="fornecedor-edicao-precos-usd-antigos"><input type="checkbox" id="fornecedor-edicao-precos-usd-antigos"> Os preços desta encomenda estão em USD (encomenda antiga, sem envio nem câmbio)</label>
                             </div>
                             <div class="fornecedor-edicao-painel-preco" data-modo-preco="eur" hidden>
                                 <div class="fornecedor-custo-real-grid fornecedor-custo-fixo-eur-grid" aria-label="Preço igual para todas as figuras">
@@ -1839,6 +1840,8 @@ function abrirEdicaoPedidoFornecedor(id) {
     delete modal.dataset.itensAlteradosListaFinal;
     modal.querySelector('#fornecedor-edicao-lista-final').value = '';
     preencherCustosGuardadosEdicaoFornecedor(modal, pedido.custos);
+    const precosUsdAntigos = modal.querySelector('#fornecedor-edicao-precos-usd-antigos');
+    if (precosUsdAntigos) precosUsdAntigos.checked = pedidoFornecedorTemPrecosUsdAntigos(pedido);
     const listaOs = modal.querySelector('#fornecedor-edicao-lista-os');
     if (listaOs) listaOs.value = '';
     const precoUnitarioEur = modal.querySelector('#fornecedor-edicao-os-preco-unitario-eur');
@@ -2082,6 +2085,17 @@ async function guardarEdicaoPedidoFornecedor(evento) {
     const deveAtualizarHistoricoConfirmacao = deveConfirmarHistoricoPedidoFornecedor(estadoAnterior, estado);
     const itens = lerItensEditadosPedidoFornecedor(pedido, modal);
     const opcoesCustoListaAtual = lerOpcoesCustoListaAtualFornecedor(modal);
+    // Encomenda antiga: os preços guardados são o PRICE em USD da lista (sem envio nem câmbio).
+    // Com o Total pago €, passam a preço USD da lista e são convertidos para € com o envio.
+    if (modal.querySelector('#fornecedor-edicao-precos-usd-antigos')?.checked
+        && deveCalcularCustoRealListaAtualFornecedor(opcoesCustoListaAtual)) {
+        itens.forEach((item) => {
+            if (!itemContaParaCustoRealListaAtualFornecedor(item)) return;
+            if (Math.max(0, Number(item.preco_lista_usd || 0)) > 0) return;
+            const preco = Math.max(0, Number(item.preco_custo ?? item.preco ?? 0) || 0);
+            if (preco > 0) item.preco_lista_usd = preco;
+        });
+    }
     const resumoCustoRealListaAtual = deveCalcularCustoRealListaAtualFornecedor(opcoesCustoListaAtual)
         && itensTemPrecoUsdListaAtualFornecedor(itens)
         ? calcularCustoRealListaAtualFornecedor(itens, opcoesCustoListaAtual)

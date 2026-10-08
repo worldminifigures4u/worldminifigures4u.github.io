@@ -110,7 +110,7 @@ function garantirFornecedoresProdutoModal() {
 function garantirFornecedoresEdicaoPedido() {
     if (window.FornecedoresEdicaoPedido) return Promise.resolve();
     if (!__fornecedoresEdicaoPromessa) {
-        __fornecedoresEdicaoPromessa = carregarScriptAdmin("fornecedores-edicao-pedido.js?v=20261008-data-encomendada");
+        __fornecedoresEdicaoPromessa = carregarScriptAdmin("fornecedores-edicao-pedido.js?v=20261008-precos-usd-antigos");
     }
     return __fornecedoresEdicaoPromessa;
 }
@@ -5534,6 +5534,21 @@ function textoDiasEncomendaFornecedor(pedido) {
     return dias === 1 ? "há 1 dia" : `há ${dias} dias`;
 }
 
+// Encomenda antiga (antes do cálculo com envio e câmbio, 28/09/2026) que nunca foi convertida:
+// os preços guardados são provavelmente o PRICE em USD da lista, não o custo real em €.
+const DATA_INICIO_CUSTO_REAL_FORNECEDOR = Date.parse("2026-09-28T00:00:00");
+function pedidoFornecedorTemPrecosUsdAntigos(pedido) {
+    if (!pedido) return false;
+    if (normalizarEstadoPedidoFornecedor(pedido.estado) === "cancelada") return false;
+    const criado = Date.parse(pedido.criado_em || "") || 0;
+    if (!criado || criado >= DATA_INICIO_CUSTO_REAL_FORNECEDOR) return false;
+    const custos = pedido.custos && typeof pedido.custos === "object" ? pedido.custos : null;
+    if (custos && Number(custos.total_pago_eur) > 0) return false;
+    const itens = Array.isArray(pedido.itens) ? pedido.itens : [];
+    if (itens.some(item => Number(item?.preco_lista_usd) > 0)) return false;
+    return itens.some(item => Number(item?.quantidade || 0) > 0 && Number(item?.preco_custo ?? item?.preco ?? 0) > 0);
+}
+
 function atualizarContagensFiltroEstadoPedidosFornecedor() {
     const select = document.getElementById("fornecedor-filtro-estado");
     if (!select) return;
@@ -5711,6 +5726,14 @@ function renderizarPedidosFornecedores() {
             criarElementoPedidoFornecedor("span", "fornecedor-pedido-resumo", resumo),
             criarElementoPedidoFornecedor("span", `estado-encomenda fornecedor-pedido-estado-linha ${obterClasseBadgeEstadoPedidoFornecedor(pedido.estado)}`, pedido.estado || "A preparar")
         );
+        if (pedidoFornecedorTemPrecosUsdAntigos(pedido)) {
+            const aviso = criarElementoPedidoFornecedor("span", "fornecedor-pedido-aviso-usd", "preços em USD?");
+            aviso.title = "Encomenda antiga: os preços devem ser o PRICE em USD da lista, sem envio nem câmbio. Edita, marca \"Os preços desta encomenda estão em USD\", preenche Envio, Total compra e Total pago € e grava.";
+            // Dentro do resumo (não cria uma coluna nova na grelha da linha).
+            const resumoLinha = linha.querySelector(".fornecedor-pedido-resumo");
+            if (resumoLinha) resumoLinha.append(" ", aviso);
+            else linha.appendChild(aviso);
+        }
         if (alvoJuntar) {
             linha.classList.add("com-destino-selecao");
             linha.appendChild(criarElementoPedidoFornecedor("span", "fornecedor-pedido-destino-selecao", "Destino seleção"));
