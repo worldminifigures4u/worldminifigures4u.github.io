@@ -110,7 +110,7 @@ function garantirFornecedoresProdutoModal() {
 function garantirFornecedoresEdicaoPedido() {
     if (window.FornecedoresEdicaoPedido) return Promise.resolve();
     if (!__fornecedoresEdicaoPromessa) {
-        __fornecedoresEdicaoPromessa = carregarScriptAdmin("fornecedores-edicao-pedido.js?v=20261008-precos-usd-antigos");
+        __fornecedoresEdicaoPromessa = carregarScriptAdmin("fornecedores-edicao-pedido.js?v=20261010-data-encomenda");
     }
     return __fornecedoresEdicaoPromessa;
 }
@@ -5416,7 +5416,19 @@ function criarDetalhesPedidoFornecedor(pedido) {
         opt.selected = pedido.estado === opcao;
         estado.appendChild(opt);
     });
-    estado.addEventListener("change", () => alterarEstadoPedidoFornecedor(pedido.id, estado.value));
+    estado.addEventListener("change", async () => {
+        const novoEstado = estado.value;
+        // Confirma antes de mudar: evita trocar o estado por engano (ex.: confundir com o filtro geral).
+        const confirmou = await mostrarConfirmacaoSite(
+            `Mudar o estado da encomenda ${obterTextoCodigoPedidoFornecedor(pedido)} de «${pedido.estado}» para «${novoEstado}»?`,
+            { titulo: "Mudar estado", textoConfirmar: "Mudar", textoCancelar: "Fechar" }
+        );
+        if (!confirmou) {
+            estado.value = pedido.estado;
+            return;
+        }
+        alterarEstadoPedidoFornecedor(pedido.id, novoEstado);
+    });
     grupoEstado.appendChild(estado);
 
     const botoes = criarElementoPedidoFornecedor("div", "admin-encomenda-botoes");

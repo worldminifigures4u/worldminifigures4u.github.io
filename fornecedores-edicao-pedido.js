@@ -1702,6 +1702,10 @@ function garantirModalEdicaoFornecedor() {
                             Estado
                             <select id="fornecedor-edicao-estado"></select>
                         </label>
+                        <label>
+                            Data da encomenda
+                            <input type="datetime-local" id="fornecedor-edicao-data-encomendada" title="Data em que a encomenda foi feita ao fornecedor (conta os dias e as datas no histórico)">
+                        </label>
                     </div>
                     <details class="fornecedor-edicao-bloco" id="fornecedor-edicao-bloco-listas">
                         <summary>Importar lista do fornecedor</summary>
@@ -1836,6 +1840,11 @@ function abrirEdicaoPedidoFornecedor(id) {
     modal.querySelector('#fornecedor-edicao-codigo').value = pedido.codigo || '';
     modal.querySelector('#fornecedor-edicao-nome').value = pedido.fornecedor || '';
     modal.querySelector('#fornecedor-edicao-referencia').value = pedido.referencia || '';
+    const campoDataEncomendada = modal.querySelector('#fornecedor-edicao-data-encomendada');
+    if (campoDataEncomendada) {
+        campoDataEncomendada.value = paraDatetimeLocalEdicaoFornecedor(pedido.data_encomendada);
+        campoDataEncomendada.dataset.original = campoDataEncomendada.value;
+    }
     modal.querySelector('#fornecedor-edicao-status').textContent = '';
     delete modal.dataset.itensAlteradosListaFinal;
     modal.querySelector('#fornecedor-edicao-lista-final').value = '';
@@ -2046,6 +2055,28 @@ function custosIguaisEdicaoFornecedor(a, b) {
     return normalizar(a) === normalizar(b);
 }
 
+function paraDatetimeLocalEdicaoFornecedor(valor) {
+    const data = valor ? new Date(valor) : null;
+    if (!data || Number.isNaN(data.getTime())) return '';
+    const dois = (n) => String(n).padStart(2, '0');
+    return `${data.getFullYear()}-${dois(data.getMonth() + 1)}-${dois(data.getDate())}T${dois(data.getHours())}:${dois(data.getMinutes())}`;
+}
+
+// Grava a data da encomenda escolhida à mão (o Supabase não a deixa mudar por outra via).
+async function guardarDataEncomendadaPedidoFornecedor(id, valorLocal) {
+    const data = new Date(valorLocal);
+    if (Number.isNaN(data.getTime())) throw new Error('Data da encomenda inválida.');
+    const { data: resposta, error } = await fornecedoresClient.rpc('definir_data_encomendada_fornecedor_admin', {
+        p_id: String(id),
+        p_data: data.toISOString()
+    });
+    if (error) throw error;
+    const guardada = resposta?.data_encomendada || data.toISOString();
+    fornecedorPedidos = fornecedorPedidos.map(item => String(item.id) === String(id) ? { ...item, data_encomendada: guardada } : item);
+    guardarPedidosFornecedores();
+    return guardada;
+}
+
 async function guardarCustosPedidoFornecedor(id, custos) {
     const { data, error } = await fornecedoresClient.rpc('guardar_custos_encomenda_fornecedor_admin', {
         p_id: String(id),
@@ -2166,6 +2197,26 @@ async function guardarEdicaoPedidoFornecedor(evento) {
             dadosPedido.codigo = codigo || null;
         }
         const atualizado = await atualizarPedidoFornecedor(id, dadosPedido);
+        let avisoData = '';
+        const campoData = modal.querySelector('#fornecedor-edicao-data-encomendada');
+        if (campoData && campoData.value && campoData.value !== (campoData.dataset.original || '')) {
+            status.textContent = 'A guardar a data da encomenda...';
+            try {
+                atualizado.data_encomendada = await guardarDataEncomendadaPedidoFornecedor(id, campoData.value);
+                // Volta a pôr as datas do histórico das figuras na data certa da encomenda.
+                if (!deveAtualizarHistoricoConfirmacao
+                    && (estadoPedidoFornecedorEhEncomendada(estado) || estadoPedidoFornecedorEhRecebida(estado))) {
+                    status.textContent = 'A acertar as datas no histórico das figuras...';
+                    await sincronizarHistoricoPedidosFornecedor(itens, fornecedor, {
+                        modo: "confirmar",
+                        dataPedido: atualizado.data_encomendada
+                    });
+                }
+            } catch (erroData) {
+                console.warn('Nao foi possivel guardar a data da encomenda.', erroData);
+                avisoData = ' A data da encomenda não ficou guardada: falta correr o SQL supabase-data-encomendada-manter.sql no Supabase.';
+            }
+        }
         let avisoCustos = '';
         const custosNovos = lerCustosParaGuardarEdicaoFornecedor(modal);
         if (!custosIguaisEdicaoFornecedor(custosNovos, pedido.custos)) {
@@ -2218,7 +2269,7 @@ async function guardarEdicaoPedidoFornecedor(evento) {
         const detalhe = itensAlterados || deveAtualizarHistoricoConfirmacao
             ? `${resumoCustoRealListaAtual.aplicado ? obterResumoCustoRealListaAtualFornecedor(resumoCustoRealListaAtual).replace(/\n+/g, ' ') : ''}${resumoCustoFixoEur.aplicado ? obterResumoCustoFixoEurFornecedor(resumoCustoFixoEur) : ''}${produtosComPrecoAtualizado ? ` Preço compra atualizado em ${produtosComPrecoAtualizado} produto(s).` : ''}${avisoPrecoCompra}`
             : '';
-        definirStatusFornecedor(`Encomenda ${atualizado.codigo || ''} gravada.${detalhe}${avisoCustos}`, Boolean(avisoPrecoCompra || avisoCustos));
+        definirStatusFornecedor(`Encomenda ${atualizado.codigo || ''} gravada.${detalhe}${avisoCustos}${avisoData}`, Boolean(avisoPrecoCompra || avisoCustos || avisoData));
     } catch (error) {
         console.error(error);
         definirStatusEdicaoFornecedor(status, "erro", obterMensagemErroEdicaoFornecedor(error));
