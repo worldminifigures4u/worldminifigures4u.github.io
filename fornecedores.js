@@ -110,7 +110,7 @@ function garantirFornecedoresProdutoModal() {
 function garantirFornecedoresEdicaoPedido() {
     if (window.FornecedoresEdicaoPedido) return Promise.resolve();
     if (!__fornecedoresEdicaoPromessa) {
-        __fornecedoresEdicaoPromessa = carregarScriptAdmin("fornecedores-edicao-pedido.js?v=20261010-encomenda-antiga");
+        __fornecedoresEdicaoPromessa = carregarScriptAdmin("fornecedores-edicao-pedido.js?v=20261010-conjunto-ref");
     }
     return __fornecedoresEdicaoPromessa;
 }
@@ -1199,6 +1199,7 @@ function serializarItemPedidoFornecedor(item) {
         ...(Number(normalizado.preco_lista_usd) > 0 ? { preco_lista_usd: Number(normalizado.preco_lista_usd) } : {}),
         ...(Number(normalizado.preco_estimado_eur) > 0 ? { preco_estimado_eur: Number(normalizado.preco_estimado_eur) } : {}),
         ...(normalizado.custo_eur_confirmado === true ? { custo_eur_confirmado: true } : {}),
+        ...(normalizado.conjunto_extra === true ? { conjunto_extra: true } : {}),
         ...(Number.isFinite(Number(normalizado.preco_custo_figura)) && normalizado.preco_custo_figura !== undefined && normalizado.preco_custo_figura !== null
             ? { preco_custo_figura: Number(normalizado.preco_custo_figura) } : {}),
         ...(Number.isFinite(Number(normalizado.preco_custo_portes)) && normalizado.preco_custo_portes !== undefined && normalizado.preco_custo_portes !== null
@@ -4793,7 +4794,10 @@ async function sincronizarPrecoCompraProdutosFornecedor(itens, fornecedorNome = 
         const precoCompra = Math.max(0, Number(item?.preco_custo ?? item?.preco_compra ?? item?.custo ?? 0) || 0);
         if (precoCompra <= 0) return;
         const produtoAtual = obterProdutoParaPedidoFornecedor(item);
-        const chave = normalizarReferenciaListaFornecedor(produtoAtual?.referencia || item?.referencia);
+        // Por produto (id): figuras diferentes com a mesma referência (conjunto) recebem cada uma o preço.
+        const chave = produtoAtual?.id
+            ? `id:${produtoAtual.id}`
+            : normalizarReferenciaListaFornecedor(produtoAtual?.referencia || item?.referencia);
         if (!chave) return;
         porProduto.set(chave, { item, produtoAtual, precoCompra });
     });
@@ -4855,7 +4859,7 @@ async function sincronizarPrecoCompraProdutosFornecedor(itens, fornecedorNome = 
         const precoEstimado = Math.max(0, Number(item?.preco_estimado_eur || 0) || 0);
         if (precoEstimado <= 0) return;
         const produtoAtual = obterProdutoParaPedidoFornecedor(item);
-        const chave = normalizarReferenciaListaFornecedor(produtoAtual?.referencia || item?.referencia);
+        const chave = produtoAtual?.id ? `id:${produtoAtual.id}` : "";
         if (!chave || porProduto.has(chave) || !produtoAtual?.id) return;
         estimados.set(chave, { produtoAtual, precoEstimado });
     });

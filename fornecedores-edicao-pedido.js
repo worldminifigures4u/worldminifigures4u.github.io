@@ -354,8 +354,31 @@ function arredondarPrecoCustoListaAtualFornecedor(valor) {
     return Math.round(numero * 100) / 100;
 }
 
+// Referência partilhada por várias fichas (um conjunto, ex.: TV8071 = Blurrg + Mandalorian): a linha
+// do fornecedor vai para todas as figuras com o preço total; só a primeira conta para as unidades.
+const CAMPOS_PRECO_CONJUNTO_FORNECEDOR = ["preco_custo", "preco", "preco_custo_moeda", "preco_custo_provisorio",
+    "custo_calculado_lista_atual", "custo_eur_confirmado", "preco_custo_figura", "preco_custo_portes"];
+function copiarPrecoConjuntoPartilhadoFornecedor(itens) {
+    const principais = new Map();
+    (itens || []).forEach((item) => {
+        if (!item || item.conjunto_extra) return;
+        const chave = normalizarReferenciaListaFornecedor(item.referencia);
+        if (chave && !principais.has(chave)) principais.set(chave, item);
+    });
+    (itens || []).forEach((item) => {
+        if (!item?.conjunto_extra) return;
+        const principal = principais.get(normalizarReferenciaListaFornecedor(item.referencia));
+        if (!principal) return;
+        CAMPOS_PRECO_CONJUNTO_FORNECEDOR.forEach((campo) => {
+            if (principal[campo] === undefined) delete item[campo];
+            else item[campo] = principal[campo];
+        });
+    });
+}
+
 function itemContaParaCustoRealListaAtualFornecedor(item) {
     if (!item) return false;
+    if (item.conjunto_extra) return false;
     if (itemIgnoradoListaEdicaoFornecedor(item)) return false;
     const estado = String(item.estado_fornecedor || "").trim().toUpperCase();
     if (estado === "EX" || item.marcado_ex === true) return false;
@@ -493,6 +516,7 @@ function calcularCustoRealListaAtualFornecedor(itens, opcoes = {}) {
         if (calcularEur) item.custo_eur_confirmado = true;
     });
 
+    copiarPrecoConjuntoPartilhadoFornecedor(itens);
     if (!calcularEur) {
         return {
             aplicado: false,
@@ -591,6 +615,7 @@ function aplicarCustoFixoEurItensFornecedor(itens, opcoes = {}) {
         // Fica guardado: o preço desta figura já é o custo real em € (apaga o aviso "preços em USD?").
         item.custo_eur_confirmado = true;
     });
+    copiarPrecoConjuntoPartilhadoFornecedor(itens);
 
     return {
         aplicado: true,
@@ -674,8 +699,18 @@ function processarLinhasListaFinalFornecedor(texto, itensAtuais = [], opcoesCust
         linhasImportadas += 1;
         if (analisada.sem_stock_fornecedor) osImportadas += 1;
 
-        const produto = encontrarProdutoListaFinalFornecedor(analisada.referencia);
+        let produto = encontrarProdutoListaFinalFornecedor(analisada.referencia);
+        // Referência partilhada por várias fichas (conjunto): a linha vai para todas, com o preço total.
+        let produtosConjunto = [];
+        if (!produto) {
+            const candidatos = obterProdutosPorReferenciaFornecedor(analisada.referencia);
+            const ativos = candidatos.filter(candidato => candidato?.ativo !== false && !obterBooleanoProdutoFornecedor(candidato?.arquivado));
+            produtosConjunto = (ativos.length > 1 ? ativos : candidatos.length > 1 ? candidatos : []);
+            if (produtosConjunto.length === 1) { produto = produtosConjunto[0]; produtosConjunto = []; }
+            if (produtosConjunto.length > 1) produto = produtosConjunto[0];
+        }
         if (!produto) foraCatalogo.push(analisada.referencia);
+        const extrasConjunto = produtosConjunto.slice(1);
         let item = criarItemFornecedorAPartirListaFinal(analisada, produto);
         item.sem_stock_fornecedor = Boolean(analisada.sem_stock_fornecedor);
         item.quantidade_os = analisada.sem_stock_fornecedor && Number(analisada.quantidade_os) > 0
@@ -692,8 +727,31 @@ function processarLinhasListaFinalFornecedor(texto, itensAtuais = [], opcoesCust
         }
         const existente = obterItemExistenteListaFinalFornecedor(itensAtuais, item);
         if (existente) itensUsados.add(existente);
+        const base = item;
         item = fundirItemListaFinalComExistenteFornecedor(item, existente);
-        if (item) itens.push(item);
+        if (item) {
+            if (extrasConjunto.length) delete item.conjunto_extra;
+            itens.push(item);
+        }
+        extrasConjunto.forEach((produtoExtra) => {
+            let extra = {
+                ...base,
+                id: produtoExtra.id,
+                nome: produtoExtra.nome || base.nome,
+                sku: produtoExtra.sku || "",
+                tema: produtoExtra.tema || base.tema || "",
+                subtema: produtoExtra.subtema || base.subtema || "",
+                imagens: produtoExtra.imagens || [],
+                conjunto_extra: true
+            };
+            const existenteExtra = obterItemExistenteListaFinalFornecedor(itensAtuais, extra);
+            if (existenteExtra) itensUsados.add(existenteExtra);
+            extra = fundirItemListaFinalComExistenteFornecedor(extra, existenteExtra);
+            if (extra) {
+                extra.conjunto_extra = true;
+                itens.push(extra);
+            }
+        });
     });
 
     (Array.isArray(itensAtuais) ? itensAtuais : []).forEach((existente) => {
@@ -923,6 +981,7 @@ function montarLinhaEdicaoProdutoFornecedor(pedido, item, indice) {
         const dataAjuste = item.data_origem_ajuste ? formatarDataOsCurtaFornecedor(item.data_origem_ajuste) : "";
         if (dataAjuste) ajuste.textContent += ` | ${dataAjuste}`;
     }
+    if (item.conjunto_extra) ajuste.textContent += " | conjunto (preço da ref.)";
     info.append(nome, ids, ajuste);
 
     const campos = document.createElement("div");
@@ -1584,9 +1643,12 @@ function atualizarResultadoPrecoIgualEdicaoFornecedor(modal) {
     const total = sincronizarTotalPagamentosEdicaoFornecedor(modal);
     const temSegundo = Boolean(String(modal.querySelector('#fornecedor-edicao-pagamento-2-eur')?.value || '').trim());
     let unidades = 0;
+    const pedidoAtual = typeof obterPedidoEdicaoFornecedor === 'function' ? obterPedidoEdicaoFornecedor(modal) : null;
     modal.querySelectorAll('.fornecedor-edicao-produto').forEach(linha => {
         if (linha.hidden || linha.dataset.removido === '1') return;
         if (linha.querySelector('[data-campo="marcar_ex"]')?.checked) return;
+        // Segunda figura de um conjunto (mesma referência): não conta como unidade paga.
+        if (pedidoAtual?.itens?.[Number(linha.dataset.indice)]?.conjunto_extra) return;
         const quantidade = Math.max(0, Math.floor(Number(String(linha.querySelector('[data-campo="quantidade"]')?.value || '0').replace(',', '.')) || 0));
         unidades += quantidade;
     });
