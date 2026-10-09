@@ -528,8 +528,10 @@ function lerOpcoesCustoFixoEurFornecedor(contexto = document) {
     const precoUnitarioEur = Math.max(0, obterValor("#fornecedor-edicao-os-preco-unitario-eur"));
     const envioEur = Math.max(0, obterValor("#fornecedor-edicao-os-envio-eur"));
     const totalCompraEur = Math.max(0, obterValor("#fornecedor-edicao-os-total-compra-eur"));
+    const unidadesPagas = Math.max(0, Math.floor(obterValor("#fornecedor-edicao-unidades-pagas")) || 0);
     // "Preço por figura €" preenchido: é o preço final de cada figura e os pagamentos são ignorados.
     return {
+        unidadesPagas,
         precoUnitarioEur,
         envioEur,
         totalCompraEur: precoUnitarioEur > 0 ? 0 : totalCompraEur,
@@ -560,8 +562,10 @@ function aplicarCustoFixoEurItensFornecedor(itens, opcoes = {}) {
     const precoBaseEur = Math.max(0, Number(opcoes.precoUnitarioEur || 0) || 0);
     const envioEur = Math.max(0, Number(opcoes.envioEur || 0) || 0);
     // O preço por figura já inclui os portes (os portes só servem para separar figura / portes).
+    // "Figuras pagas": divide o total só pelas figuras pagas (as que vieram a mais, já pagas antes, ficam com o mesmo preço).
+    const divisor = Math.max(0, Math.floor(Number(opcoes.unidadesPagas || 0))) || totalUnidades;
     const precoUnitarioFinal = totalCompraEur > 0
-        ? totalCompraEur / totalUnidades
+        ? totalCompraEur / divisor
         : precoBaseEur;
 
     if (!Number.isFinite(precoUnitarioFinal) || precoUnitarioFinal <= 0) {
@@ -569,7 +573,7 @@ function aplicarCustoFixoEurItensFornecedor(itens, opcoes = {}) {
     }
 
     const precoCusto = arredondarPrecoCustoListaAtualFornecedor(precoUnitarioFinal);
-    const portesUnidade = envioEur > 0 ? Math.round((envioEur / totalUnidades) * 100) / 100 : 0;
+    const portesUnidade = envioEur > 0 ? Math.round((envioEur / divisor) * 100) / 100 : 0;
     const figuraUnidade = Math.max(0, Math.round((precoCusto - portesUnidade) * 100) / 100);
     itensReceber.forEach((item) => {
         if (envioEur > 0) {
@@ -1599,14 +1603,19 @@ function atualizarResultadoPrecoIgualEdicaoFornecedor(modal) {
         destino.textContent = 'Não há unidades a receber para dividir o total.';
         return;
     }
-    const porFigura = total / unidades;
+    const unidadesPagas = Math.max(0, Math.floor(converterNumeroListaFornecedor(modal.querySelector('#fornecedor-edicao-unidades-pagas')?.value || '') || 0));
+    const divisor = unidadesPagas > 0 ? unidadesPagas : unidades;
+    const porFigura = total / divisor;
     const prefixo = temSegundo ? `Total ${total.toFixed(2).replace('.', ',')} € ` : '';
     const portesTotal = Math.max(0, converterNumeroListaFornecedor(modal.querySelector('#fornecedor-edicao-os-envio-eur')?.value || '') || 0);
     const fmt = (v) => v.toFixed(2).replace('.', ',');
     const divisao = portesTotal > 0 && portesTotal < total
-        ? ` · figura ${fmt(porFigura - portesTotal / unidades)} € + portes ${fmt(portesTotal / unidades)} €`
+        ? ` · figura ${fmt(porFigura - portesTotal / divisor)} € + portes ${fmt(portesTotal / divisor)} €`
         : '';
-    destino.textContent = `${prefixo}= ${fmt(porFigura)} € por figura${divisao} (${unidades} ${unidades === 1 ? 'unidade' : 'unidades'} a receber)`;
+    const textoDivisor = unidadesPagas > 0
+        ? `÷ ${unidadesPagas} pagas; ${unidades} ${unidades === 1 ? 'unidade' : 'unidades'} a receber`
+        : `${unidades} ${unidades === 1 ? 'unidade' : 'unidades'} a receber`;
+    destino.textContent = `${prefixo}= ${fmt(porFigura)} € por figura${divisao} (${textoDivisor})`;
 }
 
 function ligarBlocosEdicaoFornecedor(modal) {
@@ -1655,7 +1664,7 @@ function ligarBlocosEdicaoFornecedor(modal) {
 
 function prepararBlocosAoAbrirEdicaoFornecedor(modal, pedido) {
     modal.querySelectorAll('.fornecedor-edicao-bloco').forEach(bloco => { bloco.open = false; });
-    ['#fornecedor-edicao-pagamento-1-eur', '#fornecedor-edicao-pagamento-2-eur'].forEach(id => {
+    ['#fornecedor-edicao-pagamento-1-eur', '#fornecedor-edicao-pagamento-2-eur', '#fornecedor-edicao-unidades-pagas'].forEach(id => {
         const campo = modal.querySelector(id);
         if (campo) campo.value = '';
     });
@@ -1795,6 +1804,10 @@ function garantirModalEdicaoFornecedor() {
                                     <label>
                                         Portes € (incluídos, opcional)
                                         <input type="text" id="fornecedor-edicao-os-envio-eur" inputmode="decimal" autocomplete="off" placeholder="0,00 €">
+                                    </label>
+                                    <label>
+                                        Figuras pagas (opcional)
+                                        <input type="text" id="fornecedor-edicao-unidades-pagas" inputmode="numeric" autocomplete="off" placeholder="0" title="Quantas figuras pagaste nesta encomenda, se for diferente das unidades a receber (ex.: figuras em falta da encomenda anterior que vieram agora sem pagar). O total pago é dividido por este número.">
                                     </label>
                                     <p class="fornecedor-edicao-preco-resultado" id="fornecedor-edicao-preco-resultado" aria-live="polite"></p>
                                     <input type="hidden" id="fornecedor-edicao-os-total-compra-eur">
