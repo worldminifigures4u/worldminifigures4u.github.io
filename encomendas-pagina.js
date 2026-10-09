@@ -23,7 +23,7 @@
                 return carregarScript('paises-cliente.js?v=20260731-wallapop-es');
             })
             .then(function () {
-                return carregarScript('encomendas.js?v=20261008-dias-caixote');
+                return carregarScript('encomendas.js?v=20261010-conjunto-hist');
             });
 
         return promessaEncomendasJs;

@@ -1126,8 +1126,14 @@ function obterDataHistoricoItemFornecedorMapa(produto, pedido, item, pedidoQtd, 
 
 function obterLinhasEncomendaFornecedorProdutoMapa(produto, pedidos) {
     const linhas = [];
+    const produtoId = String(produto?.id || "").trim();
+    const idDoItem = (item) => String(item?.id_produto || item?.produto_id || item?.id || "").trim();
     (pedidos || []).forEach((pedido) => {
+        // Se a encomenda tem uma linha com o id deste produto, só essa conta: as outras com a mesma
+        // referência são outras figuras (ex.: conjunto TV8071 = Blurrg + Mandalorian) e não se repetem.
+        const temLinhaComId = Boolean(produtoId) && (pedido.itens || []).some((item) => idDoItem(item) === produtoId);
         (pedido.itens || []).forEach((item) => {
+            if (temLinhaComId && idDoItem(item) !== produtoId) return;
             if (!produtoCorrespondeItemRececaoMapa(produto, item)) return;
             const pedidoQtd = obterQuantidadePedidaItemFornecedorMapa(item);
             if (pedidoQtd <= 0) return;
