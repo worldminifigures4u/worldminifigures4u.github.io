@@ -110,7 +110,7 @@ function garantirFornecedoresProdutoModal() {
 function garantirFornecedoresEdicaoPedido() {
     if (window.FornecedoresEdicaoPedido) return Promise.resolve();
     if (!__fornecedoresEdicaoPromessa) {
-        __fornecedoresEdicaoPromessa = carregarScriptAdmin("fornecedores-edicao-pedido.js?v=20261010-estado-topo");
+        __fornecedoresEdicaoPromessa = carregarScriptAdmin("fornecedores-edicao-pedido.js?v=20261010-eur-confirmado");
     }
     return __fornecedoresEdicaoPromessa;
 }
@@ -1197,6 +1197,7 @@ function serializarItemPedidoFornecedor(item) {
         // Preço original da lista do fornecedor (USD): permite recalcular o custo ao voltar a gravar.
         ...(Number(normalizado.preco_lista_usd) > 0 ? { preco_lista_usd: Number(normalizado.preco_lista_usd) } : {}),
         ...(Number(normalizado.preco_estimado_eur) > 0 ? { preco_estimado_eur: Number(normalizado.preco_estimado_eur) } : {}),
+        ...(normalizado.custo_eur_confirmado === true ? { custo_eur_confirmado: true } : {}),
         ...(Number.isFinite(Number(normalizado.preco_custo_figura)) && normalizado.preco_custo_figura !== undefined && normalizado.preco_custo_figura !== null
             ? { preco_custo_figura: Number(normalizado.preco_custo_figura) } : {}),
         ...(Number.isFinite(Number(normalizado.preco_custo_portes)) && normalizado.preco_custo_portes !== undefined && normalizado.preco_custo_portes !== null
@@ -5628,6 +5629,8 @@ function pedidoFornecedorTemPrecosUsdAntigos(pedido) {
     if (custos && Number(custos.total_pago_eur) > 0) return false;
     const itens = Array.isArray(pedido.itens) ? pedido.itens : [];
     if (itens.some(item => Number(item?.preco_lista_usd) > 0)) return false;
+    // Corrigida com "Preço igual para todas" (ou já convertida para €): já não é suspeita.
+    if (itens.some(item => item?.custo_eur_confirmado === true)) return false;
     return itens.some(item => Number(item?.quantidade || 0) > 0 && Number(item?.preco_custo ?? item?.preco ?? 0) > 0);
 }
 

@@ -490,6 +490,7 @@ function calcularCustoRealListaAtualFornecedor(itens, opcoes = {}) {
         item.preco_custo_moeda = calcularEur ? "EUR" : "USD";
         item.preco_custo_provisorio = !calcularEur;
         item.custo_calculado_lista_atual = calcularEur;
+        if (calcularEur) item.custo_eur_confirmado = true;
     });
 
     if (!calcularEur) {
@@ -581,6 +582,8 @@ function aplicarCustoFixoEurItensFornecedor(itens, opcoes = {}) {
         item.preco_custo_moeda = "EUR";
         item.preco_custo_provisorio = false;
         item.custo_calculado_lista_atual = true;
+        // Fica guardado: o preço desta figura já é o custo real em € (apaga o aviso "preços em USD?").
+        item.custo_eur_confirmado = true;
     });
 
     return {
@@ -1771,7 +1774,7 @@ function garantirModalEdicaoFornecedor() {
                                 <div class="fornecedor-custo-real-grid fornecedor-custo-fixo-eur-grid" aria-label="Preço igual para todas as figuras">
                                     <label>
                                         Pagamento 1 €
-                                        <input type="text" id="fornecedor-edicao-pagamento-1-eur" inputmode="decimal" autocomplete="off" placeholder="120,00 €">
+                                        <input type="text" id="fornecedor-edicao-pagamento-1-eur" inputmode="decimal" autocomplete="off" placeholder="0,00 €">
                                     </label>
                                     <label>
                                         Pagamento 2 € (opcional)
@@ -1779,7 +1782,7 @@ function garantirModalEdicaoFornecedor() {
                                     </label>
                                     <label>
                                         Portes € (incluídos, opcional)
-                                        <input type="text" id="fornecedor-edicao-os-envio-eur" inputmode="decimal" autocomplete="off" placeholder="9,25 €">
+                                        <input type="text" id="fornecedor-edicao-os-envio-eur" inputmode="decimal" autocomplete="off" placeholder="0,00 €">
                                     </label>
                                     <p class="fornecedor-edicao-preco-resultado" id="fornecedor-edicao-preco-resultado" aria-live="polite"></p>
                                     <input type="hidden" id="fornecedor-edicao-os-total-compra-eur">
