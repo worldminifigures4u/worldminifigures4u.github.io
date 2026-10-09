@@ -528,10 +528,11 @@ function lerOpcoesCustoFixoEurFornecedor(contexto = document) {
     const precoUnitarioEur = Math.max(0, obterValor("#fornecedor-edicao-os-preco-unitario-eur"));
     const envioEur = Math.max(0, obterValor("#fornecedor-edicao-os-envio-eur"));
     const totalCompraEur = Math.max(0, obterValor("#fornecedor-edicao-os-total-compra-eur"));
+    // "Preço por figura €" preenchido: é o preço final de cada figura e os pagamentos são ignorados.
     return {
         precoUnitarioEur,
         envioEur,
-        totalCompraEur,
+        totalCompraEur: precoUnitarioEur > 0 ? 0 : totalCompraEur,
         ativo: precoUnitarioEur > 0 || envioEur > 0 || totalCompraEur > 0
     };
 }
@@ -558,9 +559,10 @@ function aplicarCustoFixoEurItensFornecedor(itens, opcoes = {}) {
     const totalCompraEur = Math.max(0, Number(opcoes.totalCompraEur || 0) || 0);
     const precoBaseEur = Math.max(0, Number(opcoes.precoUnitarioEur || 0) || 0);
     const envioEur = Math.max(0, Number(opcoes.envioEur || 0) || 0);
+    // O preço por figura já inclui os portes (os portes só servem para separar figura / portes).
     const precoUnitarioFinal = totalCompraEur > 0
         ? totalCompraEur / totalUnidades
-        : precoBaseEur + (envioEur > 0 ? envioEur / totalUnidades : 0);
+        : precoBaseEur;
 
     if (!Number.isFinite(precoUnitarioFinal) || precoUnitarioFinal <= 0) {
         return { aplicado: false };
@@ -1583,6 +1585,12 @@ function atualizarResultadoPrecoIgualEdicaoFornecedor(modal) {
         const quantidade = Math.max(0, Math.floor(Number(String(linha.querySelector('[data-campo="quantidade"]')?.value || '0').replace(',', '.')) || 0));
         unidades += quantidade;
     });
+    const precoPorFigura = Math.max(0, converterNumeroListaFornecedor(modal.querySelector('#fornecedor-edicao-os-preco-unitario-eur')?.value || '') || 0);
+    if (precoPorFigura > 0) {
+        const textoUnidades = `${unidades} ${unidades === 1 ? 'unidade' : 'unidades'} a receber`;
+        destino.textContent = `= ${precoPorFigura.toFixed(2).replace('.', ',')} € por figura (${textoUnidades}${unidades > 0 ? `, total ${(precoPorFigura * unidades).toFixed(2).replace('.', ',')} €` : ''})`;
+        return;
+    }
     if (!(total > 0)) {
         destino.textContent = unidades > 0 ? `${unidades} ${unidades === 1 ? 'unidade' : 'unidades'} a receber` : '';
         return;
@@ -1773,6 +1781,10 @@ function garantirModalEdicaoFornecedor() {
                             <div class="fornecedor-edicao-painel-preco" data-modo-preco="eur" hidden>
                                 <div class="fornecedor-custo-real-grid fornecedor-custo-fixo-eur-grid" aria-label="Preço igual para todas as figuras">
                                     <label>
+                                        Preço por figura €
+                                        <input type="text" id="fornecedor-edicao-os-preco-unitario-eur" inputmode="decimal" autocomplete="off" placeholder="0,00 €" title="Preço final de cada figura (já com portes). Se preenchido, os pagamentos são ignorados.">
+                                    </label>
+                                    <label>
                                         Pagamento 1 €
                                         <input type="text" id="fornecedor-edicao-pagamento-1-eur" inputmode="decimal" autocomplete="off" placeholder="0,00 €">
                                     </label>
@@ -1786,10 +1798,9 @@ function garantirModalEdicaoFornecedor() {
                                     </label>
                                     <p class="fornecedor-edicao-preco-resultado" id="fornecedor-edicao-preco-resultado" aria-live="polite"></p>
                                     <input type="hidden" id="fornecedor-edicao-os-total-compra-eur">
-                                    <input type="hidden" id="fornecedor-edicao-os-preco-unitario-eur">
 
                                 </div>
-                                <p class="fornecedor-custo-real-ajuda">O total pago (soma dos pagamentos, já com envio) é dividido pelas unidades a receber. As figuras OS, EX ou removidas não contam.</p>
+                                <p class="fornecedor-custo-real-ajuda">Preenche o Preço por figura € (aplicado igual a todas) ou os pagamentos: o total pago (soma dos pagamentos, já com envio) é dividido pelas unidades a receber. As figuras OS, EX ou removidas não contam.</p>
                             </div>
                         </div>
                     </details>

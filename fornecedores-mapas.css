@@ -5370,7 +5370,7 @@ html:not(.admin-light-mode) body #fornecedor-edicao-modal .fornecedor-edicao-fec
     gap: 4px;
 }
 #fornecedor-edicao-modal .fornecedor-custo-fixo-eur-grid {
-    grid-template-columns: minmax(160px, 240px) minmax(160px, 240px) minmax(0, 1fr);
+    grid-template-columns: minmax(160px, 220px) minmax(160px, 220px) minmax(160px, 220px) minmax(0, 1fr);
     align-items: end;
 }
 #fornecedor-edicao-modal .fornecedor-edicao-preco-resultado {
