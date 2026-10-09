@@ -907,7 +907,8 @@ function montarLinhaEdicaoProdutoFornecedor(pedido, item, indice) {
         : itemIgnoradoLista
         ? "fornecedor-ajuste-os ativo"
         : (faltaAtual > 0 ? "fornecedor-ajuste-os ativo" : "fornecedor-ajuste-os");
-    const dataOsTexto = item.data_os ? ` | desde ${formatarDataOsCurtaFornecedor(item.data_os)}` : "";
+    // Sem "desde <data>": a data da marcação fica guardada e aparece na coluna Origem da encomenda.
+    const dataOsTexto = "";
     ajuste.textContent = itemMarcadoEx
         ? `Inicial: ${quantidadeOriginal} | EX${dataOsTexto}`
         : itemNaoComprar
