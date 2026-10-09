@@ -1695,7 +1695,7 @@ function garantirModalEdicaoFornecedor() {
     modal.innerHTML = `
         <div class="fornecedor-edicao-dialog" role="dialog" aria-modal="true" aria-labelledby="fornecedor-edicao-titulo">
             <div class="fornecedor-edicao-topo">
-                <h3 id="fornecedor-edicao-titulo">Editar encomenda do fornecedor</h3>
+                <h3 id="fornecedor-edicao-titulo">Editar encomenda do fornecedor <span class="fornecedor-edicao-titulo-resumo" id="fornecedor-edicao-titulo-resumo"></span></h3>
                 <p class="fornecedores-status fornecedor-edicao-status" id="fornecedor-edicao-status" role="status"></p>
                 <div class="fornecedor-edicao-topo-acoes">
                     <select id="fornecedor-edicao-estado" class="fornecedor-status-select fornecedor-edicao-estado-topo" form="fornecedor-edicao-form" aria-label="Estado da encomenda" title="Estado da encomenda (só muda ao Gravar)"></select>
@@ -1861,6 +1861,12 @@ function abrirEdicaoPedidoFornecedor(id) {
     });
 
     modal.querySelector('#fornecedor-edicao-id').value = pedido.id;
+    const resumoTitulo = modal.querySelector('#fornecedor-edicao-titulo-resumo');
+    if (resumoTitulo) {
+        resumoTitulo.textContent = typeof formatarResumoCartaoPedidoFornecedor === 'function'
+            ? formatarResumoCartaoPedidoFornecedor(obterTotaisPedidoFornecedor(pedido))
+            : '';
+    }
     modal.querySelector('#fornecedor-edicao-codigo').value = pedido.codigo || '';
     modal.querySelector('#fornecedor-edicao-nome').value = pedido.fornecedor || '';
     modal.querySelector('#fornecedor-edicao-referencia').value = pedido.referencia || '';

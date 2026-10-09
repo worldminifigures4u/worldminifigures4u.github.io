@@ -6242,3 +6242,12 @@ body.fornecedores-vista-lista .fornecedores-coluna-direita .fornecedor-pedido-li
     }
     .fornecedor-escolher-pedido-opcao > span { white-space: nowrap; }
 }
+
+/* Editar encomenda: artigos · unidades ao lado do título */
+#fornecedor-edicao-modal .fornecedor-edicao-titulo-resumo {
+    margin-left: 12px;
+    color: #aaa;
+    font-size: 14px;
+    font-weight: 700;
+    white-space: nowrap;
+}
