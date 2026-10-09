@@ -110,7 +110,7 @@ function garantirFornecedoresProdutoModal() {
 function garantirFornecedoresEdicaoPedido() {
     if (window.FornecedoresEdicaoPedido) return Promise.resolve();
     if (!__fornecedoresEdicaoPromessa) {
-        __fornecedoresEdicaoPromessa = carregarScriptAdmin("fornecedores-edicao-pedido.js?v=20261010-eur-confirmado");
+        __fornecedoresEdicaoPromessa = carregarScriptAdmin("fornecedores-edicao-pedido.js?v=20261010-preco-por-id");
     }
     return __fornecedoresEdicaoPromessa;
 }
@@ -4791,7 +4791,8 @@ async function sincronizarPrecoCompraProdutosFornecedor(itens, fornecedorNome = 
             const { data, error } = await fornecedoresClient.rpc("atualizar_preco_compra_produto_admin", {
                 p_id: produtoAtual.id,
                 p_sku: null,
-                p_referencia: produtoAtual?.referencia || item.referencia || null,
+                // Com id, só esse produto: pela referência o Supabase apanhava também cópias com a mesma ref. e dava erro.
+                p_referencia: produtoAtual?.id ? null : (produtoAtual?.referencia || item.referencia || null),
                 p_preco_compra: precoCompra
             });
             if (error) throw error;
@@ -4846,7 +4847,7 @@ async function sincronizarPrecoCompraProdutosFornecedor(itens, fornecedorNome = 
             const { error: erroGeral } = await fornecedoresClient.rpc("atualizar_preco_compra_produto_admin", {
                 p_id: produtoAtual.id,
                 p_sku: null,
-                p_referencia: produtoAtual?.referencia || null,
+                p_referencia: produtoAtual?.id ? null : (produtoAtual?.referencia || null),
                 p_preco_compra: precoEstimado
             });
             if (erroGeral) throw erroGeral;

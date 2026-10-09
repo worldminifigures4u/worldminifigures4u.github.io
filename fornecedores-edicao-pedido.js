@@ -2259,7 +2259,7 @@ async function guardarEdicaoPedidoFornecedor(evento) {
                 produtosComPrecoAtualizado = await sincronizarPrecoCompraProdutosFornecedor(itens, fornecedor, atualizado.data_encomendada || pedido.data_encomendada || pedido.criado_em || atualizado.criado_em || '', id);
             } catch (erroPrecoCompra) {
                 console.warn('Nao foi possivel sincronizar preço compra nos produtos.', erroPrecoCompra);
-                avisoPrecoCompra = ' O preço compra ficou gravado na encomenda, mas ainda não foi atualizado na ficha do produto. Execute o SQL atualizado no Supabase.';
+                avisoPrecoCompra = ` O preço compra ficou gravado na encomenda, mas ainda não foi atualizado na ficha do produto (${erroPrecoCompra?.message || 'erro desconhecido'}).`;
             }
         }
         guardadoComSucesso = true;
