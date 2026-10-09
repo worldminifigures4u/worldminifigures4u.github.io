@@ -18,14 +18,20 @@ function mostrarPopupEdicaoFornecedor(tipo, mensagem) {
     popup.className = `fornecedor-edicao-popup ${tipo === "erro" ? "erro" : tipo === "aviso" ? "aviso" : "sucesso"}`;
     popup.hidden = false;
     window.clearTimeout(temporizadorPopupEdicaoFornecedor);
-    temporizadorPopupEdicaoFornecedor = window.setTimeout(() => {
-        popup.hidden = true;
-    }, tipo === "erro" ? 5200 : 3600);
+    // Avisos e erros ficam até se clicar (para dar tempo de ler as referências); sucesso some sozinho.
+    popup.title = "Clica para fechar";
+    popup.onclick = () => { popup.hidden = true; };
+    if (tipo !== "erro" && tipo !== "aviso") {
+        temporizadorPopupEdicaoFornecedor = window.setTimeout(() => {
+            popup.hidden = true;
+        }, 3600);
+    }
 }
 
 function definirStatusEdicaoFornecedor(status, tipo, mensagem) {
     if (status) {
         status.textContent = mensagem;
+        status.title = mensagem || "";
         status.classList.remove("status-erro", "status-sucesso", "status-aviso", "status-neutro");
         status.classList.add(tipo === "erro" ? "status-erro" : tipo === "aviso" ? "status-aviso" : "status-sucesso");
     }

@@ -6277,3 +6277,13 @@ body.fornecedores-vista-lista .fornecedores-coluna-direita .fornecedor-pedido-li
 .fornecedor-encomenda-antiga-erro { margin: 0; color: var(--fp-cor-erro, #ff6b6b); font-weight: 700; min-height: 0; }
 .fornecedor-encomenda-antiga-erro:empty { display: none; }
 .fornecedor-encomenda-antiga-acoes { display: flex; justify-content: flex-end; }
+
+/* Editar encomenda: a mensagem de estado lê-se toda (quebra linha, até 3 linhas com scroll) */
+#fornecedor-edicao-modal .fornecedor-edicao-topo .fornecedor-edicao-status {
+    white-space: normal;
+    text-overflow: clip;
+    overflow-y: auto;
+    max-height: 4.2em;
+    text-align: left;
+}
+#fornecedor-edicao-modal .fornecedor-edicao-popup { cursor: pointer; white-space: normal; }
