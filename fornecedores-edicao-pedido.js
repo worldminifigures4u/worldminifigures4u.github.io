@@ -1678,6 +1678,7 @@ function garantirModalEdicaoFornecedor() {
                 <h3 id="fornecedor-edicao-titulo">Editar encomenda do fornecedor</h3>
                 <p class="fornecedores-status fornecedor-edicao-status" id="fornecedor-edicao-status" role="status"></p>
                 <div class="fornecedor-edicao-topo-acoes">
+                    <select id="fornecedor-edicao-estado" class="fornecedor-status-select fornecedor-edicao-estado-topo" form="fornecedor-edicao-form" aria-label="Estado da encomenda" title="Estado da encomenda (só muda ao Gravar)"></select>
                     <button type="submit" form="fornecedor-edicao-form" id="fornecedor-edicao-guardar" class="wallapop-botao wallapop-botao-destaque wallapop-botao-guardar">Gravar</button>
                     <button type="button" class="fornecedor-edicao-fechar" id="fornecedor-edicao-fechar">Fechar</button>
                 </div>
@@ -1697,10 +1698,6 @@ function garantirModalEdicaoFornecedor() {
                         <label>
                             Referencia interna
                             <input type="text" id="fornecedor-edicao-referencia">
-                        </label>
-                        <label>
-                            Estado
-                            <select id="fornecedor-edicao-estado"></select>
                         </label>
                         <label>
                             Data da encomenda
