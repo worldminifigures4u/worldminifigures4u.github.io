@@ -1707,6 +1707,7 @@ function garantirModalEdicaoFornecedor() {
             <form id="fornecedor-edicao-form" class="fornecedor-edicao-form">
                 <input type="hidden" id="fornecedor-edicao-id">
                 <div class="fornecedor-edicao-corpo">
+                    <p class="fornecedor-edicao-aviso-antiga" id="fornecedor-edicao-aviso-antiga" hidden>Encomenda antiga: só regista preços e histórico. Não mexe no stock nem nas marcações das figuras, e só põe o preço de compra nas figuras sem preço (ou com um preço mais antigo). Cola a lista do fornecedor em "Importar lista do fornecedor", preenche o Preço de compra e grava.</p>
                     <div class="fornecedor-edicao-grid">
                         <label>
                             Código da encomenda
@@ -1861,6 +1862,10 @@ function abrirEdicaoPedidoFornecedor(id) {
     });
 
     modal.querySelector('#fornecedor-edicao-id').value = pedido.id;
+    const avisoAntiga = modal.querySelector('#fornecedor-edicao-aviso-antiga');
+    if (avisoAntiga) avisoAntiga.hidden = pedido.historico !== true;
+    const seletorEstado = modal.querySelector('#fornecedor-edicao-estado');
+    if (seletorEstado) seletorEstado.disabled = pedido.historico === true;
     const resumoTitulo = modal.querySelector('#fornecedor-edicao-titulo-resumo');
     if (resumoTitulo) {
         resumoTitulo.textContent = typeof formatarResumoCartaoPedidoFornecedor === 'function'
@@ -2138,7 +2143,9 @@ async function guardarEdicaoPedidoFornecedor(evento) {
     const codigoOriginal = normalizarCodigoEdicaoFornecedor(pedido.codigo);
     const fornecedor = modal.querySelector('#fornecedor-edicao-nome').value.trim();
     const referencia = modal.querySelector('#fornecedor-edicao-referencia').value.trim();
-    const estado = modal.querySelector('#fornecedor-edicao-estado').value;
+    // Encomenda antiga: só histórico de preços (não mexe no stock nem nas marcações das figuras).
+    const encomendaAntiga = pedido.historico === true;
+    const estado = encomendaAntiga ? pedido.estado : modal.querySelector('#fornecedor-edicao-estado').value;
     const estadoAnterior = pedido.estado;
     let itensAlterados = modal.dataset.itensAlteradosListaFinal === "1" || pedidoTemItensAlteradosEdicaoFornecedor(pedido, modal);
     const deveAtualizarHistoricoConfirmacao = deveConfirmarHistoricoPedidoFornecedor(estadoAnterior, estado);
@@ -2213,7 +2220,15 @@ async function guardarEdicaoPedidoFornecedor(evento) {
         if (codigo !== codigoOriginal) {
             dadosPedido.codigo = codigo || null;
         }
-        const atualizado = await atualizarPedidoFornecedor(id, dadosPedido);
+        let atualizado = await atualizarPedidoFornecedor(id, dadosPedido);
+        if (encomendaAntiga && itensAlterados) {
+            status.textContent = 'A dar as unidades como recebidas (sem mexer no stock)...';
+            const { data: dadosAntiga, error: erroAntiga } = await fornecedoresClient.rpc('acertar_recebido_encomenda_antiga_fornecedor_admin', { p_id: String(id) });
+            if (erroAntiga) throw erroAntiga;
+            atualizado = normalizarPedidoFornecedor(dadosAntiga);
+            fornecedorPedidos = fornecedorPedidos.map(item => String(item.id) === String(id) ? atualizado : item);
+            guardarPedidosFornecedores();
+        }
         let avisoData = '';
         const campoData = modal.querySelector('#fornecedor-edicao-data-encomendada');
         if (campoData && campoData.value && campoData.value !== (campoData.dataset.original || '')) {
@@ -2221,7 +2236,7 @@ async function guardarEdicaoPedidoFornecedor(evento) {
             try {
                 atualizado.data_encomendada = await guardarDataEncomendadaPedidoFornecedor(id, campoData.value);
                 // Volta a pôr as datas do histórico das figuras na data certa da encomenda.
-                if (!deveAtualizarHistoricoConfirmacao
+                if (!deveAtualizarHistoricoConfirmacao && !encomendaAntiga
                     && (estadoPedidoFornecedorEhEncomendada(estado) || estadoPedidoFornecedorEhRecebida(estado))) {
                     status.textContent = 'A acertar as datas no histórico das figuras...';
                     await sincronizarHistoricoPedidosFornecedor(itens, fornecedor, {
@@ -2245,7 +2260,9 @@ async function guardarEdicaoPedidoFornecedor(evento) {
                 avisoCustos = ' Os valores do preço de compra (Envio, Total compra, Total pago) não ficaram guardados: falta correr o SQL supabase-custos-encomenda-fornecedor.sql no Supabase.';
             }
         }
-        if (itensAlterados) {
+        if (encomendaAntiga) {
+            // Encomenda antiga: as marcações atuais das figuras não mudam.
+        } else if (itensAlterados) {
             status.textContent = 'A atualizar histórico na ficha do produto...';
             await sincronizarHistoricoPedidosFornecedor(itens, fornecedor, {
                 modo: "editar",
@@ -2261,7 +2278,7 @@ async function guardarEdicaoPedidoFornecedor(evento) {
                 console.warn('Nao foi possivel acertar a marcação atual OS/EX.', erroMarcacao);
             }
         }
-        if (deveAtualizarHistoricoConfirmacao) {
+        if (deveAtualizarHistoricoConfirmacao && !encomendaAntiga) {
             status.textContent = 'A confirmar histórico na ficha do produto...';
             await sincronizarHistoricoPedidosFornecedor(itens, fornecedor, {
                 modo: "confirmar",
@@ -2273,7 +2290,7 @@ async function guardarEdicaoPedidoFornecedor(evento) {
         if (itensAlterados) {
             status.textContent = 'A atualizar preço compra nos produtos...';
             try {
-                produtosComPrecoAtualizado = await sincronizarPrecoCompraProdutosFornecedor(itens, fornecedor, atualizado.data_encomendada || pedido.data_encomendada || pedido.criado_em || atualizado.criado_em || '', id);
+                produtosComPrecoAtualizado = await sincronizarPrecoCompraProdutosFornecedor(itens, fornecedor, atualizado.data_encomendada || pedido.data_encomendada || pedido.criado_em || atualizado.criado_em || '', id, { soPreencher: encomendaAntiga });
             } catch (erroPrecoCompra) {
                 console.warn('Nao foi possivel sincronizar preço compra nos produtos.', erroPrecoCompra);
                 avisoPrecoCompra = ` O preço compra ficou gravado na encomenda, mas ainda não foi atualizado na ficha do produto (${erroPrecoCompra?.message || 'erro desconhecido'}).`;

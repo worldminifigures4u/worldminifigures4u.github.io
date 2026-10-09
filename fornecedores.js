@@ -110,7 +110,7 @@ function garantirFornecedoresProdutoModal() {
 function garantirFornecedoresEdicaoPedido() {
     if (window.FornecedoresEdicaoPedido) return Promise.resolve();
     if (!__fornecedoresEdicaoPromessa) {
-        __fornecedoresEdicaoPromessa = carregarScriptAdmin("fornecedores-edicao-pedido.js?v=20261010-sem-usd-antigos");
+        __fornecedoresEdicaoPromessa = carregarScriptAdmin("fornecedores-edicao-pedido.js?v=20261010-encomenda-antiga");
     }
     return __fornecedoresEdicaoPromessa;
 }
@@ -867,6 +867,7 @@ function normalizarPedidoFornecedor(pedido) {
         data_encomendada: pedido.data_encomendada || null,
         data_caixote_recebido: pedido.data_caixote_recebido || null,
         custos: pedido.custos && typeof pedido.custos === 'object' ? pedido.custos : null,
+        historico: pedido.historico === true,
         itens: consolidarItensPedidoFornecedor(
             Array.isArray(pedido.itens) ? pedido.itens.map(normalizarItemPedidoFornecedor).filter(Boolean) : []
         )
@@ -4735,7 +4736,10 @@ async function sincronizarOsProdutosFornecedor(itens, fornecedorNome) {
     return sincronizarHistoricoPedidosFornecedor(itens, fornecedorNome, { modo: "criar" });
 }
 
-async function sincronizarPrecoCompraProdutosFornecedor(itens, fornecedorNome = "", dataPedido = "", pedidoId = "") {
+async function sincronizarPrecoCompraProdutosFornecedor(itens, fornecedorNome = "", dataPedido = "", pedidoId = "", opcoesSync = {}) {
+    // Encomenda antiga (soPreencher): só preenche preços em falta ou mais antigos com data; nunca substitui
+    // um preço sem data/encomenda (pode ser manual) nem um mais recente.
+    const soPreencher = opcoesSync?.soPreencher === true;
     // Data guardada com o preço = data da encomenda (a mesma do "Histórico a fornecedores"), não o dia em que se grava.
     const dataPreco = dataPedido || undefined;
     const tempoPedido = Date.parse(dataPedido || "") || 0;
@@ -4743,6 +4747,11 @@ async function sincronizarPrecoCompraProdutosFornecedor(itens, fornecedorNome = 
     // Uma encomenda só substitui um preço se for a mesma encomenda ou se for igual/mais recente.
     // Preços antigos sem encomenda registada podem ser substituídos (como antes).
     const podeSubstituirEntrada = (entrada) => {
+        if (soPreencher) {
+            if (!entrada || typeof entrada !== "object" || !(Number(entrada.preco_compra) > 0)) return true;
+            const dataEntrada = Date.parse(entrada.data_preco_compra || "") || 0;
+            return Boolean(tempoPedido && dataEntrada && tempoPedido > dataEntrada);
+        }
         if (!tempoPedido || !entrada || typeof entrada !== "object") return true;
         const origem = String(entrada.pedido_preco_compra || "");
         if (!origem || (idPedido && origem === idPedido)) return true;
@@ -4755,6 +4764,16 @@ async function sincronizarPrecoCompraProdutosFornecedor(itens, fornecedorNome = 
     };
     // Preço compra geral: não muda se algum fornecedor tiver uma compra registada mais recente (de outra encomenda).
     const podeSubstituirPrecoGeral = (produto) => {
+        if (soPreencher) {
+            if (!(Number(produto?.preco_compra || 0) > 0)) return true;
+            const comPreco = Object.values(obterObjetoFornecedoresProduto(produto))
+                .filter(entrada => entrada && typeof entrada === "object" && !entrada.preco_estimado && Number(entrada.preco_compra) > 0);
+            if (!comPreco.length || !tempoPedido) return false;
+            return comPreco.every(entrada => {
+                const dataEntrada = Date.parse(entrada.data_preco_compra || "") || 0;
+                return dataEntrada && tempoPedido > dataEntrada;
+            });
+        }
         if (!tempoPedido) return true;
         return Object.values(obterObjetoFornecedoresProduto(produto)).every((entrada) => {
             if (!entrada || typeof entrada !== "object" || entrada.preco_estimado) return true;
@@ -5737,6 +5756,106 @@ function mostrarVistaFornecedores(vista, opcoes = {}) {
     window.scrollTo(0, 0);
 }
 
+// Encomenda antiga (anterior ao site): pede fornecedor, código e data, cria-a já como Recebida
+// (sem mexer no stock nem nas marcações) e abre o Editar para colar a lista e o preço.
+function pedirDadosEncomendaAntigaFornecedor() {
+    return new Promise(resolve => {
+        const modal = document.createElement("div");
+        modal.className = "fornecedor-escolher-pedido-modal fornecedor-encomenda-antiga-modal";
+        modal.setAttribute("role", "dialog");
+        modal.setAttribute("aria-modal", "true");
+        const dialog = criarElementoPedidoFornecedor("form", "fornecedor-escolher-pedido-dialog fornecedor-encomenda-antiga-dialog");
+        const topo = criarElementoPedidoFornecedor("div", "fornecedor-escolher-pedido-topo");
+        const titulo = criarElementoPedidoFornecedor("h3", "", "Encomenda antiga");
+        const fechar = criarElementoPedidoFornecedor("button", "fornecedor-edicao-fechar", "Fechar");
+        fechar.type = "button";
+        topo.append(titulo, fechar);
+        const corpo = criarElementoPedidoFornecedor("div", "fornecedor-encomenda-antiga-corpo");
+        const ajuda = criarElementoPedidoFornecedor("p", "fornecedor-encomenda-antiga-ajuda",
+            "Só regista preços e histórico: fica como Recebida, não mexe no stock nem nas marcações das figuras, e só põe o preço de compra nas figuras sem preço (ou com um preço mais antigo). A seguir abre o Editar para colares a lista do fornecedor e o preço.");
+        const campo = (rotulo, input) => {
+            const label = criarElementoPedidoFornecedor("label", "", rotulo);
+            label.appendChild(input);
+            return label;
+        };
+        const fornecedorInput = document.createElement("input");
+        fornecedorInput.type = "text";
+        fornecedorInput.required = true;
+        fornecedorInput.setAttribute("list", "fornecedor-encomenda-antiga-lista");
+        const lista = document.createElement("datalist");
+        lista.id = "fornecedor-encomenda-antiga-lista";
+        const nomes = new Set();
+        (fornecedorFichas || []).forEach(ficha => ficha?.nome && nomes.add(ficha.nome));
+        fornecedorPedidos.forEach(pedido => pedido?.fornecedor && nomes.add(pedido.fornecedor));
+        Array.from(nomes).sort(compararTextoFornecedor).forEach(nome => lista.appendChild(new Option(nome, nome)));
+        const codigoInput = document.createElement("input");
+        codigoInput.type = "text";
+        codigoInput.placeholder = "Código de seguimento (opcional)";
+        const dataInput = document.createElement("input");
+        dataInput.type = "date";
+        dataInput.required = true;
+        const erro = criarElementoPedidoFornecedor("p", "fornecedor-encomenda-antiga-erro", "");
+        const acoes = criarElementoPedidoFornecedor("div", "fornecedor-encomenda-antiga-acoes");
+        const criar = criarElementoPedidoFornecedor("button", "wallapop-botao wallapop-botao-destaque", "Criar e editar");
+        criar.type = "submit";
+        acoes.appendChild(criar);
+        corpo.append(ajuda, campo("Fornecedor", fornecedorInput), lista, campo("Código da encomenda", codigoInput), campo("Data da encomenda", dataInput), erro, acoes);
+        dialog.append(topo, corpo);
+        modal.appendChild(dialog);
+        const terminar = valor => {
+            modal.remove();
+            document.body.classList.remove("fornecedor-escolher-pedido-modal-aberto");
+            resolve(valor);
+        };
+        fechar.addEventListener("click", () => terminar(null));
+        modal.addEventListener("click", evento => { if (evento.target === modal) terminar(null); });
+        modal.addEventListener("keydown", evento => { if (evento.key === "Escape") terminar(null); });
+        dialog.addEventListener("submit", evento => {
+            evento.preventDefault();
+            const fornecedor = fornecedorInput.value.trim();
+            const data = dataInput.value;
+            if (!fornecedor || !data) {
+                erro.textContent = "Indica o fornecedor e a data.";
+                return;
+            }
+            if (new Date(`${data}T12:00:00`) > new Date()) {
+                erro.textContent = "A data não pode ser no futuro.";
+                return;
+            }
+            terminar({ fornecedor, codigo: codigoInput.value.trim(), data: new Date(`${data}T12:00:00`).toISOString() });
+        });
+        document.body.appendChild(modal);
+        document.body.classList.add("fornecedor-escolher-pedido-modal-aberto");
+        fornecedorInput.focus();
+    });
+}
+
+async function criarEncomendaAntigaFornecedor() {
+    const dados = await pedirDadosEncomendaAntigaFornecedor();
+    if (!dados) return;
+    try {
+        definirStatusFornecedor("A criar a encomenda antiga...", false, { temporario: false });
+        const { data, error } = await fornecedoresClient.rpc("criar_encomenda_antiga_fornecedor_admin", {
+            p_fornecedor: dados.fornecedor,
+            p_codigo: dados.codigo || null,
+            p_data: dados.data
+        });
+        if (error) throw error;
+        const pedido = normalizarPedidoFornecedor(data);
+        fornecedorPedidos = [pedido, ...fornecedorPedidos.filter(item => String(item.id) !== String(pedido.id))];
+        guardarPedidosFornecedores();
+        renderizarPedidosFornecedores();
+        definirStatusFornecedor(`Encomenda antiga ${pedido.codigo} criada. Cola a lista do fornecedor e o preço no Editar.`);
+        await abrirEdicaoPedidoFornecedor(pedido.id);
+    } catch (erro) {
+        console.error(erro);
+        const semSql = /criar_encomenda_antiga_fornecedor_admin|function|does not exist|schema cache/i.test(String(erro?.message || ""));
+        definirStatusFornecedor(semSql
+            ? "Falta correr o SQL supabase-encomendas-antigas-fornecedor.sql no Supabase."
+            : "Erro ao criar a encomenda antiga: " + (erro?.message || "erro desconhecido"), true);
+    }
+}
+
 function iniciarVistasFornecedores() {
     if (document.body.dataset.vistasFornecedores === "1") return;
     document.body.dataset.vistasFornecedores = "1";
@@ -5757,7 +5876,14 @@ function iniciarVistasFornecedores() {
         fichas.textContent = "Fornecedores";
         fichas.title = "Abrir as fichas dos fornecedores";
         fichas.addEventListener("click", editarFornecedorSelecionado);
-        cabecalhoLista.append(fichas, nova);
+        const antiga = document.createElement("button");
+        antiga.type = "button";
+        antiga.id = "btn-encomenda-antiga-fornecedor";
+        antiga.className = "wallapop-botao fornecedores-btn-fichas";
+        antiga.textContent = "Encomenda antiga";
+        antiga.title = "Registar uma encomenda feita antes do site (só preços e histórico; não mexe no stock nem nas marcações)";
+        antiga.addEventListener("click", criarEncomendaAntigaFornecedor);
+        cabecalhoLista.append(antiga, fichas, nova);
     }
 
     const controles = document.querySelector("#fornecedores-escolher .fornecedor-controles-unificados");
@@ -5845,6 +5971,11 @@ function renderizarPedidosFornecedores() {
             })(),
             criarElementoPedidoFornecedor("span", `estado-encomenda fornecedor-pedido-estado-linha ${obterClasseBadgeEstadoPedidoFornecedor(pedido.estado)}`, pedido.estado || "A preparar")
         );
+        if (pedido.historico) {
+            const antigaEl = criarElementoPedidoFornecedor("span", "fornecedor-pedido-antiga", "encomenda antiga");
+            antigaEl.title = "Encomenda feita antes do site: só regista preços e histórico (não mexeu no stock nem nas marcações).";
+            linha.appendChild(antigaEl);
+        }
         if (alvoJuntar) {
             linha.classList.add("com-destino-selecao");
             const destino = criarElementoPedidoFornecedor("span", "fornecedor-pedido-destino-selecao", "Destino seleção");

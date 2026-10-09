@@ -6220,3 +6220,60 @@ html:not(.admin-light-mode) #fornecedor-sugerir-modal .fornecedor-sugerir-corpo 
     font-weight: 700;
     white-space: nowrap;
 }
+
+/* Encomendas antigas (anteriores ao site): só histórico de preços */
+.fornecedor-pedido-antiga {
+    display: inline-block;
+    padding: 1px 7px;
+    border: 1px solid #8a8a8a;
+    border-radius: 999px;
+    color: #bbb;
+    font-size: 11px;
+    font-weight: 800;
+    white-space: nowrap;
+}
+body.fornecedores-vista-lista .fornecedores-coluna-direita .fornecedor-pedido-linha-cabecalho > .fornecedor-pedido-antiga,
+.fornecedor-pedido-linha-cabecalho > .fornecedor-pedido-antiga {
+    grid-area: destino !important;
+    justify-self: start !important;
+}
+#fornecedor-edicao-modal .fornecedor-edicao-aviso-antiga {
+    margin: 0 0 12px;
+    padding: 10px 12px;
+    border: 1px solid #8a8a8a;
+    border-radius: 6px;
+    color: #ddd;
+    font-size: 13px;
+    font-weight: 700;
+}
+.fornecedor-encomenda-antiga-modal { align-items: center; }
+.fornecedor-encomenda-antiga-modal .fornecedor-encomenda-antiga-dialog {
+    width: min(560px, calc(100vw - 16px));
+    align-self: center;
+}
+.fornecedor-encomenda-antiga-corpo {
+    display: grid;
+    gap: 12px;
+    padding: 16px;
+}
+.fornecedor-encomenda-antiga-corpo label {
+    display: grid;
+    gap: 4px;
+    color: #ddd;
+    font-size: 12px;
+    font-weight: 700;
+}
+.fornecedor-encomenda-antiga-corpo input {
+    box-sizing: border-box;
+    width: 100%;
+    border: 1px solid #444;
+    border-radius: 6px;
+    background: #242424;
+    color: #fff;
+    padding: 8px;
+    font: inherit;
+}
+.fornecedor-encomenda-antiga-ajuda { margin: 0; color: #aaa; font-size: 13px; }
+.fornecedor-encomenda-antiga-erro { margin: 0; color: var(--fp-cor-erro, #ff6b6b); font-weight: 700; min-height: 0; }
+.fornecedor-encomenda-antiga-erro:empty { display: none; }
+.fornecedor-encomenda-antiga-acoes { display: flex; justify-content: flex-end; }
