@@ -5634,12 +5634,48 @@ function pedidoFornecedorTemPrecosUsdAntigos(pedido) {
     return itens.some(item => Number(item?.quantidade || 0) > 0 && Number(item?.preco_custo ?? item?.preco ?? 0) > 0);
 }
 
+function obterFiltroFornecedorListaPedidos() {
+    return String(document.getElementById("fornecedor-filtro-fornecedor-lista")?.value || "");
+}
+
+function pedidoFornecedorPassaFiltroFornecedorLista(pedido, filtro = obterFiltroFornecedorListaPedidos()) {
+    if (!filtro) return true;
+    return normalizarChaveFornecedor(pedido?.fornecedor || "") === filtro;
+}
+
+// Preenche o filtro de fornecedor com os fornecedores que têm encomendas (com a contagem no estado escolhido).
+function atualizarOpcoesFiltroFornecedorListaPedidos() {
+    const select = document.getElementById("fornecedor-filtro-fornecedor-lista");
+    if (!select) return;
+    const atual = select.value;
+    const filtroEstado = document.getElementById("fornecedor-filtro-estado")?.value || "encomendada";
+    const nomes = new Map();
+    fornecedorPedidos.forEach(pedido => {
+        const nome = String(pedido?.fornecedor || "").trim();
+        if (!nome) return;
+        const chave = normalizarChaveFornecedor(nome);
+        if (!nomes.has(chave)) nomes.set(chave, { nome, total: 0 });
+        if (pedidoFornecedorPassaFiltroEstado(pedido, filtroEstado)) nomes.get(chave).total += 1;
+    });
+    const totalTodos = fornecedorPedidos.filter(pedido => pedidoFornecedorPassaFiltroEstado(pedido, filtroEstado)).length;
+    const opcoes = [new Option(`Todos os fornecedores (${totalTodos})`, "")];
+    Array.from(nomes.entries())
+        .sort((a, b) => compararTextoFornecedor(a[1].nome, b[1].nome))
+        .forEach(([chave, info]) => opcoes.push(new Option(`${info.nome} (${info.total})`, chave)));
+    select.replaceChildren(...opcoes);
+    select.value = nomes.has(atual) ? atual : "";
+}
+
 function atualizarContagensFiltroEstadoPedidosFornecedor() {
     const select = document.getElementById("fornecedor-filtro-estado");
     if (!select) return;
+    const filtroFornecedor = obterFiltroFornecedorListaPedidos();
     Array.from(select.options).forEach(option => {
         if (!option.dataset.rotulo) option.dataset.rotulo = option.textContent.replace(/\s*\(\d+\)$/, "");
-        const total = fornecedorPedidos.filter(pedido => pedidoFornecedorPassaFiltroEstado(pedido, option.value)).length;
+        const total = fornecedorPedidos.filter(pedido =>
+            pedidoFornecedorPassaFiltroEstado(pedido, option.value)
+            && pedidoFornecedorPassaFiltroFornecedorLista(pedido, filtroFornecedor)
+        ).length;
         option.textContent = `${option.dataset.rotulo} (${total})`;
     });
 }
@@ -5768,9 +5804,14 @@ function renderizarPedidosFornecedores() {
     // Pre-definição: começar por "Encomendada" (em vez de "A preparar")
     const filtro = document.getElementById('fornecedor-filtro-estado')?.value || 'encomendada';
     caixa.replaceChildren();
+    atualizarOpcoesFiltroFornecedorListaPedidos();
     atualizarContagensFiltroEstadoPedidosFornecedor();
     atualizarResumoACaminhoPedidosFornecedor(caixa);
-    const pedidos = fornecedorPedidos.filter(pedido => pedidoFornecedorPassaFiltroEstado(pedido, filtro));
+    const filtroFornecedorLista = obterFiltroFornecedorListaPedidos();
+    const pedidos = fornecedorPedidos.filter(pedido =>
+        pedidoFornecedorPassaFiltroEstado(pedido, filtro)
+        && pedidoFornecedorPassaFiltroFornecedorLista(pedido, filtroFornecedorLista)
+    );
     if (!pedidos.length) {
         const vazio = document.createElement('p');
         vazio.className = 'fornecedor-vazio';
@@ -5999,6 +6040,7 @@ ligarEventoFornecedor('btn-sugerir-fornecedor', 'click', abrirModalSugerirFornec
 ligarEventoFornecedor('btn-juntar-selecao-fornecedor', 'click', juntarSelecaoAEncomendaExistenteFornecedor);
 ligarEventoFornecedor('btn-criar-fornecedor', 'click', criarPedidoFornecedor);
 ligarEventoFornecedor('fornecedor-filtro-estado', 'change', renderizarPedidosFornecedores);
+ligarEventoFornecedor('fornecedor-filtro-fornecedor-lista', 'change', renderizarPedidosFornecedores);
 ligarEventoFornecedor('btn-editar-fornecedor-selecionado', 'click', editarFornecedorSelecionado);
 ligarEventoFornecedor('fornecedor-ficha-modal-fechar', 'click', fecharModalFichaFornecedor);
 ligarFechoModalPorFundo(document.getElementById('fornecedor-ficha-modal'), fecharModalFichaFornecedor);
