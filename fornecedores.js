@@ -4953,8 +4953,10 @@ function escolherPedidoParaJuntarSelecaoFornecedor() {
                 acc.recebido += Math.max(0, Number(item.recebido || 0));
                 return acc;
             }, { itens: 0, quantidade: 0, recebido: 0 });
-            const botao = criarElementoPedidoFornecedor("button", "fornecedor-escolher-pedido-opcao");
+            const ultimaAberta = String(pedido.id) === String(fornecedorPedidoAlvoJuntar || "");
+            const botao = criarElementoPedidoFornecedor("button", `fornecedor-escolher-pedido-opcao${ultimaAberta ? " fornecedor-escolher-pedido-ultima" : ""}`);
             botao.type = "button";
+            if (ultimaAberta) botao.title = "Última encomenda que abriste";
             botao.append(
                 criarElementoPedidoFornecedor("strong", "", obterTextoCodigoPedidoFornecedor(pedido)),
                 criarElementoPedidoFornecedor("span", "", formatarDataPedidoFornecedor(obterDataExibicaoPedidoFornecedor(pedido))),
@@ -4978,7 +4980,7 @@ function escolherPedidoParaJuntarSelecaoFornecedor() {
         modal.appendChild(dialog);
         document.body.appendChild(modal);
         document.body.classList.add("fornecedor-escolher-pedido-modal-aberto");
-        lista.querySelector("button")?.focus();
+        (lista.querySelector(".fornecedor-escolher-pedido-ultima") || lista.querySelector("button"))?.focus();
     });
 }
 
@@ -5777,7 +5779,8 @@ function renderizarPedidosFornecedores() {
 
     pedidos.forEach(pedido => {
         const aberto = fornecedorPedidosAbertos.has(String(pedido.id));
-        const alvoJuntar = String(pedido.id) === fornecedorPedidoAlvoJuntar;
+        // A etiqueta "Destino seleção" deixou de aparecer na lista: a encomenda escolhe-se na janela "Escolher encomenda".
+        const alvoJuntar = false;
         const totaisPedido = obterTotaisPedidoFornecedor(pedido);
 
         const card = criarElementoPedidoFornecedor("article", `admin-encomenda-card fornecedor-pedido-card${aberto ? " aberta" : ""}${alvoJuntar ? " fornecedor-pedido-alvo-juntar" : ""}`);

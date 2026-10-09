@@ -6216,3 +6216,9 @@ body.fornecedores-vista-lista .fornecedores-coluna-direita .fornecedor-pedido-li
     #fornecedor-edicao-modal .fornecedor-edicao-topo-acoes { flex-wrap: wrap; }
     #fornecedor-edicao-modal .fornecedor-edicao-topo-acoes .fornecedor-edicao-estado-topo { width: 100%; }
 }
+
+/* Escolher encomenda: realça a última encomenda aberta (substitui a etiqueta "Destino seleção") */
+.fornecedor-escolher-pedido-opcao.fornecedor-escolher-pedido-ultima {
+    border-color: var(--cor-acao-principal, #ffc107) !important;
+    box-shadow: inset 0 0 0 1px var(--cor-acao-principal, #ffc107);
+}
