@@ -5922,9 +5922,13 @@ function renderizarPedidosFornecedores() {
     atualizarContagensFiltroEstadoPedidosFornecedor();
     atualizarResumoACaminhoPedidosFornecedor(caixa);
     const filtroFornecedorLista = obterFiltroFornecedorListaPedidos();
+    // Ordem pela data da encomenda (a que aparece na linha), mais recente primeiro; as antigas ficam no sítio certo.
     const pedidos = fornecedorPedidos.filter(pedido =>
         pedidoFornecedorPassaFiltroEstado(pedido, filtro)
         && pedidoFornecedorPassaFiltroFornecedorLista(pedido, filtroFornecedorLista)
+    ).sort((a, b) =>
+        (Date.parse(obterDataExibicaoPedidoFornecedor(b) || b.criado_em || 0) || 0)
+        - (Date.parse(obterDataExibicaoPedidoFornecedor(a) || a.criado_em || 0) || 0)
     );
     if (!pedidos.length) {
         const vazio = document.createElement('p');
