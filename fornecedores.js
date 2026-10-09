@@ -4839,7 +4839,21 @@ async function sincronizarPrecoCompraProdutosFornecedor(itens, fornecedorNome = 
         estimados.set(chave, { produtoAtual, precoEstimado });
     });
     for (const { produtoAtual, precoEstimado } of estimados.values()) {
-        const produtoLocal = fornecedorProdutos.find(produto => String(produto.id || "") === String(produtoAtual.id)) || produtoAtual;
+        let produtoLocal = fornecedorProdutos.find(produto => String(produto.id || "") === String(produtoAtual.id)) || produtoAtual;
+        // Sem preço de compra geral (0): fica com o estimado. Um custo real já existente nunca é substituído.
+        if (!(Number(produtoLocal?.preco_compra || 0) > 0)) {
+            const { error: erroGeral } = await fornecedoresClient.rpc("atualizar_preco_compra_produto_admin", {
+                p_id: produtoAtual.id,
+                p_sku: null,
+                p_referencia: produtoAtual?.referencia || null,
+                p_preco_compra: precoEstimado
+            });
+            if (erroGeral) throw erroGeral;
+            fornecedorProdutos = fornecedorProdutos.map(produto => String(produto.id || "") === String(produtoAtual.id)
+                ? { ...produto, preco_compra: precoEstimado }
+                : produto);
+            produtoLocal = { ...produtoLocal, preco_compra: precoEstimado };
+        }
         if (!podeSubstituirEntrada(entradaFornecedor(produtoLocal))) continue;
         const fornecedoresAtualizados = definirPrecoCompraFornecedorNoProduto(produtoLocal, fornecedorNome, precoEstimado, dataPreco, null, { estimado: true, pedidoId: idPedido });
         if (!fornecedoresAtualizados) continue;
@@ -5253,9 +5267,15 @@ function renderizarPedidoFornecedorProdutosTabela(caixa, pedido) {
 
         const precoCelula = document.createElement("td");
         precoCelula.className = "mapas-col-preco-compra";
-        const precoTexto = formatarPrecoCustoItemFornecedor(item);
+        const precoEstimadoEur = Math.max(0, Number(item?.preco_estimado_eur || 0) || 0);
+        const naoComprado = itemPedidoNaoComprarFornecedor(item) || itemPedidoEstaExFornecedor(item);
+        const precoTexto = naoComprado && precoEstimadoEur > 0
+            ? `${formatarEuroFornecedor(precoEstimadoEur)} (est.)`
+            : formatarPrecoCustoItemFornecedor(item);
         precoCelula.textContent = precoTexto;
-        if (precoTexto !== "-") {
+        if (naoComprado && precoEstimadoEur > 0) {
+            precoCelula.title = `Preço estimado em € (não comprada; lista: ${formatarPrecoCustoItemFornecedor(item)})`;
+        } else if (precoTexto !== "-") {
             precoCelula.title = obterMoedaPrecoCustoItemFornecedor(item) === "USD"
                 ? "Preço provisório em USD com envio incluído"
                 : "Preço final em euros";
