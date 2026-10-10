@@ -1354,7 +1354,9 @@ function renderizarHistoricoEncomendasFornecedorMapa(conteudo, produto, pedidos)
             const td = document.createElement("td");
             td.textContent = valor;
             td.dataset.coluna = String(indiceColuna + 1);
-            if (indiceColuna === 0) acrescentarDiasEncomendaFornecedorMapa(td, pedido);
+            // Sem dias quando a figura não veio nesta encomenda (OS total, EX ou não comprada).
+            const naoVeio = Math.max(0, Number(item?.quantidade || 0)) <= 0 && (emFalta || emEx || naoComprada);
+            if (indiceColuna === 0 && !naoVeio) acrescentarDiasEncomendaFornecedorMapa(td, pedido);
             tr.appendChild(td);
         });
         tbody.appendChild(tr);
