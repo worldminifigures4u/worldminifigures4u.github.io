@@ -638,6 +638,11 @@ function aplicarCustoFixoEurItensFornecedor(itens, opcoes = {}) {
 function renderizarItensEdicaoPedidoFornecedor(modal, pedido, itens) {
     const lista = modal?.querySelector("#fornecedor-edicao-produtos");
     if (!lista) return;
+    // Resumo do cabeçalho acompanha a lista mostrada (ex.: depois de importar a lista do fornecedor).
+    const resumoTitulo = modal.querySelector('#fornecedor-edicao-titulo-resumo');
+    if (resumoTitulo && typeof formatarResumoCartaoPedidoFornecedor === 'function') {
+        resumoTitulo.textContent = formatarResumoCartaoPedidoFornecedor(obterTotaisPedidoFornecedor({ itens: itens || [] }));
+    }
     lista.replaceChildren();
     (itens || []).forEach((item, indice) => {
         lista.appendChild(montarLinhaEdicaoProdutoFornecedor(pedido, item, indice));
@@ -1949,6 +1954,11 @@ function abrirEdicaoPedidoFornecedor(id) {
         campoDataEncomendada.dataset.original = campoDataEncomendada.value;
     }
     modal.querySelector('#fornecedor-edicao-status').textContent = '';
+    modal.querySelector('#fornecedor-edicao-status').title = '';
+    // Mensagens da encomenda anterior não passam para esta.
+    const popupAnterior = modal.querySelector('#fornecedor-edicao-popup');
+    if (popupAnterior) popupAnterior.hidden = true;
+    window.clearTimeout(temporizadorPopupEdicaoFornecedor);
     delete modal.dataset.itensAlteradosListaFinal;
     modal.querySelector('#fornecedor-edicao-lista-final').value = '';
     preencherCustosGuardadosEdicaoFornecedor(modal, pedido.custos);
@@ -1975,6 +1985,8 @@ function fecharEdicaoPedidoFornecedor() {
     const modal = document.getElementById('fornecedor-edicao-modal');
     if (!modal) return;
     modal.hidden = true;
+    const popup = modal.querySelector('#fornecedor-edicao-popup');
+    if (popup) popup.hidden = true;
     document.body.classList.remove('fornecedor-edicao-modal-aberto');
 }
 
