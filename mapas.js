@@ -149,7 +149,6 @@ function produtoPassaPesquisaMapa(produto, termo) {
     const haystack = produto.pesquisa || normalizarMapa(textoProduto);
     const termoNormalizado = normalizarBuscaFlexivelMapa(termo);
     const pesquisaFlexivel = produto.pesquisa_flexivel || normalizarBuscaFlexivelMapa(textoProduto);
-    const pesquisaCompacta = produto.pesquisa_compacta || compactarBuscaFlexivelMapa(textoProduto);
     const termoCompacto = compactarBuscaFlexivelMapa(termoNormalizado);
 
     // Admin: pesquisa exata. O texto escrito tem de aparecer tal e qual, pela mesma ordem
@@ -157,8 +156,14 @@ function produtoPassaPesquisaMapa(produto, termo) {
     if (!termoNormalizado) return true;
     if (haystack.includes(termo)) return true;
     if (pesquisaFlexivel.includes(termoNormalizado)) return true;
-    // Uma só palavra (ex. "wm691a") também encontra "WM691-A".
-    return Boolean(!termoNormalizado.includes(" ") && termoCompacto && pesquisaCompacta.includes(termoCompacto));
+    // Uma só palavra (ex. "wm691a") também encontra "WM691-A", mas tem de começar no início de uma
+    // palavra: "nba" não pode apanhar "drago-nba-ll" (Dragon Ball).
+    if (termoNormalizado.includes(" ") || !termoCompacto) return false;
+    const palavras = pesquisaFlexivel.split(" ").filter(Boolean);
+    for (let i = 0; i < palavras.length; i += 1) {
+        if (palavras.slice(i).join("").startsWith(termoCompacto)) return true;
+    }
+    return false;
 }
 
 function normalizarSkuMapa(valor) {
