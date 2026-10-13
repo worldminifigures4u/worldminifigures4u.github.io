@@ -868,6 +868,26 @@ function obterNomeItemEncomenda(item) {
     return String(item?.nome || item?.titulo || item?.sku || item?.referencia || 'Produto').trim();
 }
 
+// Figuras do catálogo cujo nome/SKU/ref. atual corresponde à pesquisa: apanha também as encomendas
+// antigas em que a figura tinha outro nome (ex.: "Qui-Gon Jinn" antes de passar a "Qui-Gon Jinn v2").
+let cacheProdutosPesquisaFigura = { termo: null, total: -1, ids: new Set(), skus: new Set() };
+function obterProdutosCatalogoPesquisaFigura(termoNormalizado) {
+    const catalogo = Array.isArray(mapasProdutos) ? mapasProdutos : [];
+    if (cacheProdutosPesquisaFigura.termo === termoNormalizado && cacheProdutosPesquisaFigura.total === catalogo.length) {
+        return cacheProdutosPesquisaFigura;
+    }
+    const ids = new Set();
+    const skus = new Set();
+    catalogo.forEach(produto => {
+        const texto = normalizarEncomenda([produto.nome, produto.sku, produto.referencia].join(' '));
+        if (!texto.includes(termoNormalizado)) return;
+        if (produto.id) ids.add(String(produto.id).trim());
+        if (produto.sku) skus.add(String(produto.sku).trim().toUpperCase());
+    });
+    cacheProdutosPesquisaFigura = { termo: termoNormalizado, total: catalogo.length, ids, skus };
+    return cacheProdutosPesquisaFigura;
+}
+
 function itemCorrespondePesquisaFigura(item, termoNormalizado) {
     if (!termoNormalizado) return false;
     const texto = normalizarEncomenda([
@@ -876,7 +896,12 @@ function itemCorrespondePesquisaFigura(item, termoNormalizado) {
         item?.sku,
         item?.referencia
     ].join(' '));
-    return texto.includes(termoNormalizado);
+    if (texto.includes(termoNormalizado)) return true;
+    const { ids, skus } = obterProdutosCatalogoPesquisaFigura(termoNormalizado);
+    const id = obterIdProdutoItemEncomenda(item);
+    if (id && ids.has(id)) return true;
+    const sku = String(item?.sku || '').trim().toUpperCase();
+    return Boolean(sku && skus.has(sku));
 }
 
 function obterTermoPesquisaFiguraAdmin() {
@@ -1527,6 +1552,11 @@ function aoPesquisarEncomendasAdmin() {
     renderizarEncomendasAdmin();
     garantirTodasConcluidasParaPesquisaAdmin();
     pesquisarEncomendasNoServidorAdmin();
+    // Pesquisa por figura: precisa do catálogo para reconhecer a figura pelo id/SKU (nomes antigos).
+    if (String(document.getElementById('pesquisa-figura-encomendas-admin')?.value || '').trim()
+        && !(Array.isArray(mapasProdutos) && mapasProdutos.length)) {
+        carregarProdutosMapaEncomendas().then(() => renderizarEncomendasAdmin()).catch(() => {});
+    }
 }
 
 document.getElementById('pesquisa-encomendas-admin').addEventListener('input', aoPesquisarEncomendasAdmin);
