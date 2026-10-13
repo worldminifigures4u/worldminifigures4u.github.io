@@ -101,7 +101,7 @@ function garantirScriptImportacaoGestao() {
 
     gestaoImportacaoScriptPromessa = new Promise((resolve, reject) => {
         const script = document.createElement('script');
-        script.src = 'gestao-importacao.js?v=20260830-ficha-completa';
+        script.src = 'gestao-importacao.js?v=20261013-sem-descontinuado';
         script.onload = resolve;
         script.onerror = () => reject(new Error('Falha ao carregar importação administrativa.'));
         document.body.appendChild(script);
@@ -232,7 +232,6 @@ function criarCsvMapasGestao(produtos) {
         'top',
         'ativo',
         'arquivado',
-        'descontinuado',
         'novidade',
         'lego',
         'peso',
@@ -256,7 +255,6 @@ function criarCsvMapasGestao(produtos) {
             produto.top || '',
             booleanoCsvGestao(produto.ativo !== false),
             booleanoCsvGestao(produto.arquivado),
-            booleanoCsvGestao(produto.descontinuado),
             booleanoCsvGestao(produto.novidade),
             produto.lego || '',
             inteiroCsvGestao(produto.peso || 10),

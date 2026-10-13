@@ -91,7 +91,7 @@ function garantirFornecedoresProdutoModal() {
     if (window.FornecedoresProdutoModal) return Promise.resolve();
     if (!__fornecedoresProdutoPromessa) {
         prepararContextoProdutoFornecedor();
-        __fornecedoresProdutoPromessa = carregarScriptAdmin("mapas-produto-modal.js?v=20261010-os-sem-dias")
+        __fornecedoresProdutoPromessa = carregarScriptAdmin("mapas-produto-modal.js?v=20261013-sem-descontinuado")
             .then(function () {
                 window.FornecedoresProdutoModal = {
                     abrir: function () {
@@ -2451,7 +2451,6 @@ function obterControlosResultadosFornecedor() {
         filtrosMarcacao,
         filtroTop: document.getElementById("fornecedor-filtro-top")?.value || "todos",
         filtroArquivado: document.getElementById("fornecedor-filtro-arquivado")?.value || "nao",
-        filtroDescontinuado: document.getElementById("fornecedor-filtro-descontinuado")?.value || "nao",
         ordenacao: document.getElementById("fornecedor-ordenacao-stock")?.value || "stock-asc",
     };
 }
@@ -2712,14 +2711,6 @@ function produtoPassaFiltroTopFornecedor(produto, filtroTop) {
     const valorTop = String(obterTopProdutoFornecedor(produto) || "").trim();
     if (filtroTop === "sim" || filtroTop === "top") return Boolean(valorTop);
     if (filtroTop === "nao" || filtroTop === "sem-top") return !valorTop;
-    return true;
-}
-
-function produtoPassaFiltroDescontinuadoFornecedor(produto, filtroDescontinuado) {
-    if (!filtroDescontinuado || filtroDescontinuado === "todos") return true;
-    const descontinuado = obterBooleanoProdutoFornecedor(produto?.descontinuado);
-    if (filtroDescontinuado === "sim" || filtroDescontinuado === "descontinuado") return descontinuado;
-    if (filtroDescontinuado === "nao" || filtroDescontinuado === "sem-descontinuado") return !descontinuado;
     return true;
 }
 
@@ -3130,7 +3121,6 @@ async function carregarCatalogoFornecedores() {
     } else if (produtos.length && !produtos.some(produto =>
         Object.prototype.hasOwnProperty.call(produto, "lego")
         && Object.prototype.hasOwnProperty.call(produto, "top")
-        && Object.prototype.hasOwnProperty.call(produto, "descontinuado")
         && Object.prototype.hasOwnProperty.call(produto, "fornecedores")
         && Object.prototype.hasOwnProperty.call(produto, "tema")
         && Object.prototype.hasOwnProperty.call(produto, "subtema")
@@ -3279,7 +3269,7 @@ function garantirBotaoSoNaEncomendaFornecedor(referencia) {
 const CHAVE_SUGERIR_MESES_FORNECEDOR = "fp-fornecedor-sugerir-meses";
 
 function obterResultadosFiltradosSugestaoFornecedor() {
-    const { termo, fornecedor, filtrosMarcacao, filtroTop, filtroArquivado, filtroDescontinuado } = obterControlosResultadosFornecedor();
+    const { termo, fornecedor, filtrosMarcacao, filtroTop, filtroArquivado } = obterControlosResultadosFornecedor();
     const indiceVendasRecentes = criarIndiceVendasRecentesFornecedor();
     return fornecedorProdutos
         .map((produto) => ({
@@ -3292,7 +3282,6 @@ function obterResultadosFiltradosSugestaoFornecedor() {
             && produtoPassaFiltrosMarcacaoFornecedor(item.produto, fornecedor, filtrosMarcacao)
             && produtoPassaFiltroTopFornecedor(item.produto, filtroTop)
             && produtoPassaFiltroArquivadoFornecedor(item.produto, filtroArquivado)
-            && produtoPassaFiltroDescontinuadoFornecedor(item.produto, filtroDescontinuado)
         ));
 }
 
@@ -3857,7 +3846,7 @@ function renderizarResultadosFornecedor() {
         caixa.classList.remove("fornecedor-resultados-mapa");
     }
 
-    const { termo, fornecedor, fornecedorMarcacao, filtroFornecedor, filtrosMarcacao, filtroTop, filtroArquivado, filtroDescontinuado, ordenacao } = obterControlosResultadosFornecedor();
+    const { termo, fornecedor, fornecedorMarcacao, filtroFornecedor, filtrosMarcacao, filtroTop, filtroArquivado, ordenacao } = obterControlosResultadosFornecedor();
     caixa.replaceChildren();
     const indiceVendasRecentes = criarIndiceVendasRecentesFornecedor();
 
@@ -3872,7 +3861,6 @@ function renderizarResultadosFornecedor() {
             && produtoPassaFiltrosMarcacaoFornecedor(item.produto, fornecedor, filtrosMarcacao)
             && produtoPassaFiltroTopFornecedor(item.produto, filtroTop)
             && produtoPassaFiltroArquivadoFornecedor(item.produto, filtroArquivado)
-            && produtoPassaFiltroDescontinuadoFornecedor(item.produto, filtroDescontinuado)
         ))
         .sort((a, b) => compararProdutosFornecedor(a, b, ordenacao));
 
@@ -6149,7 +6137,6 @@ ligarEventoFornecedor('fornecedor-filtro-marcacao', 'change', agendarRenderizaca
 ligarEventoFornecedor('btn-adicionar-filtro-marcacao', 'click', adicionarLinhaFiltroMarcacaoFornecedor);
 ligarEventoFornecedor('fornecedor-filtro-top', 'change', agendarRenderizacaoResultadosFornecedor);
 ligarEventoFornecedor('fornecedor-filtro-arquivado', 'change', agendarRenderizacaoResultadosFornecedor);
-ligarEventoFornecedor('fornecedor-filtro-descontinuado', 'change', agendarRenderizacaoResultadosFornecedor);
 ligarEventoFornecedor('btn-limpar-fornecedor', 'click', limparSelecaoFornecedor);
 ligarEventoFornecedor('btn-sugerir-fornecedor', 'click', abrirModalSugerirFornecedor);
 ligarEventoFornecedor('btn-juntar-selecao-fornecedor', 'click', juntarSelecaoAEncomendaExistenteFornecedor);

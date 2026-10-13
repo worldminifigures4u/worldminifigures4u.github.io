@@ -754,8 +754,7 @@ body.pagina-fornecedores-admin{ margin:0; padding-left:0; padding-right:0; paddi
                     "fornecedor"
                     "marcacoes"
                     "top"
-                    "arquivado"
-                    "descontinuado";
+                    "arquivado";
             }
             .pagina-fornecedores-unificada .fornecedor-controles-unificados .fornecedor-seletor-label,
             .pagina-fornecedores-unificada .fornecedor-controles-unificados .fornecedor-filtros-marcacao-bloco,
@@ -826,9 +825,9 @@ body.pagina-mapas-admin > main.fornecedores-admin {
 
 .pagina-fornecedores-unificada .fornecedor-lista-controles.mapas-lista-controles.fornecedor-controles-unificados {
     display: grid;
-    grid-template-columns: max-content max-content max-content max-content max-content;
+    grid-template-columns: max-content max-content max-content max-content;
     grid-template-areas:
-        "fornecedor marcacoes top arquivado descontinuado";
+        "fornecedor marcacoes top arquivado";
     align-items: end;
     gap: 8px;
 }
@@ -5668,8 +5667,8 @@ body.fornecedores-vista-lista .fornecedores-coluna-direita .fornecedores-cabecal
     box-shadow: none !important;
 }
 #fornecedores-aplicacao .fornecedor-lista-controles.mapas-lista-controles.fornecedor-controles-unificados {
-    grid-template-columns: max-content max-content max-content max-content max-content max-content !important;
-    grid-template-areas: "voltar fornecedor marcacoes top arquivado descontinuado" !important;
+    grid-template-columns: max-content max-content max-content max-content max-content !important;
+    grid-template-areas: "voltar fornecedor marcacoes top arquivado" !important;
     column-gap: 8px;
 }
 .fornecedores-btn-voltar-lista {
@@ -5696,7 +5695,7 @@ body.fornecedores-vista-lista .fornecedores-coluna-direita .fornecedores-cabecal
 @media (max-width: 900px) {
     #fornecedores-aplicacao .fornecedor-lista-controles.mapas-lista-controles.fornecedor-controles-unificados {
         grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
-        grid-template-areas: "voltar voltar" "fornecedor fornecedor" "marcacoes marcacoes" "top arquivado" "descontinuado descontinuado" !important;
+        grid-template-areas: "voltar voltar" "fornecedor fornecedor" "marcacoes marcacoes" "top arquivado" !important;
     }
     .fornecedores-btn-voltar-lista { justify-self: start; margin-right: 0; }
 }

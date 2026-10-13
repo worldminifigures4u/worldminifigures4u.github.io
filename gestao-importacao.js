@@ -548,7 +548,8 @@ async function extrairProdutosCatalogoDoFicheiro(conteudo, { preservarStock = fa
         const sku = normalizarTextoSku(linha[colunas.sku]).replace(/[^A-Z0-9]/g, '');
         const top = colunas.top >= 0 ? String(linha[colunas.top] || '').trim() : '';
         const arquivado = colunas.arquivado >= 0 ? obterBooleanoImportacao(linha[colunas.arquivado]) : false;
-        const descontinuado = colunas.descontinuado >= 0 ? obterBooleanoImportacao(linha[colunas.descontinuado]) : false;
+        // A opção "Descontinuado" deixou de existir: a importação grava sempre como não descontinuado.
+        const descontinuado = false;
         const novidade = colunas.novidade >= 0 ? obterBooleanoImportacao(linha[colunas.novidade]) : false;
         const referencia = colunas.referencia >= 0 ? String(linha[colunas.referencia] || '').trim() : '';
         const preco = Number(linha[colunas.preco]);

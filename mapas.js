@@ -12,7 +12,6 @@ const MAPAS_COLUNAS = [
     { chave: "top", rotulo: "top", classe: "mapas-col-top", largura: 64 },
     { chave: "ativo", rotulo: "ativo", classe: "mapas-col-ativo", largura: 70 },
     { chave: "arquivado", rotulo: "arq.", classe: "mapas-col-arquivado", titulo: "arquivado", largura: 70 },
-    { chave: "descontinuado", rotulo: "desc.", classe: "mapas-col-descontinuado", titulo: "descontinuado", largura: 70 },
     { chave: "novidade", rotulo: "nov.", classe: "mapas-col-novidade", titulo: "novidade", largura: 70 },
     { chave: "peso", rotulo: "peso", classe: "mapas-col-peso", numero: true, largura: 70 }
 ];
@@ -61,7 +60,7 @@ var __mapasProdutoModalPromessa = null;
 function garantirMapasProdutoModal() {
     if (window.MapasProdutoModal) return Promise.resolve();
     if (!__mapasProdutoModalPromessa) {
-        __mapasProdutoModalPromessa = carregarScriptAdmin("mapas-produto-modal.js?v=20261010-os-sem-dias");
+        __mapasProdutoModalPromessa = carregarScriptAdmin("mapas-produto-modal.js?v=20261013-sem-descontinuado");
     }
     return __mapasProdutoModalPromessa;
 }
@@ -697,7 +696,6 @@ function atualizarResultadosMapa() {
     const filtroAtivo = document.getElementById("mapas-filtro-ativo")?.value || "todos";
     const filtroLego = document.getElementById("mapas-filtro-lego")?.value || "todos";
     const filtroArquivado = document.getElementById("mapas-filtro-arquivado")?.value || "nao";
-    const filtroDescontinuado = document.getElementById("mapas-filtro-descontinuado")?.value || "nao";
     const filtroNovidade = document.getElementById("mapas-filtro-novidade")?.value || "todos";
     mapasResultados = mapasProdutos
         .filter(produto => produtoPassaPesquisaMapa(produto, termo))
@@ -706,7 +704,6 @@ function atualizarResultadosMapa() {
         .filter(produto => produtoPassaFiltroBooleanoMapa(produto, "ativo", filtroAtivo))
         .filter(produto => produtoPassaFiltroBooleanoMapa(produto, "lego", filtroLego))
         .filter(produto => produtoPassaFiltroBooleanoMapa(produto, "arquivado", filtroArquivado))
-        .filter(produto => produtoPassaFiltroBooleanoMapa(produto, "descontinuado", filtroDescontinuado))
         .filter(produto => produtoPassaFiltroBooleanoMapa(produto, "novidade", filtroNovidade))
         .sort(compararProdutosMapa);
     renderizarTabelaMapa();
@@ -833,7 +830,7 @@ function garantirScriptImportacaoMapas() {
 
     promessaScriptImportacaoMapas = new Promise((resolve, reject) => {
         const script = document.createElement("script");
-        script.src = "gestao-importacao.js?v=20260720-novidade-novos";
+        script.src = "gestao-importacao.js?v=20261013-sem-descontinuado";
         script.onload = () => {
             scriptImportacaoMapasCarregado = true;
             resolve();
@@ -941,7 +938,6 @@ document.getElementById("mapas-filtro-top")?.addEventListener("change", atualiza
 document.getElementById("mapas-filtro-ativo")?.addEventListener("change", atualizarResultadosMapa);
 document.getElementById("mapas-filtro-lego")?.addEventListener("change", atualizarResultadosMapa);
 document.getElementById("mapas-filtro-arquivado")?.addEventListener("change", atualizarResultadosMapa);
-document.getElementById("mapas-filtro-descontinuado")?.addEventListener("change", atualizarResultadosMapa);
 document.getElementById("mapas-filtro-novidade")?.addEventListener("change", atualizarResultadosMapa);
 document.getElementById("mapas-criar-produto")?.addEventListener("click", abrirCriacaoProdutoMapa);
 document.getElementById("mapas-copiar-lista")?.addEventListener("click", copiarListaMapaVisivel);

@@ -2079,7 +2079,6 @@ function preencherFichaProdutoMapa(produto) {
         ["Ativo", produto.ativo !== false],
         ["Top", Boolean(String(produto.top || "").trim())],
         ["Arquivado", Boolean(produto.arquivado)],
-        ["Descontinuado", Boolean(produto.descontinuado)],
         ["Novidade", Boolean(produto.novidade)]
     ].forEach(([rotulo, ativo]) => criarBadgeLeituraMapa(flagsLista, rotulo, ativo));
     topo.appendChild(secaoMarcas);
@@ -2289,7 +2288,6 @@ function preencherFormularioProdutoMapa(produto, modo = "editar") {
     criarCheckboxEdicaoMapa(secaoEstado, "mapas-editar-ativo", "Produto ativo", produto.ativo !== false);
     criarCheckboxEdicaoMapa(secaoEstado, "mapas-editar-top", "Top", Boolean(String(produto.top || "").trim()));
     criarCheckboxEdicaoMapa(secaoEstado, "mapas-editar-arquivado", "Arquivado", Boolean(produto.arquivado));
-    criarCheckboxEdicaoMapa(secaoEstado, "mapas-editar-descontinuado", "Descontinuado", Boolean(produto.descontinuado));
     criarCheckboxEdicaoMapa(secaoEstado, "mapas-editar-novidade", "Novidade", modo === "criar" ? true : Boolean(produto.novidade));
     linhaDetalhesEstado.appendChild(secaoEstado);
 
@@ -2449,7 +2447,8 @@ function lerProdutoEditadoMapa() {
         lego: document.getElementById("mapas-editar-lego").value,
         top: document.getElementById("mapas-editar-top").checked ? "sim" : "",
         arquivado: document.getElementById("mapas-editar-arquivado").checked,
-        descontinuado: document.getElementById("mapas-editar-descontinuado").checked,
+        // A opção "Descontinuado" deixou de existir no site: gravar sempre como não descontinuado.
+        descontinuado: false,
         novidade: document.getElementById("mapas-editar-novidade").checked,
         preco_compra: Number(document.getElementById("mapas-editar-preco-compra").value || 0),
         preco: Number(document.getElementById("mapas-editar-preco").value),
@@ -2565,7 +2564,7 @@ async function guardarEdicaoProdutoMapa(evento) {
         if (modo === "criar") {
             ({ data, error } = await mapasClient.rpc("criar_produto_admin", { p_produto: produto }));
             if (error) throw error;
-            const precisaExtras = Boolean(produto.top) || produto.arquivado || produto.descontinuado;
+            const precisaExtras = Boolean(produto.top) || produto.arquivado;
             if (precisaExtras && data?.id) {
                 const extra = await editarProdutoMapaRpc(data.id, data.sku || produto.sku, {
                     ...produto,

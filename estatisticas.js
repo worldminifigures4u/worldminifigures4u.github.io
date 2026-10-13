@@ -646,7 +646,7 @@ function renderizarStockParadoEstatisticas(filtro) {
     const parados = estatisticasProdutos.map(produto => {
         const stock = Math.floor(Number(produto?.stock) || 0);
         if (stock <= 0) return null;
-        if (valorBooleanoEstatisticas(produto?.arquivado) || valorBooleanoEstatisticas(produto?.descontinuado)) return null;
+        if (valorBooleanoEstatisticas(produto?.arquivado)) return null;
         if (produto?.ativo === false) return null;
         const id = String(produto?.id ?? '');
         const ultimaVenda = porId.get(id) || porNome.get(normalizarTextoEstatisticas(produto?.nome)) || null;
@@ -738,8 +738,8 @@ function garantirFichaProdutoEstatisticas() {
     if (window.MapasProdutoModal) return Promise.resolve();
     if (!promessaFichaProdutoEstatisticas) {
         promessaFichaProdutoEstatisticas = Promise.all([
-            carregarRecursoEstatisticas('css', 'fornecedores-mapas.css?v=20261010-status-ler'),
-            carregarRecursoEstatisticas('js', 'mapas-produto-modal.js?v=20261010-os-sem-dias')
+            carregarRecursoEstatisticas('css', 'fornecedores-mapas.css?v=20261013-sem-descontinuado'),
+            carregarRecursoEstatisticas('js', 'mapas-produto-modal.js?v=20261013-sem-descontinuado')
         ]).catch(erro => {
             promessaFichaProdutoEstatisticas = null;
             throw erro;
