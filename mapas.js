@@ -141,10 +141,9 @@ function produtoPassaPesquisaMapa(produto, termo) {
     const textoProduto = [
         produto.nome,
         produto.referencia,
-        produto.sku,
-        produto.subtema
+        produto.sku
     ].join(" ");
-    // O tema já não entra na pesquisa: escolhe-se no filtro Tema.
+    // Tema e subtema já não entram na pesquisa: escolhem-se no filtro Tema.
     const haystack = produto.pesquisa || normalizarMapa(textoProduto);
     const termoNormalizado = normalizarBuscaFlexivelMapa(termo);
     const pesquisaFlexivel = produto.pesquisa_flexivel || normalizarBuscaFlexivelMapa(textoProduto);
@@ -331,20 +330,17 @@ function normalizarProdutoMapa(produto) {
     normalizado.pesquisa = normalizarMapa([
         normalizado.nome,
         normalizado.referencia,
-        normalizado.sku,
-        normalizado.subtema
+        normalizado.sku
     ].join(" "));
     normalizado.pesquisa_flexivel = normalizarBuscaFlexivelMapa([
         normalizado.nome,
         normalizado.referencia,
-        normalizado.sku,
-        normalizado.subtema
+        normalizado.sku
     ].join(" "));
     normalizado.pesquisa_compacta = compactarBuscaFlexivelMapa([
         normalizado.nome,
         normalizado.referencia,
-        normalizado.sku,
-        normalizado.subtema
+        normalizado.sku
     ].join(" "));
     normalizado.termos_pesquisa = obterTermosBuscaFlexivelMapa(normalizado.pesquisa_flexivel);
     normalizado.termos_nome = obterTermosBuscaFlexivelMapa(normalizado.nome);
