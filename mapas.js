@@ -685,7 +685,13 @@ function renderizarTabelaMapa() {
     requestAnimationFrame(atualizarScrollHorizontalTopoMapa);
 }
 
-// Preenche o filtro de tema com os temas existentes (mantém a escolha atual).
+// Preenche o filtro de tema: cada tema e, por baixo (recuados), os seus subtemas. Mantém a escolha atual.
+// Valores: "t:<tema>" (o tema todo) ou "s:<tema>|<subtema>" (só esse subtema).
+function subtemaValidoMapa(subtema) {
+    const texto = normalizarMapa(subtema || "");
+    return Boolean(texto) && texto !== "semsubtema" && texto !== "sem subtema";
+}
+
 function atualizarOpcoesTemaMapa() {
     const select = document.getElementById("mapas-filtro-tema");
     if (!select) return "";
@@ -695,16 +701,48 @@ function atualizarOpcoesTemaMapa() {
         const tema = String(produto.tema || "").trim();
         if (!tema) return;
         const chave = normalizarMapa(tema);
-        if (!temas.has(chave)) temas.set(chave, tema);
+        if (!temas.has(chave)) temas.set(chave, { nome: tema, subtemas: new Map() });
+        const subtema = String(produto.subtema || "").trim();
+        if (subtemaValidoMapa(subtema)) {
+            const chaveSub = normalizarMapa(subtema);
+            if (!temas.get(chave).subtemas.has(chaveSub)) temas.get(chave).subtemas.set(chaveSub, subtema);
+        }
     });
-    const chaves = Array.from(temas.keys()).sort((a, b) => temas.get(a).localeCompare(temas.get(b), "pt", { sensitivity: "base" }));
-    const assinatura = chaves.join("|");
+    const comparar = (a, b) => a.localeCompare(b, "pt", { sensitivity: "base" });
+    const opcoes = [new Option("Todos", "")];
+    const valores = new Set([""]);
+    Array.from(temas.entries())
+        .sort((a, b) => comparar(a[1].nome, b[1].nome))
+        .forEach(([chave, info]) => {
+            const valorTema = `t:${chave}`;
+            opcoes.push(new Option(info.nome, valorTema));
+            valores.add(valorTema);
+            Array.from(info.subtemas.entries())
+                .sort((a, b) => comparar(a[1], b[1]))
+                .forEach(([chaveSub, nomeSub]) => {
+                    const valorSub = `s:${chave}|${chaveSub}`;
+                    opcoes.push(new Option(`\u00A0\u00A0\u00A0\u00A0${nomeSub}`, valorSub));
+                    valores.add(valorSub);
+                });
+        });
+    const assinatura = Array.from(valores).join("~");
     if (select.dataset.assinatura !== assinatura) {
-        select.replaceChildren(new Option("Todos", ""), ...chaves.map(chave => new Option(temas.get(chave), chave)));
+        select.replaceChildren(...opcoes);
         select.dataset.assinatura = assinatura;
     }
-    select.value = temas.has(atual) ? atual : "";
+    select.value = valores.has(atual) ? atual : "";
     return select.value;
+}
+
+function produtoPassaFiltroTemaMapa(produto, filtro) {
+    if (!filtro) return true;
+    const tema = normalizarMapa(produto.tema || "");
+    if (filtro.startsWith("t:")) return tema === filtro.slice(2);
+    if (filtro.startsWith("s:")) {
+        const [chaveTema, chaveSub] = filtro.slice(2).split("|");
+        return tema === chaveTema && normalizarMapa(produto.subtema || "") === chaveSub;
+    }
+    return true;
 }
 
 function atualizarResultadosMapa() {
@@ -718,7 +756,7 @@ function atualizarResultadosMapa() {
     const filtroArquivado = document.getElementById("mapas-filtro-arquivado")?.value || "nao";
     const filtroNovidade = document.getElementById("mapas-filtro-novidade")?.value || "todos";
     mapasResultados = mapasProdutos
-        .filter(produto => !filtroTema || normalizarMapa(produto.tema || "") === filtroTema)
+        .filter(produto => produtoPassaFiltroTemaMapa(produto, filtroTema))
         .filter(produto => produtoPassaPesquisaMapa(produto, termo))
         .filter(produto => produtoPassaFiltroStockMapa(produto, filtroStock))
         .filter(produto => produtoPassaFiltroBooleanoMapa(produto, "top", filtroTop))
