@@ -6286,3 +6286,6 @@ body.fornecedores-vista-lista .fornecedores-coluna-direita .fornecedor-pedido-li
     text-align: left;
 }
 #fornecedor-edicao-modal .fornecedor-edicao-popup { cursor: pointer; white-space: normal; }
+
+/* Mapas: filtro por tema */
+.mapas-filtro-tema { width: 150px; max-width: 150px; }

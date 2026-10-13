@@ -688,8 +688,31 @@ function renderizarTabelaMapa() {
     requestAnimationFrame(atualizarScrollHorizontalTopoMapa);
 }
 
+// Preenche o filtro de tema com os temas existentes (mantém a escolha atual).
+function atualizarOpcoesTemaMapa() {
+    const select = document.getElementById("mapas-filtro-tema");
+    if (!select) return "";
+    const atual = select.value;
+    const temas = new Map();
+    mapasProdutos.forEach(produto => {
+        const tema = String(produto.tema || "").trim();
+        if (!tema) return;
+        const chave = normalizarMapa(tema);
+        if (!temas.has(chave)) temas.set(chave, tema);
+    });
+    const chaves = Array.from(temas.keys()).sort((a, b) => temas.get(a).localeCompare(temas.get(b), "pt", { sensitivity: "base" }));
+    const assinatura = chaves.join("|");
+    if (select.dataset.assinatura !== assinatura) {
+        select.replaceChildren(new Option("Todos", ""), ...chaves.map(chave => new Option(temas.get(chave), chave)));
+        select.dataset.assinatura = assinatura;
+    }
+    select.value = temas.has(atual) ? atual : "";
+    return select.value;
+}
+
 function atualizarResultadosMapa() {
     mapasAtualizacaoPendente = 0;
+    const filtroTema = atualizarOpcoesTemaMapa();
     const termo = normalizarMapa(document.getElementById("fornecedor-pesquisa")?.value || "");
     const filtroStock = document.getElementById("mapas-filtro-stock")?.value || "todos";
     const filtroTop = document.getElementById("mapas-filtro-top")?.value || "todos";
@@ -698,6 +721,7 @@ function atualizarResultadosMapa() {
     const filtroArquivado = document.getElementById("mapas-filtro-arquivado")?.value || "nao";
     const filtroNovidade = document.getElementById("mapas-filtro-novidade")?.value || "todos";
     mapasResultados = mapasProdutos
+        .filter(produto => !filtroTema || normalizarMapa(produto.tema || "") === filtroTema)
         .filter(produto => produtoPassaPesquisaMapa(produto, termo))
         .filter(produto => produtoPassaFiltroStockMapa(produto, filtroStock))
         .filter(produto => produtoPassaFiltroBooleanoMapa(produto, "top", filtroTop))
@@ -937,6 +961,7 @@ document.getElementById("mapas-filtro-stock")?.addEventListener("change", atuali
 document.getElementById("mapas-filtro-top")?.addEventListener("change", atualizarResultadosMapa);
 document.getElementById("mapas-filtro-ativo")?.addEventListener("change", atualizarResultadosMapa);
 document.getElementById("mapas-filtro-lego")?.addEventListener("change", atualizarResultadosMapa);
+document.getElementById("mapas-filtro-tema")?.addEventListener("change", atualizarResultadosMapa);
 document.getElementById("mapas-filtro-arquivado")?.addEventListener("change", atualizarResultadosMapa);
 document.getElementById("mapas-filtro-novidade")?.addEventListener("change", atualizarResultadosMapa);
 document.getElementById("mapas-criar-produto")?.addEventListener("click", abrirCriacaoProdutoMapa);
