@@ -1339,7 +1339,9 @@ function ordenarEncomendasRecentes(a, b) {
 }
 
 function sincronizarEstadoPaginacaoConcluidas() {
-    const carregadas = encomendasAdmin.filter(item => estadoNormalizadoEncomenda(item.estado) === 'Concluído').length;
+    // Conta só as que vieram da consulta estado = 'Concluído' (escrito assim): variantes antigas
+    // (ex.: "Concluido") vêm com as ativas e não podem dar a lista de concluídas como completa.
+    const carregadas = encomendasAdmin.filter(item => String(item.estado || '') === 'Concluído').length;
     todasConcluidasCarregadas = Number.isFinite(totalConcluidasServidor)
         ? carregadas >= totalConcluidasServidor
         : false;
@@ -1370,6 +1372,7 @@ async function carregarEncomendasAdmin() {
     renderizarEncomendasAdmin();
     definirStatusEncomendas('');
     carregarDadosComplementaresEncomendasAdmin(carregamentoId);
+    garantirTodasConcluidasParaPesquisaAdmin();
 }
 
 async function carregarMaisEncomendasConcluidasAdmin() {
@@ -1443,8 +1446,91 @@ async function iniciarPainelEncomendas() {
     }
 }
 
-document.getElementById('pesquisa-encomendas-admin').addEventListener('input', renderizarEncomendasAdmin);
-document.getElementById('pesquisa-figura-encomendas-admin').addEventListener('input', renderizarEncomendasAdmin);
+// Ao pesquisar, as encomendas concluídas mais antigas (que só carregam ao fazer scroll) também entram:
+// carrega-as todas uma vez em segundo plano e volta a mostrar os resultados.
+let promessaTodasConcluidasAdmin = null;
+function garantirTodasConcluidasParaPesquisaAdmin() {
+    const temPesquisa = Boolean(String(document.getElementById('pesquisa-encomendas-admin')?.value || '').trim()
+        || String(document.getElementById('pesquisa-figura-encomendas-admin')?.value || '').trim());
+    if (!temPesquisa || todasConcluidasCarregadas || promessaTodasConcluidasAdmin || !encomendasClient) return;
+    promessaTodasConcluidasAdmin = (async () => {
+        definirStatusEncomendas('A procurar em todas as encomendas concluídas...');
+        try {
+            let inicio = 0;
+            const todas = [];
+            for (let pagina = 0; pagina < 50; pagina += 1) {
+                const resposta = await consultarEncomendasAdmin(
+                    query => query.eq('estado', 'Concluído'),
+                    { inicio, fim: inicio + 499, comContagem: inicio === 0 }
+                );
+                if (inicio === 0 && Number.isFinite(resposta.count)) totalConcluidasServidor = resposta.count;
+                const lote = resposta.data || [];
+                todas.push(...lote);
+                if (lote.length < 500) break;
+                inicio += 500;
+            }
+            const idsExistentes = new Set(encomendasAdmin.map(item => String(item.id)));
+            encomendasAdmin = [...encomendasAdmin, ...todas.filter(item => !idsExistentes.has(String(item.id)))]
+                .sort(ordenarEncomendasRecentes);
+            todasConcluidasCarregadas = true;
+            renderizarEncomendasAdmin();
+            definirStatusEncomendas('');
+            AdminEncomendaVista.carregarImagensParaEncomendas(encomendasAdmin)
+                .then(() => renderizarEncomendasAdmin())
+                .catch(() => {});
+        } catch (error) {
+            console.warn('Nao foi possivel carregar todas as encomendas concluidas para a pesquisa.', error);
+            definirStatusEncomendas('Não foi possível procurar nas encomendas concluídas mais antigas.');
+        } finally {
+            promessaTodasConcluidasAdmin = null;
+        }
+    })();
+}
+
+// Pesquisa também diretamente no Supabase (código, cliente, email, referência), para encontrar
+// qualquer encomenda mesmo que ainda não esteja carregada na página.
+let temporizadorPesquisaServidorEncomendas = null;
+let ultimaPesquisaServidorEncomendas = '';
+function pesquisarEncomendasNoServidorAdmin() {
+    window.clearTimeout(temporizadorPesquisaServidorEncomendas);
+    const termo = String(document.getElementById('pesquisa-encomendas-admin')?.value || '')
+        .trim().replace(/[%,()*\\]/g, ' ').replace(/\s+/g, ' ').trim();
+    if (termo.length < 3 || !encomendasClient || termo === ultimaPesquisaServidorEncomendas) return;
+    temporizadorPesquisaServidorEncomendas = window.setTimeout(async () => {
+        ultimaPesquisaServidorEncomendas = termo;
+        try {
+            const padrao = `%${termo}%`;
+            const { data } = await consultarEncomendasAdmin(
+                query => query.or([
+                    `codigo_encomenda.ilike.${padrao}`,
+                    `nome_cliente.ilike.${padrao}`,
+                    `email_cliente.ilike.${padrao}`,
+                    `referencia_externa.ilike.${padrao}`
+                ].join(',')),
+                { inicio: 0, fim: 199 }
+            );
+            const novas = (data || []).filter(item => !encomendasAdmin.some(atual => String(atual.id) === String(item.id)));
+            if (!novas.length) return;
+            encomendasAdmin = [...encomendasAdmin, ...novas].sort(ordenarEncomendasRecentes);
+            renderizarEncomendasAdmin();
+            AdminEncomendaVista.carregarImagensParaEncomendas(novas)
+                .then(() => renderizarEncomendasAdmin())
+                .catch(() => {});
+        } catch (error) {
+            console.warn('Pesquisa de encomendas no servidor indisponivel.', error);
+            ultimaPesquisaServidorEncomendas = '';
+        }
+    }, 300);
+}
+
+function aoPesquisarEncomendasAdmin() {
+    renderizarEncomendasAdmin();
+    garantirTodasConcluidasParaPesquisaAdmin();
+    pesquisarEncomendasNoServidorAdmin();
+}
+
+document.getElementById('pesquisa-encomendas-admin').addEventListener('input', aoPesquisarEncomendasAdmin);
+document.getElementById('pesquisa-figura-encomendas-admin').addEventListener('input', aoPesquisarEncomendasAdmin);
 document.getElementById('filtro-estado-encomendas-admin').addEventListener('change', renderizarEncomendasAdmin);
 document.getElementById('btn-concluir-encomendas-selecionadas')?.addEventListener('click', concluirEncomendasSelecionadas);
 window.addEventListener('admin-cliente-atualizado', atualizarEncomendaAbertaAposCliente);
