@@ -32,7 +32,7 @@ async function garantirProdutosCarrinhoNoCatalogo() {
 
     const { data, error } = await cliente
         .from('produtos_loja')
-        .select('id, sku, nome, preco, peso, tema, subtema, imagens, ativo, descontinuado')
+        .select('id, sku, nome, preco, peso, tema, subtema, imagens, ativo')
         .in('id', emFalta);
 
     if (error) throw error;
