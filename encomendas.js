@@ -518,7 +518,7 @@ function garantirProdutoModalEncomendas() {
     prepararContextoProdutoEncomendas();
     if (window.MapasProdutoModal) return Promise.resolve();
     if (!promessaProdutoModalEncomendas) {
-        promessaProdutoModalEncomendas = carregarScriptEncomendasAdmin('mapas-produto-modal.js?v=20261013-sem-descontinuado')
+        promessaProdutoModalEncomendas = carregarScriptEncomendasAdmin('mapas-produto-modal.js?v=20261014-fechar')
             .then(() => {
                 prepararContextoProdutoEncomendas();
             });
@@ -1131,7 +1131,7 @@ function pedirConclusaoLoteEncomendas(quantidade, total) {
 
         const acoes = criarElementoEncomenda('div', 'admin-fatura-confirmacao-acoes');
         const botoes = [
-            { texto: 'Cancelar', valor: null, classe: 'wallapop-botao admin-fatura-confirmacao-cancelar', foco: true },
+            { texto: 'Fechar', valor: null, classe: 'wallapop-botao admin-fatura-confirmacao-cancelar', foco: true },
             { texto: 'Recibos mais tarde', valor: 'mais_tarde', classe: 'wallapop-botao' },
             { texto: 'Concluir e emitir recibos', valor: 'emitir', classe: 'wallapop-botao wallapop-botao-destaque' }
         ];

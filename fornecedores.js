@@ -91,7 +91,7 @@ function garantirFornecedoresProdutoModal() {
     if (window.FornecedoresProdutoModal) return Promise.resolve();
     if (!__fornecedoresProdutoPromessa) {
         prepararContextoProdutoFornecedor();
-        __fornecedoresProdutoPromessa = carregarScriptAdmin("mapas-produto-modal.js?v=20261013-sem-descontinuado")
+        __fornecedoresProdutoPromessa = carregarScriptAdmin("mapas-produto-modal.js?v=20261014-fechar")
             .then(function () {
                 window.FornecedoresProdutoModal = {
                     abrir: function () {
@@ -1021,7 +1021,7 @@ function confirmarFornecedorNoSite(opcoes = {}) {
         }
 
         const acoes = criarElementoPedidoFornecedor("div", "fornecedor-confirmacao-acoes");
-        const cancelar = criarElementoPedidoFornecedor("button", "wallapop-botao", opcoes.textoCancelar || "Cancelar");
+        const cancelar = criarElementoPedidoFornecedor("button", "wallapop-botao", opcoes.textoCancelar || "Fechar");
         cancelar.type = "button";
         const confirmar = criarElementoPedidoFornecedor("button", "wallapop-botao wallapop-botao-destaque", opcoes.textoConfirmar || "Continuar");
         confirmar.type = "button";

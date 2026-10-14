@@ -580,7 +580,7 @@ function criarBlocoFornecedorFallbackMapa(form, id, rotulo, valor, opcoes = {}) 
                 const rotuloLinha = `${formatarDataFornecedorLeituraMapa(item.data) || "sem data"} - ${rotuloHistoricoFornecedorLeituraMapa(item.tipo)}`;
                 if (!(await mostrarConfirmacaoSite(
                     `Apagar esta linha do histórico de ${rotulo}?\n\n${rotuloLinha}\n\nSó fica definitivo ao gravar o produto.`,
-                    { titulo: "Apagar histórico", textoConfirmar: "Apagar", textoCancelar: "Cancelar" }
+                    { titulo: "Apagar histórico", textoConfirmar: "Apagar", textoCancelar: "Fechar" }
                 ))) {
                     return;
                 }
@@ -596,7 +596,7 @@ function criarBlocoFornecedorFallbackMapa(form, id, rotulo, valor, opcoes = {}) 
     botaoLimpar.addEventListener("click", async () => {
         if (!(await mostrarConfirmacaoSite(
             `Limpar o histórico de ${rotulo} nesta ficha?\n\nA marcação atual também fica vazia. Só fica definitivo ao gravar o produto.`,
-            { titulo: "Limpar histórico", textoConfirmar: "Limpar", textoCancelar: "Cancelar" }
+            { titulo: "Limpar histórico", textoConfirmar: "Limpar", textoCancelar: "Fechar" }
         ))) {
             return;
         }
@@ -2508,7 +2508,7 @@ async function apagarProdutoMapa() {
     const referencia = produto.referencia ? `\nRef.: ${produto.referencia}` : "";
     const confirmou = await mostrarConfirmacaoSite(
         `Apagar "${nome}"?${referencia}${sku}\n\nIsto apaga a ficha do produto do catálogo. As encomendas antigas não são alteradas.`,
-        { titulo: "Apagar produto", textoConfirmar: "Apagar", textoCancelar: "Cancelar" }
+        { titulo: "Apagar produto", textoConfirmar: "Apagar", textoCancelar: "Fechar" }
     );
     if (!confirmou) return;
 

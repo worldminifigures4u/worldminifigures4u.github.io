@@ -3514,7 +3514,7 @@ function confirmarResumoAlteracoesStockPlataforma(naoReporStock = []) {
         const cancelar = document.createElement('button');
         cancelar.type = 'button';
         cancelar.className = 'wallapop-botao';
-        cancelar.textContent = 'Cancelar';
+        cancelar.textContent = 'Fechar';
         cancelar.addEventListener('click', () => terminar(false));
 
         acoes.append(confirmar, cancelar);

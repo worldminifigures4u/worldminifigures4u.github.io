@@ -2315,7 +2315,7 @@ window.AdminEncomendaVista = (function () {
             "Os anexos serão mantidos e eliminados automaticamente após 2 meses. As notas internas serão mantidas."
         ];
         const botoes = [
-            { texto: "Cancelar", valor: null, classe: "wallapop-botao admin-fatura-confirmacao-cancelar", foco: true }
+            { texto: "Fechar", valor: null, classe: "wallapop-botao admin-fatura-confirmacao-cancelar", foco: true }
         ];
         if (podeEmitirFaturaMoloni(encomenda)) {
             mensagens.push("Pode emitir a fatura-recibo no Moloni agora ou deixar para mais tarde.");

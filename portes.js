@@ -389,7 +389,7 @@ async function apagarMetodoPortesAdmin(metodo) {
     const ok = await mostrarConfirmacaoSite(
         `Apagar o método "${metodo.nome_exibicao || id}" (${id})?\n\n`
         + 'Isto remove também todas as tarifas desse método em Portugal, Espanha e Europa.',
-        { titulo: "Apagar método", textoConfirmar: "Apagar", textoCancelar: "Cancelar" }
+        { titulo: "Apagar método", textoConfirmar: "Apagar", textoCancelar: "Fechar" }
     );
     if (!ok) return;
 
