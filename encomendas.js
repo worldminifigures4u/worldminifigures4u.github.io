@@ -1133,7 +1133,7 @@ function pedirConclusaoLoteEncomendas(quantidade, total) {
         const botoes = [
             { texto: 'Fechar', valor: null, classe: 'wallapop-botao admin-fatura-confirmacao-cancelar', foco: true },
             { texto: 'Recibos mais tarde', valor: 'mais_tarde', classe: 'wallapop-botao' },
-            { texto: 'Concluir e emitir recibos', valor: 'emitir', classe: 'wallapop-botao wallapop-botao-destaque' }
+            { texto: 'Concluir e emitir recibos', valor: 'emitir', classe: 'wallapop-botao admin-encomenda-recibo-moloni' }
         ];
 
         const fechar = valor => {

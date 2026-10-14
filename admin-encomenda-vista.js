@@ -2303,7 +2303,7 @@ window.AdminEncomendaVista = (function () {
             valorCancelar: false,
             botoes: [
                 { texto: "Mais tarde", valor: false, classe: "wallapop-botao" },
-                { texto: "Emitir agora", valor: true, classe: "wallapop-botao wallapop-botao-destaque", foco: true }
+                { texto: "Emitir agora", valor: true, classe: "wallapop-botao admin-encomenda-recibo-moloni", foco: true }
             ]
         });
     }
@@ -2322,7 +2322,7 @@ window.AdminEncomendaVista = (function () {
             mensagens.push("Se emitir agora, a data de emissão é a de hoje e o pagamento fica com a data real.");
             botoes.push(
                 { texto: "Recibo mais tarde", valor: "mais_tarde", classe: "wallapop-botao" },
-                { texto: "Concluir e emitir recibo", valor: "emitir", classe: "wallapop-botao wallapop-botao-destaque" }
+                { texto: "Concluir e emitir recibo", valor: "emitir", classe: "wallapop-botao admin-encomenda-recibo-moloni" }
             );
         } else {
             mensagens.push("Esta encomenda já não tem recibo Moloni pendente.");
