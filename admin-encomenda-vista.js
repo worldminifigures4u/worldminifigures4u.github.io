@@ -2253,6 +2253,11 @@ window.AdminEncomendaVista = (function () {
             const caixa = criarElemento("div", "admin-fatura-confirmacao-caixa");
             if (opcoes.titulo) {
                 const titulo = criarElemento("h3", "admin-fatura-confirmacao-titulo", opcoes.titulo);
+                // Plataforma com a mesma etiqueta colorida da lista de encomendas (Wallapop, Todocoleccion, ...).
+                if (opcoes.tituloOrigem) {
+                    titulo.append(" ", criarElemento("span", `admin-encomenda-modal-titulo-origem${obterClassePlataforma(opcoes.tituloOrigem)}`, opcoes.tituloOrigem));
+                    if (opcoes.tituloSufixo) titulo.append(opcoes.tituloSufixo);
+                }
                 caixa.appendChild(titulo);
             }
             (opcoes.mensagens || []).forEach(mensagem => {
@@ -2324,7 +2329,9 @@ window.AdminEncomendaVista = (function () {
             botoes.push({ texto: "Concluir encomenda", valor: "concluir", classe: "wallapop-botao wallapop-botao-destaque" });
         }
         return criarModalDecisaoEncomenda({
-            titulo: `Concluir encomenda ${codigo} (${origem})?`,
+            titulo: `Concluir encomenda ${codigo}`,
+            tituloOrigem: origem,
+            tituloSufixo: "?",
             mensagens,
             valorCancelar: null,
             botoes

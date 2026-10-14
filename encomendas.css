@@ -2500,3 +2500,11 @@ body .admin-encomenda-estado-avancar {
     min-width: var(--admin-encomenda-modal-botao-largura, 78px) !important;
     max-width: var(--admin-encomenda-modal-botao-largura, 78px) !important;
 }
+
+/* Diálogo "Concluir encomenda": etiqueta da plataforma como na lista */
+.admin-fatura-confirmacao-titulo .admin-encomenda-modal-titulo-origem {
+    margin: 0 2px 0 4px;
+    padding: 3px 8px;
+    font-size: 14px;
+    vertical-align: middle;
+}
