@@ -261,6 +261,51 @@ async function imprimirPedidoFornecedor(id) {
 
 const receberStockFornecedorEmCurso = new Set();
 
+// Depois de receber stock: PDF (impressão → "Guardar como PDF") com as figuras que estavam
+// a 0 ou negativas antes de receber (Nome, Ref., stock antes).
+function imprimirStockSemStockAntesFornecedor(linhas, codigo) {
+    const escapar = (valor) => String(valor ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
+    const ordenadas = linhas.slice().sort((a, b) => String(a.nome).localeCompare(String(b.nome), 'pt', { sensitivity: 'base' }));
+    const data = new Date().toLocaleDateString('pt-PT');
+    const titulo = `Stock 0 ou negativo - ${codigo || 'encomenda'}`;
+    const html = `<!DOCTYPE html><html lang="pt"><head><meta charset="UTF-8"><title>${escapar(titulo)}</title>
+<style>
+  @page { size: A4 portrait; margin: 14mm; }
+  body { font-family: Arial, Helvetica, sans-serif; color: #000; margin: 0; }
+  h1 { font-size: 16px; margin: 0 0 4px; }
+  p { font-size: 11px; margin: 0 0 10px; color: #333; }
+  table { width: 100%; border-collapse: collapse; font-size: 11px; }
+  th, td { border-bottom: 1px solid #ccc; padding: 4px 6px; text-align: left; }
+  th { border-bottom: 2px solid #000; }
+  td.num, th.num { text-align: right; width: 90px; }
+  td.ref, th.ref { width: 140px; }
+</style></head><body>
+<h1>Figuras com stock 0 ou negativo antes de receber</h1>
+<p>Encomenda ${escapar(codigo)} · ${escapar(data)} · ${ordenadas.length} figura(s)</p>
+<table><thead><tr><th>Nome</th><th class="ref">Ref.</th><th class="num">Stock antes</th></tr></thead><tbody>
+${ordenadas.map(l => `<tr><td>${escapar(l.nome)}</td><td class="ref">${escapar(l.referencia)}</td><td class="num">${escapar(l.stockAntes)}</td></tr>`).join('')}
+</tbody></table></body></html>`;
+    const iframe = document.createElement('iframe');
+    iframe.setAttribute('aria-hidden', 'true');
+    Object.assign(iframe.style, { position: 'fixed', right: '0', bottom: '0', width: '0', height: '0', border: '0' });
+    document.body.appendChild(iframe);
+    const doc = iframe.contentWindow.document;
+    doc.open();
+    doc.write(html);
+    doc.close();
+    // O nome do ficheiro sugerido ao guardar como PDF vem do título da página principal.
+    const tituloAnterior = document.title;
+    setTimeout(() => {
+        try {
+            document.title = titulo;
+            iframe.contentWindow.focus();
+            iframe.contentWindow.print();
+        } finally {
+            setTimeout(() => { document.title = tituloAnterior; iframe.remove(); }, 1500);
+        }
+    }, 300);
+}
+
 async function avisarProblemaReceberStockFornecedor(mensagem) {
     definirStatusFornecedor(mensagem, true);
     if (typeof mostrarAvisoSite === "function") {
@@ -356,6 +401,7 @@ async function receberPedidoFornecedor(id) {
         // Stock/ativo/novidade ficam só na RPC — sem reescritas absolutas depois (evita anular vendas).
         const aplicado = Array.isArray(data?.recebido_aplicado) ? data.recebido_aplicado : rececoes;
         let ativados = 0;
+        const semStockAntes = [];
         aplicado.forEach(rececao => {
             const produtoId = rececao.produto_id || rececao.id;
             const qtd = Math.max(0, Number(rececao.quantidade || 0));
@@ -368,6 +414,10 @@ async function receberPedidoFornecedor(id) {
                 ? Number(rececao.stock_depois)
                 : stockAntes + qtd;
             const saiuDeZero = stockAntes <= 0 && stockDepois > 0;
+            // Novidades ficam de fora (ainda não tinham stock por serem novas).
+            if (stockAntes <= 0 && !obterBooleanoProdutoFornecedor(produto.novidade)) {
+                semStockAntes.push({ nome: produto.nome || '', referencia: produto.referencia || '', stockAntes });
+            }
             produto.stock = stockDepois;
             if (saiuDeZero || rececao.ativado) {
                 produto.ativo = true;
@@ -395,6 +445,7 @@ async function receberPedidoFornecedor(id) {
             : '';
         definirStatusFornecedor(`Stock atualizado (+${unidades} un.) para a encomenda ${atualizado.codigo || ''}.${avisoTeto}${avisoAtivo}`);
         await mostrarAvisosStockRecebidoFornecedor(aplicado);
+        if (semStockAntes.length) imprimirStockSemStockAntesFornecedor(semStockAntes, atualizado.codigo || obterTextoCodigoPedidoFornecedor(pedido));
         if (typeof fecharModalPedidoFornecedor === "function") {
             fecharModalPedidoFornecedor();
         }
