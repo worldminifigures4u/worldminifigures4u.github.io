@@ -2508,3 +2508,11 @@ body .admin-encomenda-estado-avancar {
     font-size: 14px;
     vertical-align: middle;
 }
+
+/* Diálogos de concluir/fatura: os botões ficam todos na mesma linha */
+.admin-fatura-confirmacao-caixa { width: min(640px, calc(100vw - 32px)); max-width: none; }
+.admin-fatura-confirmacao-acoes { flex-wrap: nowrap; }
+.admin-fatura-confirmacao-acoes .wallapop-botao { min-width: 0; white-space: nowrap; }
+@media (max-width: 560px) {
+    .admin-fatura-confirmacao-acoes { flex-wrap: wrap; }
+}
