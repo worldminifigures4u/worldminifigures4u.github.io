@@ -1745,14 +1745,6 @@ html.admin-light-mode body.pagina-fornecedores-admin .fornecedor-vazio{
     color:var(--fp-light-texto-muted, #64748b) !important;
 }
 
-html.admin-light-mode body.cabecalho-com-admin .mapas-produto-leitura-valor.preco-recomendado{
-    color:#b7791f !important;
-}
-
-html.admin-light-mode body.cabecalho-com-admin .mapas-produto-leitura-valor.abaixo-recomendado{
-    color:#c2410c !important;
-}
-
 html.admin-light-mode body.cabecalho-com-admin .mapas-produto-preco-recomendado-usar{
     border-color:#b7791f;
     color:#b7791f;

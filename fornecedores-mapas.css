@@ -6299,13 +6299,6 @@ body.fornecedores-vista-lista .fornecedores-coluna-direita .fornecedor-pedido-li
 .mapas-produto-titulo-copiar.copiado::after { content: "  ✓ copiado"; font-size: 13px; font-weight: 700; }
 
 /* Preco de venda recomendado */
-.mapas-produto-leitura-valor.preco-recomendado {
-    color: #ffc400;
-}
-
-.mapas-produto-leitura-valor.abaixo-recomendado {
-    color: #ff9f43;
-}
 
 .mapas-produto-preco-recomendado-edicao {
     display: grid;
