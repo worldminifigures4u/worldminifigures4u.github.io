@@ -739,7 +739,7 @@ function garantirFichaProdutoEstatisticas() {
     if (!promessaFichaProdutoEstatisticas) {
         promessaFichaProdutoEstatisticas = Promise.all([
             carregarRecursoEstatisticas('css', 'fornecedores-mapas.css?v=20261015-preco-recomendado'),
-            carregarRecursoEstatisticas('js', 'mapas-produto-modal.js?v=20261015-preco-recomendado7')
+            carregarRecursoEstatisticas('js', 'mapas-produto-modal.js?v=20261015-ficha-estatisticas')
         ]).catch(erro => {
             promessaFichaProdutoEstatisticas = null;
             throw erro;

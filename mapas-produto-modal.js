@@ -1,6 +1,49 @@
 (function () {
 'use strict';
 
+// A ficha também abre fora dos Mapas (ex.: Estatísticas). Não depender de funções dessas páginas.
+function normalizarImagensMapa(imagens) {
+    let lista = imagens;
+    if (typeof lista === "string") {
+        try {
+            lista = JSON.parse(lista);
+        } catch (_erro) {
+            lista = String(lista).split(/[\n,]+/);
+        }
+    }
+    if (!Array.isArray(lista)) return [];
+    return lista
+        .map((item) => {
+            if (typeof item === "string") {
+                const texto = item.trim();
+                if (!texto) return "";
+                if ((texto.startsWith('"') && texto.endsWith('"')) || (texto.startsWith("'") && texto.endsWith("'"))) {
+                    try {
+                        return String(JSON.parse(texto) || "").trim();
+                    } catch (_erro) {
+                        return texto.slice(1, -1).trim();
+                    }
+                }
+                return texto;
+            }
+            if (item && typeof item === "object") {
+                return String(item.url || item.secure_url || item.src || "").trim();
+            }
+            return String(item || "").trim();
+        })
+        .filter(Boolean);
+}
+
+function chamarFuncaoPaginaMapa(nome, ...args) {
+    const fn = window[nome];
+    return typeof fn === "function" ? fn(...args) : undefined;
+}
+
+function normalizarProdutoPaginaMapa(produto) {
+    return chamarFuncaoPaginaMapa("normalizarProdutoMapa", produto)
+        || { ...produto, imagens: normalizarImagensMapa(produto?.imagens) };
+}
+
 let mapasFornecedoresFichasCache = null;
 let mapasFornecedoresFichasPromessa = null;
 let galeriaProdutoMapaEstado = { imagens: [], indice: 0, nome: "" };
@@ -2667,10 +2710,10 @@ async function apagarProdutoMapa() {
         const { error } = await mapasClient.rpc("apagar_produto_admin", { p_id: String(id) });
         if (error) throw error;
         mapasProdutos = mapasProdutos.filter(item => String(item.id) !== String(id));
-        sincronizarEstadoImportacaoMapa();
-        atualizarResultadosMapa();
+        chamarFuncaoPaginaMapa("sincronizarEstadoImportacaoMapa");
+        chamarFuncaoPaginaMapa("atualizarResultadosMapa");
         fecharEdicaoProdutoMapa();
-        definirStatusMapa(`Produto "${nome}" apagado.`);
+        chamarFuncaoPaginaMapa("definirStatusMapa", `Produto "${nome}" apagado.`);
     } catch (erro) {
         console.error(erro);
         if (status) {
@@ -2717,7 +2760,7 @@ async function guardarEdicaoProdutoMapa(evento) {
                 });
                 if (!extra.error && extra.data) data = extra.data;
             }
-            const criado = normalizarProdutoMapa({
+            const criado = normalizarProdutoPaginaMapa({
                 ...produto,
                 ...data,
                 imagens: data?.imagens ?? produto.imagens,
@@ -2726,16 +2769,16 @@ async function guardarEdicaoProdutoMapa(evento) {
                 fornecedores: data?.fornecedores ?? produto.fornecedores
             });
             mapasProdutos = [criado, ...mapasProdutos.filter(item => String(item.id) !== String(criado.id))];
-            sincronizarEstadoImportacaoMapa();
-            atualizarResultadosMapa();
-            definirStatusMapa("Produto criado.");
+            chamarFuncaoPaginaMapa("sincronizarEstadoImportacaoMapa");
+            chamarFuncaoPaginaMapa("atualizarResultadosMapa");
+            chamarFuncaoPaginaMapa("definirStatusMapa", "Produto criado.");
             await abrirFichaProdutoMapa(criado.id);
             return;
         }
 
         ({ data, error } = await editarProdutoMapaRpc(id, skuOriginal, produto));
         if (error) throw error;
-        const atualizado = normalizarProdutoMapa({
+        const atualizado = normalizarProdutoPaginaMapa({
             ...data,
             imagens: data?.imagens ?? produto.imagens,
             observacoes: data?.observacoes ?? produto.observacoes,
@@ -2743,9 +2786,9 @@ async function guardarEdicaoProdutoMapa(evento) {
             fornecedores: data?.fornecedores ?? produto.fornecedores
         });
         mapasProdutos = mapasProdutos.map(item => String(item.id) === String(atualizado.id) ? atualizado : item);
-        sincronizarEstadoImportacaoMapa();
-        atualizarResultadosMapa();
-        definirStatusMapa("Produto gravado.");
+        chamarFuncaoPaginaMapa("sincronizarEstadoImportacaoMapa");
+        chamarFuncaoPaginaMapa("atualizarResultadosMapa");
+        chamarFuncaoPaginaMapa("definirStatusMapa", "Produto gravado.");
         await abrirFichaProdutoMapa(atualizado.id);
     } catch (erro) {
         console.error(erro);
