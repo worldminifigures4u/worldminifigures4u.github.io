@@ -32,13 +32,14 @@ function formatarEuroProdutoModal(valor) {
 // arredondado para cima ao proximo multiplo de 0,05.
 const IVA_PRECO_RECOMENDADO = 0.23;
 const FATOR_PRECO_RECOMENDADO = 2;
+const PRECO_RECOMENDADO_MINIMO = 1.75;
 
 function calcularPrecoRecomendadoProdutoModal(precoCompra) {
     const custo = Number(String(precoCompra ?? "").replace(/\s|€/g, "").replace(",", ".")) || 0;
     if (!Number.isFinite(custo) || custo <= 0) return null;
     const minimoCentimos = Math.round(custo * FATOR_PRECO_RECOMENDADO * (1 + IVA_PRECO_RECOMENDADO) * 100);
     const minimo = minimoCentimos / 100;
-    const recomendado = Math.ceil(minimoCentimos / 5) * 5 / 100;
+    const recomendado = Math.max(PRECO_RECOMENDADO_MINIMO, Math.ceil(minimoCentimos / 5) * 5 / 100);
     const liquido = recomendado / (1 + IVA_PRECO_RECOMENDADO);
     return {
         minimo,
