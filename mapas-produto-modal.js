@@ -28,6 +28,31 @@ function formatarEuroProdutoModal(valor) {
     return Number(valor || 0).toLocaleString("pt-PT", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
+// Preco de venda recomendado: receber (sem IVA) pelo menos o dobro do preco de compra,
+// arredondado para cima ao proximo ,49 ou ,99.
+const IVA_PRECO_RECOMENDADO = 0.23;
+const FATOR_PRECO_RECOMENDADO = 2;
+
+function calcularPrecoRecomendadoProdutoModal(precoCompra) {
+    const custo = Number(precoCompra || 0);
+    if (!Number.isFinite(custo) || custo <= 0) return null;
+    const minimo = Math.round(custo * FATOR_PRECO_RECOMENDADO * (1 + IVA_PRECO_RECOMENDADO) * 100) / 100;
+    const base = Math.floor(minimo);
+    const recomendado = [base + 0.49, base + 0.99, base + 1.49].find((v) => v >= minimo - 0.0001);
+    const liquido = recomendado / (1 + IVA_PRECO_RECOMENDADO);
+    return {
+        minimo,
+        recomendado: Math.round(recomendado * 100) / 100,
+        lucro: Math.round((liquido - custo) * 100) / 100
+    };
+}
+
+function textoAjudaPrecoRecomendadoProdutoModal(calc) {
+    if (!calc) return "Preencha o preço de compra para calcular.";
+    return `Mínimo para receber o dobro do custo (já sem IVA 23%): ${formatarEuroProdutoModal(calc.minimo)} €. `
+        + `Lucro líquido a ${formatarEuroProdutoModal(calc.recomendado)} €: ${formatarEuroProdutoModal(calc.lucro)} €.`;
+}
+
 function normalizarSkuProdutoModal(valor) {
     return String(valor || "")
         .normalize("NFD")
@@ -1754,6 +1779,44 @@ function montarSecaoAvisosStockProdutoMapa(campos, produto) {
     carregarSecaoAvisosStockProdutoMapa(produto, conteudo);
 }
 
+function montarCampoPrecoRecomendadoEdicaoMapa(secao) {
+    const inputCompra = document.getElementById("mapas-editar-preco-compra");
+    const inputVenda = document.getElementById("mapas-editar-preco");
+    const bloco = document.createElement("div");
+    bloco.className = "mapas-produto-campo mapas-produto-preco-recomendado-edicao";
+    const rotulo = document.createElement("span");
+    rotulo.textContent = "preço recomendado";
+    const linha = document.createElement("div");
+    linha.className = "mapas-produto-preco-recomendado-linha";
+    const valor = document.createElement("strong");
+    valor.className = "mapas-produto-leitura-valor preco-recomendado";
+    const botao = document.createElement("button");
+    botao.type = "button";
+    botao.className = "mapas-produto-preco-recomendado-usar";
+    botao.textContent = "Usar";
+    botao.title = "Passar este valor para o preço venda";
+    linha.append(valor, botao);
+    bloco.append(rotulo, linha);
+    secao.appendChild(bloco);
+
+    let calcAtual = null;
+    const atualizar = () => {
+        calcAtual = calcularPrecoRecomendadoProdutoModal(inputCompra ? inputCompra.value : 0);
+        valor.textContent = calcAtual ? `${formatarEuroProdutoModal(calcAtual.recomendado)} €` : "—";
+        bloco.title = textoAjudaPrecoRecomendadoProdutoModal(calcAtual);
+        botao.disabled = !calcAtual;
+    };
+    botao.addEventListener("click", () => {
+        if (!calcAtual || !inputVenda) return;
+        inputVenda.value = calcAtual.recomendado.toFixed(2);
+        inputVenda.dispatchEvent(new Event("input", { bubbles: true }));
+        inputVenda.dispatchEvent(new Event("change", { bubbles: true }));
+    });
+    if (inputCompra) inputCompra.addEventListener("input", atualizar);
+    atualizar();
+    return bloco;
+}
+
 function criarCampoLeituraMapa(secao, rotulo, valor, opcoes = {}) {
     const bloco = document.createElement("div");
     bloco.className = `mapas-produto-campo mapas-produto-leitura${opcoes.largo ? " mapas-produto-campo-largo" : ""}`;
@@ -2073,9 +2136,20 @@ function preencherFichaProdutoMapa(produto) {
         { classeValor: Number(produto.stock || 0) <= 0 ? "sem-stock" : "" }
     );
     criarCampoLeituraMapa(secaoDetalhes, "preço compra", `${formatarEuroProdutoModal(produto.preco_compra)} €`);
-    criarCampoLeituraMapa(secaoDetalhes, "preço venda", `${formatarEuroProdutoModal(produto.preco)} €`);
+    const calcRecomendadoLeitura = calcularPrecoRecomendadoProdutoModal(produto.preco_compra);
+    const precoVendaAtual = Number(produto.preco || 0);
+    criarCampoLeituraMapa(secaoDetalhes, "preço venda", `${formatarEuroProdutoModal(produto.preco)} €`, {
+        classeValor: calcRecomendadoLeitura && precoVendaAtual > 0 && precoVendaAtual < calcRecomendadoLeitura.minimo ? "abaixo-recomendado" : ""
+    });
     criarCampoLeituraMapa(secaoDetalhes, "Peso (g)", Number(produto.peso || PESO_PADRAO_PRODUTO_GRAMAS || 10));
     criarCampoLeituraMapa(secaoDetalhes, "Lego", textoLegoProdutoModal(produto.lego) || "por verificar");
+    const blocoRecomendadoLeitura = criarCampoLeituraMapa(
+        secaoDetalhes,
+        "preço recomendado",
+        calcRecomendadoLeitura ? `${formatarEuroProdutoModal(calcRecomendadoLeitura.recomendado)} €` : "",
+        { classeValor: "preco-recomendado" }
+    );
+    blocoRecomendadoLeitura.title = textoAjudaPrecoRecomendadoProdutoModal(calcRecomendadoLeitura);
     if (Number(produto.unidades_por_embalagem || 1) > 1) {
         criarCampoLeituraMapa(secaoDetalhes, "Unid/emb.", Number(produto.unidades_por_embalagem));
     }
@@ -2315,6 +2389,7 @@ function preencherFormularioProdutoMapa(produto, modo = "editar") {
         { valor: "sim", texto: "sim" },
         { valor: "não", texto: "não" }
     ]);
+    montarCampoPrecoRecomendadoEdicaoMapa(secaoDetalhes);
     criarInputEdicaoMapa(secaoDetalhes, "mapas-editar-unidades-por-embalagem", "Unidades por embalagem", Number(produto.unidades_por_embalagem || 1), "number", { required: true, min: 1, step: 1 });
     linhaDetalhesEstado.appendChild(secaoDetalhes);
 

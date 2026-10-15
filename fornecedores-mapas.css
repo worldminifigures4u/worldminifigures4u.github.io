@@ -4638,6 +4638,7 @@ html.admin-light-mode #fornecedores-aplicacao .fornecedor-tabela-encomenda .mapa
     body #mapas-produto-modal .mapas-produto-secao-detalhes > .mapas-produto-leitura:nth-of-type(3) { order: 4; }
     body #mapas-produto-modal .mapas-produto-secao-detalhes > .mapas-produto-leitura:nth-of-type(5) { order: 5; }
     body #mapas-produto-modal .mapas-produto-secao-detalhes > .mapas-produto-leitura:nth-of-type(6) { order: 6; }
+    body #mapas-produto-modal .mapas-produto-secao-detalhes > .mapas-produto-leitura:nth-of-type(7) { order: 7; }
 }
 
 /* Telemovel: botoes do bloco Estado em duas colunas */
@@ -6296,3 +6297,45 @@ body.fornecedores-vista-lista .fornecedores-coluna-direita .fornecedor-pedido-li
 .mapas-produto-titulo-copiar { cursor: copy; user-select: none; transition: color .2s; }
 .mapas-produto-titulo-copiar.copiado { color: #7ed321 !important; }
 .mapas-produto-titulo-copiar.copiado::after { content: "  ✓ copiado"; font-size: 13px; font-weight: 700; }
+
+/* Preco de venda recomendado */
+.mapas-produto-leitura-valor.preco-recomendado {
+    color: #ffc400;
+}
+
+.mapas-produto-leitura-valor.abaixo-recomendado {
+    color: #ff9f43;
+}
+
+.mapas-produto-preco-recomendado-edicao {
+    display: grid;
+    gap: 6px;
+    align-content: start;
+}
+
+.mapas-produto-preco-recomendado-linha {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-height: 38px;
+}
+
+.mapas-produto-preco-recomendado-usar {
+    padding: 4px 12px;
+    border: 1px solid #ffc400;
+    border-radius: 8px;
+    background: transparent;
+    color: #ffc400;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.mapas-produto-preco-recomendado-usar:hover:not(:disabled) {
+    background: #ffc400;
+    color: #111;
+}
+
+.mapas-produto-preco-recomendado-usar:disabled {
+    opacity: 0.4;
+    cursor: default;
+}
