@@ -1759,3 +1759,8 @@ html.admin-light-mode body.cabecalho-com-admin .mapas-produto-leitura-valor.atin
 html.admin-light-mode body.cabecalho-com-admin #mapas-produto-modal input.atinge-recomendado{
     color:#15803d !important;
 }
+
+html.admin-light-mode body.cabecalho-com-admin .mapas-produto-leitura-valor.abaixo-recomendado,
+html.admin-light-mode body.cabecalho-com-admin #mapas-produto-modal input.abaixo-recomendado{
+    color:#c2410c !important;
+}

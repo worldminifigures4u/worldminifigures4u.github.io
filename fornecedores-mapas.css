@@ -6336,3 +6336,8 @@ body.fornecedores-vista-lista .fornecedores-coluna-direita .fornecedor-pedido-li
     opacity: 0.4;
     cursor: default;
 }
+
+.mapas-produto-leitura-valor.abaixo-recomendado,
+#mapas-produto-modal input.abaixo-recomendado {
+    color: #ff9f43 !important;
+}

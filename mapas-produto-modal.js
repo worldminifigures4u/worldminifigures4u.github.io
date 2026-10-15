@@ -1809,7 +1809,10 @@ function montarCampoPrecoRecomendadoEdicaoMapa(secao) {
         const inputVendaAtual = obterInput("mapas-editar-preco");
         if (inputVendaAtual) {
             const venda = Number(String(inputVendaAtual.value || "").replace(/\s|€/g, "").replace(",", ".")) || 0;
-            inputVendaAtual.classList.toggle("atinge-recomendado", Boolean(calcAtual) && venda > 0 && venda >= calcAtual.recomendado - 0.0001);
+            const temValor = Boolean(calcAtual) && venda > 0;
+            const atinge = temValor && venda >= calcAtual.recomendado - 0.0001;
+            inputVendaAtual.classList.toggle("atinge-recomendado", atinge);
+            inputVendaAtual.classList.toggle("abaixo-recomendado", temValor && !atinge);
         }
     };
     botao.addEventListener("click", () => {
@@ -2157,7 +2160,7 @@ function preencherFichaProdutoMapa(produto) {
     const calcRecomendadoLeitura = calcularPrecoRecomendadoProdutoModal(produto.preco_compra);
     const precoVendaAtual = Number(produto.preco || 0);
     criarCampoLeituraMapa(secaoDetalhes, "preço venda", `${formatarEuroProdutoModal(produto.preco)} €`, {
-        classeValor: calcRecomendadoLeitura && precoVendaAtual > 0 && precoVendaAtual >= calcRecomendadoLeitura.recomendado - 0.0001 ? "atinge-recomendado" : ""
+        classeValor: calcRecomendadoLeitura && !calcRecomendadoLeitura || precoVendaAtual <= 0 ? "" : (precoVendaAtual >= calcRecomendadoLeitura.recomendado - 0.0001 ? "atinge-recomendado" : "abaixo-recomendado")
     });
     criarCampoLeituraMapa(secaoDetalhes, "Peso (g)", Number(produto.peso || PESO_PADRAO_PRODUTO_GRAMAS || 10));
     criarCampoLeituraMapa(secaoDetalhes, "Lego", textoLegoProdutoModal(produto.lego) || "por verificar");
