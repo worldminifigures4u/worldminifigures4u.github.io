@@ -28,16 +28,31 @@ function formatarEuroProdutoModal(valor) {
     return Number(valor || 0).toLocaleString("pt-PT", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
-// Preco de venda recomendado: receber (sem IVA) pelo menos o dobro do preco de compra,
-// arredondado para cima ao proximo multiplo de 0,05.
+// Preco de venda recomendado (sem IVA) por escaloes do preco de compra, como no IRS:
+// ate 1,50 € x2, de 1,50 € a 3 € x1,7, acima de 3 € x1,5; depois IVA, arredondado ao multiplo de 0,05 seguinte.
 const IVA_PRECO_RECOMENDADO = 0.23;
-const FATOR_PRECO_RECOMENDADO = 2;
+const ESCALOES_PRECO_RECOMENDADO = [
+    { ate: 1.5, fator: 2 },
+    { ate: 3, fator: 1.7 },
+    { ate: Infinity, fator: 1.5 }
+];
+
+function valorSemIvaEscaloesProdutoModal(custo) {
+    let total = 0;
+    let inicio = 0;
+    for (const { ate, fator } of ESCALOES_PRECO_RECOMENDADO) {
+        if (custo <= inicio) break;
+        total += (Math.min(custo, ate) - inicio) * fator;
+        inicio = ate;
+    }
+    return total;
+}
 const PRECO_RECOMENDADO_MINIMO = 1.75;
 
 function calcularPrecoRecomendadoProdutoModal(precoCompra) {
     const custo = Number(String(precoCompra ?? "").replace(/\s|€/g, "").replace(",", ".")) || 0;
     if (!Number.isFinite(custo) || custo <= 0) return null;
-    const minimoCentimos = Math.round(custo * FATOR_PRECO_RECOMENDADO * (1 + IVA_PRECO_RECOMENDADO) * 100);
+    const minimoCentimos = Math.round(valorSemIvaEscaloesProdutoModal(custo) * (1 + IVA_PRECO_RECOMENDADO) * 100);
     const minimo = minimoCentimos / 100;
     const recomendado = Math.max(PRECO_RECOMENDADO_MINIMO, Math.ceil(minimoCentimos / 5) * 5 / 100);
     const liquido = recomendado / (1 + IVA_PRECO_RECOMENDADO);
@@ -50,7 +65,7 @@ function calcularPrecoRecomendadoProdutoModal(precoCompra) {
 
 function textoAjudaPrecoRecomendadoProdutoModal(calc) {
     if (!calc) return "Preencha o preço de compra para calcular.";
-    return `Mínimo para receber o dobro do custo (já sem IVA 23%): ${formatarEuroProdutoModal(calc.minimo)} €. `
+    return `Mínimo pelos escalões (×2 até 1,50 €, ×1,7 até 3 €, ×1,5 acima; com IVA 23%): ${formatarEuroProdutoModal(calc.minimo)} €. `
         + `Lucro líquido a ${formatarEuroProdutoModal(calc.recomendado)} €: ${formatarEuroProdutoModal(calc.lucro)} €.`;
 }
 
