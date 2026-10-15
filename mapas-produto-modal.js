@@ -29,16 +29,16 @@ function formatarEuroProdutoModal(valor) {
 }
 
 // Preco de venda recomendado: receber (sem IVA) pelo menos o dobro do preco de compra,
-// arredondado para cima ao proximo ,49 ou ,99.
+// arredondado para cima ao proximo multiplo de 0,05.
 const IVA_PRECO_RECOMENDADO = 0.23;
 const FATOR_PRECO_RECOMENDADO = 2;
 
 function calcularPrecoRecomendadoProdutoModal(precoCompra) {
     const custo = Number(String(precoCompra ?? "").replace(/\s|€/g, "").replace(",", ".")) || 0;
     if (!Number.isFinite(custo) || custo <= 0) return null;
-    const minimo = Math.round(custo * FATOR_PRECO_RECOMENDADO * (1 + IVA_PRECO_RECOMENDADO) * 100) / 100;
-    const base = Math.floor(minimo);
-    const recomendado = [base + 0.49, base + 0.99, base + 1.49].find((v) => v >= minimo - 0.0001);
+    const minimoCentimos = Math.round(custo * FATOR_PRECO_RECOMENDADO * (1 + IVA_PRECO_RECOMENDADO) * 100);
+    const minimo = minimoCentimos / 100;
+    const recomendado = Math.ceil(minimoCentimos / 5) * 5 / 100;
     const liquido = recomendado / (1 + IVA_PRECO_RECOMENDADO);
     return {
         minimo,
