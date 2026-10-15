@@ -6291,3 +6291,8 @@ body.fornecedores-vista-lista .fornecedores-coluna-direita .fornecedor-pedido-li
 .mapas-filtro-tema { width: 150px; max-width: 150px; }
 .mapas-filtro-tema option[value^="t:"] { font-weight: 800; }
 .mapas-filtro-tema option[value^="s:"] { font-weight: 400; }
+
+/* Ficha: clicar no nome copia "Nome (Subtema) (Tema)" */
+.mapas-produto-titulo-copiar { cursor: copy; user-select: none; transition: color .2s; }
+.mapas-produto-titulo-copiar.copiado { color: #7ed321 !important; }
+.mapas-produto-titulo-copiar.copiado::after { content: "  ✓ copiado"; font-size: 13px; font-weight: 700; }

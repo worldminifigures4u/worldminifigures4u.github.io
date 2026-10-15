@@ -2041,7 +2041,17 @@ function preencherFichaProdutoMapa(produto) {
     modal.querySelector("#mapas-editar-id").value = String(produto.id || "");
     modal.querySelector("#mapas-editar-sku-original").value = String(produto.sku || "");
     modal.dataset.produtoId = String(produto.id || "");
-    if (titulo) titulo.textContent = produto.nome || "Ficha do produto";
+    if (titulo) {
+        titulo.textContent = produto.nome || "Ficha do produto";
+        // Clicar no nome copia "Nome (Subtema) (Tema)" (ex.: Kuruk (Knights of Ren) (Star Wars)).
+        const subtema = String(produto.subtema || "").trim();
+        const partes = [String(produto.nome || "").trim()];
+        if (subtema && !["semsubtema", "sem subtema"].includes(subtema.toLowerCase())) partes.push(`(${subtema})`);
+        if (String(produto.tema || "").trim()) partes.push(`(${String(produto.tema).trim()})`);
+        modal.dataset.textoCopiarTitulo = partes.filter(Boolean).join(" ");
+        titulo.classList.add("mapas-produto-titulo-copiar");
+        titulo.title = `Clicar para copiar: ${modal.dataset.textoCopiarTitulo}`;
+    }
     atualizarAcoesModalProdutoMapa("ver");
 
     const topo = document.createElement("div");
@@ -2211,6 +2221,25 @@ function garantirModalEdicaoProdutoMapa() {
         </div>`;
     document.body.appendChild(modal);
     modal.querySelector("#mapas-produto-fechar-ficha")?.addEventListener("click", fecharEdicaoProdutoMapa);
+    modal.querySelector("#mapas-produto-modal-titulo")?.addEventListener("click", async (evento) => {
+        const texto = modal.dataset.textoCopiarTitulo;
+        if (!texto || document.getElementById("mapas-produto-modo")?.value !== "ver") return;
+        const alvo = evento.currentTarget;
+        try {
+            await navigator.clipboard.writeText(texto);
+        } catch (_) {
+            const area = document.createElement("textarea");
+            area.value = texto;
+            area.style.position = "fixed";
+            area.style.opacity = "0";
+            document.body.appendChild(area);
+            area.select();
+            try { document.execCommand("copy"); } catch (_) {}
+            area.remove();
+        }
+        alvo.classList.add("copiado");
+        window.setTimeout(() => alvo.classList.remove("copiado"), 900);
+    });
     modal.querySelector("#mapas-produto-cancelar")?.addEventListener("click", () => {
         const id = modal.dataset.produtoId || document.getElementById("mapas-editar-id")?.value;
         const modo = document.getElementById("mapas-produto-modo")?.value;
@@ -2242,7 +2271,12 @@ function preencherFormularioProdutoMapa(produto, modo = "editar") {
     modal.querySelector("#mapas-editar-sku-original").value = String(produto.sku || "");
     if (produto.id) modal.dataset.produtoId = String(produto.id);
     else delete modal.dataset.produtoId;
-    if (titulo) titulo.textContent = modo === "criar" ? "Novo produto" : "Editar produto";
+    if (titulo) {
+        titulo.textContent = modo === "criar" ? "Novo produto" : "Editar produto";
+        titulo.classList.remove("mapas-produto-titulo-copiar");
+        titulo.removeAttribute("title");
+        delete modal.dataset.textoCopiarTitulo;
+    }
     if (botaoGravar) {
         botaoGravar.textContent = modo === "criar" ? "Criar" : "Gravar";
         botaoGravar.classList.toggle("wallapop-botao-guardar", modo !== "criar");
