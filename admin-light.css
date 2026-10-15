@@ -1754,3 +1754,8 @@ html.admin-light-mode body.cabecalho-com-admin .mapas-produto-preco-recomendado-
     background:#b7791f;
     color:#fff;
 }
+
+html.admin-light-mode body.cabecalho-com-admin .mapas-produto-leitura-valor.atinge-recomendado,
+html.admin-light-mode body.cabecalho-com-admin #mapas-produto-modal input.atinge-recomendado{
+    color:#15803d !important;
+}
