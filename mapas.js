@@ -60,7 +60,7 @@ var __mapasProdutoModalPromessa = null;
 function garantirMapasProdutoModal() {
     if (window.MapasProdutoModal) return Promise.resolve();
     if (!__mapasProdutoModalPromessa) {
-        __mapasProdutoModalPromessa = carregarScriptAdmin("mapas-produto-modal.js?v=20261015-preco-recomendado");
+        __mapasProdutoModalPromessa = carregarScriptAdmin("mapas-produto-modal.js?v=20261015-preco-recomendado2");
     }
     return __mapasProdutoModalPromessa;
 }

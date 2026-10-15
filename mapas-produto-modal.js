@@ -34,7 +34,7 @@ const IVA_PRECO_RECOMENDADO = 0.23;
 const FATOR_PRECO_RECOMENDADO = 2;
 
 function calcularPrecoRecomendadoProdutoModal(precoCompra) {
-    const custo = Number(precoCompra || 0);
+    const custo = Number(String(precoCompra ?? "").replace(/\s|€/g, "").replace(",", ".")) || 0;
     if (!Number.isFinite(custo) || custo <= 0) return null;
     const minimo = Math.round(custo * FATOR_PRECO_RECOMENDADO * (1 + IVA_PRECO_RECOMENDADO) * 100) / 100;
     const base = Math.floor(minimo);
@@ -1780,8 +1780,7 @@ function montarSecaoAvisosStockProdutoMapa(campos, produto) {
 }
 
 function montarCampoPrecoRecomendadoEdicaoMapa(secao) {
-    const inputCompra = document.getElementById("mapas-editar-preco-compra");
-    const inputVenda = document.getElementById("mapas-editar-preco");
+    const obterInput = (id) => secao.querySelector(`#${id}`) || document.getElementById(id);
     const bloco = document.createElement("div");
     bloco.className = "mapas-produto-campo mapas-produto-preco-recomendado-edicao";
     const rotulo = document.createElement("span");
@@ -1801,19 +1800,32 @@ function montarCampoPrecoRecomendadoEdicaoMapa(secao) {
 
     let calcAtual = null;
     const atualizar = () => {
+        const inputCompra = obterInput("mapas-editar-preco-compra");
         calcAtual = calcularPrecoRecomendadoProdutoModal(inputCompra ? inputCompra.value : 0);
         valor.textContent = calcAtual ? `${formatarEuroProdutoModal(calcAtual.recomendado)} €` : "—";
         bloco.title = textoAjudaPrecoRecomendadoProdutoModal(calcAtual);
         botao.disabled = !calcAtual;
     };
     botao.addEventListener("click", () => {
+        atualizar();
+        const inputVenda = obterInput("mapas-editar-preco");
         if (!calcAtual || !inputVenda) return;
-        inputVenda.value = calcAtual.recomendado.toFixed(2);
+        const usaVirgula = String(inputVenda.value || "").includes(",") || inputVenda.type !== "number";
+        const texto = calcAtual.recomendado.toFixed(2);
+        inputVenda.value = usaVirgula ? texto.replace(".", ",") : texto;
         inputVenda.dispatchEvent(new Event("input", { bubbles: true }));
         inputVenda.dispatchEvent(new Event("change", { bubbles: true }));
     });
-    if (inputCompra) inputCompra.addEventListener("input", atualizar);
+    secao.addEventListener("input", (evento) => {
+        if (evento.target && evento.target.id === "mapas-editar-preco-compra") atualizar();
+    });
+    secao.addEventListener("change", (evento) => {
+        if (evento.target && evento.target.id === "mapas-editar-preco-compra") atualizar();
+    });
     atualizar();
+    // Outros scripts podem formatar os valores depois de a ficha abrir
+    setTimeout(atualizar, 0);
+    setTimeout(atualizar, 300);
     return bloco;
 }
 
