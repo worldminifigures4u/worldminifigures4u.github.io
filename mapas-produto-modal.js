@@ -2218,7 +2218,7 @@ function preencherFichaProdutoMapa(produto) {
     const calcRecomendadoLeitura = calcularPrecoRecomendadoProdutoModal(produto.preco_compra);
     const precoVendaAtual = Number(produto.preco || 0);
     criarCampoLeituraMapa(secaoDetalhes, "preço venda", `${formatarEuroProdutoModal(produto.preco)} €`, {
-        classeValor: calcRecomendadoLeitura && !calcRecomendadoLeitura || precoVendaAtual <= 0 ? "" : (precoVendaAtual >= calcRecomendadoLeitura.recomendado - 0.0001 ? "atinge-recomendado" : "abaixo-recomendado")
+        classeValor: !calcRecomendadoLeitura || precoVendaAtual <= 0 ? "" : (precoVendaAtual >= calcRecomendadoLeitura.recomendado - 0.0001 ? "atinge-recomendado" : "abaixo-recomendado")
     });
     criarCampoLeituraMapa(secaoDetalhes, "Peso (g)", Number(produto.peso || PESO_PADRAO_PRODUTO_GRAMAS || 10));
     criarCampoLeituraMapa(secaoDetalhes, "Lego", textoLegoProdutoModal(produto.lego) || "por verificar");
