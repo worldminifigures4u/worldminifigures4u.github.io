@@ -166,7 +166,16 @@ async function exportarTxtTextoFornecedor() {
 }
 
 function normalizarFornecedor(texto) {
-    return String(texto || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim();
+    // Ignora caracteres invisíveis (vêm às vezes ao copiar nomes de outros sites) e espaços especiais,
+    // para "natal" encontrar "Pai Nata\u00ADl" (igual à pesquisa dos Mapas).
+    return String(texto || '')
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .replace(/[\u00AD\u200B-\u200F\u2060\uFEFF]/g, '')
+        .replace(/[\u00A0\u2000-\u200A\u202F\u205F\u3000]/g, ' ')
+        .toLowerCase()
+        .replace(/\s+/g, ' ')
+        .trim();
 }
 
 function formatarEuroFornecedor(valor) {

@@ -110,7 +110,7 @@ function normalizarMapa(texto) {
     return String(texto || "")
         .normalize("NFD")
         .replace(/[\u0300-\u036f]/g, "")
-        .replace(/[\u200B-\u200D\uFEFF]/g, "")
+        .replace(/[\u00AD\u200B-\u200F\u2060\uFEFF]/g, "")
         .toLowerCase()
         .replace(/\s+/g, " ")
         .trim();
@@ -120,7 +120,7 @@ function normalizarBuscaFlexivelMapa(texto) {
     return String(texto || "")
         .normalize("NFD")
         .replace(/[\u0300-\u036f]/g, "")
-        .replace(/[\u200B-\u200D\uFEFF]/g, "")
+        .replace(/[\u00AD\u200B-\u200F\u2060\uFEFF]/g, "")
         .toLowerCase()
         .replace(/[^a-z0-9]+/g, " ")
         .trim()
