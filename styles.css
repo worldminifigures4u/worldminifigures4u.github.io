@@ -872,7 +872,8 @@ body{
 }
 
 .campo-com-limpar > :is(input, textarea).tem-limpar-campo{
-    padding-right:calc(var(--campo-limpar-tamanho) + 8px);
+    /* !important: regras de cada página (ex. padding:7px 9px na ficha de cliente) não podem tapar o texto com o X */
+    padding-right:calc(var(--campo-limpar-tamanho) + 8px) !important;
 }
 
 input[type="search"]::-webkit-search-decoration,
@@ -944,7 +945,7 @@ input[type="number"]::-webkit-inner-spin-button{
 }
 
 .campo-com-limpar--cabecalho > input.tem-limpar-campo{
-    padding-right:calc(44px + var(--campo-limpar-tamanho) + 6px);
+    padding-right:calc(44px + var(--campo-limpar-tamanho) + 6px) !important;
 }
 
 .popup-encomenda-sucesso {
