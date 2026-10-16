@@ -260,6 +260,13 @@
         const formulario = document.createElement('form');
         formulario.className = 'admin-cliente-formulario clientes-formulario';
         formulario.id = `admin-cliente-formulario-${cliente.id || 'novo'}`;
+        // Escrever nas notas marca logo "Cliente com aviso a ler".
+        formulario.addEventListener('input', (evento) => {
+            const alvo = evento.target;
+            if (alvo?.name !== 'notas' || !String(alvo.value || '').trim()) return;
+            const aviso = formulario.elements.namedItem('tem_aviso');
+            if (aviso && !aviso.checked) aviso.checked = true;
+        });
         definirFecharTopoFichaCliente(false);
         definirAcoesTopoFichaCliente();
 

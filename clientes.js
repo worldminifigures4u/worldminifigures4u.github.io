@@ -727,6 +727,13 @@ function montarFormularioCliente(dados, opcoes = {}) {
     const cliente = dados.cliente || {};
     const perfis = Array.isArray(dados.perfis) ? dados.perfis : [];
     const formulario = document.createElement("form");
+    // Escrever nas notas marca logo "Cliente com aviso a ler".
+    formulario.addEventListener("input", (evento) => {
+        const alvo = evento.target;
+        if (alvo?.name !== "notas" || !String(alvo.value || "").trim()) return;
+        const aviso = formulario.elements.namedItem("tem_aviso");
+        if (aviso && !aviso.checked) aviso.checked = true;
+    });
     formulario.className = "admin-cliente-formulario clientes-formulario";
     formulario.id = `clientes-formulario-${cliente.id || "novo"}`;
 
