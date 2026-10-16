@@ -1285,14 +1285,7 @@ window.AdminEncomendaVista = (function () {
         const concluida = estadoNormalizado(encomenda.estado) === "Concluído";
 
         if (concluida) {
-            // Só avisa quando os anexos já foram apagados (aos 2 meses); enquanto existem, mostra-os sem frase.
-            if (anexosEncomendaExpirados(encomenda)) {
-                conteudo.appendChild(criarElemento(
-                    "p",
-                    "admin-encomenda-anexos-aviso",
-                    "Os anexos desta encomenda foram apagados automaticamente após 2 meses."
-                ));
-            }
+            // Concluída: só mostra os anexos que existirem, sem frases.
         } else {
             const upload = criarElemento("div", "admin-encomenda-gestao-caixa admin-encomenda-anexos-upload");
             const campoFicheiro = criarElemento("label", "wallapop-botao admin-encomenda-anexos-escolher");
