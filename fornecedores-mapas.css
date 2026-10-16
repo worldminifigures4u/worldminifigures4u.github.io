@@ -6341,3 +6341,13 @@ body.fornecedores-vista-lista .fornecedores-coluna-direita .fornecedor-pedido-li
 #mapas-produto-modal input.abaixo-recomendado {
     color: #ff9f43 !important;
 }
+
+/* Ficha: "preço compra" com explicação figura + portes ao passar o rato. */
+.mapas-produto-preco-compra-detalhe .mapas-produto-leitura-valor {
+    cursor: help;
+    text-decoration: underline dotted rgba(255, 255, 255, 0.45);
+    text-underline-offset: 3px;
+}
+html.admin-light-mode .mapas-produto-preco-compra-detalhe .mapas-produto-leitura-valor {
+    text-decoration-color: rgba(0, 0, 0, 0.4);
+}

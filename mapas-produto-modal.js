@@ -1912,6 +1912,43 @@ function criarCampoLeituraMapa(secao, rotulo, valor, opcoes = {}) {
     return bloco;
 }
 
+// Rato em cima do "preço compra": mostra a divisão figura + portes da compra mais recente
+// (o preço de compra já inclui os portes; a divisão vem das encomendas a fornecedores).
+function explicarPortesPrecoCompraMapa(bloco, produto) {
+    const preco = Number(produto?.preco_compra || 0);
+    if (!bloco || !(preco > 0) || typeof carregarEncomendasFornecedorMapa !== "function") return;
+    const produtoId = String(produto.id || "");
+    bloco.dataset.produtoId = produtoId;
+    bloco.classList.add("mapas-produto-preco-compra-detalhe");
+    bloco.title = "A carregar figura + portes...";
+    const temDivisao = (item) => item?.preco_custo_figura != null && item?.preco_custo_portes != null
+        && Number.isFinite(Number(item.preco_custo_figura)) && Number.isFinite(Number(item.preco_custo_portes));
+    carregarEncomendasFornecedorMapa(true).then((pedidos) => {
+        if (!bloco.isConnected || bloco.dataset.produtoId !== produtoId) return;
+        const compradas = obterLinhasEncomendaFornecedorProdutoMapa(produto, pedidos).filter(({ item }) => {
+            const estado = String(item?.estado_fornecedor || "").trim().toUpperCase();
+            const naoComprada = estado === "NAO_COMPRAR" || estado === "EX" || item?.marcado_ex === true
+                || String(item?.origem_ajuste || "").trim() === "nao-comprar";
+            return !naoComprada && Number(item?.quantidade || 0) > 0;
+        });
+        const comDivisao = compradas.filter(({ item }) => temDivisao(item));
+        const escolhida = comDivisao.find(({ item }) =>
+            Math.abs(Number(item.preco_custo_figura) + Number(item.preco_custo_portes) - preco) <= 0.011
+        ) || comDivisao[0];
+        if (!escolhida) {
+            bloco.title = `${formatarEuroProdutoModal(preco)} € por figura (sem portes separados nas compras registadas).`;
+            return;
+        }
+        const figura = Number(escolhida.item.preco_custo_figura);
+        const portes = Number(escolhida.item.preco_custo_portes);
+        const origem = [escolhida.pedido?.codigo || escolhida.pedido?.referencia, escolhida.pedido?.fornecedor]
+            .filter(Boolean).join(" · ");
+        bloco.title = `Figura ${formatarEuroProdutoModal(figura)} € + portes ${formatarEuroProdutoModal(portes)} €`
+            + ` = ${formatarEuroProdutoModal(figura + portes)} €`
+            + (origem ? `\n(${origem})` : "");
+    }).catch(() => { bloco.title = ""; });
+}
+
 function criarBadgeLeituraMapa(secao, rotulo, ativo) {
     const badge = document.createElement("span");
     badge.className = `mapas-produto-leitura-badge${ativo ? " ativo" : ""}`;
@@ -2214,7 +2251,10 @@ function preencherFichaProdutoMapa(produto) {
         Number(produto.stock || 0),
         { classeValor: Number(produto.stock || 0) <= 0 ? "sem-stock" : "" }
     );
-    criarCampoLeituraMapa(secaoDetalhes, "preço compra", `${formatarEuroProdutoModal(produto.preco_compra)} €`);
+    explicarPortesPrecoCompraMapa(
+        criarCampoLeituraMapa(secaoDetalhes, "preço compra", `${formatarEuroProdutoModal(produto.preco_compra)} €`),
+        produto
+    );
     const calcRecomendadoLeitura = calcularPrecoRecomendadoProdutoModal(produto.preco_compra);
     const precoVendaAtual = Number(produto.preco || 0);
     criarCampoLeituraMapa(secaoDetalhes, "preço venda", `${formatarEuroProdutoModal(produto.preco)} €`, {
