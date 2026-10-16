@@ -850,8 +850,45 @@ body.pagina-wallapop{
             line-height:1.5;
         }
 
+        .plataforma-stock-dialogo{
+            max-height:calc(100vh - 40px);
+            max-height:calc(100dvh - 40px);
+            overflow-y:auto;
+            box-sizing:border-box;
+        }
+
         .plataforma-stock-dialogo-resumo{
             width:min(680px, 100%);
+            padding-top:0;
+        }
+
+        /* Título + Gravar/Fechar fixos no topo enquanto a lista desliza. */
+        .plataforma-stock-resumo-topo{
+            position:sticky;
+            top:0;
+            z-index:1;
+            display:flex;
+            align-items:center;
+            justify-content:space-between;
+            gap:12px;
+            margin:0 0 14px;
+            padding:20px 0 12px;
+            background:inherit;
+            border-bottom:1px solid rgba(128,128,128,.35);
+        }
+
+        .plataforma-stock-dialogo .plataforma-stock-resumo-topo h2{
+            margin:0;
+        }
+
+        .plataforma-stock-resumo-topo .plataforma-stock-acoes{
+            display:flex;
+            flex:0 0 auto;
+            gap:10px;
+        }
+
+        .plataforma-stock-resumo-topo .plataforma-stock-acoes button:last-child{
+            grid-column:auto;
         }
 
         .plataforma-stock-resumo-bloco{

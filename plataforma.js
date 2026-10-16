@@ -3518,7 +3518,11 @@ function confirmarResumoAlteracoesStockPlataforma(naoReporStock = []) {
         cancelar.addEventListener('click', () => terminar(false));
 
         acoes.append(confirmar, cancelar);
-        caixa.append(titulo, texto, blocoRetirar, blocoAcrescentar, acoes);
+        // Título e botões no topo, sempre visíveis mesmo com listas compridas.
+        const topo = document.createElement('div');
+        topo.className = 'plataforma-stock-resumo-topo';
+        topo.append(titulo, acoes);
+        caixa.append(topo, texto, blocoRetirar, blocoAcrescentar);
         fundo.appendChild(caixa);
         document.body.appendChild(fundo);
         document.body.classList.add('plataforma-modal-aberto');
