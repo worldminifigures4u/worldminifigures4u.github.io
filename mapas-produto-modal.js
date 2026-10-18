@@ -1498,6 +1498,12 @@ function montarSecaoPrecosFornecedoresMapa(campos, produto) {
     });
     tabela.append(thead, tbody);
     secao.appendChild(tabela);
+    tornarSecaoRecolhivelMapa(
+        secao,
+        "Preços por fornecedor",
+        `mais barato: ${linhas[0].fornecedor} · ${formatarEuroProdutoModal(linhas[0].preco)} €`
+            + (linhas.length > 1 ? ` · ${linhas.length} fornecedores` : "")
+    );
     campos.appendChild(secao);
 
     // A data mostrada é a da encomenda (como no Histórico a fornecedores): última encomenda desse
@@ -2399,6 +2405,37 @@ function criarSelectEdicaoMapa(form, id, rotulo, valor, opcoes = []) {
     label.appendChild(select);
     form.appendChild(label);
     return select;
+}
+
+// Secção que abre/fecha ao clicar no título; começa fechada e mostra um resumo no título.
+function tornarSecaoRecolhivelMapa(secao, titulo, resumo) {
+    const legenda = secao.querySelector(":scope > legend");
+    if (!legenda) return;
+    secao.classList.add("mapas-produto-secao-recolhivel", "recolhida");
+    legenda.replaceChildren();
+    const seta = document.createElement("span");
+    seta.className = "mapas-produto-secao-seta";
+    seta.textContent = "▸";
+    const texto = document.createElement("span");
+    texto.textContent = titulo;
+    legenda.append(seta, texto);
+    if (resumo) {
+        const extra = document.createElement("span");
+        extra.className = "mapas-produto-secao-resumo";
+        extra.textContent = ` · ${resumo}`;
+        legenda.appendChild(extra);
+    }
+    legenda.setAttribute("role", "button");
+    legenda.tabIndex = 0;
+    legenda.title = "Clicar para abrir / fechar";
+    const alternar = () => {
+        const fechada = secao.classList.toggle("recolhida");
+        seta.textContent = fechada ? "▸" : "▾";
+    };
+    legenda.addEventListener("click", alternar);
+    legenda.addEventListener("keydown", (evento) => {
+        if (evento.key === "Enter" || evento.key === " ") { evento.preventDefault(); alternar(); }
+    });
 }
 
 function criarSecaoEdicaoMapa(titulo, classe = "") {

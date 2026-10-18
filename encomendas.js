@@ -518,7 +518,7 @@ function garantirProdutoModalEncomendas() {
     prepararContextoProdutoEncomendas();
     if (window.MapasProdutoModal) return Promise.resolve();
     if (!promessaProdutoModalEncomendas) {
-        promessaProdutoModalEncomendas = carregarScriptEncomendasAdmin('mapas-produto-modal.js?v=20261018-copiar-tema-subtema')
+        promessaProdutoModalEncomendas = carregarScriptEncomendasAdmin('mapas-produto-modal.js?v=20261018-precos-recolhidos')
             .then(() => {
                 prepararContextoProdutoEncomendas();
             });

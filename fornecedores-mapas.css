@@ -6351,3 +6351,25 @@ body.fornecedores-vista-lista .fornecedores-coluna-direita .fornecedor-pedido-li
 html.admin-light-mode .mapas-produto-preco-compra-detalhe .mapas-produto-leitura-valor {
     text-decoration-color: rgba(0, 0, 0, 0.4);
 }
+
+/* Ficha: secções que abrem/fecham (ex. Preços por fornecedor), fechadas por defeito. */
+.mapas-produto-secao-recolhivel > legend {
+    cursor: pointer;
+    user-select: none;
+}
+.mapas-produto-secao-recolhivel > legend .mapas-produto-secao-seta {
+    display: inline-block;
+    width: 1.1em;
+}
+.mapas-produto-secao-recolhivel > legend .mapas-produto-secao-resumo {
+    font-size: 0.72em;
+    font-weight: 600;
+    opacity: 0.75;
+}
+.mapas-produto-secao-recolhivel.recolhida > :not(legend) {
+    display: none !important;
+}
+.mapas-produto-secao-recolhivel.recolhida {
+    padding-bottom: 4px;
+    min-height: 0;
+}
