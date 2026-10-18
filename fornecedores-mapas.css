@@ -6373,3 +6373,32 @@ html.admin-light-mode .mapas-produto-preco-compra-detalhe .mapas-produto-leitura
     padding-bottom: 4px;
     min-height: 0;
 }
+
+/* Compras: seletor Tema à direita da pesquisa (como nos Mapas). */
+.fornecedor-filtro-tema {
+    flex: 0 0 auto;
+    width: 170px;
+    max-width: 170px;
+    height: var(--fornecedor-resumo-controle-altura, 42px);
+    min-height: var(--fornecedor-resumo-controle-altura, 42px);
+    box-sizing: border-box;
+    padding: 0 28px 0 12px;
+    border: var(--fp-borda-ui, 1px solid #444);
+    border-radius: var(--fp-raio-ui, 6px);
+    background-color: var(--fp-fundo-campo, #242424);
+    color: var(--fp-texto-campo, #fff);
+    font: inherit;
+    font-size: var(--fp-fonte-ui, 15px);
+    cursor: pointer;
+}
+.fornecedor-filtro-tema:focus {
+    border-color: var(--fp-cor-destaque, #ffc400);
+    outline: none;
+}
+.fornecedor-filtro-tema.ativo {
+    border-color: var(--fp-cor-destaque, #ffc400);
+    color: var(--fp-cor-destaque, #ffc400);
+    font-weight: 700;
+}
+.fornecedor-filtro-tema option { color: var(--fp-texto-campo, #fff); background: var(--fp-fundo-campo, #242424); font-weight: 400; }
+.fornecedor-filtro-tema option[value^="t:"] { font-weight: 800; }

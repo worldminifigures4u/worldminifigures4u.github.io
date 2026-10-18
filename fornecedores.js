@@ -2454,6 +2454,7 @@ function obterControlosResultadosFornecedor() {
     const primeiroFiltro = filtrosMarcacao[0] || { fornecedor: "mesmo", marcacao: "disponivel" };
     return {
         termo: normalizarFornecedor(document.getElementById("fornecedor-pesquisa")?.value || ""),
+        filtroTema: atualizarOpcoesTemaFornecedor(),
         fornecedor,
         fornecedorMarcacao: resolverFornecedorMarcacaoFiltro(primeiroFiltro.fornecedor, fornecedor),
         filtroFornecedor: primeiroFiltro.marcacao || "disponivel",
@@ -2462,6 +2463,65 @@ function obterControlosResultadosFornecedor() {
         filtroArquivado: document.getElementById("fornecedor-filtro-arquivado")?.value || "nao",
         ordenacao: document.getElementById("fornecedor-ordenacao-stock")?.value || "stock-asc",
     };
+}
+
+// Seletor Tema (como nos Mapas): temas com os subtemas agrupados por baixo.
+function subtemaValidoFornecedor(subtema) {
+    const texto = normalizarFornecedor(subtema || "");
+    return Boolean(texto) && texto !== "semsubtema" && texto !== "sem subtema";
+}
+
+function atualizarOpcoesTemaFornecedor() {
+    const select = document.getElementById("fornecedor-filtro-tema");
+    if (!select) return "";
+    const atual = select.value;
+    const temas = new Map();
+    (fornecedorProdutos || []).forEach(produto => {
+        const tema = String(produto?.tema || "").trim();
+        if (!tema) return;
+        const chave = normalizarFornecedor(tema);
+        if (!temas.has(chave)) temas.set(chave, { nome: tema, subtemas: new Map() });
+        const subtema = String(produto.subtema || "").trim();
+        if (subtemaValidoFornecedor(subtema)) {
+            const chaveSub = normalizarFornecedor(subtema);
+            if (!temas.get(chave).subtemas.has(chaveSub)) temas.get(chave).subtemas.set(chaveSub, subtema);
+        }
+    });
+    const opcoes = [new Option("Todos os temas", "")];
+    const valores = new Set([""]);
+    Array.from(temas.entries())
+        .sort((a, b) => compararTextoFornecedor(a[1].nome, b[1].nome))
+        .forEach(([chave, info]) => {
+            const valorTema = `t:${chave}`;
+            opcoes.push(new Option(info.nome, valorTema));
+            valores.add(valorTema);
+            Array.from(info.subtemas.entries())
+                .sort((a, b) => compararTextoFornecedor(a[1], b[1]))
+                .forEach(([chaveSub, nomeSub]) => {
+                    const valorSub = `s:${chave}|${chaveSub}`;
+                    opcoes.push(new Option(`\u00A0\u00A0\u00A0\u00A0${nomeSub}`, valorSub));
+                    valores.add(valorSub);
+                });
+        });
+    const assinatura = Array.from(valores).join("~");
+    if (select.dataset.assinatura !== assinatura) {
+        select.replaceChildren(...opcoes);
+        select.dataset.assinatura = assinatura;
+    }
+    select.value = valores.has(atual) ? atual : "";
+    select.classList.toggle("ativo", Boolean(select.value));
+    return select.value;
+}
+
+function produtoPassaFiltroTemaFornecedor(produto, filtro) {
+    if (!filtro) return true;
+    const tema = normalizarFornecedor(produto?.tema || "");
+    if (filtro.startsWith("t:")) return tema === filtro.slice(2);
+    if (filtro.startsWith("s:")) {
+        const [chaveTema, chaveSub] = filtro.slice(2).split("|");
+        return tema === chaveTema && normalizarFornecedor(produto?.subtema || "") === chaveSub;
+    }
+    return true;
 }
 
 function calcularScoreResultadoFornecedor(produto, termo) {
@@ -3278,7 +3338,7 @@ function garantirBotaoSoNaEncomendaFornecedor(referencia) {
 const CHAVE_SUGERIR_MESES_FORNECEDOR = "fp-fornecedor-sugerir-meses";
 
 function obterResultadosFiltradosSugestaoFornecedor() {
-    const { termo, fornecedor, filtrosMarcacao, filtroTop, filtroArquivado } = obterControlosResultadosFornecedor();
+    const { termo, fornecedor, filtrosMarcacao, filtroTop, filtroArquivado, filtroTema } = obterControlosResultadosFornecedor();
     const indiceVendasRecentes = criarIndiceVendasRecentesFornecedor();
     return fornecedorProdutos
         .map((produto) => ({
@@ -3291,6 +3351,7 @@ function obterResultadosFiltradosSugestaoFornecedor() {
             && produtoPassaFiltrosMarcacaoFornecedor(item.produto, fornecedor, filtrosMarcacao)
             && produtoPassaFiltroTopFornecedor(item.produto, filtroTop)
             && produtoPassaFiltroArquivadoFornecedor(item.produto, filtroArquivado)
+            && produtoPassaFiltroTemaFornecedor(item.produto, filtroTema)
         ));
 }
 
@@ -3855,7 +3916,7 @@ function renderizarResultadosFornecedor() {
         caixa.classList.remove("fornecedor-resultados-mapa");
     }
 
-    const { termo, fornecedor, fornecedorMarcacao, filtroFornecedor, filtrosMarcacao, filtroTop, filtroArquivado, ordenacao } = obterControlosResultadosFornecedor();
+    const { termo, fornecedor, fornecedorMarcacao, filtroFornecedor, filtrosMarcacao, filtroTop, filtroArquivado, filtroTema, ordenacao } = obterControlosResultadosFornecedor();
     caixa.replaceChildren();
     const indiceVendasRecentes = criarIndiceVendasRecentesFornecedor();
 
@@ -3870,6 +3931,7 @@ function renderizarResultadosFornecedor() {
             && produtoPassaFiltrosMarcacaoFornecedor(item.produto, fornecedor, filtrosMarcacao)
             && produtoPassaFiltroTopFornecedor(item.produto, filtroTop)
             && produtoPassaFiltroArquivadoFornecedor(item.produto, filtroArquivado)
+            && produtoPassaFiltroTemaFornecedor(item.produto, filtroTema)
         ))
         .sort((a, b) => compararProdutosFornecedor(a, b, ordenacao));
 
@@ -3882,7 +3944,7 @@ function renderizarResultadosFornecedor() {
                     score: calcularScoreResultadoFornecedor(produto, termo),
                     vendas_3m: obterVendasRecentesProdutoPorIndiceFornecedor(produto, indiceVendasRecentes),
                 }))
-                .filter((item) => !termo || item.score < 99);
+                .filter((item) => (!termo || item.score < 99) && produtoPassaFiltroTemaFornecedor(item.produto, filtroTema));
             renderizarResultadosFornecedorTabelaEncomenda(caixa, naEncomenda);
             if (!naEncomenda.length) {
                 const vazio = document.createElement("p");
@@ -6139,6 +6201,10 @@ document.addEventListener("keydown", capturarTabQuantidadeFornecedor, true);
 document.addEventListener("wheel", bloquearAlteracaoNumeroPorRodaFornecedor, { capture: true, passive: false });
 window.addEventListener("scroll", verificarCarregamentoProgressivoFornecedor, { passive: true });
 ligarEventoFornecedor('fornecedor-pesquisa', 'input', agendarRenderizacaoResultadosFornecedor);
+ligarEventoFornecedor('fornecedor-filtro-tema', 'change', () => {
+    if (typeof reiniciarLimiteResultadosFornecedor === 'function') reiniciarLimiteResultadosFornecedor();
+    agendarRenderizacaoResultadosFornecedor();
+});
 ligarEventoFornecedor('fornecedor-nome', 'change', agendarRenderizacaoResultadosFornecedor);
 ligarEventoFornecedor('fornecedor-ordenacao-stock', 'change', agendarRenderizacaoResultadosFornecedor);
 ligarEventoFornecedor('fornecedor-filtro-marcacao-fornecedor', 'change', agendarRenderizacaoResultadosFornecedor);
