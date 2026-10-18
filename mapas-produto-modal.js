@@ -1949,6 +1949,34 @@ function explicarPortesPrecoCompraMapa(bloco, produto) {
     }).catch(() => { bloco.title = ""; });
 }
 
+async function copiarTextoFichaMapa(texto, alvo) {
+    if (!texto) return;
+    try {
+        await navigator.clipboard.writeText(texto);
+    } catch (_) {
+        const area = document.createElement("textarea");
+        area.value = texto;
+        area.style.position = "fixed";
+        area.style.opacity = "0";
+        document.body.appendChild(area);
+        area.select();
+        try { document.execCommand("copy"); } catch (_) {}
+        area.remove();
+    }
+    if (!alvo) return;
+    alvo.classList.add("copiado");
+    window.setTimeout(() => alvo.classList.remove("copiado"), 900);
+}
+
+// Valor de um campo da ficha que copia um texto ao clicar.
+function ligarCopiaCampoFichaMapa(bloco, texto) {
+    const valor = bloco?.querySelector(".mapas-produto-leitura-valor");
+    if (!valor || !texto) return;
+    valor.classList.add("mapas-produto-titulo-copiar");
+    valor.title = `Clicar para copiar: ${texto}`;
+    valor.addEventListener("click", () => copiarTextoFichaMapa(texto, valor));
+}
+
 function criarBadgeLeituraMapa(secao, rotulo, ativo) {
     const badge = document.createElement("span");
     badge.className = `mapas-produto-leitura-badge${ativo ? " ativo" : ""}`;
@@ -2222,12 +2250,8 @@ function preencherFichaProdutoMapa(produto) {
     modal.dataset.produtoId = String(produto.id || "");
     if (titulo) {
         titulo.textContent = produto.nome || "Ficha do produto";
-        // Clicar no nome copia "Nome (Subtema) (Tema)" (ex.: Kuruk (Knights of Ren) (Star Wars)).
-        const subtema = String(produto.subtema || "").trim();
-        const partes = [String(produto.nome || "").trim()];
-        if (subtema && !["semsubtema", "sem subtema"].includes(subtema.toLowerCase())) partes.push(`(${subtema})`);
-        if (String(produto.tema || "").trim()) partes.push(`(${String(produto.tema).trim()})`);
-        modal.dataset.textoCopiarTitulo = partes.filter(Boolean).join(" ");
+        // Clicar no nome copia só o nome (o Tema e o Subtema têm as suas próprias cópias).
+        modal.dataset.textoCopiarTitulo = String(produto.nome || "").trim();
         titulo.classList.add("mapas-produto-titulo-copiar");
         titulo.title = `Clicar para copiar: ${modal.dataset.textoCopiarTitulo}`;
     }
@@ -2240,8 +2264,16 @@ function preencherFichaProdutoMapa(produto) {
     const secaoIdentificacao = criarSecaoEdicaoMapa("Identificação", "mapas-produto-secao-identificacao");
     criarCampoLeituraMapa(secaoIdentificacao, "Ref.", produto.referencia || "");
     criarCampoLeituraMapa(secaoIdentificacao, "SKU", produto.sku || "");
-    criarCampoLeituraMapa(secaoIdentificacao, "Tema", formatarTemaProdutoMapa(produto.tema));
-    criarCampoLeituraMapa(secaoIdentificacao, "Subtema", produto.subtema === "semsubtema" ? "" : (produto.subtema || ""));
+    // Clicar no Tema copia "Nome (Tema)"; no Subtema copia "Nome (Tema) (Subtema)".
+    const nomeCopiar = String(produto.nome || "").trim();
+    const temaCopiar = String(formatarTemaProdutoMapa(produto.tema) || "").trim();
+    const subtemaBruto = String(produto.subtema || "").trim();
+    const subtemaCopiar = ["semsubtema", "sem subtema"].includes(subtemaBruto.toLowerCase()) ? "" : subtemaBruto;
+    const textoComTema = [nomeCopiar, temaCopiar ? `(${temaCopiar})` : ""].filter(Boolean).join(" ");
+    const blocoTema = criarCampoLeituraMapa(secaoIdentificacao, "Tema", temaCopiar);
+    const blocoSubtema = criarCampoLeituraMapa(secaoIdentificacao, "Subtema", subtemaCopiar);
+    if (temaCopiar) ligarCopiaCampoFichaMapa(blocoTema, textoComTema);
+    if (subtemaCopiar) ligarCopiaCampoFichaMapa(blocoSubtema, `${textoComTema} (${subtemaCopiar})`);
     topo.appendChild(secaoIdentificacao);
 
     const secaoDetalhes = criarSecaoEdicaoMapa("Detalhes", "mapas-produto-secao-detalhes");
@@ -2414,24 +2446,10 @@ function garantirModalEdicaoProdutoMapa() {
         </div>`;
     document.body.appendChild(modal);
     modal.querySelector("#mapas-produto-fechar-ficha")?.addEventListener("click", fecharEdicaoProdutoMapa);
-    modal.querySelector("#mapas-produto-modal-titulo")?.addEventListener("click", async (evento) => {
+    modal.querySelector("#mapas-produto-modal-titulo")?.addEventListener("click", (evento) => {
         const texto = modal.dataset.textoCopiarTitulo;
         if (!texto || document.getElementById("mapas-produto-modo")?.value !== "ver") return;
-        const alvo = evento.currentTarget;
-        try {
-            await navigator.clipboard.writeText(texto);
-        } catch (_) {
-            const area = document.createElement("textarea");
-            area.value = texto;
-            area.style.position = "fixed";
-            area.style.opacity = "0";
-            document.body.appendChild(area);
-            area.select();
-            try { document.execCommand("copy"); } catch (_) {}
-            area.remove();
-        }
-        alvo.classList.add("copiado");
-        window.setTimeout(() => alvo.classList.remove("copiado"), 900);
+        copiarTextoFichaMapa(texto, evento.currentTarget);
     });
     modal.querySelector("#mapas-produto-cancelar")?.addEventListener("click", () => {
         const id = modal.dataset.produtoId || document.getElementById("mapas-editar-id")?.value;
