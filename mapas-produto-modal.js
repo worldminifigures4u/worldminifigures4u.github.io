@@ -71,44 +71,83 @@ function formatarEuroProdutoModal(valor) {
     return Number(valor || 0).toLocaleString("pt-PT", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
-// Preco de venda recomendado (sem IVA) por escaloes do preco de compra, como no IRS:
-// ate 1,50 € x2, de 1,50 € a 3 € x1,7, acima de 3 € x1,5; depois IVA, arredondado ao multiplo de 0,05 seguinte.
+// Preço de venda recomendado = (custo + lucro) + IVA 23%, arredondado aos 0,05 € seguintes, mínimo 1,75 €.
+// Lucro = o maior entre o lucro fixo do fornecedor e 70% do custo, + 0,10 € por cada 10 g acima de 10 g.
+//  - Lote 50 (chega em ~12 dias): lucro fixo 0,83 € (as figuras de 0,59 € ficam a 1,75 €).
+//  - Restantes fornecedores (~28 dias, mais dinheiro parado): lucro fixo 0,90 €.
+// Os portes são pagos pelo comprador; o extra por peso cobre embalagem e espaço das figuras grandes.
 const IVA_PRECO_RECOMENDADO = 0.23;
-const ESCALOES_PRECO_RECOMENDADO = [
-    { ate: 1.5, fator: 2 },
-    { ate: 3, fator: 1.7 },
-    { ate: Infinity, fator: 1.5 }
-];
-
-function valorSemIvaEscaloesProdutoModal(custo) {
-    let total = 0;
-    let inicio = 0;
-    for (const { ate, fator } of ESCALOES_PRECO_RECOMENDADO) {
-        if (custo <= inicio) break;
-        total += (Math.min(custo, ate) - inicio) * fator;
-        inicio = ate;
-    }
-    return total;
-}
 const PRECO_RECOMENDADO_MINIMO = 1.75;
+const LUCRO_FIXO_LOTE50 = 0.83;
+const LUCRO_FIXO_OUTROS = 0.90;
+const LUCRO_PERCENTAGEM_CUSTO = 0.70;
+const EXTRA_POR_10G_ACIMA = 0.10;
+const PESO_BASE_RECOMENDADO_G = 10;
+const CUSTO_MAXIMO_LOTE50_SEM_FORNECEDOR = 0.60;
 
-function calcularPrecoRecomendadoProdutoModal(precoCompra) {
-    const custo = Number(String(precoCompra ?? "").replace(/\s|€/g, "").replace(",", ".")) || 0;
-    if (!Number.isFinite(custo) || custo <= 0) return null;
-    const minimoCentimos = Math.round(valorSemIvaEscaloesProdutoModal(custo) * (1 + IVA_PRECO_RECOMENDADO) * 100);
-    const minimo = minimoCentimos / 100;
-    const recomendado = Math.max(PRECO_RECOMENDADO_MINIMO, Math.ceil(minimoCentimos / 5) * 5 / 100);
+function converterNumeroPrecoModal(valor) {
+    const numero = Number(String(valor ?? "").replace(/\s|€/g, "").replace(",", "."));
+    return Number.isFinite(numero) ? numero : 0;
+}
+
+function eFornecedorLote50ProdutoModal(nome) {
+    return String(nome || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^a-z0-9]/g, "") === "lote50";
+}
+
+// Fornecedor de onde vem o preço de compra: o que tem esse preço registado; senão o mais barato comprado.
+function obterFornecedorPrecoCompraProdutoModal(produto, custo) {
+    const linhas = Object.entries(obterObjetoFornecedoresProdutoMapa(produto))
+        .map(([nome, valor]) => ({
+            nome: String(nome || "").trim(),
+            preco: obterPrecoCompraMarcacaoFornecedorLeituraMapa(valor),
+            estimado: Boolean(valor && typeof valor === "object" && valor.preco_estimado)
+        }))
+        .filter((linha) => linha.nome && linha.preco > 0 && !linha.estimado);
+    if (!linhas.length) return "";
+    const igual = linhas.find((linha) => Math.abs(linha.preco - custo) <= 0.011);
+    if (igual) return igual.nome;
+    return linhas.sort((a, b) => a.preco - b.preco)[0].nome;
+}
+
+function calcularPrecoRecomendadoProdutoModal(precoCompra, opcoes = {}) {
+    const custo = converterNumeroPrecoModal(precoCompra);
+    if (!(custo > 0)) return null;
+    const fornecedor = opcoes.produto ? obterFornecedorPrecoCompraProdutoModal(opcoes.produto, custo) : "";
+    const lote50 = fornecedor
+        ? eFornecedorLote50ProdutoModal(fornecedor)
+        : custo <= CUSTO_MAXIMO_LOTE50_SEM_FORNECEDOR + 0.0001;
+    const lucroFixo = lote50 ? LUCRO_FIXO_LOTE50 : LUCRO_FIXO_OUTROS;
+    const lucroPercentagem = custo * LUCRO_PERCENTAGEM_CUSTO;
+    const peso = Math.max(0, converterNumeroPrecoModal(opcoes.peso ?? opcoes.produto?.peso ?? PESO_BASE_RECOMENDADO_G)) || PESO_BASE_RECOMENDADO_G;
+    const blocosExtra = Math.max(0, Math.ceil((peso - PESO_BASE_RECOMENDADO_G) / 10 - 1e-9));
+    const extraPeso = blocosExtra * EXTRA_POR_10G_ACIMA;
+    const lucroBase = Math.max(lucroFixo, lucroPercentagem);
+    const lucroAlvo = lucroBase + extraPeso;
+    const comIvaCentimos = Math.round((custo + lucroAlvo) * (1 + IVA_PRECO_RECOMENDADO) * 100);
+    const recomendado = Math.max(PRECO_RECOMENDADO_MINIMO, Math.ceil(comIvaCentimos / 5) * 5 / 100);
     const liquido = recomendado / (1 + IVA_PRECO_RECOMENDADO);
     return {
-        minimo,
         recomendado: Math.round(recomendado * 100) / 100,
-        lucro: Math.round((liquido - custo) * 100) / 100
+        lucro: Math.round((liquido - custo) * 100) / 100,
+        custo,
+        fornecedor,
+        lote50,
+        lucroFixo,
+        usaPercentagem: lucroPercentagem > lucroFixo,
+        lucroBase: Math.round(lucroBase * 100) / 100,
+        peso,
+        extraPeso: Math.round(extraPeso * 100) / 100
     };
 }
 
 function textoAjudaPrecoRecomendadoProdutoModal(calc) {
     if (!calc) return "Preencha o preço de compra para calcular.";
-    return `Mínimo pelos escalões (×2 até 1,50 €, ×1,7 até 3 €, ×1,5 acima; com IVA 23%): ${formatarEuroProdutoModal(calc.minimo)} €. `
+    const origem = calc.lote50 ? "Lote 50" : (calc.fornecedor || "outros fornecedores");
+    const regraLucro = calc.usaPercentagem
+        ? `70% do custo = ${formatarEuroProdutoModal(calc.lucroBase)} €`
+        : `lucro fixo ${origem} = ${formatarEuroProdutoModal(calc.lucroFixo)} €`;
+    const peso = calc.extraPeso > 0 ? ` + ${formatarEuroProdutoModal(calc.extraPeso)} € pelo peso (${calc.peso} g)` : "";
+    return `Custo ${formatarEuroProdutoModal(calc.custo)} € + ${regraLucro}${peso} + IVA 23% (mín. 1,75 €).\n`
         + `Lucro líquido a ${formatarEuroProdutoModal(calc.recomendado)} €: ${formatarEuroProdutoModal(calc.lucro)} €.`;
 }
 
@@ -1844,7 +1883,7 @@ function montarSecaoAvisosStockProdutoMapa(campos, produto) {
     carregarSecaoAvisosStockProdutoMapa(produto, conteudo);
 }
 
-function montarCampoPrecoRecomendadoEdicaoMapa(secao) {
+function montarCampoPrecoRecomendadoEdicaoMapa(secao, produto = null) {
     const obterInput = (id) => secao.querySelector(`#${id}`) || document.getElementById(id);
     const bloco = document.createElement("div");
     bloco.className = "mapas-produto-campo mapas-produto-preco-recomendado-edicao";
@@ -1866,7 +1905,11 @@ function montarCampoPrecoRecomendadoEdicaoMapa(secao) {
     let calcAtual = null;
     const atualizar = () => {
         const inputCompra = obterInput("mapas-editar-preco-compra");
-        calcAtual = calcularPrecoRecomendadoProdutoModal(inputCompra ? inputCompra.value : 0);
+        const inputPeso = obterInput("mapas-editar-peso");
+        calcAtual = calcularPrecoRecomendadoProdutoModal(inputCompra ? inputCompra.value : 0, {
+            produto,
+            peso: inputPeso ? inputPeso.value : produto?.peso
+        });
         valor.textContent = calcAtual ? `${formatarEuroProdutoModal(calcAtual.recomendado)} €` : "—";
         bloco.title = textoAjudaPrecoRecomendadoProdutoModal(calcAtual);
         botao.disabled = !calcAtual;
@@ -1890,10 +1933,10 @@ function montarCampoPrecoRecomendadoEdicaoMapa(secao) {
         inputVenda.dispatchEvent(new Event("change", { bubbles: true }));
     });
     secao.addEventListener("input", (evento) => {
-        if (evento.target && ["mapas-editar-preco-compra", "mapas-editar-preco"].includes(evento.target.id)) atualizar();
+        if (evento.target && ["mapas-editar-preco-compra", "mapas-editar-preco", "mapas-editar-peso"].includes(evento.target.id)) atualizar();
     });
     secao.addEventListener("change", (evento) => {
-        if (evento.target && ["mapas-editar-preco-compra", "mapas-editar-preco"].includes(evento.target.id)) atualizar();
+        if (evento.target && ["mapas-editar-preco-compra", "mapas-editar-preco", "mapas-editar-peso"].includes(evento.target.id)) atualizar();
     });
     atualizar();
     // Outros scripts podem formatar os valores depois de a ficha abrir
@@ -2293,7 +2336,7 @@ function preencherFichaProdutoMapa(produto) {
         criarCampoLeituraMapa(secaoDetalhes, "preço compra", `${formatarEuroProdutoModal(produto.preco_compra)} €`),
         produto
     );
-    const calcRecomendadoLeitura = calcularPrecoRecomendadoProdutoModal(produto.preco_compra);
+    const calcRecomendadoLeitura = calcularPrecoRecomendadoProdutoModal(produto.preco_compra, { produto });
     const precoVendaAtual = Number(produto.preco || 0);
     criarCampoLeituraMapa(secaoDetalhes, "preço venda", `${formatarEuroProdutoModal(produto.preco)} €`, {
         classeValor: !calcRecomendadoLeitura || precoVendaAtual <= 0 ? "" : (precoVendaAtual >= calcRecomendadoLeitura.recomendado - 0.0001 ? "atinge-recomendado" : "abaixo-recomendado")
@@ -2563,7 +2606,7 @@ function preencherFormularioProdutoMapa(produto, modo = "editar") {
         { valor: "sim", texto: "sim" },
         { valor: "não", texto: "não" }
     ]);
-    montarCampoPrecoRecomendadoEdicaoMapa(secaoDetalhes);
+    montarCampoPrecoRecomendadoEdicaoMapa(secaoDetalhes, produto);
     criarInputEdicaoMapa(secaoDetalhes, "mapas-editar-unidades-por-embalagem", "Unidades por embalagem", Number(produto.unidades_por_embalagem || 1), "number", { required: true, min: 1, step: 1 });
     linhaDetalhesEstado.appendChild(secaoDetalhes);
 
