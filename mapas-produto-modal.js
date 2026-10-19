@@ -73,12 +73,12 @@ function formatarEuroProdutoModal(valor) {
 
 // Preço de venda recomendado = (custo + lucro) + IVA 23%, arredondado aos 0,05 € seguintes, mínimo 1,75 €.
 // Lucro = o maior entre o lucro fixo do fornecedor e 70% do custo, + 0,10 € por cada 10 g acima de 10 g.
-//  - Lote 50 (chega em ~12 dias): lucro fixo 0,83 € (as figuras de 0,59 € ficam a 1,75 €).
+//  - Lote 50 (chega em ~12 dias): lucro fixo 0,82 € (figuras até 0,60 € ficam a 1,75 €).
 //  - Restantes fornecedores (~28 dias, mais dinheiro parado): lucro fixo 0,90 €.
 // Os portes são pagos pelo comprador; o extra por peso cobre embalagem e espaço das figuras grandes.
 const IVA_PRECO_RECOMENDADO = 0.23;
 const PRECO_RECOMENDADO_MINIMO = 1.75;
-const LUCRO_FIXO_LOTE50 = 0.83;
+const LUCRO_FIXO_LOTE50 = 0.82;
 const LUCRO_FIXO_OUTROS = 0.90;
 const LUCRO_PERCENTAGEM_CUSTO = 0.70;
 const EXTRA_POR_10G_ACIMA = 0.10;
