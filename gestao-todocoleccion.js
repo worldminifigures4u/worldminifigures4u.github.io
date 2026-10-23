@@ -62,7 +62,8 @@
     function gruposDuplicados() {
         const mapa = new Map();
         lotes.forEach((l) => {
-            if (!l.produto_id || l.emparelhamento === 'ignorado') return;
+            // Só contam ligações seguras; as sugestões "em dúvida" não são duplicados.
+            if (!l.produto_id || !['certo', 'confirmado'].includes(l.emparelhamento)) return;
             if (!mapa.has(l.produto_id)) mapa.set(l.produto_id, []);
             mapa.get(l.produto_id).push(l);
         });
