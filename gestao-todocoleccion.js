@@ -107,6 +107,7 @@
         acoes.push(`<button type="button" class="wallapop-botao" data-tc-acao="trocar" data-id="${l.id}">${l.produto_id ? 'Trocar' : 'Escolher produto'}</button>`);
         if (l.emparelhamento === 'ignorado') acoes.push(`<button type="button" class="wallapop-botao" data-tc-acao="repor" data-id="${l.id}">Repor</button>`);
         else acoes.push(`<button type="button" class="wallapop-botao" data-tc-acao="ignorar" data-id="${l.id}" title="Não sincronizar este lote">Ignorar</button>`);
+        acoes.push(`<button type="button" class="wallapop-botao gestao-tc-botao-apagar" data-tc-acao="apagar" data-id="${l.id}" title="Apaga este lote definitivamente no Todocoleccion">Apagar no Todocoleccion</button>`);
         return `<article class="gestao-tc-linha" data-estado-lote="${l.estado}">
             <div class="gestao-tc-lote">
                 ${l.imagem ? `<img src="${esc(l.imagem)}" alt="" loading="lazy">` : '<span class="gestao-tc-sem-img"></span>'}
@@ -227,6 +228,33 @@
         desenhar();
     }
 
+    async function apagarNoTodocoleccion(id, botao) {
+        const lote = lotes.find((l) => l.id === id);
+        if (!lote) return;
+        const mensagem = `Apagar definitivamente no Todocoleccion o lote nº ${lote.id}?\n\n"${lote.titulo || ''}"\n\nNão é possível desfazer.`;
+        const confirmado = typeof mostrarConfirmacaoSite === 'function'
+            ? await mostrarConfirmacaoSite(mensagem, { titulo: 'Apagar no Todocoleccion', textoConfirmar: 'Apagar', textoCancelar: 'Cancelar' })
+            : window.confirm(mensagem);
+        if (!confirmado) return;
+        if (botao) botao.disabled = true;
+        status(`A apagar o lote nº ${lote.id} no Todocoleccion…`);
+        try {
+            const r = await cliente().functions.invoke('todocoleccion', { body: { acao: 'apagar_lote', id: lote.id, titulo: lote.titulo || '' } });
+            if (r.error || !r.data?.ok) {
+                const erro = r.data?.erro === 'titulo_ou_id_nao_coincide'
+                    ? 'o lote mudou no Todocoleccion desde a última leitura; carrega em "Atualizar do Todocoleccion" e tenta outra vez.'
+                    : (r.data?.erro || r.error?.message || 'falhou');
+                throw new Error(erro);
+            }
+            lotes = lotes.filter((l) => l.id !== lote.id);
+            status(`Lote nº ${lote.id} apagado no Todocoleccion.`, 'sucesso');
+            desenhar();
+        } catch (erro) {
+            status('Não foi apagado: ' + (erro.message || erro), 'erro');
+            if (botao) botao.disabled = false;
+        }
+    }
+
     async function atualizarDoTodocoleccion() {
         const btn = $('btn-gestao-tc-atualizar');
         btn.disabled = true;
@@ -273,6 +301,7 @@
             const acao = b.dataset.tcAcao;
             if (acao === 'mais') { mostrar += POR_PAGINA; desenhar(); return; }
             if (acao === 'trocar') { abrirTroca(id); return; }
+            if (acao === 'apagar') { apagarNoTodocoleccion(id, b).catch(console.error); return; }
             const campos = acao === 'confirmar' ? { emparelhamento: 'confirmado' }
                 : acao === 'ignorar' ? { emparelhamento: 'ignorado' }
                 : acao === 'repor' ? { emparelhamento: lotes.find((l) => l.id === id)?.produto_id ? 'duvida' : 'sem' } : null;

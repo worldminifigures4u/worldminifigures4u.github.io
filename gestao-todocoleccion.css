@@ -23,6 +23,10 @@ html.admin-light-mode body.cabecalho-com-admin .gestao-tc{ --tc-fundo:var(--fp-l
 .gestao-tc-seta{ color:var(--tc-suave); font-size:1.3em; }
 .gestao-tc-acoes{ display:flex; flex-wrap:wrap; gap:6px; justify-content:flex-end; }
 .gestao-tc-acoes .wallapop-botao{ min-height:34px; padding:4px 10px; }
+.gestao-tc-acoes .gestao-tc-botao-apagar{ border-color:var(--fp-cor-perigo-hover,#a52828); color:var(--fp-cor-erro,#ff6b6b); }
+.gestao-tc-acoes .gestao-tc-botao-apagar:hover{ background:var(--fp-cor-perigo,#7a1f1f); color:#fff; }
+html.admin-light-mode body.cabecalho-com-admin .gestao-tc-acoes .gestao-tc-botao-apagar{ border-color:var(--fp-light-perigo,#b42318); color:var(--fp-light-perigo,#b42318); }
+html.admin-light-mode body.cabecalho-com-admin .gestao-tc-acoes .gestao-tc-botao-apagar:hover{ background:var(--fp-light-perigo,#b42318); color:#fff; }
 .gestao-tc-erro{ color:var(--fp-cor-erro,#ff6b6b) !important; }
 .gestao-tc-mais{ align-self:center; margin-top:8px; }
 
