@@ -139,7 +139,7 @@
             total = grupos.length;
             html = grupos.slice(0, mostrar).map((g) => `
                 <section class="gestao-tc-grupo">
-                    <header>${htmlProduto(g[0].produto)}<span class="gestao-tc-grupo-info">${g.length} anúncios · ${g.filter((l) => l.estado === 0).length} à venda</span></header>
+                    <div class="gestao-tc-grupo-topo">${htmlProduto(g[0].produto)}<span class="gestao-tc-grupo-info">${g.length} anúncios · ${g.filter((l) => l.estado === 0).length} à venda</span></div>
                     ${g.map((l) => htmlLote(l, false)).join('')}
                 </section>`).join('');
             if (!total) html = '<p class="ajuda-admin">Não há produtos com mais do que um anúncio.</p>';
@@ -262,12 +262,11 @@
             status('A ler a lista de lotes do Todocoleccion…');
             const r = await cliente().functions.invoke('todocoleccion', { body: { acao: 'listar' } });
             if (r.error || !r.data?.ok) throw new Error(r.data?.erro || r.error?.message || 'falhou');
+            // Os lotes novos são lidos e emparelhados em segundo plano pela edge function.
             const d = await cliente().rpc('todocoleccion_disparar', { p_corpo: { acao: 'ler_detalhes', limite: 120, continuar: true } });
             if (d.error) throw d.error;
-            status(`${r.data.total} lotes no Todocoleccion. A ler os novos em segundo plano; volta a carregar daqui a uns minutos.`, 'sucesso');
-            const e = await cliente().rpc('todocoleccion_emparelhar');
-            if (e.error) throw e.error;
             await carregar();
+            status(`${r.data.total} lotes no Todocoleccion. Se houver lotes novos, aparecem daqui a uns minutos (recarrega a página).`, 'sucesso');
         } catch (erro) {
             status('Erro: ' + (erro.message || erro), 'erro');
         } finally {

@@ -202,3 +202,97 @@ revoke all on function public.listar_lotes_todocoleccion_admin(integer, integer)
 revoke all on function public.procurar_produtos_todocoleccion_admin(text, bigint) from public, anon;
 grant execute on function public.listar_lotes_todocoleccion_admin(integer, integer) to authenticated;
 grant execute on function public.procurar_produtos_todocoleccion_admin(text, bigint) to authenticated;
+
+-- ===== Atualização 2026-10-23 17:40: emparelhamento mais rápido =====
+-- Substitui todocoleccion_emparelhar() por todocoleccion_emparelhar(p_so_pendentes boolean default true).
+-- Por defeito só trata lotes 'pendente' (novos); é chamada pela edge function no fim de ler_detalhes.
+-- Usa uma tabela temporária de produtos normalizados com índice trigram (todos os lotes em ~2 s).
+drop function if exists public.todocoleccion_emparelhar();
+
+create or replace function public.todocoleccion_emparelhar(p_so_pendentes boolean default true)
+returns jsonb language plpgsql security definer set search_path = public, extensions as $$
+declare
+  r record; v_nome text; v_extras text[]; v_n text; v_ex text[]; v_alvo text;
+  v_cands jsonb; v_exatos bigint[]; v_mesmo_nome bigint[]; v_melhor real; v_escolhido bigint;
+  n_certo int := 0; n_duvida int := 0; n_sem int := 0;
+begin
+  if not (public.is_admin() or coalesce(auth.role(),'') = 'service_role' or current_user in ('postgres','supabase_admin')) then
+    raise exception 'Acesso reservado ao administrador' using errcode = '42501';
+  end if;
+
+  if not exists (select 1 from todocoleccion_lotes where titulo is not null
+                  and (case when p_so_pendentes then emparelhamento = 'pendente'
+                            else emparelhamento in ('pendente','certo','duvida','sem') end)) then
+    return jsonb_build_object('certo', 0, 'duvida', 0, 'sem', 0);
+  end if;
+
+  -- produtos normalizados uma só vez, com índice de semelhança
+  drop table if exists tc_prod;
+  create temp table tc_prod on commit drop as
+  select p.id, p.nome, p.tema, nullif(p.subtema,'semsubtema') as subtema, p.sku, p.stock, (p.imagens)[1]::text as imagem,
+         public.tc_normalizar(p.nome) as n_nome, public.tc_normalizar(p.tema) as n_tema,
+         public.tc_normalizar(nullif(p.subtema,'semsubtema')) as n_sub,
+         public.tc_normalizar(p.nome || ' ' || coalesce(p.tema,'') || ' ' || coalesce(nullif(p.subtema,'semsubtema'),'')) as n_tudo
+    from produtos p;
+  create index on tc_prod (n_nome);
+  create index on tc_prod using gist (n_nome extensions.gist_trgm_ops);
+  analyze tc_prod;
+
+  for r in select id, titulo from todocoleccion_lotes
+           where titulo is not null
+             and (case when p_so_pendentes then emparelhamento = 'pendente'
+                       else emparelhamento in ('pendente','certo','duvida','sem') end)
+  loop
+    select nome, extras into v_nome, v_extras from public.tc_titulo_partes(r.titulo);
+    v_n := public.tc_normalizar(v_nome);
+    v_alvo := public.tc_normalizar(v_nome || ' ' || array_to_string(v_extras,' '));
+    select coalesce(array_agg(public.tc_normalizar(e)), array[]::text[]) into v_ex from unnest(v_extras) e;
+
+    select array_agg(p.id) into v_mesmo_nome from tc_prod p where p.n_nome = v_n;
+    select array_agg(p.id) into v_exatos from tc_prod p
+     where p.n_nome = v_n and (p.n_tema = any(v_ex) or p.n_sub = any(v_ex));
+
+    -- candidatos: os de nome exato + os 5 mais próximos pelo índice; ficam os 3 melhores
+    select coalesce(jsonb_agg(s order by (s->>'exato')::boolean desc, (s->>'semelhanca')::real desc), '[]'::jsonb),
+           max((s->>'semelhanca')::real)
+      into v_cands, v_melhor
+    from (
+      select s from (
+        select distinct on (c.id) c.id,
+               jsonb_build_object('produto_id', c.id, 'nome', c.nome, 'tema', c.tema, 'subtema', c.subtema,
+                 'sku', c.sku, 'stock', c.stock, 'imagem', c.imagem, 'exato', c.n_nome = v_n,
+                 'semelhanca', round(greatest(extensions.similarity(c.n_nome, v_n),
+                                              extensions.similarity(c.n_tudo, v_alvo))::numeric, 3)) s
+          from (
+            (select * from tc_prod p where p.n_nome = v_n)
+            union all
+            (select * from tc_prod p order by p.n_nome operator(extensions.<->) v_n limit 5)
+          ) c
+      ) d
+      order by (s->>'exato')::boolean desc, (s->>'semelhanca')::real desc
+      limit 3
+    ) x;
+
+    v_escolhido := null;
+    if v_exatos is not null and cardinality(v_exatos) = 1 then
+      v_escolhido := v_exatos[1];
+    elsif v_exatos is null and v_mesmo_nome is not null and cardinality(v_mesmo_nome) = 1 then
+      v_escolhido := v_mesmo_nome[1];
+    end if;
+
+    if v_escolhido is not null then
+      update todocoleccion_lotes set produto_id = v_escolhido, emparelhamento = 'certo', semelhanca = 1, sugestoes = v_cands where id = r.id;
+      n_certo := n_certo + 1;
+    elsif coalesce(v_melhor,0) >= 0.35 then
+      update todocoleccion_lotes set produto_id = (v_cands->0->>'produto_id')::bigint, emparelhamento = 'duvida', semelhanca = v_melhor, sugestoes = v_cands where id = r.id;
+      n_duvida := n_duvida + 1;
+    else
+      update todocoleccion_lotes set produto_id = null, emparelhamento = 'sem', semelhanca = v_melhor, sugestoes = v_cands where id = r.id;
+      n_sem := n_sem + 1;
+    end if;
+  end loop;
+
+  return jsonb_build_object('certo', n_certo, 'duvida', n_duvida, 'sem', n_sem);
+end $$;
+revoke all on function public.todocoleccion_emparelhar(boolean) from public, anon;
+grant execute on function public.todocoleccion_emparelhar(boolean) to authenticated, service_role;

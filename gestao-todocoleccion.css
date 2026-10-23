@@ -31,7 +31,7 @@ html.admin-light-mode body.cabecalho-com-admin .gestao-tc-acoes .gestao-tc-botao
 .gestao-tc-mais{ align-self:center; margin-top:8px; }
 
 .gestao-tc-grupo{ border:1px solid var(--tc-borda); border-radius:10px; padding:10px; display:flex; flex-direction:column; gap:8px; }
-.gestao-tc-grupo > header{ display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap; }
+.gestao-tc-grupo-topo{ display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap; }
 .gestao-tc-grupo .gestao-tc-linha{ grid-template-columns:minmax(0,1fr) auto; }
 .gestao-tc-grupo-info{ font-weight:600; color:var(--tc-suave); }
 
