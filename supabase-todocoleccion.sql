@@ -153,3 +153,52 @@ begin
 end $$;
 revoke all on function public.todocoleccion_emparelhar() from public, anon;
 grant execute on function public.todocoleccion_emparelhar() to authenticated, service_role;
+
+-- A tabela produtos não é lida diretamente pelo login (hardening): o admin usa estas RPC.
+revoke all on table public.todocoleccion_lotes from anon, authenticated;
+grant select, update on table public.todocoleccion_lotes to authenticated;
+
+create or replace function public.listar_lotes_todocoleccion_admin(p_limite integer default 1000, p_offset integer default 0)
+returns jsonb language plpgsql stable security definer set search_path = public as $$
+declare v jsonb;
+begin
+  if not public.is_admin() then
+    raise exception 'Acesso administrativo negado.' using errcode = '42501';
+  end if;
+  select coalesce(jsonb_agg(x order by x.id), '[]'::jsonb) into v from (
+    select l.id, l.referencia, l.titulo, l.preco, l.stock, l.estado, l.imagem, l.produto_id,
+           l.emparelhamento, l.semelhanca, l.sugestoes, l.erro,
+           case when p.id is null then null else jsonb_build_object(
+             'id', p.id, 'nome', p.nome, 'tema', p.tema, 'subtema', p.subtema,
+             'sku', p.sku, 'stock', p.stock, 'imagens', to_jsonb(p.imagens)) end as produto
+      from todocoleccion_lotes l
+      left join produtos p on p.id = l.produto_id
+     order by l.id
+     limit least(greatest(coalesce(p_limite,1000),1),2000) offset greatest(coalesce(p_offset,0),0)
+  ) x;
+  return v;
+end $$;
+
+create or replace function public.procurar_produtos_todocoleccion_admin(p_texto text default null, p_id bigint default null)
+returns jsonb language plpgsql stable security definer set search_path = public as $$
+declare v jsonb; t text := nullif(trim(coalesce(p_texto,'')), '');
+begin
+  if not public.is_admin() then
+    raise exception 'Acesso administrativo negado.' using errcode = '42501';
+  end if;
+  select coalesce(jsonb_agg(x), '[]'::jsonb) into v from (
+    select jsonb_build_object('id', p.id, 'nome', p.nome, 'tema', p.tema, 'subtema', p.subtema,
+             'sku', p.sku, 'stock', p.stock, 'imagens', to_jsonb(p.imagens)) x
+      from produtos p
+     where (p_id is not null and p.id = p_id)
+        or (p_id is null and t is not null and (p.nome ilike '%' || t || '%' or p.sku ilike '%' || t || '%'))
+     order by p.nome
+     limit 20
+  ) s;
+  return v;
+end $$;
+
+revoke all on function public.listar_lotes_todocoleccion_admin(integer, integer) from public, anon;
+revoke all on function public.procurar_produtos_todocoleccion_admin(text, bigint) from public, anon;
+grant execute on function public.listar_lotes_todocoleccion_admin(integer, integer) to authenticated;
+grant execute on function public.procurar_produtos_todocoleccion_admin(text, bigint) to authenticated;

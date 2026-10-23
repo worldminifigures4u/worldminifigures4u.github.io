@@ -47,12 +47,11 @@
         status('A carregar lotes…');
         const todos = [];
         for (let inicio = 0; ; inicio += 1000) {
-            const { data, error } = await db.from('todocoleccion_lotes')
-                .select('id, referencia, titulo, preco, stock, estado, imagem, produto_id, emparelhamento, semelhanca, sugestoes, erro, produto:produtos(id, nome, tema, subtema, sku, stock, imagens)')
-                .order('id').range(inicio, inicio + 999);
+            const { data, error } = await db.rpc('listar_lotes_todocoleccion_admin', { p_limite: 1000, p_offset: inicio });
             if (error) { status('Erro ao carregar: ' + error.message, 'erro'); return; }
-            todos.push(...(data || []));
-            if (!data || data.length < 1000) break;
+            const pagina = Array.isArray(data) ? data : [];
+            todos.push(...pagina);
+            if (pagina.length < 1000) break;
         }
         lotes = todos;
         carregado = true;
@@ -207,11 +206,7 @@
         const alvo = $('gestao-tc-resultados');
         const q = texto.trim();
         if (q.length < 2) { alvo.innerHTML = ''; return; }
-        const termo = `%${q.replace(/[%_]/g, '')}%`;
-        const { data, error } = await cliente().from('produtos')
-            .select('id, nome, tema, subtema, sku, stock, imagens')
-            .or(`nome.ilike.${termo},sku.ilike.${termo}`)
-            .order('nome').limit(20);
+        const { data, error } = await cliente().rpc('procurar_produtos_todocoleccion_admin', { p_texto: q.replace(/[%_]/g, '') });
         if (error) { alvo.innerHTML = `<p class="gestao-tc-erro">${esc(error.message)}</p>`; return; }
         alvo.innerHTML = (data || []).length ? data.map((p) => htmlOpcao(p)).join('') : '<p class="ajuda-admin">Nenhum produto encontrado.</p>';
         alvo._produtos = data || [];
@@ -220,8 +215,8 @@
     async function escolherProduto(produtoId) {
         if (!loteEmTroca) return;
         const id = loteEmTroca.id;
-        const { data: produto } = await cliente().from('produtos')
-            .select('id, nome, tema, subtema, sku, stock, imagens').eq('id', produtoId).maybeSingle();
+        const { data: encontrados } = await cliente().rpc('procurar_produtos_todocoleccion_admin', { p_id: Number(produtoId) });
+        const produto = Array.isArray(encontrados) ? encontrados[0] : null;
         if (await atualizarLotes([id], { produto_id: Number(produtoId), emparelhamento: 'confirmado' })) {
             const l = lotes.find((x) => x.id === id);
             if (l) l.produto = produto || null;
