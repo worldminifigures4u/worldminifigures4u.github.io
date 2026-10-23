@@ -266,7 +266,9 @@
             const d = await cliente().rpc('todocoleccion_disparar', { p_corpo: { acao: 'ler_detalhes', limite: 120, continuar: true } });
             if (d.error) throw d.error;
             await carregar();
-            status(`${r.data.total} lotes no Todocoleccion. Se houver lotes novos, aparecem daqui a uns minutos (recarrega a página).`, 'sucesso');
+            const removidos = r.data.removidos ? ` ${r.data.removidos} lote(s) que já não existem lá foram retirados da lista.` : '';
+            const aviso = r.data.aviso ? ` Atenção: ${r.data.aviso}` : '';
+            status(`${r.data.total} lotes no Todocoleccion.${removidos}${aviso} Se houver lotes novos, aparecem daqui a uns minutos (recarrega a página).`, r.data.aviso ? 'erro' : 'sucesso');
         } catch (erro) {
             status('Erro: ' + (erro.message || erro), 'erro');
         } finally {
