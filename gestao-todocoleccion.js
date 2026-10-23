@@ -268,7 +268,7 @@
             await carregar();
             const removidos = r.data.removidos ? ` ${r.data.removidos} lote(s) que já não existem lá foram retirados da lista.` : '';
             const aviso = r.data.aviso ? ` Atenção: ${r.data.aviso}` : '';
-            status(`${r.data.total} lotes no Todocoleccion.${removidos}${aviso} Se houver lotes novos, aparecem daqui a uns minutos (recarrega a página).`, r.data.aviso ? 'erro' : 'sucesso');
+            status(`${r.data.total} lotes no Todocoleccion.${removidos}${aviso} A reler títulos, preços e stock de todos os lotes em segundo plano (cerca de 10 minutos); recarrega a página depois.`, r.data.aviso ? 'erro' : 'sucesso');
         } catch (erro) {
             status('Erro: ' + (erro.message || erro), 'erro');
         } finally {
