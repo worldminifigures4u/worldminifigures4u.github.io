@@ -2,7 +2,7 @@
 <html lang="pt">
 <head>
     <meta charset="UTF-8">
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdn.jsdelivr.net https://cdn.sheetjs.com; connect-src 'self' https://cdn.jsdelivr.net https://gksndzxadndrsynvzgzb.supabase.co wss://gksndzxadndrsynvzgzb.supabase.co https://api.cloudinary.com; img-src 'self' data: blob: https://res.cloudinary.com https://gksndzxadndrsynvzgzb.supabase.co; style-src 'self'; font-src 'self' data:; frame-src 'none'; object-src 'none'; base-uri 'self'; form-action 'self';">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdn.jsdelivr.net https://cdn.sheetjs.com; connect-src 'self' https://cdn.jsdelivr.net https://gksndzxadndrsynvzgzb.supabase.co wss://gksndzxadndrsynvzgzb.supabase.co https://api.cloudinary.com; img-src 'self' data: blob: https://res.cloudinary.com https://gksndzxadndrsynvzgzb.supabase.co https://*.todocoleccion.online https://*.todocoleccion.net; style-src 'self'; font-src 'self' data:; frame-src 'none'; object-src 'none'; base-uri 'self'; form-action 'self';">
     <meta name="referrer" content="strict-origin-when-cross-origin">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
@@ -23,6 +23,7 @@
     <link rel="stylesheet" href="gestao.css?v=20260831-exportar-limpo">
     <link rel="stylesheet" href="admin-light.css?v=20261015-preco-recomendado-laranja">
     <link rel="stylesheet" href="portes.css?v=20260726-embutido-gestao">
+    <link rel="stylesheet" href="gestao-todocoleccion.css?v=20261023-tc">
     <link rel="stylesheet" href="styles-tema.css?v=20260721-sem-underline" media="print" data-async-css>
     <noscript><link rel="stylesheet" href="styles-tema.css?v=20260721-sem-underline"></noscript>
     <script src="async-css.js?v=20260713-r25"></script>
@@ -80,6 +81,7 @@
             <button type="button" class="gestao-menu-item" data-gestao-seccao="importar" aria-pressed="false">Importar</button>
             <button type="button" class="gestao-menu-item" data-gestao-seccao="exportar" aria-pressed="false">Exportar</button>
             <button type="button" class="gestao-menu-item" data-gestao-seccao="copia" aria-pressed="false">Cópia de segurança</button>
+            <button type="button" class="gestao-menu-item" data-gestao-seccao="todocoleccion" aria-pressed="false">Todocoleccion</button>
         </nav>
 
         <div class="gestao-painel ativa" data-gestao-painel="banners">
@@ -218,6 +220,32 @@
             </div>
         </section>
 
+        <section class="gestao-painel gestao-tc" id="gestao-painel-todocoleccion" data-gestao-painel="todocoleccion" aria-label="Todocoleccion" hidden>
+            <h1>Todocoleccion</h1>
+            <p class="ajuda-admin">Liga cada lote do Todocoleccion ao produto certo do catálogo. Os <strong>certos</strong> coincidem no nome e no tema; revê os <strong>em dúvida</strong> e os <strong>sem correspondência</strong>. Em <strong>Duplicados</strong> vês os produtos com mais do que um anúncio. Os lotes ignorados não serão sincronizados.</p>
+            <div class="gestao-tc-barra">
+                <input type="search" id="gestao-tc-pesquisa" class="input-pesquisa" placeholder="Procurar por título, produto, SKU ou nº do lote" autocomplete="off">
+                <button type="button" id="btn-gestao-tc-confirmar-certos" class="wallapop-botao wallapop-botao-destaque" disabled>Confirmar todos os certos</button>
+                <button type="button" id="btn-gestao-tc-atualizar" class="wallapop-botao" title="Lê outra vez a lista de lotes do Todocoleccion">Atualizar do Todocoleccion</button>
+            </div>
+            <div id="status-gestao-tc" class="msg-status" aria-live="polite"></div>
+            <nav class="gestao-tc-filtros" id="gestao-tc-filtros" aria-label="Filtrar lotes"></nav>
+            <div class="gestao-tc-lista" id="gestao-tc-lista"></div>
+
+            <dialog class="gestao-tc-dialogo" id="gestao-tc-dialogo" aria-labelledby="gestao-tc-dialogo-titulo">
+                <div class="gestao-tc-dialogo-topo">
+                    <h2 id="gestao-tc-dialogo-titulo">Escolher produto</h2>
+                    <button type="button" class="wallapop-botao" id="gestao-tc-dialogo-fechar" aria-label="Fechar">✕</button>
+                </div>
+                <div id="gestao-tc-dialogo-lote"></div>
+                <h3>Sugestões</h3>
+                <div class="gestao-tc-opcoes" id="gestao-tc-sugestoes"></div>
+                <h3>Procurar outro produto</h3>
+                <input type="search" id="gestao-tc-pesquisa-produto" class="input-pesquisa" placeholder="Nome ou SKU" autocomplete="off">
+                <div class="gestao-tc-opcoes" id="gestao-tc-resultados"></div>
+            </dialog>
+        </section>
+
         <section class="gestao-painel gestao-importacao-painel mapas-importacao-painel" id="mapas-painel-exportacao" data-gestao-painel="exportar" aria-label="Exportar catálogo" hidden>
             <h1>Exportar</h1>
             <div class="mapas-importacao-corpo gestao-importacao-corpo gestao-exportacao-corpo" role="group" aria-label="Opções de exportação">
@@ -239,8 +267,9 @@
     <script src="app-util.js?v=20260926-admin-nav-centro" defer></script>
     <script src="app-sku.js?v=20260713-r25" defer></script>
     <script src="admin-theme.js?v=20260826-light-mode" defer></script>
-    <script src="gestao.js?v=20261014-fechar" defer></script>
+    <script src="gestao.js?v=20261023-tc" defer></script>
     <script src="gestao-copia.js?v=20261003-copia" defer></script>
+    <script src="gestao-todocoleccion.js?v=20261023-tc" defer></script>
     <script src="app-portes.js?v=20260915-ctt-azul-internacional-v3" defer></script>
     <script src="portes.js?v=20261014-fechar" defer></script>
     <script src="campo-limpar.js?v=20261003-lados-trocados" defer></script>

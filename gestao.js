@@ -13,7 +13,7 @@ function definirStatusGestao(mensagem) {
 }
 
 function selecionarSeccaoGestao(seccao, atualizarHash = true) {
-    const seccaoNormalizada = ['portes', 'importar', 'exportar', 'copia'].includes(seccao) ? seccao : 'banners';
+    const seccaoNormalizada = ['portes', 'importar', 'exportar', 'copia', 'todocoleccion'].includes(seccao) ? seccao : 'banners';
     document.querySelectorAll('[data-gestao-seccao]').forEach((botao) => {
         const ativo = botao.dataset.gestaoSeccao === seccaoNormalizada;
         botao.classList.toggle('ativa', ativo);
@@ -27,12 +27,13 @@ function selecionarSeccaoGestao(seccao, atualizarHash = true) {
     if (atualizarHash) {
         const hash = seccaoNormalizada === 'portes'
             ? '#portes-de-envio'
-            : (seccaoNormalizada === 'importar' ? '#importar' : (seccaoNormalizada === 'exportar' ? '#exportar' : (seccaoNormalizada === 'copia' ? '#copia-de-seguranca' : '#banners')));
+            : (seccaoNormalizada === 'importar' ? '#importar' : (seccaoNormalizada === 'exportar' ? '#exportar' : (seccaoNormalizada === 'copia' ? '#copia-de-seguranca' : (seccaoNormalizada === 'todocoleccion' ? '#todocoleccion' : '#banners'))));
         history.replaceState(null, '', hash);
     }
     if (seccaoNormalizada === 'importar') {
         prepararImportacaoGestao(false).catch(console.error);
     }
+    document.dispatchEvent(new CustomEvent('gestao:seccao', { detail: seccaoNormalizada }));
 }
 
 function iniciarMenuSeccoesGestao() {
@@ -40,7 +41,7 @@ function iniciarMenuSeccoesGestao() {
         botao.addEventListener('click', () => selecionarSeccaoGestao(botao.dataset.gestaoSeccao));
     });
     const hash = String(window.location.hash || '').toLowerCase();
-    selecionarSeccaoGestao(hash.includes('portes') ? 'portes' : (hash.includes('copia') ? 'copia' : (hash.includes('export') ? 'exportar' : (hash.includes('import') ? 'importar' : 'banners'))), false);
+    selecionarSeccaoGestao(hash.includes('todocoleccion') ? 'todocoleccion' : hash.includes('portes') ? 'portes' : (hash.includes('copia') ? 'copia' : (hash.includes('export') ? 'exportar' : (hash.includes('import') ? 'importar' : 'banners'))), false);
 }
 
 function definirEstadoProdutosImportacaoGestao() {
