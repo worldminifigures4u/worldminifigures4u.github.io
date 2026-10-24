@@ -312,7 +312,8 @@
             const campos = acao === 'confirmar' ? { emparelhamento: 'confirmado' }
                 : acao === 'ignorar' ? { emparelhamento: 'ignorado' }
                 : acao === 'repor' ? { emparelhamento: lotes.find((l) => l.id === id)?.produto_id ? 'duvida' : 'sem' } : null;
-            if (campos) atualizarLotes([id], campos).then(desenhar);
+            // Depois de confirmar/ignorar/repor, o lote deixa de ficar preso nesta lista.
+            if (campos) { trocados.delete(id); atualizarLotes([id], campos).then(desenhar); }
         });
 
         const dlg = $('gestao-tc-dialogo');
