@@ -18,6 +18,8 @@
     let pesquisa = '';
     let mostrar = POR_PAGINA;
     let loteEmTroca = null;
+    // Lotes trocados nesta lista: continuam visíveis aqui (por confirmar) até mudar de filtro ou pesquisa.
+    const trocados = new Set();
     let temporizadorPesquisaProduto = null;
 
     const $ = (id) => document.getElementById(id);
@@ -90,13 +92,13 @@
         }
     }
 
-    function htmlProduto(p) {
+    function htmlProduto(p, porConfirmar = false) {
         if (!p) return '<div class="gestao-tc-produto gestao-tc-produto-vazio">Sem produto ligado</div>';
         const img = imagemProduto(p);
         const sub = p.subtema && p.subtema !== 'semsubtema' ? ` · ${esc(p.subtema)}` : '';
         return `<div class="gestao-tc-produto">
             ${img ? `<img src="${esc(img)}" alt="" loading="lazy">` : '<span class="gestao-tc-sem-img"></span>'}
-            <div><strong>${esc(p.nome)}</strong><span>${esc(p.tema)}${sub}</span><span>${p.referencia ? `Ref. ${esc(p.referencia)} · ` : ''}SKU ${esc(p.sku)} · stock ${esc(p.stock ?? 0)}</span></div>
+            <div>${porConfirmar ? '<span class="gestao-tc-etiqueta">Trocado · por confirmar</span>' : ''}<strong>${esc(p.nome)}</strong><span>${esc(p.tema)}${sub}</span><span>${p.referencia ? `Ref. ${esc(p.referencia)} · ` : ''}SKU ${esc(p.sku)} · stock ${esc(p.stock ?? 0)}</span></div>
         </div>`;
     }
 
@@ -108,7 +110,8 @@
         if (l.emparelhamento === 'ignorado') acoes.push(`<button type="button" class="wallapop-botao" data-tc-acao="repor" data-id="${l.id}">Repor</button>`);
         else acoes.push(`<button type="button" class="wallapop-botao" data-tc-acao="ignorar" data-id="${l.id}" title="Não sincronizar este lote">Ignorar</button>`);
         acoes.push(`<button type="button" class="wallapop-botao gestao-tc-botao-apagar" data-tc-acao="apagar" data-id="${l.id}" title="Apaga este lote definitivamente no Todocoleccion">Apagar no Todocoleccion</button>`);
-        return `<article class="gestao-tc-linha" data-estado-lote="${l.estado}">
+        const porConfirmar = trocados.has(l.id) && l.emparelhamento !== 'confirmado';
+        return `<article class="gestao-tc-linha${porConfirmar ? ' gestao-tc-linha-por-confirmar' : ''}" data-estado-lote="${l.estado}">
             <div class="gestao-tc-lote">
                 ${l.imagem ? `<img src="${esc(l.imagem)}" alt="" loading="lazy">` : '<span class="gestao-tc-sem-img"></span>'}
                 <div>
@@ -117,7 +120,7 @@
                     ${l.erro ? `<span class="gestao-tc-erro">${esc(l.erro)}</span>` : ''}
                 </div>
             </div>
-            ${comProduto ? `<span class="gestao-tc-seta" aria-hidden="true">→</span>${htmlProduto(l.produto)}` : ''}
+            ${comProduto ? `<span class="gestao-tc-seta" aria-hidden="true">→</span>${htmlProduto(l.produto, porConfirmar)}` : ''}
             ${comAcoes ? `<div class="gestao-tc-acoes">${acoes.join('')}</div>` : ''}
         </article>`;
     }
@@ -144,7 +147,7 @@
                 </section>`).join('');
             if (!total) html = '<p class="ajuda-admin">Não há produtos com mais do que um anúncio.</p>';
         } else {
-            const filtrados = lotes.filter((l) => l.emparelhamento === filtro && correspondePesquisa(l))
+            const filtrados = lotes.filter((l) => (l.emparelhamento === filtro || trocados.has(l.id)) && correspondePesquisa(l))
                 .sort((a, b) => (a.semelhanca ?? 0) - (b.semelhanca ?? 0));
             total = filtrados.length;
             html = filtrados.slice(0, mostrar).map((l) => htmlLote(l)).join('');
@@ -219,10 +222,11 @@
         const id = loteEmTroca.id;
         const { data: encontrados } = await cliente().rpc('procurar_produtos_todocoleccion_admin', { p_id: Number(produtoId) });
         const produto = Array.isArray(encontrados) ? encontrados[0] : null;
-        if (await atualizarLotes([id], { produto_id: Number(produtoId), emparelhamento: 'confirmado' })) {
+        if (await atualizarLotes([id], { produto_id: Number(produtoId), emparelhamento: 'duvida' })) {
             const l = lotes.find((x) => x.id === id);
             if (l) l.produto = produto || null;
-            status('Lote ligado ao produto.', 'sucesso');
+            trocados.add(id);
+            status('Produto trocado. Verifica e carrega em Confirmar.', 'sucesso');
         }
         fecharTroca();
         desenhar();
@@ -285,11 +289,13 @@
             const b = ev.target.closest('[data-tc-filtro]');
             if (!b) return;
             filtro = b.dataset.tcFiltro;
+            trocados.clear();
             mostrar = POR_PAGINA;
             desenhar();
         });
         $('gestao-tc-pesquisa').addEventListener('input', (ev) => {
             pesquisa = ev.target.value.trim().toLowerCase();
+            trocados.clear();
             mostrar = POR_PAGINA;
             desenhar();
         });

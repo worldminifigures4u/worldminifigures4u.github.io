@@ -54,3 +54,7 @@ html.admin-light-mode body.cabecalho-com-admin .gestao-tc-acoes .gestao-tc-botao
     .gestao-tc-seta{ transform:rotate(90deg); justify-self:start; }
     .gestao-tc-acoes{ justify-content:flex-start; }
 }
+
+/* Lote trocado à espera de confirmação */
+.gestao-tc-linha-por-confirmar{ border-color:var(--tc-acento); box-shadow:0 0 0 1px var(--tc-acento) inset; }
+.gestao-tc-etiqueta{ align-self:flex-start; font-size:.75em !important; font-weight:700; color:var(--tc-acento-texto) !important; background:var(--tc-acento); border-radius:999px; padding:1px 8px; margin-bottom:2px; }
