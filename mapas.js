@@ -749,7 +749,7 @@ function atualizarResultadosMapa() {
     const filtroTop = document.getElementById("mapas-filtro-top")?.value || "todos";
     const filtroAtivo = document.getElementById("mapas-filtro-ativo")?.value || "todos";
     const filtroLego = document.getElementById("mapas-filtro-lego")?.value || "todos";
-    const filtroArquivado = document.getElementById("mapas-filtro-arquivado")?.value || "nao";
+    const filtroArquivado = document.getElementById("mapas-filtro-arquivado")?.value || "todos";
     const filtroNovidade = document.getElementById("mapas-filtro-novidade")?.value || "todos";
     mapasResultados = mapasProdutos
         .filter(produto => produtoPassaFiltroTemaMapa(produto, filtroTema))
