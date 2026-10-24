@@ -296,3 +296,8 @@ begin
 end $$;
 revoke all on function public.todocoleccion_emparelhar(boolean) from public, anon;
 grant execute on function public.todocoleccion_emparelhar(boolean) to authenticated, service_role;
+
+
+-- 2026-10-24 (aplicado no Supabase: migration todocoleccion_referencia_produto)
+-- A referência do produto do site passa a vir no produto ligado, nas sugestões e na pesquisa.
+-- Ver definições atuais com: select pg_get_functiondef('public.listar_lotes_todocoleccion_admin(integer,integer)'::regprocedure);

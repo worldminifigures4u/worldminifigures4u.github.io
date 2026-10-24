@@ -96,7 +96,7 @@
         const sub = p.subtema && p.subtema !== 'semsubtema' ? ` · ${esc(p.subtema)}` : '';
         return `<div class="gestao-tc-produto">
             ${img ? `<img src="${esc(img)}" alt="" loading="lazy">` : '<span class="gestao-tc-sem-img"></span>'}
-            <div><strong>${esc(p.nome)}</strong><span>${esc(p.tema)}${sub}</span><span>SKU ${esc(p.sku)} · stock ${esc(p.stock ?? 0)}</span></div>
+            <div><strong>${esc(p.nome)}</strong><span>${esc(p.tema)}${sub}</span><span>${p.referencia ? `Ref. ${esc(p.referencia)} · ` : ''}SKU ${esc(p.sku)} · stock ${esc(p.stock ?? 0)}</span></div>
         </div>`;
     }
 
@@ -113,7 +113,7 @@
                 ${l.imagem ? `<img src="${esc(l.imagem)}" alt="" loading="lazy">` : '<span class="gestao-tc-sem-img"></span>'}
                 <div>
                     <strong>${esc(l.titulo || '(sem título)')}</strong>
-                    <span>${euros(l.preco)} · <span class="gestao-tc-estado">${esc(estado)}</span>${l.referencia ? ` · Ref. ${esc(l.referencia)}` : ''} · nº ${l.id}</span>
+                    <span>${euros(l.preco)} · <span class="gestao-tc-estado">${esc(estado)}</span> · nº ${l.id}</span>
                     ${l.erro ? `<span class="gestao-tc-erro">${esc(l.erro)}</span>` : ''}
                 </div>
             </div>
@@ -124,7 +124,7 @@
 
     function correspondePesquisa(l) {
         if (!pesquisa) return true;
-        const alvo = `${l.titulo || ''} ${l.produto?.nome || ''} ${l.produto?.sku || ''} ${l.referencia || ''} ${l.id}`.toLowerCase();
+        const alvo = `${l.titulo || ''} ${l.produto?.nome || ''} ${l.produto?.sku || ''} ${l.produto?.referencia || ''} ${l.id}`.toLowerCase();
         return alvo.includes(pesquisa);
     }
 
@@ -180,7 +180,7 @@
         const sub = p.subtema && p.subtema !== 'semsubtema' ? ` · ${esc(p.subtema)}` : '';
         return `<button type="button" class="gestao-tc-opcao" data-tc-escolher="${p.produto_id ?? p.id}">
             ${img ? `<img src="${esc(img)}" alt="" loading="lazy">` : '<span class="gestao-tc-sem-img"></span>'}
-            <span><strong>${esc(p.nome)}</strong><span>${esc(p.tema)}${sub} · SKU ${esc(p.sku)} · stock ${esc(p.stock ?? 0)}</span></span>
+            <span><strong>${esc(p.nome)}</strong><span>${esc(p.tema)}${sub} · ${p.referencia ? `Ref. ${esc(p.referencia)} · ` : ''}SKU ${esc(p.sku)} · stock ${esc(p.stock ?? 0)}</span></span>
             ${semelhanca !== undefined ? `<span class="gestao-tc-semelhanca">${Math.round(Number(semelhanca) * 100)}%</span>` : ''}
         </button>`;
     }
