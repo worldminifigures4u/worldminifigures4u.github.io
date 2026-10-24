@@ -113,7 +113,7 @@
                 ${l.imagem ? `<img src="${esc(l.imagem)}" alt="" loading="lazy">` : '<span class="gestao-tc-sem-img"></span>'}
                 <div>
                     <strong>${esc(l.titulo || '(sem título)')}</strong>
-                    <span>${euros(l.preco)} · <span class="gestao-tc-estado">${esc(estado)}</span> · nº ${l.id}</span>
+                    <span>${euros(l.preco)} · <span class="gestao-tc-estado">${esc(estado)}</span>${l.referencia ? ` · Ref. ${esc(l.referencia)}` : ''} · nº ${l.id}</span>
                     ${l.erro ? `<span class="gestao-tc-erro">${esc(l.erro)}</span>` : ''}
                 </div>
             </div>
@@ -124,7 +124,7 @@
 
     function correspondePesquisa(l) {
         if (!pesquisa) return true;
-        const alvo = `${l.titulo || ''} ${l.produto?.nome || ''} ${l.produto?.sku || ''} ${l.id}`.toLowerCase();
+        const alvo = `${l.titulo || ''} ${l.produto?.nome || ''} ${l.produto?.sku || ''} ${l.referencia || ''} ${l.id}`.toLowerCase();
         return alvo.includes(pesquisa);
     }
 
