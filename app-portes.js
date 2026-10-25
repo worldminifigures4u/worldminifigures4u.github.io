@@ -1,5 +1,5 @@
 // Tabelas de portes usadas pelo carrinho (fallback local + carga remota com cache).
-const PORTES_CACHE_KEY = 'figures-planet-portes-tarifas-v12';
+const PORTES_CACHE_KEY = 'figures-planet-portes-tarifas-v13';
 const PORTES_CACHE_TTL_MS = 6 * 60 * 60 * 1000;
 const PORTES_PESO_ABERTO_G = 999999;
 
@@ -8,7 +8,7 @@ const METODOS_ENVIO_FALLBACK = [
     { id: 'ctt_azul', nome_exibicao: 'CTT Azul', registado: false, ordem: 2 },
     { id: 'ctt_azul_internacional', nome_exibicao: 'CTT Azul Internacional', nome_cliente: 'CTT com seguimento', registado: true, ordem: 3 },
     { id: 'ctt_registado', nome_exibicao: 'CTT Registado', registado: true, ordem: 4 },
-    { id: 'inpost_registado', nome_exibicao: 'InPost Registado', registado: true, ordem: 5 }
+    { id: 'inpost_registado', nome_exibicao: 'InPost com seguimento', registado: true, ordem: 5 }
 ];
 
 let PORTES_METODOS = METODOS_ENVIO_FALLBACK.slice();
@@ -19,47 +19,47 @@ const TABELA_PORTES_FALLBACK = {
             { id: 'ctt_normal', nome: 'CTT Normal', valor: 1.94 },
             { id: 'ctt_azul', nome: 'CTT Azul', valor: 2.58 },
             { id: 'ctt_registado', nome: 'CTT Registado', valor: 5.66 },
-            { id: 'inpost_registado', nome: 'InPost Registado', valor: 4.76 }
+            { id: 'inpost_registado', nome: 'InPost com seguimento', valor: 4.76 }
         ]},
         { ate: 500, opcoes: [
             { id: 'ctt_normal', nome: 'CTT Normal', valor: 2.88 },
             { id: 'ctt_azul', nome: 'CTT Azul', valor: 4.80 },
             { id: 'ctt_registado', nome: 'CTT Registado', valor: 6.64 },
-            { id: 'inpost_registado', nome: 'InPost Registado', valor: 4.76 }
+            { id: 'inpost_registado', nome: 'InPost com seguimento', valor: 4.76 }
         ]},
         { ate: 1000, opcoes: [
             { id: 'ctt_normal', nome: 'CTT Normal', valor: 6.83 },
             { id: 'ctt_azul', nome: 'CTT Azul', valor: 9.59 },
             { id: 'ctt_registado', nome: 'CTT Registado', valor: 10.98 },
-            { id: 'inpost_registado', nome: 'InPost Registado', valor: 5.42 }
+            { id: 'inpost_registado', nome: 'InPost com seguimento', valor: 5.42 }
         ]},
         { ate: Infinity, opcoes: [
             { id: 'ctt_normal', nome: 'CTT Normal', valor: 6.83 },
             { id: 'ctt_azul', nome: 'CTT Azul', valor: 9.59 },
             { id: 'ctt_registado', nome: 'CTT Registado', valor: 10.98 },
-            { id: 'inpost_registado', nome: 'InPost Registado', valor: 5.89 }
+            { id: 'inpost_registado', nome: 'InPost com seguimento', valor: 5.89 }
         ]}
     ],
     espanha: [
         { ate: 100, opcoes: [
             { id: 'ctt_azul_internacional', nome: 'CTT Azul Internacional', valor: 6.95 },
-            { id: 'inpost_registado', nome: 'InPost Registado', valor: 5.12 }
+            { id: 'inpost_registado', nome: 'InPost com seguimento', valor: 5.12 }
         ]},
         { ate: 250, opcoes: [
             { id: 'ctt_azul_internacional', nome: 'CTT Azul Internacional', valor: 9.29 },
-            { id: 'inpost_registado', nome: 'InPost Registado', valor: 5.12 }
+            { id: 'inpost_registado', nome: 'InPost com seguimento', valor: 5.12 }
         ]},
         { ate: 500, opcoes: [
             { id: 'ctt_azul_internacional', nome: 'CTT Azul Internacional', valor: 12.05 },
-            { id: 'inpost_registado', nome: 'InPost Registado', valor: 5.12 }
+            { id: 'inpost_registado', nome: 'InPost com seguimento', valor: 5.12 }
         ]},
         { ate: 1000, opcoes: [
             { id: 'ctt_azul_internacional', nome: 'CTT Azul Internacional', valor: 16.24 },
-            { id: 'inpost_registado', nome: 'InPost Registado', valor: 5.12 }
+            { id: 'inpost_registado', nome: 'InPost com seguimento', valor: 5.12 }
         ]},
         { ate: Infinity, opcoes: [
             { id: 'ctt_azul_internacional', nome: 'CTT Azul Internacional', valor: 26.08 },
-            { id: 'inpost_registado', nome: 'InPost Registado', valor: 5.81 }
+            { id: 'inpost_registado', nome: 'InPost com seguimento', valor: 5.81 }
         ]}
     ],
     europa: [

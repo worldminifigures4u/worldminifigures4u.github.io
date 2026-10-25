@@ -307,3 +307,7 @@ grant execute on function public.todocoleccion_emparelhar(boolean) to authentica
 -- Espanha/Europa: Azul Internacional ativo (6,95 / 9,29 / 12,05 / 16,24 / 26,08), CTT Registado desativado.
 alter table public.portes_metodos add column if not exists nome_cliente text;
 update public.portes_metodos set registado = true, nome_cliente = 'CTT com seguimento' where id = 'ctt_azul_internacional';
+-- InPost: nome "InPost com seguimento" no carrinho e no admin (id continua inpost_registado).
+update public.portes_metodos set nome_exibicao = 'InPost com seguimento' where id = 'inpost_registado';
+update public.portes_tarifas set nome_exibicao = 'InPost com seguimento' where metodo_id = 'inpost_registado';
+update public.encomendas set metodo_envio_nome = 'InPost com seguimento' where metodo_envio_nome = 'InPost Registado';

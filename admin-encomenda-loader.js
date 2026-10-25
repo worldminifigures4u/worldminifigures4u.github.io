@@ -18,7 +18,7 @@
 
     function garantirAppPortes() {
         if (typeof window.garantirTabelaPortesCarregada === 'function') return Promise.resolve();
-        return carregarScript('app-portes.js?v=20261025-com-seguimento');
+        return carregarScript('app-portes.js?v=20261025-inpost-seguimento');
     }
 
     function garantirAdminEncomendaVista() {
@@ -29,7 +29,7 @@
                     return carregarScript('morada-formato.js?v=20260713-morada-formatada');
                 })
                 .then(function () {
-                    return carregarScript('admin-encomenda-vista.js?v=20261016-sem-frases-anexos');
+                    return carregarScript('admin-encomenda-vista.js?v=20261025-inpost-seguimento');
                 });
         }
         return promessaVista;

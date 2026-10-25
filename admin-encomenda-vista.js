@@ -230,7 +230,7 @@ window.AdminEncomendaVista = (function () {
         const nome = String(encomenda?.metodo_envio_nome || "").trim();
         if (nome) return nome;
         const metodoId = normalizarTextoEnvio(encomenda?.metodo_envio).replace(/\s+/g, "_");
-        if (metodoId === "inpost_registado") return "InPost Registado";
+        if (metodoId === "inpost_registado") return "InPost com seguimento";
         if (metodoId === "ctt_registado") return "CTT Registado";
         return "envio registado";
     }
