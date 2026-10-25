@@ -301,3 +301,9 @@ grant execute on function public.todocoleccion_emparelhar(boolean) to authentica
 -- 2026-10-24 (aplicado no Supabase: migration todocoleccion_referencia_produto)
 -- A referência do produto do site passa a vir no produto ligado, nas sugestões e na pesquisa.
 -- Ver definições atuais com: select pg_get_functiondef('public.listar_lotes_todocoleccion_admin(integer,integer)'::regprocedure);
+
+-- ===== Portes 2026-10-25 (não é Todocoleccion; registado aqui por conveniência) =====
+-- CTT Azul Internacional passa a "com seguimento" e o cliente vê "CTT com seguimento".
+-- Espanha/Europa: Azul Internacional ativo (6,95 / 9,29 / 12,05 / 16,24 / 26,08), CTT Registado desativado.
+alter table public.portes_metodos add column if not exists nome_cliente text;
+update public.portes_metodos set registado = true, nome_cliente = 'CTT com seguimento' where id = 'ctt_azul_internacional';

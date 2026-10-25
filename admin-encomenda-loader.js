@@ -18,7 +18,7 @@
 
     function garantirAppPortes() {
         if (typeof window.garantirTabelaPortesCarregada === 'function') return Promise.resolve();
-        return carregarScript('app-portes.js?v=20261025-registado-europa');
+        return carregarScript('app-portes.js?v=20261025-com-seguimento');
     }
 
     function garantirAdminEncomendaVista() {

@@ -94,8 +94,11 @@ function obterRotuloOpcaoEnvio(opcao, opcoesVisiveis) {
     const preco = formatarEuro(valorPortesComIva(opcao.valor)) + ' €';
     const registado = opcao.registado === true || metodoEnvioRegistado(opcao.id);
     const recomendado = mostrarBadgeRecomendadoEnvio(opcoesVisiveis) && registado;
-    const nome = opcao.nome
-        || (typeof obterMetaMetodoEnvio === 'function' ? obterMetaMetodoEnvio(opcao.id)?.nome_exibicao : '')
+    // No carrinho público o cliente vê o nome_cliente do método (se existir); a encomenda grava o nome interno.
+    const meta = typeof obterMetaMetodoEnvio === 'function' ? obterMetaMetodoEnvio(opcao.id) : null;
+    const nome = meta?.nome_cliente
+        || opcao.nome
+        || meta?.nome_exibicao
         || opcao.id;
 
     if (metodoEnvioEmMao(opcao.id)) {

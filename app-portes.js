@@ -1,12 +1,12 @@
 // Tabelas de portes usadas pelo carrinho (fallback local + carga remota com cache).
-const PORTES_CACHE_KEY = 'figures-planet-portes-tarifas-v11';
+const PORTES_CACHE_KEY = 'figures-planet-portes-tarifas-v12';
 const PORTES_CACHE_TTL_MS = 6 * 60 * 60 * 1000;
 const PORTES_PESO_ABERTO_G = 999999;
 
 const METODOS_ENVIO_FALLBACK = [
     { id: 'ctt_normal', nome_exibicao: 'CTT Normal', registado: false, ordem: 1 },
     { id: 'ctt_azul', nome_exibicao: 'CTT Azul', registado: false, ordem: 2 },
-    { id: 'ctt_azul_internacional', nome_exibicao: 'CTT Azul Internacional', registado: false, ordem: 3 },
+    { id: 'ctt_azul_internacional', nome_exibicao: 'CTT Azul Internacional', nome_cliente: 'CTT com seguimento', registado: true, ordem: 3 },
     { id: 'ctt_registado', nome_exibicao: 'CTT Registado', registado: true, ordem: 4 },
     { id: 'inpost_registado', nome_exibicao: 'InPost Registado', registado: true, ordem: 5 }
 ];
@@ -42,41 +42,41 @@ const TABELA_PORTES_FALLBACK = {
     ],
     espanha: [
         { ate: 100, opcoes: [
-            { id: 'ctt_registado', nome: 'CTT Registado', valor: 8.98 },
+            { id: 'ctt_azul_internacional', nome: 'CTT Azul Internacional', valor: 6.95 },
             { id: 'inpost_registado', nome: 'InPost Registado', valor: 5.12 }
         ]},
         { ate: 250, opcoes: [
-            { id: 'ctt_registado', nome: 'CTT Registado', valor: 10.58 },
+            { id: 'ctt_azul_internacional', nome: 'CTT Azul Internacional', valor: 9.29 },
             { id: 'inpost_registado', nome: 'InPost Registado', valor: 5.12 }
         ]},
         { ate: 500, opcoes: [
-            { id: 'ctt_registado', nome: 'CTT Registado', valor: 13.65 },
+            { id: 'ctt_azul_internacional', nome: 'CTT Azul Internacional', valor: 12.05 },
             { id: 'inpost_registado', nome: 'InPost Registado', valor: 5.12 }
         ]},
         { ate: 1000, opcoes: [
-            { id: 'ctt_registado', nome: 'CTT Registado', valor: 19.13 },
+            { id: 'ctt_azul_internacional', nome: 'CTT Azul Internacional', valor: 16.24 },
             { id: 'inpost_registado', nome: 'InPost Registado', valor: 5.12 }
         ]},
         { ate: Infinity, opcoes: [
-            { id: 'ctt_registado', nome: 'CTT Registado', valor: 28.72 },
+            { id: 'ctt_azul_internacional', nome: 'CTT Azul Internacional', valor: 26.08 },
             { id: 'inpost_registado', nome: 'InPost Registado', valor: 5.81 }
         ]}
     ],
     europa: [
         { ate: 100, opcoes: [
-            { id: 'ctt_registado', nome: 'CTT Registado', valor: 8.98 }
+            { id: 'ctt_azul_internacional', nome: 'CTT Azul Internacional', valor: 6.95 }
         ]},
         { ate: 250, opcoes: [
-            { id: 'ctt_registado', nome: 'CTT Registado', valor: 10.58 }
+            { id: 'ctt_azul_internacional', nome: 'CTT Azul Internacional', valor: 9.29 }
         ]},
         { ate: 500, opcoes: [
-            { id: 'ctt_registado', nome: 'CTT Registado', valor: 13.65 }
+            { id: 'ctt_azul_internacional', nome: 'CTT Azul Internacional', valor: 12.05 }
         ]},
         { ate: 1000, opcoes: [
-            { id: 'ctt_registado', nome: 'CTT Registado', valor: 19.13 }
+            { id: 'ctt_azul_internacional', nome: 'CTT Azul Internacional', valor: 16.24 }
         ]},
         { ate: Infinity, opcoes: [
-            { id: 'ctt_registado', nome: 'CTT Registado', valor: 28.72 }
+            { id: 'ctt_azul_internacional', nome: 'CTT Azul Internacional', valor: 26.08 }
         ]}
     ]
 };
@@ -124,6 +124,8 @@ function aplicarCatalogoMetodosEnvio(metodos) {
     PORTES_METODOS = lista.map((metodo) => ({
         id: String(metodo.id || ''),
         nome_exibicao: String(metodo.nome_exibicao || metodo.id || ''),
+        // Nome mostrado só ao cliente no carrinho público; encomenda e admin usam nome_exibicao.
+        nome_cliente: String(metodo.nome_cliente || ''),
         registado: metodo.registado === true,
         ativo: metodo.ativo !== false,
         ordem: Number(metodo.ordem || 0)
@@ -132,7 +134,8 @@ function aplicarCatalogoMetodosEnvio(metodos) {
         PORTES_METODOS.push({
             id: 'ctt_azul_internacional',
             nome_exibicao: 'CTT Azul Internacional',
-            registado: false,
+            nome_cliente: 'CTT com seguimento',
+            registado: true,
             ativo: true,
             ordem: 3
         });
@@ -276,7 +279,7 @@ async function carregarTabelaPortesRemota(forcar = false) {
             .order('ordem'),
         client
             .from('portes_metodos')
-            .select('id, nome_exibicao, registado, ativo, ordem')
+            .select('id, nome_exibicao, nome_cliente, registado, ativo, ordem')
             .eq('ativo', true)
             .order('ordem')
     ]);
