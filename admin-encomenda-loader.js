@@ -18,7 +18,7 @@
 
     function garantirAppPortes() {
         if (typeof window.garantirTabelaPortesCarregada === 'function') return Promise.resolve();
-        return carregarScript('app-portes.js?v=20260927-olx-envios-txt');
+        return carregarScript('app-portes.js?v=20261025-registado-europa');
     }
 
     function garantirAdminEncomendaVista() {
