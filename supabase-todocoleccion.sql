@@ -372,3 +372,36 @@ drop trigger if exists produtos_tc_sincronizar_stock on public.produtos;
 create trigger produtos_tc_sincronizar_stock
   after update of stock on public.produtos
   for each row execute function public.produtos_tc_sincronizar_stock();
+
+-- ============================================================
+-- Importação das encomendas do todocoleccion (26/10/2026)
+-- Edge function acao importar_encomendas (modo "base" marcou as 218 antigas como já registadas).
+-- Corre a cada 10 min (pg_cron). Cria a encomenda (origem Todocoleccion, referencia_externa = nº da encomenda TC),
+-- desce o stock (pode ficar negativo: a venda já aconteceu) e liga o lote republicado ao produto.
+-- Paga no TC -> passa de "A aguardar pagamento" a "Em preparação".
+-- Ver a versão completa das funções na migração todocoleccion_encomendas_importacao.
+-- ============================================================
+-- tabela: public.todocoleccion_encomendas(id_order pk, data_encomenda, total, comprador, estado_tc, encomenda_id,
+--         situacao [importada|ja_registada|anulada|erro], erro, itens, visto_em, criado_em)
+-- função: public.todocoleccion_criar_encomenda(p jsonb)  (só service_role)
+-- create extension if not exists pg_cron;
+-- select cron.schedule('todocoleccion-importar-encomendas', '*/10 * * * *',
+--   $$select public.todocoleccion_disparar('{"acao":"importar_encomendas"}'::jsonb)$$);
+
+create table if not exists public.todocoleccion_encomendas (
+  id_order bigint primary key,
+  data_encomenda timestamptz,
+  total numeric,
+  comprador text,
+  estado_tc text,
+  encomenda_id bigint references public.encomendas(id) on delete set null,
+  situacao text not null check (situacao in ('importada','ja_registada','anulada','erro')),
+  erro text,
+  itens jsonb,
+  visto_em timestamptz default now(),
+  criado_em timestamptz default now()
+);
+alter table public.todocoleccion_encomendas enable row level security;
+create policy "admin le encomendas tc" on public.todocoleccion_encomendas for select to authenticated using (public.is_admin());
+revoke insert, update, delete on public.todocoleccion_encomendas from anon, authenticated;
+-- (função todocoleccion_criar_encomenda: ver migração no Supabase)
