@@ -3092,8 +3092,17 @@ function criarTextoEncomendaWallapop() {
         String(item.nome || '').trim(),
         `${formatarEuroWallapop(obterPrecoItemWallapop(item))} €`
     ].join('\t')));
-    const total = calcularTotalFicheirosPlataforma(itens);
-    linhas.push('', `Total:\t${formatarEuroWallapop(total)} €`);
+    const envio = obterEnvioParaFicheirosPlataforma() || {};
+    const portes = Number(envio.portes) || 0;
+    const total = calcularTotalFicheirosPlataforma(itens, envio);
+    linhas.push('');
+    // Com portes (ex.: WhatsApp): mostra subtotal e portes antes do total, como nas encomendas do site.
+    if (portes > 0) {
+        const nomeEnvio = String(envio.nome || '').trim();
+        linhas.push(`Subtotal:\t${formatarEuroWallapop(calcularTotalPrecoLoteWallapop(itens))} €`);
+        linhas.push(`Portes de envio${nomeEnvio ? ` (${nomeEnvio})` : ''}:\t${formatarEuroWallapop(portes)} €`);
+    }
+    linhas.push(`Total:\t${formatarEuroWallapop(total)} €`);
     return '\ufeff' + anexarFigurasRepetidasAoTextoPlataforma(linhas).join('\r\n');
 }
 
