@@ -311,3 +311,20 @@ update public.portes_metodos set registado = true, nome_cliente = 'CTT com segui
 update public.portes_metodos set nome_exibicao = 'InPost com seguimento' where id = 'inpost_registado';
 update public.portes_tarifas set nome_exibicao = 'InPost com seguimento' where metodo_id = 'inpost_registado';
 update public.encomendas set metodo_envio_nome = 'InPost com seguimento' where metodo_envio_nome = 'InPost Registado';
+
+-- ============================================================
+-- Preço próprio do Todocoleccion (26/10/2026)
+-- Regra: preço venda x 1,10, arredondado para cima aos 5 cêntimos, mínimo 1,95 €.
+-- produtos.preco_todocoleccion (opcional) sobrepõe-se à regra.
+-- listar_produtos_mapas_admin devolve preco_todocoleccion e preco_todocoleccion_regra;
+-- editar_produto_admin_v2 grava preco_todocoleccion só se a chave vier no JSON (vazio = null).
+-- ============================================================
+alter table public.produtos add column if not exists preco_todocoleccion numeric;
+
+create or replace function public.tc_preco_regra(p_preco numeric) returns numeric language sql immutable as $$
+  select greatest(1.95, ceil(round(coalesce(p_preco,0) * 1.10, 4) / 0.05) * 0.05)::numeric(10,2);
+$$;
+
+create or replace function public.tc_preco_produto(p_produto public.produtos) returns numeric language sql stable as $$
+  select coalesce(p_produto.preco_todocoleccion, public.tc_preco_regra(p_produto.preco::numeric))::numeric(10,2);
+$$;

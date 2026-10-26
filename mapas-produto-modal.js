@@ -160,6 +160,13 @@ function normalizarSkuProdutoModal(valor) {
         .replace(/[^A-Z0-9]/g, "");
 }
 
+// Preço no Todocoleccion: preço venda x 1,10, arredondado para cima aos 5 cêntimos, mínimo 1,95 € (igual a tc_preco_regra na BD).
+function precoTodocoleccionRegraMapa(precoVenda) {
+    const preco = Number(String(precoVenda ?? "").replace(/\s|€/g, "").replace(",", ".")) || 0;
+    const centimos = Math.ceil(Math.round(preco * 1.10 * 10000) / 10000 / 0.05 - 1e-9) * 5;
+    return Math.max(1.95, centimos / 100);
+}
+
 function criarInputEdicaoMapa(form, id, rotulo, valor, tipo = "text", opcoes = {}) {
     const label = document.createElement("label");
     label.setAttribute("for", id);
@@ -2341,6 +2348,12 @@ function preencherFichaProdutoMapa(produto) {
     criarCampoLeituraMapa(secaoDetalhes, "preço venda", `${formatarEuroProdutoModal(produto.preco)} €`, {
         classeValor: !calcRecomendadoLeitura || precoVendaAtual <= 0 ? "" : (precoVendaAtual >= calcRecomendadoLeitura.recomendado - 0.0001 ? "atinge-recomendado" : "abaixo-recomendado")
     });
+    {
+        const manualTc = produto.preco_todocoleccion !== null && produto.preco_todocoleccion !== undefined && produto.preco_todocoleccion !== "";
+        const precoTc = manualTc ? Number(produto.preco_todocoleccion) : precoTodocoleccionRegraMapa(produto.preco);
+        const blocoTc = criarCampoLeituraMapa(secaoDetalhes, "preço Todocoleccion", `${formatarEuroProdutoModal(precoTc)} €${manualTc ? "" : " (regra)"}`);
+        blocoTc.title = manualTc ? "Preço definido à mão" : "Preço venda × 1,10, arredondado para cima aos 5 cêntimos, mínimo 1,95 €";
+    }
     criarCampoLeituraMapa(secaoDetalhes, "Peso (g)", Number(produto.peso || PESO_PADRAO_PRODUTO_GRAMAS || 10));
     criarCampoLeituraMapa(secaoDetalhes, "Lego", textoLegoProdutoModal(produto.lego) || "por verificar");
     const blocoRecomendadoLeitura = criarCampoLeituraMapa(
@@ -2600,6 +2613,16 @@ function preencherFormularioProdutoMapa(produto, modo = "editar") {
     criarInputEdicaoMapa(secaoDetalhes, "mapas-editar-stock", "Stock", Number(produto.stock || 0), "number", { required: true, step: 1 });
     criarInputEdicaoMapa(secaoDetalhes, "mapas-editar-preco-compra", "preço compra", Number(produto.preco_compra || 0).toFixed(2), "number", { min: 0, step: "0.01" });
     criarInputEdicaoMapa(secaoDetalhes, "mapas-editar-preco", "preço venda", Number(produto.preco || 0).toFixed(2), "number", { required: true, min: 0, step: "0.01" });
+    const valorTc = produto.preco_todocoleccion === null || produto.preco_todocoleccion === undefined || produto.preco_todocoleccion === ""
+        ? "" : Number(produto.preco_todocoleccion).toFixed(2);
+    const inputPrecoTc = criarInputEdicaoMapa(secaoDetalhes, "mapas-editar-preco-todocoleccion", "preço Todocoleccion", valorTc, "number", { min: 0, step: "0.01" });
+    const atualizarRegraTc = () => {
+        const regra = precoTodocoleccionRegraMapa(secaoDetalhes.querySelector("#mapas-editar-preco")?.value);
+        inputPrecoTc.placeholder = regra.toFixed(2);
+        inputPrecoTc.title = `Vazio = regra (preço venda × 1,10, mínimo 1,95 €): ${formatarEuroProdutoModal(regra)} €`;
+    };
+    secaoDetalhes.addEventListener("input", (evento) => { if (evento.target?.id === "mapas-editar-preco") atualizarRegraTc(); });
+    atualizarRegraTc();
     criarInputEdicaoMapa(secaoDetalhes, "mapas-editar-peso", "Peso (g)", Number(produto.peso || PESO_PADRAO_PRODUTO_GRAMAS || 10), "number", { required: true, min: 1, step: 1 });
     criarSelectEdicaoMapa(secaoDetalhes, "mapas-editar-lego", "Lego", textoLegoProdutoModal(produto.lego), [
         { valor: "", texto: "por verificar" },
@@ -2778,6 +2801,13 @@ function lerProdutoEditadoMapa() {
         novidade: document.getElementById("mapas-editar-novidade").checked,
         preco_compra: Number(document.getElementById("mapas-editar-preco-compra").value || 0),
         preco: Number(document.getElementById("mapas-editar-preco").value),
+        // Vazio = usar a regra do Todocoleccion (fica null na BD)
+        preco_todocoleccion: (() => {
+            const campo = document.getElementById("mapas-editar-preco-todocoleccion");
+            if (!campo) return undefined;
+            const texto = String(campo.value || "").trim().replace(",", ".");
+            return texto === "" ? "" : Number(texto);
+        })(),
         peso: Number(document.getElementById("mapas-editar-peso").value || 10),
         stock: Math.floor(Number(document.getElementById("mapas-editar-stock").value || 0)),
         unidades_por_embalagem: Math.max(1, Math.floor(Number(document.getElementById("mapas-editar-unidades-por-embalagem")?.value || 1))),
