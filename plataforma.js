@@ -763,9 +763,28 @@ async function carregarFichaClientePorPerfilPlataforma(opcoes = {}) {
         return null;
     }
     if (perfilExternoDetetado.plataforma === 'WhatsApp') {
+        // Número de WhatsApp: procura a ficha do cliente com este telemóvel (+351, espaços, etc. são ignorados).
+        const telefone = perfilExternoDetetado.telefone || perfilExternoDetetado.utilizador;
+        const resposta = await wallapopClient.rpc('obter_ficha_cliente_por_telefone_admin', { p_telefone: telefone });
+        if (!resposta.error && resposta.data?.sucesso) {
+            preencherClientePlataformaComFicha(resposta.data);
+            if (!document.getElementById('plataforma-telefone-cliente').value.trim()) {
+                document.getElementById('plataforma-telefone-cliente').value = telefone;
+            }
+            const outros = Number(resposta.data.clientes_com_telefone || 1) - 1;
+            if (outros > 0) {
+                atualizarBarraPerfilPlataforma({
+                    erro: true,
+                    texto: `Atenção: há ${outros + 1} fichas com este telemóvel. Foi carregada a mais recente.`
+                });
+            }
+            return resposta.data;
+        }
+        if (resposta.error) console.error('Erro ao procurar ficha pelo telemóvel.', resposta.error);
         fichaClientePlataformaAtual = null;
-        document.getElementById('plataforma-telefone-cliente').value = perfilExternoDetetado.telefone || perfilExternoDetetado.utilizador;
+        document.getElementById('plataforma-telefone-cliente').value = telefone;
         renderizarFichaClientePlataforma(null);
+        atualizarBarraPerfilPlataforma({ texto: `WhatsApp ${telefone}: sem ficha de cliente com este telemóvel.` });
         return { sucesso: false, whatsapp: true };
     }
     definirStatusWallapop('');
@@ -3817,6 +3836,9 @@ async function registarEncomendaWallapop() {
 
     if (perfil) {
         if (perfil.plataforma === 'WhatsApp') {
+            if (!fichaClientePlataformaAtual) {
+                await carregarFichaClientePorPerfilPlataforma({ abrirCriacao: false }).catch(() => null);
+            }
             const campoNome = document.getElementById('wallapop-nome-encomenda');
             const campoUtilizador = document.getElementById('wallapop-nome-cliente');
             const campoTelefone = document.getElementById('plataforma-telefone-cliente');
@@ -3991,6 +4013,19 @@ async function registarEncomendaWallapop() {
             if (associacao.error || associacao.data?.sucesso === false) {
                 avisoPerfil = ' A encomenda foi gravada, mas o perfil do cliente n\u00e3o ficou associado.';
                 console.error('Erro ao associar perfil externo:', associacao.error || associacao.data);
+            } else {
+                renderizarFichaClientePlataforma(associacao.data);
+                const numeroCliente = Number(associacao.data?.resumo?.encomendas || associacao.data?.numero_encomenda_cliente || 0);
+                if (numeroCliente > 1) avisoPerfil = ` ${formatarOrdinalEncomendaPlataforma(numeroCliente)} deste cliente.`;
+            }
+        } else if (plataforma === 'WhatsApp' && fichaClientePlataformaAtual?.cliente?.id) {
+            const associacao = await wallapopClient.rpc('associar_cliente_encomenda_whatsapp_admin', {
+                p_encomenda_id: String(data.encomenda?.id || encomendaPlataformaEmEdicao?.id),
+                p_cliente_id: fichaClientePlataformaAtual.cliente.id
+            });
+            if (associacao.error || associacao.data?.sucesso === false) {
+                avisoPerfil = ' A encomenda foi gravada, mas não ficou associada à ficha do cliente.';
+                console.error('Erro ao associar cliente WhatsApp:', associacao.error || associacao.data);
             } else {
                 renderizarFichaClientePlataforma(associacao.data);
                 const numeroCliente = Number(associacao.data?.resumo?.encomendas || associacao.data?.numero_encomenda_cliente || 0);

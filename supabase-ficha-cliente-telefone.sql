@@ -1,0 +1,9 @@
+-- Já aplicado no Supabase em 2026-10-26 (migration ficha_cliente_por_telefone_whatsapp).
+-- Plataformas: escrever o número de WhatsApp carrega a ficha do cliente com esse telemóvel
+-- (compara os últimos 9 algarismos: +351, 00351, espaços e pontos são ignorados) e, ao gravar,
+-- a encomenda WhatsApp fica associada a esse cliente.
+--   public.telefone_chave_cliente(text)
+--   public.ficha_cliente_gestao_json(uuid)                 (interna, sem grant)
+--   public.obter_ficha_cliente_por_telefone_admin(text)
+--   public.associar_cliente_encomenda_whatsapp_admin(text, uuid)
+-- Ver definições: select pg_get_functiondef('public.obter_ficha_cliente_por_telefone_admin(text)'::regprocedure);
