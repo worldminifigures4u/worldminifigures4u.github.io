@@ -1611,7 +1611,18 @@ window.AdminEncomendaVista = (function () {
             String(item.nome || "").trim(),
             `${formatarEuroExportacao(obterPrecoExportacao(item))} €`
         ].join("\t")));
-        linhas.push("", `Total:\t${formatarEuroExportacao(calcularSubtotalExportacao(itens))} €`);
+        const subtotal = calcularSubtotalExportacao(itens);
+        const portes = Number(encomenda?.portes || 0) || 0;
+        linhas.push("");
+        // Com portes (ex.: WhatsApp): subtotal e portes antes do total, como nas encomendas do site.
+        if (portes > 0) {
+            const envio = String(encomenda?.metodo_envio_nome || encomenda?.metodo_envio || "").trim();
+            linhas.push(`Subtotal:\t${formatarEuroExportacao(subtotal)} €`);
+            linhas.push(`Portes de envio${envio ? ` (${envio})` : ""}:\t${formatarEuroExportacao(portes)} €`);
+            linhas.push(`Total:\t${formatarEuroExportacao(Number(encomenda?.total || 0) || (subtotal + portes))} €`);
+        } else {
+            linhas.push(`Total:\t${formatarEuroExportacao(subtotal)} €`);
+        }
         return "\ufeff" + linhas.join("\r\n");
     }
 
