@@ -328,3 +328,47 @@ $$;
 create or replace function public.tc_preco_produto(p_produto public.produtos) returns numeric language sql stable as $$
   select coalesce(p_produto.preco_todocoleccion, public.tc_preco_regra(p_produto.preco::numeric))::numeric(10,2);
 $$;
+
+-- ============================================================
+-- Sincronização de stock site -> todocoleccion (26/10/2026)
+-- Regra: lote à venda só se o produto tiver stock > 0.
+-- Trigger em produtos.stock chama a edge function (acao sincronizar_estado) quando o stock
+-- passa de >0 para <=0 ou ao contrário. Também corre no fim de cada "Atualizar do Todocoleccion".
+-- ============================================================
+create or replace function public.todocoleccion_lotes_sincronizar(p_produtos bigint[] default null)
+returns table(id bigint, referencia text, acao text)
+language sql stable security definer set search_path = public as $$
+  select l.id, l.referencia,
+         case when l.estado = 0 then 'retirar' else 'reativar' end
+  from todocoleccion_lotes l join produtos p on p.id = l.produto_id
+  where l.emparelhamento = 'confirmado' and l.referencia is not null
+    and (p_produtos is null or p.id = any(p_produtos))
+    and ((l.estado = 0 and coalesce(p.stock,0) <= 0) or (l.estado = 4 and coalesce(p.stock,0) > 0))
+  order by l.id;
+$$;
+revoke all on function public.todocoleccion_lotes_sincronizar(bigint[]) from public, anon, authenticated;
+
+create or replace function public.produtos_tc_sincronizar_stock()
+returns trigger language plpgsql security definer set search_path = public, vault, net as $$
+begin
+  if (coalesce(old.stock,0) > 0) is distinct from (coalesce(new.stock,0) > 0)
+     and exists (select 1 from todocoleccion_lotes l where l.produto_id = new.id and l.emparelhamento = 'confirmado') then
+    begin
+      perform net.http_post(
+        url := 'https://gksndzxadndrsynvzgzb.supabase.co/functions/v1/todocoleccion',
+        headers := jsonb_build_object('Content-Type','application/json','x-tc-segredo',
+          (select decrypted_secret from vault.decrypted_secrets where name='todocoleccion_segredo_interno')),
+        body := jsonb_build_object('acao','sincronizar_estado','produtos', jsonb_build_array(new.id)),
+        timeout_milliseconds := 150000);
+    exception when others then
+      raise warning 'todocoleccion: sincronização de stock falhou para o produto %: %', new.id, sqlerrm;
+    end;
+  end if;
+  return new;
+end $$;
+revoke all on function public.produtos_tc_sincronizar_stock() from public, anon, authenticated;
+
+drop trigger if exists produtos_tc_sincronizar_stock on public.produtos;
+create trigger produtos_tc_sincronizar_stock
+  after update of stock on public.produtos
+  for each row execute function public.produtos_tc_sincronizar_stock();
