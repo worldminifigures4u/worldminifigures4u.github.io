@@ -405,3 +405,24 @@ alter table public.todocoleccion_encomendas enable row level security;
 create policy "admin le encomendas tc" on public.todocoleccion_encomendas for select to authenticated using (public.is_admin());
 revoke insert, update, delete on public.todocoleccion_encomendas from anon, authenticated;
 -- (função todocoleccion_criar_encomenda: ver migração no Supabase)
+
+-- ============================================================
+-- Stock exato no todocoleccion (26/10/2026)
+-- A gestão de stock está ativa na conta (confirmado pelo suporte). O GET devolve o campo "stock " (com espaço).
+-- O lote no TC passa a ter as mesmas unidades que o site; à venda só com stock > 0.
+-- O trigger envia qualquer mudança de stock (não só a passagem pelo 0).
+-- ============================================================
+create or replace function public.todocoleccion_lotes_sincronizar_v2(p_produtos bigint[] default null)
+returns table(id bigint, referencia text, estado integer, stock_tc integer, alvo integer)
+language sql stable security definer set search_path = public as $$
+  select l.id, l.referencia, l.estado, l.stock, greatest(coalesce(p.stock,0),0)
+  from todocoleccion_lotes l join produtos p on p.id = l.produto_id
+  where l.emparelhamento = 'confirmado' and l.referencia is not null and l.estado in (0,4)
+    and (p_produtos is null or p.id = any(p_produtos))
+    and (l.stock is distinct from greatest(coalesce(p.stock,0),0)
+         or (l.estado = 0 and coalesce(p.stock,0) <= 0) or (l.estado = 4 and coalesce(p.stock,0) > 0))
+  order by (l.estado = 0 and coalesce(p.stock,0) <= 0) desc, l.id;
+$$;
+revoke all on function public.todocoleccion_lotes_sincronizar_v2(bigint[]) from public, anon, authenticated;
+-- produtos_tc_sincronizar_stock(): a condição passa a ser
+--   coalesce(old.stock,0) is distinct from coalesce(new.stock,0)
