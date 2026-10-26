@@ -1543,8 +1543,16 @@ function renderizarMaisProdutosVitrine() {
         }
 
         const fim = Math.min(indiceRenderizado + PRODUTOS_POR_LOTE, produtosFiltradosAtual.length);
+        // Nunca desenhar o mesmo produto duas vezes (ex.: duas pesquisas seguidas ao escrever).
+        const idsNaVitrine = new Set(
+            Array.from(vitrine.querySelectorAll('.produto-card[data-id]'), (card) => card.dataset.id)
+        );
         for (let i = indiceRenderizado; i < fim; i++) {
-            vitrine.appendChild(criarCardProduto(produtosFiltradosAtual[i]));
+            const produto = produtosFiltradosAtual[i];
+            const idProduto = String(produto?.id ?? '');
+            if (idProduto && idsNaVitrine.has(idProduto)) continue;
+            if (idProduto) idsNaVitrine.add(idProduto);
+            vitrine.appendChild(criarCardProduto(produto));
         }
         indiceRenderizado = fim;
         atualizarBotoesFavoritos();
@@ -1570,9 +1578,13 @@ function renderizarMaisProdutosVitrine() {
     });
 }
 
+let geracaoVitrineLoja = 0;
+
 async function reiniciarVitrinePaginada() {
     const vitrine = document.getElementById('vitrine-produtos');
     if (!vitrine) return;
+    // Cada reinício (ex.: cada letra escrita na pesquisa) tem um número; só o mais recente desenha.
+    const geracao = ++geracaoVitrineLoja;
 
     removerSentinelaCarregarMais();
     vitrine.replaceChildren();
@@ -1589,6 +1601,11 @@ async function reiniciarVitrinePaginada() {
         reinicioProdutosPendente = false;
         await carregarPaginaProdutosLoja({ reiniciar: true });
     }
+
+    if (geracao !== geracaoVitrineLoja) return;
+    // Limpa outra vez: uma pesquisa anterior pode ter desenhado entretanto.
+    removerSentinelaCarregarMais();
+    vitrine.replaceChildren();
 
     if (produtosFiltradosAtual.length === 0) {
         const erroDiv = document.createElement('div');
