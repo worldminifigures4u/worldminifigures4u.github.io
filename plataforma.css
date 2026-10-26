@@ -1633,3 +1633,47 @@ html .plataforma-painel-cabecalho #btn-nova-encomenda-plataforma.wallapop-botao:
     flex-wrap: wrap;
 }
 .plataforma-lista-cabecalho .plataforma-analisar-lista { justify-self: auto; }
+
+/* Notas do cliente sem aviso marcado: discretas (o quadro amarelo fica só para avisos). */
+.plataforma-cliente-notas-discretas{
+    display:flex;
+    flex-direction:column;
+    gap:3px;
+    width:100%;
+    box-sizing:border-box;
+    margin:0;
+    padding:8px 12px;
+    border:1px solid #333;
+    border-radius:6px;
+    background:#1a1a1a;
+    color:#aaa;
+    font:inherit;
+    font-size:13px;
+    text-align:left;
+    cursor:pointer;
+}
+.plataforma-cliente-notas-discretas:disabled{ cursor:default; }
+.plataforma-cliente-notas-discretas strong{
+    color:#888;
+    font-size:11px;
+    font-weight:700;
+    text-transform:uppercase;
+    letter-spacing:.03em;
+}
+.plataforma-cliente-notas-discretas span{
+    color:#ccc;
+    white-space:pre-line;
+    line-height:1.35;
+}
+.plataforma-cliente-notas-discretas:not(:disabled):hover,
+.plataforma-cliente-notas-discretas:not(:disabled):focus-visible{
+    border-color:#555;
+    outline:none;
+}
+html.admin-light-mode .plataforma-cliente-notas-discretas{
+    border-color:#ddd;
+    background:#f6f6f6;
+    color:#666;
+}
+html.admin-light-mode .plataforma-cliente-notas-discretas strong{ color:#888; }
+html.admin-light-mode .plataforma-cliente-notas-discretas span{ color:#444; }

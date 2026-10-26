@@ -659,7 +659,25 @@ function renderizarAvisoClientePerfilPlataforma(cliente = {}) {
     if (!caixa) return;
     caixa.replaceChildren();
     if (!cliente.tem_aviso) {
-        caixa.hidden = true;
+        // Sem aviso marcado: as notas aparecem na mesma, de forma discreta (nunca se perde uma nota).
+        const notas = String(cliente.notas || '').trim();
+        if (!notas) {
+            caixa.hidden = true;
+            return;
+        }
+        const nota = document.createElement('button');
+        nota.type = 'button';
+        nota.className = 'plataforma-cliente-notas-discretas';
+        nota.title = cliente.id ? 'Abrir ficha do cliente' : 'Notas do cliente';
+        if (cliente.id) nota.addEventListener('click', abrirFichaClientePlataformaModal);
+        else nota.disabled = true;
+        const rotulo = document.createElement('strong');
+        rotulo.textContent = 'Notas do cliente';
+        const texto = document.createElement('span');
+        texto.textContent = notas;
+        nota.append(rotulo, texto);
+        caixa.appendChild(nota);
+        caixa.hidden = false;
         return;
     }
 
