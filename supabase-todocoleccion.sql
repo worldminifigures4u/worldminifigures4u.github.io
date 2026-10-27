@@ -426,3 +426,472 @@ $$;
 revoke all on function public.todocoleccion_lotes_sincronizar_v2(bigint[]) from public, anon, authenticated;
 -- produtos_tc_sincronizar_stock(): a condição passa a ser
 --   coalesce(old.stock,0) is distinct from coalesce(new.stock,0)
+
+-- ===== 2026-10-27: títulos e descrições em espanhol =====
+alter table todocoleccion_lotes add column if not exists descricao_versao text;
+create table if not exists todocoleccion_titulos_novos (lote_id bigint primary key, tema text, base text, titulo_atual text, titulo_novo text, aplicado_em timestamptz, erro text, tentativas int not null default 0);
+alter table todocoleccion_titulos_novos enable row level security;
+
+create table if not exists todocoleccion_trad (ordem serial, tema text, de text, para text, inicio boolean default false, alvo text default 'nome');
+alter table todocoleccion_trad enable row level security;
+truncate todocoleccion_trad;
+insert into todocoleccion_trad (tema, de, para, inicio) values
+-- Marvel (nome em inglês + nome em Espanha)
+('Marvel','Spider-Man','Spider-Man Hombre Araña',true),
+('Marvel','Spider-Gwen','Spider-Gwen Spider-Woman',true),
+('Marvel','Black Widow','Black Widow Viuda Negra',true),
+('Marvel','Black Panther','Black Panther Pantera Negra',true),
+('Marvel','Captain America','Capitán América',true),
+('Marvel','Captain Marvel','Capitana Marvel',true),
+('Marvel','Captain Carter','Capitana Carter',true),
+('Marvel','Green Goblin','Green Goblin Duende Verde',true),
+('Marvel','Doctor Doom','Doctor Doom Doctor Muerte',true),
+('Marvel','Doctor Strange','Doctor Extraño Strange',true),
+('Marvel','Hawkeye','Hawkeye Ojo de Halcón',true),
+('Marvel','Human Torch','Antorcha Humana',true),
+('Marvel','Invisible Woman','Mujer Invisible',true),
+('Marvel','Mister Fantastic','Mister Fantástico',true),
+('Marvel','The Thing','La Cosa The Thing',true),
+('Marvel','Scarlet Witch','Bruja Escarlata',true),
+('Marvel','Winter Soldier','Soldado de Invierno',true),
+('Marvel','Ghost Rider','Ghost Rider Motorista Fantasma',true),
+('Marvel','Iron Fist','Iron Fist Puño de Hierro',true),
+('Marvel','Punisher','Punisher Castigador',true),
+('Marvel','Storm','Tormenta Storm',true),
+('Marvel','Cyclops','Cíclope Cyclops',true),
+('Marvel','Beast','Bestia Beast',true),
+('Marvel','Iceman','Iceman Hombre de Hielo',true),
+('Marvel','Nightcrawler','Rondador Nocturno Nightcrawler',true),
+('Marvel','Mystique','Mística Mystique',true),
+('Marvel','Rogue','Pícara Rogue',true),
+('Marvel','Sabretooth','Dientes de Sable',true),
+('Marvel','Silver Surfer','Estela Plateada Silver Surfer',true),
+('Marvel','Red Skull','Cráneo Rojo Red Skull',true),
+('Marvel','Iron Skull','Cráneo de Hierro Iron Skull',true),
+('Marvel','Lizard','Lagarto Lizard',true),
+('Marvel','Vulture','Buitre Vulture',true),
+('Marvel','Rhino','Rino Rhino',true),
+('Marvel','Sandman','Hombre de Arena Sandman',true),
+('Marvel','Scorpion','Escorpión Scorpion',true),
+('Marvel','Wasp','Avispa Wasp',true),
+('Marvel','Vision','Visión Vision',true),
+('Marvel','White Vision','Visión Blanca',true),
+('Marvel','Valkyrie','Valquiria',true),
+('Marvel','War Machine','War Machine Máquina de Guerra',true),
+('Marvel','Falcon -','Falcon Halcón',true),
+('Marvel','Falcon','Falcon Halcón',true),
+('Marvel','She-Hulk','She-Hulk Hulka',true),
+('Marvel','Red She-Hulk','Hulka Roja Red She-Hulk',true),
+('Marvel','Red Hulk','Hulk Rojo Red Hulk',true),
+('Marvel','Grey Hulk','Hulk Gris',true),
+('Marvel','Ant-Man','Ant-Man Hombre Hormiga',true),
+('Marvel','Professor X','Profesor X',true),
+('Marvel','Moon Knight','Moon Knight Caballero Luna',true),
+('Marvel','Dark Phoenix','Fénix Oscura Dark Phoenix',true),
+('Marvel','White Phoenix','Fénix Blanca',true),
+('Marvel','Phoenix','Fénix Phoenix',true),
+('Marvel','Archangel','Arcángel Archangel',true),
+('Marvel','Colossus','Coloso Colossus',true),
+('Marvel','The Collector','El Coleccionista',true),
+('Marvel','The Ancient One','El Anciano Ancient One',true),
+('Marvel','The Hand Ninja','Ninja de La Mano',true),
+('Marvel','Quicksilver','Mercurio Quicksilver',true),
+('Marvel','Red Guardian','Guardián Rojo',true),
+('Marvel','White Queen','Reina Blanca Emma Frost',true),
+('Marvel','Mole Man','Hombre Topo',true),
+('Marvel','Molten Man','Hombre Fundido Molten Man',true),
+('Marvel','Chameleon','Camaleón',true),
+('Marvel','Executioner','Verdugo Executioner',true),
+('Marvel','Count Nefaria','Conde Nefaria',true),
+('Marvel','Kraven the Hunter','Kraven el Cazador',true),
+('Marvel','Kang the Conquerer','Kang el Conquistador',true),
+('Marvel','Gorr the God Butcher','Gorr el Carnicero de Dioses',true),
+('Marvel','High Evolutionary','Alto Evolucionador',true),
+('Marvel','Crimson Dynamo','Dínamo Carmesí',true),
+('Marvel','Wolverine -','Wolverine Lobezno',true),
+('Marvel','Wolverine','Wolverine Lobezno',true),
+('Marvel','Peter Quill','Peter Quill Star-Lord',true),
+('Marvel','Rocket Raccoon','Rocket Mapache',true),
+('Marvel','Groot Jovem','Groot Joven Baby Groot',true),
+('Marvel','Amora ”Enchantress”','Amora Encantadora',true),
+('Marvel','Viper ”Madame Hydra”','Víbora Madame Hydra',true),
+('Marvel','Sylvie “Lady Loki”','Sylvie Lady Loki',true),
+('Marvel','Hydra Henchman','Secuaz de Hydra',true),
+('Marvel','Mr. Negative’s Henchman','Secuaz de Mr. Negative',true),
+('Marvel','Lucky o cão pizza','Lucky el perro pizza',false),
+('Marvel','Black & Gold Suit','Traje Negro y Dorado',false),
+('Marvel','Symbiote Suit','Traje Simbionte',false),
+('Marvel','Black Suit','Traje Negro',false),
+('Marvel','com mota','con moto',false),
+-- DC
+('DC','Wonder Woman','Wonder Woman Mujer Maravilla',true),
+('DC','Green Lantern','Green Lantern Linterna Verde',true),
+('DC','Green Arrow','Green Arrow Flecha Verde',true),
+('DC','Riddler','Riddler Enigma',true),
+('DC','Penguin','Pingüino Penguin',true),
+('DC','Two-Face','Dos Caras Two-Face',true),
+('DC','Poison Ivy','Poison Ivy Hiedra Venenosa',true),
+('DC','Scarecrow','Espantapájaros Scarecrow',true),
+('DC','Martian Manhunter','Detective Marciano Martian Manhunter',true),
+('DC','Captain Cold','Capitán Frío Captain Cold',true),
+('DC','Blue Beetle','Escarabajo Azul Blue Beetle',true),
+('DC','Plastic Man','Hombre Plástico Plastic Man',true),
+('DC','Red Hood','Capucha Roja Red Hood',true),
+('DC','Red Arrow','Flecha Roja Red Arrow',true),
+('DC','Atom','Átomo Atom',true),
+('DC','Ocean Master','Amo del Océano Ocean Master',true),
+('DC','White Canary','Canario Blanco White Canary',true),
+('DC','White Lantern','Linterna Blanca',true),
+('DC','Peacemaker','Peacemaker Pacificador',true),
+('DC','Doctor Fate','Doctor Fate Destino',true),
+('DC','Condiment King','Rey de los Condimentos',true),
+('DC','Joker Henchman','Secuaz del Joker',true),
+('DC','Calculator','Calculadora Calculator',true),
+('DC','Egghead','Cabeza de Huevo Egghead',true),
+-- Star Wars
+('Star Wars','Admiral','Almirante',true),
+('Star Wars','Emperor','Emperador',true),
+('Star Wars','Captain','Capitán',true),
+('Star Wars','Commander','Comandante',true),
+('Star Wars','Grand Inquisitor','Gran Inquisidor',true),
+('Star Wars','Grand Moff','Gran Moff',true),
+('Star Wars','Supreme Leader Snoke','Líder Supremo Snoke',true),
+('Star Wars','The Armorer','La Armera The Armorer',true),
+('Star Wars','Mother Talzin','Madre Talzin',true),
+('Star Wars','Daughter of Mortis','Hija de Mortis',true),
+('Star Wars','The Son of Mortis','Hijo de Mortis',true),
+('Star Wars','Mortis The Father','Padre de Mortis',true),
+('Star Wars','Abeloth The Mother','Abeloth la Madre',true),
+('Star Wars','Royal Guard','Guardia Real Royal Guard',true),
+('Star Wars','Naboo Guard','Guardia de Naboo',true),
+('Star Wars','Jedi Temple Guard','Guardia del Templo Jedi',true),
+('Star Wars','Queen Amidala','Reina Amidala',true),
+('Star Wars','Lieutenant','Teniente',true),
+('Star Wars','Mandalorian','Mandaloriano Mandalorian',true),
+('Star Wars','Hologram','Holograma',false),
+('Star Wars','Pilot','Piloto',false),
+-- O Senhor dos Anéis
+('O Senhor dos Anéis','Carneiro montada dos Anões','Carnero montura de los Enanos',false),
+('O Senhor dos Anéis','Javali montada dos Anões','Jabalí montura de los Enanos',false),
+('O Senhor dos Anéis','Cavalo Nazgûl','Caballo Nazgûl',false),
+('O Senhor dos Anéis','sela castanha','silla marrón',false),
+('O Senhor dos Anéis','sela cinzenta','silla gris',false),
+('O Senhor dos Anéis','Gandalf o Branco','Gandalf el Blanco',false),
+('O Senhor dos Anéis','Gandalf o Cinzento','Gandalf el Gris',false),
+('O Senhor dos Anéis','Guerreiro Anão','Guerrero Enano',false),
+('O Senhor dos Anéis','Mestre da Cidade do Lago','Gobernador de la Ciudad del Lago',false),
+('O Senhor dos Anéis','O Senhor dos Nazgûl','Señor de los Nazgûl',false),
+('O Senhor dos Anéis','Rei Bruxo de Angmar','Rey Brujo de Angmar',false),
+('O Senhor dos Anéis','Rei dos Mortos','Rey de los Muertos',false),
+('O Senhor dos Anéis','Soldado dos Mortos','Soldado de los Muertos',false),
+('O Senhor dos Anéis','the Dwarf - Aged','el Enano Anciano',false),
+('O Senhor dos Anéis','the Dwarf','el Enano',false),
+('O Senhor dos Anéis','Elf Archer','Arquero Elfo',false),
+('O Senhor dos Anéis','Elf Guard','Guardia Elfo',false),
+('O Senhor dos Anéis','Elf Warrior','Guerrero Elfo',false),
+('O Senhor dos Anéis','Cave Troll','Troll de las Cavernas',false),
+('O Senhor dos Anéis','Goblin King','Rey Goblin',false),
+('O Senhor dos Anéis','Bain Son of Bard','Bain hijo de Bardo',false),
+('O Senhor dos Anéis','Bard the Bowman','Bardo el Arquero',false),
+('O Senhor dos Anéis','Thorin Oakenshield','Thorin Escudo de Roble',false),
+('O Senhor dos Anéis','Bilbo Baggins','Bilbo Bolsón',false),
+('O Senhor dos Anéis','Frodo Baggins','Frodo Bolsón',false),
+('O Senhor dos Anéis','Samwise Gamgee','Sam Gamyi Samwise',false),
+('O Senhor dos Anéis','Dáin II Ironfoot','Dáin II Pie de Hierro',false),
+-- Filmes e Séries
+('Filmes e Séries','Eduardo Mãos de Tesoura','Eduardo Manostijeras',false),
+('Filmes e Séries','Fantasma - brilha no escuro','Fantasma brilla en la oscuridad',false),
+('Filmes e Séries','Múmia','Momia',false),
+('Filmes e Séries','Predador','Depredador Predator',false),
+('Filmes e Séries','Jack the Ripper','Jack el Destripador',false),
+('Filmes e Séries','The Mask','La Máscara The Mask',false),
+('Filmes e Séries','Pennywise Clown','Pennywise payaso',false),
+('Filmes e Séries','Art the Clown','Art el payaso',false),
+('Filmes e Séries','Esqueleto Mexicano','Esqueleto Mexicano Catrín',false),
+('Filmes e Séries','Monkey King','Rey Mono Monkey King',false),
+('Filmes e Séries','DeLorean Time Machine','DeLorean máquina del tiempo',false),
+-- Cidade
+('Cidade','Bombeiro','Bombero',false),
+('Cidade','Boneco de Neve','Muñeco de Nieve',false),
+('Cidade','Canoísta','Piragüista',false),
+('Cidade','Casal de Turistas com cão','Pareja de Turistas con perro',false),
+('Cidade','Dançarina Oriental','Bailarina Oriental',false),
+('Cidade','Empresário','Empresario',false),
+('Cidade','Gangster Machados','Gánster con hachas',false),
+('Cidade','Jóquei','Jockey',false),
+('Cidade','Lutador Artes Marciais','Luchador de Artes Marciales',false),
+('Cidade','Mergulhador','Buceador',false),
+('Cidade','Party Clown','Payaso de fiesta',false),
+('Cidade','Polícia com Pistola e Algemas','Policía con Pistola y Esposas',false),
+('Cidade','Prisioneiro','Prisionero',false),
+('Cidade','Quebra-Nozes','Cascanueces',false),
+('Cidade','Rapariga com Vespa','Chica con Vespa',false),
+('Cidade','Universitário','Universitario',false),
+('Cidade','Wrestler','Luchador Wrestler',false),
+('Cidade','Boxer','Boxeador',false),
+-- Animais
+('Animais','Cavalo','Caballo',false),
+('Animais','sela amarela','silla amarilla',false),
+('Animais','sela castanha','silla marrón',false),
+('Animais','Castanho','Marrón',false),
+('Animais','Branco','Blanco',false),
+('Animais','Creme','Crema',false),
+('Animais','Tubarão','Tiburón',false),
+-- Disney
+('Disney','Ió','Igor Eeyore',false),
+('Disney','Margarida','Daisy',false),
+('Disney','Pateta','Goofy',false),
+('Disney','Teco','Chop',false),
+('Disney','Tico','Chip',false),
+('Disney','Tio Patinhas','Tío Gilito',false),
+('Disney','Ursinho Pooh','Winnie the Pooh',false),
+-- Diversos
+('Diversos','Pai Natal','Papá Noel',false),
+('Diversos','Gingerbread Man','Hombre de Jengibre',false),
+-- Dragon Ball
+('Dragon Ball','Tartaruga Genial','Maestro Roshi Muten Roshi',false),
+('Dragon Ball','Freeza','Freezer',false),
+('Dragon Ball','Grand Priest','Gran Sacerdote',false),
+-- Faroeste
+('Faroeste','Carroça de Cowboys Faroeste compatível com lego','Carreta de Vaqueros',false),
+('Faroeste','Chefe Índio','Jefe Indio',false),
+('Faroeste','Índio Apache','Indio Apache',false),
+('Faroeste','Viajante do Faroeste','Viajero del Oeste',false),
+('Faroeste','Xerife','Sheriff',false),
+('Faroeste','Cowboy','Vaquero Cowboy',false),
+-- Futebol
+('Futebol','Croácia','Croacia',false),
+('Futebol','Espanha','España',false),
+('Futebol','Neymar Júnior','Neymar Jr',false),
+('Futebol','Vinicius Júnior','Vinicius Jr',false),
+-- Harry Potter
+('Harry Potter','Cedrico','Cedric',false),
+('Harry Potter','Cerberus Fluffy Three-Headed Dog','Fluffy perro de tres cabezas',false),
+('Harry Potter','Moaning Myrtle','Myrtle la Llorona',false),
+('Harry Potter','Sir Nicholas Nearly Headless Nick','Nick Casi Decapitado',false),
+('Harry Potter','Mad-Eye Moody','Ojoloco Moody',false),
+-- Masters
+('Masters of the Universe','Sorceress','Hechicera Sorceress',false),
+('Masters of the Universe','Beast Man','Beast Man Hombre Bestia',false),
+-- Medieval
+('Medieval','Cavaleiro Templário','Caballero Templario',false),
+('Medieval','Grão-Mestre Ordem Teutónica','Gran Maestre de la Orden Teutónica',false),
+('Medieval','Rei','Rey',false),
+('Medieval','Teutonic Knight','Caballero Teutónico',false),
+('Medieval','Evil Dwarf','Enano Malvado',false),
+('Medieval','Golden Knight','Caballero Dorado',false),
+('Medieval','Viking','Vikingo',false),
+-- Militar
+('Militar','Figura Adolf Hitler','Adolf Hitler',false),
+('Militar','British Imperial Soldier Red Coat','Soldado Británico Casaca Roja',false),
+('Militar','French Cuirassier','Coracero Francés',false),
+('Militar','Fuzileiro Britânico','Fusilero Británico',false),
+('Militar','Grenadier of the Old Guard','Granadero de la Vieja Guardia',false),
+('Militar','Guarda de Honra Alemão','Guardia de Honor Alemán',false),
+('Militar','Guerrilheiro Árabe','Guerrillero Árabe',false),
+('Militar','Hamleys Royal Guard','Guardia Real británica Hamleys',false),
+('Militar','Napoleon Bonaparte','Napoleón Bonaparte',false),
+('Militar','North Vietnamese Soldier','Soldado Norvietnamita',false),
+('Militar','Russian Line Infantry','Infantería de Línea Rusa',false),
+('Militar','Scottish Bagpiper','Gaitero Escocés',false),
+('Militar','Soldado Alemão','Soldado Alemán',false),
+('Militar','Soldado Britânico','Soldado Británico',false),
+('Militar','Soldado Confederado - Sul','Soldado Confederado Sur',false),
+('Militar','Soldado Japonês','Soldado Japonés',false),
+('Militar','Soldado Soviético Infantaria','Soldado Soviético Infantería',false),
+('Militar','Soldado União - Norte','Soldado de la Unión Norte',false),
+('Militar','Soldado USA','Soldado Americano USA',false),
+-- One Piece
+('One Piece','Kaido das Cem Feras','Kaido de las Cien Bestias',false),
+('One Piece','Whitebeard','Barbablanca Whitebeard',false),
+('One Piece','Blackbeard','Barbanegra Blackbeard',false),
+-- Simpsons
+('Os Simpsons','Palhaço Krusty','Krusty el Payaso',false),
+('Os Simpsons','Grampa','Abuelo Simpson',false),
+('Os Simpsons','Chief Wiggum','Jefe Wiggum',false),
+('Os Simpsons','Groundskeeper Willie','Willie el jardinero',false),
+('Os Simpsons','Comic Book Guy','Dependiente de la tienda de cómics',false),
+('Os Simpsons','Santa''s Little Helper','Ayudante de Santa Claus',false),
+('Os Simpsons','Snowball','Bola de Nieve',false),
+('Os Simpsons','Mr. Burns','Sr. Burns',false),
+-- Piratas
+('Piratas das Caraíbas','Mermaid Syrena','Sirena Syrena',false),
+('Piratas das Caraíbas','Captain Salazar','Capitán Salazar',false),
+('Piratas das Caraíbas','Blackbeard','Barbanegra',false),
+('Piratas das Caraíbas','Lieutenant','Teniente',false),
+('Piratas das Caraíbas','Officer','Oficial',false),
+('Piratas das Caraíbas','Jack Sparrow','Capitán Jack Sparrow',false),
+-- Rua Sésamo
+('Rua Sésamo','Becas','Epi Ernie',false),
+('Rua Sésamo','Egas','Blas Bert',false),
+('Rua Sésamo','Monstro das Bolachas','Monstruo de las Galletas',false),
+('Rua Sésamo','Óscar O Resmungão','Óscar el Gruñón',false),
+('Rua Sésamo','Poupas','Paco Pico Big Bird',false),
+-- Stranger Things
+('Stranger Things','Câmara Fotográfica','Cámara Fotográfica',false),
+('Stranger Things','Cassete','Casete',false),
+('Stranger Things','Xerife','Sheriff',false),
+('Stranger Things','Pink Dress','Vestido Rosa',false),
+('Stranger Things','Season 5','Temporada 5',false),
+-- Tempos Antigos
+('Tempos Antigos','Atlantis Portal Emperor','Emperador del Portal de la Atlántida',false),
+('Tempos Antigos','British Royal Navy Soldier','Soldado de la Marina Real Británica',false),
+('Tempos Antigos','Canibal','Caníbal',false),
+('Tempos Antigos','Centurião Romano','Centurión Romano',false),
+('Tempos Antigos','Deusa Athena','Diosa Atenea',false),
+('Tempos Antigos','Faraó do Egipto','Faraón de Egipto',false),
+('Tempos Antigos','Frontiersman','Pionero del Oeste',false),
+('Tempos Antigos','Greek Hoplite','Hoplita Griego',false),
+('Tempos Antigos','Mosqueteiro','Mosquetero',false),
+('Tempos Antigos','Rainha do Egito','Reina de Egipto',false),
+('Tempos Antigos','Rainha Múmia','Reina Momia',false),
+-- Toy Story
+('Toy Story','Alien Little Green Men','Marciano Alien',false),
+('Toy Story','Bullseye Horse','Perdigón caballo Bullseye',false),
+('Toy Story','Emperor Zurg','Emperador Zurg',false),
+('Toy Story','Stinky Pete','Pete el Apestoso',false),
+-- Animação
+('Animação','Golden Ninja','Ninja Dorado Golden Ninja',false),
+-- Geral (todos os temas)
+(null,'Guerreiro','Guerrero',false),
+(null,'Clássico','Clásico',false),
+(null,'Clássica','Clásica',false),
+(null,'Classic Standard','Clásico',false),
+(null,'Classic','Clásico',false),
+(null,'Comics','Cómic',false),
+(null,'Jovem','Joven',false),
+(null,'Young','Joven',false),
+(null,'Aged','Anciano',false),
+(null,'Transformação','Transformación',false),
+(null,'Branco','Blanco',false),
+(null,'Creme','Crema',false),
+(null,'Filme Lego','Película',false),
+(null,'Senador','Senador',false),
+(null,'e','y',false);
+
+-- Subtemas (conteúdo dos parênteses)
+insert into todocoleccion_trad (tema, de, para, alvo) values
+(null,'Guardiões da Galáxia','Guardianes de la Galaxia','sub'),
+(null,'Guardiões da Galaxia','Guardianes de la Galaxia','sub'),
+(null,'Guardians of the Galaxy','Guardianes de la Galaxia','sub'),
+(null,'Avengers','Vengadores Avengers','sub'),
+(null,'Fantastic 4','4 Fantásticos','sub'),
+(null,'Fantastic Four','4 Fantásticos','sub'),
+(null,'Segunda Guerra Mundial WW2','Segunda Guerra Mundial','sub'),
+(null,'WW2 Segunda Guerra Mundial','Segunda Guerra Mundial','sub'),
+(null,'WW2','Segunda Guerra Mundial','sub'),
+(null,'Guerra Civil Americana','Guerra de Secesión','sub'),
+(null,'Tico e Teco','Chip y Chop','sub'),
+(null,'Regresso ao Futuro','Regreso al Futuro','sub'),
+(null,'Back to the Future','Regreso al Futuro','sub'),
+(null,'Caça-Fantasmas','Cazafantasmas Ghostbusters','sub'),
+(null,'Ghostbusters','Cazafantasmas Ghostbusters','sub'),
+(null,'Dia dos Mortos','Día de Muertos','sub'),
+(null,'O Silêncio dos Inocentes','El Silencio de los Corderos','sub'),
+(null,'Sexta-feira 13','Viernes 13','sub'),
+(null,'A Nightmare on Elm Street','Pesadilla en Elm Street','sub'),
+(null,'The Texas Chainsaw Massacre','La Matanza de Texas','sub'),
+(null,'The Shining','El Resplandor','sub'),
+(null,'The Nightmare Before Christmas','Pesadilla antes de Navidad','sub'),
+(null,'Child''s Play','Muñeco Diabólico','sub'),
+(null,'The Conjuring','Expediente Warren','sub'),
+(null,'Aliens','Aliens el regreso','sub'),
+(null,'Steven Spielberg','el Extraterrestre','sub'),
+(null,'Tom & Jerry','Tom y Jerry','sub'),
+(null,'Sonic','Sonic the Hedgehog','sub');
+
+-- Subtemas genéricos que não entram no título
+create table if not exists todocoleccion_sub_ignorar (sub text primary key);
+alter table todocoleccion_sub_ignorar enable row level security;
+insert into todocoleccion_sub_ignorar values ('Filmes e Séries'),('Animais'),('Cidade'),('Antiguidade'),('Tempos Antigos'),('Medieval'),('Militar'),('Famosos'),('Futebol'),('Jogos'),('Uniformes'),('Dinossauros'),
+('Star Wars'),('Marvel'),('DC'),('DC Comics'),('Dragon Ball'),('One Piece'),('Harry Potter'),('Stranger Things'),('NBA'),('Disney'),('Toy Story'),('Image Comics'),
+('Os Simpsons'),('Piratas das Caraíbas'),('Rua Sésamo'),('Tartarugas Ninja'),('O Senhor dos Anéis'),('O Senhor dos Aneis'),('Masters of the Universe'),('Faroeste')
+on conflict do nothing;
+
+insert into todocoleccion_trad (tema, de, para, inicio) values
+('Marvel','BD','Cómic',false),('DC','BD','Cómic',false),
+('Marvel','Captain América','Capitán América',true),
+('Tempos Antigos','Guerreiro Escocês','Guerrero Escocés',false),
+(null,'Professor','Profesor',false),
+('Star Wars','Leia Organa Aged','Leia Organa Anciana',false);
+
+create or replace function public.tc_esc(t text) returns text language sql immutable set search_path = '' as $$ select regexp_replace(t, '([.\-+*?()\[\]^$|\\{}])', '\\\1', 'g') $$;
+
+create or replace function public.tc_titulo_es(p_tema text, p_base text) returns text language plpgsql set search_path = public as $$
+declare
+  nome text; subs text[] := '{}'; s text; m text[]; extra text := ''; kw text; r record; sub_es text; partes text[] := '{}'; t text; pref text := 'Minifigura'; feito boolean := false;
+begin
+  nome := p_base;
+  for m in select regexp_matches(nome, '[\(\[]([^\)\]]*cm)[\)\]]', 'g') loop extra := extra || ' (' || replace(m[1], ' x ', 'x') || ')'; end loop;
+  nome := regexp_replace(nome, '[\(\[][^\)\]]*cm[\)\]]', ' ', 'g');
+  for m in select regexp_matches(nome, '\(([^)]*)\)', 'g') loop subs := subs || trim(m[1]); end loop;
+  nome := regexp_replace(nome, '\([^)]*\)', ' ', 'g');
+  nome := regexp_replace(nome, '\s+(minifiguras?|Minifigura Figura Minifigure.*|BO09)\s*$', '', 'i');
+  nome := trim(regexp_replace(nome, '\s+', ' ', 'g'));
+  nome := regexp_replace(nome, '\s+-\s*$', '');
+  for r in select * from todocoleccion_trad where alvo='nome' and (tema = p_tema) order by inicio desc, length(de) desc, ordem loop
+    if r.inicio then
+      if not feito and nome ~* ('^' || tc_esc(r.de) || '(\s|$)') then nome := r.para || substr(nome, length(r.de) + 1); feito := true; end if;
+    else
+      nome := regexp_replace(nome, '(^|\s)' || tc_esc(r.de) || '(?=\s|$|,)', '\1' || r.para, 'g');
+    end if;
+  end loop;
+  for r in select * from todocoleccion_trad where alvo='nome' and tema is null order by length(de) desc, ordem loop
+    nome := regexp_replace(nome, '(^|\s)' || tc_esc(r.de) || '(?=\s|$|,)', '\1' || r.para, 'g');
+  end loop;
+  nome := trim(regexp_replace(regexp_replace(nome, '\s+-\s+', ' ', 'g'), '\s+', ' ', 'g'));
+  foreach s in array subs loop
+    if exists (select 1 from todocoleccion_sub_ignorar where sub = s) then continue; end if;
+    select para into sub_es from todocoleccion_trad where alvo='sub' and de = s limit 1;
+    if not (coalesce(sub_es, s) = any(partes)) then partes := partes || coalesce(sub_es, s); end if;
+  end loop;
+  kw := case p_tema
+    when 'Star Wars' then 'Star Wars' when 'Marvel' then 'Marvel' when 'DC' then 'DC Comics'
+    when 'O Senhor dos Anéis' then 'El Señor de los Anillos' when 'Filmes e Séries' then 'película'
+    when 'Stranger Things' then 'Stranger Things' when 'One Piece' then 'One Piece anime' when 'Harry Potter' then 'Harry Potter'
+    when 'Futebol' then 'fútbol' when 'Dragon Ball' then 'Dragon Ball anime' when 'Militar' then 'militar'
+    when 'Cidade' then 'ciudad' when 'Tempos Antigos' then 'histórico' when 'Piratas das Caraíbas' then 'Piratas del Caribe'
+    when 'Os Simpsons' then 'Los Simpson' when 'Animação' then 'dibujos animados' when 'Medieval' then 'medieval'
+    when 'Disney' then 'Disney' when 'Masters of the Universe' then 'He-Man Masters del Universo' when 'Faroeste' then 'Oeste'
+    when 'Jogos' then 'videojuego' when 'Toy Story' then 'Toy Story Disney' when 'Animais' then 'animal'
+    when 'NBA' then 'NBA baloncesto' when 'Rua Sésamo' then 'Barrio Sésamo' when 'Famosos' then 'famoso'
+    when 'Tartarugas Ninja' then 'Tortugas Ninja' when 'Image Comics' then 'Image Comics' when 'Dinossauros' then 'Jurassic World'
+    else '' end;
+  t := array_to_string(partes, ' ');
+  if kw <> '' and position(lower(kw) in lower(t)) = 0 then t := trim(t || ' ' || kw); end if;
+  if p_tema = 'Animais' then pref := 'Figura'; elsif p_tema = 'Dinossauros' then pref := 'Figura Dinosaurio'; end if;
+  return trim(regexp_replace(pref || ' ' || nome || case when t <> '' then ' - ' || t else '' end || ' muñeco' || extra, '\s+', ' ', 'g'));
+end $$;
+revoke execute on function public.tc_titulo_es(text,text) from public, anon, authenticated;
+revoke execute on function public.tc_esc(text) from public, anon, authenticated;
+
+-- Fila: lotes confirmados com título antigo -> título novo gerado
+insert into todocoleccion_titulos_novos (lote_id, tema, base, titulo_atual)
+select l.id, p.tema,
+  trim(regexp_replace(regexp_replace(l.titulo, '\s*(Lego compatível minifiguras?|Minifigura Figura Minifigure.*Muñeco)\s*$', '', 'i'), '\s+', ' ', 'g')),
+  l.titulo
+from todocoleccion_lotes l join produtos p on p.id=l.produto_id
+where l.emparelhamento='confirmado' and l.titulo not ilike 'Minifigura %'
+on conflict do nothing;
+update todocoleccion_titulos_novos set titulo_novo = tc_titulo_es(tema, base) where aplicado_em is null;
+
+-- Envia 50 títulos de cada vez (só depois das descrições), no máximo 2 tentativas por lote
+create or replace function public.todocoleccion_titulos_seguinte() returns jsonb language plpgsql security definer set search_path = public as $$
+declare v_itens jsonb; v_desc int;
+begin
+  select count(*) into v_desc from todocoleccion_lotes where emparelhamento='confirmado' and estado in (0,4) and descricao_versao is null;
+  if v_desc > 0 then return jsonb_build_object('espera_descricoes', v_desc); end if;
+  if exists (select 1 from todocoleccion_titulos_novos where aplicado_em > now() - interval '150 seconds') then
+    return jsonb_build_object('em_curso', true);
+  end if;
+  select coalesce(jsonb_agg(jsonb_build_object('id', x.lote_id, 'titulo', x.titulo_novo)), '[]') into v_itens from (
+    select n.lote_id, n.titulo_novo from todocoleccion_titulos_novos n join todocoleccion_lotes l on l.id = n.lote_id
+    where n.titulo_novo is not null and l.titulo is distinct from n.titulo_novo and n.tentativas < 2
+    order by n.lote_id limit 50) x;
+  if jsonb_array_length(v_itens) = 0 then return jsonb_build_object('terminado', true); end if;
+  update todocoleccion_titulos_novos set tentativas = tentativas + 1, aplicado_em = now() where lote_id in (select (e->>'id')::bigint from jsonb_array_elements(v_itens) e);
+  perform todocoleccion_disparar(jsonb_build_object('acao','titulos_lotes','itens', v_itens));
+  return jsonb_build_object('enviados', jsonb_array_length(v_itens));
+end $$;
+revoke execute on function public.todocoleccion_titulos_seguinte() from public, anon, authenticated;
+select cron.schedule('todocoleccion-titulos', '*/3 * * * *', $$select public.todocoleccion_titulos_seguinte()$$);
