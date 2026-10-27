@@ -921,3 +921,23 @@ revoke execute on function public.todocoleccion_encomenda_enviada() from public,
 
 create trigger encomendas_tc_enviada after update of estado, codigo_seguimento on public.encomendas
 for each row execute function public.todocoleccion_encomenda_enviada();
+
+-- ===== 2026-10-27: fotos do lote no todocoleccion atualizadas sozinhas quando mudam no site =====
+create or replace function public.todocoleccion_produto_fotos() returns trigger language plpgsql security definer set search_path = public as $$
+declare v_lote bigint;
+begin
+  if old.imagens::text is distinct from new.imagens::text and coalesce(cardinality(new.imagens), 0) > 0 then
+    for v_lote in select id from todocoleccion_lotes where produto_id = new.id and emparelhamento = 'confirmado' and estado in (0, 4) loop
+      begin
+        perform todocoleccion_disparar(jsonb_build_object('acao', 'fotos_lote', 'id', v_lote));
+      exception when others then
+        raise warning 'todocoleccion fotos_lote %: %', v_lote, sqlerrm;
+      end;
+    end loop;
+  end if;
+  return new;
+end $$;
+revoke execute on function public.todocoleccion_produto_fotos() from public, anon, authenticated;
+
+create trigger produtos_tc_fotos after update of imagens on public.produtos
+for each row execute function public.todocoleccion_produto_fotos();
