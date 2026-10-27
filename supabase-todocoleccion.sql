@@ -895,3 +895,29 @@ begin
 end $$;
 revoke execute on function public.todocoleccion_titulos_seguinte() from public, anon, authenticated;
 select cron.schedule('todocoleccion-titulos', '*/3 * * * *', $$select public.todocoleccion_titulos_seguinte()$$);
+
+-- ===== 2026-10-27: marcar encomendas como enviadas no todocoleccion =====
+alter table public.todocoleccion_encomendas add column if not exists enviada_tc_em timestamptz, add column if not exists envio_tc_erro text;
+
+create or replace function public.todocoleccion_encomenda_enviada() returns trigger language plpgsql security definer set search_path = public as $$
+begin
+  if new.origem = 'Todocoleccion'
+     and coalesce(new.referencia_externa, '') ~ '^[0-9]+$'
+     and nullif(trim(coalesce(new.codigo_seguimento, '')), '') is not null
+     and new.estado in ('Enviado', 'Concluído')
+     and (old.estado is distinct from new.estado or old.codigo_seguimento is distinct from new.codigo_seguimento)
+     and exists (select 1 from todocoleccion_encomendas e where e.id_order = new.referencia_externa::bigint and e.enviada_tc_em is null)
+  then
+    begin
+      perform todocoleccion_disparar(jsonb_build_object('acao', 'marcar_enviada', 'id_order', new.referencia_externa::bigint,
+        'codigo', trim(new.codigo_seguimento), 'data', to_char(now() at time zone 'Europe/Lisbon', 'DD/MM/YYYY')));
+    exception when others then
+      raise warning 'todocoleccion marcar_enviada: %', sqlerrm;
+    end;
+  end if;
+  return new;
+end $$;
+revoke execute on function public.todocoleccion_encomenda_enviada() from public, anon, authenticated;
+
+create trigger encomendas_tc_enviada after update of estado, codigo_seguimento on public.encomendas
+for each row execute function public.todocoleccion_encomenda_enviada();
