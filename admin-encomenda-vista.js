@@ -503,6 +503,11 @@ window.AdminEncomendaVista = (function () {
         const caixa = document.createElement("input");
         caixa.type = "checkbox";
         caixa.checked = Boolean(encomenda.stock_verificado_em);
+        if (estadoNormalizado(encomenda?.estado) === "Concluído") {
+            caixa.disabled = true;
+            rotulo.classList.add("bloqueada");
+            rotulo.title = "Encomenda concluída: não é possível alterar";
+        }
         const texto = criarElemento("span", "", "Stock verificado");
         rotulo.append(caixa, texto);
         const quando = criarElemento("span", "admin-encomenda-verificacao-stock-quando");
@@ -554,7 +559,7 @@ window.AdminEncomendaVista = (function () {
                 caixa.checked = Boolean(anterior);
                 hooks.definirStatus("Erro ao gravar 'Stock verificado': " + detalheErro(error), true);
             } finally {
-                caixa.disabled = false;
+                caixa.disabled = estadoNormalizado(encomenda?.estado) === "Concluído";
                 mostrarQuando();
             }
         });
@@ -586,6 +591,12 @@ window.AdminEncomendaVista = (function () {
         const marcacaoAtual = obterMarcacaoOrdemItem(encomenda, item, indice);
         input.checked = marcacaoAtual === tipo;
         celula.classList.toggle("marcacao-ativa", input.checked);
+        // Encomenda concluída: a marcação fica fixa.
+        if (estadoNormalizado(encomenda?.estado) === "Concluído") {
+            input.disabled = true;
+            celula.classList.add("marcacao-bloqueada");
+            celula.title = "Encomenda concluída: não é possível alterar";
+        }
 
         input.addEventListener("click", evento => evento.stopPropagation());
         input.addEventListener("change", async evento => {
@@ -615,8 +626,9 @@ window.AdminEncomendaVista = (function () {
                 aplicarDestaqueMarcacaoOrdem(linhaProduto, marcacaoAnterior);
                 hooks.definirStatus("Erro ao gravar marcação: " + detalheErro(error), true);
             } finally {
-                input.disabled = false;
-                if (outroRef.atual) outroRef.atual.input.disabled = false;
+                const bloqueada = estadoNormalizado(encomenda?.estado) === "Concluído";
+                input.disabled = bloqueada;
+                if (outroRef.atual) outroRef.atual.input.disabled = bloqueada;
             }
         });
 

@@ -2593,3 +2593,14 @@ html.admin-light-mode .admin-encomenda-verificacao-stock.verificado{
     .admin-encomenda-notas-com-verificacao{ flex-direction:column; }
     .admin-encomenda-verificacao-stock{ flex-basis:auto; }
 }
+
+/* Encomenda concluída: Penúltimo / Último e Stock verificado bloqueados. */
+.admin-encomenda-produto-marcacao.marcacao-bloqueada,
+.admin-encomenda-verificacao-stock-check.bloqueada{
+    cursor:not-allowed;
+    opacity:.6;
+}
+.admin-encomenda-produto-marcacao.marcacao-bloqueada input,
+.admin-encomenda-verificacao-stock-check.bloqueada input{
+    cursor:not-allowed;
+}
