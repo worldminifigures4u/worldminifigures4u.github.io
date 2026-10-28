@@ -491,6 +491,85 @@ window.AdminEncomendaVista = (function () {
     function aplicarDestaqueMarcacaoOrdem(linha, marcacao) {
         linha.classList.toggle("marcado-ultimo", marcacao === "ultimo");
         linha.classList.toggle("marcado-penultimo", marcacao === "penultimo");
+        // O painel "Stock verificado" desta encomenda atualiza a lista de Penúltimo/Último.
+        linha.dispatchEvent(new CustomEvent("fp-marcacao-ordem", { bubbles: true }));
+    }
+
+    // Painel à direita das notas: "Stock verificado" (guardado na encomenda) e as figuras
+    // marcadas como Penúltimo / Último, para tirar os anúncios das plataformas.
+    function criarPainelVerificacaoStock(encomenda) {
+        const painel = criarElemento("div", "admin-encomenda-verificacao-stock");
+        const rotulo = criarElemento("label", "admin-encomenda-verificacao-stock-check");
+        const caixa = document.createElement("input");
+        caixa.type = "checkbox";
+        caixa.checked = Boolean(encomenda.stock_verificado_em);
+        const texto = criarElemento("span", "", "Stock verificado");
+        rotulo.append(caixa, texto);
+        const quando = criarElemento("span", "admin-encomenda-verificacao-stock-quando");
+        const listas = criarElemento("div", "admin-encomenda-verificacao-stock-listas");
+        painel.append(rotulo, quando, listas);
+
+        const mostrarQuando = () => {
+            const data = encomenda.stock_verificado_em ? new Date(encomenda.stock_verificado_em) : null;
+            quando.textContent = data && !Number.isNaN(data.getTime())
+                ? data.toLocaleString("pt-PT", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" })
+                : "";
+            painel.classList.toggle("verificado", Boolean(data));
+        };
+
+        const atualizarListas = () => {
+            const raiz = painel.closest(".admin-encomenda-detalhes") || painel.parentElement;
+            const nomes = (classe) => Array.from(raiz ? raiz.querySelectorAll(`.admin-encomenda-produto.${classe}`) : [])
+                .map((linha) => linha.dataset.nomeFigura || "").filter(Boolean);
+            const penultimo = nomes("marcado-penultimo");
+            const ultimo = nomes("marcado-ultimo");
+            listas.replaceChildren();
+            if (!penultimo.length && !ultimo.length) {
+                listas.appendChild(criarElemento("span", "admin-encomenda-verificacao-stock-vazio", "Sem Penúltimo nem Último."));
+                return;
+            }
+            [["Penúltimo", penultimo, "penultimo"], ["Último", ultimo, "ultimo"]].forEach(([titulo, lista, classe]) => {
+                if (!lista.length) return;
+                const linha = criarElemento("div", `admin-encomenda-verificacao-stock-linha ${classe}`);
+                linha.append(criarElemento("strong", "", `${titulo}:`), criarElemento("span", "", lista.join(", ")));
+                listas.appendChild(linha);
+            });
+        };
+
+        caixa.addEventListener("click", (evento) => evento.stopPropagation());
+        caixa.addEventListener("change", async (evento) => {
+            evento.stopPropagation();
+            const valor = caixa.checked ? new Date().toISOString() : null;
+            const anterior = encomenda.stock_verificado_em || null;
+            caixa.disabled = true;
+            try {
+                const { error } = await obterClient()
+                    .from("encomendas")
+                    .update({ stock_verificado_em: valor })
+                    .eq("id", String(encomenda.id));
+                if (error) throw error;
+                sincronizarEncomendaNaLista(encomenda, { stock_verificado_em: valor });
+                encomenda.stock_verificado_em = valor;
+            } catch (error) {
+                caixa.checked = Boolean(anterior);
+                hooks.definirStatus("Erro ao gravar 'Stock verificado': " + detalheErro(error), true);
+            } finally {
+                caixa.disabled = false;
+                mostrarQuando();
+            }
+        });
+
+        painel.addEventListener("click", (evento) => evento.stopPropagation());
+        mostrarQuando();
+        // Depois de a encomenda estar montada (lista de produtos já existe) e sempre que a marcação muda.
+        requestAnimationFrame(atualizarListas);
+        const aoMudar = () => atualizarListas();
+        setTimeout(() => {
+            const raiz = painel.closest(".admin-encomenda-detalhes");
+            if (raiz) raiz.addEventListener("fp-marcacao-ordem", aoMudar);
+            atualizarListas();
+        }, 0);
+        return { elemento: painel, atualizar: atualizarListas };
     }
 
     function criarCelulaCheckboxMarcacaoOrdem(encomenda, item, indice, tipo, linhaProduto, outroRef) {
@@ -3074,7 +3153,9 @@ window.AdminEncomendaVista = (function () {
         grupoConteudo.append(grupoInfo, colunaNotas);
 
         controloNotas = criarSecaoNotasInternasEncomenda(encomenda, { compacto: true, semBotao: true });
-        colunaNotas.appendChild(controloNotas.elemento);
+        const notasComVerificacao = criarElemento("div", "admin-encomenda-notas-com-verificacao");
+        notasComVerificacao.append(controloNotas.elemento, criarPainelVerificacaoStock(encomenda).elemento);
+        colunaNotas.appendChild(notasComVerificacao);
 
         gravarTudo = criarElemento("button", "wallapop-botao wallapop-botao-destaque wallapop-botao-guardar admin-encomenda-gravar", "Gravar");
         gravarTudo.type = "button";
@@ -3162,6 +3243,7 @@ window.AdminEncomendaVista = (function () {
         const lista = criarElemento("div", "admin-encomenda-produtos-lista");
         obterProdutos(encomenda).forEach((item, indice) => {
             const linhaProduto = criarElemento("div", "admin-encomenda-produto");
+            linhaProduto.dataset.nomeFigura = String(item?.nome || "").trim();
             const quantidade = Number(item.quantidade || item.qtd || 1);
             const preco = Number(item.preco_unitario ?? item.preco ?? 0);
             const marcacaoAtual = obterMarcacaoOrdemItem(encomenda, item, indice);
