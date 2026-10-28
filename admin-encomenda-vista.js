@@ -3047,7 +3047,25 @@ window.AdminEncomendaVista = (function () {
             );
             anexosContagem.dataset.encomendaId = String(encomenda.id);
             anexosContagem.title = formatarTextoContagemAnexos(encomenda.num_anexos);
-            linha.appendChild(anexosContagem);
+            // Depois dos anexos: estado da verificação de stock (Em preparação / Enviado).
+            const estadoLinha = estadoNormalizado(encomenda.estado);
+            if (estadoLinha === "Em preparação" || estadoLinha === "Enviado") {
+                const temMarcacoes = obterProdutos(encomenda)
+                    .some((item, indice) => Boolean(obterMarcacaoOrdemItem(encomenda, item, indice)));
+                const verificado = Boolean(encomenda.stock_verificado_em) || !temMarcacoes;
+                const grupo = criarElemento("span", "admin-encomenda-anexos-stock");
+                grupo.append(
+                    anexosContagem,
+                    criarElemento(
+                        "span",
+                        `admin-encomenda-stock-estado ${verificado ? "verificado" : "por-verificar"}`,
+                        verificado ? "Stock verificado" : "Stock por verificar"
+                    )
+                );
+                linha.appendChild(grupo);
+            } else {
+                linha.appendChild(anexosContagem);
+            }
         }
 
         if (estadoNormalizado(encomenda.estado) === "Pago") {

@@ -2622,3 +2622,22 @@ html.admin-light-mode .admin-encomenda-verificacao-stock.verificado{
     text-decoration:underline;
     outline:none;
 }
+
+/* Lista de encomendas: "Stock verificado" (verde) / "Stock por verificar" (vermelho) depois dos anexos. */
+.admin-encomenda-anexos-stock{
+    justify-self:start;
+    display:inline-flex;
+    align-items:center;
+    gap:10px;
+    white-space:nowrap;
+}
+.admin-encomenda-stock-estado{
+    font-size:11px;
+    font-weight:800;
+    line-height:1.3;
+    white-space:nowrap;
+}
+.admin-encomenda-stock-estado.verificado{ color:#4caf50; }
+.admin-encomenda-stock-estado.por-verificar{ color:#ff5252; }
+html.admin-light-mode .admin-encomenda-stock-estado.verificado{ color:#2e7d32; }
+html.admin-light-mode .admin-encomenda-stock-estado.por-verificar{ color:#c62828; }
