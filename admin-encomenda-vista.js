@@ -510,16 +510,12 @@ window.AdminEncomendaVista = (function () {
         }
         const texto = criarElemento("span", "", "Stock verificado");
         rotulo.append(caixa, texto);
-        const quando = criarElemento("span", "admin-encomenda-verificacao-stock-quando");
         const listas = criarElemento("div", "admin-encomenda-verificacao-stock-listas");
-        painel.append(rotulo, quando, listas);
+        painel.append(rotulo, listas);
 
+        // A data/hora fica gravada na encomenda, mas não é mostrada.
         const mostrarQuando = () => {
-            const data = encomenda.stock_verificado_em ? new Date(encomenda.stock_verificado_em) : null;
-            quando.textContent = data && !Number.isNaN(data.getTime())
-                ? data.toLocaleString("pt-PT", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" })
-                : "";
-            painel.classList.toggle("verificado", Boolean(data));
+            painel.classList.toggle("verificado", Boolean(encomenda.stock_verificado_em));
         };
 
         const atualizarListas = () => {
