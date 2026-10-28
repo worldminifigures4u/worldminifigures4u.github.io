@@ -2604,3 +2604,21 @@ html.admin-light-mode .admin-encomenda-verificacao-stock.verificado{
 .admin-encomenda-verificacao-stock-check.bloqueada input{
     cursor:not-allowed;
 }
+
+/* Nomes no painel Stock verificado: clicáveis como no corpo da encomenda. */
+.admin-encomenda-verificacao-stock-figura{
+    display:inline;
+    padding:0;
+    margin:0;
+    border:0;
+    background:none;
+    color:inherit;
+    font:inherit;
+    text-align:left;
+    cursor:pointer;
+}
+.admin-encomenda-verificacao-stock-figura:hover,
+.admin-encomenda-verificacao-stock-figura:focus-visible{
+    text-decoration:underline;
+    outline:none;
+}

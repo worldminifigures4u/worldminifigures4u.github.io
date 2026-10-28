@@ -524,8 +524,13 @@ window.AdminEncomendaVista = (function () {
 
         const atualizarListas = () => {
             const raiz = painel.closest(".admin-encomenda-detalhes") || painel.parentElement;
+            // Cada figura marcada: nome + botão do nome na lista (para abrir a mesma ficha do produto).
             const nomes = (classe) => Array.from(raiz ? raiz.querySelectorAll(`.admin-encomenda-produto.${classe}`) : [])
-                .map((linha) => linha.dataset.nomeFigura || "").filter(Boolean);
+                .map((linha) => ({
+                    nome: linha.dataset.nomeFigura || "",
+                    origem: linha.querySelector(".admin-encomenda-produto-nome-botao")
+                }))
+                .filter((figura) => figura.nome);
             const penultimo = nomes("marcado-penultimo");
             const ultimo = nomes("marcado-ultimo");
             listas.replaceChildren();
@@ -536,7 +541,23 @@ window.AdminEncomendaVista = (function () {
             [["Penúltimo", penultimo, "penultimo"], ["Último", ultimo, "ultimo"]].forEach(([titulo, lista, classe]) => {
                 if (!lista.length) return;
                 const linha = criarElemento("div", `admin-encomenda-verificacao-stock-linha ${classe}`);
-                linha.append(criarElemento("strong", "", `${titulo}:`), criarElemento("span", "", lista.join(", ")));
+                linha.appendChild(criarElemento("strong", "", `${titulo}:`));
+                lista.forEach((figura, posicao) => {
+                    if (posicao > 0) linha.appendChild(document.createTextNode(", "));
+                    if (figura.origem) {
+                        const botao = criarElemento("button", "admin-encomenda-verificacao-stock-figura", figura.nome);
+                        botao.type = "button";
+                        botao.title = "Abrir ficha do produto";
+                        botao.addEventListener("click", (evento) => {
+                            evento.preventDefault();
+                            evento.stopPropagation();
+                            figura.origem.click();
+                        });
+                        linha.appendChild(botao);
+                    } else {
+                        linha.appendChild(criarElemento("span", "", figura.nome));
+                    }
+                });
                 listas.appendChild(linha);
             });
         };
