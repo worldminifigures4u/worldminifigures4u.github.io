@@ -941,6 +941,8 @@ function normalizarPedidoRececaoMapa(pedido) {
         atualizado_em: pedido.atualizado_em || pedido.updated_at || "",
         data_encomendada: pedido.data_encomendada || "",
         data_caixote_recebido: pedido.data_caixote_recebido || "",
+        // Totais da compra (envio USD, total USD, total pago €): para separar figura / portes / taxas.
+        custos: pedido.custos && typeof pedido.custos === "object" ? pedido.custos : null,
         itens: Array.isArray(itens) ? itens : []
     };
 }
@@ -972,7 +974,7 @@ async function carregarEncomendasFornecedorMapa(forcar = false) {
             }
             const { data, error } = await mapasClient
                 .from("encomendas_fornecedores")
-                .select("id,codigo,fornecedor,referencia,estado,criado_em,atualizado_em,data_encomendada,itens")
+                .select("id,codigo,fornecedor,referencia,estado,criado_em,atualizado_em,data_encomendada,custos,itens")
                 .order("criado_em", { ascending: false })
                 .limit(500);
             if (error) throw error;
@@ -1968,40 +1970,111 @@ function criarCampoLeituraMapa(secao, rotulo, valor, opcoes = {}) {
     return bloco;
 }
 
-// Rato em cima do "preço compra": mostra a divisão figura + portes da compra mais recente
-// (o preço de compra já inclui os portes; a divisão vem das encomendas a fornecedores).
+// Rato em cima do "preço compra": divisão figura + portes + taxas da compra mais recente.
+// Compras em USD: figura e portes ao câmbio oficial do BCE no dia da encomenda (Frankfurter);
+// taxas = o resto (margem do câmbio do PayPal/banco + comissões). Compras em €: figura + portes.
+const CACHE_CAMBIO_USD_EUR_MAPA = "fp-cambio-usd-eur-bce";
+const promessasCambioUsdEurMapa = new Map();
+
+function lerCacheCambioUsdEurMapa() {
+    try { return JSON.parse(localStorage.getItem(CACHE_CAMBIO_USD_EUR_MAPA) || "{}") || {}; }
+    catch (_) { return {}; }
+}
+
+function obterCambioOficialUsdEurMapa(dataIso) {
+    const dia = String(dataIso || "").slice(0, 10);
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(dia)) return Promise.resolve(null);
+    const cache = lerCacheCambioUsdEurMapa();
+    if (Number(cache[dia]) > 0) return Promise.resolve(Number(cache[dia]));
+    if (promessasCambioUsdEurMapa.has(dia)) return promessasCambioUsdEurMapa.get(dia);
+    const promessa = fetch(`https://api.frankfurter.dev/v1/${dia}?base=USD&symbols=EUR`)
+        .then((r) => (r.ok ? r.json() : null))
+        .then((dados) => {
+            const taxa = Number(dados?.rates?.EUR);
+            if (!(taxa > 0)) return null;
+            const atual = lerCacheCambioUsdEurMapa();
+            atual[dia] = taxa;
+            try { localStorage.setItem(CACHE_CAMBIO_USD_EUR_MAPA, JSON.stringify(atual)); } catch (_) {}
+            return taxa;
+        })
+        .catch(() => null)
+        .finally(() => promessasCambioUsdEurMapa.delete(dia));
+    promessasCambioUsdEurMapa.set(dia, promessa);
+    return promessa;
+}
+
+function itemCompradoPedidoFornecedorMapa(item) {
+    const estado = String(item?.estado_fornecedor || "").trim().toUpperCase();
+    const naoComprada = estado === "NAO_COMPRAR" || estado === "EX" || item?.marcado_ex === true
+        || String(item?.origem_ajuste || "").trim() === "nao-comprar";
+    return !naoComprada && !item?.conjunto_extra && Number(item?.quantidade || 0) > 0;
+}
+
+// Portes em USD que cabem a uma unidade desta figura (mesmo rateio usado ao calcular o custo).
+function portesUsdUnidadePedidoMapa(pedido, item) {
+    const custos = pedido?.custos && typeof pedido.custos === "object" ? pedido.custos : {};
+    const envioUsd = Math.max(0, Number(custos.envio_usd || 0) || 0);
+    if (!(envioUsd > 0)) return 0;
+    const comprados = (pedido?.itens || []).filter(itemCompradoPedidoFornecedorMapa);
+    const unidades = comprados.reduce((t, it) => t + Math.max(0, Math.floor(Number(it.quantidade || 0))), 0);
+    if (custos.rateio_envio === "valor") {
+        const produtosUsd = comprados.reduce((t, it) => t + Math.max(0, Math.floor(Number(it.quantidade || 0))) * Math.max(0, Number(it.preco_lista_usd || 0)), 0);
+        return produtosUsd > 0 ? envioUsd * (Math.max(0, Number(item?.preco_lista_usd || 0)) / produtosUsd) : 0;
+    }
+    return unidades > 0 ? envioUsd / unidades : 0;
+}
+
 function explicarPortesPrecoCompraMapa(bloco, produto) {
     const preco = Number(produto?.preco_compra || 0);
     if (!bloco || !(preco > 0) || typeof carregarEncomendasFornecedorMapa !== "function") return;
     const produtoId = String(produto.id || "");
     bloco.dataset.produtoId = produtoId;
     bloco.classList.add("mapas-produto-preco-compra-detalhe");
-    bloco.title = "A carregar figura + portes...";
-    const temDivisao = (item) => item?.preco_custo_figura != null && item?.preco_custo_portes != null
-        && Number.isFinite(Number(item.preco_custo_figura)) && Number.isFinite(Number(item.preco_custo_portes));
-    carregarEncomendasFornecedorMapa(true).then((pedidos) => {
+    bloco.title = "A carregar figura + portes + taxas...";
+    const eur = (v) => formatarEuroProdutoModal(v);
+    carregarEncomendasFornecedorMapa(true).then(async (pedidos) => {
         if (!bloco.isConnected || bloco.dataset.produtoId !== produtoId) return;
-        const compradas = obterLinhasEncomendaFornecedorProdutoMapa(produto, pedidos).filter(({ item }) => {
-            const estado = String(item?.estado_fornecedor || "").trim().toUpperCase();
-            const naoComprada = estado === "NAO_COMPRAR" || estado === "EX" || item?.marcado_ex === true
-                || String(item?.origem_ajuste || "").trim() === "nao-comprar";
-            return !naoComprada && Number(item?.quantidade || 0) > 0;
-        });
-        const comDivisao = compradas.filter(({ item }) => temDivisao(item));
-        const escolhida = comDivisao.find(({ item }) =>
-            Math.abs(Number(item.preco_custo_figura) + Number(item.preco_custo_portes) - preco) <= 0.011
-        ) || comDivisao[0];
-        if (!escolhida) {
-            bloco.title = `${formatarEuroProdutoModal(preco)} € por figura (sem portes separados nas compras registadas).`;
+        const compradas = obterLinhasEncomendaFornecedorProdutoMapa(produto, pedidos)
+            .filter(({ item }) => itemCompradoPedidoFornecedorMapa(item));
+        if (!compradas.length) {
+            bloco.title = `${eur(preco)} € por figura (sem compras registadas).`;
             return;
         }
-        const figura = Number(escolhida.item.preco_custo_figura);
-        const portes = Number(escolhida.item.preco_custo_portes);
-        const origem = [escolhida.pedido?.codigo || escolhida.pedido?.referencia, escolhida.pedido?.fornecedor]
-            .filter(Boolean).join(" · ");
-        bloco.title = `Figura ${formatarEuroProdutoModal(figura)} € + portes ${formatarEuroProdutoModal(portes)} €`
-            + ` = ${formatarEuroProdutoModal(figura + portes)} €`
-            + (origem ? `\n(${origem})` : "");
+        const custoItem = ({ item }) => Math.max(0, Number(item?.preco_custo ?? item?.preco ?? 0) || 0);
+        const escolhida = compradas.find((l) => Math.abs(custoItem(l) - preco) <= 0.011) || compradas[0];
+        const { pedido, item } = escolhida;
+        const custo = custoItem(escolhida) || preco;
+        const origem = [pedido?.codigo || pedido?.referencia, pedido?.fornecedor].filter(Boolean).join(" · ");
+        const sufixo = origem ? `\n(${origem})` : "";
+
+        // Compra em USD com total pago em €: figura + portes ao câmbio oficial, taxas = resto.
+        const precoUsd = Math.max(0, Number(item?.preco_lista_usd || 0) || 0);
+        const pagoEur = Math.max(0, Number(pedido?.custos?.total_pago_eur || 0) || 0);
+        if (precoUsd > 0 && pagoEur > 0) {
+            const dataCompra = pedido?.data_encomendada || pedido?.criado_em || escolhida.dataRef || "";
+            const cambio = await obterCambioOficialUsdEurMapa(dataCompra);
+            if (!bloco.isConnected || bloco.dataset.produtoId !== produtoId) return;
+            if (cambio > 0) {
+                const figura = Math.round(precoUsd * cambio * 100) / 100;
+                const portes = Math.round(portesUsdUnidadePedidoMapa(pedido, item) * cambio * 100) / 100;
+                const taxas = Math.max(0, Math.round((custo - figura - portes) * 100) / 100);
+                bloco.title = `Figura ${eur(figura)} € + portes ${eur(portes)} € + taxas ${eur(taxas)} € = ${eur(figura + portes + taxas)} €`
+                    + `\nCâmbio oficial ${String(dataCompra).slice(0, 10)}: 1 USD = ${cambio.toFixed(4).replace(".", ",")} €`
+                    + sufixo;
+                return;
+            }
+        }
+
+        // Compra em € (ou sem câmbio disponível): figura + portes, como antes.
+        const temDivisao = item?.preco_custo_figura != null && item?.preco_custo_portes != null
+            && Number.isFinite(Number(item.preco_custo_figura)) && Number.isFinite(Number(item.preco_custo_portes));
+        if (!temDivisao) {
+            bloco.title = `${eur(custo)} € por figura (sem portes separados nesta compra).${sufixo}`;
+            return;
+        }
+        const figura = Number(item.preco_custo_figura);
+        const portes = Number(item.preco_custo_portes);
+        bloco.title = `Figura ${eur(figura)} € + portes ${eur(portes)} € = ${eur(figura + portes)} €${sufixo}`;
     }).catch(() => { bloco.title = ""; });
 }
 
