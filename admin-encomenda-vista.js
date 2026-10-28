@@ -2586,6 +2586,28 @@ window.AdminEncomendaVista = (function () {
         const dataPagamentoIso = atualizarDataPagamentoFlag ? new Date().toISOString() : null;
         let reporStock = true;
 
+        // Concluir com Penúltimo/Último ainda por verificar: avisa antes.
+        if (estado === "Concluído" && estadoAnterior !== "Concluído" && !encomenda.stock_verificado_em) {
+            const marcadas = { penultimo: [], ultimo: [] };
+            obterProdutos(encomenda).forEach((item, indice) => {
+                const marcacao = obterMarcacaoOrdemItem(encomenda, item, indice);
+                if (marcadas[marcacao]) marcadas[marcacao].push(String(item?.nome || "Figura").trim());
+            });
+            if (marcadas.penultimo.length || marcadas.ultimo.length) {
+                const linhas = [];
+                if (marcadas.penultimo.length) linhas.push(`Penúltimo: ${marcadas.penultimo.join(", ")}`);
+                if (marcadas.ultimo.length) linhas.push(`Último: ${marcadas.ultimo.join(", ")}`);
+                const continuar = await mostrarConfirmacaoSite(
+                    `O stock desta encomenda ainda não foi verificado.\n\n${linhas.join("\n")}\n\nConcluir mesmo assim?`,
+                    { titulo: "Stock por verificar", textoConfirmar: "Concluir", textoCancelar: "Fechar" }
+                );
+                if (!continuar) {
+                    select.value = estadoAnterior;
+                    return;
+                }
+            }
+        }
+
         if (estado === "Concluído" && estadoAnterior !== "Concluído" && opcoes.semConfirmacaoConclusao !== true) {
             const escolhaConclusao = await pedirConclusaoEncomenda(encomenda);
             if (!escolhaConclusao) {
