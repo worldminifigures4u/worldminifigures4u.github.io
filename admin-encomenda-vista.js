@@ -503,8 +503,8 @@ window.AdminEncomendaVista = (function () {
         const caixa = document.createElement("input");
         caixa.type = "checkbox";
         caixa.checked = Boolean(encomenda.stock_verificado_em);
-        if (estadoNormalizado(encomenda?.estado) === "Concluído") {
-            caixa.disabled = true;
+        const concluida = () => estadoNormalizado(encomenda?.estado) === "Concluído";
+        if (concluida()) {
             rotulo.classList.add("bloqueada");
             rotulo.title = "Encomenda concluída: não é possível alterar";
         }
@@ -541,7 +541,10 @@ window.AdminEncomendaVista = (function () {
             });
         };
 
-        caixa.addEventListener("click", (evento) => evento.stopPropagation());
+        caixa.addEventListener("click", (evento) => {
+            evento.stopPropagation();
+            if (concluida()) evento.preventDefault();
+        });
         caixa.addEventListener("change", async (evento) => {
             evento.stopPropagation();
             const valor = caixa.checked ? new Date().toISOString() : null;
@@ -559,7 +562,7 @@ window.AdminEncomendaVista = (function () {
                 caixa.checked = Boolean(anterior);
                 hooks.definirStatus("Erro ao gravar 'Stock verificado': " + detalheErro(error), true);
             } finally {
-                caixa.disabled = estadoNormalizado(encomenda?.estado) === "Concluído";
+                caixa.disabled = false;
                 mostrarQuando();
             }
         });
@@ -592,13 +595,17 @@ window.AdminEncomendaVista = (function () {
         input.checked = marcacaoAtual === tipo;
         celula.classList.toggle("marcacao-ativa", input.checked);
         // Encomenda concluída: a marcação fica fixa.
-        if (estadoNormalizado(encomenda?.estado) === "Concluído") {
-            input.disabled = true;
+        // (sem "disabled", para manter as cores da marcação; o clique é simplesmente ignorado)
+        const concluida = () => estadoNormalizado(encomenda?.estado) === "Concluído";
+        if (concluida()) {
             celula.classList.add("marcacao-bloqueada");
             celula.title = "Encomenda concluída: não é possível alterar";
         }
 
-        input.addEventListener("click", evento => evento.stopPropagation());
+        input.addEventListener("click", evento => {
+            evento.stopPropagation();
+            if (concluida()) evento.preventDefault();
+        });
         input.addEventListener("change", async evento => {
             evento.stopPropagation();
             const selecionado = input.checked;
@@ -626,9 +633,8 @@ window.AdminEncomendaVista = (function () {
                 aplicarDestaqueMarcacaoOrdem(linhaProduto, marcacaoAnterior);
                 hooks.definirStatus("Erro ao gravar marcação: " + detalheErro(error), true);
             } finally {
-                const bloqueada = estadoNormalizado(encomenda?.estado) === "Concluído";
-                input.disabled = bloqueada;
-                if (outroRef.atual) outroRef.atual.input.disabled = bloqueada;
+                input.disabled = false;
+                if (outroRef.atual) outroRef.atual.input.disabled = false;
             }
         });
 
