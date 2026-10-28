@@ -2530,7 +2530,8 @@ body .admin-encomenda-estado-avancar {
     min-width:0;
 }
 .admin-encomenda-verificacao-stock{
-    flex:0 0 clamp(180px, 16vw, 240px);
+    /* Larga o suficiente para nomes como "Erling Haaland Manchester City" caberem numa linha. */
+    flex:0 0 clamp(300px, 30vw, 420px);
     display:flex;
     flex-direction:column;
     gap:4px;
