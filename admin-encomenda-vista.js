@@ -514,8 +514,17 @@ window.AdminEncomendaVista = (function () {
         painel.append(rotulo, listas);
 
         // A data/hora fica gravada na encomenda, mas não é mostrada.
+        // Sem Penúltimo nem Último não há nada a verificar: aparece marcado (sem gravar nada),
+        // e volta a "por verificar" se alguém marcar uma figura depois.
+        let semMarcacoes = false;
         const mostrarQuando = () => {
-            painel.classList.toggle("verificado", Boolean(encomenda.stock_verificado_em));
+            const verificado = Boolean(encomenda.stock_verificado_em) || semMarcacoes;
+            caixa.checked = verificado;
+            painel.classList.toggle("verificado", verificado);
+            rotulo.classList.toggle("automatico", semMarcacoes && !encomenda.stock_verificado_em);
+            rotulo.title = semMarcacoes && !encomenda.stock_verificado_em
+                ? "Sem Penúltimo nem Último: nada a verificar"
+                : (concluida() ? "Encomenda concluída: não é possível alterar" : "");
         };
 
         const atualizarListas = () => {
@@ -530,7 +539,9 @@ window.AdminEncomendaVista = (function () {
             const penultimo = nomes("marcado-penultimo");
             const ultimo = nomes("marcado-ultimo");
             listas.replaceChildren();
-            if (!penultimo.length && !ultimo.length) {
+            semMarcacoes = !penultimo.length && !ultimo.length;
+            mostrarQuando();
+            if (semMarcacoes) {
                 listas.appendChild(criarElemento("span", "admin-encomenda-verificacao-stock-vazio", "Sem Penúltimo nem Último."));
                 return;
             }
@@ -560,7 +571,8 @@ window.AdminEncomendaVista = (function () {
 
         caixa.addEventListener("click", (evento) => {
             evento.stopPropagation();
-            if (concluida()) evento.preventDefault();
+            // Concluída, ou sem nada a verificar: a caixa não muda.
+            if (concluida() || (semMarcacoes && !encomenda.stock_verificado_em)) evento.preventDefault();
         });
         caixa.addEventListener("change", async (evento) => {
             evento.stopPropagation();
