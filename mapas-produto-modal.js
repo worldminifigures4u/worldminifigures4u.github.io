@@ -1987,8 +1987,12 @@ function obterCambioOficialUsdEurMapa(dataIso) {
     const cache = lerCacheCambioUsdEurMapa();
     if (Number(cache[dia]) > 0) return Promise.resolve(Number(cache[dia]));
     if (promessasCambioUsdEurMapa.has(dia)) return promessasCambioUsdEurMapa.get(dia);
-    const promessa = fetch(`https://api.frankfurter.dev/v1/${dia}?base=USD&symbols=EUR`)
-        .then((r) => (r.ok ? r.json() : null))
+    // Endereço principal e, se falhar, o antigo (mesmo serviço, câmbios do BCE).
+    const pedirJson = (url) => fetch(url).then((r) => (r.ok ? r.json() : null)).catch(() => null);
+    const promessa = pedirJson(`https://api.frankfurter.dev/v1/${dia}?base=USD&symbols=EUR`)
+        .then((dados) => (Number(dados?.rates?.EUR) > 0
+            ? dados
+            : pedirJson(`https://api.frankfurter.app/${dia}?from=USD&to=EUR`)))
         .then((dados) => {
             const taxa = Number(dados?.rates?.EUR);
             if (!(taxa > 0)) return null;
@@ -2048,12 +2052,14 @@ function explicarPortesPrecoCompraMapa(bloco, produto) {
         const sufixo = origem ? `\n(${origem})` : "";
 
         // Compra em USD com total pago em €: figura + portes ao câmbio oficial, taxas = resto.
+        let avisoCambio = "";
         const precoUsd = Math.max(0, Number(item?.preco_lista_usd || 0) || 0);
         const pagoEur = Math.max(0, Number(pedido?.custos?.total_pago_eur || 0) || 0);
         if (precoUsd > 0 && pagoEur > 0) {
             const dataCompra = pedido?.data_encomendada || pedido?.criado_em || escolhida.dataRef || "";
             const cambio = await obterCambioOficialUsdEurMapa(dataCompra);
             if (!bloco.isConnected || bloco.dataset.produtoId !== produtoId) return;
+            if (!(cambio > 0)) avisoCambio = "\nTaxas não calculadas: câmbio oficial indisponível.";
             if (cambio > 0) {
                 const figura = Math.round(precoUsd * cambio * 100) / 100;
                 const portes = Math.round(portesUsdUnidadePedidoMapa(pedido, item) * cambio * 100) / 100;
@@ -2069,12 +2075,12 @@ function explicarPortesPrecoCompraMapa(bloco, produto) {
         const temDivisao = item?.preco_custo_figura != null && item?.preco_custo_portes != null
             && Number.isFinite(Number(item.preco_custo_figura)) && Number.isFinite(Number(item.preco_custo_portes));
         if (!temDivisao) {
-            bloco.title = `${eur(custo)} € por figura (sem portes separados nesta compra).${sufixo}`;
+            bloco.title = `${eur(custo)} € por figura (sem portes separados nesta compra).${avisoCambio}${sufixo}`;
             return;
         }
         const figura = Number(item.preco_custo_figura);
         const portes = Number(item.preco_custo_portes);
-        bloco.title = `Figura ${eur(figura)} € + portes ${eur(portes)} € = ${eur(figura + portes)} €${sufixo}`;
+        bloco.title = `Figura ${eur(figura)} € + portes ${eur(portes)} € = ${eur(figura + portes)} €${avisoCambio}${sufixo}`;
     }).catch(() => { bloco.title = ""; });
 }
 
