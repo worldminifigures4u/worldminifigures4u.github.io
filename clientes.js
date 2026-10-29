@@ -489,6 +489,15 @@ async function abrirCliente(clienteId) {
         return;
     }
     renderizarFichaCliente(data);
+    mostrarFichaNoTelemovel();
+}
+
+// No telemóvel a ficha fica por baixo da lista: leva o ecrã até ela para se ver que abriu.
+function mostrarFichaNoTelemovel() {
+    if (!window.matchMedia || !window.matchMedia("(max-width: 760px)").matches) return;
+    const ficha = document.getElementById("clientes-ficha");
+    if (!ficha) return;
+    requestAnimationFrame(() => ficha.scrollIntoView({ behavior: "smooth", block: "start" }));
 }
 
 function criarSecaoResumoCliente(resumo = {}, historico = []) {

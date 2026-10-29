@@ -941,3 +941,65 @@ revoke execute on function public.todocoleccion_produto_fotos() from public, ano
 
 create trigger produtos_tc_fotos after update of imagens on public.produtos
 for each row execute function public.todocoleccion_produto_fotos();
+
+-- ===== 2026-10-28: portes sugeridos nas encomendas do todocoleccion (o Rui põe-nos à mão no TC) =====
+CREATE OR REPLACE FUNCTION public.todocoleccion_portes_sugeridos(p_pais text, p_cp text, p_peso numeric)
+ RETURNS jsonb LANGUAGE plpgsql STABLE SET search_path TO 'public'
+AS $function$
+declare
+  pais text := translate(lower(trim(coalesce(p_pais,''))), 'áàâãäéèêëíìîïóòôõöúùûüçñ', 'aaaaaeeeeiiiiooooouuuucn');
+  cp text := upper(regexp_replace(coalesce(p_cp,''), '\s', '', 'g'));
+  peso numeric := greatest(coalesce(p_peso, 10), 1);
+  v_zona text; ctt numeric; excl text;
+  ue text[] := array['alemanha','alemania','austria','belgica','bulgaria','chipre','croacia','dinamarca','eslovaquia','eslovenia',
+    'espanha','espana','estonia','finlandia','franca','francia','grecia','hungria','irlanda','italia','letonia','lituania',
+    'luxemburgo','malta','paises baixos','paises bajos','holanda','polonia','portugal','chequia','republica checa','romenia','rumania','suecia'];
+begin
+  if pais = '' then return jsonb_build_object('texto', 'Portes: país desconhecido – verificar.', 'excluido', false); end if;
+  if not pais = any(ue) then excl := 'país fora da UE (' || p_pais || ')';
+  elsif pais in ('espanha','espana') and (cp ~ '^(35|38|51|52)') then excl := 'Canárias/Ceuta/Melilla (CP ' || cp || ')';
+  elsif pais in ('alemanha','alemania') and cp in ('78266','27498') then excl := 'Büsingen/Heligolândia (CP ' || cp || ')';
+  elsif pais = 'grecia' and cp = '63086' then excl := 'Monte Athos (CP ' || cp || ')';
+  elsif pais = 'italia' and cp in ('23030','22061') then excl := 'Livigno/Campione d''Italia (CP ' || cp || ')';
+  elsif pais in ('franca','francia') and cp ~ '^97' then excl := 'território ultramarino francês (CP ' || cp || ')';
+  elsif pais = 'finlandia' and cp ~ '^(AX-?)?22[1-9][0-9]{2}$' then excl := 'Ilhas Åland (CP ' || cp || ')';
+  end if;
+  if excl is not null then
+    return jsonb_build_object('excluido', true, 'texto', 'ATENÇÃO: destino sem envio – ' || excl || '. Anular antes do pagamento.');
+  end if;
+  if pais = 'portugal' then
+    return jsonb_build_object('excluido', false, 'texto', 'Portes: Portugal – definir à mão (sem tabela no Todocoleccion).');
+  end if;
+  v_zona := case when pais in ('espanha','espana') then 'espanha' else 'europa' end;
+  select preco into ctt from portes_tarifas
+   where zona = v_zona and metodo_id = 'ctt_azul_internacional' and ativo and peso_ate_g >= peso
+   order by peso_ate_g limit 1;
+  if pais in ('espanha','espana') and cp !~ '^07' then
+    return jsonb_build_object('excluido', false, 'inpost', 4.95, 'ctt', ctt,
+      'texto', 'Portes a indicar no Todocoleccion (' || peso || ' g): InPost 4,95 € (ponto de recolha) | CTT ' || replace(to_char(ctt,'FM990.00'),'.',',') || ' € (domicílio).');
+  end if;
+  return jsonb_build_object('excluido', false, 'ctt', ctt,
+    'texto', 'Portes a indicar no Todocoleccion (' || peso || ' g): CTT ' || replace(to_char(ctt,'FM990.00'),'.',',') || ' €'
+      || case when cp ~ '^07' then ' (Baleares: só CTT).' else '.' end);
+end $function$;
+
+CREATE OR REPLACE FUNCTION public.todocoleccion_encomenda_portes()
+ RETURNS trigger LANGUAGE plpgsql SECURITY DEFINER SET search_path TO 'public'
+AS $function$
+declare s jsonb;
+begin
+  if new.origem = 'Todocoleccion' and coalesce(new.portes, 0) = 0 then
+    s := todocoleccion_portes_sugeridos(new.pais_cliente, new.cp_cliente, new.peso_total);
+    new.notas_internas := concat_ws(E'\n', nullif(new.notas_internas, ''), s->>'texto');
+    if (s->>'excluido')::boolean then new.prioritaria := true; end if;
+  end if;
+  return new;
+end $function$;
+revoke execute on function public.todocoleccion_encomenda_portes() from public, anon, authenticated;
+
+create trigger encomendas_tc_portes_sugeridos before insert on public.encomendas
+for each row execute function public.todocoleccion_encomenda_portes();
+
+-- ===== 2026-10-28: ficha do cliente nas encomendas importadas do todocoleccion =====
+-- (função todocoleccion_ligar_cliente(p_encomenda bigint, p jsonb) criada na migração "todocoleccion_ligar_cliente";
+--  todocoleccion_criar_encomenda passou a chamar "perform todocoleccion_ligar_cliente(v_id, p);" antes do return final)
