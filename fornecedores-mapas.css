@@ -6478,3 +6478,24 @@ html.admin-light-mode .mapas-produto-preco-compra-detalhe .mapas-produto-leitura
     opacity: 0.75;
     white-space: nowrap;
 }
+
+/* Mapas: barra de filtros e cabeçalho da tabela sempre visíveis ao descer (presos por baixo do menu). */
+.pagina-mapas-admin #fornecedor-contador-barra {
+    position: sticky;
+    top: var(--mapas-topo-fixo, 56px);
+    z-index: 20;
+    background: #121212;
+}
+.pagina-mapas-admin .mapas-tabela-wrapper.mapas-wrapper-sem-scroll {
+    overflow: visible;
+}
+.pagina-mapas-admin .mapas-produtos-tabela th {
+    /* -1px: com border-collapse a borda de cima do th não acompanha o sticky; sobe 1px para não ver as linhas por trás. */
+    top: calc(var(--mapas-topo-fixo, 56px) + var(--mapas-barra-altura, 0px) - 1px);
+}
+.pagina-mapas-admin .mapas-produtos-tabela thead th {
+    z-index: 5;
+}
+.pagina-mapas-admin .mapas-produtos-tabela.mapas-com-foto thead .mapas-col-foto {
+    z-index: 6;
+}

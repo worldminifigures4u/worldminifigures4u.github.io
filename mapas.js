@@ -442,6 +442,28 @@ function larguraTabelaMapaVisivel() {
     return obterColunasVisiveisMapa().reduce((soma, coluna) => soma + (Number(coluna.largura) || 100), 0);
 }
 
+// Mede o menu fixo e a barra de filtros para a barra e o cabeçalho da tabela ficarem presos logo abaixo ao descer.
+function atualizarTopoFixoMapa() {
+    const raiz = document.documentElement;
+    const cabecalho = document.querySelector(".cabecalho-site-admin");
+    const barra = document.getElementById("fornecedor-contador-barra");
+    const topo = cabecalho ? Math.max(0, Math.round(cabecalho.getBoundingClientRect().bottom)) : 0;
+    raiz.style.setProperty("--mapas-topo-fixo", `${topo}px`);
+    raiz.style.setProperty("--mapas-barra-altura", `${barra ? Math.round(barra.offsetHeight) : 0}px`);
+}
+
+if (typeof ResizeObserver === "function") {
+    const observadorTopoFixoMapa = new ResizeObserver(() => atualizarTopoFixoMapa());
+    const ligarObservadorTopoFixoMapa = () => {
+        [document.querySelector(".cabecalho-site-admin"), document.getElementById("fornecedor-contador-barra")]
+            .filter(Boolean)
+            .forEach(elemento => observadorTopoFixoMapa.observe(elemento));
+        atualizarTopoFixoMapa();
+    };
+    if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", ligarObservadorTopoFixoMapa);
+    else ligarObservadorTopoFixoMapa();
+}
+
 function atualizarScrollHorizontalTopoMapa() {
     const topo = document.getElementById("mapas-tabela-scroll-topo");
     const inner = document.getElementById("mapas-tabela-scroll-topo-inner");
@@ -452,6 +474,9 @@ function atualizarScrollHorizontalTopoMapa() {
     inner.style.width = `${largura}px`;
     const precisaScroll = largura > wrapper.clientWidth + 1;
     topo.classList.toggle("mapas-scroll-topo-oculto", !precisaScroll);
+    // Sem scroll horizontal o wrapper fica com overflow visível, para o cabeçalho da tabela poder ficar fixo (sticky) ao descer.
+    wrapper.classList.toggle("mapas-wrapper-sem-scroll", !precisaScroll);
+    atualizarTopoFixoMapa();
     if (precisaScroll) topo.scrollLeft = wrapper.scrollLeft;
 }
 
