@@ -6402,3 +6402,22 @@ html.admin-light-mode .mapas-produto-preco-compra-detalhe .mapas-produto-leitura
 }
 .fornecedor-filtro-tema option { color: var(--fp-texto-campo, #fff); background: var(--fp-fundo-campo, #242424); font-weight: 400; }
 .fornecedor-filtro-tema option[value^="t:"] { font-weight: 800; }
+
+/* Barra de filtros dos Mapas: filtros Sim/Não compactos e quebra de linha quando não cabe. */
+.pagina-mapas-admin .mapas-contador-filtros {
+    grid-template-columns: max-content minmax(0, max-content);
+}
+.pagina-mapas-admin .mapas-direita-zona {
+    flex-wrap: wrap;
+    row-gap: 8px;
+}
+.pagina-mapas-admin .mapas-direita-zona .mapas-filtro-booleano > .mapas-filtro-stock:not(.mapas-filtro-tema):not(.mapas-filtro-stock-curto) {
+    width: 82px;
+    padding-left: 8px;
+    padding-right: 4px;
+}
+.pagina-mapas-admin .mapas-pesquisa-zona > .campo-com-limpar,
+.pagina-mapas-admin .mapas-pesquisa-zona > #fornecedor-pesquisa {
+    min-width: 190px;
+    max-width: 220px;
+}
