@@ -91,7 +91,7 @@ function garantirFornecedoresProdutoModal() {
     if (window.FornecedoresProdutoModal) return Promise.resolve();
     if (!__fornecedoresProdutoPromessa) {
         prepararContextoProdutoFornecedor();
-        __fornecedoresProdutoPromessa = carregarScriptAdmin("mapas-produto-modal.js?v=20261028-cambio-reserva")
+        __fornecedoresProdutoPromessa = carregarScriptAdmin("mapas-produto-modal.js?v=20261029-personalizada")
             .then(function () {
                 window.FornecedoresProdutoModal = {
                     abrir: function () {
@@ -307,6 +307,7 @@ function normalizarProdutoMapa(produto) {
         arquivado: valorBooleanoMapa(produto.arquivado),
         descontinuado: valorBooleanoMapa(produto.descontinuado),
         novidade: valorBooleanoMapa(produto.novidade),
+        personalizada: valorBooleanoMapa(produto.personalizada),
         peso: Number(produto.peso || 10),
         tema: produto.tema || "",
         subtema: produto.subtema || "",

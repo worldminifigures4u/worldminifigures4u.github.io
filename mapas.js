@@ -60,7 +60,7 @@ var __mapasProdutoModalPromessa = null;
 function garantirMapasProdutoModal() {
     if (window.MapasProdutoModal) return Promise.resolve();
     if (!__mapasProdutoModalPromessa) {
-        __mapasProdutoModalPromessa = carregarScriptAdmin("mapas-produto-modal.js?v=20261028-cambio-reserva");
+        __mapasProdutoModalPromessa = carregarScriptAdmin("mapas-produto-modal.js?v=20261029-personalizada");
     }
     return __mapasProdutoModalPromessa;
 }
@@ -316,6 +316,7 @@ function normalizarProdutoMapa(produto) {
         arquivado: valorBooleanoMapa(produto.arquivado),
         descontinuado: valorBooleanoMapa(produto.descontinuado),
         novidade: valorBooleanoMapa(produto.novidade),
+        personalizada: valorBooleanoMapa(produto.personalizada),
         peso: Number(produto.peso || 10),
         tema: produto.tema || "",
         subtema: produto.subtema || "",
@@ -751,6 +752,7 @@ function atualizarResultadosMapa() {
     const filtroLego = document.getElementById("mapas-filtro-lego")?.value || "todos";
     const filtroArquivado = document.getElementById("mapas-filtro-arquivado")?.value || "todos";
     const filtroNovidade = document.getElementById("mapas-filtro-novidade")?.value || "todos";
+    const filtroPersonalizada = document.getElementById("mapas-filtro-personalizada")?.value || "todos";
     mapasResultados = mapasProdutos
         .filter(produto => produtoPassaFiltroTemaMapa(produto, filtroTema))
         .filter(produto => produtoPassaPesquisaMapa(produto, termo))
@@ -760,6 +762,7 @@ function atualizarResultadosMapa() {
         .filter(produto => produtoPassaFiltroBooleanoMapa(produto, "lego", filtroLego))
         .filter(produto => produtoPassaFiltroBooleanoMapa(produto, "arquivado", filtroArquivado))
         .filter(produto => produtoPassaFiltroBooleanoMapa(produto, "novidade", filtroNovidade))
+        .filter(produto => produtoPassaFiltroBooleanoMapa(produto, "personalizada", filtroPersonalizada))
         .sort(compararProdutosMapa);
     renderizarTabelaMapa();
 }
@@ -995,6 +998,7 @@ document.getElementById("mapas-filtro-lego")?.addEventListener("change", atualiz
 document.getElementById("mapas-filtro-tema")?.addEventListener("change", atualizarResultadosMapa);
 document.getElementById("mapas-filtro-arquivado")?.addEventListener("change", atualizarResultadosMapa);
 document.getElementById("mapas-filtro-novidade")?.addEventListener("change", atualizarResultadosMapa);
+document.getElementById("mapas-filtro-personalizada")?.addEventListener("change", atualizarResultadosMapa);
 document.getElementById("mapas-criar-produto")?.addEventListener("click", abrirCriacaoProdutoMapa);
 document.getElementById("mapas-copiar-lista")?.addEventListener("click", copiarListaMapaVisivel);
 document.addEventListener("click", (evento) => {

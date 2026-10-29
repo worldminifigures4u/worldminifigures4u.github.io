@@ -2455,7 +2455,8 @@ function preencherFichaProdutoMapa(produto) {
         ["Ativo", produto.ativo !== false],
         ["Top", Boolean(String(produto.top || "").trim())],
         ["Arquivado", Boolean(produto.arquivado)],
-        ["Novidade", Boolean(produto.novidade)]
+        ["Novidade", Boolean(produto.novidade)],
+        ["Personalizada", Boolean(produto.personalizada)]
     ].forEach(([rotulo, ativo]) => criarBadgeLeituraMapa(flagsLista, rotulo, ativo));
     topo.appendChild(secaoMarcas);
 
@@ -2717,6 +2718,7 @@ function preencherFormularioProdutoMapa(produto, modo = "editar") {
     criarCheckboxEdicaoMapa(secaoEstado, "mapas-editar-top", "Top", Boolean(String(produto.top || "").trim()));
     criarCheckboxEdicaoMapa(secaoEstado, "mapas-editar-arquivado", "Arquivado", Boolean(produto.arquivado));
     criarCheckboxEdicaoMapa(secaoEstado, "mapas-editar-novidade", "Novidade", modo === "criar" ? true : Boolean(produto.novidade));
+    criarCheckboxEdicaoMapa(secaoEstado, "mapas-editar-personalizada", "Personalizada", Boolean(produto.personalizada));
     linhaDetalhesEstado.appendChild(secaoEstado);
 
     campos.appendChild(linhaDetalhesEstado);
@@ -2842,6 +2844,7 @@ function abrirCriacaoProdutoMapa() {
         arquivado: false,
         descontinuado: false,
         novidade: true,
+        personalizada: false,
         preco_compra: 0,
         preco: 0,
         peso: typeof PESO_PADRAO_PRODUTO_GRAMAS === "number" ? PESO_PADRAO_PRODUTO_GRAMAS : 10,
@@ -2878,6 +2881,7 @@ function lerProdutoEditadoMapa() {
         // A opção "Descontinuado" deixou de existir no site: gravar sempre como não descontinuado.
         descontinuado: false,
         novidade: document.getElementById("mapas-editar-novidade").checked,
+        personalizada: Boolean(document.getElementById("mapas-editar-personalizada")?.checked),
         preco_compra: Number(document.getElementById("mapas-editar-preco-compra").value || 0),
         preco: Number(document.getElementById("mapas-editar-preco").value),
         // Vazio = usar a regra do Todocoleccion (fica null na BD)
@@ -2928,6 +2932,16 @@ async function editarProdutoMapaRpc(id, skuOriginal, produto) {
         }));
     }
     return { data, error };
+}
+
+// A coluna "personalizada" é gravada à parte (as RPCs de edição têm lista fixa de colunas).
+async function definirPersonalizadaProdutoMapa(id, valor) {
+    const { error } = await mapasClient.rpc("definir_personalizada_produto_admin", {
+        p_id: String(id),
+        p_valor: Boolean(valor)
+    });
+    if (error) throw error;
+    return Boolean(valor);
 }
 
 async function apagarProdutoMapa() {
@@ -3007,9 +3021,14 @@ async function guardarEdicaoProdutoMapa(evento) {
                 });
                 if (!extra.error && extra.data) data = extra.data;
             }
+            let personalizadaCriado = false;
+            if (produto.personalizada && data?.id) {
+                personalizadaCriado = await definirPersonalizadaProdutoMapa(data.id, true);
+            }
             const criado = normalizarProdutoPaginaMapa({
                 ...produto,
                 ...data,
+                personalizada: personalizadaCriado,
                 imagens: data?.imagens ?? produto.imagens,
                 observacoes: data?.observacoes ?? produto.observacoes,
                 notas_gestao: data?.notas_gestao ?? produto.notas_gestao,
@@ -3023,10 +3042,16 @@ async function guardarEdicaoProdutoMapa(evento) {
             return;
         }
 
+        const produtoAntes = mapasProdutos.find(item => String(item.id) === String(id));
         ({ data, error } = await editarProdutoMapaRpc(id, skuOriginal, produto));
         if (error) throw error;
+        let personalizadaFinal = Boolean(produtoAntes?.personalizada);
+        if (Boolean(produto.personalizada) !== personalizadaFinal) {
+            personalizadaFinal = await definirPersonalizadaProdutoMapa(data?.id || id, produto.personalizada);
+        }
         const atualizado = normalizarProdutoPaginaMapa({
             ...data,
+            personalizada: personalizadaFinal,
             imagens: data?.imagens ?? produto.imagens,
             observacoes: data?.observacoes ?? produto.observacoes,
             notas_gestao: data?.notas_gestao ?? produto.notas_gestao,

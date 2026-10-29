@@ -346,6 +346,7 @@ function normalizarProdutoParaFichaMapaEncomenda(produto = {}) {
         arquivado: valorBooleanoProdutoEncomenda(produto.arquivado),
         descontinuado: valorBooleanoProdutoEncomenda(produto.descontinuado),
         novidade: valorBooleanoProdutoEncomenda(produto.novidade),
+        personalizada: valorBooleanoProdutoEncomenda(produto.personalizada),
         peso: Number(produto.peso || 10),
         tema: produto.tema || '',
         subtema: produto.subtema || '',
@@ -518,7 +519,7 @@ function garantirProdutoModalEncomendas() {
     prepararContextoProdutoEncomendas();
     if (window.MapasProdutoModal) return Promise.resolve();
     if (!promessaProdutoModalEncomendas) {
-        promessaProdutoModalEncomendas = carregarScriptEncomendasAdmin('mapas-produto-modal.js?v=20261028-cambio-reserva')
+        promessaProdutoModalEncomendas = carregarScriptEncomendasAdmin('mapas-produto-modal.js?v=20261029-personalizada')
             .then(() => {
                 prepararContextoProdutoEncomendas();
             });
