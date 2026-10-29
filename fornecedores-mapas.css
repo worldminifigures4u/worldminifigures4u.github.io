@@ -6452,3 +6452,21 @@ html.admin-light-mode .mapas-produto-preco-compra-detalhe .mapas-produto-leitura
     min-width: 180px;
     max-width: 210px;
 }
+
+/* Mapas: Novo, Colunas e Copiar com a mesma altura dos filtros (36px). */
+.pagina-mapas-admin .mapas-contador-filtros {
+    --fp-botao-altura: 36px;
+}
+.pagina-mapas-admin .mapas-direita-zona > #mapas-criar-produto,
+.pagina-mapas-admin .mapas-direita-zona > #mapas-copiar-lista,
+.pagina-mapas-admin .mapas-direita-zona > .mapas-colunas-painel > summary {
+    height: 36px !important;
+    min-height: 36px !important;
+    padding: 0 12px !important;
+    font-size: 14px !important;
+    line-height: 1 !important;
+    box-sizing: border-box;
+}
+.pagina-mapas-admin .mapas-direita-zona > .mapas-colunas-painel {
+    min-height: 36px;
+}
