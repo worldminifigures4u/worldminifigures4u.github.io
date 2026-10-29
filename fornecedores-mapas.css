@@ -6486,11 +6486,29 @@ html.admin-light-mode .mapas-produto-preco-compra-detalhe .mapas-produto-leitura
     z-index: 20;
     background: #121212;
 }
-.pagina-mapas-admin .mapas-tabela-wrapper.mapas-wrapper-sem-scroll {
-    overflow: visible;
+/* O wrapper nunca é contentor de scroll (clip não cria scroll), para o cabeçalho ficar preso à janela.
+   A deslocação horizontal é feita pela barra de scroll de cima (ver aplicarScrollHorizontalMapa em mapas.js). */
+.pagina-mapas-admin .mapas-tabela-wrapper,
+.pagina-mapas-admin .mapas-tabela-wrapper.mapas-tabela-virtual {
+    overflow-x: clip !important;
+    overflow-y: visible !important;
+}
+.pagina-mapas-admin .mapas-tabela-wrapper > .mapas-produtos-tabela {
+    transform: translateX(calc(var(--mapas-scroll-x, 0px) * -1));
+}
+.pagina-mapas-admin .mapas-produtos-tabela.mapas-com-foto .mapas-col-foto {
+    transform: translateX(var(--mapas-scroll-x, 0px));
+}
+/* Barra de scroll horizontal de cima: também presa, entre a barra de filtros e o cabeçalho da tabela. */
+.pagina-mapas-admin .mapas-tabela-scroll-topo {
+    position: sticky;
+    top: calc(var(--mapas-topo-fixo, 56px) + var(--mapas-barra-altura, 0px));
+    z-index: 8;
+    margin-bottom: 0;
+    background: var(--fp-scroll-track, #1a1a1a);
 }
 .pagina-mapas-admin .mapas-produtos-tabela th {
-    top: calc(var(--mapas-topo-fixo, 56px) + var(--mapas-barra-altura, 0px));
+    top: calc(var(--mapas-topo-fixo, 56px) + var(--mapas-barra-altura, 0px) + var(--mapas-scroll-topo-altura, 0px));
 }
 .pagina-mapas-admin .mapas-produtos-tabela thead th {
     z-index: 5;

@@ -453,6 +453,11 @@ function atualizarTopoFixoMapa() {
     const alturaBarra = barra ? barra.getBoundingClientRect().height : 0;
     raiz.style.setProperty("--mapas-topo-fixo", `${topo}px`);
     raiz.style.setProperty("--mapas-barra-altura", `${alturaBarra}px`);
+    const scrollTopo = document.getElementById("mapas-tabela-scroll-topo");
+    const alturaScrollTopo = scrollTopo && !scrollTopo.classList.contains("mapas-scroll-topo-oculto")
+        ? scrollTopo.getBoundingClientRect().height + (parseFloat(getComputedStyle(scrollTopo).marginBottom) || 0)
+        : 0;
+    raiz.style.setProperty("--mapas-scroll-topo-altura", `${alturaScrollTopo}px`);
 }
 
 if (typeof ResizeObserver === "function") {
@@ -467,6 +472,16 @@ if (typeof ResizeObserver === "function") {
     else ligarObservadorTopoFixoMapa();
 }
 
+// Scroll horizontal da tabela (quando as colunas visíveis não cabem):
+// o wrapper NÃO é um contentor de scroll (overflow-x: clip), senão o cabeçalho "sticky" ficava preso ao wrapper
+// em vez de à janela. A barra de scroll de cima comanda a deslocação da tabela (translateX via --mapas-scroll-x);
+// a coluna da foto compensa a deslocação para ficar sempre à esquerda.
+function aplicarScrollHorizontalMapa(valor) {
+    const wrapper = document.getElementById("mapas-tabela-wrapper");
+    if (!wrapper) return;
+    wrapper.style.setProperty("--mapas-scroll-x", `${Math.max(0, valor || 0)}px`);
+}
+
 function atualizarScrollHorizontalTopoMapa() {
     const topo = document.getElementById("mapas-tabela-scroll-topo");
     const inner = document.getElementById("mapas-tabela-scroll-topo-inner");
@@ -477,10 +492,9 @@ function atualizarScrollHorizontalTopoMapa() {
     inner.style.width = `${largura}px`;
     const precisaScroll = largura > wrapper.clientWidth + 1;
     topo.classList.toggle("mapas-scroll-topo-oculto", !precisaScroll);
-    // Sem scroll horizontal o wrapper fica com overflow visível, para o cabeçalho da tabela poder ficar fixo (sticky) ao descer.
-    wrapper.classList.toggle("mapas-wrapper-sem-scroll", !precisaScroll);
+    wrapper.classList.toggle("mapas-wrapper-com-scroll", precisaScroll);
+    aplicarScrollHorizontalMapa(precisaScroll ? topo.scrollLeft : 0);
     atualizarTopoFixoMapa();
-    if (precisaScroll) topo.scrollLeft = wrapper.scrollLeft;
 }
 
 function ligarScrollHorizontalTopoMapa() {
@@ -488,18 +502,16 @@ function ligarScrollHorizontalTopoMapa() {
     const wrapper = document.getElementById("mapas-tabela-wrapper");
     if (!topo || !wrapper) return;
 
-    let aSincronizar = false;
-    const sincronizar = (origem, destino) => {
-        if (aSincronizar) return;
-        aSincronizar = true;
-        destino.scrollLeft = origem.scrollLeft;
-        requestAnimationFrame(() => {
-            aSincronizar = false;
-        });
-    };
-
-    topo.addEventListener("scroll", () => sincronizar(topo, wrapper), { passive: true });
-    wrapper.addEventListener("scroll", () => sincronizar(wrapper, topo), { passive: true });
+    topo.addEventListener("scroll", () => aplicarScrollHorizontalMapa(topo.scrollLeft), { passive: true });
+    // Trackpad / Shift + roda do rato em cima da tabela também deslocam na horizontal.
+    wrapper.addEventListener("wheel", (evento) => {
+        if (topo.classList.contains("mapas-scroll-topo-oculto")) return;
+        const horizontal = Math.abs(evento.deltaX) > Math.abs(evento.deltaY) ? evento.deltaX : (evento.shiftKey ? evento.deltaY : 0);
+        if (!horizontal) return;
+        const antes = topo.scrollLeft;
+        topo.scrollLeft = antes + horizontal;
+        if (topo.scrollLeft !== antes) evento.preventDefault();
+    }, { passive: false });
 }
 
 function criarCabecalhoTabelaMapa() {
