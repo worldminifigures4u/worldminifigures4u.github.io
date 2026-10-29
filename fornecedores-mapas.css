@@ -6558,3 +6558,10 @@ body.cabecalho-com-admin.pagina-mapas-admin #fornecedor-resultados .mapas-tabela
 .pagina-mapas-admin table.mapas-produtos-tabela > thead > tr > th {
     border-top-width: 0;
 }
+
+/* Compras: o conteúdo começa exatamente por baixo do menu (medida exata do menu, posta pelo fornecedores.js).
+   A barra dos filtros já está, ao abrir, onde fica presa: ao descer não se mexe nem deixa espaço por onde se vejam as linhas. */
+body.cabecalho-com-admin.pagina-fornecedores-unificada {
+    --espaco-abaixo-cabecalho: 0px;
+    padding-top: var(--fornecedor-cabecalho-fundo, var(--cabecalho-offset, 128px));
+}

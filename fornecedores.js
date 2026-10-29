@@ -6134,13 +6134,19 @@ function atualizarTopoStickyFornecedor() {
     if (!estaPaginaFornecedoresUnificada()) return;
     const cabecalho = document.querySelector("header");
     if (!cabecalho) return;
-    const fundoCabecalho = Math.max(0, Math.floor(cabecalho.getBoundingClientRect().bottom) - 1);
-    // A barra dos filtros fica sempre na sua posicao inicial (nao sobe com o scroll).
+    // Medidas exatas (com decimais). Arredondar deixava frestas de ~1px entre o menu, a barra dos filtros,
+    // a linha da pesquisa e o cabeçalho da tabela, por onde se viam as linhas a passar (sobretudo com zoom != 100%).
+    const fundoCabecalho = Math.max(0, cabecalho.getBoundingClientRect().bottom);
+    // O conteúdo começa exatamente por baixo do menu: a barra dos filtros já está, ao abrir, onde fica presa (sem salto).
+    const fundoTexto = `${fundoCabecalho}px`;
+    if (document.body.style.getPropertyValue("--fornecedor-cabecalho-fundo") !== fundoTexto) {
+        document.body.style.setProperty("--fornecedor-cabecalho-fundo", fundoTexto);
+    }
     const painel = document.getElementById("fornecedores-escolher");
     let fundo = fundoCabecalho;
-    if (painel) {
+    if (painel && painel.getClientRects().length) {
         const estilos = getComputedStyle(painel);
-        const topoNatural = Math.round(painel.getBoundingClientRect().top + window.scrollY + (parseFloat(estilos.paddingTop) || 0) + (parseFloat(estilos.borderTopWidth) || 0));
+        const topoNatural = painel.getBoundingClientRect().top + window.scrollY + (parseFloat(estilos.paddingTop) || 0) + (parseFloat(estilos.borderTopWidth) || 0);
         fundo = Math.max(fundoCabecalho, topoNatural);
     }
     if (document.body.dataset.fornecedorStickyTopo !== String(fundo)) {
@@ -6155,10 +6161,10 @@ function atualizarAlturaStickyControlesFornecedor() {
     const controles = document.querySelector(".fornecedor-controles-unificados");
     if (!controles) return;
 
-    const altura = Math.ceil(controles.getBoundingClientRect().height);
+    const altura = controles.getBoundingClientRect().height;
     document.body.style.setProperty("--fornecedor-controles-sticky-altura", `${altura}px`);
     const resumo = document.getElementById("fornecedor-resumo-encomenda");
-    const alturaResumo = resumo ? Math.ceil(resumo.getBoundingClientRect().height) : 0;
+    const alturaResumo = resumo ? resumo.getBoundingClientRect().height : 0;
     document.body.style.setProperty("--fornecedor-resumo-sticky-altura", `${alturaResumo}px`);
 }
 
@@ -6183,6 +6189,8 @@ function ligarStickyInfoFornecedor() {
     if ("ResizeObserver" in window) {
         const observador = new ResizeObserver(atualizarAlturaStickyControlesFornecedor);
         observador.observe(controles);
+        const cabecalhoSite = document.querySelector("header");
+        if (cabecalhoSite) observador.observe(cabecalhoSite);
         const resumo = document.getElementById("fornecedor-resumo-encomenda");
         if (resumo) observador.observe(resumo);
     }
