@@ -2,7 +2,7 @@ const MAPAS_COLUNAS = [
     { chave: "foto", rotulo: "foto", classe: "mapas-col-foto", semOrdenacao: true, largura: 64 },
     { chave: "nome", rotulo: "nome", classe: "mapas-col-nome", obrigatorio: true, largura: 280 },
     { chave: "referencia", rotulo: "referência", classe: "mapas-col-ref", largura: 110 },
-    { chave: "stock", rotulo: "stock", classe: "mapas-col-stock", numero: true, largura: 72 },
+    { chave: "stock", rotulo: "stock", classe: "mapas-col-stock", numero: true, largura: 104 },
     { chave: "tema", rotulo: "tema", classe: "mapas-col-tema", largura: 150 },
     { chave: "subtema", rotulo: "subtema", classe: "mapas-col-subtema", largura: 170 },
     { chave: "preco_compra", rotulo: "preço compra", classe: "mapas-col-preco", numero: true, dinheiro: true, largura: 128 },
@@ -399,12 +399,17 @@ function criarItemContadorMapa(rotulo, valor, destaque = false) {
     return item;
 }
 
+let mapasTotaisCabecalho = { produtos: 0, unidades: 0 };
+
 function renderizarContadoresMapa(resultados) {
     const contador = document.getElementById("fornecedor-contador-barra");
     if (!contador) return;
     const destinoContadores = document.getElementById("mapas-contadores-resumo") || contador;
     destinoContadores.querySelectorAll(".mapas-contador-item").forEach(item => item.remove());
     const totalStock = resultados.reduce((acc, produto) => acc + Number(produto.stock || 0), 0);
+    // Os totais passaram para o cabeçalho da tabela: Nome (produtos) e Stock (unidades).
+    mapasTotaisCabecalho = { produtos: resultados.length, unidades: totalStock };
+    if (destinoContadores !== contador) return;
     const figuras = criarItemContadorMapa("Produtos", resultados.length);
     const stock = criarItemContadorMapa("Unid.", totalStock);
     if (destinoContadores !== contador) {
@@ -481,6 +486,15 @@ function criarCabecalhoTabelaMapa() {
             th.textContent = coluna.rotulo;
         } else {
             th.textContent = coluna.rotulo + (mapasOrdenacao.coluna === coluna.chave ? (mapasOrdenacao.direcao === "asc" ? " ▲" : " ▼") : "");
+            const total = coluna.chave === "nome" ? mapasTotaisCabecalho.produtos
+                : coluna.chave === "stock" ? mapasTotaisCabecalho.unidades : null;
+            if (total !== null) {
+                const totalSpan = document.createElement("span");
+                totalSpan.className = "mapas-th-total";
+                totalSpan.textContent = ` (${total})`;
+                th.appendChild(totalSpan);
+                th.title = coluna.chave === "nome" ? `${total} produtos` : `${total} unidades em stock`;
+            }
             th.addEventListener("click", () => {
                 if (mapasOrdenacao.coluna === coluna.chave) {
                     mapasOrdenacao.direcao = mapasOrdenacao.direcao === "asc" ? "desc" : "asc";

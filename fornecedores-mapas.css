@@ -1826,7 +1826,7 @@ body.pagina-mapas-admin > main.fornecedores-admin {
 .mapas-col-arquivado { width: 96px; }
 .mapas-col-descontinuado { width: 112px; }
 .mapas-col-novidade { width: 90px; }
-.mapas-col-stock { width: 70px; }
+.mapas-col-stock { width: 104px; }
 .mapas-col-tema { width: 130px; }
 .mapas-col-subtema { width: 150px; }
 .mapas-col-peso { width: 70px; }
@@ -6469,4 +6469,12 @@ html.admin-light-mode .mapas-produto-preco-compra-detalhe .mapas-produto-leitura
 }
 .pagina-mapas-admin .mapas-direita-zona > .mapas-colunas-painel {
     min-height: 36px;
+}
+
+/* Mapas: totais (produtos e unidades) no cabeçalho da tabela; a caixa de contadores da barra deixa de aparecer. */
+.pagina-mapas-admin #mapas-contadores-resumo { display: none !important; }
+.pagina-mapas-admin .mapas-th-total {
+    font-weight: 600;
+    opacity: 0.75;
+    white-space: nowrap;
 }
