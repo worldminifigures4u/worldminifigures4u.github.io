@@ -1003,3 +1003,63 @@ for each row execute function public.todocoleccion_encomenda_portes();
 -- ===== 2026-10-28: ficha do cliente nas encomendas importadas do todocoleccion =====
 -- (função todocoleccion_ligar_cliente(p_encomenda bigint, p jsonb) criada na migração "todocoleccion_ligar_cliente";
 --  todocoleccion_criar_encomenda passou a chamar "perform todocoleccion_ligar_cliente(v_id, p);" antes do return final)
+
+-- ===== 2026-10-29: criação automática de lotes no todocoleccion =====
+-- Figuras ativas, com stock, preço > 0, foto e SKU, sem lote: cria o lote (título em espanhol, preço pela regra,
+-- secção e descrição copiadas de um lote modelo do mesmo tema). Cron às :17 e :47, no máximo 5 de cada vez.
+create table if not exists public.todocoleccion_excluir (produto_id bigint primary key, motivo text);
+alter table public.todocoleccion_excluir enable row level security;
+insert into public.todocoleccion_excluir (produto_id, motivo)
+select id, 'bases/placas/nave' from produtos where id in (56891,56890,56889,56888,56887,56886,56885,56884,15301)
+on conflict do nothing;
+
+create table if not exists public.todocoleccion_criacoes (
+  produto_id bigint primary key, tentado_em timestamptz not null default now(), tentativas int not null default 1,
+  modelo_ref text, titulo text, erro text);
+alter table public.todocoleccion_criacoes enable row level security;
+
+create or replace function public.todocoleccion_modelo_tema(p_tema text) returns text
+language sql stable set search_path = public as $$
+  with s as (
+    select l.seccao, count(*) n from todocoleccion_lotes l join produtos q on q.id = l.produto_id
+    where l.emparelhamento = 'confirmado' and q.tema = p_tema group by 1 order by 2 desc limit 1)
+  select l.referencia from todocoleccion_lotes l join produtos q on q.id = l.produto_id join s on s.seccao = l.seccao
+  where q.tema = p_tema and l.estado = 0 and l.descricao_versao = 'es-2026-10c' and l.referencia is not null
+  order by l.id desc limit 1;
+$$;
+
+create or replace function public.todocoleccion_criar_lotes_novos(p_max int default 5) returns jsonb
+language plpgsql security definer set search_path = public as $$
+declare r record; v_modelo text; v_titulo text; v_enviados int := 0; v_sem_modelo text[] := '{}';
+begin
+  for r in
+    select p.id, p.nome, p.tema, p.subtema, p.preco from produtos p
+    where p.ativo and not coalesce(p.arquivado, false) and coalesce(p.stock, 0) > 0 and coalesce(p.preco, 0) > 0
+      and coalesce(cardinality(p.imagens), 0) > 0 and nullif(trim(coalesce(p.sku, '')), '') is not null
+      and not exists (select 1 from todocoleccion_lotes l where l.produto_id = p.id)
+      and not exists (select 1 from todocoleccion_excluir x where x.produto_id = p.id)
+      and p.nome !~* '^(base|bases|placa)\M|^nave$'
+      and not exists (select 1 from todocoleccion_criacoes c where c.produto_id = p.id
+                      and (c.tentativas >= 3 or c.tentado_em > now() - interval '2 hours'))
+    order by p.id limit p_max
+  loop
+    v_modelo := todocoleccion_modelo_tema(r.tema);
+    if v_modelo is null then v_sem_modelo := v_sem_modelo || r.tema; continue; end if;
+    v_titulo := tc_titulo_es(r.tema, r.nome || coalesce(' (' || nullif(nullif(r.subtema, ''), 'semsubtema') || ')', ''));
+    insert into todocoleccion_criacoes (produto_id, modelo_ref, titulo) values (r.id, v_modelo, v_titulo)
+    on conflict (produto_id) do update set tentado_em = now(), tentativas = todocoleccion_criacoes.tentativas + 1,
+      modelo_ref = excluded.modelo_ref, titulo = excluded.titulo;
+    perform todocoleccion_disparar(jsonb_build_object('acao', 'criar_lote', 'produto_id', r.id,
+      'preco', tc_preco_regra(r.preco::numeric), 'modelo_ref', v_modelo, 'titulo', v_titulo));
+    v_enviados := v_enviados + 1;
+  end loop;
+  if v_enviados > 0 or exists (select 1 from todocoleccion_criacoes where tentado_em > now() - interval '1 hour') then
+    perform todocoleccion_disparar(jsonb_build_object('acao', 'sincronizar_estado'));
+  end if;
+  return jsonb_build_object('enviados', v_enviados, 'temas_sem_modelo', v_sem_modelo);
+end $$;
+revoke execute on function public.todocoleccion_criar_lotes_novos(int) from public, anon, authenticated;
+revoke execute on function public.todocoleccion_modelo_tema(text) from public, anon, authenticated;
+insert into todocoleccion_sub_ignorar values ('semsubtema') on conflict do nothing;
+
+select cron.schedule('todocoleccion-lotes-novos', '17,47 * * * *', $$select public.todocoleccion_criar_lotes_novos(5)$$);
