@@ -6535,3 +6535,26 @@ html.admin-light-mode .pagina-mapas-admin table.mapas-produtos-tabela > tbody > 
 html.admin-light-mode .pagina-mapas-admin table.mapas-produtos-tabela > tbody > tr.mapa-linha-quantidade-ativa > td:first-child {
     box-shadow: inset 3px 0 0 #ffc400, inset 0 1px 0 #f0c442;
 }
+
+/* Mapas: o conteúdo começa exatamente por baixo do menu (mesma medida exata usada pela barra fixa).
+   Assim a barra de filtros já está, ao abrir a página, na posição onde fica presa: ao descer não se mexe nada (sem salto). */
+body.cabecalho-com-admin.pagina-mapas-admin {
+    --espaco-abaixo-cabecalho: 0px;
+    padding-top: var(--mapas-topo-fixo, var(--cabecalho-offset, 128px));
+}
+body.cabecalho-com-admin.pagina-mapas-admin .fornecedores-painel-mapa {
+    border-top-left-radius: 0 !important;
+    border-top-right-radius: 0 !important;
+}
+/* Por baixo da barra havia 3 linhas de 1px empilhadas (caixa dos resultados, bloco da tabela e topo do cabeçalho).
+   Fica só a linha de baixo da barra; assim o cabeçalho da tabela também já está, ao abrir, onde fica preso. */
+/* (o bloco recebe "border: ... !important" do tema em styles.css, daí o !important aqui só na largura/raio de cima) */
+body.cabecalho-com-admin.pagina-mapas-admin #fornecedor-resultados,
+body.cabecalho-com-admin.pagina-mapas-admin #fornecedor-resultados .mapas-tabela-bloco {
+    border-top-width: 0 !important;
+    border-top-left-radius: 0 !important;
+    border-top-right-radius: 0 !important;
+}
+.pagina-mapas-admin table.mapas-produtos-tabela > thead > tr > th {
+    border-top-width: 0;
+}
