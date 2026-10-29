@@ -6421,3 +6421,34 @@ html.admin-light-mode .mapas-produto-preco-compra-detalhe .mapas-produto-leitura
     min-width: 190px;
     max-width: 220px;
 }
+
+/* Barra de filtros dos Mapas: tudo numa linha em ecrãs normais e quebra de linha (nunca sai do ecrã) quando não cabe. */
+.pagina-mapas-admin .mapas-contador-filtros {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: flex-end;
+    gap: 8px;
+}
+.pagina-mapas-admin .mapas-acoes-zona,
+.pagina-mapas-admin .mapas-direita-zona {
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 6px;
+    row-gap: 8px;
+    max-width: 100%;
+}
+.pagina-mapas-admin .mapas-direita-zona .mapas-filtro-booleano > .mapas-filtro-stock:not(.mapas-filtro-tema):not(.mapas-filtro-stock-curto) {
+    width: 70px;
+    padding-left: 6px;
+    padding-right: 2px;
+}
+.pagina-mapas-admin .mapas-direita-zona .mapas-filtro-tema {
+    width: 140px;
+    max-width: 140px;
+}
+.pagina-mapas-admin .mapas-pesquisa-zona > .campo-com-limpar,
+.pagina-mapas-admin .mapas-pesquisa-zona > #fornecedor-pesquisa {
+    min-width: 180px;
+    max-width: 210px;
+}
