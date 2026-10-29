@@ -513,6 +513,37 @@ function obterFichaFornecedorPorNome(nome) {
     return fornecedorFichas.find(ficha => normalizarChaveFornecedor(ficha.nome) === alvo);
 }
 
+// Preparar encomenda: o fornecedor escolhido em "Encomendar a" e as linhas de filtro de marcação
+// (fornecedor + marcação) ficam guardados, para não se perderem ao sair e voltar à página (tal como as quantidades).
+const CHAVE_FILTROS_PREPARAR_FORNECEDOR = "fp-fornecedor-preparar-filtros";
+let filtrosPrepararFornecedorRestaurados = false;
+
+function lerFiltrosPrepararFornecedorGuardados() {
+    try {
+        const dados = JSON.parse(localStorage.getItem(CHAVE_FILTROS_PREPARAR_FORNECEDOR) || "null");
+        if (!dados || typeof dados !== "object") return null;
+        const filtros = Array.isArray(dados.filtros)
+            ? dados.filtros
+                .filter(filtro => filtro && typeof filtro === "object")
+                .map(filtro => ({ fornecedor: String(filtro.fornecedor || "mesmo"), marcacao: String(filtro.marcacao || "todos") }))
+            : [];
+        return { fornecedor: String(dados.fornecedor || ""), filtros };
+    } catch (erro) {
+        return null;
+    }
+}
+
+function guardarFiltrosPrepararFornecedor() {
+    // Antes de repor o que estava guardado não se grava nada (senão os valores por defeito apagavam o guardado).
+    if (!filtrosPrepararFornecedorRestaurados) return;
+    try {
+        localStorage.setItem(CHAVE_FILTROS_PREPARAR_FORNECEDOR, JSON.stringify({
+            fornecedor: document.getElementById("fornecedor-nome")?.value || "",
+            filtros: obterFiltrosMarcacaoFornecedor(true)
+        }));
+    } catch (erro) { /* sem armazenamento */ }
+}
+
 function obterOpcoesMarcacaoFornecedor() {
     return [
         { valor: "todos", texto: "Todos" },
@@ -618,7 +649,7 @@ function renderizarLinhasFiltroMarcacaoFornecedor(filtros = null) {
             linha.append(grupoFornecedor, grupoMarcacao, remover);
             caixaExtra.appendChild(linha);
         }
-    });
+    });    guardarFiltrosPrepararFornecedor();
 }
 
 function adicionarLinhaFiltroMarcacaoFornecedor() {
@@ -628,6 +659,7 @@ function adicionarLinhaFiltroMarcacaoFornecedor() {
     const fornecedores = fornecedorFichas.filter(ficha => ficha.ativo).map(ficha => ficha.nome);
     const proximo = fornecedores.find(nome => !jaUsados.has(nome)) || fornecedores[0] || "";
     filtros.push({ fornecedor: proximo, marcacao: "todos" });
+    filtrosPrepararFornecedorRestaurados = true;
     renderizarLinhasFiltroMarcacaoFornecedor(filtros);
     agendarRenderizacaoResultadosFornecedor();
 }
@@ -635,7 +667,11 @@ function adicionarLinhaFiltroMarcacaoFornecedor() {
 function ligarFiltrosMarcacaoFornecedor() {
     const ligarCaixa = caixa => {
         if (!caixa) return;
-        caixa.addEventListener("change", agendarRenderizacaoResultadosFornecedor);
+        caixa.addEventListener("change", () => {
+            filtrosPrepararFornecedorRestaurados = true;
+            guardarFiltrosPrepararFornecedor();
+            agendarRenderizacaoResultadosFornecedor();
+        });
         caixa.addEventListener("click", evento => {
             const botao = evento.target.closest(".fornecedor-btn-remover-filtro-marcacao");
             if (!botao) return;
@@ -645,12 +681,17 @@ function ligarFiltrosMarcacaoFornecedor() {
             ).length;
             if (!linha || totalLinhas <= 1) return;
             linha.remove();
+            filtrosPrepararFornecedorRestaurados = true;
             renderizarLinhasFiltroMarcacaoFornecedor(obterFiltrosMarcacaoFornecedor(true));
             agendarRenderizacaoResultadosFornecedor();
         });
     };
     ligarCaixa(document.getElementById("fornecedor-filtros-marcacao"));
     ligarCaixa(document.getElementById("fornecedor-filtros-marcacao-extra"));
+    document.getElementById("fornecedor-nome")?.addEventListener("change", () => {
+        filtrosPrepararFornecedorRestaurados = true;
+        guardarFiltrosPrepararFornecedor();
+    });
     document.querySelector('label[for="fornecedor-filtro-marcacao-fornecedor"]')?.setAttribute("hidden", "");
     document.querySelector('label[for="fornecedor-filtro-marcacao"]')?.setAttribute("hidden", "");
 }
@@ -659,9 +700,25 @@ function renderizarFornecedoresGuardados() {
     const selectPedido = document.getElementById("fornecedor-nome");
     const selectMarcacao = document.getElementById("fornecedor-filtro-marcacao-fornecedor");
     const selectFicha = document.getElementById("fornecedor-ficha-lista");
-    const valorAtual = selectPedido?.value || "";
+    let valorAtual = selectPedido?.value || "";
     const valorMarcacaoAtual = selectMarcacao?.value || "mesmo";
-    const filtrosMarcacaoAtuais = obterFiltrosMarcacaoFornecedor(true);
+    let filtrosMarcacaoAtuais = obterFiltrosMarcacaoFornecedor(true);
+
+    // Repor o que estava escolhido da última vez. Só se dá por reposto quando os fornecedores guardados já
+    // existem na lista (as fichas podem chegar primeiro da cópia local e só depois do Supabase).
+    if (!filtrosPrepararFornecedorRestaurados) {
+        const guardado = lerFiltrosPrepararFornecedorGuardados();
+        if (!guardado) {
+            filtrosPrepararFornecedorRestaurados = true;
+        } else {
+            const ativos = new Set(fornecedorFichas.filter(ficha => ficha.ativo).map(ficha => ficha.nome));
+            if (guardado.fornecedor) valorAtual = guardado.fornecedor;
+            if (guardado.filtros.length) filtrosMarcacaoAtuais = guardado.filtros;
+            const todosExistem = (!guardado.fornecedor || ativos.has(guardado.fornecedor))
+                && guardado.filtros.every(filtro => filtro.fornecedor === "mesmo" || ativos.has(filtro.fornecedor));
+            if (todosExistem) filtrosPrepararFornecedorRestaurados = true;
+        }
+    }
 
     if (selectPedido) {
         selectPedido.replaceChildren();
@@ -6085,6 +6142,10 @@ async function iniciarFornecedoresAdmin() {
         const pedidosPromessa = carregarPedidosFornecedoresRemotos();
         await fichasPromessa;
         renderizarFornecedoresGuardados();
+        // As fichas já chegaram do Supabase: o que se podia repor já foi reposto (um fornecedor guardado que entretanto
+        // ficou inativo fica de fora). A partir daqui as alterações voltam a ser guardadas.
+        filtrosPrepararFornecedorRestaurados = true;
+        guardarFiltrosPrepararFornecedor();
         preencherFormularioFichaFornecedor();
         await Promise.all([catalogoPromessa, vendasPromessa, pedidosPromessa]);
         bloqueio.hidden = true;
