@@ -6490,12 +6490,48 @@ html.admin-light-mode .mapas-produto-preco-compra-detalhe .mapas-produto-leitura
     overflow: visible;
 }
 .pagina-mapas-admin .mapas-produtos-tabela th {
-    /* -1px: com border-collapse a borda de cima do th não acompanha o sticky; sobe 1px para não ver as linhas por trás. */
-    top: calc(var(--mapas-topo-fixo, 56px) + var(--mapas-barra-altura, 0px) - 1px);
+    top: calc(var(--mapas-topo-fixo, 56px) + var(--mapas-barra-altura, 0px));
 }
 .pagina-mapas-admin .mapas-produtos-tabela thead th {
     z-index: 5;
 }
 .pagina-mapas-admin .mapas-produtos-tabela.mapas-com-foto thead .mapas-col-foto {
     z-index: 6;
+}
+
+/* Mapas: bordas separadas (sem border-collapse). Com border-collapse as bordas são desenhadas pela tabela e não
+   acompanham o cabeçalho fixo, deixando uma linha de 1px onde se viam as linhas a passar. Aqui cada célula tem
+   a sua borda (direita e de baixo; a primeira coluna também à esquerda e o cabeçalho também em cima), com o mesmo aspeto. */
+.pagina-mapas-admin table.mapas-produtos-tabela {
+    border-collapse: separate;
+    border-spacing: 0;
+}
+.pagina-mapas-admin table.mapas-produtos-tabela > thead > tr > th,
+.pagina-mapas-admin table.mapas-produtos-tabela > tbody > tr > td {
+    border-style: solid;
+    border-width: 0 1px 1px 0;
+}
+.pagina-mapas-admin table.mapas-produtos-tabela > thead > tr > th {
+    border-top-width: 1px;
+    border-bottom-width: 2px;
+}
+.pagina-mapas-admin table.mapas-produtos-tabela > thead > tr > th:first-child,
+.pagina-mapas-admin table.mapas-produtos-tabela > tbody > tr > td:first-child {
+    border-left-width: 1px;
+}
+.pagina-mapas-admin table.mapas-produtos-tabela > tbody > tr.mapas-spacer-virtual > td {
+    border-width: 0 !important;
+}
+/* Linha com quantidade ativa: a borda de cima passa a ser a de baixo da linha anterior; a cor de destaque vai num traço interior. */
+.pagina-mapas-admin table.mapas-produtos-tabela > tbody > tr.mapa-linha-quantidade-ativa > td {
+    box-shadow: inset 0 1px 0 #80612d;
+}
+.pagina-mapas-admin table.mapas-produtos-tabela > tbody > tr.mapa-linha-quantidade-ativa > td:first-child {
+    box-shadow: inset 3px 0 0 #ffc400, inset 0 1px 0 #80612d;
+}
+html.admin-light-mode .pagina-mapas-admin table.mapas-produtos-tabela > tbody > tr.mapa-linha-quantidade-ativa > td {
+    box-shadow: inset 0 1px 0 #f0c442;
+}
+html.admin-light-mode .pagina-mapas-admin table.mapas-produtos-tabela > tbody > tr.mapa-linha-quantidade-ativa > td:first-child {
+    box-shadow: inset 3px 0 0 #ffc400, inset 0 1px 0 #f0c442;
 }

@@ -447,9 +447,12 @@ function atualizarTopoFixoMapa() {
     const raiz = document.documentElement;
     const cabecalho = document.querySelector(".cabecalho-site-admin");
     const barra = document.getElementById("fornecedor-contador-barra");
-    const topo = cabecalho ? Math.max(0, Math.round(cabecalho.getBoundingClientRect().bottom)) : 0;
+    // Valores exatos (com decimais): arredondar deixava uma fresta de ~1px onde se viam as linhas a passar,
+    // sobretudo com zoom do browser diferente de 100%.
+    const topo = cabecalho ? Math.max(0, cabecalho.getBoundingClientRect().bottom) : 0;
+    const alturaBarra = barra ? barra.getBoundingClientRect().height : 0;
     raiz.style.setProperty("--mapas-topo-fixo", `${topo}px`);
-    raiz.style.setProperty("--mapas-barra-altura", `${barra ? Math.round(barra.offsetHeight) : 0}px`);
+    raiz.style.setProperty("--mapas-barra-altura", `${alturaBarra}px`);
 }
 
 if (typeof ResizeObserver === "function") {
