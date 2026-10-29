@@ -722,7 +722,8 @@ function obterFiltrosVitrineAtuais() {
 }
 
 function aplicarFiltrosQueryProdutos(query, filtros) {
-    let consulta = query.eq('ativo', true).eq('arquivado', false);
+    // Produtos sem preço (0 €) nunca aparecem na loja.
+    let consulta = query.eq('ativo', true).eq('arquivado', false).gt('preco', 0);
 
     if (filtros.pesquisa) {
         return consulta.ilike('nome', `%${filtros.pesquisa}%`);
@@ -850,6 +851,7 @@ async function carregarMetadadosTemasLoja() {
                     .select('tema, subtema')
                     .eq('ativo', true)
                     .eq('arquivado', false)
+                    .gt('preco', 0)
                     .order('tema', { ascending: true })
                     .order('subtema', { ascending: true })
                     .range(inicio, inicio + TAMANHO_PAGINA_METADADOS - 1),

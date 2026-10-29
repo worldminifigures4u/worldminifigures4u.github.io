@@ -450,6 +450,22 @@ Deno.serve(async (req) => {
       });
     }
 
+    // Produtos sem preco (0 euros ou vazio) nunca podem ser vendidos.
+    const produtosSemPreco = [...mapaProdutos.values()].filter((produto) => !(Number(produto.preco) > 0));
+    if (produtosSemPreco.length > 0) {
+      const nomes = produtosSemPreco
+        .map((produto) => String(produto.nome || "Produto indisponivel"))
+        .filter(Boolean);
+      const detalhe = nomes.length > 0 ? `: ${nomes.join(", ")}` : "";
+      return respostaJson(req, 409, {
+        error: `Um ou mais produtos ja nao estao disponiveis para compra${detalhe}. Atualize o carrinho e tente novamente.`,
+        produtos_indisponiveis: produtosSemPreco.map((produto) => ({
+          id_produto: produto.id,
+          nome: produto.nome,
+        })),
+      });
+    }
+
     const produtosEncomenda = itens.map((item) => {
       const produto = mapaProdutos.get(String(item.id_produto)) as Produto;
       const precoUnitario = Number(produto.preco || 0);
