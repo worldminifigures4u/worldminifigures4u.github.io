@@ -573,19 +573,20 @@ async function marcarEnviada(idOrder: number, codigo: string, data: string) {
 }
 
 // ---------- Descrição dos lotes ----------
-const DESCRICAO_VERSAO = "es-2026-10d";
-const LINHA_PORTES = "<p>\u27a4 Envío a <strong>España</strong> peninsular: <strong>solo 4,95 €</strong> (cualquier cantidad de lotes)</p>";
+const DESCRICAO_VERSAO = "es-2026-10e";
+const LINHA_PORTES = "<p>\u27a4 Envío a <strong>España</strong> peninsular: <strong>4,95 €</strong>, da igual cuántas figuras compre</p>";
+const LINHA_PORTES_ARTIGO = "<p>\u27a4 Envío a <strong>España</strong> peninsular: <strong>4,95 €</strong>, da igual cuántos artículos compre</p>";
 const LINHA_ENVIO = "<p>\u2709\ufe0f Envío desde Portugal con seguimiento. Puede comprar varios lotes y pagar un solo envío. España peninsular: InPost a punto de recogida. Envío a domicilio y resto de Europa por CTT según el peso. Tras la compra le indicaré los gastos de envío antes del pago.</p>";
 const DESCRICAO_NOVA = LINHA_PORTES +
   "<p>✨ Minifigura nueva. La gran mayoría se envían en su bolsa original precintada de fábrica; algunas figuras personalizadas, aunque nuevas, se envían sin bolsa precintada.</p>" +
   "<p>ℹ️ Las figuras no son de la marca LEGO®. Son de otras marcas, pero compatibles con LEGO® y con las mismas dimensiones.</p>" +
   "<p>✔️ Recibirá la figura tal y como aparece en las fotos, con todos sus accesorios. Solo la base puede ser diferente.</p>" +
   LINHA_ENVIO;
-const INICIO_NOVO = "Envío a España peninsular: solo 4,95 €";
+const INICIO_NOVO = "Envío a España peninsular: 4,95 €, da igual cuánt";
 // Descrição antiga "normal" (só estes lotes são mudados; os diferentes ficam como estão e são listados).
 const DESCRICAO_ANTIGA = "Consulte todas as figuras deste tema em \"Ver todos os seus lotes nesta secção\".As figuras não são marca lego mas são compatíveis e com as mesmas dimensões.A base das figuras pode ser diferente da apresentada na foto.";
 // Para artigos que não são figuras (veículos, carroças...).
-const DESCRICAO_ARTIGO = LINHA_PORTES +
+const DESCRICAO_ARTIGO = LINHA_PORTES_ARTIGO +
   "<p>\u2728 Artículo nuevo.</p>" +
   "<p>\u2139\ufe0f No es de la marca LEGO®. Es de otra marca, pero compatible con LEGO®.</p>" +
   "<p>\u2714\ufe0f Recibirá el artículo tal y como aparece en las fotos.</p>" +
@@ -606,7 +607,8 @@ async function descricaoLote(id: number, forcar = false, artigo = false) {
     await db.from("todocoleccion_lotes").update({ descricao_versao: DESCRICAO_VERSAO }).eq("id", id);
     return { ok: true, sem_alteracao: true };
   }
-  const jaTextoNovo = atual.startsWith(normTexto("Minifigura nueva")) || atual.startsWith(normTexto("Artículo nuevo"));
+  const jaTextoNovo = atual.startsWith(normTexto("Minifigura nueva")) || atual.startsWith(normTexto("Artículo nuevo"))
+    || atual.startsWith(normTexto("Envío a España peninsular"));
   // Variantes da descrição antiga em português (todas começam por "Consulte todas as figuras" e têm o aviso da marca).
   const antigaPt = atual === normTexto(DESCRICAO_ANTIGA) || (atual.startsWith(normTexto("Consulte todas as figuras")) && atual.includes(normTexto("As figuras não são marca lego")));
   if (!forcar && !jaTextoNovo && !antigaPt) {
