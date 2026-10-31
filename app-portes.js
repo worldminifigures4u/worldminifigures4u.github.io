@@ -43,23 +43,23 @@ const TABELA_PORTES_FALLBACK = {
     espanha: [
         { ate: 100, opcoes: [
             { id: 'ctt_azul_internacional', nome: 'CTT Azul Internacional', valor: 6.95 },
-            { id: 'inpost_registado', nome: 'InPost com seguimento', valor: 5.12 }
+            { id: 'inpost_registado', nome: 'InPost com seguimento', valor: 4.95 }
         ]},
         { ate: 250, opcoes: [
             { id: 'ctt_azul_internacional', nome: 'CTT Azul Internacional', valor: 9.29 },
-            { id: 'inpost_registado', nome: 'InPost com seguimento', valor: 5.12 }
+            { id: 'inpost_registado', nome: 'InPost com seguimento', valor: 4.95 }
         ]},
         { ate: 500, opcoes: [
             { id: 'ctt_azul_internacional', nome: 'CTT Azul Internacional', valor: 12.05 },
-            { id: 'inpost_registado', nome: 'InPost com seguimento', valor: 5.12 }
+            { id: 'inpost_registado', nome: 'InPost com seguimento', valor: 4.95 }
         ]},
         { ate: 1000, opcoes: [
             { id: 'ctt_azul_internacional', nome: 'CTT Azul Internacional', valor: 16.24 },
-            { id: 'inpost_registado', nome: 'InPost com seguimento', valor: 5.12 }
+            { id: 'inpost_registado', nome: 'InPost com seguimento', valor: 4.95 }
         ]},
         { ate: Infinity, opcoes: [
             { id: 'ctt_azul_internacional', nome: 'CTT Azul Internacional', valor: 26.08 },
-            { id: 'inpost_registado', nome: 'InPost com seguimento', valor: 5.81 }
+            { id: 'inpost_registado', nome: 'InPost com seguimento', valor: 4.95 }
         ]}
     ],
     europa: [

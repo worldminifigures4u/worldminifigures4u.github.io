@@ -884,7 +884,7 @@ function obterOpcaoInPostTodocoleccionFallback(peso) {
     const zonaEspanha = tabela.espanha || [];
     const opcoesEspanha = (zonaEspanha.find(linha => peso <= linha.ate) || zonaEspanha[zonaEspanha.length - 1])?.opcoes || [];
     return opcoesEspanha.find(opcao => opcao.id === 'inpost_registado')
-        || { id: 'inpost_registado', nome: 'InPost com seguimento', valor: peso > 1000 ? 5.81 : 5.12 };
+        || { id: 'inpost_registado', nome: 'InPost com seguimento', valor: 4.95 };
 }
 
 function juntarOpcoesEnvioPlataforma(...grupos) {
