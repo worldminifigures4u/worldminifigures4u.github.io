@@ -1063,3 +1063,28 @@ revoke execute on function public.todocoleccion_modelo_tema(text) from public, a
 insert into todocoleccion_sub_ignorar values ('semsubtema') on conflict do nothing;
 
 select cron.schedule('todocoleccion-lotes-novos', '17,47 * * * *', $$select public.todocoleccion_criar_lotes_novos(5)$$);
+
+-- ===== 2026-10-30: títulos v2 (nome primeiro + extras de pesquisa) e descrição com destaque InPost 4,95 € =====
+-- Formato: Nome (Saga) minifigura muñeco [subtema] [palavra genérica] + extras até 100 caracteres:
+--   nome original em inglês → forma colada de nomes com hífen → figura → compatible → juguete → coleccionable → nueva
+-- Testes de pesquisa no todocoleccion (Shocker): exige todas as palavras; só título e secção contam (descrição não);
+-- palavras da mesma raiz contam (figura/figuras, coleccionable/colección, minifigure/minifigura); acentos ignorados;
+-- hífen = espaço mas palavra colada (Spiderman) não encontra Spider-Man; "figura" e "minifigura" são precisas as duas.
+-- Funções: tc_titulo_es_v2(tema, base), tc_titulo_v2_montar(...), unaccent_simples(text) (ver na BD: pg_get_functiondef).
+-- todocoleccion_criar_lotes_novos passou a usar tc_titulo_es_v2.
+-- todocoleccion_titulos_seguinte: deixou de esperar pelas descrições.
+-- Descrições es-2026-10d: todocoleccion_descricoes_seguinte() + cron 'todocoleccion-descricoes' (*/2), espera que os
+-- títulos acabem; tabela todocoleccion_controlo (chave, em). Quando termina, desliga os crons de títulos e descrições.
+-- todocoleccion_modelo_tema aceita descricao_versao like 'es-2026-10%'.
+
+-- ===== 2026-10-31: loja mostra arquivados com stock (arquivado = só esconder nas encomendas a fornecedores) =====
+create or replace view public.produtos_loja with (security_invoker=false) as
+ SELECT id, sku, nome, preco, peso, tema, subtema, imagens, ativo,
+    COALESCE(descontinuado, false) AS descontinuado,
+    COALESCE(arquivado, false) AS arquivado,
+    COALESCE(stock, 0) > 0 AS tem_stock
+   FROM produtos produto;
+-- InPost Espanha 4,95 € em todos os escalões de peso:
+-- update portes_tarifas set preco = 4.95 where zona='espanha' and metodo_id='inpost_registado';
+-- 2026-10-31: todocoleccion_criar_lotes_novos passa a criar lotes também para produtos arquivados com stock
+--   (condição: p.ativo and coalesce(p.stock,0) > 0 ... — deixou de excluir arquivado).

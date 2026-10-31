@@ -262,7 +262,7 @@ async function criarLote(produtoId: number, titulo: string, preco: number, model
     title: titulo,
     id_section: m.id_section,
     price: preco.toFixed(2),
-    description_item: m.description || m.description_plain || "",
+    description_item: DESCRICAO_NOVA,
     condition: m.condition || 5,
     shipping_type: 3,
   };
@@ -277,6 +277,7 @@ async function criarLote(produtoId: number, titulo: string, preco: number, model
       id: d.id, referencia: sku, titulo: d.title, preco: d.price ? Number(d.price) : null, stock: stockTc(d),
       estado: d.status, seccao: d.id_section, imagem: d.main_image || null, num_imagens: (d.images_list || []).length,
       produto_id: produtoId, emparelhamento: "confirmado", detalhe_lido_em: new Date().toISOString(), visto_em: new Date().toISOString(),
+      descricao_versao: DESCRICAO_VERSAO,
     }, { onConflict: "id" });
   }
   return { ok: !!d?.success, id: d?.id ?? r?.id, titulo: d?.title, preco: d?.price, estado: d?.status, seccao: d?.id_section,
@@ -572,35 +573,42 @@ async function marcarEnviada(idOrder: number, codigo: string, data: string) {
 }
 
 // ---------- Descrição dos lotes ----------
-const DESCRICAO_VERSAO = "es-2026-10c";
-const DESCRICAO_NOVA =
+const DESCRICAO_VERSAO = "es-2026-10e";
+const LINHA_PORTES = "<p>\u27a4 Envío a <strong>España</strong> peninsular: <strong>4,95 €</strong>, da igual cuántas figuras compre</p>";
+const LINHA_PORTES_ARTIGO = "<p>\u27a4 Envío a <strong>España</strong> peninsular: <strong>4,95 €</strong>, da igual cuántos artículos compre</p>";
+const LINHA_ENVIO = "<p>\u2709\ufe0f Envío desde Portugal con seguimiento. Puede comprar varios lotes y pagar un solo envío. España peninsular: InPost a punto de recogida. Envío a domicilio y resto de Europa por CTT según el peso. Tras la compra le indicaré los gastos de envío antes del pago.</p>";
+const DESCRICAO_NOVA = LINHA_PORTES +
   "<p>✨ Minifigura nueva. La gran mayoría se envían en su bolsa original precintada de fábrica; algunas figuras personalizadas, aunque nuevas, se envían sin bolsa precintada.</p>" +
   "<p>ℹ️ Las figuras no son de la marca LEGO®. Son de otras marcas, pero compatibles con LEGO® y con las mismas dimensiones.</p>" +
   "<p>✔️ Recibirá la figura tal y como aparece en las fotos, con todos sus accesorios. Solo la base puede ser diferente.</p>" +
-  "<p>✉️ Envío desde Portugal con seguimiento. Puede comprar varios lotes y pagar un solo envío. <strong>España peninsular: envío por InPost por solo 5,12 € (cualquier cantidad de lotes); escríbame antes de comprar para ajustar los gastos de envío.</strong></p>";
+  LINHA_ENVIO;
+const INICIO_NOVO = "Envío a España peninsular: 4,95 €, da igual cuánt";
 // Descrição antiga "normal" (só estes lotes são mudados; os diferentes ficam como estão e são listados).
 const DESCRICAO_ANTIGA = "Consulte todas as figuras deste tema em \"Ver todos os seus lotes nesta secção\".As figuras não são marca lego mas são compatíveis e com as mesmas dimensões.A base das figuras pode ser diferente da apresentada na foto.";
 // Para artigos que não são figuras (veículos, carroças...).
-const DESCRICAO_ARTIGO =
+const DESCRICAO_ARTIGO = LINHA_PORTES_ARTIGO +
   "<p>\u2728 Artículo nuevo.</p>" +
   "<p>\u2139\ufe0f No es de la marca LEGO®. Es de otra marca, pero compatible con LEGO®.</p>" +
   "<p>\u2714\ufe0f Recibirá el artículo tal y como aparece en las fotos.</p>" +
-  "<p>\u2709\ufe0f Envío desde Portugal con seguimiento. Puede comprar varios lotes y pagar un solo envío. <strong>España peninsular: envío por InPost por solo 5,12 € (cualquier cantidad de lotes); escríbame antes de comprar para ajustar los gastos de envío.</strong></p>";
+  LINHA_ENVIO;
 const normTexto = (t: string) => String(t || "").toLowerCase().normalize("NFD").replace(/[^a-z0-9]/g, "");
 
 async function descricaoLote(id: number, forcar = false, artigo = false) {
-  const html = artigo ? DESCRICAO_ARTIGO : DESCRICAO_NOVA;
-  const inicioTexto = artigo ? "Artículo nuevo" : "Minifigura nueva. La gran mayoría";
   const { data: l } = await db.from("todocoleccion_lotes").select("id, referencia").eq("id", id).maybeSingle();
   if (!l?.referencia) return { ok: false, erro: "lote_desconhecido" };
   const d = await tc(`/products/${encodeURIComponent(l.referencia)}`);
   if (!d?.success || Number(d.id) !== id) return { ok: false, erro: `detalhe: ${d?.error || "id_nao_coincide"}` };
   const atual = normTexto(d.description_plain || d.description || "");
-  if (!forcar && /ℹ|&#8505;/.test(String(d.description || "")) && atual.startsWith(normTexto("Minifigura nueva. La gran mayoría"))) {
+  // Veículos e outros artigos: detetados pelo texto atual.
+  if (atual.includes(normTexto("Artículo nuevo"))) artigo = true;
+  const html = artigo ? DESCRICAO_ARTIGO : DESCRICAO_NOVA;
+  const inicioTexto = artigo ? "Artículo nuevo" : "Minifigura nueva. La gran mayoría";
+  if (!forcar && atual.startsWith(normTexto(INICIO_NOVO)) && atual.includes(normTexto(inicioTexto))) {
     await db.from("todocoleccion_lotes").update({ descricao_versao: DESCRICAO_VERSAO }).eq("id", id);
     return { ok: true, sem_alteracao: true };
   }
-  const jaTextoNovo = atual.startsWith(normTexto("Minifigura nueva"));
+  const jaTextoNovo = atual.startsWith(normTexto("Minifigura nueva")) || atual.startsWith(normTexto("Artículo nuevo"))
+    || atual.startsWith(normTexto("Envío a España peninsular"));
   // Variantes da descrição antiga em português (todas começam por "Consulte todas as figuras" e têm o aviso da marca).
   const antigaPt = atual === normTexto(DESCRICAO_ANTIGA) || (atual.startsWith(normTexto("Consulte todas as figuras")) && atual.includes(normTexto("As figuras não são marca lego")));
   if (!forcar && !jaTextoNovo && !antigaPt) {
@@ -625,7 +633,8 @@ async function descricaoLote(id: number, forcar = false, artigo = false) {
   const depois = { titulo: v?.title, preco: v?.price, imagens: (v?.images_list || []).length, portes: JSON.stringify(v?.shipping_config ?? null), estado: v?.status, stock: stockTc(v) };
   const igual = depois.titulo === antes.titulo && Number(depois.preco) === Number(antes.preco) && depois.imagens === antes.imagens
     && depois.portes === antes.portes && depois.estado === antes.estado && depois.stock === antes.stock;
-  const novaOk = normTexto(v?.description_plain || v?.description || "").startsWith(normTexto(inicioTexto))
+  const vt = normTexto(v?.description_plain || v?.description || "");
+  const novaOk = vt.startsWith(normTexto(INICIO_NOVO)) && vt.includes(normTexto(inicioTexto))
     && /ℹ|&#8505;/.test(String(v?.description || ""));
   const ok = igual && novaOk;
   await db.from("todocoleccion_lotes").update({ descricao_versao: ok ? DESCRICAO_VERSAO : "erro" }).eq("id", id);
