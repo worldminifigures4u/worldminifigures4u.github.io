@@ -1086,3 +1086,5 @@ create or replace view public.produtos_loja with (security_invoker=false) as
    FROM produtos produto;
 -- InPost Espanha 4,95 € em todos os escalões de peso:
 -- update portes_tarifas set preco = 4.95 where zona='espanha' and metodo_id='inpost_registado';
+-- 2026-10-31: todocoleccion_criar_lotes_novos passa a criar lotes também para produtos arquivados com stock
+--   (condição: p.ativo and coalesce(p.stock,0) > 0 ... — deixou de excluir arquivado).
