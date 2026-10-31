@@ -2399,7 +2399,7 @@ function preencherFichaProdutoMapa(produto) {
     const secaoIdentificacao = criarSecaoEdicaoMapa("Identificação", "mapas-produto-secao-identificacao");
     criarCampoLeituraMapa(secaoIdentificacao, "Ref.", produto.referencia || "");
     criarCampoLeituraMapa(secaoIdentificacao, "SKU", produto.sku || "");
-    // Clicar no Tema copia "Nome (Tema)"; no Subtema copia "Nome (Tema) (Subtema)".
+    // Clicar no Tema copia "Nome (Tema)"; no Subtema copia "Nome (Subtema) (Tema)".
     const nomeCopiar = String(produto.nome || "").trim();
     const temaCopiar = String(formatarTemaProdutoMapa(produto.tema) || "").trim();
     const subtemaBruto = String(produto.subtema || "").trim();
@@ -2408,7 +2408,9 @@ function preencherFichaProdutoMapa(produto) {
     const blocoTema = criarCampoLeituraMapa(secaoIdentificacao, "Tema", temaCopiar);
     const blocoSubtema = criarCampoLeituraMapa(secaoIdentificacao, "Subtema", subtemaCopiar);
     if (temaCopiar) ligarCopiaCampoFichaMapa(blocoTema, textoComTema);
-    if (subtemaCopiar) ligarCopiaCampoFichaMapa(blocoSubtema, `${textoComTema} (${subtemaCopiar})`);
+    if (subtemaCopiar) {
+        ligarCopiaCampoFichaMapa(blocoSubtema, [nomeCopiar, `(${subtemaCopiar})`, temaCopiar ? `(${temaCopiar})` : ""].filter(Boolean).join(" "));
+    }
     topo.appendChild(secaoIdentificacao);
 
     const secaoDetalhes = criarSecaoEdicaoMapa("Detalhes", "mapas-produto-secao-detalhes");
