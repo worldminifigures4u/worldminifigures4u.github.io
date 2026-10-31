@@ -1076,3 +1076,13 @@ select cron.schedule('todocoleccion-lotes-novos', '17,47 * * * *', $$select publ
 -- Descrições es-2026-10d: todocoleccion_descricoes_seguinte() + cron 'todocoleccion-descricoes' (*/2), espera que os
 -- títulos acabem; tabela todocoleccion_controlo (chave, em). Quando termina, desliga os crons de títulos e descrições.
 -- todocoleccion_modelo_tema aceita descricao_versao like 'es-2026-10%'.
+
+-- ===== 2026-10-31: loja mostra arquivados com stock (arquivado = só esconder nas encomendas a fornecedores) =====
+create or replace view public.produtos_loja with (security_invoker=false) as
+ SELECT id, sku, nome, preco, peso, tema, subtema, imagens, ativo,
+    COALESCE(descontinuado, false) AS descontinuado,
+    COALESCE(arquivado, false) AS arquivado,
+    COALESCE(stock, 0) > 0 AS tem_stock
+   FROM produtos produto;
+-- InPost Espanha 4,95 € em todos os escalões de peso:
+-- update portes_tarifas set preco = 4.95 where zona='espanha' and metodo_id='inpost_registado';
