@@ -1095,9 +1095,8 @@ create or replace function public.todocoleccion_produto_dados() returns trigger
 language plpgsql security definer set search_path to 'public' as $f$
 declare l record; v_titulo text; v_preco numeric; v_corpo jsonb;
 begin
-  -- Títulos dos Looney Tunes foram feitos à mão (nome espanhol + inglês): só o preço é automático.
   if (new.nome, new.tema, new.subtema) is distinct from (old.nome, old.tema, old.subtema)
-     and coalesce(new.tema,'') <> 'Looney Tunes' and coalesce(new.nome,'') <> '' then
+     and coalesce(new.nome,'') <> '' then
     v_titulo := tc_titulo_es_v2(new.tema, new.nome || coalesce(' (' || nullif(nullif(new.subtema, ''), 'semsubtema') || ')', ''));
   end if;
   if new.preco is distinct from old.preco and coalesce(new.preco, 0) > 0 then
@@ -1116,3 +1115,14 @@ end $f$;
 drop trigger if exists produtos_tc_dados on public.produtos;
 create trigger produtos_tc_dados after update of nome, tema, subtema, preco on public.produtos
   for each row execute function todocoleccion_produto_dados();
+-- Looney Tunes também automáticos: tc_titulo_es_v2 tem o tema 'Looney Tunes' (saga Looney Tunes, palavra genérica
+-- 'dibujos animados') e todocoleccion_trad tem os nomes espanhóis (Road Runner → Correcaminos / Road Runner, etc.).
+insert into todocoleccion_trad (tema, de, para, inicio, alvo) values
+ ('Looney Tunes','Road Runner','Correcaminos / Road Runner',true,'nome'),
+ ('Looney Tunes','Coyote','Coyote / Wile E. Coyote',true,'nome'),
+ ('Looney Tunes','Sylvester','Gato Silvestre / Sylvester',true,'nome'),
+ ('Looney Tunes','Marvin the Martian','Marvin el Marciano / Marvin the Martian',true,'nome'),
+ ('Looney Tunes','Daffy Duck','Pato Lucas / Daffy Duck',true,'nome'),
+ ('Looney Tunes','Tweety','Piolín / Tweety',true,'nome'),
+ ('Looney Tunes','Porky Pig','Porky Pig / cerdito Porky',true,'nome'),
+ ('Looney Tunes','Tasmanian Devil','Taz Demonio de Tasmania / Tasmanian Devil',true,'nome');
