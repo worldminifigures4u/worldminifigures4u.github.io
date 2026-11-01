@@ -798,6 +798,15 @@ Deno.serve(async (req) => {
       case "descricao_lote": return resp(req, await descricaoLote(Number(corpo.id), !!corpo.forcar, !!corpo.artigo));
       case "descricoes_lotes": return resp(req, await descricoesLotes(corpo));
       case "titulos_lotes": return resp(req, await titulosLotes(corpo));
+      case "atualizar_lote": {
+        // Mudança no site (nome/tema/subtema e/ou preço): título e preço de UM lote, um a seguir ao outro.
+        const id = Number(corpo.id);
+        const out: any = { id };
+        if (corpo.titulo) out.titulo = await tituloLote(id, String(corpo.titulo));
+        if (Number(corpo.preco) > 0) out.preco = await precoLote(id, Number(corpo.preco));
+        out.ok = (!out.titulo || out.titulo.ok) && (!out.preco || out.preco.ok);
+        return resp(req, out);
+      }
       case "fotos_lote": return resp(req, await fotosLote(Number(corpo.id)));
       case "marcar_enviada": return resp(req, await marcarEnviada(Number(corpo.id_order), String(corpo.codigo || "").trim(), String(corpo.data || "")));
       case "apagar_lote": return resp(req, await apagarLote(Number(corpo.id), String(corpo.titulo || "")));
