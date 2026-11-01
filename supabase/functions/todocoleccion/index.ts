@@ -664,21 +664,22 @@ async function descricoesLotes(corpo: any) {
 
 // ---------- Título dos lotes ----------
 // Muda só o TÍTULO de UM lote (PUT com os restantes dados iguais) e confirma que o resto não mudou.
-async function tituloLote(id: number, novo: string) {
+async function tituloLote(id: number, novo: string, seccao = 0) {
   novo = String(novo || "").trim();
   if (novo.length < 5) return { ok: false, erro: "titulo_invalido" };
   const { data: l } = await db.from("todocoleccion_lotes").select("id, referencia").eq("id", id).maybeSingle();
   if (!l?.referencia) return { ok: false, erro: "lote_desconhecido" };
   const d = await tc(`/products/${encodeURIComponent(l.referencia)}`);
   if (!d?.success || Number(d.id) !== id) return { ok: false, erro: `detalhe: ${d?.error || "id_nao_coincide"}` };
-  if (String(d.title || "").trim() === novo) {
-    await db.from("todocoleccion_lotes").update({ titulo: novo }).eq("id", id);
+  const secAlvo = seccao > 0 ? seccao : Number(d.id_section);
+  if (String(d.title || "").trim() === novo && Number(d.id_section) === secAlvo) {
+    await db.from("todocoleccion_lotes").update({ titulo: novo, seccao: secAlvo }).eq("id", id);
     return { ok: true, sem_alteracao: true };
   }
   const antes = { titulo: d.title, preco: d.price, imagens: (d.images_list || []).length, portes: JSON.stringify(d.shipping_config ?? null),
     estado: d.status, stock: stockTc(d), descricao: normTexto(d.description_plain || d.description || "") };
   const corpo: Record<string, unknown> = {
-    id_product: l.referencia, title: novo, id_section: d.id_section, price: Number(d.price).toFixed(2),
+    id_product: l.referencia, title: novo, id_section: secAlvo, price: Number(d.price).toFixed(2),
     description_item: d.description || d.description_plain || "", condition: d.condition || 5,
   };
   if (d.condition_details) corpo.condition_details = d.condition_details;
@@ -694,9 +695,9 @@ async function tituloLote(id: number, novo: string) {
     estado: v?.status, stock: stockTc(v), descricao: normTexto(v?.description_plain || v?.description || "") };
   const resto = Number(depois.preco) === Number(antes.preco) && depois.imagens === antes.imagens && depois.portes === antes.portes
     && depois.estado === antes.estado && depois.stock === antes.stock && depois.descricao === antes.descricao;
-  const tituloOk = String(depois.titulo || "").trim() === novo;
-  if (v?.success) await db.from("todocoleccion_lotes").update({ titulo: v.title }).eq("id", id);
-  return { ok: tituloOk && resto, titulo_ok: tituloOk, resto_igual: resto, antes: { ...antes, descricao: undefined }, depois: { ...depois, descricao: undefined } };
+  const tituloOk = String(depois.titulo || "").trim() === novo && Number(v?.id_section) === secAlvo;
+  if (v?.success) await db.from("todocoleccion_lotes").update({ titulo: v.title, seccao: v.id_section }).eq("id", id);
+  return { ok: tituloOk && resto, seccao: v?.id_section, titulo_ok: tituloOk, resto_igual: resto, antes: { ...antes, descricao: undefined }, depois: { ...depois, descricao: undefined } };
 }
 
 async function titulosLotes(corpo: any) {
@@ -802,7 +803,11 @@ Deno.serve(async (req) => {
         // Mudança no site (nome/tema/subtema e/ou preço): título e preço de UM lote, um a seguir ao outro.
         const id = Number(corpo.id);
         const out: any = { id };
-        if (corpo.titulo) out.titulo = await tituloLote(id, String(corpo.titulo));
+        if (corpo.titulo || Number(corpo.seccao) > 0) {
+          let t = String(corpo.titulo || "");
+          if (!t) { const { data: x } = await db.from("todocoleccion_lotes").select("titulo").eq("id", id).maybeSingle(); t = String(x?.titulo || ""); }
+          out.titulo = await tituloLote(id, t, Number(corpo.seccao) || 0);
+        }
         if (Number(corpo.preco) > 0) out.preco = await precoLote(id, Number(corpo.preco));
         out.ok = (!out.titulo || out.titulo.ok) && (!out.preco || out.preco.ok);
         return resp(req, out);

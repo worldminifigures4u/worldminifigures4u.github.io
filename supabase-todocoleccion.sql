@@ -1126,3 +1126,5 @@ insert into todocoleccion_trad (tema, de, para, inicio, alvo) values
  ('Looney Tunes','Tweety','Piolín / Tweety',true,'nome'),
  ('Looney Tunes','Porky Pig','Porky Pig / cerdito Porky',true,'nome'),
  ('Looney Tunes','Tasmanian Devil','Taz Demonio de Tasmania / Tasmanian Devil',true,'nome');
+-- 2026-11-01: tema mudado → o lote passa para a secção habitual desse tema (secção do lote modelo do tema).
+-- todocoleccion_produto_dados() envia {acao:'atualizar_lote', id, titulo?, seccao?, preco?}; ver pg_get_functiondef na BD.
