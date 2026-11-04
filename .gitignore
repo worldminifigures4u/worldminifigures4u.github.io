@@ -10,6 +10,8 @@ supabase/functions/*
 !supabase/functions/emitir-fatura-moloni/index.ts
 !supabase/functions/criar-encomenda/
 !supabase/functions/criar-encomenda/index.ts
+!supabase/functions/wallapop/
+!supabase/functions/wallapop/index.ts
 mapas csv/
 API key site envio mails/
 fotos de outros sites/
