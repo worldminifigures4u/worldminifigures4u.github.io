@@ -629,7 +629,7 @@ function garantirFichaClientePlataforma() {
                 return carregarScriptAdmin('paises-cliente.js?v=20260731-wallapop-es');
             })
             .then(function () {
-                return carregarScriptAdmin('admin-ficha-cliente.js?v=20261016-notas-aviso');
+                return carregarScriptAdmin('admin-ficha-cliente.js?v=20261104-historico-abrir');
             })
             .then(function () {
                 window.AdminFichaCliente?.configurar({

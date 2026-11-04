@@ -502,8 +502,30 @@
         return true;
     }
 
-    function criarCodigoHistoricoEncomenda(item) {
-        return criarElemento('strong', '', item.codigo || item.codigo_encomenda || `#${item.id}`);
+    // Clicar no código abre a encomenda numa janela rápida (como na página Clientes), quando a página tem essa janela.
+    function criarCodigoHistoricoEncomenda(item, indice = 0, historico = []) {
+        const codigo = item.codigo || item.codigo_encomenda || `#${item.id}`;
+        const abrir = typeof window.abrirModalEncomendaClienteLazy === 'function'
+            ? window.abrirModalEncomendaClienteLazy
+            : (typeof window.abrirModalEncomendaCliente === 'function' ? window.abrirModalEncomendaCliente : null);
+        if (!item.id || !abrir || !document.getElementById('clientes-encomenda-modal')) {
+            return criarElemento('strong', '', codigo);
+        }
+        const botao = document.createElement('button');
+        botao.type = 'button';
+        botao.className = 'clientes-historico-codigo';
+        botao.textContent = codigo;
+        botao.title = 'Abrir encomenda';
+        botao.addEventListener('click', () => {
+            const historicoComId = historico.filter(entrada => entrada?.id);
+            const posicao = Math.max(0, historicoComId.indexOf(item));
+            try {
+                abrir(historicoComId, posicao)?.catch?.(console.error);
+            } catch (erro) {
+                console.error(erro);
+            }
+        });
+        return botao;
     }
 
     function formatarDataAvisoStock(valor) {
@@ -651,13 +673,13 @@
         const historicoSecao = criarElemento('section', 'admin-cliente-secao');
         historicoSecao.appendChild(criarElemento('h3', '', 'Hist\u00f3rico de encomendas'));
         const listaHistorico = criarElemento('div', 'admin-cliente-historico');
-        historico.forEach((item) => {
+        historico.forEach((item, indice) => {
             const cancelada = String(item.estado || '').trim().toLowerCase() === 'cancelado';
             const linha = criarElemento('div', 'admin-cliente-historico-linha');
             if (cancelada) linha.classList.add('clientes-historico-cancelada');
             const estado = criarElemento('span', cancelada ? 'clientes-historico-estado-cancelada' : '', item.estado || '');
             linha.append(
-                criarCodigoHistoricoEncomenda(item),
+                criarCodigoHistoricoEncomenda(item, indice, historico),
                 criarElemento('span', 'clientes-historico-origem', item.origem || 'Site'),
                 estado,
                 criarElemento('span', 'clientes-historico-data', formatarData(item.data)),
