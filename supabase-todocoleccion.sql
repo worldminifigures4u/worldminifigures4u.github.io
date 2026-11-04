@@ -1143,3 +1143,7 @@ alter table public.todocoleccion_mensagens enable row level security;
 -- (ver pg_get_functiondef na BD).
 create trigger encomendas_tc_mensagens after insert or update of estado, codigo_seguimento, cliente_gestao_id on public.encomendas
   for each row execute function todocoleccion_encomenda_mensagens();
+-- 2026-11-04: método de pagamento do comprador (PayPal / Pago tc (cartão) / Transferência) passa para encomendas.metodo_pagamento
+--   (todocoleccion_criar_encomenda usa p->>'metodo_pagamento'; ao pagar também é atualizado).
+-- PayPal: acréscimo de 10 % sobre lotes + envio — nas notas internas (todocoleccion_encomenda_portes) e na 1.ª mensagem
+--   ao comprador ("según indico en mis condiciones de envío"), com o valor a indicar como portes já somado.

@@ -404,6 +404,14 @@ async function sincronizarEstado(produtos: number[] | null, corpo: any = {}) {
 }
 
 // ---------- Encomendas do todocoleccion ----------
+// Método de pagamento escolhido pelo comprador, em português para o admin.
+function metodoPagamentoTc(d: any): string {
+  const c = String(d?.payment_method || "").toLowerCase();
+  if (c === "paypal") return "PayPal";
+  if (c === "psp") return "Pago tc (cartão)";
+  if (c === "transferencia") return "Transferência";
+  return String(d?.payment_method_text || "") || "Todocoleccion";
+}
 const PAISES: Record<string, [string, string]> = {
   "España": ["Espanha", "espanha"], "Portugal": ["Portugal", "portugal"], "Francia": ["França", "franca"],
   "Alemania": ["Alemanha", "alemanha"], "Italia": ["Itália", "italia"], "Países Bajos": ["Países Baixos", "paises_baixos"],
@@ -478,6 +486,7 @@ async function importarEncomendas(modo: string) {
           const pais = d?.buyer?.country || "";
           const campos: Record<string, unknown> = {
             estado: "Pago",
+            metodo_pagamento: metodoPagamentoTc(d),
             data_pagamento: st.paid_timestamp ? new Date(Number(st.paid_timestamp) * 1000).toISOString() : new Date().toISOString(),
           };
           if (portes > 0) {
@@ -540,7 +549,7 @@ async function importarEncomendas(modo: string) {
       total: Number(d.price_total ?? d.total), portes, login: b.login || b.slug || "", perfil_url: b.slug ? `https://pt.todocoleccion.net/usuario/${b.slug}` : "",
       nome: b.name || "", email: b.email || "", telefone: b.mobile || b.phone || "", morada: b.address || "", cp: b.cp || "",
       cidade: b.city || b.locality || "", pais: paisPt, regiao_envio: regiao, metodo_envio: metodo, metodo_envio_nome: metodoNome,
-      itens, sem_produto: sem } });
+      metodo_pagamento: metodoPagamentoTc(d), itens, sem_produto: sem } });
     if (error || !r?.sucesso) {
       await db.from("todocoleccion_encomendas").upsert({ ...linhaBase, situacao: "erro", erro: error?.message || r?.erro || "desconhecido" }, { onConflict: "id_order" });
       erros.push({ id_order: idOrder, erro: error?.message || r?.erro });
