@@ -572,6 +572,19 @@ async function marcarEnviada(idOrder: number, codigo: string, data: string) {
   return { ok, data: dt, resposta: r, estado: st };
 }
 
+// Envia UMA mensagem ao comprador no mensageiro do pedido (só texto) e regista o resultado.
+async function mensagemEncomenda(idOrder: number, tipo: string, texto: string) {
+  texto = String(texto || "").trim();
+  if (!idOrder || !texto || !tipo) return { ok: false, erro: "dados_em_falta" };
+  const { data: ja } = await db.from("todocoleccion_mensagens").select("enviada_em").eq("id_order", idOrder).eq("tipo", tipo).maybeSingle();
+  if (ja?.enviada_em) return { ok: true, ja_enviada: true };
+  const r = await tc(`/orders/messages/${idOrder}`, { method: "POST", body: JSON.stringify({ text: texto }) });
+  const ok = !!(r?.success ?? (r && !r.error));
+  await db.from("todocoleccion_mensagens").upsert({ id_order: idOrder, tipo, texto, enviada_em: ok ? new Date().toISOString() : null,
+    erro: ok ? null : JSON.stringify(r).slice(0, 500), tentado_em: new Date().toISOString() }, { onConflict: "id_order,tipo" });
+  return { ok, resposta: r };
+}
+
 // ---------- Descrição dos lotes ----------
 const DESCRICAO_VERSAO = "es-2026-10e";
 const LINHA_PORTES = "<p>\u27a4 Envío a <strong>España</strong> peninsular: <strong>4,95 €</strong>, da igual cuántas figuras compre</p>";
@@ -812,6 +825,7 @@ Deno.serve(async (req) => {
         out.ok = (!out.titulo || out.titulo.ok) && (!out.preco || out.preco.ok);
         return resp(req, out);
       }
+      case "mensagem_encomenda": return resp(req, await mensagemEncomenda(Number(corpo.id_order), String(corpo.tipo || ""), String(corpo.texto || "")));
       case "fotos_lote": return resp(req, await fotosLote(Number(corpo.id)));
       case "marcar_enviada": return resp(req, await marcarEnviada(Number(corpo.id_order), String(corpo.codigo || "").trim(), String(corpo.data || "")));
       case "apagar_lote": return resp(req, await apagarLote(Number(corpo.id), String(corpo.titulo || "")));

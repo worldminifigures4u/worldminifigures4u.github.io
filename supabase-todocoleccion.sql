@@ -1128,3 +1128,18 @@ insert into todocoleccion_trad (tema, de, para, inicio, alvo) values
  ('Looney Tunes','Tasmanian Devil','Taz Demonio de Tasmania / Tasmanian Devil',true,'nome');
 -- 2026-11-01: tema mudado → o lote passa para a secção habitual desse tema (secção do lote modelo do tema).
 -- todocoleccion_produto_dados() envia {acao:'atualizar_lote', id, titulo?, seccao?, preco?}; ver pg_get_functiondef na BD.
+
+-- ===== 2026-11-04: mensagens automáticas ao comprador (POST /orders/messages/{id_order}) =====
+-- Edge function: ação "mensagem_encomenda" {id_order, tipo, texto}; regista em todocoleccion_mensagens (não repete).
+-- Tipos: 'nova' (portes InPost/CTT calculados pelo peso e destino; não envia para destinos excluídos),
+--        'pago', 'enviada' (transportadora + código de seguimento).
+-- Nome: primeiro nome da ficha do cliente (clientes_gestao.nome); se só houver o nome de utilizador → "Hola,".
+-- A primeira mensagem sai quando a ficha do cliente fica ligada à encomenda (cliente_gestao_id).
+create table if not exists public.todocoleccion_mensagens (
+  id_order bigint not null, tipo text not null, texto text, enviada_em timestamptz, erro text, tentado_em timestamptz,
+  criado_em timestamptz not null default now(), primary key (id_order, tipo));
+alter table public.todocoleccion_mensagens enable row level security;
+-- Funções: tc_euros(numeric), todocoleccion_mensagem_texto(text, encomendas), todocoleccion_encomenda_mensagens()
+-- (ver pg_get_functiondef na BD).
+create trigger encomendas_tc_mensagens after insert or update of estado, codigo_seguimento, cliente_gestao_id on public.encomendas
+  for each row execute function todocoleccion_encomenda_mensagens();
