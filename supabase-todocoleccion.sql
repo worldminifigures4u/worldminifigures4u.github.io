@@ -1088,3 +1088,43 @@ create or replace view public.produtos_loja with (security_invoker=false) as
 -- update portes_tarifas set preco = 4.95 where zona='espanha' and metodo_id='inpost_registado';
 -- 2026-10-31: todocoleccion_criar_lotes_novos passa a criar lotes também para produtos arquivados com stock
 --   (condição: p.ativo and coalesce(p.stock,0) > 0 ... — deixou de excluir arquivado).
+
+-- ===== 2026-11-01: nome/tema/subtema/preço do site passam automaticamente para o todocoleccion =====
+-- Edge function: nova ação "atualizar_lote" {id, titulo?, preco?} (título e depois preço, no mesmo pedido).
+create or replace function public.todocoleccion_produto_dados() returns trigger
+language plpgsql security definer set search_path to 'public' as $f$
+declare l record; v_titulo text; v_preco numeric; v_corpo jsonb;
+begin
+  if (new.nome, new.tema, new.subtema) is distinct from (old.nome, old.tema, old.subtema)
+     and coalesce(new.nome,'') <> '' then
+    v_titulo := tc_titulo_es_v2(new.tema, new.nome || coalesce(' (' || nullif(nullif(new.subtema, ''), 'semsubtema') || ')', ''));
+  end if;
+  if new.preco is distinct from old.preco and coalesce(new.preco, 0) > 0 then
+    v_preco := tc_preco_regra(new.preco::numeric);
+  end if;
+  if v_titulo is null and v_preco is null then return new; end if;
+  for l in select id, titulo, preco from todocoleccion_lotes
+           where produto_id = new.id and emparelhamento = 'confirmado' and estado in (0, 4) loop
+    v_corpo := jsonb_build_object('acao', 'atualizar_lote', 'id', l.id);
+    if v_titulo is not null and v_titulo is distinct from l.titulo then v_corpo := v_corpo || jsonb_build_object('titulo', v_titulo); end if;
+    if v_preco is not null and v_preco is distinct from l.preco then v_corpo := v_corpo || jsonb_build_object('preco', v_preco); end if;
+    if v_corpo ? 'titulo' or v_corpo ? 'preco' then perform todocoleccion_disparar(v_corpo); end if;
+  end loop;
+  return new;
+end $f$;
+drop trigger if exists produtos_tc_dados on public.produtos;
+create trigger produtos_tc_dados after update of nome, tema, subtema, preco on public.produtos
+  for each row execute function todocoleccion_produto_dados();
+-- Looney Tunes também automáticos: tc_titulo_es_v2 tem o tema 'Looney Tunes' (saga Looney Tunes, palavra genérica
+-- 'dibujos animados') e todocoleccion_trad tem os nomes espanhóis (Road Runner → Correcaminos / Road Runner, etc.).
+insert into todocoleccion_trad (tema, de, para, inicio, alvo) values
+ ('Looney Tunes','Road Runner','Correcaminos / Road Runner',true,'nome'),
+ ('Looney Tunes','Coyote','Coyote / Wile E. Coyote',true,'nome'),
+ ('Looney Tunes','Sylvester','Gato Silvestre / Sylvester',true,'nome'),
+ ('Looney Tunes','Marvin the Martian','Marvin el Marciano / Marvin the Martian',true,'nome'),
+ ('Looney Tunes','Daffy Duck','Pato Lucas / Daffy Duck',true,'nome'),
+ ('Looney Tunes','Tweety','Piolín / Tweety',true,'nome'),
+ ('Looney Tunes','Porky Pig','Porky Pig / cerdito Porky',true,'nome'),
+ ('Looney Tunes','Tasmanian Devil','Taz Demonio de Tasmania / Tasmanian Devil',true,'nome');
+-- 2026-11-01: tema mudado → o lote passa para a secção habitual desse tema (secção do lote modelo do tema).
+-- todocoleccion_produto_dados() envia {acao:'atualizar_lote', id, titulo?, seccao?, preco?}; ver pg_get_functiondef na BD.
