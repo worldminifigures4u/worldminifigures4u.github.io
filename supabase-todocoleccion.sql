@@ -1149,3 +1149,7 @@ create trigger encomendas_tc_mensagens after insert or update of estado, codigo_
 --   ao comprador ("según indico en mis condiciones de envío"), com o valor a indicar como portes já somado.
 -- 2026-11-05: notas internas deixam de ter os portes sugeridos/PayPal (vão na mensagem ao comprador);
 --   todocoleccion_encomenda_portes só escreve o aviso de destino sem envio e marca prioritária.
+-- 2026-11-05: mensagens na língua do país do comprador — todocoleccion_lingua(pais) (es/pt/fr/it/de, resto en)
+--   e todocoleccion_frase(lingua, chave); Espanha peninsular mantém as duas opções em espanhol; Portugal sem 1.ª mensagem.
+--   Prazo de envio passa a "24-48 horas laborables / working hours / heures ouvrées / ore lavorative / an Werktagen / horas úteis".
+--   Acréscimo PayPal calculado sobre (total - portes) + portes da opção.
