@@ -6353,12 +6353,14 @@ html.admin-light-mode .mapas-produto-preco-compra-detalhe .mapas-produto-leitura
     text-decoration-color: rgba(0, 0, 0, 0.4);
 }
 /* Histórico a fornecedores: preço com figura + portes + taxas ao passar o rato. */
-.mapas-produto-historico-fornecedores-tabela td.mapas-produto-historico-preco-detalhe {
+.mapas-produto-historico-fornecedores-tabela td.mapas-produto-historico-preco-detalhe,
+.mapas-produto-precos-fornecedores-tabela td.mapas-produto-historico-preco-detalhe {
     cursor: help;
     text-decoration: underline dotted rgba(255, 255, 255, 0.45);
     text-underline-offset: 3px;
 }
-html.admin-light-mode .mapas-produto-historico-fornecedores-tabela td.mapas-produto-historico-preco-detalhe {
+html.admin-light-mode .mapas-produto-historico-fornecedores-tabela td.mapas-produto-historico-preco-detalhe,
+html.admin-light-mode .mapas-produto-precos-fornecedores-tabela td.mapas-produto-historico-preco-detalhe {
     text-decoration-color: rgba(0, 0, 0, 0.4);
 }
 

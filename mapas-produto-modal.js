@@ -1581,6 +1581,17 @@ function montarSecaoPrecosFornecedoresMapa(campos, produto) {
                     || item?.marcado_ex === true;
                 return linha.estimado ? naoComprada : (!naoComprada && Number(item?.quantidade || 0) > 0);
             });
+            // Último preço comprado: ao passar o rato mostra figura + portes + taxas dessa encomenda.
+            const celulaPreco = tr.cells[1];
+            if (encomenda && !linha.estimado && celulaPreco && itemCompradoPedidoFornecedorMapa(encomenda.item)) {
+                const custoItem = Math.max(0, Number(encomenda.item?.preco_custo ?? encomenda.item?.preco ?? 0) || 0);
+                celulaPreco.classList.add("mapas-produto-historico-preco-detalhe");
+                celulaPreco.title = "A calcular figura + portes + taxas...";
+                const origem = encomenda.pedido?.codigo || encomenda.pedido?.referencia || "";
+                textoDivisaoPrecoCompraFornecedorMapa(encomenda.pedido, encomenda.item, custoItem || linha.preco, encomenda.dataRef, origem ? `\n(${origem})` : "")
+                    .then((texto) => { celulaPreco.title = texto; })
+                    .catch(() => { celulaPreco.title = ""; });
+            }
             const celulaData = tr.cells[2];
             if (!encomenda?.dataRef || !celulaData) return;
             celulaData.textContent = formatarDataEncomendaFornecedorMapa(encomenda.dataRef);
