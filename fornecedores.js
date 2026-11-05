@@ -110,7 +110,7 @@ function garantirFornecedoresProdutoModal() {
 function garantirFornecedoresEdicaoPedido() {
     if (window.FornecedoresEdicaoPedido) return Promise.resolve();
     if (!__fornecedoresEdicaoPromessa) {
-        __fornecedoresEdicaoPromessa = carregarScriptAdmin("fornecedores-edicao-pedido.js?v=20261010-limpar-popup");
+        __fornecedoresEdicaoPromessa = carregarScriptAdmin("fornecedores-edicao-pedido.js?v=20261105-ignorado");
     }
     return __fornecedoresEdicaoPromessa;
 }
@@ -5243,6 +5243,7 @@ function obterValorOrdenacaoItemPedidoFornecedor(item, coluna) {
         const grupo = faltaOs > 0 && !naoComprar ? 5
             : marcadoEx ? 4
             : naoComprar ? 3
+            : itemPedidoIgnoradoListaFornecedor(item) ? 2.5
             : item?.origem_ajuste ? 2
             : 1;
         const texto = naoComprar ? "" : String(obterTextoOrigemAjusteItemPedidoFornecedor(item) || "");
@@ -5490,6 +5491,14 @@ function renderizarPedidoFornecedorProdutosTabela(caixa, pedido) {
                 dataExSpan.textContent = dataEx;
                 origemCelula.appendChild(dataExSpan);
             }
+        }
+        const ignoradoItem = itemPedidoIgnoradoListaFornecedor(item) && !marcadoEx && !naoComprarItem && !(faltaOs > 0);
+        if (ignoradoItem) {
+            const ignSpan = document.createElement("span");
+            ignSpan.className = "fornecedor-ajuste-os fornecedor-ajuste-ign ativo";
+            ignSpan.textContent = "Ignorado";
+            ignSpan.title = "O fornecedor não pôs esta figura na lista.";
+            origemCelula.appendChild(ignSpan);
         }
         // Uma só data por figura: OS/EX/Não comprar mostram a sua; a data de ajuste só aparece sem marcação.
         if (item.origem_ajuste && !marcadoEx && !naoComprarItem && !(faltaOs > 0)) {

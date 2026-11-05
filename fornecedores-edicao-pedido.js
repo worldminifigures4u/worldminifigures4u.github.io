@@ -1302,6 +1302,10 @@ async function aplicarListaFinalNaEdicaoFornecedor() {
 
     const avisos = [];
     if (foraCatalogo.length) avisos.push(`${foraCatalogo.length} referência(s) fora do catálogo incluída(s): ${foraCatalogo.join(", ")}`);
+    // Figuras da encomenda que o fornecedor não pôs na lista (ficam "Ignorado na lista").
+    const ignoradas = itens.filter(itemIgnoradoListaEdicaoFornecedor)
+        .map(item => item.referencia || item.sku || item.nome || "sem referência");
+    if (ignoradas.length) avisos.push(`${ignoradas.length} ignorada(s) pelo fornecedor (não vieram na lista): ${ignoradas.join(", ")}`);
     if (erros.length) avisos.push(erros.join("; "));
     definirStatusEdicaoFornecedor(
         status,

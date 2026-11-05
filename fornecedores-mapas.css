@@ -6160,6 +6160,7 @@ html:not(.admin-light-mode) #fornecedor-sugerir-modal .fornecedor-sugerir-corpo 
     margin: 0;
 }
 .fornecedor-ajuste-os.fornecedor-ajuste-nc.ativo { color: #8ab4f8 !important; }
+.fornecedor-ajuste-os.fornecedor-ajuste-ign.ativo { color: #f0a35e !important; }
 .mapas-produto-historico-rececoes-tabela tr.mapas-produto-historico-nao-comprada td { color: #8ab4f8; }
 
 /* Ficha do produto: preços por fornecedor */
