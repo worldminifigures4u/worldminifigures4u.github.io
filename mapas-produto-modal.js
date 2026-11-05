@@ -2075,7 +2075,7 @@ function explicarPortesPrecoCompraMapa(bloco, produto) {
         const temDivisao = item?.preco_custo_figura != null && item?.preco_custo_portes != null
             && Number.isFinite(Number(item.preco_custo_figura)) && Number.isFinite(Number(item.preco_custo_portes));
         if (!temDivisao) {
-            bloco.title = `${eur(custo)} € por figura (sem portes separados nesta compra).${avisoCambio}${sufixo}`;
+            bloco.title = `${eur(custo)} € por figura.\nPreço do fornecedor em USD não registado nesta compra: não é possível separar figura, portes e taxas.${avisoCambio}${sufixo}`;
             return;
         }
         const figura = Number(item.preco_custo_figura);
