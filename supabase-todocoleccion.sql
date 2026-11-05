@@ -1153,3 +1153,6 @@ create trigger encomendas_tc_mensagens after insert or update of estado, codigo_
 --   e todocoleccion_frase(lingua, chave); Espanha peninsular mantém as duas opções em espanhol; Portugal sem 1.ª mensagem.
 --   Prazo de envio passa a "24-48 horas laborables / working hours / heures ouvrées / ore lavorative / an Werktagen / horas úteis".
 --   Acréscimo PayPal calculado sobre (total - portes) + portes da opção.
+-- 2026-11-05: Portugal automatizado — todocoleccion_portes_sugeridos usa a tabela do site (zona portugal:
+--   inpost_registado e ctt_registado por peso); 1.ª mensagem em português com as duas opções (e PayPal +10 %).
+--   Mensagem "enviada": transportadora pelo código (XX123456789XX = CTT; só números = InPost) ou pelo método.
