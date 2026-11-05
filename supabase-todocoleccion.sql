@@ -1147,3 +1147,5 @@ create trigger encomendas_tc_mensagens after insert or update of estado, codigo_
 --   (todocoleccion_criar_encomenda usa p->>'metodo_pagamento'; ao pagar também é atualizado).
 -- PayPal: acréscimo de 10 % sobre lotes + envio — nas notas internas (todocoleccion_encomenda_portes) e na 1.ª mensagem
 --   ao comprador ("según indico en mis condiciones de envío"), com o valor a indicar como portes já somado.
+-- 2026-11-05: notas internas deixam de ter os portes sugeridos/PayPal (vão na mensagem ao comprador);
+--   todocoleccion_encomenda_portes só escreve o aviso de destino sem envio e marca prioritária.
