@@ -1156,3 +1156,5 @@ create trigger encomendas_tc_mensagens after insert or update of estado, codigo_
 -- 2026-11-05: Portugal automatizado — todocoleccion_portes_sugeridos usa a tabela do site (zona portugal:
 --   inpost_registado e ctt_registado por peso); 1.ª mensagem em português com as duas opções (e PayPal +10 %).
 --   Mensagem "enviada": transportadora pelo código (XX123456789XX = CTT; só números = InPost) ou pelo método.
+-- 2026-11-05: lotes novos de 10 em 10 minutos (desfasado das encomendas, que correm aos minutos 0,10,20…):
+-- select cron.alter_job((select jobid from cron.job where jobname='todocoleccion-lotes-novos'), schedule := '7,17,27,37,47,57 * * * *');
