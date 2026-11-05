@@ -1489,6 +1489,15 @@ function renderizarHistoricoEncomendasFornecedorMapa(conteudo, produto, pedidos)
             // Sem dias quando a figura não veio nesta encomenda (OS total, EX ou não comprada).
             const naoVeio = Math.max(0, Number(item?.quantidade || 0)) <= 0 && (emFalta || emEx || naoComprada);
             if (indiceColuna === 0 && !naoVeio) acrescentarDiasEncomendaFornecedorMapa(td, pedido);
+            // Preço em €: ao passar o rato mostra figura + portes + taxas dessa encomenda.
+            const custoLinha = Math.max(0, Number(item?.preco_custo ?? item?.preco ?? 0) || 0);
+            if (indiceColuna === 5 && custoLinha > 0 && / €$/.test(precoTexto) && itemCompradoPedidoFornecedorMapa(item)) {
+                td.classList.add("mapas-produto-historico-preco-detalhe");
+                td.title = "A calcular figura + portes + taxas...";
+                textoDivisaoPrecoCompraFornecedorMapa(pedido, item, custoLinha, dataRef)
+                    .then((texto) => { td.title = texto; })
+                    .catch(() => { td.title = ""; });
+            }
             tr.appendChild(td);
         });
         tbody.appendChild(tr);
@@ -2028,6 +2037,38 @@ function portesUsdUnidadePedidoMapa(pedido, item) {
     return unidades > 0 ? envioUsd / unidades : 0;
 }
 
+// Texto "Figura + portes + taxas" (ou "Figura + portes") do custo de uma figura numa encomenda ao fornecedor.
+// Usado no preço de compra da ficha e no preço de cada linha do Histórico a fornecedores.
+async function textoDivisaoPrecoCompraFornecedorMapa(pedido, item, custo, dataRef = "", sufixo = "") {
+    const eur = (v) => formatarEuroProdutoModal(v);
+    // Compra em USD com total pago em €: figura + portes ao câmbio oficial, taxas = resto.
+    let avisoCambio = "";
+    const precoUsd = Math.max(0, Number(item?.preco_lista_usd || 0) || 0);
+    const pagoEur = Math.max(0, Number(pedido?.custos?.total_pago_eur || 0) || 0);
+    if (precoUsd > 0 && pagoEur > 0) {
+        const dataCompra = pedido?.data_encomendada || pedido?.criado_em || dataRef || "";
+        const cambio = await obterCambioOficialUsdEurMapa(dataCompra);
+        if (!(cambio > 0)) avisoCambio = "\nTaxas não calculadas: câmbio oficial indisponível.";
+        if (cambio > 0) {
+            const figura = Math.round(precoUsd * cambio * 100) / 100;
+            const portes = Math.round(portesUsdUnidadePedidoMapa(pedido, item) * cambio * 100) / 100;
+            const taxas = Math.max(0, Math.round((custo - figura - portes) * 100) / 100);
+            return `Figura ${eur(figura)} € + portes ${eur(portes)} € + taxas ${eur(taxas)} € = ${eur(figura + portes + taxas)} €`
+                + `\nCâmbio oficial ${String(dataCompra).slice(0, 10)}: 1 USD = ${cambio.toFixed(4).replace(".", ",")} €`
+                + sufixo;
+        }
+    }
+    // Compra em € (ou sem câmbio disponível): figura + portes, como antes.
+    const temDivisao = item?.preco_custo_figura != null && item?.preco_custo_portes != null
+        && Number.isFinite(Number(item.preco_custo_figura)) && Number.isFinite(Number(item.preco_custo_portes));
+    if (!temDivisao) {
+        return `${eur(custo)} € por figura.\nPreço do fornecedor em USD não registado nesta compra: não é possível separar figura, portes e taxas.${avisoCambio}${sufixo}`;
+    }
+    const figura = Number(item.preco_custo_figura);
+    const portes = Number(item.preco_custo_portes);
+    return `Figura ${eur(figura)} € + portes ${eur(portes)} € = ${eur(figura + portes)} €${avisoCambio}${sufixo}`;
+}
+
 function explicarPortesPrecoCompraMapa(bloco, produto) {
     const preco = Number(produto?.preco_compra || 0);
     if (!bloco || !(preco > 0) || typeof carregarEncomendasFornecedorMapa !== "function") return;
@@ -2050,37 +2091,9 @@ function explicarPortesPrecoCompraMapa(bloco, produto) {
         const custo = custoItem(escolhida) || preco;
         const origem = [pedido?.codigo || pedido?.referencia, pedido?.fornecedor].filter(Boolean).join(" · ");
         const sufixo = origem ? `\n(${origem})` : "";
-
-        // Compra em USD com total pago em €: figura + portes ao câmbio oficial, taxas = resto.
-        let avisoCambio = "";
-        const precoUsd = Math.max(0, Number(item?.preco_lista_usd || 0) || 0);
-        const pagoEur = Math.max(0, Number(pedido?.custos?.total_pago_eur || 0) || 0);
-        if (precoUsd > 0 && pagoEur > 0) {
-            const dataCompra = pedido?.data_encomendada || pedido?.criado_em || escolhida.dataRef || "";
-            const cambio = await obterCambioOficialUsdEurMapa(dataCompra);
-            if (!bloco.isConnected || bloco.dataset.produtoId !== produtoId) return;
-            if (!(cambio > 0)) avisoCambio = "\nTaxas não calculadas: câmbio oficial indisponível.";
-            if (cambio > 0) {
-                const figura = Math.round(precoUsd * cambio * 100) / 100;
-                const portes = Math.round(portesUsdUnidadePedidoMapa(pedido, item) * cambio * 100) / 100;
-                const taxas = Math.max(0, Math.round((custo - figura - portes) * 100) / 100);
-                bloco.title = `Figura ${eur(figura)} € + portes ${eur(portes)} € + taxas ${eur(taxas)} € = ${eur(figura + portes + taxas)} €`
-                    + `\nCâmbio oficial ${String(dataCompra).slice(0, 10)}: 1 USD = ${cambio.toFixed(4).replace(".", ",")} €`
-                    + sufixo;
-                return;
-            }
-        }
-
-        // Compra em € (ou sem câmbio disponível): figura + portes, como antes.
-        const temDivisao = item?.preco_custo_figura != null && item?.preco_custo_portes != null
-            && Number.isFinite(Number(item.preco_custo_figura)) && Number.isFinite(Number(item.preco_custo_portes));
-        if (!temDivisao) {
-            bloco.title = `${eur(custo)} € por figura.\nPreço do fornecedor em USD não registado nesta compra: não é possível separar figura, portes e taxas.${avisoCambio}${sufixo}`;
-            return;
-        }
-        const figura = Number(item.preco_custo_figura);
-        const portes = Number(item.preco_custo_portes);
-        bloco.title = `Figura ${eur(figura)} € + portes ${eur(portes)} € = ${eur(figura + portes)} €${avisoCambio}${sufixo}`;
+        const texto = await textoDivisaoPrecoCompraFornecedorMapa(pedido, item, custo, escolhida.dataRef, sufixo);
+        if (!bloco.isConnected || bloco.dataset.produtoId !== produtoId) return;
+        bloco.title = texto;
     }).catch(() => { bloco.title = ""; });
 }
 
