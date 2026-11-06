@@ -1388,8 +1388,17 @@ window.AdminEncomendaVista = (function () {
             }, 0);
         });
 
+        // Atualiza a caixa quando as notas mudam por outro lado (ex.: botão "Aguarda resposta").
+        function definirNotasGravadas(texto) {
+            valorGravado = String(texto || "");
+            notas.value = valorGravado;
+            encomenda.notas_internas = valorGravado;
+            ajustarAlturaNotasTelemovel();
+        }
+
         const controloNotas = {
             guardar: guardarNotasInternas,
+            definirNotasGravadas,
             gravarAoSair: gravarNotasAoSair,
             temAlteracoesPendentes,
             reverter: reverterNotas,
@@ -3457,16 +3466,18 @@ window.AdminEncomendaVista = (function () {
 
         // Botão "Aguarda resposta do comprador": põe/tira a nota nas notas internas.
         if (!["Concluído", "Cancelado"].includes(estadoAtual)) {
-            const ativo = aguardaRespostaComprador(encomenda);
-            const botaoAguarda = criarElemento(
-                "button",
-                `wallapop-botao admin-encomenda-aguarda-resposta-botao${ativo ? " ativo" : ""}`,
-                ativo ? "Aguarda resposta ✓" : "Aguarda resposta"
-            );
+            const botaoAguarda = criarElemento("button", "wallapop-botao admin-encomenda-aguarda-resposta-botao");
             botaoAguarda.type = "button";
-            botaoAguarda.title = ativo
-                ? "Tirar o alerta: o comprador já respondeu."
-                : "Marcar que está paga mas à espera da resposta do comprador (não preparar ainda).";
+            let ativo = false;
+            const mostrarEstadoAguarda = () => {
+                ativo = aguardaRespostaComprador(encomenda);
+                botaoAguarda.classList.toggle("ativo", ativo);
+                botaoAguarda.textContent = ativo ? "Aguarda resposta ✓" : "Aguarda resposta";
+                botaoAguarda.title = ativo
+                    ? "Tirar o alerta: o comprador já respondeu."
+                    : "Marcar que está paga mas à espera da resposta do comprador (não preparar ainda).";
+            };
+            mostrarEstadoAguarda();
             botaoAguarda.addEventListener("mousedown", () => controloNotas?.ignorarProximoBlur?.());
             botaoAguarda.addEventListener("click", async (evento) => {
                 evento.stopPropagation();
@@ -3488,7 +3499,11 @@ window.AdminEncomendaVista = (function () {
                 }
                 sincronizarEncomendaNaLista(encomenda, { notas_internas: notasNovas });
                 encomenda.notas_internas = notasNovas;
-                hooks.definirStatus(!ativo ? "Alerta posto: a aguardar resposta do comprador." : "Alerta tirado.");
+                controloNotas?.definirNotasGravadas?.(notasNovas);
+                const posto = !ativo;
+                mostrarEstadoAguarda();
+                botaoAguarda.disabled = false;
+                hooks.definirStatus(posto ? "Alerta posto: a aguardar resposta do comprador." : "Alerta tirado.");
                 atualizarListaAposAlteracaoEncomenda();
             });
             blocoEstado.appendChild(botaoAguarda);
