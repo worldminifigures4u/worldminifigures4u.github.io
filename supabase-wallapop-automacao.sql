@@ -20,3 +20,20 @@
 --  Venda confirmada: passa para "Pago" (e retira a nota acima). Cancelada / entregue: não mexe. Nunca emite faturas.
 --  Figuras: nome igual; várias fichas -> a ativa com stock; nome não exato -> a mais provável, com aviso e prioritária.
 select 1;
+
+-- =====================================================================
+-- 06/11/2026 — "Venda confirmada" com a encomenda já em Pago (ou mais à frente)
+-- Antes: não mexia ("sem_alteracao") e a nota "PAGO - a aguardar resposta do comprador" ficava.
+-- Agora: tira só essa nota (ação "nota_tirada"), sem mudar estado nem data de pagamento.
+-- Vale para lotes personalizados e vendas normais. Cópia da versão anterior em
+-- wallapop_config.chave = 'backup_wallapop_aplicar_email_20261106'.
+-- =====================================================================
+create or replace function public.wallapop_tirar_nota_pago(t text) returns text
+language sql immutable set search_path to 'public' as $f$
+  select nullif(btrim(regexp_replace(coalesce(t,''), E'(^|\\n)PAGO - a aguardar resposta do comprador(\\n|$)', E'\\1', 'g'), E'\n '), '')
+$f$;
+-- Em wallapop_aplicar_email, nos dois ramos "confirmada":
+--   else
+--     update encomendas set notas_internas = wallapop_tirar_nota_pago(notas_internas)
+--       where id = v_enc_id and estado <> 'Cancelado' and position(NOTA_PAGO in coalesce(notas_internas,'')) > 0;
+--     v_acao := case when found then 'nota_tirada' else 'sem_alteracao' end;
