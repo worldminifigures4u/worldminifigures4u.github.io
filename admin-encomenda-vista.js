@@ -1150,6 +1150,31 @@ window.AdminEncomendaVista = (function () {
         return String(nome || "").replace(/^\d{13}-[a-z0-9]{6}-/i, "");
     }
 
+    // Alerta "pago, mas à espera que o comprador diga se quer um anúncio com todas as figuras".
+    // Fica nas notas internas (a automação do Wallapop escreve a mesma frase).
+    const NOTA_AGUARDA_RESPOSTA = "PAGO - a aguardar resposta do comprador";
+    const REGEX_NOTA_AGUARDA_RESPOSTA = /^[ \t]*PAGO\s*-\s*a aguardar resposta do comprador[ \t]*(\r?\n)?/im;
+
+    function aguardaRespostaComprador(encomenda) {
+        const estado = estadoNormalizado(encomenda?.estado);
+        if (estado === "Concluído" || estado === "Cancelado") return false;
+        return REGEX_NOTA_AGUARDA_RESPOSTA.test(String(encomenda?.notas_internas || ""));
+    }
+
+    function alternarNotaAguardaResposta(notas, ativar) {
+        const texto = String(notas || "");
+        const tem = REGEX_NOTA_AGUARDA_RESPOSTA.test(texto);
+        if (ativar && !tem) return texto.trim() ? `${NOTA_AGUARDA_RESPOSTA}\n${texto}` : NOTA_AGUARDA_RESPOSTA;
+        if (!ativar && tem) return texto.replace(REGEX_NOTA_AGUARDA_RESPOSTA, "").replace(/^\s*\n/, "");
+        return texto;
+    }
+
+    function criarSeloAguardaResposta() {
+        const selo = criarElemento("span", "admin-encomenda-aguarda-resposta", "Aguarda resposta");
+        selo.title = "Pago, mas à espera da resposta do comprador (anúncio com todas as figuras). Não preparar ainda.";
+        return selo;
+    }
+
     function formatarTextoContagemAnexos(quantidade) {
         const n = Number(quantidade);
         if (!Number.isFinite(n) || n < 0) return "…";
@@ -3078,7 +3103,15 @@ window.AdminEncomendaVista = (function () {
             checkbox.addEventListener("change", () => atualizarPrioridade(encomenda, checkbox.checked, checkbox));
             prioridade.addEventListener("click", evento => evento.stopPropagation());
             prioridade.append(checkbox, criarElemento("span", "", "Prioritária"));
-            linha.appendChild(prioridade);
+            if (!modoModal && aguardaRespostaComprador(encomenda)) {
+                const grupoPrioridade = criarElemento("span", "admin-encomenda-prioridade-com-aguarda");
+                grupoPrioridade.append(prioridade, criarSeloAguardaResposta());
+                linha.appendChild(grupoPrioridade);
+            } else {
+                linha.appendChild(prioridade);
+            }
+        } else if (!modoModal && aguardaRespostaComprador(encomenda)) {
+            linha.appendChild(criarSeloAguardaResposta());
         } else {
             linha.appendChild(criarElemento("span", "admin-encomenda-prioridade-vazia", ""));
         }
@@ -3420,6 +3453,45 @@ window.AdminEncomendaVista = (function () {
                 atualizarEstado(encomenda, proximoEstado, select, opcoes);
             });
             blocoEstado.appendChild(avancar);
+        }
+
+        // Botão "Aguarda resposta do comprador": põe/tira a nota nas notas internas.
+        if (!["Concluído", "Cancelado"].includes(estadoAtual)) {
+            const ativo = aguardaRespostaComprador(encomenda);
+            const botaoAguarda = criarElemento(
+                "button",
+                `wallapop-botao admin-encomenda-aguarda-resposta-botao${ativo ? " ativo" : ""}`,
+                ativo ? "Aguarda resposta ✓" : "Aguarda resposta"
+            );
+            botaoAguarda.type = "button";
+            botaoAguarda.title = ativo
+                ? "Tirar o alerta: o comprador já respondeu."
+                : "Marcar que está paga mas à espera da resposta do comprador (não preparar ainda).";
+            botaoAguarda.addEventListener("mousedown", () => controloNotas?.ignorarProximoBlur?.());
+            botaoAguarda.addEventListener("click", async (evento) => {
+                evento.stopPropagation();
+                botaoAguarda.disabled = true;
+                // Primeiro grava o que estiver escrito nas notas, para não se perder.
+                if (controloNotas?.temAlteracoesPendentes?.()) {
+                    const gravou = await controloNotas.guardar();
+                    if (!gravou) { botaoAguarda.disabled = false; return; }
+                }
+                const notasNovas = alternarNotaAguardaResposta(encomenda.notas_internas, !ativo);
+                const { data, error } = await obterClient().rpc("guardar_notas_encomenda_admin", {
+                    p_encomenda_id: String(encomenda.id),
+                    p_notas: notasNovas
+                });
+                if (error || data?.sucesso === false) {
+                    hooks.definirStatus("Erro ao gravar o alerta: " + (error?.message || data?.erro || "sem detalhe"), true);
+                    botaoAguarda.disabled = false;
+                    return;
+                }
+                sincronizarEncomendaNaLista(encomenda, { notas_internas: notasNovas });
+                encomenda.notas_internas = notasNovas;
+                hooks.definirStatus(!ativo ? "Alerta posto: a aguardar resposta do comprador." : "Alerta tirado.");
+                atualizarListaAposAlteracaoEncomenda();
+            });
+            blocoEstado.appendChild(botaoAguarda);
         }
 
         gestaoLinha.append(blocoEstado, gestaoEncomenda);

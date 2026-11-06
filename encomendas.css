@@ -2641,3 +2641,71 @@ html.admin-light-mode .admin-encomenda-verificacao-stock.verificado{
 .admin-encomenda-stock-estado.por-verificar{ color:#ff5252; }
 html.admin-light-mode .admin-encomenda-stock-estado.verificado{ color:#2e7d32; }
 html.admin-light-mode .admin-encomenda-stock-estado.por-verificar{ color:#c62828; }
+
+/* Alerta "Aguarda resposta" (pago, mas à espera da resposta do comprador) */
+.admin-encomenda-aguarda-resposta{
+    justify-self:start;
+    display:inline-block;
+    padding:1px 6px;
+    border-radius:3px;
+    border:1px solid rgba(255, 152, 0, 0.55);
+    background:rgba(255, 152, 0, 0.14);
+    color:#ffb74d;
+    font-size:10px;
+    font-weight:700;
+    line-height:1.35;
+    white-space:nowrap;
+}
+.admin-encomenda-prioridade-com-aguarda{
+    justify-self:start;
+    display:inline-flex;
+    flex-direction:column;
+    align-items:flex-start;
+    gap:2px;
+}
+html.admin-light-mode .admin-encomenda-aguarda-resposta{
+    background:#fff3e0;
+    border-color:#ffb74d;
+    color:#b45309;
+}
+body .admin-encomenda-aguarda-resposta-botao{
+    flex:0 0 auto;
+    height:var(--admin-encomenda-modal-controlo-altura, 36px);
+    min-height:0 !important;
+    margin:0 !important;
+    padding:0 10px !important;
+    border:1px solid #444 !important;
+    border-radius:5px !important;
+    background:transparent !important;
+    color:#ddd !important;
+    font-size:12px !important;
+    font-weight:700 !important;
+    white-space:nowrap;
+    box-shadow:none !important;
+    cursor:pointer;
+}
+body .admin-encomenda-aguarda-resposta-botao:is(:hover, :focus-visible){
+    border-color:#ff9800 !important;
+    color:#ffb74d !important;
+    outline:none;
+}
+body .admin-encomenda-aguarda-resposta-botao.ativo{
+    border-color:rgba(255, 152, 0, 0.7) !important;
+    background:rgba(255, 152, 0, 0.16) !important;
+    color:#ffb74d !important;
+}
+html.admin-light-mode body .admin-encomenda-aguarda-resposta-botao{
+    border-color:var(--fp-light-borda-forte, #c3ccd8) !important;
+    color:var(--fp-light-texto, #182231) !important;
+}
+html.admin-light-mode body .admin-encomenda-aguarda-resposta-botao.ativo{
+    background:#fff3e0 !important;
+    border-color:#ffb74d !important;
+    color:#b45309 !important;
+}
+.admin-encomenda-modal-acoes .admin-encomenda-modal-estado:has(.admin-encomenda-aguarda-resposta-botao){
+    flex:0 0 auto !important;
+    width:auto !important;
+    min-width:0 !important;
+    gap:6px !important;
+}
