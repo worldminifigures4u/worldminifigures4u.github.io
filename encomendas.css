@@ -2669,6 +2669,8 @@ html.admin-light-mode .admin-encomenda-aguarda-resposta{
     color:#b45309;
 }
 body .admin-encomenda-aguarda-resposta-botao{
+    --fp-botao-altura:var(--admin-encomenda-modal-controlo-altura, 36px);
+    --fp-botao-raio:5px;
     flex:0 0 auto;
     box-sizing:border-box !important;
     display:inline-flex !important;
