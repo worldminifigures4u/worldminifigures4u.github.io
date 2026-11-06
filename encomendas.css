@@ -2670,10 +2670,18 @@ html.admin-light-mode .admin-encomenda-aguarda-resposta{
 }
 body .admin-encomenda-aguarda-resposta-botao{
     flex:0 0 auto;
-    height:var(--admin-encomenda-modal-controlo-altura, 36px);
+    box-sizing:border-box !important;
+    display:inline-flex !important;
+    align-items:center !important;
+    justify-content:center !important;
+    width:var(--admin-encomenda-modal-botao-largura, 78px) !important;
+    min-width:var(--admin-encomenda-modal-botao-largura, 78px) !important;
+    max-width:var(--admin-encomenda-modal-botao-largura, 78px) !important;
+    height:var(--admin-encomenda-modal-controlo-altura, 36px) !important;
+    max-height:var(--admin-encomenda-modal-controlo-altura, 36px) !important;
     min-height:0 !important;
     margin:0 !important;
-    padding:0 10px !important;
+    padding:0 !important;
     border:1px solid #444 !important;
     border-radius:5px !important;
     background:transparent !important;
@@ -2683,6 +2691,11 @@ body .admin-encomenda-aguarda-resposta-botao{
     white-space:nowrap;
     box-shadow:none !important;
     cursor:pointer;
+}
+body .admin-encomenda-aguarda-resposta-botao svg{
+    display:block;
+    flex:0 0 auto;
+    pointer-events:none;
 }
 body .admin-encomenda-aguarda-resposta-botao:is(:hover, :focus-visible){
     border-color:#ff9800 !important;

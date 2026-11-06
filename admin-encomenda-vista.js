@@ -3469,13 +3469,32 @@ window.AdminEncomendaVista = (function () {
             const botaoAguarda = criarElemento("button", "wallapop-botao admin-encomenda-aguarda-resposta-botao");
             botaoAguarda.type = "button";
             let ativo = false;
+            // Só o ícone (ampulheta), da largura da seta, para não roubar espaço ao nome do cliente.
+            const svgNsAguarda = "http://www.w3.org/2000/svg";
+            const ampulheta = document.createElementNS(svgNsAguarda, "svg");
+            ampulheta.setAttribute("viewBox", "0 0 24 24");
+            ampulheta.setAttribute("width", "20");
+            ampulheta.setAttribute("height", "20");
+            ampulheta.setAttribute("aria-hidden", "true");
+            ampulheta.setAttribute("focusable", "false");
+            const caminhoAmpulheta = document.createElementNS(svgNsAguarda, "path");
+            caminhoAmpulheta.setAttribute("d", "M6 3h12M6 21h12M7 3c0 5 10 6 10 9s-10 4-10 9M17 3c0 5-10 6-10 9s10 4 10 9");
+            caminhoAmpulheta.setAttribute("fill", "none");
+            caminhoAmpulheta.setAttribute("stroke", "currentColor");
+            caminhoAmpulheta.setAttribute("stroke-width", "2.2");
+            caminhoAmpulheta.setAttribute("stroke-linecap", "round");
+            caminhoAmpulheta.setAttribute("stroke-linejoin", "round");
+            ampulheta.appendChild(caminhoAmpulheta);
+            botaoAguarda.appendChild(ampulheta);
             const mostrarEstadoAguarda = () => {
                 ativo = aguardaRespostaComprador(encomenda);
                 botaoAguarda.classList.toggle("ativo", ativo);
-                botaoAguarda.textContent = ativo ? "Aguarda resposta ✓" : "Aguarda resposta";
-                botaoAguarda.title = ativo
-                    ? "Tirar o alerta: o comprador já respondeu."
-                    : "Marcar que está paga mas à espera da resposta do comprador (não preparar ainda).";
+                const texto = ativo
+                    ? "Aguarda resposta do comprador (ativo). Clique para tirar o alerta."
+                    : "Aguarda resposta do comprador: marcar que está paga mas à espera da resposta (não preparar ainda).";
+                botaoAguarda.title = texto;
+                botaoAguarda.setAttribute("aria-label", texto);
+                botaoAguarda.setAttribute("aria-pressed", ativo ? "true" : "false");
             };
             mostrarEstadoAguarda();
             botaoAguarda.addEventListener("mousedown", () => controloNotas?.ignorarProximoBlur?.());
