@@ -91,3 +91,13 @@ begin
   return jsonb_build_object('erro', case when v_n = 0 then 'nao_encontrada' else 'varias' end, 'n', v_n);
 end $f$;
 revoke all on function public.wallapop_encomenda_para_etiqueta(text, text) from public, anon, authenticated;
+
+-- =====================================================================
+-- 07/11/2026 — País do comprador no Wallapop
+-- A função "wallapop" lê location.country_code do perfil público (api.wallapop.com/api/v3/users/<b>) e envia pais_codigo.
+-- * pais_por_codigo(codigo): ES -> Espanha, PT -> Portugal, FR -> França, IT -> Itália, ... (nomes como nas fichas).
+-- * wallapop_ligar_cliente(slug, nome, pais): igual ao de 2 argumentos e preenche clientes_gestao.pais só se vazio.
+-- * wallapop_aplicar_email: usa-o nas vendas normais (a encomenda fica com o país da ficha) e, nos lotes,
+--   preenche o país da ficha e da encomenda só se estiverem vazios. Cópia anterior em
+--   wallapop_config.chave = 'backup_wallapop_aplicar_email_20261107_pais'.
+-- =====================================================================

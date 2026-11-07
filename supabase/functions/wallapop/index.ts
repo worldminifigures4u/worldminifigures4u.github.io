@@ -59,13 +59,14 @@ function tipoPeloAssunto(assunto: string): "venda" | "confirmada" | null {
 }
 
 // Perfil público do comprador no Wallapop (sem login).
-async function perfilWallapop(hash: string): Promise<{ slug: string | null; erro?: string }> {
+async function perfilWallapop(hash: string): Promise<{ slug: string | null; pais?: string | null; erro?: string }> {
   try {
     const r = await fetch(`https://api.wallapop.com/api/v3/users/${encodeURIComponent(hash)}`, { headers: { Accept: "application/json" } });
     if (!r.ok) return { slug: null, erro: `http_${r.status}` };
     const j = await r.json();
     const slug = String(j?.web_slug || "").trim().toLowerCase();
-    return slug ? { slug } : { slug: null, erro: "sem_slug" };
+    const pais = String(j?.location?.country_code || "").trim().toUpperCase() || null;
+    return slug ? { slug, pais } : { slug: null, erro: "sem_slug" };
   } catch (e) {
     return { slug: null, erro: String(e) };
   }
@@ -90,14 +91,14 @@ Deno.serve(async (req) => {
       resultados.push({ message_id, ok: false, erro: "formato_email_desconhecido" });
       continue;
     }
-    let perfil: { slug: string | null; erro?: string } = { slug: null };
+    let perfil: { slug: string | null; pais?: string | null; erro?: string } = { slug: null };
     if (lido.comprador_hash) perfil = await perfilWallapop(lido.comprador_hash);
     if (!perfil.slug) {
       // Sem perfil não se trata: o script volta a tentar na próxima execução.
       resultados.push({ message_id, ok: false, erro: `perfil_indisponivel: ${perfil.erro || "sem_codigo"}` });
       continue;
     }
-    const p = { message_id, tipo, recebido_em: e?.date || null, perfil_slug: perfil.slug, ...lido };
+    const p = { message_id, tipo, recebido_em: e?.date || null, perfil_slug: perfil.slug, pais_codigo: perfil.pais || null, ...lido };
     const { data, error } = await db.rpc("wallapop_processar_email", { p, p_simular: simular });
     if (error) resultados.push({ message_id, ok: false, erro: error.message });
     else resultados.push({ message_id, ok: true, simulado: simular, ...data });
