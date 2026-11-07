@@ -1,4 +1,5 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { PDFDocument, PDFName, PDFRawStream, StandardFonts, rgb, decodePDFRawStream } from "https://esm.sh/pdf-lib@1.17.1";
 
 // Automação Vinted: recebe os emails da Vinted (enviados pelo script do Gmail) e aplica as regras
 // (função public.vinted_processar_email). Com "simular": true nada fica gravado nas encomendas.
@@ -127,16 +128,91 @@ function base64ParaBytes(b64: string): Uint8Array {
   return bytes;
 }
 
-async function anexarEtiqueta(encomendaId: number, pdfB64: string, nome: string) {
-  const bytes = base64ParaBytes(pdfB64);
-  if (bytes.length < 100 || String.fromCharCode(...bytes.slice(0, 5)) !== "%PDF-") return "pdf_invalido";
+// Etiqueta compacta, igual à da extensão: transportadora + nome (negrito) por cima, QR (180 pt) e o código por baixo,
+// no canto superior esquerdo de uma página A4. O QR e o código são recortados do próprio PDF da Vinted.
+// Devolve null se não encontrar o QR (aí anexa-se o PDF original).
+async function compactarEtiqueta(original: Uint8Array, nome: string, transportadora: string): Promise<Uint8Array | null> {
+  try {
+    const fonte = await PDFDocument.load(original);
+    const pag = fonte.getPage(0);
+    const res: any = pag.node.Resources();
+    const xobjs: any = res?.lookup(PDFName.of("XObject"));
+    if (!xobjs) return null;
+    // Imagem do QR: quadrada, a preto e branco (1 bit).
+    const qrNomes = new Set<string>();
+    for (const [chave, ref] of xobjs.entries()) {
+      const obj: any = fonte.context.lookup(ref);
+      const dict = obj?.dict;
+      if (!dict) continue;
+      if (String(dict.get(PDFName.of("Subtype"))) !== "/Image") continue;
+      const w = Number(dict.get(PDFName.of("Width"))?.asNumber?.() ?? 0), h = Number(dict.get(PDFName.of("Height"))?.asNumber?.() ?? 0);
+      const bpc = Number(dict.get(PDFName.of("BitsPerComponent"))?.asNumber?.() ?? 0);
+      if (w > 50 && w === h && bpc === 1) qrNomes.add(String(chave).replace(/^\//, ""));
+    }
+    if (!qrNomes.size) return null;
+    // Onde o QR é desenhado: "L 0 0 A X Y cm /XOn Do" nos conteúdos da página.
+    const conteudos: any = pag.node.Contents();
+    const refs = conteudos?.asArray ? conteudos.asArray() : [conteudos];
+    let texto = "";
+    for (const r of refs) {
+      const st: any = fonte.context.lookup(r) ?? r;
+      if (st instanceof PDFRawStream) texto += new TextDecoder("latin1").decode(decodePDFRawStream(st).decode()) + "\n";
+      else if (st?.getContents) texto += new TextDecoder("latin1").decode(st.getContents()) + "\n";
+    }
+    let caixa: { x: number; y: number; l: number } | null = null;
+    for (const m of texto.matchAll(/([\d.]+)\s+0\s+0\s+([\d.]+)\s+([\d.]+)\s+([\d.]+)\s+cm\s*\/(\w+)\s+Do/g)) {
+      if (!qrNomes.has(m[5])) continue;
+      const l = Number(m[1]);
+      if (l >= 80 && Math.abs(l - Number(m[2])) < 1) { caixa = { x: Number(m[3]), y: Number(m[4]), l }; break; }
+    }
+    if (!caixa) return null;
+
+    const pdf = await PDFDocument.create();
+    const largura = 595, altura = 842, lado = 180, x = 24;
+    const pagina = pdf.addPage([largura, altura]);
+    const negrito = await pdf.embedFont(StandardFonts.HelveticaBold);
+    const seguro = (t: string) => Array.from(String(t || "")).map((c) => { try { negrito.encodeText(c); return c; } catch { return "?"; } }).join("");
+    let topo = altura - 24;
+    for (const linha of [transportadora || "Vinted Go", nome].filter(Boolean)) {
+      const t = seguro(linha);
+      let tamanho = 12.6;
+      while (tamanho > 6 && negrito.widthOfTextAtSize(t, tamanho) > lado) tamanho -= 1;
+      pagina.drawText(t, { x: x + (lado - negrito.widthOfTextAtSize(t, tamanho)) / 2, y: topo - tamanho, size: tamanho, font: negrito, color: rgb(0, 0, 0) });
+      topo -= tamanho + (linha === nome ? 8 : 6);
+    }
+    // Recorte: o QR e, por baixo, o código (que no PDF da Vinted já vem centrado sob o QR).
+    const abaixo = Math.round(caixa.l * 0.14);
+    const recorte = await pdf.embedPage(pag, { left: caixa.x, bottom: caixa.y - abaixo, right: caixa.x + caixa.l, top: caixa.y + caixa.l });
+    const escala = lado / caixa.l;
+    pagina.drawPage(recorte, { x, y: topo - (caixa.l + abaixo) * escala, width: lado, height: (caixa.l + abaixo) * escala });
+    return await pdf.save();
+  } catch (_e) {
+    return null;
+  }
+}
+
+async function anexarEtiqueta(encomendaId: number, pdfB64: string, nome: string, transportadora = "") {
+  const original = base64ParaBytes(pdfB64);
+  if (original.length < 100 || String.fromCharCode(...original.slice(0, 5)) !== "%PDF-") return "pdf_invalido";
+  const compacta = await compactarEtiqueta(original, nome, transportadora);
+  const bytes = compacta || original;
   const pasta = String(encomendaId);
   const { data: existentes } = await db.storage.from(BUCKET).list(pasta, { limit: 1000 });
   if ((existentes || []).some((f: any) => /etiqueta/i.test(String(f?.name || "")))) return "ja_tinha";
   const aleatorio = Math.random().toString(36).slice(2, 8).padEnd(6, "0");
   const caminho = `${pasta}/${Date.now()}-${aleatorio}-Etiqueta Vinted - ${limparNome(nome) || "comprador"}.pdf`;
   const { error } = await db.storage.from(BUCKET).upload(caminho, bytes, { contentType: "application/pdf", cacheControl: "3600", upsert: false });
-  return error ? `erro: ${error.message}` : "anexada";
+  if (error) return `erro: ${error.message}`;
+  return compacta ? "anexada" : "anexada_original";
+}
+
+function transportadoraDoEmail(html: string) {
+  if (/inpost/i.test(html)) return "InPost";
+  if (/vinted\s*go/i.test(html)) return "Vinted Go";
+  if (/\bctt\b/i.test(html)) return "CTT";
+  if (/correos/i.test(html)) return "Correos";
+  if (/mondial\s*relay/i.test(html)) return "Mondial Relay";
+  return "Vinted Go";
 }
 
 Deno.serve(async (req) => {
@@ -144,6 +220,25 @@ Deno.serve(async (req) => {
   if (!(await autorizado(req))) return resp({ ok: false, erro: "nao_autorizado" }, 401);
   let corpo: any = {};
   try { corpo = await req.json(); } catch { /* vazio */ }
+
+  // Refazer no formato compacto uma etiqueta Vinted já anexada: {"compactar_anexo": "<id>/<ficheiro>.pdf", "nome": "...", "transportadora": "..."}
+  if (corpo.compactar_anexo) {
+    const caminho = String(corpo.compactar_anexo);
+    if (!/^\d+\/[^/]+\.pdf$/i.test(caminho) || !/etiqueta/i.test(caminho)) return resp({ ok: false, erro: "caminho_invalido" }, 400);
+    const { data: blob, error: erroDown } = await db.storage.from(BUCKET).download(caminho);
+    if (erroDown || !blob) return resp({ ok: false, erro: erroDown?.message || "nao_encontrado" }, 404);
+    const original = new Uint8Array(await blob.arrayBuffer());
+    const compacta = await compactarEtiqueta(original, String(corpo.nome || ""), String(corpo.transportadora || ""));
+    if (!compacta) return resp({ ok: false, erro: "qr_nao_encontrado" });
+    if (corpo.so_testar) {
+      let bin = "";
+      for (let i = 0; i < compacta.length; i += 0x8000) bin += String.fromCharCode(...compacta.subarray(i, i + 0x8000));
+      return resp({ ok: true, acao: "teste", pdf_base64: btoa(bin), tamanho_original: original.length, tamanho_novo: compacta.length });
+    }
+    const { error: erroUp } = await db.storage.from(BUCKET).upload(caminho, compacta, { contentType: "application/pdf", upsert: true });
+    return resp(erroUp ? { ok: false, erro: erroUp.message } : { ok: true, acao: "compactada", tamanho_original: original.length, tamanho_novo: compacta.length });
+  }
+
   const simular = corpo.simular !== false;
   const emails = (Array.isArray(corpo.emails) ? corpo.emails : []).slice(0, 20);
   const resultados: any[] = [];
@@ -176,7 +271,7 @@ Deno.serve(async (req) => {
     const { data, error } = await db.rpc("vinted_processar_email", { p, p_simular: simular });
     let etiqueta: string | null = null;
     if (!error && !simular && tipo === "etiqueta" && data?.encomenda_id && e?.pdf_base64) {
-      etiqueta = await anexarEtiqueta(Number(data.encomenda_id), String(e.pdf_base64), data.comprador || data.codigo || "");
+      etiqueta = await anexarEtiqueta(Number(data.encomenda_id), String(e.pdf_base64), data.comprador || data.codigo || "", transportadoraDoEmail(html));
     }
     if (error) resultados.push({ message_id, ok: false, erro: error.message });
     else resultados.push({ message_id, ok: true, simulado: simular, etiqueta, ...data });

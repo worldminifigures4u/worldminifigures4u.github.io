@@ -50,3 +50,10 @@ alter table public.vinted_simulacoes enable row level security;
 -- * A função "vinted" lê o país da página pública https://www.vinted.pt/member/<membro> ("country_title")
 --   apenas quando a ficha ainda não tem país; vinted_aplicar_email passa-o ao cliente (venda e lote).
 alter table public.vinted_emails add column if not exists pais text;
+
+-- 2026-11-07: etiqueta Vinted no formato compacto (como o Assistente de Respostas).
+-- A função "vinted" (v3) recorta o QR do PDF da Vinted e põe numa folha A4, canto superior
+-- esquerdo: transportadora + nome do comprador a negrito, QR de 180pt e o código por baixo.
+-- Se não encontrar o QR, anexa o PDF original. Para refazer uma etiqueta já anexada:
+--   POST .../functions/v1/vinted  {"compactar_anexo":"<id>/<ficheiro>.pdf","nome":"...","transportadora":"InPost"}
+--   (com "so_testar": true devolve o PDF em base64 sem gravar).
