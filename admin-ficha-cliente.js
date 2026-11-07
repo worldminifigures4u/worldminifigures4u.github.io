@@ -248,6 +248,20 @@
         return secao;
     }
 
+
+    // Campos de texto da ficha: ao colar ou sair do campo, tira espaços no início/fim e junta espaços duplos.
+    function ligarLimpezaEspacosFormularioCliente(formulario) {
+        const limpar = (alvo) => {
+            if (!(alvo instanceof HTMLInputElement)) return;
+            if (!["text", "email", "tel", "url", "search", ""].includes(alvo.type)) return;
+            const limpo = alvo.value.replace(/\s+/g, " ").trim();
+            if (limpo !== alvo.value) alvo.value = limpo;
+        };
+        formulario.addEventListener("change", (evento) => limpar(evento.target));
+        formulario.addEventListener("paste", (evento) => setTimeout(() => limpar(evento.target), 0));
+        formulario.addEventListener("submit", () => formulario.querySelectorAll("input").forEach(limpar), true);
+    }
+
     function montarFormularioClienteModal(opcoes = {}) {
         const {
             cliente = {},
@@ -258,6 +272,7 @@
         } = opcoes;
 
         const formulario = document.createElement('form');
+        ligarLimpezaEspacosFormularioCliente(formulario);
         formulario.className = 'admin-cliente-formulario clientes-formulario';
         formulario.id = `admin-cliente-formulario-${cliente.id || 'novo'}`;
         // Escrever nas notas marca logo "Cliente com aviso a ler".

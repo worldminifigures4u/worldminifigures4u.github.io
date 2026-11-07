@@ -23,7 +23,7 @@
                 return carregarScript('paises-cliente.js?v=20260731-wallapop-es');
             })
             .then(function () {
-                return carregarScript('encomendas.js?v=20261105-precos-forn');
+                return carregarScript('encomendas.js?v=20261107-espacos');
             });
 
         return promessaEncomendasJs;

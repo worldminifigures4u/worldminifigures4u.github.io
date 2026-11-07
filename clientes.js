@@ -736,6 +736,7 @@ function montarFormularioCliente(dados, opcoes = {}) {
     const cliente = dados.cliente || {};
     const perfis = Array.isArray(dados.perfis) ? dados.perfis : [];
     const formulario = document.createElement("form");
+    ligarLimpezaEspacosFormularioCliente(formulario);
     // Escrever nas notas marca logo "Cliente com aviso a ler".
     formulario.addEventListener("input", (evento) => {
         const alvo = evento.target;
@@ -1090,3 +1091,16 @@ document.getElementById("clientes-ficha")?.addEventListener("mouseenter", () => 
     }
 }, { once: true });
 window.addEventListener("load", iniciarClientesAdmin);
+
+// Campos de texto da ficha: ao colar ou sair do campo, tira espaços no início/fim e junta espaços duplos.
+function ligarLimpezaEspacosFormularioCliente(formulario) {
+    const limpar = (alvo) => {
+        if (!(alvo instanceof HTMLInputElement)) return;
+        if (!["text", "email", "tel", "url", "search", ""].includes(alvo.type)) return;
+        const limpo = alvo.value.replace(/\s+/g, " ").trim();
+        if (limpo !== alvo.value) alvo.value = limpo;
+    };
+    formulario.addEventListener("change", (evento) => limpar(evento.target));
+    formulario.addEventListener("paste", (evento) => setTimeout(() => limpar(evento.target), 0));
+    formulario.addEventListener("submit", () => formulario.querySelectorAll("input").forEach(limpar), true);
+}
