@@ -43,3 +43,10 @@ create table if not exists public.vinted_simulacoes (
   titulos jsonb, resultado jsonb, criado_em timestamptz not null default now()
 );
 alter table public.vinted_simulacoes enable row level security;
+
+-- 07/11/2026 — País do comprador
+-- * vinted_emails.pais; vinted_pais_conhecido(utilizador, membro) -> país da ficha (null se vazio).
+-- * vinted_ligar_cliente(utilizador, membro, pais): igual ao de 2 argumentos e preenche clientes_gestao.pais só se vazio.
+-- * A função "vinted" lê o país da página pública https://www.vinted.pt/member/<membro> ("country_title")
+--   apenas quando a ficha ainda não tem país; vinted_aplicar_email passa-o ao cliente (venda e lote).
+alter table public.vinted_emails add column if not exists pais text;

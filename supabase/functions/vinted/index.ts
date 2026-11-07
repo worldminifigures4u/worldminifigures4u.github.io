@@ -6,6 +6,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 //  - "Etiqueta de envio ...": cria/liga a encomenda (títulos + ID do pedido) e anexa o PDF da etiqueta.
 //  - "Este pedido está concluído": só fica registado.
 // Número de membro do comprador: encomendas anteriores, ou a pesquisa pública de membros da Vinted (sem login).
+// País: página pública do perfil, só quando a ficha do cliente não o tem.
 const SUPA_URL = Deno.env.get("SUPABASE_URL")!;
 const SERVICE = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 const db = createClient(SUPA_URL, SERVICE, { auth: { persistSession: false } });
@@ -98,6 +99,23 @@ async function membroVinted(utilizador: string): Promise<{ membro: string | null
   }
 }
 
+// País do comprador (página pública do perfil, sem login). Só quando a ficha do cliente ainda não o tem.
+async function paisVinted(utilizador: string, membro: string | null): Promise<string | null> {
+  if (!membro) return null;
+  const { data: conhecido } = await db.rpc("vinted_pais_conhecido", { p_utilizador: utilizador, p_membro: membro });
+  if (typeof conhecido === "string" && conhecido.trim()) return null; // já tem país: não mexe
+  try {
+    const r = await fetch(`https://www.vinted.pt/member/${encodeURIComponent(membro)}`, { headers: { "User-Agent": "Mozilla/5.0", Accept: "text/html" } });
+    if (!r.ok) return null;
+    const html = await r.text();
+    const m = html.match(/country_title(?:_local)?\\?"\s*:\s*\\?"([^"\\]+)/);
+    const pais = m ? desescapar(m[1]) : "";
+    return pais && pais.length <= 40 ? pais : null;
+  } catch {
+    return null;
+  }
+}
+
 function limparNome(nome: string) {
   return String(nome || "").normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^\x20-\x7e]/g, "")
     .replace(/[\\/:*?"<>|#]/g, "").replace(/\s+/g, " ").trim().slice(0, 80);
@@ -145,7 +163,8 @@ Deno.serve(async (req) => {
         resultados.push({ message_id, ok: false, erro: "perfil_indisponivel: pesquisa Vinted falhou" });
         continue; // o script volta a tentar na próxima execução (até 24 h; depois segue sem o link)
       }
-      p = { ...p, ...v, membro_id: m.membro };
+      const pais = await paisVinted(v.comprador, m.membro);
+      p = { ...p, ...v, membro_id: m.membro, pais };
     } else if (tipo === "etiqueta") {
       const et = lerEtiqueta(html);
       if (!et.titulos.length) { resultados.push({ message_id, ok: false, erro: "formato_email_desconhecido" }); continue; }
