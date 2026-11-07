@@ -12,6 +12,8 @@ supabase/functions/*
 !supabase/functions/criar-encomenda/index.ts
 !supabase/functions/wallapop/
 !supabase/functions/wallapop/index.ts
+!supabase/functions/wallapop-etiqueta/
+!supabase/functions/wallapop-etiqueta/index.ts
 mapas csv/
 API key site envio mails/
 fotos de outros sites/

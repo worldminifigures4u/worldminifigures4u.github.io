@@ -29,7 +29,7 @@
                     return carregarScript('morada-formato.js?v=20260713-morada-formatada');
                 })
                 .then(function () {
-                    return carregarScript('admin-encomenda-vista.js?v=20261106-aguarda-icone');
+                    return carregarScript('admin-encomenda-vista.js?v=20261107-envio-wallapop');
                 });
         }
         return promessaVista;

@@ -2724,3 +2724,15 @@ html.admin-light-mode body .admin-encomenda-aguarda-resposta-botao.ativo{
     min-width:0 !important;
     gap:6px !important;
 }
+
+/* Wallapop: link "Abrir envio" na linha Envio da encomenda */
+.admin-encomenda-envio-wallapop-link{
+    margin-left:6px;
+    color:#13c1ac;
+    font-size:11px;
+    font-weight:700;
+    text-decoration:underline;
+    white-space:nowrap;
+}
+.admin-encomenda-envio-wallapop-link:hover{ color:#5ee0cf; }
+html.admin-light-mode .admin-encomenda-envio-wallapop-link{ color:#0b8a7a; }

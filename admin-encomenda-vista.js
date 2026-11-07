@@ -2968,6 +2968,26 @@ window.AdminEncomendaVista = (function () {
         return linha;
     }
 
+    // Wallapop: link para a página do envio (onde se imprime a etiqueta), guardado pela automação dos emails.
+    function acrescentarLinkEnvioWallapop(linha, encomenda) {
+        if (origemEncomenda(encomenda) !== "wallapop" || !encomenda?.id) return;
+        const valor = linha.querySelector("span");
+        if (!valor) return;
+        obterClient().rpc("obter_link_envio_wallapop_admin", { p_encomenda_id: Number(encomenda.id) })
+            .then(({ data, error }) => {
+                if (error || typeof data !== "string" || !/^https:\/\/www\.wallapop\.com\/delivery\/timeline\?/.test(data)) return;
+                if (!linha.isConnected || linha.querySelector(".admin-encomenda-envio-wallapop-link")) return;
+                const link = criarElemento("a", "admin-encomenda-envio-wallapop-link", "Abrir envio ↗");
+                link.href = data;
+                link.target = "_blank";
+                link.rel = "noopener noreferrer";
+                link.title = "Abrir a página do envio no Wallapop (para imprimir a etiqueta)";
+                link.addEventListener("click", evento => evento.stopPropagation());
+                valor.append(" ", link);
+            })
+            .catch(() => {});
+    }
+
     function criarLinhaDetalheMorada(encomenda) {
         const linha = criarElemento("div", "admin-encomenda-detalhe-linha admin-encomenda-detalhe-linha-morada");
         linha.appendChild(criarElemento("strong", "", "Morada"));
@@ -3255,10 +3275,12 @@ window.AdminEncomendaVista = (function () {
             criarLinhaDetalhe("Telemóvel", dadosClienteEncomenda.telefone_cliente)
         );
 
+        const linhaEnvio = criarLinhaDetalhe("Envio", encomenda.metodo_envio_nome || encomenda.metodo_envio);
         colunaContacto.append(
             criarLinhaDetalhe("E-mail", dadosClienteEncomenda.email_cliente),
-            criarLinhaDetalhe("Envio", encomenda.metodo_envio_nome || encomenda.metodo_envio)
+            linhaEnvio
         );
+        acrescentarLinkEnvioWallapop(linhaEnvio, encomenda);
         colunaContacto.appendChild(criarLinhaDetalhe("Pagamento", encomenda.metodo_pagamento));
 
         if (encomenda.referencia_externa) {
