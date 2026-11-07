@@ -101,3 +101,9 @@ revoke all on function public.wallapop_encomenda_para_etiqueta(text, text) from 
 --   preenche o país da ficha e da encomenda só se estiverem vazios. Cópia anterior em
 --   wallapop_config.chave = 'backup_wallapop_aplicar_email_20261107_pais'.
 -- =====================================================================
+
+-- 07/11/2026 — Lote personalizado passa logo a Pago
+-- No email "Fizeste uma venda" de um lote ("… - Lote personalizado – CÓDIGO"), se a encomenda estiver
+-- "A aguardar pagamento" passa a "Pago" com data_pagamento = hora do email e sai a nota
+-- "PAGO - a aguardar resposta do comprador" (ação "lote_pago"). O "Venda confirmada" seguinte já não muda nada.
+-- Cópia anterior: wallapop_config.chave = 'backup_wallapop_aplicar_email_20261107_lote_pago'.
