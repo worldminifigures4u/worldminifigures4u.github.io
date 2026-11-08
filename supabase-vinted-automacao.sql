@@ -57,3 +57,13 @@ alter table public.vinted_emails add column if not exists pais text;
 -- Se não encontrar o QR, anexa o PDF original. Para refazer uma etiqueta já anexada:
 --   POST .../functions/v1/vinted  {"compactar_anexo":"<id>/<ficheiro>.pdf","nome":"...","transportadora":"InPost"}
 --   (com "so_testar": true devolve o PDF em base64 sem gravar).
+
+-- 2026-11-08: preços Vinted = preço do site +25%, com descontos de conjunto na Vinted
+-- (2 artigos 10%, 3 artigos 15%, 5 artigos 20% -> um lote de 5 fica igual ao site).
+--  * vinted_criar_encomenda: o total da Vinted manda. É repartido pelas figuras na proporção dos
+--    preços do site (cêntimos de arredondamento numa linha de quantidade 1); cada linha guarda
+--    "preco_site". Nota informativa "Preços das figuras ajustados…". Aviso + prioritária só se o
+--    total for < 70% ou > 130% da soma do site. Cópia anterior: wallapop_config backup_vinted_criar_encomenda_20261108.
+--  * vinted_total_esperado(ids jsonb): total esperado na Vinted (+25% por figura e desconto do conjunto).
+--  * vinted_aplicar_email: no desempate de vendas à espera aceita também o total esperado (±0,05 €).
+--    Cópia anterior: backup_vinted_aplicar_email_20261108.
