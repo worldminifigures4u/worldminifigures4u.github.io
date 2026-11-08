@@ -64,6 +64,6 @@ alter table public.vinted_emails add column if not exists pais text;
 --    preços do site (cêntimos de arredondamento numa linha de quantidade 1); cada linha guarda
 --    "preco_site". Nota informativa "Preços das figuras ajustados…". Aviso + prioritária só se o
 --    total for < 70% ou > 130% da soma do site. Cópia anterior: wallapop_config backup_vinted_criar_encomenda_20261108.
---  * vinted_total_esperado(ids jsonb): total esperado na Vinted (+25% por figura e desconto do conjunto).
+--  * vinted_total_esperado(ids jsonb): total esperado na Vinted (+25% por figura arredondado a 0,05 €, e desconto do conjunto).
 --  * vinted_aplicar_email: no desempate de vendas à espera aceita também o total esperado (±0,05 €).
 --    Cópia anterior: backup_vinted_aplicar_email_20261108.
