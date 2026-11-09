@@ -1,6 +1,6 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
-// Automação Wallapop: recebe os emails "Fizeste uma venda" / "Venda confirmada" (enviados pelo script do Gmail),
+// Automação Wallapop: recebe os emails "Fizeste uma venda" / "Venda confirmada" (ou em espanhol "Has hecho una venta" / "Venta confirmada") (enviados pelo script do Gmail),
 // tira deles o comprador, a transação e os títulos, pergunta ao Wallapop o perfil do comprador e aplica as regras
 // (função public.wallapop_processar_email). Com "simular": true nada fica gravado.
 const SUPA_URL = Deno.env.get("SUPABASE_URL")!;
@@ -53,8 +53,8 @@ function lerEmail(html: string) {
 }
 
 function tipoPeloAssunto(assunto: string): "venda" | "confirmada" | null {
-  if (/Fizeste uma venda/i.test(assunto)) return "venda";
-  if (/Venda confirmada/i.test(assunto)) return "confirmada";
+  if (/Fizeste uma venda|Has hecho una venta/i.test(assunto)) return "venda";
+  if (/Venda confirmada|Venta confirmada/i.test(assunto)) return "confirmada";
   return null;
 }
 
