@@ -955,8 +955,13 @@ function podeUsarTotalManualPlataforma() {
 function atualizarVisibilidadePortesManualPlataforma() {
     const bloco = document.getElementById('plataforma-portes-manual-bloco');
     if (!bloco) return;
-    const visivel = podeEditarPortesManuaisPlataforma();
+    // O total manual também se usa em Entrega em mão (sem portes): só o campo dos portes fica escondido.
+    const portesVisiveis = podeEditarPortesManuaisPlataforma();
+    const visivel = portesVisiveis || podeUsarTotalManualPlataforma();
     bloco.hidden = !visivel;
+    const campoPortesBloco = document.getElementById('plataforma-portes-manual-campo');
+    if (campoPortesBloco) campoPortesBloco.hidden = !portesVisiveis;
+    bloco.classList.toggle('so-total', visivel && !portesVisiveis);
     if (!visivel && !encomendaPlataformaEmEdicao) {
         const campoPortes = document.getElementById('plataforma-portes-manual');
         const campoTotal = document.getElementById('plataforma-total-manual');
