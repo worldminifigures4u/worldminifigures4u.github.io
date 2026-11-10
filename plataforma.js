@@ -3260,6 +3260,12 @@ function criarCabecalhoCodigoEncomenda() {
     return [`${nomeCliente} - Lote personalizado \u2013 ${codigo}`, ''];
 }
 
+// Nome do ficheiro TXT = primeira linha do texto ("Nome - Lote personalizado – CÓDIGO"); a pasta mantém o nome da encomenda.
+function nomeFicheiroTxtPlataforma(nomeEncomenda) {
+    const primeiraLinha = criarCabecalhoCodigoEncomenda()[0] || '';
+    return `${limparNomePastaWallapop(primeiraLinha) || nomeEncomenda}.txt`;
+}
+
 function validarEncomendaRegistadaParaFicheiros() {
     if (obterCodigoEncomendaAtual()) return true;
     definirStatusWallapop('Registe primeiro a encomenda para incluir o c\u00f3digo nos ficheiros.', true);
@@ -3340,7 +3346,7 @@ async function descarregarImagemWallapop(opcoes = {}) {
 
         definirStatusWallapop('A gerar as imagens...');
         const ficheiros = [
-            { nome: `${nomeEncomenda}.txt`, conteudo: criarTextoEncomendaWallapop() }
+            { nome: nomeFicheiroTxtPlataforma(nomeEncomenda), conteudo: criarTextoEncomendaWallapop() }
         ];
         const textoNotas = criarTextoNotasAnuncioPlataforma();
         if (textoNotas) {
@@ -3397,14 +3403,14 @@ async function guardarFicheirosPlataforma(opcoes = {}) {
         if (plataforma === 'OLX') {
             definirStatusWallapop('A gerar a imagem OLX...');
             const ficheirosImagem = await criarFicheirosImagemPlataforma(obterItensParaFicheirosPlataforma());
-            await escreverFicheiroWallapop(pastaEncomenda, `${nomeEncomenda}.txt`, criarTextoClienteOlx());
+            await escreverFicheiroWallapop(pastaEncomenda, nomeFicheiroTxtPlataforma(nomeEncomenda), criarTextoClienteOlx());
             if (textoNotas) await escreverFicheiroWallapop(pastaEncomenda, 'notas encomenda.txt', textoNotas);
             for (const ficheiro of ficheirosImagem) {
                 await escreverFicheiroWallapop(pastaEncomenda, ficheiro.nome, ficheiro.conteudo);
             }
             definirStatusWallapop(`Pasta "${nomeEncomenda}" gravada com o ficheiro OLX e ${ficheirosImagem.length} imagem(ns).`);
         } else {
-            await escreverFicheiroWallapop(pastaEncomenda, `${nomeEncomenda}.txt`, criarTextoInternoPlataforma());
+            await escreverFicheiroWallapop(pastaEncomenda, nomeFicheiroTxtPlataforma(nomeEncomenda), criarTextoInternoPlataforma());
             if (textoNotas) await escreverFicheiroWallapop(pastaEncomenda, 'notas encomenda.txt', textoNotas);
             definirStatusWallapop(`Ficheiro ${plataforma} gravado na pasta "${nomeEncomenda}".`);
         }
