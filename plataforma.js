@@ -3325,6 +3325,19 @@ function garantirHtml2CanvasPlataforma() {
     return html2canvasPromessaPlataforma;
 }
 
+// Ao exportar outra vez com outro total, apaga o ficheiro do preço anterior (ex.: "50,00.txt").
+async function apagarFicheirosPrecoAntigosPlataforma(pasta, nomeAtual) {
+    try {
+        const antigos = [];
+        for await (const [nome, entrada] of pasta.entries()) {
+            if (entrada.kind === 'file' && nome !== nomeAtual && /^\d+,\d{2}\.txt$/.test(nome)) antigos.push(nome);
+        }
+        for (const nome of antigos) await pasta.removeEntry(nome);
+    } catch (erro) {
+        console.warn('Não foi possível apagar o ficheiro do preço anterior.', erro);
+    }
+}
+
 async function descarregarImagemWallapop(opcoes = {}) {
     if (!validarEncomendaRegistadaParaFicheiros()) return false;
     const campoNome = document.getElementById('wallapop-nome-encomenda');
@@ -3345,8 +3358,11 @@ async function descarregarImagemWallapop(opcoes = {}) {
         const pastaBase = opcoes.pastaBase || await obterPastaBaseWallapop();
 
         definirStatusWallapop('A gerar as imagens...');
+        // Ficheiro com o preço no nome (ex.: "53,40.txt"): F2 + Ctrl+C para colar o preço no anúncio.
+        const precoAnuncio = formatarEuroWallapop(calcularTotalFicheirosPlataforma(itensFicheiros));
         const ficheiros = [
-            { nome: nomeFicheiroTxtPlataforma(nomeEncomenda), conteudo: criarTextoEncomendaWallapop() }
+            { nome: nomeFicheiroTxtPlataforma(nomeEncomenda), conteudo: criarTextoEncomendaWallapop() },
+            { nome: `${precoAnuncio}.txt`, conteudo: precoAnuncio }
         ];
         const textoNotas = criarTextoNotasAnuncioPlataforma();
         if (textoNotas) {
@@ -3358,6 +3374,7 @@ async function descarregarImagemWallapop(opcoes = {}) {
         definirStatusWallapop('A gravar os ficheiros...');
         // Voltar a obter a subpasta imediatamente antes de escrever (evita handle stale).
         const pastaEncomenda = await pastaBase.getDirectoryHandle(nomeEncomenda, { create: true });
+        await apagarFicheirosPrecoAntigosPlataforma(pastaEncomenda, `${precoAnuncio}.txt`);
         for (const ficheiro of ficheiros) {
             await escreverFicheiroWallapop(pastaEncomenda, ficheiro.nome, ficheiro.conteudo);
         }
