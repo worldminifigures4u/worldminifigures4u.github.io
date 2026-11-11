@@ -110,7 +110,7 @@ function garantirFornecedoresProdutoModal() {
 function garantirFornecedoresEdicaoPedido() {
     if (window.FornecedoresEdicaoPedido) return Promise.resolve();
     if (!__fornecedoresEdicaoPromessa) {
-        __fornecedoresEdicaoPromessa = carregarScriptAdmin("fornecedores-edicao-pedido.js?v=20261111-ex-preco-proprio");
+        __fornecedoresEdicaoPromessa = carregarScriptAdmin("fornecedores-edicao-pedido.js?v=20261111-ex-desconto-total");
     }
     return __fornecedoresEdicaoPromessa;
 }

@@ -573,7 +573,10 @@ function lerOpcoesCustoFixoEurFornecedor(contexto = document) {
 function obterResumoCustoFixoEurFornecedor(resumo) {
     if (!resumo?.aplicado) return "";
     if (resumo.modo === "total") {
-        return ` Total compra EUR: ${formatarMoedaResumoCustoListaAtualFornecedor(resumo.totalCompraEur)} / ${resumo.totalUnidades} unidade(s) a receber = ${formatarMoedaResumoCustoListaAtualFornecedor(resumo.precoUnitarioFinal)} por unidade.`;
+        const descontoEx = resumo.custoExEur > 0
+            ? ` (pago ${formatarMoedaResumoCustoListaAtualFornecedor(resumo.totalPagoEur)} - EX ${formatarMoedaResumoCustoListaAtualFornecedor(resumo.custoExEur)})`
+            : "";
+        return ` Total compra EUR: ${formatarMoedaResumoCustoListaAtualFornecedor(resumo.totalCompraEur)}${descontoEx} / ${resumo.totalUnidades} unidade(s) a receber = ${formatarMoedaResumoCustoListaAtualFornecedor(resumo.precoUnitarioFinal)} por unidade.`;
     }
     const envio = resumo.envioEur > 0
         ? ` + envio ${formatarMoedaResumoCustoListaAtualFornecedor(resumo.envioEur)} / ${resumo.totalUnidades}`
@@ -589,7 +592,18 @@ function aplicarCustoFixoEurItensFornecedor(itens, opcoes = {}) {
         return { aplicado: false, erro: "Não há unidades a receber para dividir o custo EUR." };
     }
 
-    const totalCompraEur = Math.max(0, Number(opcoes.totalCompraEur || 0) || 0);
+    // Figuras EX compradas apesar do preço: ficam com o preço escrito nelas, e o valor delas
+    // sai do total pago antes de dividir pelas outras.
+    const custoExEur = (itens || []).reduce((soma, item) => {
+        if (!itemPedidoEstaExFornecedor(item)) return soma;
+        const qtd = Math.max(0, Math.floor(Number(item.quantidade || 0)));
+        return soma + qtd * Math.max(0, Number(item.preco_custo ?? item.preco ?? 0) || 0);
+    }, 0);
+    const totalPagoEur = Math.max(0, Number(opcoes.totalCompraEur || 0) || 0);
+    const totalCompraEur = totalPagoEur > 0 ? Math.max(0, Math.round((totalPagoEur - custoExEur) * 100) / 100) : 0;
+    if (totalPagoEur > 0 && totalCompraEur <= 0) {
+        return { aplicado: false, erro: "O valor das figuras EX é igual ou maior do que o total pago." };
+    }
     const precoBaseEur = Math.max(0, Number(opcoes.precoUnitarioEur || 0) || 0);
     const envioEur = Math.max(0, Number(opcoes.envioEur || 0) || 0);
     // O preço por figura já inclui os portes (os portes só servem para separar figura / portes).
@@ -629,6 +643,8 @@ function aplicarCustoFixoEurItensFornecedor(itens, opcoes = {}) {
         modo: totalCompraEur > 0 ? "total" : "unitario",
         totalUnidades,
         totalCompraEur,
+        totalPagoEur,
+        custoExEur,
         precoBaseEur,
         envioEur,
         precoUnitarioFinal: precoCusto,
@@ -1659,10 +1675,17 @@ function atualizarResultadoPrecoIgualEdicaoFornecedor(modal) {
     const total = sincronizarTotalPagamentosEdicaoFornecedor(modal);
     const temSegundo = Boolean(String(modal.querySelector('#fornecedor-edicao-pagamento-2-eur')?.value || '').trim());
     let unidades = 0;
+    let custoEx = 0;
     const pedidoAtual = typeof obterPedidoEdicaoFornecedor === 'function' ? obterPedidoEdicaoFornecedor(modal) : null;
     modal.querySelectorAll('.fornecedor-edicao-produto').forEach(linha => {
         if (linha.hidden || linha.dataset.removido === '1') return;
-        if (linha.querySelector('[data-campo="marcar_ex"]')?.checked) return;
+        if (linha.querySelector('[data-campo="marcar_ex"]')?.checked) {
+            // EX comprada: fica com o preço dela e o valor sai do total pago.
+            const qtdEx = Math.max(0, Math.floor(Number(String(linha.querySelector('[data-campo="quantidade"]')?.value || '0').replace(',', '.')) || 0));
+            const precoEx = Math.max(0, converterNumeroListaFornecedor(linha.querySelector('[data-campo="preco_custo"]')?.value || '') || 0);
+            custoEx += qtdEx * precoEx;
+            return;
+        }
         // Segunda figura de um conjunto (mesma referência): não conta como unidade paga.
         if (pedidoAtual?.itens?.[Number(linha.dataset.indice)]?.conjunto_extra) return;
         const quantidade = Math.max(0, Math.floor(Number(String(linha.querySelector('[data-campo="quantidade"]')?.value || '0').replace(',', '.')) || 0));
@@ -1684,8 +1707,15 @@ function atualizarResultadoPrecoIgualEdicaoFornecedor(modal) {
     }
     const unidadesPagas = Math.max(0, Math.floor(converterNumeroListaFornecedor(modal.querySelector('#fornecedor-edicao-unidades-pagas')?.value || '') || 0));
     const divisor = unidadesPagas > 0 ? unidadesPagas : unidades;
-    const porFigura = total / divisor;
-    const prefixo = temSegundo ? `Total ${total.toFixed(2).replace('.', ',')} € ` : '';
+    custoEx = Math.round(custoEx * 100) / 100;
+    const totalDividir = Math.round((total - custoEx) * 100) / 100;
+    if (totalDividir <= 0) {
+        destino.textContent = `O valor das figuras EX (${custoEx.toFixed(2).replace('.', ',')} €) é igual ou maior do que o total pago.`;
+        return;
+    }
+    const porFigura = totalDividir / divisor;
+    const prefixo = (temSegundo || custoEx > 0 ? `Total ${total.toFixed(2).replace('.', ',')} € ` : '')
+        + (custoEx > 0 ? `- EX ${custoEx.toFixed(2).replace('.', ',')} € ` : '');
     const portesTotal = Math.max(0, converterNumeroListaFornecedor(modal.querySelector('#fornecedor-edicao-os-envio-eur')?.value || '') || 0);
     const fmt = (v) => v.toFixed(2).replace('.', ',');
     const divisao = portesTotal > 0 && portesTotal < total
@@ -1892,7 +1922,7 @@ function garantirModalEdicaoFornecedor() {
                                     <input type="hidden" id="fornecedor-edicao-os-total-compra-eur">
 
                                 </div>
-                                <p class="fornecedor-custo-real-ajuda">Preenche o Preço por figura € (aplicado igual a todas) ou os pagamentos: o total pago (soma dos pagamentos, já com envio) é dividido pelas unidades a receber. As figuras OS, EX ou removidas não contam.</p>
+                                <p class="fornecedor-custo-real-ajuda">Preenche o Preço por figura € (aplicado igual a todas) ou os pagamentos: o total pago (soma dos pagamentos, já com envio) é dividido pelas unidades a receber. As figuras OS ou removidas não contam; as EX compradas ficam com o preço escrito nelas e o valor delas é descontado do total pago.</p>
                             </div>
                         </div>
                     </details>
