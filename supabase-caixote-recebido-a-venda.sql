@@ -22,3 +22,7 @@
 -- trg_fornecedores_caixote_deu_entrada: ao passar a "Caixote recebido" reativa as figuras sem stock do caixote;
 --   ao sair de "Caixote recebido" desativa as que continuem sem stock; nos dois casos sincroniza os lotes no todocoleccion.
 -- Cópias anteriores: backup_todocoleccion_lotes_sincronizar_v2_20261111, backup_todocoleccion_criar_lotes_novos_20261111.
+
+-- Verificação automática (2026-11-11): cron "todocoleccion-acertar-lotes", de 15 em 15 minutos (4,19,34,49).
+-- todocoleccion_acertar_lotes(15): se houver lotes com unidades/estado diferentes de stock_para_venda,
+-- acerta no máximo 15 por volta (pedidos grandes esgotam os recursos da função); sem diferenças não contacta o todocoleccion.
