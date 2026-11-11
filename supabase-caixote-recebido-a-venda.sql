@@ -1,0 +1,16 @@
+-- 2026-11-11: figuras num caixote recebido (encomenda a fornecedor com estado "Caixote recebido")
+-- continuam à venda mesmo com stock 0 ou negativo, e podem ser compradas no site.
+--
+-- caixote_a_receber(id text) -> unidades da figura em caixotes recebidos que ainda não deram entrada
+--   (quantidade - recebido de cada item das encomendas_fornecedores com estado 'Caixote recebido').
+--
+-- trg_produtos_manter_ativo_caixote (BEFORE UPDATE OF ativo, stock ON produtos):
+--   quando uma venda deixa o stock a 0 ou menos e a figura vem num caixote recebido (e não está arquivada),
+--   mantém ativo = true. Vale para todas as vendas (site, Plataformas, Wallapop, Vinted, Todocoleccion...).
+--
+-- trg_fornecedores_caixote_deu_entrada (AFTER UPDATE OF estado ON encomendas_fornecedores):
+--   quando o caixote deixa de estar "Caixote recebido", as figuras dele que continuem com stock 0 ou menos
+--   (e sem outro caixote recebido) deixam de estar à venda.
+--
+-- criar_encomenda_com_stock (compra no site): aceita a figura se stock + caixote_a_receber >= quantidade.
+--   Cópia anterior: wallapop_config 'backup_criar_encomenda_com_stock_20261111'.
