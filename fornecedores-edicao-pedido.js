@@ -1163,8 +1163,21 @@ function montarLinhaEdicaoProdutoFornecedor(pedido, item, indice) {
             }
         }
         if (marcarExInput.checked) {
-            // Marcado como EX: a quantidade pode ser ajustada livremente (ex: decidir
-            // encomendar apesar do preço) sem que isso mexa em OS/Falta nem desmarque EX.
+            if (pedidoValor > 0) {
+                // Pôr quantidade numa figura EX = decidir comprá-la apesar do preço:
+                // deixa de ser EX e fica como compra normal (sem OS), com o preço gravado no fornecedor.
+                marcarExInput.checked = false;
+                marcarOsInput.checked = false;
+                faltaInput.value = "0";
+                linha.dataset.compraEx = "1";
+            }
+            atualizarAjuste();
+            return;
+        }
+        if (linha.dataset.compraEx === "1") {
+            // Figura que era EX e passou a ser comprada: a quantidade escolhida é a pedida, sem OS.
+            faltaInput.value = "0";
+            marcarOsInput.checked = false;
             atualizarAjuste();
             return;
         }
@@ -2003,8 +2016,12 @@ function lerItensEditadosPedidoFornecedor(pedido, modal) {
         const remover = linha.querySelector('[data-campo="remover"]')?.checked;
         if (remover) return null;
         const quantidade = Math.max(0, Math.floor(Number(linha.querySelector('[data-campo="quantidade"]')?.value || 0)));
-        const quantidadeOriginal = Math.max(quantidade, Math.floor(Number(item.quantidade_original ?? item.quantidade ?? quantidade) || quantidade));
         const marcarEx = Boolean(linha.querySelector('[data-campo="marcar_ex"]')?.checked);
+        // EX que passou a ser comprado: a quantidade pedida passa a ser a inicial (não gera OS pela diferença).
+        const compraEx = linha.dataset.compraEx === "1" && !marcarEx && quantidade > 0;
+        const quantidadeOriginal = compraEx
+            ? quantidade
+            : Math.max(quantidade, Math.floor(Number(item.quantidade_original ?? item.quantidade ?? quantidade) || quantidade));
         const marcarOs = Boolean(linha.querySelector('[data-campo="marcar_os"]')?.checked) && !marcarEx;
         const marcarNaoComprar = Boolean(linha.querySelector('[data-campo="nao_comprar"]')?.checked) && !marcarEx && !marcarOs;
         if (marcarNaoComprar) {
