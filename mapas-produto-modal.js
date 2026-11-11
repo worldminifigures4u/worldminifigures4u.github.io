@@ -1327,7 +1327,9 @@ function formatarDataEncomendaFornecedorMapa(valor) {
 function obterTipoLinhaEncomendaFornecedorMapa(linha) {
     const faltaOs = Math.max(0, Math.floor(Number(linha?.item?.falta_os || 0)));
     if (faltaOs > 0) return "os";
-    const emEx = Boolean(linha?.item?.marcado_ex) || String(linha?.item?.estado_fornecedor || "").trim().toUpperCase() === "EX";
+    // EX com quantidade = comprada apesar do preço: conta como encomendada.
+    const emEx = (Boolean(linha?.item?.marcado_ex) || String(linha?.item?.estado_fornecedor || "").trim().toUpperCase() === "EX")
+        && Number(linha?.item?.quantidade || 0) <= 0;
     if (emEx) return "ex";
     const estado = String(linha?.pedido?.estado || "").trim().toLowerCase();
     if (estado.includes("solicit")) return "solicitada";
@@ -1393,8 +1395,8 @@ function renderizarHistoricoEncomendasFornecedorMapa(conteudo, produto, pedidos)
     const linhasEncomendas = obterLinhasEncomendaFornecedorProdutoMapa(produto, pedidos).filter(({ item }) => {
         const faltaOs = Math.max(0, Math.floor(Number(item?.falta_os || 0)));
         const emEx = Boolean(item?.marcado_ex) || String(item?.estado_fornecedor || "").trim().toUpperCase() === "EX";
-        // EX (preço alto) não deve aparecer aqui - só interessa mostrar quando é OS.
-        return faltaOs > 0 || !emEx;
+        // EX (preço alto) não deve aparecer aqui - só quando é OS ou foi comprada apesar do preço.
+        return faltaOs > 0 || !emEx || Number(item?.quantidade || 0) > 0;
     });
     const linhas = [
         ...linhasEncomendas.map((linha) => ({ ...linha, origem: "encomenda" }))
@@ -1455,7 +1457,8 @@ function renderizarHistoricoEncomendasFornecedorMapa(conteudo, produto, pedidos)
         const naoCompradaItem = String(item?.estado_fornecedor || "").trim().toUpperCase() === "NAO_COMPRAR"
             || String(item?.origem_ajuste || "").trim() === "nao-comprar";
         const emFalta = faltaOs > 0 && !naoCompradaItem;
-        const emEx = Boolean(item?.marcado_ex) || String(item?.estado_fornecedor || "").trim().toUpperCase() === "EX";
+        const emEx = (Boolean(item?.marcado_ex) || String(item?.estado_fornecedor || "").trim().toUpperCase() === "EX")
+            && Number(item?.quantidade || 0) <= 0;
         if (emFalta) {
             tr.classList.add("mapas-produto-historico-os");
         } else if (emEx) {
@@ -1577,8 +1580,8 @@ function montarSecaoPrecosFornecedoresMapa(campos, produto) {
             const encomenda = encomendas.find(({ pedido, item }) => {
                 if (normalizarTextoProdutoMapa(pedido?.fornecedor) !== chave) return false;
                 const naoComprada = String(item?.estado_fornecedor || "").toUpperCase() === "NAO_COMPRAR"
-                    || String(item?.estado_fornecedor || "").toUpperCase() === "EX"
-                    || item?.marcado_ex === true;
+                    || ((String(item?.estado_fornecedor || "").toUpperCase() === "EX" || item?.marcado_ex === true)
+                        && Number(item?.quantidade || 0) <= 0);
                 return linha.estimado ? naoComprada : (!naoComprada && Number(item?.quantidade || 0) > 0);
             });
             // Último preço comprado: ao passar o rato mostra figura + portes + taxas dessa encomenda.
@@ -2029,7 +2032,8 @@ function obterCambioOficialUsdEurMapa(dataIso) {
 
 function itemCompradoPedidoFornecedorMapa(item) {
     const estado = String(item?.estado_fornecedor || "").trim().toUpperCase();
-    const naoComprada = estado === "NAO_COMPRAR" || estado === "EX" || item?.marcado_ex === true
+    const exNaoComprada = (estado === "EX" || item?.marcado_ex === true) && Number(item?.quantidade || 0) <= 0;
+    const naoComprada = estado === "NAO_COMPRAR" || exNaoComprada
         || String(item?.origem_ajuste || "").trim() === "nao-comprar";
     return !naoComprada && !item?.conjunto_extra && Number(item?.quantidade || 0) > 0;
 }

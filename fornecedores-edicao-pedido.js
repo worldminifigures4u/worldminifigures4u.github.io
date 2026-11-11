@@ -387,7 +387,7 @@ function itemContaParaCustoRealListaAtualFornecedor(item) {
     if (item.conjunto_extra) return false;
     if (itemIgnoradoListaEdicaoFornecedor(item)) return false;
     const estado = String(item.estado_fornecedor || "").trim().toUpperCase();
-    if (estado === "EX" || item.marcado_ex === true) return false;
+    // EX com quantidade = comprada apesar do preço: conta como as outras.
     return Math.max(0, Number(item.quantidade || 0)) > 0;
 }
 
@@ -484,7 +484,7 @@ function calcularCustoRealListaAtualFornecedor(itens, opcoes = {}) {
     // encomenda, para comparar fornecedores na ficha do produto (não mexe no preço da encomenda).
     if (calcularEur) {
         (itens || []).forEach((item) => {
-            if (!itemPedidoNaoComprarFornecedor(item) && !itemPedidoEstaExFornecedor(item)) return;
+            if (!itemPedidoNaoComprarFornecedor(item) && !itemPedidoExNaoCompradoFornecedor(item)) return;
             const precoUsd = obterPrecoUsdListaAtualFornecedor(item, true)
                 || (String(item?.preco_custo_moeda || "").toUpperCase() !== "EUR" ? Math.max(0, Number(item?.preco_custo || 0)) : 0);
             if (!(precoUsd > 0)) { delete item.preco_estimado_eur; return; }
@@ -1163,21 +1163,8 @@ function montarLinhaEdicaoProdutoFornecedor(pedido, item, indice) {
             }
         }
         if (marcarExInput.checked) {
-            if (pedidoValor > 0) {
-                // Pôr quantidade numa figura EX = decidir comprá-la apesar do preço:
-                // deixa de ser EX e fica como compra normal (sem OS), com o preço gravado no fornecedor.
-                marcarExInput.checked = false;
-                marcarOsInput.checked = false;
-                faltaInput.value = "0";
-                linha.dataset.compraEx = "1";
-            }
-            atualizarAjuste();
-            return;
-        }
-        if (linha.dataset.compraEx === "1") {
-            // Figura que era EX e passou a ser comprada: a quantidade escolhida é a pedida, sem OS.
-            faltaInput.value = "0";
-            marcarOsInput.checked = false;
+            // Marcado como EX: a quantidade pode ser ajustada livremente (comprar apesar do preço)
+            // sem mexer em OS/Falta nem desmarcar EX. Com quantidade > 0 conta como comprada.
             atualizarAjuste();
             return;
         }
@@ -2016,12 +2003,8 @@ function lerItensEditadosPedidoFornecedor(pedido, modal) {
         const remover = linha.querySelector('[data-campo="remover"]')?.checked;
         if (remover) return null;
         const quantidade = Math.max(0, Math.floor(Number(linha.querySelector('[data-campo="quantidade"]')?.value || 0)));
+        const quantidadeOriginal = Math.max(quantidade, Math.floor(Number(item.quantidade_original ?? item.quantidade ?? quantidade) || quantidade));
         const marcarEx = Boolean(linha.querySelector('[data-campo="marcar_ex"]')?.checked);
-        // EX que passou a ser comprado: a quantidade pedida passa a ser a inicial (não gera OS pela diferença).
-        const compraEx = linha.dataset.compraEx === "1" && !marcarEx && quantidade > 0;
-        const quantidadeOriginal = compraEx
-            ? quantidade
-            : Math.max(quantidade, Math.floor(Number(item.quantidade_original ?? item.quantidade ?? quantidade) || quantidade));
         const marcarOs = Boolean(linha.querySelector('[data-campo="marcar_os"]')?.checked) && !marcarEx;
         const marcarNaoComprar = Boolean(linha.querySelector('[data-campo="nao_comprar"]')?.checked) && !marcarEx && !marcarOs;
         if (marcarNaoComprar) {

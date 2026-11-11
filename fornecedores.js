@@ -91,7 +91,7 @@ function garantirFornecedoresProdutoModal() {
     if (window.FornecedoresProdutoModal) return Promise.resolve();
     if (!__fornecedoresProdutoPromessa) {
         prepararContextoProdutoFornecedor();
-        __fornecedoresProdutoPromessa = carregarScriptAdmin("mapas-produto-modal.js?v=20261105-precos-forn")
+        __fornecedoresProdutoPromessa = carregarScriptAdmin("mapas-produto-modal.js?v=20261111-ex-comprada")
             .then(function () {
                 window.FornecedoresProdutoModal = {
                     abrir: function () {
@@ -110,7 +110,7 @@ function garantirFornecedoresProdutoModal() {
 function garantirFornecedoresEdicaoPedido() {
     if (window.FornecedoresEdicaoPedido) return Promise.resolve();
     if (!__fornecedoresEdicaoPromessa) {
-        __fornecedoresEdicaoPromessa = carregarScriptAdmin("fornecedores-edicao-pedido.js?v=20261111-comprar-ex");
+        __fornecedoresEdicaoPromessa = carregarScriptAdmin("fornecedores-edicao-pedido.js?v=20261111-ex-comprada");
     }
     return __fornecedoresEdicaoPromessa;
 }
@@ -3168,7 +3168,7 @@ function obterPendentesProdutoFornecedor(produto) {
 }
 
 function obterQuantidadePedidaPendenteFornecedor(item) {
-    if (itemPedidoEstaExFornecedor(item)) return 0;
+    if (itemPedidoExNaoCompradoFornecedor(item)) return 0;
     return Math.max(0, Math.floor(Number(
         item?.quantidade ?? item?.qtd ?? item?.quantidade_original ?? item?.quantidade_inicial ?? 0
     )));
@@ -4664,6 +4664,12 @@ function itemPedidoEstaExFornecedor(item) {
         || String(item.estado_fornecedor || "").trim().toUpperCase() === "EX";
 }
 
+// EX sem quantidade = não comprada (cara demais). EX com quantidade = comprada apesar do preço,
+// mantém a marcação EX mas conta como compra normal (a receber, preço de compra, histórico).
+function itemPedidoExNaoCompradoFornecedor(item) {
+    return itemPedidoEstaExFornecedor(item) && Math.max(0, Math.floor(Number(item?.quantidade || 0))) <= 0;
+}
+
 // Gravar sem alterar linhas: acerta só a "Marcação atual" das figuras OS total / EX,
 // sem mexer no histórico. Poucas gravações (só as que estão diferentes).
 async function acertarMarcacoesAtuaisOsExFornecedor(itens, fornecedorNome) {
@@ -4906,7 +4912,7 @@ async function sincronizarPrecoCompraProdutosFornecedor(itens, fornecedorNome = 
         if (item?.preco_custo_provisorio || String(item?.preco_custo_moeda || "").trim().toUpperCase() === "USD") return;
         // Figuras EX (caras, não compradas) e sem unidades a receber guardam o preço só na encomenda:
         // não mudam o preço compra do produto.
-        if (itemPedidoEstaExFornecedor(item) || itemPedidoIgnoradoListaFornecedor(item)) return;
+        if (itemPedidoExNaoCompradoFornecedor(item) || itemPedidoIgnoradoListaFornecedor(item)) return;
         if (Math.max(0, Math.floor(Number(item?.quantidade || 0))) <= 0) return;
         const precoCompra = Math.max(0, Number(item?.preco_custo ?? item?.preco_compra ?? item?.custo ?? 0) || 0);
         if (precoCompra <= 0) return;
@@ -4972,7 +4978,7 @@ async function sincronizarPrecoCompraProdutosFornecedor(itens, fornecedorNome = 
     // deste fornecedor na ficha do produto, sem mexer no "preço compra" geral do produto.
     const estimados = new Map();
     (itens || []).forEach(item => {
-        if (!itemPedidoNaoComprarFornecedor(item) && !itemPedidoEstaExFornecedor(item)) return;
+        if (!itemPedidoNaoComprarFornecedor(item) && !itemPedidoExNaoCompradoFornecedor(item)) return;
         const precoEstimado = Math.max(0, Number(item?.preco_estimado_eur || 0) || 0);
         if (precoEstimado <= 0) return;
         const produtoAtual = obterProdutoParaPedidoFornecedor(item);
@@ -5413,7 +5419,7 @@ function renderizarPedidoFornecedorProdutosTabela(caixa, pedido) {
         const precoCelula = document.createElement("td");
         precoCelula.className = "mapas-col-preco-compra";
         const precoEstimadoEur = Math.max(0, Number(item?.preco_estimado_eur || 0) || 0);
-        const naoComprado = itemPedidoNaoComprarFornecedor(item) || itemPedidoEstaExFornecedor(item);
+        const naoComprado = itemPedidoNaoComprarFornecedor(item) || itemPedidoExNaoCompradoFornecedor(item);
         const precoTexto = naoComprado && precoEstimadoEur > 0
             ? `${formatarEuroFornecedor(precoEstimadoEur)} (est.)`
             : formatarPrecoCustoItemFornecedor(item);
