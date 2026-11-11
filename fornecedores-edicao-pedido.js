@@ -387,7 +387,8 @@ function itemContaParaCustoRealListaAtualFornecedor(item) {
     if (item.conjunto_extra) return false;
     if (itemIgnoradoListaEdicaoFornecedor(item)) return false;
     const estado = String(item.estado_fornecedor || "").trim().toUpperCase();
-    // EX com quantidade = comprada apesar do preço: conta como as outras.
+    // EX (mesmo comprada apesar do preço) fica com o preço escrito na figura: fora do preço igual / custo real.
+    if (estado === "EX" || item.marcado_ex === true) return false;
     return Math.max(0, Number(item.quantidade || 0)) > 0;
 }
 
