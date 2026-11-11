@@ -26,3 +26,5 @@
 -- Verificação automática (2026-11-11): cron "todocoleccion-acertar-lotes", de 15 em 15 minutos (4,19,34,49).
 -- todocoleccion_acertar_lotes(15): se houver lotes com unidades/estado diferentes de stock_para_venda,
 -- acerta no máximo 15 por volta (pedidos grandes esgotam os recursos da função); sem diferenças não contacta o todocoleccion.
+-- todocoleccion_acertar_lotes também reativa (antes de acertar os lotes) as figuras não arquivadas, sem stock e
+-- desativadas que estejam num caixote recebido (ex.: caixote que passou a "Caixote recebido" antes desta regra existir).
