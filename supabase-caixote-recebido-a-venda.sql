@@ -14,3 +14,11 @@
 --
 -- criar_encomenda_com_stock (compra no site): aceita a figura se stock + caixote_a_receber >= quantidade.
 --   Cópia anterior: wallapop_config 'backup_criar_encomenda_com_stock_20261111'.
+
+-- Todocoleccion (2026-11-11):
+-- stock_para_venda(id) = greatest(stock + caixote_a_receber (se ativa e não arquivada), 0).
+-- todocoleccion_lotes_sincronizar_v2: unidades do lote = stock_para_venda (antes: stock do site).
+-- todocoleccion_criar_lotes_novos: cria lote se stock_para_venda > 0 (antes: stock > 0).
+-- trg_fornecedores_caixote_deu_entrada: ao passar a "Caixote recebido" reativa as figuras sem stock do caixote;
+--   ao sair de "Caixote recebido" desativa as que continuem sem stock; nos dois casos sincroniza os lotes no todocoleccion.
+-- Cópias anteriores: backup_todocoleccion_lotes_sincronizar_v2_20261111, backup_todocoleccion_criar_lotes_novos_20261111.
