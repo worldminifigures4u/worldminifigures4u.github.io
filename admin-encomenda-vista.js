@@ -2724,6 +2724,38 @@ window.AdminEncomendaVista = (function () {
 
         let codigoSeguimentoPendente = null;
 
+        // Todocoleccion: sem código de seguimento o lote não fica marcado como enviado no TC
+        // nem o comprador recebe a mensagem com o seguimento. Pede o código antes de mudar.
+        if (
+            String(encomenda.origem || "") === "Todocoleccion"
+            && (estado === "Enviado" || estado === "Concluído")
+            && estadoAnterior !== estado
+            && !String(encomenda.codigo_seguimento || "").trim()
+            && mostrarCampoSeguimento(encomenda)
+        ) {
+            const codigoEncomenda = encomenda.codigo_encomenda || encomenda.id || "";
+            const resposta = await pedirTextoSite(
+                `Encomenda ${codigoEncomenda} (Todocoleccion) · ${obterRotuloEnvioRegistado(encomenda)}\n`
+                + "Indique o código de seguimento. Sem ele, a venda não fica marcada como enviada no Todocoleccion e o comprador não recebe o número de seguimento.",
+                "",
+                { titulo: "Falta o código de seguimento", textoConfirmar: "Gravar", textoCancelar: "Fechar" }
+            );
+            if (resposta === null) {
+                select.value = estadoAnterior;
+                return;
+            }
+            const codigo = String(resposta).trim();
+            if (codigo) {
+                codigoSeguimentoPendente = codigo;
+            } else if (!(await mostrarConfirmacaoSite(
+                `Mudar a encomenda ${codigoEncomenda} para «${estado}» sem código de seguimento?\n\nNo Todocoleccion continuará por marcar como enviada.`,
+                { titulo: "Sem código de seguimento", textoConfirmar: "Mudar sem código", textoCancelar: "Voltar" }
+            ))) {
+                select.value = estadoAnterior;
+                return;
+            }
+        }
+
         select.disabled = true;
         hooks.definirStatus("A atualizar o estado...");
         try {
