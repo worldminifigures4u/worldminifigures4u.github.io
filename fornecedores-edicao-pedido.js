@@ -2265,6 +2265,17 @@ async function guardarEdicaoPedidoFornecedor(evento) {
     let itensAlterados = modal.dataset.itensAlteradosListaFinal === "1" || pedidoTemItensAlteradosEdicaoFornecedor(pedido, modal);
     const deveAtualizarHistoricoConfirmacao = deveConfirmarHistoricoPedidoFornecedor(estadoAnterior, estado);
     const itens = lerItensEditadosPedidoFornecedor(pedido, modal);
+    // Assinatura dos preços antes de recalcular: os valores guardados do "Preço de compra" voltam a ser
+    // aplicados em cada gravação, mas só contam como alteração se algum preço mudar de facto.
+    const assinaturaPrecosItens = (lista) => JSON.stringify((lista || []).map(item => [
+        Math.round(Number(item?.preco_custo ?? 0) * 10000),
+        Math.round(Number(item?.preco_custo_figura ?? -1) * 10000),
+        Math.round(Number(item?.preco_custo_portes ?? -1) * 10000),
+        String(item?.preco_custo_moeda || ''),
+        Boolean(item?.preco_custo_provisorio),
+        Math.round(Number(item?.preco_estimado_eur ?? -1) * 10000)
+    ]));
+    const precosAntesRecalculo = assinaturaPrecosItens(itens);
     const opcoesCustoListaAtual = lerOpcoesCustoListaAtualFornecedor(modal);
     const resumoCustoRealListaAtual = deveCalcularCustoRealListaAtualFornecedor(opcoesCustoListaAtual)
         && itensTemPrecoUsdListaAtualFornecedor(itens)
@@ -2275,16 +2286,14 @@ async function guardarEdicaoPedidoFornecedor(evento) {
         status.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
         return;
     }
-    if (resumoCustoRealListaAtual.aplicado) {
-        itensAlterados = true;
-    }
     const resumoCustoFixoEur = aplicarCustoFixoEurItensFornecedor(itens, lerOpcoesCustoFixoEurFornecedor(modal));
     if (resumoCustoFixoEur.erro) {
         definirStatusEdicaoFornecedor(status, "erro", resumoCustoFixoEur.erro);
         status.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
         return;
     }
-    if (resumoCustoFixoEur.aplicado) {
+    if ((resumoCustoRealListaAtual.aplicado || resumoCustoFixoEur.aplicado)
+        && assinaturaPrecosItens(itens) !== precosAntesRecalculo) {
         itensAlterados = true;
     }
 
