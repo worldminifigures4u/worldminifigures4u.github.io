@@ -1750,7 +1750,7 @@ window.AdminEncomendaVista = (function () {
         }
 
         return [
-            "Pode ainda optar por outros tipos de envio disponíveis:",
+            "Pode optar pelos seguintes tipos de envio disponíveis:",
             ...alternativas.map(opcao => {
                 const nome = String(opcao?.nome || opcao?.nome_exibicao || opcao?.id || "Envio").trim();
                 const portesOpcao = formatarValorEnvioExportacao(opcao?.valor);
