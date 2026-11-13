@@ -3437,6 +3437,8 @@ function calcularSugestoesFornecedor(meses, substituir) {
         const previsto = Number(produto.stock || 0) + obterPendentesProdutoFornecedor(produto);
         let necessario = Math.ceil((vendas / 3) * meses - previsto);
         if (necessario <= 0) return;
+        // Falta só 1 (o mínimo daria 2 a mais): se o previsto já cobre 2 meses de vendas, não sugere.
+        if (necessario === 1 && previsto >= Math.ceil((vendas / 3) * 2)) return;
         necessario = Math.max(necessario, MINIMO_SUGERIR_FORNECEDOR);
         const embalagem = Math.max(1, Math.floor(Number(produto.unidades_por_embalagem) || 1));
         if (embalagem > 1) necessario = Math.ceil(necessario / embalagem) * embalagem;
@@ -3540,7 +3542,7 @@ function abrirModalSugerirFornecedor() {
                         <input type="checkbox" id="fornecedor-sugerir-substituir">
                         Substituir quantidades já escritas
                     </label>
-                    <p class="fornecedor-sugerir-ajuda">Por figura: vendas dos últimos 3 meses ÷ 3 × meses a cobrir − Prev. (stock + a caminho), no mínimo 3 unidades, arredondado à embalagem. Só entram as figuras da lista com os filtros atuais.</p>
+                    <p class="fornecedor-sugerir-ajuda">Por figura: vendas dos últimos 3 meses ÷ 3 × meses a cobrir − Prev. (stock + a caminho), no mínimo 3 unidades (se faltar só 1 e o Prev. já cobrir 2 meses, não sugere), arredondado à embalagem. Só entram as figuras da lista com os filtros atuais.</p>
                 </div>
             </div>`;
         document.body.appendChild(modal);
