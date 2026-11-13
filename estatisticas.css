@@ -124,7 +124,72 @@
 }
 
 .estatisticas-grid-principal {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+/* Topo: vendas por mês (janeiro a dezembro, numa coluna) à esquerda; indicadores, lucro e plataformas à direita. */
+.estatisticas-destaque {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 14px;
+    align-items: stretch;
+    margin-bottom: 14px;
+}
+
+.estatisticas-destaque .estatisticas-painel-comparacao {
+    display: flex;
+    flex-direction: column;
+}
+
+/* Os 12 meses ocupam a altura toda do quadro (acompanha a coluna da direita). */
+.estatisticas-destaque .estatisticas-comparacao-meses {
+    flex: 1;
+    grid-template-columns: 1fr;
+    grid-auto-rows: 1fr;
+    gap: 0;
+}
+
+.estatisticas-destaque .estatisticas-comparacao-grupo {
+    padding: 8px 0;
+    align-items: center;
+}
+
+.estatisticas-destaque-direita {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    min-width: 0;
+}
+
+.estatisticas-destaque-direita .estatisticas-metricas {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    margin-bottom: 0;
+}
+
+.estatisticas-destaque-direita .estatisticas-metricas.estatisticas-metricas-lucro {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.estatisticas-destaque-direita .estatisticas-lucro-aviso {
+    margin: 0;
+}
+
+.estatisticas-destaque-direita > .estatisticas-painel {
+    flex: 1;
+    min-height: 0;
+}
+
+@media (max-width: 1100px) {
+    .estatisticas-destaque {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 760px) {
+    .estatisticas-destaque-direita .estatisticas-metricas,
+    .estatisticas-destaque-direita .estatisticas-metricas.estatisticas-metricas-lucro {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
 }
 
 /* Vendas por mês no topo, a toda a largura. */

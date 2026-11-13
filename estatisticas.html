@@ -19,7 +19,7 @@
     <link rel="apple-touch-icon" href="fp-ring-favicon-192.png">
     <link rel="stylesheet" href="styles.css?v=20261016-limpar-sem-tapar">
     <link rel="stylesheet" href="styles-admin.css?v=20260920-guardar-verde">
-    <link rel="stylesheet" href="estatisticas.css?v=20261113-meses-primeiro">
+    <link rel="stylesheet" href="estatisticas.css?v=20261113-topo-duas-colunas">
     <link rel="stylesheet" href="admin-light.css?v=20261015-preco-recomendado-laranja">
     <link rel="stylesheet" href="styles-tema.css?v=20260721-sem-underline" media="print" data-async-css>
     <noscript><link rel="stylesheet" href="styles-tema.css?v=20260721-sem-underline"></noscript>
@@ -106,17 +106,8 @@
             </div>
         </section>
 
-        <section class="estatisticas-metricas" aria-label="Indicadores principais">
-            <article><span>Total vendido</span><strong id="estatisticas-total-vendido">0,00 €</strong></article>
-            <article><span>Número de encomendas</span><strong id="estatisticas-numero-encomendas">0</strong></article>
-            <article><span>Ticket médio</span><strong id="estatisticas-ticket-medio">0,00 €</strong></article>
-            <article><span>Unidades vendidas</span><strong id="estatisticas-unidades">0</strong></article>
-            <article><span>Preço médio por figura</span><strong id="estatisticas-preco-medio-figura">0,00 €</strong></article>
-        </section>
-
-        <!-- Vendas por mês (por ano, com comparação entre anos) logo a seguir aos indicadores. -->
-
-        <section class="estatisticas-grid estatisticas-grid-comparacao">
+        <!-- Topo: vendas por mês (esquerda) e indicadores, lucro e plataformas (direita). -->
+        <section class="estatisticas-destaque">
             <article class="estatisticas-painel estatisticas-painel-comparacao">
                 <div class="estatisticas-painel-cabecalho">
                     <h2>Vendas por mês e ano</h2>
@@ -124,15 +115,27 @@
                 </div>
                 <div class="estatisticas-comparacao-meses" id="estatisticas-comparacao-meses"></div>
             </article>
+            <div class="estatisticas-destaque-direita">
+            <section class="estatisticas-metricas" aria-label="Indicadores principais">
+                <article><span>Total vendido</span><strong id="estatisticas-total-vendido">0,00 €</strong></article>
+                <article><span>Número de encomendas</span><strong id="estatisticas-numero-encomendas">0</strong></article>
+                <article><span>Ticket médio</span><strong id="estatisticas-ticket-medio">0,00 €</strong></article>
+                <article><span>Unidades vendidas</span><strong id="estatisticas-unidades">0</strong></article>
+                <article><span>Preço médio por figura</span><strong id="estatisticas-preco-medio-figura">0,00 €</strong></article>
+            </section>
+            <section class="estatisticas-metricas estatisticas-metricas-lucro" aria-label="Lucro das figuras">
+                <article><span>Receita das figuras</span><strong id="estatisticas-lucro-receita">0,00 €</strong></article>
+                <article><span>Custo das figuras</span><strong id="estatisticas-lucro-custo">0,00 €</strong></article>
+                <article class="estatisticas-metrica-lucro"><span>Lucro</span><strong id="estatisticas-lucro-total">0,00 €</strong></article>
+                <article><span>Margem</span><strong id="estatisticas-lucro-margem">0 %</strong></article>
+            </section>
+            <p class="estatisticas-lucro-aviso" id="estatisticas-lucro-aviso" hidden></p>
+                <article class="estatisticas-painel">
+                    <h2>Vendas por plataforma/site</h2>
+                    <div class="estatisticas-barras" id="estatisticas-plataformas"></div>
+                </article>
+            </div>
         </section>
-
-        <section class="estatisticas-metricas estatisticas-metricas-lucro" aria-label="Lucro das figuras">
-            <article><span>Receita das figuras</span><strong id="estatisticas-lucro-receita">0,00 €</strong></article>
-            <article><span>Custo das figuras</span><strong id="estatisticas-lucro-custo">0,00 €</strong></article>
-            <article class="estatisticas-metrica-lucro"><span>Lucro</span><strong id="estatisticas-lucro-total">0,00 €</strong></article>
-            <article><span>Margem</span><strong id="estatisticas-lucro-margem">0 %</strong></article>
-        </section>
-        <p class="estatisticas-lucro-aviso" id="estatisticas-lucro-aviso" hidden></p>
 
         <section class="estatisticas-grid estatisticas-grid-lucro">
             <article class="estatisticas-painel">
@@ -182,10 +185,6 @@
             <article class="estatisticas-painel">
                 <h2>Vendas por ano</h2>
                 <div class="estatisticas-barras" id="estatisticas-anos"></div>
-            </article>
-            <article class="estatisticas-painel">
-                <h2>Vendas por plataforma/site</h2>
-                <div class="estatisticas-barras" id="estatisticas-plataformas"></div>
             </article>
         </section>
 
