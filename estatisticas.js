@@ -310,16 +310,12 @@ function calcularComparacaoMensalAnos(encomendas, anosSelecionados, filtro) {
 
 function renderizarComparacaoMensalAnos(encomendasBase, filtro) {
     const anosDisponiveis = obterAnosDisponiveisComparacao(encomendasBase);
-    const container = document.getElementById('estatisticas-comparacao-meses');
-    // Com um só ano com vendas, a comparação repetia o gráfico "Vendas por mês": fica escondida.
-    const secao = container?.closest('section');
-    if (secao) secao.hidden = anosDisponiveis.length <= 1;
-    if (anosDisponiveis.length <= 1) return;
     atualizarOpcoesComparacaoAnos(anosDisponiveis);
+    const container = document.getElementById('estatisticas-comparacao-meses');
     container.replaceChildren();
     const anosSelecionados = obterAnosSelecionadosComparacao(anosDisponiveis);
-    if (anosSelecionados.length < 2) {
-        container.appendChild(criarElementoEstatisticas('p', 'estatisticas-vazio', 'Marca pelo menos dois anos para comparar.'));
+    if (!anosSelecionados.length) {
+        container.appendChild(criarElementoEstatisticas('p', 'estatisticas-vazio', 'Seleciona pelo menos um ano.'));
         return;
     }
 
@@ -554,7 +550,7 @@ function renderizarEstatisticas() {
 
     renderizarBarras('estatisticas-dias', dados.dias, { formatarLabel: formatarDiaEstatisticas, mostrarEncomendas: true, limite: 31 });
     renderizarBarras('estatisticas-dias-semana', dados.diasSemana, { formatarLabel: formatarDiaSemanaEstatisticas, mostrarEncomendas: true, limite: 7, manterZeros: true });
-    renderizarBarras('estatisticas-meses', dados.meses, { formatarLabel: formatarMesEstatisticas, mostrarEncomendas: true, limite: 18 });
+    // "Vendas por mês" foi retirado: o quadro "Vendas por mês e ano" (comparação) mostra o mesmo com só um ano marcado.
     renderizarBarras('estatisticas-anos', dados.anos, { mostrarEncomendas: true, limite: 10 });
     renderizarBarras('estatisticas-plataformas', dados.plataformas, { mostrarEncomendas: true, limite: 10 });
     renderizarBarras('estatisticas-estados', dados.estados, { mostrarEncomendas: true, limite: 8 });
