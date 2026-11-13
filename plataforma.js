@@ -340,6 +340,42 @@ function aplicarPaisEnvioPredefinidoPlataforma() {
     selecionarPaisEnvioPlataforma(obterPaisEnvioPredefinidoPorPlataforma(plataforma));
 }
 
+// País do cliente a partir do link do perfil (Wallapop/Vinted/OLX), pela função "wallapop" do site.
+const cachePaisPerfilPlataforma = new Map();
+async function obterPaisDoPerfilPlataforma(link) {
+    const chave = String(link || '').trim();
+    if (!chave || !wallapopClient?.functions) return '';
+    if (cachePaisPerfilPlataforma.has(chave)) return cachePaisPerfilPlataforma.get(chave);
+    try {
+        const { data, error } = await Promise.race([
+            wallapopClient.functions.invoke('wallapop', { body: { pais_perfil: chave } }),
+            new Promise(resolve => setTimeout(() => resolve({ error: new Error('tempo') }), 8000))
+        ]);
+        if (error || !data?.ok) return '';
+        const texto = data.pais || data.codigo || '';
+        const pais = window.PaisesCliente?.normalizarPaisParaOpcao?.(texto) || texto;
+        cachePaisPerfilPlataforma.set(chave, pais);
+        return pais;
+    } catch (_) {
+        return '';
+    }
+}
+
+// Ficha sem país: escolhe o país do perfil (se o link não mudou entretanto). Na edição de uma encomenda não mexe.
+async function aplicarPaisDoPerfilPlataforma() {
+    if (encomendaPlataformaEmEdicao) return '';
+    const link = document.getElementById('plataforma-link-perfil')?.value.trim() || '';
+    if (!link || perfilExternoDetetado?.plataforma === 'WhatsApp') return '';
+    const pais = await obterPaisDoPerfilPlataforma(link);
+    const linkAtual = document.getElementById('plataforma-link-perfil')?.value.trim() || '';
+    if (!pais || linkAtual !== link || encomendaPlataformaEmEdicao) return '';
+    if (fichaClientePlataformaAtual?.cliente?.pais) return '';
+    selecionarPaisEnvioPorTextoPlataforma(pais);
+    definirStatusWallapop(`País do cliente preenchido a partir do perfil: ${pais}.`);
+    guardarRascunhoClientePlataforma();
+    return pais;
+}
+
 function preencherClientePlataformaComFicha(dados) {
     fichaClientePlataformaAtual = dados?.sucesso ? dados : null;
     const cliente = fichaClientePlataformaAtual?.cliente || {};
@@ -348,7 +384,15 @@ function preencherClientePlataformaComFicha(dados) {
     document.getElementById('plataforma-morada-cliente').value = cliente.morada || '';
     document.getElementById('plataforma-cp-cliente').value = cliente.cp || '';
     document.getElementById('plataforma-cidade-cliente').value = cliente.cidade || '';
-    aplicarPaisEnvioPredefinidoPlataforma();
+    if (!encomendaPlataformaEmEdicao) {
+        // País da ficha; sem país na ficha, o da plataforma e depois o do perfil.
+        if (cliente.pais) {
+            selecionarPaisEnvioPorTextoPlataforma(cliente.pais);
+        } else {
+            aplicarPaisEnvioPredefinidoPlataforma();
+            aplicarPaisDoPerfilPlataforma().catch(() => {});
+        }
+    }
     renderizarFichaClientePlataforma(dados);
     guardarRascunhoClientePlataforma();
 }
@@ -629,7 +673,7 @@ function garantirFichaClientePlataforma() {
                 return carregarScriptAdmin('paises-cliente.js?v=20260731-wallapop-es');
             })
             .then(function () {
-                return carregarScriptAdmin('admin-ficha-cliente.js?v=20261107-espacos');
+                return carregarScriptAdmin('admin-ficha-cliente.js?v=20261113-pais-perfil');
             })
             .then(function () {
                 window.AdminFichaCliente?.configurar({
@@ -819,11 +863,14 @@ async function carregarFichaClientePorPerfilPlataforma(opcoes = {}) {
         });
         definirStatusWallapop('');
         const modalCliente = document.getElementById('admin-cliente-modal');
+        // Sem ficha: o país do perfil escolhe o país de envio e vem preenchido na ficha nova.
+        const paisPerfil = await aplicarPaisDoPerfilPlataforma().catch(() => '');
         if (abrirCriacao && (!modalCliente || modalCliente.hidden)) {
             garantirFichaClientePlataforma().then(function () {
                 window.AdminFichaCliente?.abrirCriacao({
                     url: linkPerfil || perfilExternoDetetado.url || '',
                     utilizador: perfilExternoDetetado.utilizador || '',
+                    pais: paisPerfil || '',
                     onCriado: async () => {
                         await carregarFichaClientePorPerfilPlataforma();
                     }

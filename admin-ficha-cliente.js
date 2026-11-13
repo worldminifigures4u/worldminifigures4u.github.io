@@ -440,7 +440,8 @@
         const urlInicial = obterUrlExternoSeguro(opcoes.url || '');
         const nomeInicial = String(opcoes.nome || '').trim();
         const plataformaInicial = global.PaisesCliente?.detetarPlataformaUrl(urlInicial);
-        const paisInicial = global.PaisesCliente?.paisPredefinidoPlataforma(plataformaInicial) || 'Portugal';
+        const paisInicial = (opcoes.pais && (global.PaisesCliente?.normalizarPaisParaOpcao(opcoes.pais) || opcoes.pais))
+            || global.PaisesCliente?.paisPredefinidoPlataforma(plataformaInicial) || 'Portugal';
         const { formulario } = montarFormularioClienteModal({
             cliente: { nome: '', nome_utilizador: nomeInicial, pais: paisInicial },
             perfis: urlInicial ? [{ url: urlInicial }] : [],
@@ -500,6 +501,11 @@
             }
         });
 
+        // País vindo do perfil (ex.: página Plataformas): prevalece sobre o país por defeito da plataforma.
+        if (opcoes.pais) {
+            const selectPais = formulario.querySelector('select[name="pais"]');
+            if (selectPais && [...selectPais.options].some((opcao) => opcao.value === paisInicial)) selectPais.value = paisInicial;
+        }
         conteudo.replaceChildren(formulario);
         formulario.querySelector('input[name="nome_utilizador"]')?.focus();
     }

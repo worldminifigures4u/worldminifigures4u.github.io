@@ -72,12 +72,52 @@ async function perfilWallapop(hash: string): Promise<{ slug: string | null; pais
   }
 }
 
+// País a partir do link do perfil (página Plataformas, admin): Wallapop, Vinted ou OLX.
+// Wallapop: a página pública do perfil traz o código interno do utilizador; a API dá o país desse código.
+async function paisDoPerfil(link: string): Promise<{ ok: boolean; pais?: string | null; codigo?: string | null; erro?: string }> {
+  let url: URL;
+  try { url = new URL(String(link || "").trim()); } catch { return { ok: false, erro: "link_invalido" }; }
+  const host = url.hostname.toLowerCase().replace(/^www\./, "");
+  const caminho = decodeURIComponent(url.pathname).replace(/\/+$/, "");
+  const cabecalhos = { "User-Agent": "Mozilla/5.0", Accept: "text/html" };
+  try {
+    if (host === "wallapop.com" || host.endsWith(".wallapop.com")) {
+      const slug = (caminho.match(/\/user\/([^/?#]+)$/i)?.[1] || "").toLowerCase();
+      if (!slug) return { ok: false, erro: "link_invalido" };
+      const r = await fetch(`https://es.wallapop.com/user/${encodeURIComponent(slug)}`, { headers: cabecalhos });
+      if (!r.ok) return { ok: false, erro: `perfil_http_${r.status}` };
+      const html = await r.text();
+      const candidatos = [...new Set([...html.matchAll(/"id"\s*:\s*"([a-z0-9]{10,14})"/g)].map((m) => m[1]))].slice(0, 6);
+      for (const hash of candidatos) {
+        const p = await perfilWallapop(hash);
+        if (p.slug === slug) return { ok: true, codigo: p.pais || null };
+      }
+      return { ok: false, erro: "perfil_sem_pais" };
+    }
+    if (/^vinted\.[a-z.]+$/i.test(host)) {
+      const membro = caminho.match(/\/member\/(\d+)/i)?.[1];
+      if (!membro) return { ok: false, erro: "link_invalido" };
+      const r = await fetch(`https://www.vinted.pt/member/${membro}`, { headers: cabecalhos });
+      if (!r.ok) return { ok: false, erro: `perfil_http_${r.status}` };
+      const html = await r.text();
+      const m = html.match(/country_title(?:_local)?\\?"\s*:\s*\\?"([^"\\]+)/);
+      const pais = m ? desescapar(m[1]) : "";
+      return pais && pais.length <= 40 ? { ok: true, pais } : { ok: false, erro: "perfil_sem_pais" };
+    }
+    if (host === "olx.pt" || host.endsWith(".olx.pt")) return { ok: true, codigo: "PT" };
+    return { ok: false, erro: "plataforma_sem_pais" };
+  } catch (e) {
+    return { ok: false, erro: String(e) };
+  }
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: CORS });
   if (req.method !== "POST") return resp({ ok: false, erro: "metodo" }, 405);
   if (!(await autorizado(req))) return resp({ ok: false, erro: "nao_autorizado" }, 401);
   let corpo: any = {};
   try { corpo = await req.json(); } catch { /* vazio */ }
+  if (corpo.pais_perfil) return resp(await paisDoPerfil(String(corpo.pais_perfil)));
   const simular = corpo.simular !== false; // por defeito só simula; o script envia simular:false quando estiver ligado a sério
   const emails = (Array.isArray(corpo.emails) ? corpo.emails : []).slice(0, 30);
   const resultados: any[] = [];
