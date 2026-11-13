@@ -3285,7 +3285,8 @@ function criarTextoClienteOlx() {
     const numeroFiguras = itens.reduce((total, item) => total + Math.max(1, Number(item.quantidade) || 1), 0);
     // Valor das figuras para os outros envios: total geral sem os portes escolhidos (inclui um total manual).
     const baseFiguras = arredondarDinheiroPlataforma(totalGeral - Number(envio.portes || 0));
-    const linhas = criarCabecalhoCodigoEncomenda().concat(['Produtos:']);
+    // OLX: o texto vai para o cliente, por isso não leva a linha "Nome - Lote personalizado – CÓDIGO".
+    const linhas = ['Produtos:'];
     itens.forEach(item => {
         linhas.push(formatarLinhaTxtProdutoPlataforma(item));
     });
