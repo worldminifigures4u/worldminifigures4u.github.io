@@ -1859,7 +1859,8 @@ window.AdminEncomendaVista = (function () {
             "",
             `Figuras:\t${numeroFiguras}`,
             `Subtotal das figuras:\t${formatarEuroExportacao(subtotal)} €`,
-            `Portes de envio (${envio}):\t${formatarEuroExportacao(portes)} €`,
+            // Entrega em mão: sem a linha dos portes (são 0,00 €).
+            ...(envioEntregaMaoExportacao(encomenda) ? [] : [`Portes de envio (${envio}):\t${formatarEuroExportacao(portes)} €`]),
             "",
             `Total geral:\t${formatarEuroExportacao(total)} €`,
             "",

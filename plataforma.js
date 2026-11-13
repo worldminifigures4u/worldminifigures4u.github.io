@@ -3294,7 +3294,8 @@ function criarTextoClienteOlx() {
         '',
         `Figuras:\t${numeroFiguras}`,
         `Subtotal das figuras:\t${formatarEuroWallapop(subtotal)} \u20ac`,
-        `Portes de envio (${envio.nome}):\t${formatarEuroWallapop(envio.portes)} \u20ac`,
+        // Entrega em mão: sem a linha dos portes (são 0,00 €).
+        ...((metodoEnvioEntregaMaoPlataforma(envio.id || envio.metodo_envio || '') || normalizarTextoPlataforma(envio.nome).includes('entrega em mao')) ? [] : [`Portes de envio (${envio.nome}):\t${formatarEuroWallapop(envio.portes)} \u20ac`]),
         '',
         `Total geral:\t${formatarEuroWallapop(totalGeral)} \u20ac`,
         '',
