@@ -1726,7 +1726,16 @@ window.AdminEncomendaVista = (function () {
         return "Nota: com a InPost, a encomenda não é entregue em casa, mas sim num ponto de recolha à sua escolha. Se preferir este envio, indique-me o seu e-mail: vai receber uma mensagem da InPost onde pode escolher o ponto mais conveniente e completar os dados de envio.";
     }
 
-    function criarLinhasOutrosEnviosOlxExportacao(encomenda, itens, baseFiguras = null) {
+    // Uma opção de envio no TXT do OLX: nome numa linha, portes e total bem separados na seguinte.
+    function linhasOpcaoEnvioTxtExportacao(nome, portes, total) {
+        return [
+            `- ${nome}`,
+            `    Portes: ${formatarEuroExportacao(portes)} €   |   Total: ${formatarEuroExportacao(total)} €`,
+            ""
+        ];
+    }
+
+    function criarLinhasOutrosEnviosOlxExportacao(encomenda, itens, baseFiguras = null, opcaoAtual = null) {
         const opcoes = obterOpcoesEnvioExportacao(encomenda, itens);
         const metodoAtual = normalizarChaveEnvioExportacao(encomenda?.metodo_envio);
         const nomeAtual = normalizarTextoEnvio(encomenda?.metodo_envio_nome);
@@ -1742,23 +1751,34 @@ window.AdminEncomendaVista = (function () {
             nome: encomenda?.metodo_envio_nome
         }) || alternativas.some(envioInPostExportacao);
 
-        if (!alternativas.length) {
+        if (!alternativas.length && !opcaoAtual) {
             return [
                 "Pode ainda optar por outros tipos de envio disponíveis de acordo com as opções configuradas no site.",
                 ...(incluirNotaInPost ? ["", criarNotaInPostExportacao()] : [])
             ];
         }
 
+        const linhasOpcoes = [];
+        // Entrega em mão: aparece como a primeira opção da lista (portes 0,00 €).
+        if (opcaoAtual && baseFiguras !== null) {
+            linhasOpcoes.push(...linhasOpcaoEnvioTxtExportacao(opcaoAtual.nome, opcaoAtual.portes || 0, baseFiguras + Number(opcaoAtual.portes || 0)));
+        }
+        alternativas.forEach(opcao => {
+            const nome = String(opcao?.nome || opcao?.nome_exibicao || opcao?.id || "Envio").trim();
+            const portesOpcao = formatarValorEnvioExportacao(opcao?.valor);
+            if (baseFiguras === null) {
+                linhasOpcoes.push(`- ${nome}: ${formatarEuroExportacao(portesOpcao)} €`);
+                return;
+            }
+            // Total com estes portes (o valor das figuras, com um eventual total manual, mantém-se).
+            const totalOpcao = Math.round((baseFiguras + Number(portesOpcao || 0)) * 100) / 100;
+            linhasOpcoes.push(...linhasOpcaoEnvioTxtExportacao(nome, portesOpcao, totalOpcao));
+        });
+        while (linhasOpcoes.length && linhasOpcoes[linhasOpcoes.length - 1] === "") linhasOpcoes.pop();
         return [
             "Pode optar pelos seguintes tipos de envio disponíveis:",
-            ...alternativas.map(opcao => {
-                const nome = String(opcao?.nome || opcao?.nome_exibicao || opcao?.id || "Envio").trim();
-                const portesOpcao = formatarValorEnvioExportacao(opcao?.valor);
-                if (baseFiguras === null) return `- ${nome}: ${formatarEuroExportacao(portesOpcao)} €`;
-                // Total com estes portes (o valor das figuras, com um eventual total manual, mantém-se).
-                const totalOpcao = Math.round((baseFiguras + Number(portesOpcao || 0)) * 100) / 100;
-                return `- ${nome}: portes ${formatarEuroExportacao(portesOpcao)} € · total ${formatarEuroExportacao(totalOpcao)} €`;
-            }),
+            "",
+            ...linhasOpcoes,
             ...(incluirNotaInPost ? ["", criarNotaInPostExportacao()] : [])
         ];
     }
@@ -1855,19 +1875,28 @@ window.AdminEncomendaVista = (function () {
             const totalLinha = obterQuantidadeExportacao(item) * obterPrecoExportacao(item);
             linhas.push(`${obterQuantidadeExportacao(item)}x ${item.nome} ${formatarEuroExportacao(totalLinha)} €`);
         });
-        linhas.push(
-            "",
-            `Figuras:\t${numeroFiguras}`,
-            `Subtotal das figuras:\t${formatarEuroExportacao(subtotal)} €`,
-            // Entrega em mão: sem a linha dos portes (são 0,00 €).
-            ...(envioEntregaMaoExportacao(encomenda) ? [] : [`Portes de envio (${envio}):\t${formatarEuroExportacao(portes)} €`]),
-            "",
-            `Total geral:\t${formatarEuroExportacao(total)} €`,
-            "",
-            ...criarLinhasOutrosEnviosOlxExportacao(encomenda, itens, baseFiguras),
-            "",
-            ...criarLinhasDadosClienteExportacao(encomenda)
-        );
+        if (envioEntregaMaoExportacao(encomenda)) {
+            // Entrega em mão: um só valor das figuras; a entrega em mão entra na lista de envios.
+            linhas.push(
+                "",
+                `Figuras:\t${numeroFiguras}`,
+                `Total das figuras:\t${formatarEuroExportacao(baseFiguras)} €`,
+                "",
+                ...criarLinhasOutrosEnviosOlxExportacao(encomenda, itens, baseFiguras, { nome: String(envio || "Entrega em mão"), portes })
+            );
+        } else {
+            linhas.push(
+                "",
+                `Figuras:\t${numeroFiguras}`,
+                `Subtotal das figuras:\t${formatarEuroExportacao(subtotal)} €`,
+                `Portes de envio (${envio}):\t${formatarEuroExportacao(portes)} €`,
+                "",
+                `Total geral:\t${formatarEuroExportacao(total)} €`,
+                "",
+                ...criarLinhasOutrosEnviosOlxExportacao(encomenda, itens, baseFiguras)
+            );
+        }
+        linhas.push("", ...criarLinhasDadosClienteExportacao(encomenda));
         return "\ufeff" + linhas.join("\r\n");
     }
 

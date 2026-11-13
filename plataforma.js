@@ -3240,7 +3240,16 @@ function criarNotaInPostTxtPlataforma() {
     return 'Nota: com a InPost, a encomenda não é entregue em casa, mas sim num ponto de recolha à sua escolha. Se preferir este envio, indique-me o seu e-mail: vai receber uma mensagem da InPost onde pode escolher o ponto mais conveniente e completar os dados de envio.';
 }
 
-function criarLinhasOutrosEnviosOlxPlataforma(envio, baseFiguras = null) {
+// Uma opção de envio no TXT do OLX: nome numa linha, portes e total bem separados na seguinte.
+function linhasOpcaoEnvioTxtPlataforma(nome, portes, total) {
+    return [
+        `- ${nome}`,
+        `    Portes: ${formatarEuroWallapop(portes)} \u20ac   |   Total: ${formatarEuroWallapop(total)} \u20ac`,
+        ''
+    ];
+}
+
+function criarLinhasOutrosEnviosOlxPlataforma(envio, baseFiguras = null, opcaoAtual = null) {
     const regiao = envio?.regiao || document.getElementById('plataforma-pais-envio')?.value || 'portugal';
     const peso = Number(envio?.peso || calcularPesoPlataforma());
     const opcoes = obterOpcoesEnvioPlataforma(regiao, peso, obterPlataformaParaFicheiros());
@@ -3255,22 +3264,33 @@ function criarLinhasOutrosEnviosOlxPlataforma(envio, baseFiguras = null) {
     });
     const incluirNotaInPost = envioInPostTxtPlataforma(envio) || alternativas.some(envioInPostTxtPlataforma);
 
-    if (!alternativas.length) {
+    if (!alternativas.length && !opcaoAtual) {
         return [
             'Pode ainda optar por outros tipos de envio disponíveis de acordo com as opções configuradas no site.',
             ...(incluirNotaInPost ? ['', criarNotaInPostTxtPlataforma()] : [])
         ];
     }
 
+    const linhasOpcoes = [];
+    // Entrega em mão: aparece como a primeira opção da lista (portes 0,00 €).
+    if (opcaoAtual && baseFiguras !== null) {
+        linhasOpcoes.push(...linhasOpcaoEnvioTxtPlataforma(opcaoAtual.nome, opcaoAtual.portes || 0, baseFiguras + Number(opcaoAtual.portes || 0)));
+    }
+    alternativas.forEach(opcao => {
+        const nome = String(opcao?.nome || opcao?.nome_exibicao || opcao?.id || 'Envio').trim();
+        const portes = calcularPortesPlataforma(opcao?.valor);
+        if (baseFiguras === null) {
+            linhasOpcoes.push(`- ${nome}: ${formatarEuroWallapop(portes)} \u20ac`);
+            return;
+        }
+        // Total com estes portes (o valor das figuras, com um eventual total manual, mantém-se).
+        linhasOpcoes.push(...linhasOpcaoEnvioTxtPlataforma(nome, portes, arredondarDinheiroPlataforma(baseFiguras + Number(portes || 0))));
+    });
+    while (linhasOpcoes.length && linhasOpcoes[linhasOpcoes.length - 1] === '') linhasOpcoes.pop();
     return [
         'Pode optar pelos seguintes tipos de envio disponíveis:',
-        ...alternativas.map(opcao => {
-            const nome = String(opcao?.nome || opcao?.nome_exibicao || opcao?.id || 'Envio').trim();
-            const portes = calcularPortesPlataforma(opcao?.valor);
-            if (baseFiguras === null) return `- ${nome}: ${formatarEuroWallapop(portes)} \u20ac`;
-            // Total com estes portes (o valor das figuras, com um eventual total manual, mantém-se).
-            return `- ${nome}: portes ${formatarEuroWallapop(portes)} \u20ac \u00b7 total ${formatarEuroWallapop(arredondarDinheiroPlataforma(baseFiguras + Number(portes || 0)))} \u20ac`;
-        }),
+        '',
+        ...linhasOpcoes,
         ...(incluirNotaInPost ? ['', criarNotaInPostTxtPlataforma()] : [])
     ];
 }
@@ -3290,19 +3310,30 @@ function criarTextoClienteOlx() {
     itens.forEach(item => {
         linhas.push(formatarLinhaTxtProdutoPlataforma(item));
     });
-    linhas.push(
-        '',
-        `Figuras:\t${numeroFiguras}`,
-        `Subtotal das figuras:\t${formatarEuroWallapop(subtotal)} \u20ac`,
-        // Entrega em mão: sem a linha dos portes (são 0,00 €).
-        ...((metodoEnvioEntregaMaoPlataforma(envio.id || envio.metodo_envio || '') || normalizarTextoPlataforma(envio.nome).includes('entrega em mao')) ? [] : [`Portes de envio (${envio.nome}):\t${formatarEuroWallapop(envio.portes)} \u20ac`]),
-        '',
-        `Total geral:\t${formatarEuroWallapop(totalGeral)} \u20ac`,
-        '',
-        ...criarLinhasOutrosEnviosOlxPlataforma(envio, baseFiguras),
-        '',
-        ...criarLinhasDadosClienteOlx()
-    );
+    const entregaMao = metodoEnvioEntregaMaoPlataforma(envio.id || envio.metodo_envio || '')
+        || normalizarTextoPlataforma(envio.nome).includes('entrega em mao');
+    if (entregaMao) {
+        // Entrega em mão: um só valor das figuras; a entrega em mão entra na lista de envios.
+        linhas.push(
+            '',
+            `Figuras:\t${numeroFiguras}`,
+            `Total das figuras:\t${formatarEuroWallapop(baseFiguras)} \u20ac`,
+            '',
+            ...criarLinhasOutrosEnviosOlxPlataforma(envio, baseFiguras, { nome: envio.nome || 'Entrega em mão', portes: Number(envio.portes || 0) })
+        );
+    } else {
+        linhas.push(
+            '',
+            `Figuras:\t${numeroFiguras}`,
+            `Subtotal das figuras:\t${formatarEuroWallapop(subtotal)} \u20ac`,
+            `Portes de envio (${envio.nome}):\t${formatarEuroWallapop(envio.portes)} \u20ac`,
+            '',
+            `Total geral:\t${formatarEuroWallapop(totalGeral)} \u20ac`,
+            '',
+            ...criarLinhasOutrosEnviosOlxPlataforma(envio, baseFiguras)
+        );
+    }
+    linhas.push('', ...criarLinhasDadosClienteOlx());
     return '\ufeff' + linhas.join('\r\n');
 }
 
