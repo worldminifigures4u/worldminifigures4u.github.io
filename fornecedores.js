@@ -2854,7 +2854,14 @@ function obterQuantidadeSelecionadaFornecedor(id) {
     return Number(item?.quantidade || 0);
 }
 
+// Referências que não identificam um conjunto ("Personalizado", "-", ...): cada figura é independente.
+function referenciaGenericaFornecedor(referencia) {
+    const ref = normalizarReferenciaListaFornecedor(referencia);
+    return !ref || ["PERSONALIZADO", "PERSONALIZADA", "CUSTOM", "-", "--"].includes(ref);
+}
+
 function obterProdutosRelacionadosQuantidadeFornecedor(produto) {
+    if (referenciaGenericaFornecedor(produto?.referencia)) return produto ? [produto] : [];
     const relacionados = obterProdutosPorReferenciaFornecedor(produto?.referencia);
     if (relacionados.length > 1) return relacionados;
     return produto ? [produto] : [];
@@ -3421,7 +3428,7 @@ function calcularSugestoesFornecedor(meses, substituir) {
     obterResultadosFiltradosSugestaoFornecedor().forEach(({ produto, vendas_3m }) => {
         const vendas = Math.max(0, Number(vendas_3m) || 0);
         if (vendas <= 0) return;
-        const referencia = normalizarReferenciaListaFornecedor(produto?.referencia);
+        const referencia = referenciaGenericaFornecedor(produto?.referencia) ? "" : normalizarReferenciaListaFornecedor(produto?.referencia);
         const grupo = referencia ? `ref:${referencia}` : `id:${produto.id}`;
         if (grupos.has(grupo)) return;
         grupos.add(grupo);
