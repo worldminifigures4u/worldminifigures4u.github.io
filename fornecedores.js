@@ -3394,6 +3394,8 @@ function garantirBotaoSoNaEncomendaFornecedor(referencia) {
 
 /* ===== Sugerir quantidades (vendas dos ultimos 3 meses x meses a cobrir - previsto) ===== */
 const CHAVE_SUGERIR_MESES_FORNECEDOR = "fp-fornecedor-sugerir-meses";
+// Cada figura sugerida leva pelo menos esta quantidade.
+const MINIMO_SUGERIR_FORNECEDOR = 3;
 
 function obterResultadosFiltradosSugestaoFornecedor() {
     const { termo, fornecedor, filtrosMarcacao, filtroTop, filtroArquivado, filtroTema } = obterControlosResultadosFornecedor();
@@ -3428,6 +3430,7 @@ function calcularSugestoesFornecedor(meses, substituir) {
         const previsto = Number(produto.stock || 0) + obterPendentesProdutoFornecedor(produto);
         let necessario = Math.ceil((vendas / 3) * meses - previsto);
         if (necessario <= 0) return;
+        necessario = Math.max(necessario, MINIMO_SUGERIR_FORNECEDOR);
         const embalagem = Math.max(1, Math.floor(Number(produto.unidades_por_embalagem) || 1));
         if (embalagem > 1) necessario = Math.ceil(necessario / embalagem) * embalagem;
         sugestoes.push({ produto, vendas, necessario, embalagem, atual });
@@ -3453,7 +3456,8 @@ function aplicarSugestoesFornecedor(meses, substituir) {
             if (restante <= 0) return;
             let quantidade = Math.min(item.necessario, restante);
             if (item.embalagem > 1) quantidade = Math.floor(quantidade / item.embalagem) * item.embalagem;
-            if (quantidade <= 0) return;
+            // Nunca abaixo do mínimo: sem unidades suficientes para o alvo, a figura fica de fora.
+            if (quantidade <= 0 || quantidade < MINIMO_SUGERIR_FORNECEDOR) return;
             escolhidas.push({ ...item, necessario: quantidade });
             restante -= quantidade;
         });
@@ -3529,7 +3533,7 @@ function abrirModalSugerirFornecedor() {
                         <input type="checkbox" id="fornecedor-sugerir-substituir">
                         Substituir quantidades já escritas
                     </label>
-                    <p class="fornecedor-sugerir-ajuda">Por figura: vendas dos últimos 3 meses ÷ 3 × meses a cobrir − Prev. (stock + a caminho), arredondado à embalagem. Só entram as figuras da lista com os filtros atuais.</p>
+                    <p class="fornecedor-sugerir-ajuda">Por figura: vendas dos últimos 3 meses ÷ 3 × meses a cobrir − Prev. (stock + a caminho), no mínimo 3 unidades, arredondado à embalagem. Só entram as figuras da lista com os filtros atuais.</p>
                 </div>
             </div>`;
         document.body.appendChild(modal);
