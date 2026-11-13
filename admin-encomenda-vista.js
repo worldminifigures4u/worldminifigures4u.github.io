@@ -2263,15 +2263,22 @@ window.AdminEncomendaVista = (function () {
         itens = prepararItensExportacao(encomenda);
 
         const ficheiros = [];
+        // TXT com o nome da linha "Nome - Lote personalizado – CÓDIGO" (fácil de copiar para o anúncio).
+        const nomeTxt = `${limparNomePastaExportacao(criarCabecalhoTxtExportacao(encomenda)[0] || "") || nomePasta}.txt`;
         if (origemEncomenda(encomenda) === "olx") {
-            ficheiros.push({ nome: `${nomePasta}.txt`, conteudo: criarTextoClienteOlxExportacao(encomenda, itens) });
+            ficheiros.push({ nome: nomeTxt, conteudo: criarTextoClienteOlxExportacao(encomenda, itens) });
         } else if (origemUsaTextoAnuncio(encomenda)) {
-            ficheiros.push({ nome: `${nomePasta}.txt`, conteudo: criarTextoAnuncioExportacao(encomenda, itens) });
+            ficheiros.push({ nome: nomeTxt, conteudo: criarTextoAnuncioExportacao(encomenda, itens) });
         } else if (origemEncomenda(encomenda) === "site" || origemEncomenda(encomenda) === "loja") {
-            ficheiros.push({ nome: `${nomePasta}.txt`, conteudo: criarTextoSiteExportacao(encomenda, itens) });
+            ficheiros.push({ nome: nomeTxt, conteudo: criarTextoSiteExportacao(encomenda, itens) });
         } else {
-            ficheiros.push({ nome: `${nomePasta}.txt`, conteudo: criarTextoInternoExportacao(encomenda, itens) });
+            ficheiros.push({ nome: nomeTxt, conteudo: criarTextoInternoExportacao(encomenda, itens) });
         }
+        // Ficheiro com o preço no nome (ex.: "53,40.txt"): F2 + Ctrl+C para colar o preço no anúncio.
+        const totalEncomenda = Number(encomenda?.total || 0)
+            || (calcularSubtotalExportacao(itens) + (Number(encomenda?.portes || 0) || 0));
+        const nomePreco = `${formatarEuroExportacao(totalEncomenda)}.txt`;
+        ficheiros.push({ nome: nomePreco, conteudo: formatarEuroExportacao(totalEncomenda) });
 
         const notas = criarTextoNotasExportacao(encomenda);
         if (notas) ficheiros.push({ nome: "notas encomenda.txt", conteudo: notas });
@@ -2289,6 +2296,17 @@ window.AdminEncomendaVista = (function () {
         }
         atualizarStatus("A gravar ficheiros", "processando");
         const pastaEncomenda = await pastaBase.getDirectoryHandle(nomePasta, { create: true });
+        // Ao exportar outra vez: apaga o ficheiro do preço anterior e o TXT com o nome antigo da pasta.
+        try {
+            const antigos = [];
+            for await (const [nome, entrada] of pastaEncomenda.entries()) {
+                if (entrada.kind !== "file" || nome === nomePreco || nome === nomeTxt) continue;
+                if (/^\d+,\d{2}\.txt$/.test(nome) || nome === `${nomePasta}.txt`) antigos.push(nome);
+            }
+            for (const nome of antigos) await pastaEncomenda.removeEntry(nome);
+        } catch (erroLimpeza) {
+            console.warn("Não foi possível apagar ficheiros antigos da pasta.", erroLimpeza);
+        }
         for (const ficheiro of ficheiros) {
             await escreverFicheiroExportacao(pastaEncomenda, ficheiro.nome, ficheiro.conteudo);
         }

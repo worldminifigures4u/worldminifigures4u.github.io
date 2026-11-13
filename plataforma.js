@@ -3473,6 +3473,10 @@ async function guardarFicheirosPlataforma(opcoes = {}) {
         const pastaBase = opcoes.pastaBase || await obterPastaBaseWallapop();
         const pastaEncomenda = await pastaBase.getDirectoryHandle(nomeEncomenda, { create: true });
         const textoNotas = criarTextoNotasAnuncioPlataforma();
+        // Ficheiro com o preço no nome (ex.: "53,40.txt"), como nas plataformas com imagens.
+        const precoAnuncio = formatarEuroWallapop(calcularTotalFicheirosPlataforma(obterItensParaFicheirosPlataforma()));
+        await apagarFicheirosPrecoAntigosPlataforma(pastaEncomenda, `${precoAnuncio}.txt`);
+        await escreverFicheiroWallapop(pastaEncomenda, `${precoAnuncio}.txt`, precoAnuncio);
         if (plataforma === 'OLX') {
             definirStatusWallapop('A gerar a imagem OLX...');
             const ficheirosImagem = await criarFicheirosImagemPlataforma(obterItensParaFicheirosPlataforma());
