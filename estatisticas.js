@@ -310,12 +310,16 @@ function calcularComparacaoMensalAnos(encomendas, anosSelecionados, filtro) {
 
 function renderizarComparacaoMensalAnos(encomendasBase, filtro) {
     const anosDisponiveis = obterAnosDisponiveisComparacao(encomendasBase);
-    atualizarOpcoesComparacaoAnos(anosDisponiveis);
     const container = document.getElementById('estatisticas-comparacao-meses');
+    // Com um só ano com vendas, a comparação repetia o gráfico "Vendas por mês": fica escondida.
+    const secao = container?.closest('section');
+    if (secao) secao.hidden = anosDisponiveis.length <= 1;
+    if (anosDisponiveis.length <= 1) return;
+    atualizarOpcoesComparacaoAnos(anosDisponiveis);
     container.replaceChildren();
     const anosSelecionados = obterAnosSelecionadosComparacao(anosDisponiveis);
-    if (!anosSelecionados.length) {
-        container.appendChild(criarElementoEstatisticas('p', 'estatisticas-vazio', 'Seleciona pelo menos um ano.'));
+    if (anosSelecionados.length < 2) {
+        container.appendChild(criarElementoEstatisticas('p', 'estatisticas-vazio', 'Marca pelo menos dois anos para comparar.'));
         return;
     }
 
