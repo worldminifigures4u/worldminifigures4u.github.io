@@ -19,3 +19,6 @@ supabase/functions/*
 mapas csv/
 API key site envio mails/
 fotos de outros sites/
+
+# Ficheiros entregues pelo Claude (podem ter dados privados, ex. segredo da extensão)
+Claude outputs/
