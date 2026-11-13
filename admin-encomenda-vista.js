@@ -1726,7 +1726,7 @@ window.AdminEncomendaVista = (function () {
         return "Nota: com a InPost, a encomenda não é entregue em casa, mas sim num ponto de recolha à sua escolha. Se preferir este envio, indique-me o seu e-mail: vai receber uma mensagem da InPost onde pode escolher o ponto mais conveniente e completar os dados de envio.";
     }
 
-    function criarLinhasOutrosEnviosOlxExportacao(encomenda, itens) {
+    function criarLinhasOutrosEnviosOlxExportacao(encomenda, itens, baseFiguras = null) {
         const opcoes = obterOpcoesEnvioExportacao(encomenda, itens);
         const metodoAtual = normalizarChaveEnvioExportacao(encomenda?.metodo_envio);
         const nomeAtual = normalizarTextoEnvio(encomenda?.metodo_envio_nome);
@@ -1753,7 +1753,11 @@ window.AdminEncomendaVista = (function () {
             "Pode ainda optar por outros tipos de envio disponíveis:",
             ...alternativas.map(opcao => {
                 const nome = String(opcao?.nome || opcao?.nome_exibicao || opcao?.id || "Envio").trim();
-                return `- ${nome}: ${formatarEuroExportacao(formatarValorEnvioExportacao(opcao?.valor))} €`;
+                const portesOpcao = formatarValorEnvioExportacao(opcao?.valor);
+                if (baseFiguras === null) return `- ${nome}: ${formatarEuroExportacao(portesOpcao)} €`;
+                // Total com estes portes (o valor das figuras, com um eventual total manual, mantém-se).
+                const totalOpcao = Math.round((baseFiguras + Number(portesOpcao || 0)) * 100) / 100;
+                return `- ${nome}: portes ${formatarEuroExportacao(portesOpcao)} € · total ${formatarEuroExportacao(totalOpcao)} €`;
             }),
             ...(incluirNotaInPost ? ["", criarNotaInPostExportacao()] : [])
         ];
@@ -1843,18 +1847,23 @@ window.AdminEncomendaVista = (function () {
         const portes = Number(encomenda?.portes || 0);
         const total = Number(encomenda?.total || 0) || (subtotal + portes);
         const envio = encomenda?.metodo_envio_nome || encomenda?.metodo_envio || "Envio";
-        const linhas = criarCabecalhoTxtExportacao(encomenda).concat(["Produtos:"]);
+        const numeroFiguras = itens.reduce((soma, item) => soma + obterQuantidadeExportacao(item), 0);
+        const baseFiguras = Math.round((total - portes) * 100) / 100;
+        // OLX: o texto vai para o cliente, por isso não leva a linha "Nome - Lote personalizado – CÓDIGO".
+        const linhas = ["Produtos:"];
         itens.forEach(item => {
             const totalLinha = obterQuantidadeExportacao(item) * obterPrecoExportacao(item);
             linhas.push(`${obterQuantidadeExportacao(item)}x ${item.nome} ${formatarEuroExportacao(totalLinha)} €`);
         });
         linhas.push(
             "",
+            `Figuras:\t${numeroFiguras}`,
+            `Subtotal das figuras:\t${formatarEuroExportacao(subtotal)} €`,
             `Portes de envio (${envio}):\t${formatarEuroExportacao(portes)} €`,
             "",
             `Total geral:\t${formatarEuroExportacao(total)} €`,
             "",
-            ...criarLinhasOutrosEnviosOlxExportacao(encomenda, itens),
+            ...criarLinhasOutrosEnviosOlxExportacao(encomenda, itens, baseFiguras),
             "",
             ...criarLinhasDadosClienteExportacao(encomenda)
         );
