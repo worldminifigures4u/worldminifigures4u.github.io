@@ -124,7 +124,12 @@
 }
 
 .estatisticas-grid-principal {
-    grid-template-columns: repeat(5, minmax(0, 1fr));
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+/* Vendas por mês no topo, a toda a largura. */
+.estatisticas-painel-meses {
+    min-height: 300px;
 }
 
 .estatisticas-painel {

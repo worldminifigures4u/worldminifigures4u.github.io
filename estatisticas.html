@@ -19,7 +19,7 @@
     <link rel="apple-touch-icon" href="fp-ring-favicon-192.png">
     <link rel="stylesheet" href="styles.css?v=20261016-limpar-sem-tapar">
     <link rel="stylesheet" href="styles-admin.css?v=20260920-guardar-verde">
-    <link rel="stylesheet" href="estatisticas.css?v=20261003-stock-parado">
+    <link rel="stylesheet" href="estatisticas.css?v=20261113-meses-primeiro">
     <link rel="stylesheet" href="admin-light.css?v=20261015-preco-recomendado-laranja">
     <link rel="stylesheet" href="styles-tema.css?v=20260721-sem-underline" media="print" data-async-css>
     <noscript><link rel="stylesheet" href="styles-tema.css?v=20260721-sem-underline"></noscript>
@@ -114,6 +114,24 @@
             <article><span>Preço médio por figura</span><strong id="estatisticas-preco-medio-figura">0,00 €</strong></article>
         </section>
 
+        <!-- Vendas por mês primeiro (o gráfico mais consultado), a toda a largura. -->
+        <section class="estatisticas-grid estatisticas-grid-comparacao">
+            <article class="estatisticas-painel estatisticas-painel-meses">
+                <h2>Vendas por mês</h2>
+                <div class="estatisticas-barras" id="estatisticas-meses"></div>
+            </article>
+        </section>
+
+        <section class="estatisticas-grid estatisticas-grid-comparacao">
+            <article class="estatisticas-painel estatisticas-painel-comparacao">
+                <div class="estatisticas-painel-cabecalho">
+                    <h2>Comparar vendas por mês e ano</h2>
+                    <div class="estatisticas-anos-opcoes" id="estatisticas-comparar-anos" aria-label="Anos a comparar"></div>
+                </div>
+                <div class="estatisticas-comparacao-meses" id="estatisticas-comparacao-meses"></div>
+            </article>
+        </section>
+
         <section class="estatisticas-metricas estatisticas-metricas-lucro" aria-label="Lucro das figuras">
             <article><span>Receita das figuras</span><strong id="estatisticas-lucro-receita">0,00 €</strong></article>
             <article><span>Custo das figuras</span><strong id="estatisticas-lucro-custo">0,00 €</strong></article>
@@ -168,10 +186,6 @@
                 <div class="estatisticas-barras" id="estatisticas-dias-semana"></div>
             </article>
             <article class="estatisticas-painel">
-                <h2>Vendas por mês</h2>
-                <div class="estatisticas-barras" id="estatisticas-meses"></div>
-            </article>
-            <article class="estatisticas-painel">
                 <h2>Vendas por ano</h2>
                 <div class="estatisticas-barras" id="estatisticas-anos"></div>
             </article>
@@ -181,15 +195,6 @@
             </article>
         </section>
 
-        <section class="estatisticas-grid estatisticas-grid-comparacao">
-            <article class="estatisticas-painel estatisticas-painel-comparacao">
-                <div class="estatisticas-painel-cabecalho">
-                    <h2>Comparar vendas por mês e ano</h2>
-                    <div class="estatisticas-anos-opcoes" id="estatisticas-comparar-anos" aria-label="Anos a comparar"></div>
-                </div>
-                <div class="estatisticas-comparacao-meses" id="estatisticas-comparacao-meses"></div>
-            </article>
-        </section>
 
         <section class="estatisticas-grid">
             <article class="estatisticas-painel">
@@ -221,7 +226,7 @@
     <script src="app-config.js?v=20260930-dialogo-fechar" defer></script>
 <script src="agenda-alertas.js?v=20260920-entre-abas" defer></script>
     <script src="admin-theme.js?v=20260826-light-mode" defer></script>
-    <script src="estatisticas.js?v=20261111-ex-comprada" defer></script>
+    <script src="estatisticas.js?v=20261113-meses-primeiro" defer></script>
 <script src="campo-limpar.js?v=20261003-lados-trocados" defer></script>
 <script src="inline-listeners-base.js?v=20260929-menu-telemovel" defer></script>
 <script src="inline-listeners-admin.js?v=20260713-r25" defer></script>
