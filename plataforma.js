@@ -3240,7 +3240,7 @@ function criarNotaInPostTxtPlataforma() {
     return 'Nota: com a InPost, a encomenda não é entregue em casa, mas sim num ponto de recolha à sua escolha. Se preferir este envio, indique-me o seu e-mail: vai receber uma mensagem da InPost onde pode escolher o ponto mais conveniente e completar os dados de envio.';
 }
 
-function criarLinhasOutrosEnviosOlxPlataforma(envio) {
+function criarLinhasOutrosEnviosOlxPlataforma(envio, baseFiguras = null) {
     const regiao = envio?.regiao || document.getElementById('plataforma-pais-envio')?.value || 'portugal';
     const peso = Number(envio?.peso || calcularPesoPlataforma());
     const opcoes = obterOpcoesEnvioPlataforma(regiao, peso, obterPlataformaParaFicheiros());
@@ -3266,7 +3266,10 @@ function criarLinhasOutrosEnviosOlxPlataforma(envio) {
         'Pode ainda optar por outros tipos de envio disponíveis:',
         ...alternativas.map(opcao => {
             const nome = String(opcao?.nome || opcao?.nome_exibicao || opcao?.id || 'Envio').trim();
-            return `- ${nome}: ${formatarEuroWallapop(calcularPortesPlataforma(opcao?.valor))} \u20ac`;
+            const portes = calcularPortesPlataforma(opcao?.valor);
+            if (baseFiguras === null) return `- ${nome}: ${formatarEuroWallapop(portes)} \u20ac`;
+            // Total com estes portes (o valor das figuras, com um eventual total manual, mantém-se).
+            return `- ${nome}: portes ${formatarEuroWallapop(portes)} \u20ac \u00b7 total ${formatarEuroWallapop(arredondarDinheiroPlataforma(baseFiguras + Number(portes || 0)))} \u20ac`;
         }),
         ...(incluirNotaInPost ? ['', criarNotaInPostTxtPlataforma()] : [])
     ];
@@ -3279,17 +3282,22 @@ function criarTextoClienteOlx() {
         total + Math.max(1, Number(item.quantidade) || 1) * obterPrecoItemWallapop(item)
     ), 0);
     const totalGeral = obterTotalParaFicheirosPlataforma(subtotal, envio.portes);
+    const numeroFiguras = itens.reduce((total, item) => total + Math.max(1, Number(item.quantidade) || 1), 0);
+    // Valor das figuras para os outros envios: total geral sem os portes escolhidos (inclui um total manual).
+    const baseFiguras = arredondarDinheiroPlataforma(totalGeral - Number(envio.portes || 0));
     const linhas = criarCabecalhoCodigoEncomenda().concat(['Produtos:']);
     itens.forEach(item => {
         linhas.push(formatarLinhaTxtProdutoPlataforma(item));
     });
     linhas.push(
         '',
+        `Figuras:\t${numeroFiguras}`,
+        `Subtotal das figuras:\t${formatarEuroWallapop(subtotal)} \u20ac`,
         `Portes de envio (${envio.nome}):\t${formatarEuroWallapop(envio.portes)} \u20ac`,
         '',
         `Total geral:\t${formatarEuroWallapop(totalGeral)} \u20ac`,
         '',
-        ...criarLinhasOutrosEnviosOlxPlataforma(envio),
+        ...criarLinhasOutrosEnviosOlxPlataforma(envio, baseFiguras),
         '',
         ...criarLinhasDadosClienteOlx()
     );
