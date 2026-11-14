@@ -1158,3 +1158,19 @@ create trigger encomendas_tc_mensagens after insert or update of estado, codigo_
 --   Mensagem "enviada": transportadora pelo código (XX123456789XX = CTT; só números = InPost) ou pelo método.
 -- 2026-11-05: lotes novos de 10 em 10 minutos (desfasado das encomendas, que correm aos minutos 0,10,20…):
 -- select cron.alter_job((select jobid from cron.job where jobname='todocoleccion-lotes-novos'), schedule := '7,17,27,37,47,57 * * * *');
+
+-- 2026-11-14: editar uma encomenda de plataforma apagava referencia_externa (nº TC),
+-- cortando marcar_enviada e as mensagens. plataforma.js passa a mantê-la e este gatilho impede apagá-la.
+create or replace function public.encomendas_manter_referencia_externa()
+returns trigger language plpgsql set search_path to 'public' as $$
+begin
+  if new.origem = 'Todocoleccion'
+     and nullif(trim(coalesce(old.referencia_externa,'')),'') is not null
+     and nullif(trim(coalesce(new.referencia_externa,'')),'') is null then
+    new.referencia_externa := old.referencia_externa;
+  end if;
+  return new;
+end $$;
+create trigger encomendas_manter_referencia_tc
+before update of referencia_externa on public.encomendas
+for each row execute function public.encomendas_manter_referencia_externa();
