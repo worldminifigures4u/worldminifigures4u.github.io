@@ -1776,7 +1776,7 @@ window.AdminEncomendaVista = (function () {
         });
         while (linhasOpcoes.length && linhasOpcoes[linhasOpcoes.length - 1] === "") linhasOpcoes.pop();
         return [
-            "Pode optar pelos seguintes tipos de envio disponíveis:",
+            "Acrescem os portes de envio e manuseamento, de acordo com a sua escolha:",
             "",
             ...linhasOpcoes,
             ...(incluirNotaInPost ? ["", criarNotaInPostExportacao()] : [])
@@ -1875,27 +1875,14 @@ window.AdminEncomendaVista = (function () {
             const totalLinha = obterQuantidadeExportacao(item) * obterPrecoExportacao(item);
             linhas.push(`${obterQuantidadeExportacao(item)}x ${item.nome} ${formatarEuroExportacao(totalLinha)} €`);
         });
-        if (envioEntregaMaoExportacao(encomenda)) {
-            // Entrega em mão: um só valor das figuras; a entrega em mão entra na lista de envios.
-            linhas.push(
-                "",
-                `Figuras:\t${numeroFiguras}`,
-                `Total das figuras:\t${formatarEuroExportacao(baseFiguras)} €`,
-                "",
-                ...criarLinhasOutrosEnviosOlxExportacao(encomenda, itens, baseFiguras, { nome: String(envio || "Entrega em mão"), portes })
-            );
-        } else {
-            linhas.push(
-                "",
-                `Figuras:\t${numeroFiguras}`,
-                `Subtotal das figuras:\t${formatarEuroExportacao(subtotal)} €`,
-                `Portes de envio (${envio}):\t${formatarEuroExportacao(portes)} €`,
-                "",
-                `Total geral:\t${formatarEuroExportacao(total)} €`,
-                "",
-                ...criarLinhasOutrosEnviosOlxExportacao(encomenda, itens, baseFiguras)
-            );
-        }
+        // Um só valor das figuras; os portes vêm na lista de envios (o escolhido em primeiro), cada um com o total.
+        linhas.push(
+            "",
+            `Figuras:\t${numeroFiguras}`,
+            `Total das figuras:\t${formatarEuroExportacao(baseFiguras)} €`,
+            "",
+            ...criarLinhasOutrosEnviosOlxExportacao(encomenda, itens, baseFiguras, { nome: String(envio || "Envio"), portes })
+        );
         linhas.push("", ...criarLinhasDadosClienteExportacao(encomenda));
         return "\ufeff" + linhas.join("\r\n");
     }

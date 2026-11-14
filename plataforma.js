@@ -3288,7 +3288,7 @@ function criarLinhasOutrosEnviosOlxPlataforma(envio, baseFiguras = null, opcaoAt
     });
     while (linhasOpcoes.length && linhasOpcoes[linhasOpcoes.length - 1] === '') linhasOpcoes.pop();
     return [
-        'Pode optar pelos seguintes tipos de envio disponíveis:',
+        'Acrescem os portes de envio e manuseamento, de acordo com a sua escolha:',
         '',
         ...linhasOpcoes,
         ...(incluirNotaInPost ? ['', criarNotaInPostTxtPlataforma()] : [])
@@ -3310,29 +3310,14 @@ function criarTextoClienteOlx() {
     itens.forEach(item => {
         linhas.push(formatarLinhaTxtProdutoPlataforma(item));
     });
-    const entregaMao = metodoEnvioEntregaMaoPlataforma(envio.id || envio.metodo_envio || '')
-        || normalizarTextoPlataforma(envio.nome).includes('entrega em mao');
-    if (entregaMao) {
-        // Entrega em mão: um só valor das figuras; a entrega em mão entra na lista de envios.
-        linhas.push(
-            '',
-            `Figuras:\t${numeroFiguras}`,
-            `Total das figuras:\t${formatarEuroWallapop(baseFiguras)} \u20ac`,
-            '',
-            ...criarLinhasOutrosEnviosOlxPlataforma(envio, baseFiguras, { nome: envio.nome || 'Entrega em mão', portes: Number(envio.portes || 0) })
-        );
-    } else {
-        linhas.push(
-            '',
-            `Figuras:\t${numeroFiguras}`,
-            `Subtotal das figuras:\t${formatarEuroWallapop(subtotal)} \u20ac`,
-            `Portes de envio (${envio.nome}):\t${formatarEuroWallapop(envio.portes)} \u20ac`,
-            '',
-            `Total geral:\t${formatarEuroWallapop(totalGeral)} \u20ac`,
-            '',
-            ...criarLinhasOutrosEnviosOlxPlataforma(envio, baseFiguras)
-        );
-    }
+    // Um só valor das figuras; os portes vêm na lista de envios (o escolhido em primeiro), cada um com o total.
+    linhas.push(
+        '',
+        `Figuras:\t${numeroFiguras}`,
+        `Total das figuras:\t${formatarEuroWallapop(baseFiguras)} \u20ac`,
+        '',
+        ...criarLinhasOutrosEnviosOlxPlataforma(envio, baseFiguras, { nome: envio.nome || 'Envio', portes: Number(envio.portes || 0) })
+    );
     linhas.push('', ...criarLinhasDadosClienteOlx());
     return '\ufeff' + linhas.join('\r\n');
 }
