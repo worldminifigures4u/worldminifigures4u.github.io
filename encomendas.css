@@ -2659,9 +2659,13 @@ html.admin-light-mode .admin-encomenda-stock-estado.por-verificar{ color:#c62828
 .admin-encomenda-prioridade-com-aguarda{
     justify-self:start;
     display:inline-flex;
-    flex-direction:column;
-    align-items:flex-start;
-    gap:2px;
+    flex-direction:row;
+    align-items:center;
+    gap:8px;
+    white-space:nowrap;
+}
+.admin-encomenda-prioridade-com-aguarda .admin-encomenda-prioridade{
+    min-width:0;
 }
 html.admin-light-mode .admin-encomenda-aguarda-resposta{
     background:#fff3e0;
