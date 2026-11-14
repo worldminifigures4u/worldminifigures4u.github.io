@@ -3272,13 +3272,21 @@ function criarLinhasOutrosEnviosOlxPlataforma(envio, baseFiguras = null, opcaoAt
     }
 
     const linhasOpcoes = [];
-    // Todas as opções (incluindo a escolhida) por ordem de preço dos portes, do mais barato para o mais caro.
+    // Todas as opções disponíveis (incluindo a escolhida, que nesta fase não tem destaque).
     const listaOpcoes = alternativas.map(opcao => ({
         nome: String(opcao?.nome || opcao?.nome_exibicao || opcao?.id || 'Envio').trim(),
         portes: Number(calcularPortesPlataforma(opcao?.valor) || 0)
     }));
     if (opcaoAtual && baseFiguras !== null) listaOpcoes.push({ nome: opcaoAtual.nome, portes: Number(opcaoAtual.portes || 0) });
-    listaOpcoes.sort((a, b) => a.portes - b.portes);
+    // Ordem: Entrega em mão, InPost e depois CTT (dentro de cada grupo, do mais barato para o mais caro).
+    const grupoEnvioTxt = nome => {
+        const n = String(nome || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+        if (n.includes('entrega em mao')) return 0;
+        if (n.includes('inpost')) return 1;
+        if (n.includes('ctt')) return 2;
+        return 3;
+    };
+    listaOpcoes.sort((a, b) => (grupoEnvioTxt(a.nome) - grupoEnvioTxt(b.nome)) || (a.portes - b.portes));
     listaOpcoes.forEach(({ nome, portes }) => {
         if (baseFiguras === null) {
             linhasOpcoes.push(`- ${nome}: ${formatarEuroWallapop(portes)} \u20ac`);
