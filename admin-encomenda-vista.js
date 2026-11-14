@@ -1531,6 +1531,23 @@ window.AdminEncomendaVista = (function () {
             if (bloco.dataset.anexosCarregados === "true") return;
             bloco.dataset.anexosCarregados = "true";
             await carregarAnexos(encomenda, lista, statusAnexos);
+            // Ao voltar a este separador (ex.: depois de criar a etiqueta no "Abrir envio" do Wallapop,
+            // que a junta à encomenda), volta a ler os anexos sem ser preciso fechar ou atualizar a página.
+            let ultimaLeitura = Date.now();
+            const recarregarAoVoltar = () => {
+                if (!bloco.isConnected) {
+                    document.removeEventListener("visibilitychange", recarregarAoVoltar);
+                    window.removeEventListener("focus", recarregarAoVoltar);
+                    return;
+                }
+                if (document.visibilityState !== "visible" || Date.now() - ultimaLeitura < 2000) return;
+                ultimaLeitura = Date.now();
+                carregarAnexos(encomenda, lista, statusAnexos);
+                // Segunda leitura: a etiqueta pode ainda estar a ser gravada quando se volta ao separador.
+                setTimeout(() => { if (bloco.isConnected) carregarAnexos(encomenda, lista, statusAnexos); }, 6000);
+            };
+            document.addEventListener("visibilitychange", recarregarAoVoltar);
+            window.addEventListener("focus", recarregarAoVoltar);
         };
         return bloco;
     }
