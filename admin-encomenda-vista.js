@@ -2303,8 +2303,9 @@ window.AdminEncomendaVista = (function () {
         // Ficheiro com o preço no nome (ex.: "53,40.txt"): F2 + Ctrl+C para colar o preço no anúncio.
         const totalEncomenda = Number(encomenda?.total || 0)
             || (calcularSubtotalExportacao(itens) + (Number(encomenda?.portes || 0) || 0));
-        const nomePreco = `${formatarEuroExportacao(totalEncomenda)}.txt`;
-        ficheiros.push({ nome: nomePreco, conteudo: formatarEuroExportacao(totalEncomenda) });
+        // No OLX não é preciso o ficheiro do preço (o de uma exportação anterior é apagado mais abaixo).
+        const nomePreco = origemEncomenda(encomenda) === "olx" ? null : `${formatarEuroExportacao(totalEncomenda)}.txt`;
+        if (nomePreco) ficheiros.push({ nome: nomePreco, conteudo: formatarEuroExportacao(totalEncomenda) });
 
         const notas = criarTextoNotasExportacao(encomenda);
         if (notas) ficheiros.push({ nome: "notas encomenda.txt", conteudo: notas });

@@ -3501,8 +3501,9 @@ async function guardarFicheirosPlataforma(opcoes = {}) {
         const textoNotas = criarTextoNotasAnuncioPlataforma();
         // Ficheiro com o preço no nome (ex.: "53,40.txt"), como nas plataformas com imagens.
         const precoAnuncio = formatarEuroWallapop(calcularTotalFicheirosPlataforma(obterItensParaFicheirosPlataforma()));
-        await apagarFicheirosPrecoAntigosPlataforma(pastaEncomenda, `${precoAnuncio}.txt`);
-        await escreverFicheiroWallapop(pastaEncomenda, `${precoAnuncio}.txt`, precoAnuncio);
+        // No OLX não é preciso o ficheiro do preço (apaga o de uma exportação anterior, se existir).
+        await apagarFicheirosPrecoAntigosPlataforma(pastaEncomenda, plataforma === 'OLX' ? null : `${precoAnuncio}.txt`);
+        if (plataforma !== 'OLX') await escreverFicheiroWallapop(pastaEncomenda, `${precoAnuncio}.txt`, precoAnuncio);
         if (plataforma === 'OLX') {
             definirStatusWallapop('A gerar a imagem OLX...');
             const ficheirosImagem = await criarFicheirosImagemPlataforma(obterItensParaFicheirosPlataforma());
