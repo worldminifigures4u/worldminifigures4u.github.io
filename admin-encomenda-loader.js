@@ -29,7 +29,7 @@
                     return carregarScript('morada-formato.js?v=20260713-morada-formatada');
                 })
                 .then(function () {
-                    return carregarScript('admin-encomenda-vista.js?v=20261114-olx-acrescem-portes');
+                    return carregarScript('admin-encomenda-vista.js?v=20261114-olx-ordem-preco');
                 });
         }
         return promessaVista;

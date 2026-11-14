@@ -3272,19 +3272,20 @@ function criarLinhasOutrosEnviosOlxPlataforma(envio, baseFiguras = null, opcaoAt
     }
 
     const linhasOpcoes = [];
-    // Entrega em mão: aparece como a primeira opção da lista (portes 0,00 €).
-    if (opcaoAtual && baseFiguras !== null) {
-        linhasOpcoes.push(...linhasOpcaoEnvioTxtPlataforma(opcaoAtual.nome, opcaoAtual.portes || 0, baseFiguras + Number(opcaoAtual.portes || 0)));
-    }
-    alternativas.forEach(opcao => {
-        const nome = String(opcao?.nome || opcao?.nome_exibicao || opcao?.id || 'Envio').trim();
-        const portes = calcularPortesPlataforma(opcao?.valor);
+    // Todas as opções (incluindo a escolhida) por ordem de preço dos portes, do mais barato para o mais caro.
+    const listaOpcoes = alternativas.map(opcao => ({
+        nome: String(opcao?.nome || opcao?.nome_exibicao || opcao?.id || 'Envio').trim(),
+        portes: Number(calcularPortesPlataforma(opcao?.valor) || 0)
+    }));
+    if (opcaoAtual && baseFiguras !== null) listaOpcoes.push({ nome: opcaoAtual.nome, portes: Number(opcaoAtual.portes || 0) });
+    listaOpcoes.sort((a, b) => a.portes - b.portes);
+    listaOpcoes.forEach(({ nome, portes }) => {
         if (baseFiguras === null) {
             linhasOpcoes.push(`- ${nome}: ${formatarEuroWallapop(portes)} \u20ac`);
             return;
         }
         // Total com estes portes (o valor das figuras, com um eventual total manual, mantém-se).
-        linhasOpcoes.push(...linhasOpcaoEnvioTxtPlataforma(nome, portes, arredondarDinheiroPlataforma(baseFiguras + Number(portes || 0))));
+        linhasOpcoes.push(...linhasOpcaoEnvioTxtPlataforma(nome, portes, arredondarDinheiroPlataforma(baseFiguras + portes)));
     });
     while (linhasOpcoes.length && linhasOpcoes[linhasOpcoes.length - 1] === '') linhasOpcoes.pop();
     return [
