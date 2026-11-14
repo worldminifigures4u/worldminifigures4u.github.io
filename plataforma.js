@@ -3244,7 +3244,7 @@ function criarNotaInPostTxtPlataforma() {
 function linhasOpcaoEnvioTxtPlataforma(nome, portes, total) {
     return [
         `- ${nome}`,
-        `    Portes: ${formatarEuroWallapop(portes)} \u20ac   |   Total: ${formatarEuroWallapop(total)} \u20ac`,
+        `    Custo: ${Number(portes || 0) > 0 ? `${formatarEuroWallapop(portes)} \u20ac` : 'sem custo'}   |   Total: ${formatarEuroWallapop(total)} \u20ac`,
         ''
     ];
 }
@@ -3297,7 +3297,7 @@ function criarLinhasOutrosEnviosOlxPlataforma(envio, baseFiguras = null, opcaoAt
     });
     while (linhasOpcoes.length && linhasOpcoes[linhasOpcoes.length - 1] === '') linhasOpcoes.pop();
     return [
-        'Acrescem os portes de envio e manuseamento, de acordo com a sua escolha:',
+        'Ao valor das figuras acresce o custo da forma de entrega que escolher:',
         '',
         ...linhasOpcoes,
         ...(incluirNotaInPost ? ['', criarNotaInPostTxtPlataforma()] : [])

@@ -1730,7 +1730,7 @@ window.AdminEncomendaVista = (function () {
     function linhasOpcaoEnvioTxtExportacao(nome, portes, total) {
         return [
             `- ${nome}`,
-            `    Portes: ${formatarEuroExportacao(portes)} €   |   Total: ${formatarEuroExportacao(total)} €`,
+            `    Custo: ${Number(portes || 0) > 0 ? `${formatarEuroExportacao(portes)} €` : 'sem custo'}   |   Total: ${formatarEuroExportacao(total)} €`,
             ""
         ];
     }
@@ -1788,7 +1788,7 @@ window.AdminEncomendaVista = (function () {
         });
         while (linhasOpcoes.length && linhasOpcoes[linhasOpcoes.length - 1] === "") linhasOpcoes.pop();
         return [
-            "Acrescem os portes de envio e manuseamento, de acordo com a sua escolha:",
+            "Ao valor das figuras acresce o custo da forma de entrega que escolher:",
             "",
             ...linhasOpcoes,
             ...(incluirNotaInPost ? ["", criarNotaInPostExportacao()] : [])
