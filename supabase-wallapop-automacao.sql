@@ -107,3 +107,8 @@ revoke all on function public.wallapop_encomenda_para_etiqueta(text, text) from 
 -- "A aguardar pagamento" passa a "Pago" com data_pagamento = hora do email e sai a nota
 -- "PAGO - a aguardar resposta do comprador" (ação "lote_pago"). O "Venda confirmada" seguinte já não muda nada.
 -- Cópia anterior: wallapop_config.chave = 'backup_wallapop_aplicar_email_20261107_lote_pago'.
+
+-- 2026-11-14: "Fizeste uma venda" (anúncios normais) cria a encomenda sempre como Pago (com data de pagamento),
+-- sem marcação prioritária (os avisos ficam só nas notas). Com várias figuras mantém a nota
+-- "PAGO - a aguardar resposta do comprador" (selo Aguarda resposta), que sai com o "Venda confirmada".
+-- Cópia anterior: wallapop_config 'backup_wallapop_aplicar_email_20261114'.
