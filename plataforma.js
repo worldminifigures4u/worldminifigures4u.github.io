@@ -3287,7 +3287,10 @@ function criarLinhasOutrosEnviosOlxPlataforma(envio, baseFiguras = null, opcaoAt
         return 3;
     };
     listaOpcoes.sort((a, b) => (grupoEnvioTxt(a.nome) - grupoEnvioTxt(b.nome)) || (a.portes - b.portes));
-    listaOpcoes.forEach(({ nome, portes }) => {
+    // Só no TXT do OLX: a InPost aparece também "com seguro".
+    listaOpcoes.forEach(({ nome: nomeOriginal, portes }) => {
+        let nome = nomeOriginal;
+        if (/inpost/i.test(nome) && !/seguro/i.test(nome)) nome = /com seguimento/i.test(nome) ? `${nome} e seguro` : `${nome} com seguro`;
         if (baseFiguras === null) {
             linhasOpcoes.push(`- ${nome}: ${formatarEuroWallapop(portes)} \u20ac`);
             return;
