@@ -1765,6 +1765,9 @@ window.AdminEncomendaVista = (function () {
             portes: Number(formatarValorEnvioExportacao(opcao?.valor) || 0)
         }));
         if (opcaoAtual && baseFiguras !== null) listaOpcoes.push({ nome: opcaoAtual.nome, portes: Number(opcaoAtual.portes || 0) });
+        // A Entrega em mão não está na tabela de portes: entra sempre na lista (como no exportador das Plataformas).
+        const temEntregaMao = listaOpcoes.some(opcao => String(opcao.nome || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().includes("entrega em mao"));
+        if (!temEntregaMao) listaOpcoes.push({ nome: "Entrega em mão em Tomar", portes: 0 });
         // Ordem: Entrega em mão, InPost e depois CTT (dentro de cada grupo, do mais barato para o mais caro).
         const grupoEnvioTxt = nome => {
             const n = String(nome || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
