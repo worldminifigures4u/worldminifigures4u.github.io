@@ -4080,7 +4080,11 @@ async function registarEncomendaWallapop() {
         const parametros = {
             p_itens: obterItensEncomendaWallapop(),
             p_nome_cliente: nomeCliente,
-            p_referencia_externa: plataforma === 'WhatsApp' ? (dadosCliente.telefone || null) : null,
+            // Ao editar, mantém a referência existente (ex.: nº da encomenda Todocoleccion,
+            // usado para marcar enviada e enviar mensagens ao comprador).
+            p_referencia_externa: plataforma === 'WhatsApp'
+                ? (dadosCliente.telefone || null)
+                : (encomendaPlataformaEmEdicao?.referencia_externa || null),
             p_regiao_envio: envio.regiao || null,
             p_metodo_envio: envio.id || null,
             p_metodo_envio_nome: envio.nome || null,
