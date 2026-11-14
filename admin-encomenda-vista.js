@@ -1301,10 +1301,12 @@ window.AdminEncomendaVista = (function () {
             }
             atualizarContagemAnexosLista(encomenda, anexos.length);
             status.textContent = "";
+            return anexos.length;
         } catch (error) {
             lista.replaceChildren();
             status.textContent = "Anexos indisponíveis. Execute primeiro o ficheiro SQL de configuração.";
             console.warn("Erro ao carregar anexos da encomenda.", error);
+            return null;
         }
     }
 
@@ -1530,21 +1532,29 @@ window.AdminEncomendaVista = (function () {
         bloco.carregarAnexos = async () => {
             if (bloco.dataset.anexosCarregados === "true") return;
             bloco.dataset.anexosCarregados = "true";
-            await carregarAnexos(encomenda, lista, statusAnexos);
+            let quantidadeAnexos = await carregarAnexos(encomenda, lista, statusAnexos);
             // Ao voltar a este separador (ex.: depois de criar a etiqueta no "Abrir envio" do Wallapop,
-            // que a junta à encomenda), volta a ler os anexos sem ser preciso fechar ou atualizar a página.
-            let ultimaLeitura = Date.now();
+            // que a junta à encomenda), vê os anexos de 3 em 3 s durante até 30 s e pára quando aparece um novo.
+            let verificacao = null;
+            const pararVerificacao = () => { if (verificacao) clearInterval(verificacao); verificacao = null; };
             const recarregarAoVoltar = () => {
                 if (!bloco.isConnected) {
+                    pararVerificacao();
                     document.removeEventListener("visibilitychange", recarregarAoVoltar);
                     window.removeEventListener("focus", recarregarAoVoltar);
                     return;
                 }
-                if (document.visibilityState !== "visible" || Date.now() - ultimaLeitura < 2000) return;
-                ultimaLeitura = Date.now();
-                carregarAnexos(encomenda, lista, statusAnexos);
-                // Segunda leitura: a etiqueta pode ainda estar a ser gravada quando se volta ao separador.
-                setTimeout(() => { if (bloco.isConnected) carregarAnexos(encomenda, lista, statusAnexos); }, 6000);
+                if (document.visibilityState !== "visible" || verificacao) return;
+                const inicio = Date.now();
+                const quantidadeAntes = quantidadeAnexos;
+                const verificar = async () => {
+                    if (!bloco.isConnected || Date.now() - inicio > 30000) { pararVerificacao(); return; }
+                    const quantidade = await carregarAnexos(encomenda, lista, statusAnexos);
+                    if (quantidade !== null) quantidadeAnexos = quantidade;
+                    if (quantidade !== null && quantidadeAntes !== null && quantidade > quantidadeAntes) pararVerificacao();
+                };
+                verificacao = setInterval(verificar, 3000);
+                verificar();
             };
             document.addEventListener("visibilitychange", recarregarAoVoltar);
             window.addEventListener("focus", recarregarAoVoltar);
