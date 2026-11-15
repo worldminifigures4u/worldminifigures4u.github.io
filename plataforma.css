@@ -1677,3 +1677,21 @@ html.admin-light-mode .plataforma-cliente-notas-discretas{
 }
 html.admin-light-mode .plataforma-cliente-notas-discretas strong{ color:#888; }
 html.admin-light-mode .plataforma-cliente-notas-discretas span{ color:#444; }
+
+/* Aviso: o perfil não indica o país (fica o pré-definido da plataforma, a confirmar) */
+.plataforma-aviso-pais-perfil{
+    margin-top:6px;
+    padding:4px 8px;
+    border-radius:4px;
+    border:1px solid rgba(255, 152, 0, 0.6);
+    background:rgba(255, 152, 0, 0.14);
+    color:#ffb74d;
+    font-size:12px;
+    font-weight:700;
+    line-height:1.35;
+}
+html.admin-light-mode .plataforma-aviso-pais-perfil{
+    background:#fff3e0;
+    border-color:#ffb74d;
+    color:#b45309;
+}

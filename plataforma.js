@@ -303,7 +303,26 @@ function resolverValorPaisEnvioMoloniPlataforma(paisCliente, regiaoEnvio) {
     return 'portugal';
 }
 
+// Aviso junto ao país quando o perfil (ex.: Wallapop sem localização) não indica o país: fica o pré-definido, a confirmar.
+function mostrarAvisoPaisPerfilPlataforma(mostrar) {
+    const bloco = document.getElementById('plataforma-pais-envio-bloco');
+    if (!bloco) return;
+    let aviso = document.getElementById('plataforma-aviso-pais-perfil');
+    if (!mostrar) {
+        aviso?.remove();
+        return;
+    }
+    if (!aviso) {
+        aviso = document.createElement('div');
+        aviso.id = 'plataforma-aviso-pais-perfil';
+        aviso.className = 'plataforma-aviso-pais-perfil';
+        bloco.appendChild(aviso);
+    }
+    aviso.textContent = '\u26a0 O perfil não indica o país: confirma com o comprador.';
+}
+
 function selecionarPaisEnvioPlataforma(valor) {
+    mostrarAvisoPaisPerfilPlataforma(false);
     const select = document.getElementById('plataforma-pais-envio');
     if (!select) return;
     const destino = [...select.options].some((opcao) => opcao.value === valor)
@@ -368,8 +387,13 @@ async function aplicarPaisDoPerfilPlataforma() {
     if (!link || perfilExternoDetetado?.plataforma === 'WhatsApp') return '';
     const pais = await obterPaisDoPerfilPlataforma(link);
     const linkAtual = document.getElementById('plataforma-link-perfil')?.value.trim() || '';
-    if (!pais || linkAtual !== link || encomendaPlataformaEmEdicao) return '';
+    if (linkAtual !== link || encomendaPlataformaEmEdicao) return '';
     if (fichaClientePlataformaAtual?.cliente?.pais) return '';
+    if (!pais) {
+        // Sem país no perfil: fica o país pré-definido da plataforma, com aviso para confirmar.
+        mostrarAvisoPaisPerfilPlataforma(true);
+        return '';
+    }
     selecionarPaisEnvioPorTextoPlataforma(pais);
     definirStatusWallapop(`País do cliente preenchido a partir do perfil: ${pais}.`);
     guardarRascunhoClientePlataforma();
@@ -4404,6 +4428,7 @@ document.getElementById('plataforma-link-perfil').addEventListener('input', () =
     }, 350);
 });
 document.getElementById('plataforma-pais-envio').addEventListener('change', () => {
+    mostrarAvisoPaisPerfilPlataforma(false);
     marcarWallapopPorRegistar();
     atualizarOpcoesEnvioPlataforma();
     guardarRascunhoClientePlataforma();
