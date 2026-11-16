@@ -6595,3 +6595,14 @@ body.cabecalho-com-admin.pagina-fornecedores-unificada {
     --espaco-abaixo-cabecalho: 0px;
     padding-top: var(--fornecedor-cabecalho-fundo, var(--cabecalho-offset, 128px));
 }
+
+/* Tabelas centradas (ex.: encomenda ao fornecedor no telemóvel): centrar com margens automáticas e não com
+   justify-content:center — quando a tabela é mais larga que o ecrã, o "center" empurrava a foto e o nome para fora
+   do ecrã à esquerda, onde não se consegue deslizar. Assim fica centrada quando cabe e começa à esquerda quando não cabe. */
+.pagina-fornecedores-unificada .fornecedor-tabela-wrapper-centro {
+    justify-content: flex-start !important;
+}
+.pagina-fornecedores-unificada .fornecedor-tabela-wrapper-centro > .fornecedor-tabela-encomenda {
+    margin-left: auto;
+    margin-right: auto;
+}
