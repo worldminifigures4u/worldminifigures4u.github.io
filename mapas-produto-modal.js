@@ -799,7 +799,10 @@ function montarSecaoFornecedoresFallbackMapa(campos, produto) {
     const secao = criarSecaoEdicaoMapa("Fornecedores", "mapas-produto-secao-media mapas-produto-fornecedores mapas-produto-fornecedores-fallback");
     nomes.forEach((nome) => {
         const chave = normalizarChaveFornecedorMapa(nome);
-        const valor = fornecedores[nome];
+        // A chave gravada pode estar escrita de outra forma (ex.: "lote50" em vez de "Lote 50"): procura pela chave normalizada,
+        // senão o campo aparece vazio e, ao gravar, a marcação (ex.: EX) seria limpa sem ninguém a ter retirado.
+        const chaveGravada = Object.keys(fornecedores).find((k) => normalizarChaveFornecedorMapa(k) === chave);
+        const valor = chaveGravada !== undefined ? fornecedores[chaveGravada] : fornecedores[nome];
         const input = criarBlocoFornecedorFallbackMapa(secao, `mapas-editar-fornecedor-fallback-${chave}`, nome, valor, { produto });
         input.dataset.fornecedorNome = nome;
         input.dataset.fornecedorChave = chave;
