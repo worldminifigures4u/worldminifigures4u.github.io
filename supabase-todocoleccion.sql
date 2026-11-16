@@ -1174,3 +1174,47 @@ end $$;
 create trigger encomendas_manter_referencia_tc
 before update of referencia_externa on public.encomendas
 for each row execute function public.encomendas_manter_referencia_externa();
+
+-- 2026-11-16: anulações automáticas. A importação (edge v38) vê is_anulled na lista de encomendas e,
+-- uma só vez por pedido, chama esta função: cancela a encomenda do admin e repõe o stock
+-- (só em A aguardar pagamento / Pago / Em preparação; Enviado/Concluído ficam "anulada_rever").
+-- O stock sobe para o lote pela sincronização. Nunca usar "Insertar otro igual" (repunha a dobrar).
+create or replace function public.todocoleccion_anular_encomenda(p_id_order bigint)
+returns jsonb language plpgsql security definer set search_path to 'public' as $$
+declare
+  v_enc public.encomendas%rowtype;
+  v_item record;
+  v_stock integer;
+begin
+  select e.* into v_enc from public.encomendas e
+    join public.todocoleccion_encomendas t on t.encomenda_id = e.id
+   where t.id_order = p_id_order for update of e;
+  if not found then return jsonb_build_object('sucesso', false, 'erro', 'sem_encomenda_admin'); end if;
+  if v_enc.estado in ('Cancelado', 'Devolvido') then
+    return jsonb_build_object('sucesso', true, 'acao', 'ja_cancelada', 'codigo', v_enc.codigo_encomenda);
+  end if;
+  if v_enc.estado not in ('A aguardar pagamento', 'Pago', 'Em preparação') then
+    return jsonb_build_object('sucesso', false, 'erro', 'estado_' || v_enc.estado, 'codigo', v_enc.codigo_encomenda);
+  end if;
+  if not coalesce(v_enc.stock_reposto, false) then
+    for v_item in
+      select coalesce(nullif(item->>'id_produto',''), nullif(item->>'id','')) as id_produto,
+             sum(greatest(1, coalesce(nullif(item->>'quantidade','')::integer, nullif(item->>'qtd','')::integer, 1)))::integer as qtd
+        from jsonb_array_elements(coalesce(v_enc.produtos, '[]'::jsonb)) item
+       group by 1
+    loop
+      continue when v_item.id_produto is null;
+      select coalesce(stock, 0) into v_stock from public.produtos where id::text = v_item.id_produto for update;
+      continue when not found;
+      update public.produtos set stock = v_stock + v_item.qtd, ativo = (v_stock + v_item.qtd) > 0
+       where id::text = v_item.id_produto;
+    end loop;
+  end if;
+  update public.encomendas
+     set estado = 'Cancelado', stock_reposto = true,
+         notas_internas = trim(coalesce(notas_internas, '') || E'\nCancelada automaticamente: venda anulada no Todocoleccion (' || to_char(now() at time zone 'Europe/Lisbon', 'DD/MM/YYYY HH24:MI') || ').')
+   where id = v_enc.id;
+  return jsonb_build_object('sucesso', true, 'acao', 'cancelada', 'codigo', v_enc.codigo_encomenda);
+end $$;
+revoke all on function public.todocoleccion_anular_encomenda(bigint) from public, anon, authenticated;
+grant execute on function public.todocoleccion_anular_encomenda(bigint) to service_role;
