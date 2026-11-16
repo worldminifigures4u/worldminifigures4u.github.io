@@ -1072,7 +1072,10 @@ function normalizarMarcacaoFornecedorLeituraMapa(valor) {
         ? String(valor.estado || valor.marcacao || valor.status || "").trim()
         : (historico.length ? "" : String(valor ?? "").trim());
 
-    if (!estado && historico.length) {
+    // Marcação limpa (ex.: OS ou EX retirada): o histórico fica só como histórico, não volta a ser a marcação atual.
+    const marcacaoLimpa = Boolean(valor && typeof valor === "object" && !Array.isArray(valor) && valor.marcacao_atual_limpa === true);
+    if (marcacaoLimpa) estado = "";
+    if (!estado && historico.length && !marcacaoLimpa) {
         const ultimo = historico[historico.length - 1];
         const tipoUltimo = normalizarTipoHistoricoFornecedorMapa(ultimo?.tipo);
         if (tipoUltimo === "os" || tipoUltimo === "encomendada_os") estado = "OS";
