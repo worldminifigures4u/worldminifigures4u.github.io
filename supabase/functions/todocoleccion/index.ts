@@ -470,12 +470,26 @@ async function importarEncomendas(modo: string) {
   const idsAdmin = (conhecidas || []).map((c: any) => c.encomenda_id).filter(Boolean);
   const { data: porPagar } = await db.from("encomendas").select("id").in("id", idsAdmin.length ? idsAdmin : [0]).eq("estado", "A aguardar pagamento");
   const aguardam = new Set((porPagar || []).map((e: any) => Number(e.id)));
-  const importadas: any[] = [], registadas: any[] = [], pagas: any[] = [], erros: any[] = [];
+  const importadas: any[] = [], registadas: any[] = [], pagas: any[] = [], anuladas: any[] = [], erros: any[] = [];
 
   for (const o of lista.orders) {
     const idOrder = Number(o.id_order);
     const conhecida: any = mapa.get(idOrder);
     if (conhecida) {
+      // Venda anulada no todocoleccion: cancela a encomenda no admin e repõe o stock (uma só vez).
+      // O stock sobe para o lote pela sincronização; nunca usar "Insertar otro igual" (repunha a dobrar).
+      if (o.is_anulled && conhecida.encomenda_id && !["anulada", "anulada_rever"].includes(String(conhecida.situacao || ""))) {
+        const { data: an, error: erroAn } = await db.rpc("todocoleccion_anular_encomenda", { p_id_order: idOrder });
+        const okAn = !erroAn && an?.sucesso;
+        await db.from("todocoleccion_encomendas").update({
+          situacao: okAn ? "anulada" : "anulada_rever",
+          erro: okAn ? null : `anulação: ${erroAn?.message || an?.erro || "desconhecido"}`,
+          estado_tc: o.status, visto_em: new Date().toISOString(),
+        }).eq("id_order", idOrder);
+        if (okAn) anuladas.push({ id_order: idOrder, codigo: an.codigo, acao: an.acao });
+        else erros.push({ id_order: idOrder, erro: `anulação: ${erroAn?.message || an?.erro}`, codigo: an?.codigo });
+        continue;
+      }
       // Paga no todocoleccion e ainda à espera no admin: passa a Pago, com os portes e o total finais.
       if (!o.is_anulled && conhecida.encomenda_id && aguardam.has(Number(conhecida.encomenda_id))) {
         const d = await tc(`/orders/${idOrder}`);
@@ -558,7 +572,7 @@ async function importarEncomendas(modo: string) {
     await db.from("todocoleccion_encomendas").upsert({ ...linhaBase, situacao: "importada", encomenda_id: r.encomenda_id }, { onConflict: "id_order" });
     importadas.push({ id_order: idOrder, codigo: r.codigo, produtos: itens.length, sem_produto: sem.length });
   }
-  return { ok: erros.length === 0, modo: modo || "normal", importadas, registadas: registadas.length, pagas, erros };
+  return { ok: erros.length === 0, modo: modo || "normal", importadas, registadas: registadas.length, pagas, anuladas, erros };
 }
 
 // Marca no todocoleccion UMA encomenda como enviada, com data e número de seguimento, e confirma.
