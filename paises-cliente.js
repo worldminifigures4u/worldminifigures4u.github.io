@@ -232,6 +232,11 @@
         const aoAlterarLink = (evento) => {
             const input = evento.target;
             if (!input || !/^perfil_url_\d+$/.test(input.name || '')) return;
+            // Só quando o link muda: ao sair do campo (blur/change) com o mesmo link não volta a pôr o país pré-definido
+            // por cima do país que entretanto veio do perfil ou foi escolhido à mão.
+            const valor = String(input.value || '').trim();
+            if (input.dataset.paisLinkAplicado === valor) return;
+            input.dataset.paisLinkAplicado = valor;
             const plataforma = detetarPlataformaUrl(input.value);
             if (!plataforma) return;
             aplicarPaisPredefinidoNoFormulario(formulario, plataforma);

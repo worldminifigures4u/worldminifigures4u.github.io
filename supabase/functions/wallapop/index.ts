@@ -59,22 +59,24 @@ function tipoPeloAssunto(assunto: string): "venda" | "confirmada" | null {
 }
 
 // Perfil público do comprador no Wallapop (sem login).
-async function perfilWallapop(hash: string): Promise<{ slug: string | null; pais?: string | null; erro?: string }> {
+async function perfilWallapop(hash: string): Promise<{ slug: string | null; pais?: string | null; nome?: string | null; erro?: string }> {
   try {
     const r = await fetch(`https://api.wallapop.com/api/v3/users/${encodeURIComponent(hash)}`, { headers: { Accept: "application/json" } });
     if (!r.ok) return { slug: null, erro: `http_${r.status}` };
     const j = await r.json();
     const slug = String(j?.web_slug || "").trim().toLowerCase();
     const pais = String(j?.location?.country_code || "").trim().toUpperCase() || null;
-    return slug ? { slug, pais } : { slug: null, erro: "sem_slug" };
+    const nome = String(j?.micro_name || "").trim() || null;
+    return slug ? { slug, pais, nome } : { slug: null, erro: "sem_slug" };
   } catch (e) {
     return { slug: null, erro: String(e) };
   }
 }
 
-// País a partir do link do perfil (página Plataformas, admin): Wallapop, Vinted ou OLX.
+// País (e nome público) a partir do link do perfil (página Plataformas, ficha de cliente): Wallapop, Vinted ou OLX.
+// O nome devolvido serve para o "Nome de utilizador" da ficha (ex.: "Diego F." no Wallapop).
 // Wallapop: a página pública do perfil traz o código interno do utilizador; a API dá o país desse código.
-async function paisDoPerfil(link: string): Promise<{ ok: boolean; pais?: string | null; codigo?: string | null; erro?: string }> {
+async function paisDoPerfil(link: string): Promise<{ ok: boolean; pais?: string | null; codigo?: string | null; nome?: string | null; erro?: string }> {
   let url: URL;
   try { url = new URL(String(link || "").trim()); } catch { return { ok: false, erro: "link_invalido" }; }
   const host = url.hostname.toLowerCase().replace(/^www\./, "");
@@ -90,7 +92,7 @@ async function paisDoPerfil(link: string): Promise<{ ok: boolean; pais?: string 
       const candidatos = [...new Set([...html.matchAll(/"id"\s*:\s*"([a-z0-9]{10,14})"/g)].map((m) => m[1]))].slice(0, 6);
       for (const hash of candidatos) {
         const p = await perfilWallapop(hash);
-        if (p.slug === slug) return { ok: true, codigo: p.pais || null };
+        if (p.slug === slug) return { ok: true, codigo: p.pais || null, nome: p.nome || null };
       }
       return { ok: false, erro: "perfil_sem_pais" };
     }
@@ -102,7 +104,12 @@ async function paisDoPerfil(link: string): Promise<{ ok: boolean; pais?: string 
       const html = await r.text();
       const m = html.match(/country_title(?:_local)?\\?"\s*:\s*\\?"([^"\\]+)/);
       const pais = m ? desescapar(m[1]) : "";
-      return pais && pais.length <= 40 ? { ok: true, pais } : { ok: false, erro: "perfil_sem_pais" };
+      const login = html.match(/\\?"login\\?"\s*:\s*\\?"([^"\\]{1,60})/);
+      // O link costuma trazer o nome de utilizador (/member/123456-nome); senão, o "login" da página.
+      const doLink = caminho.match(/\/member\/\d+-([^/?#]+)/i)?.[1] || "";
+      const nome = doLink || (login ? desescapar(login[1]) : null);
+      if (pais && pais.length <= 40) return { ok: true, pais, nome };
+      return nome ? { ok: true, pais: null, nome } : { ok: false, erro: "perfil_sem_pais" };
     }
     if (host === "olx.pt" || host.endsWith(".olx.pt")) return { ok: true, codigo: "PT" };
     return { ok: false, erro: "plataforma_sem_pais" };

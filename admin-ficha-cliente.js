@@ -262,6 +262,59 @@
         formulario.addEventListener("submit", () => formulario.querySelectorAll("input").forEach(limpar), true);
     }
 
+    // Ficha nova: ao colar o link principal (ou se já vier preenchido), pede ao site o nome público e o país do perfil
+    // (função "wallapop", ação pais_perfil) e preenche o "Nome de utilizador" e o "País" que ainda não tenham sido escritos à mão.
+    function ligarPreenchimentoPeloPerfil(formulario) {
+        const campoNome = formulario.querySelector('input[name="nome_utilizador"]');
+        const selectPais = formulario.querySelector('select[name="pais"]');
+        if (!campoNome && !selectPais) return;
+        let nomeAutomatico = '';
+        let paisEscolhidoAMao = false;
+        let ultimoLink = '';
+        let temporizador = null;
+        selectPais?.addEventListener('change', (evento) => { if (evento.isTrusted) paisEscolhidoAMao = true; });
+
+        const pedir = async (link) => {
+            if (!link || link === ultimoLink || !fichaClient?.functions) return;
+            ultimoLink = link;
+            definirStatusFichaCliente('A obter o nome e o país do perfil...');
+            try {
+                const { data, error } = await fichaClient.functions.invoke('wallapop', { body: { pais_perfil: link } });
+                const linkAtual = String(formulario.querySelector('[name="perfil_url_1"]')?.value || '').trim();
+                if (linkAtual !== link || !formulario.isConnected) return;
+                if (error || !data?.ok) { definirStatusFichaCliente(''); return; }
+                const preenchidos = [];
+                const nome = String(data.nome || '').trim();
+                if (nome && campoNome && (!campoNome.value.trim() || campoNome.value.trim() === nomeAutomatico)) {
+                    campoNome.value = nome;
+                    nomeAutomatico = nome;
+                    preenchidos.push('nome');
+                }
+                const pais = global.PaisesCliente?.normalizarPaisParaOpcao?.(data.pais || data.codigo || '') || '';
+                if (pais && selectPais && !paisEscolhidoAMao && [...selectPais.options].some((o) => o.value === pais)) {
+                    selectPais.value = pais;
+                    preenchidos.push('país');
+                }
+                definirStatusFichaCliente(preenchidos.length
+                    ? `Preenchido a partir do perfil: ${preenchidos.join(' e ')}.`
+                    : (pais || nome ? '' : 'O perfil não indica o país: confirma com o comprador.'));
+            } catch (_) {
+                definirStatusFichaCliente('');
+            }
+        };
+
+        const aoAlterar = (evento) => {
+            if (evento.target?.name !== 'perfil_url_1') return;
+            clearTimeout(temporizador);
+            const link = String(evento.target.value || '').trim();
+            temporizador = setTimeout(() => pedir(link), evento.type === 'input' ? 600 : 0);
+        };
+        formulario.addEventListener('input', aoAlterar);
+        formulario.addEventListener('change', aoAlterar);
+        const inicial = String(formulario.querySelector('[name="perfil_url_1"]')?.value || '').trim();
+        if (inicial) setTimeout(() => pedir(inicial), 0);
+    }
+
     function montarFormularioClienteModal(opcoes = {}) {
         const {
             cliente = {},
@@ -335,6 +388,7 @@
         linksExternos.appendChild(criarCamposPerfisCliente(perfis, true, cliente.notas || ''));
         formulario.appendChild(linksExternos);
         global.PaisesCliente?.ligarPerfisAoPaisCliente(formulario);
+        if (modoCriacao) ligarPreenchimentoPeloPerfil(formulario);
 
         formulario.addEventListener('submit', async (evento) => {
             evento.preventDefault();
@@ -438,7 +492,7 @@
         if (!conteudo) return;
 
         const urlInicial = obterUrlExternoSeguro(opcoes.url || '');
-        const nomeInicial = String(opcoes.nome || '').trim();
+        const nomeInicial = String(opcoes.nome || '').trim();  // o nome público vem do perfil (ligarPreenchimentoPeloPerfil)
         const plataformaInicial = global.PaisesCliente?.detetarPlataformaUrl(urlInicial);
         const paisInicial = (opcoes.pais && (global.PaisesCliente?.normalizarPaisParaOpcao(opcoes.pais) || opcoes.pais))
             || global.PaisesCliente?.paisPredefinidoPlataforma(plataformaInicial) || 'Portugal';

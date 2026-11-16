@@ -20,10 +20,10 @@
 
         promessaEncomendasJs = carregarScript('morada-formato.js?v=20260713-morada-formatada')
             .then(function () {
-                return carregarScript('paises-cliente.js?v=20260731-wallapop-es');
+                return carregarScript('paises-cliente.js?v=20261116-ficha-nome-pais-perfil');
             })
             .then(function () {
-                return carregarScript('encomendas.js?v=20261116-chave-fornecedor');
+                return carregarScript('encomendas.js?v=20261116-ficha-nome-pais-perfil');
             });
 
         return promessaEncomendasJs;
