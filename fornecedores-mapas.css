@@ -6688,3 +6688,75 @@ html.admin-light-mode #fornecedor-edicao-modal .fornecedor-preco-opcao-estado { 
     #fornecedor-edicao-modal .fornecedor-preco-opcoes-ou { justify-self: center; }
     #fornecedor-edicao-modal .fornecedor-preco-pagamentos-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
+
+/* Preço de compra: escolhas em botões (mais fácil de carregar do que a bolinha).
+   O radio continua lá (teclado/leitores de ecrã), só fica escondido; o botão escolhido fica destacado. */
+#fornecedor-edicao-modal .fornecedor-edicao-modo-preco { gap: 8px; }
+#fornecedor-edicao-modal .fornecedor-edicao-modo-preco label,
+#fornecedor-edicao-modal .fornecedor-custo-real-campo-caixa label {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 36px;
+    padding: 0 16px;
+    border: 1px solid #555;
+    border-radius: 8px;
+    background: #2a2a2a;
+    color: #ddd;
+    font-weight: 700;
+    cursor: pointer;
+    user-select: none;
+    transition: background .12s, border-color .12s, color .12s;
+}
+#fornecedor-edicao-modal .fornecedor-edicao-modo-preco label:hover,
+#fornecedor-edicao-modal .fornecedor-custo-real-campo-caixa label:hover { border-color: #888; background: #333; }
+#fornecedor-edicao-modal .fornecedor-edicao-modo-preco label:has(input:checked),
+#fornecedor-edicao-modal .fornecedor-custo-real-campo-caixa label:has(input:checked) {
+    border-color: var(--cor-acao-principal, #ffc107);
+    background: var(--cor-acao-principal, #ffc107);
+    color: #111;
+}
+#fornecedor-edicao-modal .fornecedor-edicao-modo-preco label:has(input:focus-visible),
+#fornecedor-edicao-modal .fornecedor-custo-real-campo-caixa label:has(input:focus-visible) {
+    outline: 2px solid #fff;
+    outline-offset: 2px;
+}
+#fornecedor-edicao-modal .fornecedor-edicao-modo-preco input[type="radio"],
+#fornecedor-edicao-modal .fornecedor-custo-real-campo-caixa input[type="radio"] {
+    position: absolute;
+    opacity: 0;
+    width: 1px;
+    height: 1px;
+    margin: 0;
+    pointer-events: none;
+}
+/* Distribuir envio: os dois botões ocupam a caixa toda, com a altura dos campos ao lado */
+#fornecedor-edicao-modal .fornecedor-custo-real-campo-caixa {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+    padding: 0;
+    border: 0;
+    background: transparent;
+}
+#fornecedor-edicao-modal .fornecedor-custo-real-campo-caixa label { min-height: 0; height: 100%; padding: 0 10px; }
+html.admin-light-mode #fornecedor-edicao-modal .fornecedor-edicao-modo-preco label,
+html.admin-light-mode #fornecedor-edicao-modal .fornecedor-custo-real-campo-caixa label { background: #f1f1f1; border-color: #c8c8c8; color: #333; }
+html.admin-light-mode #fornecedor-edicao-modal .fornecedor-edicao-modo-preco label:hover,
+html.admin-light-mode #fornecedor-edicao-modal .fornecedor-custo-real-campo-caixa label:hover { background: #e6e6e6; border-color: #999; }
+html.admin-light-mode #fornecedor-edicao-modal .fornecedor-edicao-modo-preco label:has(input:checked),
+html.admin-light-mode #fornecedor-edicao-modal .fornecedor-custo-real-campo-caixa label:has(input:checked) {
+    background: var(--cor-acao-principal, #ffc107); border-color: var(--cor-acao-principal, #ffc107); color: #111;
+}
+html.admin-light-mode #fornecedor-edicao-modal .fornecedor-edicao-modo-preco label:has(input:focus-visible),
+html.admin-light-mode #fornecedor-edicao-modal .fornecedor-custo-real-campo-caixa label:has(input:focus-visible) { outline-color: #111; }
+@media (max-width: 700px) {
+    /* Telemóvel: 2 campos por linha (a regra de 4 colunas acima anulava a de 2) e "Distribuir envio" numa linha só */
+    #fornecedor-edicao-modal .fornecedor-edicao-painel-preco[data-modo-preco="usd"] .fornecedor-custo-real-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+    #fornecedor-edicao-modal .fornecedor-edicao-painel-preco[data-modo-preco="usd"] .fornecedor-custo-real-campo-opcoes { grid-column: 1 / -1; }
+    #fornecedor-edicao-modal .fornecedor-custo-real-campo-caixa label { min-height: 36px; }
+    #fornecedor-edicao-modal .fornecedor-edicao-modo-preco label { flex: 1 1 100%; }
+}
