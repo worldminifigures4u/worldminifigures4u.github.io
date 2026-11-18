@@ -1927,23 +1927,23 @@ function garantirModalEdicaoFornecedor() {
                                         <h4 class="fornecedor-preco-opcao-titulo"><span class="fornecedor-preco-opcao-letra">B</span> Pagamentos <small class="fornecedor-preco-opcao-estado"></small></h4>
                                         <div class="fornecedor-custo-real-grid fornecedor-preco-opcao-grid fornecedor-preco-pagamentos-grid">
                                             <label>
-                                                Pagamento 1 €
+                                                1.º pagamento (€)
                                                 <input type="text" id="fornecedor-edicao-pagamento-1-eur" inputmode="decimal" autocomplete="off" placeholder="0,00 €">
                                             </label>
                                             <label>
-                                                Pagamento 2 € (opcional)
+                                                2.º pagamento (€, opcional)
                                                 <input type="text" id="fornecedor-edicao-pagamento-2-eur" inputmode="decimal" autocomplete="off" placeholder="0,00 €">
                                             </label>
                                             <label>
-                                                Pagamento 3 € (opcional)
+                                                3.º pagamento (€, opcional)
                                                 <input type="text" id="fornecedor-edicao-pagamento-3-eur" inputmode="decimal" autocomplete="off" placeholder="0,00 €">
                                             </label>
                                             <label>
-                                                Pagamento 4 € (opcional)
+                                                4.º pagamento (€, opcional)
                                                 <input type="text" id="fornecedor-edicao-pagamento-4-eur" inputmode="decimal" autocomplete="off" placeholder="0,00 €">
                                             </label>
                                             <label>
-                                                Pagamento 5 € (opcional)
+                                                5.º pagamento (€, opcional)
                                                 <input type="text" id="fornecedor-edicao-pagamento-5-eur" inputmode="decimal" autocomplete="off" placeholder="0,00 €">
                                             </label>
                                             <label>
