@@ -1889,15 +1889,15 @@ function garantirModalEdicaoFornecedor() {
                             <div class="fornecedor-edicao-painel-preco" data-modo-preco="usd">
                                 <div class="fornecedor-custo-real-grid" aria-label="Custo real da compra">
                                     <label>
-                                        Total compra USD
+                                        Total compra (USD)
                                         <input type="text" id="fornecedor-edicao-total-compra-usd" inputmode="decimal" autocomplete="off" placeholder="$0,00">
                                     </label>
                                     <label>
-                                        Envio USD
+                                        Envio (USD)
                                         <input type="text" id="fornecedor-edicao-envio-usd" inputmode="decimal" autocomplete="off" placeholder="$0,00">
                                     </label>
                                     <label>
-                                        Total pago €
+                                        Total pago (€)
                                         <input type="text" id="fornecedor-edicao-total-eur" inputmode="decimal" autocomplete="off" placeholder="0,00 €">
                                     </label>
                                     <div class="fornecedor-custo-real-campo-opcoes" role="radiogroup" aria-label="Distribuir envio">
@@ -1908,7 +1908,7 @@ function garantirModalEdicaoFornecedor() {
                                         </div>
                                     </div>
                                 </div>
-                                <p class="fornecedor-custo-real-ajuda">Sem o Total pago €, o preço fica provisório em USD com o envio incluído. Com ele, passa a €.</p>
+                                <p class="fornecedor-custo-real-ajuda">Sem o Total pago (€), o preço fica provisório em USD com o envio incluído. Com ele, passa a €.</p>
                             </div>
                             <div class="fornecedor-edicao-painel-preco" data-modo-preco="eur" hidden>
                                 <div class="fornecedor-preco-opcoes" aria-label="Preço igual para todas as figuras: usar a opção A ou a opção B">
@@ -1916,7 +1916,7 @@ function garantirModalEdicaoFornecedor() {
                                         <h4 class="fornecedor-preco-opcao-titulo"><span class="fornecedor-preco-opcao-letra">A</span> Preço por figura <small class="fornecedor-preco-opcao-estado"></small></h4>
                                         <div class="fornecedor-custo-real-grid fornecedor-preco-opcao-grid">
                                             <label>
-                                                Preço por figura €
+                                                Preço por figura (€)
                                                 <input type="text" id="fornecedor-edicao-os-preco-unitario-eur" inputmode="decimal" autocomplete="off" placeholder="0,00 €" title="Preço final de cada figura (já com portes). Se preenchido, os pagamentos são ignorados.">
                                             </label>
                                         </div>
@@ -1947,7 +1947,7 @@ function garantirModalEdicaoFornecedor() {
                                                 <input type="text" id="fornecedor-edicao-pagamento-5-eur" inputmode="decimal" autocomplete="off" placeholder="0,00 €">
                                             </label>
                                             <label>
-                                                Total pago €
+                                                Total pago (€)
                                                 <input type="text" id="fornecedor-edicao-os-total-compra-eur" class="fornecedor-edicao-total-pagamentos" readonly tabindex="-1" placeholder="0,00 €" title="Soma dos pagamentos 1 a 5">
                                             </label>
                                             <label>
