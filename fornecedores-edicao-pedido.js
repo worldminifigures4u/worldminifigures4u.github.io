@@ -1889,12 +1889,12 @@ function garantirModalEdicaoFornecedor() {
                             <div class="fornecedor-edicao-painel-preco" data-modo-preco="usd">
                                 <div class="fornecedor-custo-real-grid" aria-label="Custo real da compra">
                                     <label>
-                                        Envio USD
-                                        <input type="text" id="fornecedor-edicao-envio-usd" inputmode="decimal" autocomplete="off" placeholder="$0,00">
-                                    </label>
-                                    <label>
                                         Total compra USD
                                         <input type="text" id="fornecedor-edicao-total-compra-usd" inputmode="decimal" autocomplete="off" placeholder="$0,00">
+                                    </label>
+                                    <label>
+                                        Envio USD
+                                        <input type="text" id="fornecedor-edicao-envio-usd" inputmode="decimal" autocomplete="off" placeholder="$0,00">
                                     </label>
                                     <label>
                                         Total pago €
