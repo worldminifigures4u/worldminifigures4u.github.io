@@ -6616,3 +6616,75 @@ body.cabecalho-com-admin.pagina-fornecedores-unificada {
     margin-left: auto;
     margin-right: auto;
 }
+
+/* Preço igual para todas: opção A (preço por figura) OU opção B (pagamentos), em caixas separadas */
+#fornecedor-edicao-modal .fornecedor-preco-opcoes {
+    display: grid;
+    grid-template-columns: minmax(200px, 260px) auto minmax(0, 1fr);
+    gap: 14px;
+    align-items: stretch;
+}
+#fornecedor-edicao-modal .fornecedor-preco-opcao {
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 12px 14px;
+    border: 1px solid #3a3a3a;
+    border-radius: 10px;
+    background: #161616;
+    transition: opacity .15s, border-color .15s;
+}
+#fornecedor-edicao-modal .fornecedor-preco-opcao[data-estado="ativa"] {
+    border-color: var(--cor-acao-principal, #ffc107);
+    box-shadow: inset 0 0 0 1px var(--cor-acao-principal, #ffc107);
+}
+#fornecedor-edicao-modal .fornecedor-preco-opcao[data-estado="inativa"] { opacity: .45; }
+#fornecedor-edicao-modal .fornecedor-preco-opcao-titulo {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0;
+    font-size: 15px;
+    font-weight: 800;
+}
+#fornecedor-edicao-modal .fornecedor-preco-opcao-letra {
+    display: inline-grid;
+    place-items: center;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: var(--cor-acao-principal, #ffc107);
+    color: #111;
+    font-size: 13px;
+}
+#fornecedor-edicao-modal .fornecedor-preco-opcao-estado {
+    margin-left: auto;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .05em;
+    color: #9a9a9a;
+}
+#fornecedor-edicao-modal .fornecedor-preco-opcao[data-estado="ativa"] .fornecedor-preco-opcao-estado { color: var(--cor-acao-principal, #ffc107); }
+#fornecedor-edicao-modal .fornecedor-preco-opcao-grid {
+    grid-template-columns: 1fr;
+    margin: 0;
+}
+#fornecedor-edicao-modal .fornecedor-preco-pagamentos-grid { grid-template-columns: repeat(5, minmax(100px, 1fr)); }
+#fornecedor-edicao-modal .fornecedor-preco-opcao-ajuda { margin: 0; font-size: 12px; color: #9a9a9a; }
+#fornecedor-edicao-modal .fornecedor-preco-opcoes-ou {
+    align-self: center;
+    font-weight: 800;
+    text-transform: uppercase;
+    color: #8a8a8a;
+}
+#fornecedor-edicao-modal .fornecedor-preco-opcoes + .fornecedor-edicao-preco-resultado { margin-top: 10px; }
+html.admin-light-mode #fornecedor-edicao-modal .fornecedor-preco-opcao { background: #fafafa; border-color: #d6d6d6; }
+html.admin-light-mode #fornecedor-edicao-modal .fornecedor-preco-opcao-ajuda,
+html.admin-light-mode #fornecedor-edicao-modal .fornecedor-preco-opcao-estado { color: #666; }
+@media (max-width: 1000px) {
+    #fornecedor-edicao-modal .fornecedor-preco-opcoes { grid-template-columns: 1fr; }
+    #fornecedor-edicao-modal .fornecedor-preco-opcoes-ou { justify-self: center; }
+    #fornecedor-edicao-modal .fornecedor-preco-pagamentos-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}

@@ -1698,6 +1698,14 @@ function atualizarResultadoPrecoIgualEdicaoFornecedor(modal) {
         unidades += quantidade;
     });
     const precoPorFigura = Math.max(0, converterNumeroListaFornecedor(modal.querySelector('#fornecedor-edicao-os-preco-unitario-eur')?.value || '') || 0);
+    // A (preço por figura) ou B (pagamentos): a opção em uso fica destacada e a outra esbatida.
+    const opcaoUsada = precoPorFigura > 0 ? 'figura' : (total > 0 ? 'pagamentos' : '');
+    modal.querySelectorAll('.fornecedor-preco-opcao').forEach(caixa => {
+        const estado = !opcaoUsada ? '' : (caixa.dataset.opcaoPreco === opcaoUsada ? 'ativa' : 'inativa');
+        if (estado) caixa.dataset.estado = estado; else delete caixa.dataset.estado;
+        const etiqueta = caixa.querySelector('.fornecedor-preco-opcao-estado');
+        if (etiqueta) etiqueta.textContent = estado === 'ativa' ? 'em uso' : (estado === 'inativa' ? 'não usada' : '');
+    });
     if (precoPorFigura > 0) {
         const textoUnidades = `${unidades} ${unidades === 1 ? 'unidade' : 'unidades'} a receber`;
         destino.textContent = `= ${precoPorFigura.toFixed(2).replace('.', ',')} € por figura (${textoUnidades}${unidades > 0 ? `, total ${(precoPorFigura * unidades).toFixed(2).replace('.', ',')} €` : ''})`;
@@ -1903,43 +1911,55 @@ function garantirModalEdicaoFornecedor() {
                                 <p class="fornecedor-custo-real-ajuda">Sem o Total pago €, o preço fica provisório em USD com o envio incluído. Com ele, passa a €.</p>
                             </div>
                             <div class="fornecedor-edicao-painel-preco" data-modo-preco="eur" hidden>
-                                <div class="fornecedor-custo-real-grid fornecedor-custo-fixo-eur-grid" aria-label="Preço igual para todas as figuras">
-                                    <label>
-                                        Preço por figura €
-                                        <input type="text" id="fornecedor-edicao-os-preco-unitario-eur" inputmode="decimal" autocomplete="off" placeholder="0,00 €" title="Preço final de cada figura (já com portes). Se preenchido, os pagamentos são ignorados.">
-                                    </label>
-                                    <label>
-                                        Pagamento 1 €
-                                        <input type="text" id="fornecedor-edicao-pagamento-1-eur" inputmode="decimal" autocomplete="off" placeholder="0,00 €">
-                                    </label>
-                                    <label>
-                                        Pagamento 2 € (opcional)
-                                        <input type="text" id="fornecedor-edicao-pagamento-2-eur" inputmode="decimal" autocomplete="off" placeholder="0,00 €">
-                                    </label>
-                                    <label>
-                                        Pagamento 3 € (opcional)
-                                        <input type="text" id="fornecedor-edicao-pagamento-3-eur" inputmode="decimal" autocomplete="off" placeholder="0,00 €">
-                                    </label>
-                                    <label>
-                                        Pagamento 4 € (opcional)
-                                        <input type="text" id="fornecedor-edicao-pagamento-4-eur" inputmode="decimal" autocomplete="off" placeholder="0,00 €">
-                                    </label>
-                                    <label>
-                                        Pagamento 5 € (opcional)
-                                        <input type="text" id="fornecedor-edicao-pagamento-5-eur" inputmode="decimal" autocomplete="off" placeholder="0,00 €">
-                                    </label>
-                                    <label>
-                                        Total pago €
-                                        <input type="text" id="fornecedor-edicao-os-total-compra-eur" class="fornecedor-edicao-total-pagamentos" readonly tabindex="-1" placeholder="0,00 €" title="Soma dos pagamentos 1 a 5">
-                                    </label>
-                                    <label>
-                                        Figuras pagas (opcional)
-                                        <input type="text" id="fornecedor-edicao-unidades-pagas" inputmode="numeric" autocomplete="off" placeholder="0" title="Quantas figuras pagaste nesta encomenda, se for diferente das unidades a receber (ex.: figuras em falta da encomenda anterior que vieram agora sem pagar). O total pago é dividido por este número.">
-                                    </label>
-                                    <p class="fornecedor-edicao-preco-resultado" id="fornecedor-edicao-preco-resultado" aria-live="polite"></p>
-
+                                <div class="fornecedor-preco-opcoes" aria-label="Preço igual para todas as figuras: usar a opção A ou a opção B">
+                                    <section class="fornecedor-preco-opcao" data-opcao-preco="figura">
+                                        <h4 class="fornecedor-preco-opcao-titulo"><span class="fornecedor-preco-opcao-letra">A</span> Preço por figura <small class="fornecedor-preco-opcao-estado"></small></h4>
+                                        <div class="fornecedor-custo-real-grid fornecedor-preco-opcao-grid">
+                                            <label>
+                                                Preço por figura €
+                                                <input type="text" id="fornecedor-edicao-os-preco-unitario-eur" inputmode="decimal" autocomplete="off" placeholder="0,00 €" title="Preço final de cada figura (já com portes). Se preenchido, os pagamentos são ignorados.">
+                                            </label>
+                                        </div>
+                                        <p class="fornecedor-preco-opcao-ajuda">O preço final de cada figura, já com portes.</p>
+                                    </section>
+                                    <div class="fornecedor-preco-opcoes-ou" aria-hidden="true">ou</div>
+                                    <section class="fornecedor-preco-opcao" data-opcao-preco="pagamentos">
+                                        <h4 class="fornecedor-preco-opcao-titulo"><span class="fornecedor-preco-opcao-letra">B</span> Pagamentos <small class="fornecedor-preco-opcao-estado"></small></h4>
+                                        <div class="fornecedor-custo-real-grid fornecedor-preco-opcao-grid fornecedor-preco-pagamentos-grid">
+                                            <label>
+                                                Pagamento 1 €
+                                                <input type="text" id="fornecedor-edicao-pagamento-1-eur" inputmode="decimal" autocomplete="off" placeholder="0,00 €">
+                                            </label>
+                                            <label>
+                                                Pagamento 2 € (opcional)
+                                                <input type="text" id="fornecedor-edicao-pagamento-2-eur" inputmode="decimal" autocomplete="off" placeholder="0,00 €">
+                                            </label>
+                                            <label>
+                                                Pagamento 3 € (opcional)
+                                                <input type="text" id="fornecedor-edicao-pagamento-3-eur" inputmode="decimal" autocomplete="off" placeholder="0,00 €">
+                                            </label>
+                                            <label>
+                                                Pagamento 4 € (opcional)
+                                                <input type="text" id="fornecedor-edicao-pagamento-4-eur" inputmode="decimal" autocomplete="off" placeholder="0,00 €">
+                                            </label>
+                                            <label>
+                                                Pagamento 5 € (opcional)
+                                                <input type="text" id="fornecedor-edicao-pagamento-5-eur" inputmode="decimal" autocomplete="off" placeholder="0,00 €">
+                                            </label>
+                                            <label>
+                                                Total pago €
+                                                <input type="text" id="fornecedor-edicao-os-total-compra-eur" class="fornecedor-edicao-total-pagamentos" readonly tabindex="-1" placeholder="0,00 €" title="Soma dos pagamentos 1 a 5">
+                                            </label>
+                                            <label>
+                                                Figuras pagas (opcional)
+                                                <input type="text" id="fornecedor-edicao-unidades-pagas" inputmode="numeric" autocomplete="off" placeholder="0" title="Quantas figuras pagaste nesta encomenda, se for diferente das unidades a receber (ex.: figuras em falta da encomenda anterior que vieram agora sem pagar). O total pago é dividido por este número.">
+                                            </label>
+                                        </div>
+                                        <p class="fornecedor-preco-opcao-ajuda">O Total pago (soma dos pagamentos, já com envio) é dividido pelas unidades a receber.</p>
+                                    </section>
                                 </div>
-                                <p class="fornecedor-custo-real-ajuda">Preenche o Preço por figura € (aplicado igual a todas) ou os pagamentos: o Total pago (soma dos pagamentos 1 a 5, já com envio) é dividido pelas unidades a receber. As figuras OS ou removidas não contam; as EX compradas ficam com o preço escrito nelas e o valor delas é descontado do total pago.</p>
+                                <p class="fornecedor-edicao-preco-resultado" id="fornecedor-edicao-preco-resultado" aria-live="polite"></p>
+                                <p class="fornecedor-custo-real-ajuda">As figuras OS ou removidas não contam; as EX compradas ficam com o preço escrito nelas e o valor delas é descontado do total pago.</p>
                             </div>
                         </div>
                     </details>
