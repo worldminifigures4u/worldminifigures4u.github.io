@@ -220,14 +220,17 @@ function analisarLinhaListaFinalFornecedor(linha, numeroLinha, estadoParser = nu
     }
 
     const referencia = partes[0];
-    const quantidade = Math.floor(converterNumeroListaFornecedor(partes[1]));
-    const semStock = textoIndicaSemStockListaFinalFornecedor(partes.slice(2).join(" "));
+    // "OUT OF STOCK" em qualquer coluna depois da referência: fica OS, com ou sem quantidade
+    // (ex.: "PG507 <vazio> out of stock" ou "PG507 0 out of stock"); sem quantidade, a OS é a quantidade da encomenda.
+    const semStock = textoIndicaSemStockListaFinalFornecedor(partes.slice(1).join(" "));
+    const temQuantidade = /^\d+$/.test(String(partes[1] || "").trim());
+    const quantidade = temQuantidade ? Math.floor(converterNumeroListaFornecedor(partes[1])) : 0;
     if (!referencia || (quantidade <= 0 && !semStock)) {
         return { erro: `linha ${numeroLinha}: referência ou quantidade inválida`, original: linha };
     }
 
     // Só a coluna a seguir à quantidade é o preço (juntar tudo transformava "1  5" em 15).
-    const precoTexto = partes[2] || "";
+    const precoTexto = temQuantidade ? (partes[2] || "") : "";
     const precoCusto = semStock ? 0 : Math.max(0, converterNumeroListaFornecedor(precoTexto));
     return {
         referencia,
