@@ -942,7 +942,7 @@ function garantirScriptImportacaoMapas() {
 
     promessaScriptImportacaoMapas = new Promise((resolve, reject) => {
         const script = document.createElement("script");
-        script.src = "gestao-importacao.js?v=20261013-sem-descontinuado";
+        script.src = "gestao-importacao.js?v=20261118-fornecedor-nome";
         script.onload = () => {
             scriptImportacaoMapasCarregado = true;
             resolve();

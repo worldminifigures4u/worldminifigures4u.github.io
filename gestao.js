@@ -102,7 +102,7 @@ function garantirScriptImportacaoGestao() {
 
     gestaoImportacaoScriptPromessa = new Promise((resolve, reject) => {
         const script = document.createElement('script');
-        script.src = 'gestao-importacao.js?v=20261013-sem-descontinuado';
+        script.src = 'gestao-importacao.js?v=20261118-fornecedor-nome';
         script.onload = resolve;
         script.onerror = () => reject(new Error('Falha ao carregar importação administrativa.'));
         document.body.appendChild(script);

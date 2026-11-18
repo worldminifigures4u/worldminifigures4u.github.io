@@ -105,7 +105,8 @@ function extrairFornecedoresImportacao(linha, cabecalhos) {
         if(!fornecedor) return;
         const valor = valorFornecedorImportacaoValido(linha[indice]);
         if(!valor) return;
-        fornecedores[fornecedor.chave] = juntarValoresFornecedorImportacao(fornecedores[fornecedor.chave], valor);
+        // Grava com o nome oficial do fornecedor (ex.: "Lote 50"), nunca com a chave normalizada ("lote50").
+        fornecedores[fornecedor.nome] = juntarValoresFornecedorImportacao(fornecedores[fornecedor.nome], valor);
     });
     return fornecedores;
 }
