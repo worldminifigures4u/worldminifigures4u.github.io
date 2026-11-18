@@ -111,7 +111,21 @@ async function paisDoPerfil(link: string): Promise<{ ok: boolean; pais?: string 
       if (pais && pais.length <= 40) return { ok: true, pais, nome };
       return nome ? { ok: true, pais: null, nome } : { ok: false, erro: "perfil_sem_pais" };
     }
-    if (host === "olx.pt" || host.endsWith(".olx.pt")) return { ok: true, codigo: "PT" };
+    if (host === "olx.pt" || host.endsWith(".olx.pt")) {
+      // OLX: país é sempre Portugal; o nome do vendedor vem nos dados da página (userListing.seller.data.name).
+      let nome: string | null = null;
+      try {
+        const r = await fetch(url.href, { headers: cabecalhos });
+        if (r.ok) {
+          const html = await r.text();
+          const base = html.indexOf("userListing");
+          const inicio = base >= 0 ? html.indexOf("seller", base) : -1;
+          const m = inicio >= 0 ? html.slice(inicio, inicio + 4000).match(/\\*"name\\*"\s*:\s*\\*"([^"\\]{1,60}(?:\\+u[0-9a-fA-F]{4}[^"\\]{0,60})*)/) : null;
+          if (m) nome = desescapar(m[1].replace(/\\+u([0-9a-fA-F]{4})/g, (_x, h) => String.fromCharCode(parseInt(h, 16))));
+        }
+      } catch { /* sem nome */ }
+      return { ok: true, codigo: "PT", nome };
+    }
     return { ok: false, erro: "plataforma_sem_pais" };
   } catch (e) {
     return { ok: false, erro: String(e) };
