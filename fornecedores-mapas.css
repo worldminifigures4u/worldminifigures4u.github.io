@@ -5370,8 +5370,17 @@ html:not(.admin-light-mode) body #fornecedor-edicao-modal .fornecedor-edicao-fec
     gap: 4px;
 }
 #fornecedor-edicao-modal .fornecedor-custo-fixo-eur-grid {
-    grid-template-columns: repeat(5, minmax(140px, 210px)) minmax(0, 1fr);
+    /* 1.ª linha: Preço por figura + Pagamentos 1 a 5; 2.ª linha: Total pago, Portes, Figuras pagas e o resultado */
+    grid-template-columns: repeat(6, minmax(120px, 1fr));
     align-items: end;
+}
+#fornecedor-edicao-modal .fornecedor-custo-fixo-eur-grid .fornecedor-edicao-preco-resultado {
+    grid-column: span 3;
+}
+#fornecedor-edicao-modal .fornecedor-edicao-total-pagamentos {
+    font-weight: 800;
+    color: var(--cor-acao-principal, #ffc107);
+    cursor: default;
 }
 #fornecedor-edicao-modal .fornecedor-edicao-preco-resultado {
     margin: 0;
@@ -5384,6 +5393,7 @@ html:not(.admin-light-mode) body #fornecedor-edicao-modal .fornecedor-edicao-fec
 }
 @media (max-width: 700px) {
     #fornecedor-edicao-modal .fornecedor-custo-fixo-eur-grid { grid-template-columns: 1fr; }
+    #fornecedor-edicao-modal .fornecedor-custo-fixo-eur-grid .fornecedor-edicao-preco-resultado { grid-column: auto; }
 }
 
 /* Editar encomenda: miniaturas sem fundo branco ao lado da foto */

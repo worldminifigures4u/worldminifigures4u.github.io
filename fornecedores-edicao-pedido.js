@@ -1663,11 +1663,14 @@ function mostrarModoPrecoEdicaoFornecedor(modal, modo, limparOutro = false) {
     });
 }
 
+// Preço igual para todas: até 5 pagamentos; o Total pago € é a soma deles.
+const IDS_PAGAMENTOS_EDICAO_FORNECEDOR = [1, 2, 3, 4, 5].map(n => `#fornecedor-edicao-pagamento-${n}-eur`);
+
 function sincronizarTotalPagamentosEdicaoFornecedor(modal) {
     const campoTotal = modal?.querySelector('#fornecedor-edicao-os-total-compra-eur');
     if (!campoTotal) return 0;
     const valor = (id) => Math.max(0, converterNumeroListaFornecedor(modal.querySelector(id)?.value || '') || 0);
-    const total = Math.round((valor('#fornecedor-edicao-pagamento-1-eur') + valor('#fornecedor-edicao-pagamento-2-eur')) * 100) / 100;
+    const total = Math.round(IDS_PAGAMENTOS_EDICAO_FORNECEDOR.reduce((soma, id) => soma + valor(id), 0) * 100) / 100;
     campoTotal.value = total > 0 ? total.toFixed(2).replace('.', ',') : '';
     return total;
 }
@@ -1676,7 +1679,7 @@ function atualizarResultadoPrecoIgualEdicaoFornecedor(modal) {
     const destino = modal?.querySelector('#fornecedor-edicao-preco-resultado');
     if (!destino) return;
     const total = sincronizarTotalPagamentosEdicaoFornecedor(modal);
-    const temSegundo = Boolean(String(modal.querySelector('#fornecedor-edicao-pagamento-2-eur')?.value || '').trim());
+    const temSegundo = IDS_PAGAMENTOS_EDICAO_FORNECEDOR.slice(1).some(id => String(modal.querySelector(id)?.value || '').trim());
     let unidades = 0;
     let custoEx = 0;
     const pedidoAtual = typeof obterPedidoEdicaoFornecedor === 'function' ? obterPedidoEdicaoFornecedor(modal) : null;
@@ -1776,7 +1779,7 @@ function ligarBlocosEdicaoFornecedor(modal) {
 
 function prepararBlocosAoAbrirEdicaoFornecedor(modal, pedido) {
     modal.querySelectorAll('.fornecedor-edicao-bloco').forEach(bloco => { bloco.open = false; });
-    ['#fornecedor-edicao-pagamento-1-eur', '#fornecedor-edicao-pagamento-2-eur', '#fornecedor-edicao-unidades-pagas'].forEach(id => {
+    [...IDS_PAGAMENTOS_EDICAO_FORNECEDOR, '#fornecedor-edicao-os-total-compra-eur', '#fornecedor-edicao-unidades-pagas'].forEach(id => {
         const campo = modal.querySelector(id);
         if (campo) campo.value = '';
     });
@@ -1794,7 +1797,7 @@ function prepararBlocosAoAbrirEdicaoFornecedor(modal, pedido) {
 function garantirModalEdicaoFornecedor() {
     let modal = document.getElementById('fornecedor-edicao-modal');
     // Recria se faltar alguma secção nova (modal antigo em memória)
-    if (modal && (!modal.querySelector('#fornecedor-edicao-lista-os') || !modal.querySelector('#fornecedor-edicao-lista-ex') || !modal.querySelector('#fornecedor-edicao-total-eur') || !modal.querySelector('#fornecedor-edicao-total-compra-usd') || !modal.querySelector('#fornecedor-edicao-os-total-compra-eur') || !modal.querySelector('#fornecedor-edicao-bloco-listas'))) {
+    if (modal && (!modal.querySelector('#fornecedor-edicao-lista-os') || !modal.querySelector('#fornecedor-edicao-lista-ex') || !modal.querySelector('#fornecedor-edicao-total-eur') || !modal.querySelector('#fornecedor-edicao-total-compra-usd') || !modal.querySelector('#fornecedor-edicao-os-total-compra-eur') || !modal.querySelector('#fornecedor-edicao-pagamento-5-eur') || !modal.querySelector('#fornecedor-edicao-bloco-listas'))) {
         modal.remove();
         modal = null;
     }
@@ -1914,6 +1917,22 @@ function garantirModalEdicaoFornecedor() {
                                         <input type="text" id="fornecedor-edicao-pagamento-2-eur" inputmode="decimal" autocomplete="off" placeholder="0,00 €">
                                     </label>
                                     <label>
+                                        Pagamento 3 € (opcional)
+                                        <input type="text" id="fornecedor-edicao-pagamento-3-eur" inputmode="decimal" autocomplete="off" placeholder="0,00 €">
+                                    </label>
+                                    <label>
+                                        Pagamento 4 € (opcional)
+                                        <input type="text" id="fornecedor-edicao-pagamento-4-eur" inputmode="decimal" autocomplete="off" placeholder="0,00 €">
+                                    </label>
+                                    <label>
+                                        Pagamento 5 € (opcional)
+                                        <input type="text" id="fornecedor-edicao-pagamento-5-eur" inputmode="decimal" autocomplete="off" placeholder="0,00 €">
+                                    </label>
+                                    <label>
+                                        Total pago €
+                                        <input type="text" id="fornecedor-edicao-os-total-compra-eur" class="fornecedor-edicao-total-pagamentos" readonly tabindex="-1" placeholder="0,00 €" title="Soma dos pagamentos 1 a 5">
+                                    </label>
+                                    <label>
                                         Portes € (incluídos, opcional)
                                         <input type="text" id="fornecedor-edicao-os-envio-eur" inputmode="decimal" autocomplete="off" placeholder="0,00 €">
                                     </label>
@@ -1922,10 +1941,9 @@ function garantirModalEdicaoFornecedor() {
                                         <input type="text" id="fornecedor-edicao-unidades-pagas" inputmode="numeric" autocomplete="off" placeholder="0" title="Quantas figuras pagaste nesta encomenda, se for diferente das unidades a receber (ex.: figuras em falta da encomenda anterior que vieram agora sem pagar). O total pago é dividido por este número.">
                                     </label>
                                     <p class="fornecedor-edicao-preco-resultado" id="fornecedor-edicao-preco-resultado" aria-live="polite"></p>
-                                    <input type="hidden" id="fornecedor-edicao-os-total-compra-eur">
 
                                 </div>
-                                <p class="fornecedor-custo-real-ajuda">Preenche o Preço por figura € (aplicado igual a todas) ou os pagamentos: o total pago (soma dos pagamentos, já com envio) é dividido pelas unidades a receber. As figuras OS ou removidas não contam; as EX compradas ficam com o preço escrito nelas e o valor delas é descontado do total pago.</p>
+                                <p class="fornecedor-custo-real-ajuda">Preenche o Preço por figura € (aplicado igual a todas) ou os pagamentos: o Total pago (soma dos pagamentos 1 a 5, já com envio) é dividido pelas unidades a receber. As figuras OS ou removidas não contam; as EX compradas ficam com o preço escrito nelas e o valor delas é descontado do total pago.</p>
                             </div>
                         </div>
                     </details>
