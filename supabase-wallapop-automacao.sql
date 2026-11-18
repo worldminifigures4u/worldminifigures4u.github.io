@@ -112,3 +112,10 @@ revoke all on function public.wallapop_encomenda_para_etiqueta(text, text) from 
 -- sem marcação prioritária (os avisos ficam só nas notas). Com várias figuras mantém a nota
 -- "PAGO - a aguardar resposta do comprador" (selo Aguarda resposta), que sai com o "Venda confirmada".
 -- Cópia anterior: wallapop_config 'backup_wallapop_aplicar_email_20261114'.
+
+-- 2026-11-18: emails do Wallapop com o botão novo (delivery/tracking/<transação>), sem b= nem i=.
+-- A função "wallapop" lê a transação deste link; sem código do comprador segue sem perfil nem país.
+-- wallapop_aplicar_email: venda normal sem perfil cria a encomenda com o aviso "falta preencher o perfil Wallapop à mão";
+-- "Venda confirmada" procura pela transação e, se falhar, por comprador + títulos (só se houver uma venda sem perfil);
+-- se a confirmada trouxer perfil, completa a encomenda e tira o aviso.
+-- Cópias anteriores: wallapop_config 'backup_wallapop_aplicar_email_20261118' e 'backup_edge_wallapop_v8_20261118'.

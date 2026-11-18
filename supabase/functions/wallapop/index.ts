@@ -41,13 +41,15 @@ function lerEmail(html: string) {
   const nome = html.match(/Comprado por:\s*<\/div>\s*<div[^>]*>([^<]*)<\/div>/);
   const titulos = [...html.matchAll(/<p style="font-size:14px;line-height:24px;margin:0 8px">([^<]*)<\/p>/g)].map((m) => desescapar(m[1])).filter(Boolean);
   const link = html.match(/delivery%2Ftimeline%3Fb=([a-z0-9]+)%26i=([a-z0-9]+)%26r=([0-9a-f-]+)/i);
+  // Formato novo do botão (nov. 2026): só traz a transação, sem o código do comprador.
+  const tracking = html.match(/delivery%2Ftracking%2F([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})/i);
   const total = html.match(/Total<\/span>\s*<span[^>]*>([^<]*)<\/span>/);
   return {
     comprador_nome: nome ? desescapar(nome[1]) : null,
     titulos,
     comprador_hash: link?.[1] ?? null,
     item_hash: link?.[2] ?? null,
-    transacao: link?.[3] ?? null,
+    transacao: link?.[3] ?? tracking?.[1] ?? null,
     total: total ? Number(String(total[1]).replace(/[^0-9.,]/g, "").replace(",", ".")) || null : null,
   };
 }
@@ -153,11 +155,14 @@ Deno.serve(async (req) => {
       continue;
     }
     let perfil: { slug: string | null; pais?: string | null; erro?: string } = { slug: null };
-    if (lido.comprador_hash) perfil = await perfilWallapop(lido.comprador_hash);
-    if (!perfil.slug) {
-      // Sem perfil não se trata: o script volta a tentar na próxima execução.
-      resultados.push({ message_id, ok: false, erro: `perfil_indisponivel: ${perfil.erro || "sem_codigo"}` });
-      continue;
+    // Email no formato novo não traz o código do comprador: segue sem perfil (completa-se com a "Venda confirmada").
+    if (lido.comprador_hash) {
+      perfil = await perfilWallapop(lido.comprador_hash);
+      if (!perfil.slug) {
+        // Sem perfil não se trata: o script volta a tentar na próxima execução.
+        resultados.push({ message_id, ok: false, erro: `perfil_indisponivel: ${perfil.erro || "sem_codigo"}` });
+        continue;
+      }
     }
     const p = { message_id, tipo, recebido_em: e?.date || null, perfil_slug: perfil.slug, pais_codigo: perfil.pais || null, ...lido };
     const { data, error } = await db.rpc("wallapop_processar_email", { p, p_simular: simular });
