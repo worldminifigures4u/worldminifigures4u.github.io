@@ -5370,12 +5370,12 @@ html:not(.admin-light-mode) body #fornecedor-edicao-modal .fornecedor-edicao-fec
     gap: 4px;
 }
 #fornecedor-edicao-modal .fornecedor-custo-fixo-eur-grid {
-    /* 1.ª linha: Preço por figura + Pagamentos 1 a 5; 2.ª linha: Total pago, Portes, Figuras pagas e o resultado */
+    /* 1.ª linha: Preço por figura + Pagamentos 1 a 5; 2.ª linha: Total pago, Figuras pagas e o resultado */
     grid-template-columns: repeat(6, minmax(120px, 1fr));
     align-items: end;
 }
 #fornecedor-edicao-modal .fornecedor-custo-fixo-eur-grid .fornecedor-edicao-preco-resultado {
-    grid-column: span 3;
+    grid-column: span 4;
 }
 #fornecedor-edicao-modal .fornecedor-edicao-total-pagamentos {
     font-weight: 800;

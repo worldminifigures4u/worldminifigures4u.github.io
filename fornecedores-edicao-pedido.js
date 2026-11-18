@@ -1933,10 +1933,6 @@ function garantirModalEdicaoFornecedor() {
                                         <input type="text" id="fornecedor-edicao-os-total-compra-eur" class="fornecedor-edicao-total-pagamentos" readonly tabindex="-1" placeholder="0,00 €" title="Soma dos pagamentos 1 a 5">
                                     </label>
                                     <label>
-                                        Portes € (incluídos, opcional)
-                                        <input type="text" id="fornecedor-edicao-os-envio-eur" inputmode="decimal" autocomplete="off" placeholder="0,00 €">
-                                    </label>
-                                    <label>
                                         Figuras pagas (opcional)
                                         <input type="text" id="fornecedor-edicao-unidades-pagas" inputmode="numeric" autocomplete="off" placeholder="0" title="Quantas figuras pagaste nesta encomenda, se for diferente das unidades a receber (ex.: figuras em falta da encomenda anterior que vieram agora sem pagar). O total pago é dividido por este número.">
                                     </label>
