@@ -23,7 +23,7 @@
                 return carregarScript('paises-cliente.js?v=20261116-ficha-nome-pais-perfil');
             })
             .then(function () {
-                return carregarScript('encomendas.js?v=20261116-ficha-nome-pais-perfil');
+                return carregarScript('encomendas.js?v=20261118-linha-ao-fechar');
             });
 
         return promessaEncomendasJs;

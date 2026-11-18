@@ -622,6 +622,7 @@ function fecharModalEncomendaAdmin() {
     const botaoFechar = document.getElementById('admin-encomenda-modal-fechar');
     const topo = modal?.querySelector('.admin-encomenda-modal-topo');
     if (!modal || !conteudo) return;
+    const idFechada = String(modal.dataset.encomendaId || '');
     carregamentoImagensModalId += 1;
     conteudo.querySelector('.admin-encomenda-card')?._limparAlturaNotas?.();
     modal.hidden = true;
@@ -632,6 +633,23 @@ function fecharModalEncomendaAdmin() {
     conteudo.replaceChildren();
     acoesTopo?.replaceChildren();
     document.body.classList.remove('admin-encomenda-modal-aberto');
+    atualizarCardListaEncomendaAdmin(idFechada);
+}
+
+// Ao fechar a encomenda, a linha dela na lista é desenhada de novo: o que foi alterado lá dentro
+// sem mudar o estado (ex.: "Stock verificado", Penúltimo/Último) passa a aparecer logo na lista.
+function atualizarCardListaEncomendaAdmin(id) {
+    if (!id) return;
+    const lista = document.getElementById('lista-encomendas-admin');
+    const cardAtual = lista?.querySelector(`.admin-encomenda-card[data-encomenda-id="${CSS.escape(id)}"]`);
+    if (!cardAtual) return;
+    const encomenda = encomendasAdmin.find(item => String(item.id) === id);
+    if (!encomenda) return;
+    if (!encomendasFiltradasAdmin().some(item => String(item.id) === id)) {
+        renderizarEncomendasAdmin();
+        return;
+    }
+    cardAtual.replaceWith(criarCardEncomenda(encomenda));
 }
 
 function obterResumoVisualModalEncomenda(encomenda = {}) {
