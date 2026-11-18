@@ -119,3 +119,8 @@ revoke all on function public.wallapop_encomenda_para_etiqueta(text, text) from 
 -- "Venda confirmada" procura pela transação e, se falhar, por comprador + títulos (só se houver uma venda sem perfil);
 -- se a confirmada trouxer perfil, completa a encomenda e tira o aviso.
 -- Cópias anteriores: wallapop_config 'backup_wallapop_aplicar_email_20261118' e 'backup_edge_wallapop_v8_20261118'.
+
+-- 2026-11-18: perfil do comprador a partir do chat (extensão "Assistente de Respostas" 1.11.3).
+-- wallapop_ligar_perfil(transacao, codigo, slug, nome, pais_codigo): só service role. Liga o perfil se a encomenda não tiver
+-- nenhum, preenche o país se faltar e tira o aviso. A função "wallapop" (ligar_perfil) só aceita o perfil cujo nome público
+-- é igual ao do comprador. Versão anterior da função: commit 2880791.

@@ -134,6 +134,31 @@ async function paisDoPerfil(link: string): Promise<{ ok: boolean; pais?: string 
   }
 }
 
+// Extensão "Assistente de Respostas": perfis vistos na página do chat do Wallapop. Só aceita o perfil cujo nome público
+// é o do comprador da venda; depois liga-o à encomenda (só se ela ainda não tiver perfil).
+function normalizarNome(t: unknown) {
+  return String(t || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/\s+/g, " ").trim();
+}
+
+async function ligarPerfil(c: any) {
+  const transacaoBruta = String(c?.transacao || "").trim().toLowerCase();
+  const transacao = /^[0-9a-f-]{20,60}$/.test(transacaoBruta) ? transacaoBruta : "";
+  const codigoBruto = String(c?.codigo || "").trim().toUpperCase();
+  const codigo = /^[A-Z0-9]{6}$/.test(codigoBruto) ? codigoBruto : "";
+  const nome = String(c?.comprador_nome || "").trim().slice(0, 120);
+  const candidatos = [...new Set((Array.isArray(c?.candidatos) ? c.candidatos : []).map((s: unknown) => String(s || "").trim().toLowerCase()))]
+    .filter((s) => /^[a-z0-9][a-z0-9._-]{0,80}-\d+$/.test(s)).slice(0, 8);
+  if (!nome || !candidatos.length || (!transacao && !codigo)) return { ok: false, erro: "sem_dados" };
+  const vistos = await Promise.all(candidatos.map(async (slug) => ({ slug, ...(await paisDoPerfil(`https://es.wallapop.com/user/${slug}`)) })));
+  const iguais = vistos.filter((v) => v.ok && normalizarNome(v.nome) === normalizarNome(nome));
+  if (!iguais.length) return { ok: true, acao: "sem_correspondencia" };
+  if (iguais.length > 1) return { ok: true, acao: "varios_perfis" };
+  const { data, error } = await db.rpc("wallapop_ligar_perfil", {
+    p_transacao: transacao || null, p_codigo: codigo || null, p_slug: iguais[0].slug, p_nome: nome, p_pais_codigo: iguais[0].codigo || null,
+  });
+  return error ? { ok: false, erro: error.message } : { ok: true, ...data };
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: CORS });
   if (req.method !== "POST") return resp({ ok: false, erro: "metodo" }, 405);
@@ -141,6 +166,7 @@ Deno.serve(async (req) => {
   let corpo: any = {};
   try { corpo = await req.json(); } catch { /* vazio */ }
   if (corpo.pais_perfil) return resp(await paisDoPerfil(String(corpo.pais_perfil)));
+  if (corpo.ligar_perfil) return resp(await ligarPerfil(corpo.ligar_perfil));
   const simular = corpo.simular !== false; // por defeito só simula; o script envia simular:false quando estiver ligado a sério
   const emails = (Array.isArray(corpo.emails) ? corpo.emails : []).slice(0, 30);
   const resultados: any[] = [];
