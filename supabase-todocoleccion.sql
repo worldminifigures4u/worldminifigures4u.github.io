@@ -1223,3 +1223,8 @@ grant execute on function public.todocoleccion_anular_encomenda(bigint) to servi
 -- (ex.: Blackbeard BL02 ficou com 1 em vez de 20) e a tabela continuava a dizer 20, por isso a
 -- sincronização não o corrigia. precoLote passa a repor as unidades depois do PUT, como já faziam
 -- o título e a descrição. Relidos todos os lotes à venda para corrigir os afetados.
+
+-- 2026-11-19: 153 lotes ainda com título antigo ("Minifigura X - Tema muñeco") passaram ao formato v2
+-- (Stripe, Ripley, Optimus Prime, Kratos e Indiana Jones com título escrito à mão para manter a saga).
+-- tc_titulo_es_v2: lista de palavras portuguesas a ignorar ganhou amarela, mota, machados, mergulhador,
+-- algemas, tartaruga, genial, moto, carro, espada, escudo, chapeu, barco (editada com replace() no corpo).
