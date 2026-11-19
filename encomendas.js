@@ -1203,10 +1203,35 @@ function atualizarAcoesLoteEncomendas() {
     const totalVisivel = baseTotal.reduce((soma, encomenda) => soma + obterTotalEncomendaLote(encomenda), 0);
     barra.hidden = !loteEncomendasAtivo() || !visiveis.length || !filtroEstadoPermiteTotalEncomendas();
     total.textContent = formatarEuroEncomenda(totalVisivel);
+    const botaoSelecionarTodas = document.getElementById('btn-selecionar-todas-encomendas');
+    if (botaoSelecionarTodas) {
+        botaoSelecionarTodas.hidden = !selecionaveis || !visiveis.some(encomendaEntraSelecionarTodas);
+    }
     if (botaoConcluir) {
         botaoConcluir.hidden = !selecionaveis || !selecionadas.length;
         botaoConcluir.textContent = selecionadas.length === 1 ? 'Concluir selecionada' : 'Concluir selecionadas';
     }
+}
+
+// "Selecionar todas" (Enviadas): marca as encomendas à vista, exceto as do OLX e do WhatsApp.
+const ORIGENS_FORA_SELECIONAR_TODAS = new Set(['olx', 'whatsapp']);
+
+function encomendaEntraSelecionarTodas(encomenda) {
+    const origem = String(encomenda?.origem || 'site').trim().toLowerCase();
+    return estadoNormalizadoEncomenda(encomenda?.estado) === 'Enviado' && !ORIGENS_FORA_SELECIONAR_TODAS.has(origem);
+}
+
+function selecionarTodasEncomendasLote() {
+    const lista = document.getElementById('lista-encomendas-admin');
+    obterEncomendasLoteVisiveis()
+        .filter(encomendaEntraSelecionarTodas)
+        .forEach(encomenda => {
+            const id = String(encomenda.id);
+            encomendasSelecionadasLote.add(id);
+            const caixa = lista?.querySelector(`.admin-encomenda-card[data-encomenda-id="${CSS.escape(id)}"] .admin-encomenda-selecao-lote input`);
+            if (caixa) caixa.checked = true;
+        });
+    atualizarAcoesLoteEncomendas();
 }
 
 async function concluirEncomendasSelecionadas() {
@@ -1582,6 +1607,7 @@ document.getElementById('pesquisa-encomendas-admin').addEventListener('input', a
 document.getElementById('pesquisa-figura-encomendas-admin').addEventListener('input', aoPesquisarEncomendasAdmin);
 document.getElementById('filtro-estado-encomendas-admin').addEventListener('change', renderizarEncomendasAdmin);
 document.getElementById('btn-concluir-encomendas-selecionadas')?.addEventListener('click', concluirEncomendasSelecionadas);
+document.getElementById('btn-selecionar-todas-encomendas')?.addEventListener('click', selecionarTodasEncomendasLote);
 window.addEventListener('admin-cliente-atualizado', atualizarEncomendaAbertaAposCliente);
 window.addEventListener('scroll', verificarCarregamentoConcluidasScroll, { passive: true });
 document.getElementById('admin-imagem-modal-fechar').addEventListener('click', fecharImagemProdutoEncomenda);
