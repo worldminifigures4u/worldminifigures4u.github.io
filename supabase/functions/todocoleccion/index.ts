@@ -292,7 +292,7 @@ async function precoLote(id: number, novo: number) {
   if (!l?.referencia) return { ok: false, erro: "lote_desconhecido" };
   const d = await tc(`/products/${encodeURIComponent(l.referencia)}`);
   if (!d?.success || Number(d.id) !== id) return { ok: false, erro: `detalhe: ${d?.error || "id_nao_coincide"}` };
-  const antes = { titulo: d.title, preco: d.price, imagens: (d.images_list || []).length, portes: JSON.stringify(d.shipping_config ?? null), estado: d.status };
+  const antes = { titulo: d.title, preco: d.price, imagens: (d.images_list || []).length, portes: JSON.stringify(d.shipping_config ?? null), estado: d.status, stock: stockTc(d) };
   if (Number(d.price) === Number(novo.toFixed(2))) return { ok: true, sem_alteracao: true, antes };
   const corpo: Record<string, unknown> = {
     id_product: l.referencia,
@@ -306,10 +306,15 @@ async function precoLote(id: number, novo: number) {
   if (d.observations) corpo.observations = d.observations;
   const r = await tc(`/products`, { method: "PUT", body: JSON.stringify(corpo) });
   if (!r?.success) return { ok: false, erro: `put: ${r?.error}`, antes };
-  const v = await tc(`/products/${encodeURIComponent(l.referencia)}`);
-  const depois = { titulo: v?.title, preco: v?.price, imagens: (v?.images_list || []).length, portes: JSON.stringify(v?.shipping_config ?? null), estado: v?.status };
-  if (v?.success) await db.from("todocoleccion_lotes").update({ preco: Number(v.price) }).eq("id", id);
-  const igual = depois.titulo === antes.titulo && depois.imagens === antes.imagens && depois.portes === antes.portes && depois.estado === antes.estado;
+  let v = await tc(`/products/${encodeURIComponent(l.referencia)}`);
+  // O PUT repõe as unidades a 1: volta a pôr as que o lote tinha.
+  if (v?.success && antes.stock !== null && stockTc(v) !== antes.stock) {
+    await tc(`/products/${encodeURIComponent(l.referencia)}`, { method: "PATCH", body: JSON.stringify({ stock: antes.stock }) });
+    v = await tc(`/products/${encodeURIComponent(l.referencia)}`);
+  }
+  const depois = { titulo: v?.title, preco: v?.price, imagens: (v?.images_list || []).length, portes: JSON.stringify(v?.shipping_config ?? null), estado: v?.status, stock: stockTc(v) };
+  if (v?.success) await db.from("todocoleccion_lotes").update({ preco: Number(v.price), stock: stockTc(v) }).eq("id", id);
+  const igual = depois.titulo === antes.titulo && depois.imagens === antes.imagens && depois.portes === antes.portes && depois.estado === antes.estado && depois.stock === antes.stock;
   return { ok: Number(v?.price) === Number(novo.toFixed(2)) && igual, antes, depois, descricao_igual: (v?.description || "") === (d.description || "") };
 }
 

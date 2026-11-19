@@ -1218,3 +1218,8 @@ begin
 end $$;
 revoke all on function public.todocoleccion_anular_encomenda(bigint) from public, anon, authenticated;
 grant execute on function public.todocoleccion_anular_encomenda(bigint) to service_role;
+
+-- 2026-11-19 (edge v39): mudar o PREÇO de um lote (PUT) repunha as unidades a 1 no todocoleccion
+-- (ex.: Blackbeard BL02 ficou com 1 em vez de 20) e a tabela continuava a dizer 20, por isso a
+-- sincronização não o corrigia. precoLote passa a repor as unidades depois do PUT, como já faziam
+-- o título e a descrição. Relidos todos os lotes à venda para corrigir os afetados.
