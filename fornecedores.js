@@ -91,7 +91,7 @@ function garantirFornecedoresProdutoModal() {
     if (window.FornecedoresProdutoModal) return Promise.resolve();
     if (!__fornecedoresProdutoPromessa) {
         prepararContextoProdutoFornecedor();
-        __fornecedoresProdutoPromessa = carregarScriptAdmin("mapas-produto-modal.js?v=20261116-chave-fornecedor")
+        __fornecedoresProdutoPromessa = carregarScriptAdmin("mapas-produto-modal.js?v=20261120-preco-tc")
             .then(function () {
                 window.FornecedoresProdutoModal = {
                     abrir: function () {
@@ -317,6 +317,9 @@ function normalizarProdutoMapa(produto) {
         imagens: normalizarImagensMapa(produto.imagens),
         observacoes: produto.observacoes || "",
         notas_gestao: produto.notas_gestao || "",
+        // Preço manual do Todocoleccion (null = usar a regra), quando a lista o traz. Sem isto a ficha mostrava a regra e a edição abria vazia,
+        // e gravar de novo apagava o preço.
+        ...(produto.preco_todocoleccion !== undefined ? { preco_todocoleccion: produto.preco_todocoleccion } : {}),
         fornecedores: produto.fornecedores || {}
     };
     normalizado.pesquisa = normalizarMapa([

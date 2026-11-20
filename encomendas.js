@@ -356,6 +356,9 @@ function normalizarProdutoParaFichaMapaEncomenda(produto = {}) {
         imagens: normalizarImagensProdutoEncomenda(produto.imagens),
         observacoes: produto.observacoes || '',
         notas_gestao: produto.notas_gestao || '',
+        // Preço manual do Todocoleccion (null = usar a regra), quando a lista o traz. Sem isto a ficha mostrava a regra e a edição abria vazia,
+        // e gravar de novo apagava o preço.
+        ...(produto.preco_todocoleccion !== undefined ? { preco_todocoleccion: produto.preco_todocoleccion } : {}),
         fornecedores: produto.fornecedores || {}
     };
     normalizado.pesquisa = normalizarTextoProdutoEncomenda([
@@ -519,7 +522,7 @@ function garantirProdutoModalEncomendas() {
     prepararContextoProdutoEncomendas();
     if (window.MapasProdutoModal) return Promise.resolve();
     if (!promessaProdutoModalEncomendas) {
-        promessaProdutoModalEncomendas = carregarScriptEncomendasAdmin('mapas-produto-modal.js?v=20261116-chave-fornecedor')
+        promessaProdutoModalEncomendas = carregarScriptEncomendasAdmin('mapas-produto-modal.js?v=20261120-preco-tc')
             .then(() => {
                 prepararContextoProdutoEncomendas();
             });

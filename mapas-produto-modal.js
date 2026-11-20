@@ -2925,6 +2925,8 @@ function lerProdutoEditadoMapa() {
             const campo = document.getElementById("mapas-editar-preco-todocoleccion");
             if (!campo) return undefined;
             const texto = String(campo.value || "").trim().replace(",", ".");
+            // Lista sem esta informação (ex.: Fornecedores): campo vazio não apaga o preço gravado.
+            if (texto === "" && produtoAtual && !("preco_todocoleccion" in produtoAtual)) return undefined;
             return texto === "" ? "" : Number(texto);
         })(),
         peso: Number(document.getElementById("mapas-editar-peso").value || 10),
