@@ -484,6 +484,20 @@ async function importarEncomendas(modo: string) {
       // Venda anulada no todocoleccion: cancela a encomenda no admin e repõe o stock (uma só vez).
       // O stock sobe para o lote pela sincronização; nunca usar "Insertar otro igual" (repunha a dobrar).
       if (o.is_anulled && conhecida.encomenda_id && !["anulada", "anulada_rever"].includes(String(conhecida.situacao || ""))) {
+        // is_anulled já vem true com a anulação só pedida: confirma artigo a artigo
+        // (status 1 vendido, 2 anulado, 3 anulação pendente). Só avança com todos em 2.
+        const det = await tc(`/orders/${idOrder}`);
+        const sts = ((det?.products || []) as any[]).map((x: any) => Number(x.status));
+        if (!det?.success || !sts.length || sts.some((s) => s === 3)) {
+          await db.from("todocoleccion_encomendas").update({ situacao: "anulacao_pendente", estado_tc: o.status, visto_em: new Date().toISOString() }).eq("id_order", idOrder);
+          continue;
+        }
+        if (!sts.every((s) => s === 2)) {
+          await db.from("todocoleccion_encomendas").update({ situacao: "anulada_rever", erro: `anulação parcial: estados ${sts.join(",")}`,
+            estado_tc: o.status, visto_em: new Date().toISOString() }).eq("id_order", idOrder);
+          erros.push({ id_order: idOrder, erro: "anulação parcial" });
+          continue;
+        }
         const { data: an, error: erroAn } = await db.rpc("todocoleccion_anular_encomenda", { p_id_order: idOrder });
         const okAn = !erroAn && an?.sucesso;
         await db.from("todocoleccion_encomendas").update({

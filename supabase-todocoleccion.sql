@@ -1228,3 +1228,11 @@ grant execute on function public.todocoleccion_anular_encomenda(bigint) to servi
 -- (Stripe, Ripley, Optimus Prime, Kratos e Indiana Jones com título escrito à mão para manter a saga).
 -- tc_titulo_es_v2: lista de palavras portuguesas a ignorar ganhou amarela, mota, machados, mergulhador,
 -- algemas, tartaruga, genial, moto, carro, espada, escudo, chapeu, barco (editada com replace() no corpo).
+
+-- 2026-11-20 (edge v40): antes de cancelar por anulação, lê o pedido e exige todos os artigos com status 2
+-- (1 vendido, 2 anulado, 3 anulação pendente). Pendente -> situacao 'anulacao_pendente' (volta a ver na
+-- importação seguinte); anulação parcial -> 'anulada_rever'. Nota: com a anulação só pedida, o detalhe já
+-- traz is_annulled=true, mas a lista (/orders) ainda traz is_anulled=false.
+alter table public.todocoleccion_encomendas drop constraint todocoleccion_encomendas_situacao_check;
+alter table public.todocoleccion_encomendas add constraint todocoleccion_encomendas_situacao_check
+  check (situacao = any (array['importada','ja_registada','anulada','erro','anulada_rever','anulacao_pendente']));
