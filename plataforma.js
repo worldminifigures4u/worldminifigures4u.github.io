@@ -1156,7 +1156,7 @@ function atualizarOpcoesEnvioPlataforma() {
 
 function formatarContagemFigurasPlataforma(total) {
     const valor = Math.max(0, Number(total) || 0);
-    return `${valor} ${valor === 1 ? 'figura' : 'figuras'}`;
+    return `${valor} ${valor === 1 ? 'produto' : 'produtos'}`;
 }
 
 function atualizarContagemFigurasPlataforma() {
