@@ -3478,8 +3478,14 @@ function aplicarSugestoesFornecedor(meses, substituir) {
         if (totalFinal < alvo) avisoAlvo = ` Faltam ${alvo - totalFinal} un. para o alvo de ${alvo}.`;
     }
 
+    // Figuras com a mesma referência (ex.: as 17 do "Lote 17", que se compram juntas) entram com a mesma
+    // quantidade, mas só as que passam nos filtros de marcação: as OS/EX no fornecedor ficam de fora.
+    const { fornecedor: fornecedorSugerir, filtrosMarcacao: filtrosSugerir } = obterControlosResultadosFornecedor();
     sugestoes.forEach(({ produto, necessario }) => {
-        obterProdutosRelacionadosQuantidadeFornecedor(produto).forEach((relacionado) => {
+        obterProdutosRelacionadosQuantidadeFornecedor(produto)
+            .filter((relacionado) => String(relacionado.id) === String(produto.id)
+                || produtoPassaFiltrosMarcacaoFornecedor(relacionado, fornecedorSugerir, filtrosSugerir))
+            .forEach((relacionado) => {
             const id = String(relacionado.id);
             const indice = fornecedorSelecao.findIndex(item => String(item.id) === id);
             if (indice >= 0) fornecedorSelecao[indice] = { ...fornecedorSelecao[indice], ...relacionado, quantidade: necessario };
