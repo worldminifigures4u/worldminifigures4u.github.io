@@ -554,6 +554,7 @@ function obterOpcoesMarcacaoFornecedor() {
         { valor: "ex", texto: "EX" },
         { valor: "os-ou-ex", texto: "OS ou EX" },
         { valor: "disponivel", texto: "Disponível" },
+        { valor: "sem-os", texto: "Todas menos OS" },
     ];
 }
 
@@ -2493,6 +2494,8 @@ function produtoPassaFiltroFornecedor(produto, fornecedorMarcacao, filtro) {
     const valor = obterValorFornecedorProduto(produto, fornecedorMarcacao);
     const estado = classificarValorFornecedor(valor);
     if (filtro === "os-ou-ex") return estado.tipo === "os" || estado.tipo === "ex";
+    // Todas menos OS = disponíveis e também as EX
+    if (filtro === "sem-os") return estado.tipo !== "os";
     // Disponivel = sem OS/EX (inclui vazio, Encomendada e Solicitada)
     if (filtro === "disponivel") {
         return estado.tipo === "disponivel"
@@ -3687,7 +3690,8 @@ function obterTextoResumoMarcacaoFornecedor(fornecedor, fornecedorMarcacao, filt
         os: "OS",
         ex: "EX",
         "os-ou-ex": "OS ou EX",
-        disponivel: "Disponível"
+        disponivel: "Disponível",
+        "sem-os": "Todas menos OS"
     };
     const rotulo = rotulos[filtroFornecedor] || filtroFornecedor;
     if (fornecedorMarcacao && fornecedor && fornecedorMarcacao !== fornecedor) {
@@ -3711,7 +3715,8 @@ function obterTextoResumoFiltrosMarcacaoFornecedor(fornecedor, filtrosMarcacao) 
         os: "OS",
         ex: "EX",
         "os-ou-ex": "OS ou EX",
-        disponivel: "Disponível"
+        disponivel: "Disponível",
+        "sem-os": "Todas menos OS"
     };
     const texto = ativos.map(filtro => {
         const fornecedorMarcacao = resolverFornecedorMarcacaoFiltro(filtro.fornecedor, fornecedor);
