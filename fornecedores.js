@@ -553,7 +553,7 @@ function obterOpcoesMarcacaoFornecedor() {
         { valor: "os", texto: "OS" },
         { valor: "ex", texto: "EX" },
         { valor: "os-ou-ex", texto: "OS ou EX" },
-        { valor: "disponivel", texto: "Disponível" },
+        { valor: "disponivel", texto: "Sem OS nem EX" },
         { valor: "sem-os", texto: "Todas menos OS" },
     ];
 }
@@ -3690,7 +3690,7 @@ function obterTextoResumoMarcacaoFornecedor(fornecedor, fornecedorMarcacao, filt
         os: "OS",
         ex: "EX",
         "os-ou-ex": "OS ou EX",
-        disponivel: "Disponível",
+        disponivel: "Sem OS nem EX",
         "sem-os": "Todas menos OS"
     };
     const rotulo = rotulos[filtroFornecedor] || filtroFornecedor;
@@ -3715,7 +3715,7 @@ function obterTextoResumoFiltrosMarcacaoFornecedor(fornecedor, filtrosMarcacao) 
         os: "OS",
         ex: "EX",
         "os-ou-ex": "OS ou EX",
-        disponivel: "Disponível",
+        disponivel: "Sem OS nem EX",
         "sem-os": "Todas menos OS"
     };
     const texto = ativos.map(filtro => {
