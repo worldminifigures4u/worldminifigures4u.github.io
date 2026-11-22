@@ -613,7 +613,7 @@ const MAPA_ICONES_TEMAS = {
         path('M7 9.5l-1.5-1'),
         path('M17 9.5l1.5-1')
     ],
-    'Tempos Antigos': [
+    'Antiguidade': [
         path('M3 19h18'),
         path('M5 19l4-8 3 5 3-4 4 7'),
         path('M16 9.5l1.5-1.5'),
