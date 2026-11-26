@@ -3327,7 +3327,10 @@ function criarLinhasOutrosEnviosOlxPlataforma(envio, baseFiguras = null, opcaoAt
         'Ao valor das figuras acresce o custo da forma de entrega que escolher:',
         '',
         ...linhasOpcoes,
-        ...(incluirNotaInPost ? ['', criarNotaInPostTxtPlataforma()] : [])
+        ...(incluirNotaInPost ? ['', criarNotaInPostTxtPlataforma()] : []),
+        // No fim, pergunta ao cliente qual das opções quer.
+        '',
+        'Qual destas formas de entrega prefere?'
     ];
 }
 

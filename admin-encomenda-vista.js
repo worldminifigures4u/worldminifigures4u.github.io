@@ -1821,7 +1821,10 @@ window.AdminEncomendaVista = (function () {
             "Ao valor das figuras acresce o custo da forma de entrega que escolher:",
             "",
             ...linhasOpcoes,
-            ...(incluirNotaInPost ? ["", criarNotaInPostExportacao()] : [])
+            ...(incluirNotaInPost ? ["", criarNotaInPostExportacao()] : []),
+            // No fim, pergunta ao cliente qual das opções quer.
+            "",
+            "Qual destas formas de entrega prefere?"
         ];
     }
 
