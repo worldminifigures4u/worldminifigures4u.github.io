@@ -3821,7 +3821,17 @@ function observarImagensTabelaEncomendaFornecedor() {
     });
 }
 
-function criarTheadTabelaEncomendaFornecedor() {
+// Soma das quantidades das figuras à vista (todas as que passam nos filtros, não só as já desenhadas).
+function textoQtdVistaFornecedor(total) {
+    return total > 0 ? ` (${total})` : "";
+}
+
+function atualizarQtdVistaFornecedor(idsVista) {
+    const total = (idsVista || []).reduce((soma, id) => soma + Math.max(0, obterQuantidadeSelecionadaFornecedor(id)), 0);
+    document.querySelectorAll(".fornecedor-qtd-vista").forEach((el) => { el.textContent = textoQtdVistaFornecedor(total); });
+}
+
+function criarTheadTabelaEncomendaFornecedor(totalQtdVista = 0) {
     const thead = document.createElement("thead");
     const cabecalho = document.createElement("tr");
     [
@@ -3839,6 +3849,13 @@ function criarTheadTabelaEncomendaFornecedor() {
         botao.type = "button";
         botao.textContent = texto;
         botao.tabIndex = -1;
+        if (coluna === "qtd") {
+            const soma = document.createElement("span");
+            soma.className = "fornecedor-qtd-vista";
+            soma.title = "Unidades das figuras à vista";
+            soma.textContent = textoQtdVistaFornecedor(totalQtdVista);
+            botao.appendChild(soma);
+        }
         if (!coluna) {
             botao.disabled = true;
             botao.classList.add("mapas-th-sem-ordenacao");
@@ -3889,7 +3906,9 @@ function renderizarResultadosFornecedorTabelaEncomenda(caixa, resultados) {
     tabela.className = "mapas-produtos-tabela fornecedor-tabela-encomenda";
     tabela.dataset.colunaAtiva = fornecedorMapaOrdenacao.coluna || "";
 
-    tabela.appendChild(criarTheadTabelaEncomendaFornecedor());
+    const idsVista = resultados.map(({ produto }) => produto.id);
+    const totalQtdVista = idsVista.reduce((soma, id) => soma + Math.max(0, obterQuantidadeSelecionadaFornecedor(id)), 0);
+    tabela.appendChild(criarTheadTabelaEncomendaFornecedor(totalQtdVista));
 
     const tbody = document.createElement("tbody");
     const resultadosOrdenados = resultados
@@ -3956,9 +3975,10 @@ function renderizarResultadosFornecedorTabelaEncomenda(caixa, resultados) {
         input.addEventListener("input", () => {
             linha.classList.toggle("fornecedor-linha-com-quantidade", Math.floor(Number(input.value) || 0) > 0);
             definirQuantidadeMapaFornecedor(atual, input.value);
+            atualizarQtdVistaFornecedor(idsVista);
         });
-        input.addEventListener("change", () => definirQuantidadeMapaFornecedor(atual, input.value));
-        input.addEventListener("blur", () => definirQuantidadeMapaFornecedor(atual, input.value));
+        input.addEventListener("change", () => { definirQuantidadeMapaFornecedor(atual, input.value); atualizarQtdVistaFornecedor(idsVista); });
+        input.addEventListener("blur", () => { definirQuantidadeMapaFornecedor(atual, input.value); atualizarQtdVistaFornecedor(idsVista); });
         ligarSelecaoLinhaQuantidadeMapa(input);
         input.addEventListener("keydown", (evento) => {
             if (evento.key !== "Enter") return;
@@ -4029,12 +4049,18 @@ function renderizarResultadosFornecedor() {
                     score: calcularScoreResultadoFornecedor(produto, termo),
                     vendas_3m: obterVendasRecentesProdutoPorIndiceFornecedor(produto, indiceVendasRecentes),
                 }))
-                .filter((item) => (!termo || item.score < 99) && produtoPassaFiltroTemaFornecedor(item.produto, filtroTema));
+                // Também os filtros de marcação (ex.: ver quais das figuras da encomenda estão OS noutro fornecedor).
+                .filter((item) => (!termo || item.score < 99)
+                    && produtoPassaFiltroTemaFornecedor(item.produto, filtroTema)
+                    && produtoPassaFiltrosMarcacaoFornecedor(item.produto, fornecedor, filtrosMarcacao));
             renderizarResultadosFornecedorTabelaEncomenda(caixa, naEncomenda);
             if (!naEncomenda.length) {
                 const vazio = document.createElement("p");
                 vazio.className = "fornecedor-vazio";
-                vazio.textContent = "Ainda não há produtos nesta encomenda.";
+                const temProdutos = fornecedorProdutos.some((produto) => obterQuantidadeSelecionadaFornecedor(produto.id) > 0);
+                vazio.textContent = temProdutos
+                    ? "Nenhuma figura da encomenda passa nos filtros de marcação."
+                    : "Ainda não há produtos nesta encomenda.";
                 caixa.appendChild(vazio);
             }
             return;
