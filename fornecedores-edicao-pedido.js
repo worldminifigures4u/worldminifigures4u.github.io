@@ -2448,7 +2448,22 @@ async function guardarEdicaoPedidoFornecedor(evento) {
         }
         let produtosComPrecoAtualizado = 0;
         let avisoPrecoCompra = '';
-        if (itensAlterados) {
+        // Ficha com um preço vindo desta encomenda diferente do que está agora na encomenda (ex.: figuras
+        // marcadas EX depois de gravado o "Preço igual para todas"): acerta a ficha mesmo sem outras mudanças.
+        const fichaComPrecoDesatualizado = !encomendaAntiga && itens.some((item) => {
+            if (Math.max(0, Math.floor(Number(item?.quantidade || 0))) <= 0) return false;
+            if (item?.preco_custo_provisorio || String(item?.preco_custo_moeda || '').trim().toUpperCase() === 'USD') return false;
+            const preco = Number(item?.preco_custo ?? 0);
+            if (!(preco > 0)) return false;
+            const produto = fornecedorProdutos.find((atual) => String(atual.id) === String(item.id));
+            if (!produto) return false;
+            const fornecedoresProduto = obterObjetoFornecedoresProduto(produto);
+            const chave = Object.keys(fornecedoresProduto).find((atual) => normalizarChaveFornecedor(atual) === normalizarChaveFornecedor(fornecedor));
+            const entrada = chave ? fornecedoresProduto[chave] : null;
+            if (!entrada || typeof entrada !== 'object' || String(entrada.pedido_preco_compra || '') !== String(id)) return false;
+            return Math.abs(Number(entrada.preco_compra || 0) - preco) > 0.004;
+        });
+        if (itensAlterados || fichaComPrecoDesatualizado) {
             status.textContent = 'A atualizar preço compra nos produtos...';
             try {
                 produtosComPrecoAtualizado = await sincronizarPrecoCompraProdutosFornecedor(itens, fornecedor, atualizado.data_encomendada || pedido.data_encomendada || pedido.criado_em || atualizado.criado_em || '', id, { soPreencher: encomendaAntiga });
