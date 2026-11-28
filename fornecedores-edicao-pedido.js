@@ -2007,6 +2007,9 @@ function abrirEdicaoPedidoFornecedor(id) {
     });
 
     modal.querySelector('#fornecedor-edicao-id').value = pedido.id;
+    // Cópia dos itens tal como estavam ao abrir: "Aplicar lista" e o custo fixo substituem pedido.itens
+    // durante a edição, e a sincronização das fichas precisa de comparar com o estado real anterior.
+    modal._itensOriginaisEdicao = { id: String(pedido.id), itens: JSON.parse(JSON.stringify(pedido.itens || [])) };
     const avisoAntiga = modal.querySelector('#fornecedor-edicao-aviso-antiga');
     if (avisoAntiga) avisoAntiga.hidden = pedido.historico !== true;
     const seletorEstado = modal.querySelector('#fornecedor-edicao-estado');
@@ -2427,17 +2430,10 @@ async function guardarEdicaoPedidoFornecedor(evento) {
             status.textContent = 'A atualizar histórico na ficha do produto...';
             await sincronizarHistoricoPedidosFornecedor(itens, fornecedor, {
                 modo: "editar",
-                itensAnteriores: pedido.itens || [],
+                itensAnteriores: (modal._itensOriginaisEdicao?.id === String(id) ? modal._itensOriginaisEdicao.itens : null) || pedido.itens || [],
                 estadoPedido: estado,
                 dataPedido: pedido.data_encomendada || pedido.criado_em || ''
             });
-        } else if (typeof acertarMarcacoesAtuaisOsExFornecedor === 'function') {
-            status.textContent = 'A verificar marcações OS/EX na ficha do produto...';
-            try {
-                await acertarMarcacoesAtuaisOsExFornecedor(itens, fornecedor);
-            } catch (erroMarcacao) {
-                console.warn('Nao foi possivel acertar a marcação atual OS/EX.', erroMarcacao);
-            }
         }
         if (deveAtualizarHistoricoConfirmacao && !encomendaAntiga) {
             status.textContent = 'A confirmar histórico na ficha do produto...';
@@ -2445,6 +2441,15 @@ async function guardarEdicaoPedidoFornecedor(evento) {
                 modo: "confirmar",
                 dataPedido: atualizado.data_encomendada || atualizado.criado_em || pedido.data_encomendada || pedido.criado_em || ''
             });
+        }
+        if (!encomendaAntiga && typeof acertarMarcacoesAtuaisOsExFornecedor === 'function') {
+            // Garantia final: cada linha OS/EX da encomenda fica com essa marcação na ficha do produto.
+            status.textContent = 'A verificar marcações OS/EX na ficha do produto...';
+            try {
+                await acertarMarcacoesAtuaisOsExFornecedor(itens, fornecedor);
+            } catch (erroMarcacao) {
+                console.warn('Nao foi possivel acertar a marcação atual OS/EX.', erroMarcacao);
+            }
         }
         let produtosComPrecoAtualizado = 0;
         let avisoPrecoCompra = '';

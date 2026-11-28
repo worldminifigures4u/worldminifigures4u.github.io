@@ -110,7 +110,7 @@ function garantirFornecedoresProdutoModal() {
 function garantirFornecedoresEdicaoPedido() {
     if (window.FornecedoresEdicaoPedido) return Promise.resolve();
     if (!__fornecedoresEdicaoPromessa) {
-        __fornecedoresEdicaoPromessa = carregarScriptAdmin("fornecedores-edicao-pedido.js?v=20261127-preco-ficha");
+        __fornecedoresEdicaoPromessa = carregarScriptAdmin("fornecedores-edicao-pedido.js?v=20261128-juntar-marcacoes");
     }
     return __fornecedoresEdicaoPromessa;
 }
@@ -5221,6 +5221,7 @@ async function adicionarSelecaoAoPedidoFornecedor(id) {
 
     const itens = serializarItensPedidoFornecedor(pedido.itens);
     const itensExportar = [];
+    const itensNovos = [];
     fornecedorSelecao.forEach(selecionado => {
         const existente = encontrarItemPedidoFornecedor(itens, selecionado);
         const quantidade = Math.max(1, Math.floor(Number(selecionado.quantidade) || 1));
@@ -5238,13 +5239,23 @@ async function adicionarSelecaoAoPedidoFornecedor(id) {
                 existente.preco_custo_provisorio = existente.preco_custo_moeda === "USD";
             }
         } else {
-            itens.push(serializarItemPedidoFornecedor(criarItemFornecedorAPartirSelecao(selecionado, 'substituicao')));
+            const novo = serializarItemPedidoFornecedor(criarItemFornecedorAPartirSelecao(selecionado, 'substituicao'));
+            itens.push(novo);
+            itensNovos.push(novo);
         }
     });
 
     try {
         definirStatusFornecedor('A completar encomenda com a selecao...', false, { temporario: false });
         const atualizado = await atualizarPedidoFornecedor(pedido.id, { itens: consolidarItensPedidoFornecedor(itens) });
+        if (itensNovos.length) {
+            // Linhas novas: mesmo registo na ficha que ao criar a encomenda (Solicitada / OS / EX).
+            try {
+                await sincronizarHistoricoPedidosFornecedor(itensNovos, atualizado.fornecedor || pedido.fornecedor, { modo: "criar" });
+            } catch (erroHistorico) {
+                console.warn('Nao foi possivel registar os produtos juntados na ficha.', erroHistorico);
+            }
+        }
         fornecedorSelecao = [];
         limparAlvoUnidadesFornecedor();
         guardarSelecaoFornecedor();
